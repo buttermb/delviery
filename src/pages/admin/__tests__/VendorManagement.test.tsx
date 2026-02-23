@@ -32,9 +32,12 @@ vi.mock('@/contexts/TenantAdminAuthContext', () => ({
   }),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: vi.fn().mockReturnValue({
-    toast: vi.fn(),
+vi.mock('sonner', () => ({
+  toast: Object.assign(vi.fn(), {
+    success: vi.fn(),
+    error: vi.fn(),
+    loading: vi.fn(),
+    info: vi.fn(),
   }),
 }));
 
@@ -62,7 +65,7 @@ vi.mock('@/lib/logger', () => ({
 // Import after mocks
 import { VendorManagement } from '../VendorManagement';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 const wrapper = ({ children }: { children: ReactNode }) => (
@@ -177,8 +180,8 @@ describe('VendorManagement', () => {
 
     it('should submit form with correct data using Record<string, unknown> type cast', async () => {
       const user = userEvent.setup();
-      const mockToast = vi.fn();
-      (useToast as ReturnType<typeof vi.fn>).mockReturnValue({ toast: mockToast });
+      vi.mocked(toast.success).mockClear();
+      vi.mocked(toast.error).mockClear();
 
       const insertMock = vi.fn().mockResolvedValue({ data: null, error: null });
       (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({

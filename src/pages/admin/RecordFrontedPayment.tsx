@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { ArrowLeft, CreditCard } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useRecordPayment } from '@/hooks/useRecordPayment';
 import type { PaymentMethod } from '@/lib/services/paymentService';
 import { formatCurrency } from '@/lib/formatters';
@@ -28,7 +28,6 @@ export default function RecordFrontedPayment() {
   const { navigateToAdmin } = useTenantNavigation();
   const { id } = useParams();
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const { recordFrontedPayment, isRecordingFrontedPayment } = useRecordPayment();
   
   const [frontedItem, setFrontedItem] = useState<any>(null);
@@ -61,21 +60,13 @@ export default function RecordFrontedPayment() {
 
   const handleRecordPayment = async () => {
     if (!tenant?.id || !id) {
-      toast({
-        title: 'Error',
-        description: 'Tenant or fronted inventory ID not found',
-        variant: 'destructive'
-      });
+      toast.error("Tenant or fronted inventory ID not found");
       return;
     }
 
     const paymentAmount = parseFloat(amount);
     if (!paymentAmount || paymentAmount <= 0) {
-      toast({
-        title: 'Invalid Amount',
-        description: 'Please enter a valid payment amount',
-        variant: 'destructive'
-      });
+      toast.error("Please enter a valid payment amount");
       return;
     }
 
@@ -89,19 +80,12 @@ export default function RecordFrontedPayment() {
         showToast: false // We handle toast manually for custom message
       });
 
-      toast({
-        title: 'Success!',
-        description: `Payment of ${formatCurrency(paymentAmount)} recorded${result.clientName ? ` for ${result.clientName}` : ''}. ${result.remaining > 0 ? `Remaining: ${formatCurrency(result.remaining)}` : 'Fully paid!'}`
-      });
+      toast.success("Payment of ${formatCurrency(paymentAmount)} recorded${result.clientName ? ");
 
       navigateToAdmin('inventory/fronted');
     } catch (error) {
       logger.error('Error recording payment:', error);
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to record payment',
-        variant: 'destructive'
-      });
+      toast.error("Error");
     }
   };
 

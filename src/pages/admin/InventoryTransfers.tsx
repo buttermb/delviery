@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Truck, Plus, Package, Loader2 } from 'lucide-react';
 import { formatSmartDate } from '@/lib/formatters';
 import { handleError } from "@/utils/errorHandling/handlers";
@@ -27,7 +27,6 @@ export default function InventoryTransfers() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     product_id: '',
@@ -138,7 +137,7 @@ export default function InventoryTransfers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory-transfers', tenantId] });
-      toast({ title: 'Transfer created', description: 'Inventory transfer has been created.' });
+      toast.success("Inventory transfer has been created.");
       setFormData({
         product_id: '',
         from_warehouse: '',
@@ -162,23 +161,23 @@ export default function InventoryTransfers() {
 
     // Validation
     if (!formData.product_id) {
-      toast({ title: 'Error', description: 'Please select a product', variant: 'destructive' });
+      toast.error("Please select a product");
       return;
     }
     if (!formData.from_warehouse) {
-      toast({ title: 'Error', description: 'Please select origin location', variant: 'destructive' });
+      toast.error("Please select origin location");
       return;
     }
     if (!formData.to_warehouse) {
-      toast({ title: 'Error', description: 'Please select destination location', variant: 'destructive' });
+      toast.error("Please select destination location");
       return;
     }
     if (formData.from_warehouse === formData.to_warehouse) {
-      toast({ title: 'Error', description: 'Origin and destination must be different', variant: 'destructive' });
+      toast.error("Origin and destination must be different");
       return;
     }
     if (!formData.quantity_lbs || parseFloat(formData.quantity_lbs) <= 0) {
-      toast({ title: 'Error', description: 'Please enter a valid quantity', variant: 'destructive' });
+      toast.error("Please enter a valid quantity");
       return;
     }
 

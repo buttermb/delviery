@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import { useSendNotification } from '@/hooks/useNotifications';
 
@@ -99,19 +99,12 @@ export const OrderDetailsDialog = ({
         }
       }
 
-      toast({
-        title: 'Order Updated',
-        description: `Order status changed to ${newStatus}`,
-      });
+      toast.success("Order status changed to ${newStatus}");
 
       onUpdate();
       onOpenChange(false);
     } catch (error: unknown) {
-      toast({
-        variant: 'destructive',
-        title: 'Update Failed',
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
-      });
+      toast.error("Update Failed");
     } finally {
       setUpdating(false);
     }

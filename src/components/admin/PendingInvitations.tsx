@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Clock, X, RefreshCw } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { showCopyToast, showErrorToast } from '@/utils/toastHelpers';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
@@ -24,7 +24,6 @@ interface PendingInvitationsProps {
 }
 
 export function PendingInvitations({ invitations, tenantId, onInvitationsChange }: PendingInvitationsProps) {
-  const { toast } = useToast();
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
 
@@ -47,18 +46,11 @@ export function PendingInvitations({ invitations, tenantId, onInvitationsChange 
         throw new Error(errorMessage);
       }
 
-      toast({
-        title: 'Invitation Cancelled',
-        description: 'The invitation has been cancelled successfully'
-      });
+      toast.success("The invitation has been cancelled successfully");
 
       onInvitationsChange();
     } catch (error: unknown) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to cancel invitation',
-        variant: 'destructive'
-      });
+      toast.error("Error");
     } finally {
       setCancelingId(null);
     }

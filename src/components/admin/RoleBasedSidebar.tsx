@@ -25,7 +25,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import type { LucideIcon } from 'lucide-react';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
 
@@ -66,7 +66,7 @@ export function RoleBasedSidebar() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    toast({ title: 'Signed out successfully' });
+    toast.success("Signed out successfully");
 
     // Navigate to appropriate login page based on context
     if (tenantSlug) {

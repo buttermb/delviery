@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { formatSmartDate } from '@/lib/formatters';
 import { Download } from 'lucide-react';
@@ -20,7 +20,6 @@ import { useCredits } from '@/hooks/useCredits';
 export default function DataExport() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const [exportType, setExportType] = useState<string>('');
   const [format, setFormat] = useState<string>('csv');
   const { isFreeTier, performAction } = useCredits();
@@ -51,11 +50,7 @@ export default function DataExport() {
 
   const handleExport = async () => {
     if (!exportType) {
-      toast({
-        title: 'Missing Information',
-        description: 'Please select a data type to export',
-        variant: 'destructive',
-      });
+      toast.error("Please select a data type to export");
       return;
     }
 
@@ -66,20 +61,13 @@ export default function DataExport() {
     if (isFreeTier) {
       const result = await performAction(actionKey, undefined, 'export');
       if (!result.success) {
-        toast({
-          title: 'Insufficient Credits',
-          description: result.errorMessage || 'Not enough credits for this action',
-          variant: 'destructive',
-        });
+        toast.error("Insufficient Credits");
         return;
       }
     }
 
     try {
-      toast({
-        title: 'Export Started',
-        description: `Preparing ${exportType} export...`,
-      });
+      toast.success("Preparing ${exportType} export...");
 
       // 1. Create Job Record
       const { data: job, error: dbError } = await (supabase as any)
@@ -103,25 +91,14 @@ export default function DataExport() {
 
       if (invokeError) {
         logger.error("Failed to trigger export function", invokeError);
-        toast({
-          title: "Warning",
-          description: "Export job created but processing might be delayed.",
-          variant: "default"
-        });
+        toast.success("Export job created but processing might be delayed.");
       } else if (invokeData && typeof invokeData === 'object' && 'error' in invokeData && invokeData.error) {
         // Check for error in response body (edge functions can return 200 with error)
         const errorMessage = typeof invokeData.error === 'string' ? invokeData.error : 'Export processing failed';
         logger.error("Export function returned error in response", { error: errorMessage });
-        toast({
-          title: "Export Failed",
-          description: errorMessage,
-          variant: "destructive"
-        });
+        toast.error("Export Failed");
       } else {
-        toast({
-          title: 'Export Processing',
-          description: 'Your export is running in the background. It will appear in the history list below when complete.',
-        });
+        toast.success("Your export is running in the background. It will appear in the history list below when complete.");
       }
 
       // Refresh history
@@ -130,11 +107,7 @@ export default function DataExport() {
 
     } catch (error: unknown) {
       logger.error("Export initiation failed", error);
-      toast({
-        title: "Export Failed",
-        description: humanizeError(error),
-        variant: "destructive"
-      });
+      toast.error("Export Failed");
     }
   };
 

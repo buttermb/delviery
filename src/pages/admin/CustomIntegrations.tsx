@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Plug, Plus, Edit, ArrowLeft, Webhook, Loader2 } from 'lucide-react';
 import { IntegrationWebhooks } from '@/components/integrations/IntegrationWebhooks';
 import { handleError } from '@/utils/errorHandling/handlers';
@@ -36,7 +36,6 @@ export default function CustomIntegrations() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIntegration, setEditingIntegration] = useState<Integration | null>(null);
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
@@ -101,7 +100,7 @@ export default function CustomIntegrations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-integrations', tenantId] });
-      toast({ title: 'Integration created', description: 'Custom integration has been created.' });
+      toast.success("Custom integration has been created.");
       resetForm();
     },
     onError: (error: unknown) => {
@@ -138,7 +137,7 @@ export default function CustomIntegrations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-integrations', tenantId] });
-      toast({ title: 'Integration updated', description: 'Integration has been updated successfully.' });
+      toast.success("Integration has been updated successfully.");
       resetForm();
     },
     onError: (error: unknown) => {

@@ -40,7 +40,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
@@ -80,7 +80,6 @@ interface Product {
 
 export default function StorefrontBundles() {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -170,11 +169,11 @@ export default function StorefrontBundles() {
       queryClient.invalidateQueries({ queryKey: ['marketplace-bundles'] });
       setShowCreateDialog(false);
       resetForm();
-      toast({ title: 'Bundle created!' });
+      toast.success("Bundle created!");
     },
     onError: (error) => {
       logger.error('Failed to create bundle', error, { component: 'StorefrontBundles' });
-      toast({ title: 'Failed to create bundle', variant: 'destructive' });
+      toast.error("Failed to create bundle");
     },
   });
 
@@ -202,11 +201,11 @@ export default function StorefrontBundles() {
       queryClient.invalidateQueries({ queryKey: ['marketplace-bundles'] });
       setEditingBundle(null);
       resetForm();
-      toast({ title: 'Bundle updated!' });
+      toast.success("Bundle updated!");
     },
     onError: (error) => {
       logger.error('Failed to update bundle', error, { component: 'StorefrontBundles' });
-      toast({ title: 'Failed to update bundle', variant: 'destructive' });
+      toast.error("Failed to update bundle");
     },
   });
 
@@ -226,7 +225,7 @@ export default function StorefrontBundles() {
     },
     onError: (error: Error) => {
       logger.error('Failed to toggle bundle status', { error });
-      toast({ title: 'Failed to update bundle', description: humanizeError(error), variant: 'destructive' });
+      toast.error("Failed to update bundle");
     },
   });
 
@@ -243,11 +242,11 @@ export default function StorefrontBundles() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-bundles'] });
-      toast({ title: 'Bundle deleted' });
+      toast.success("Bundle deleted");
     },
     onError: (error: Error) => {
       logger.error('Failed to delete bundle', { error });
-      toast({ title: 'Failed to delete bundle', description: humanizeError(error), variant: 'destructive' });
+      toast.error("Failed to delete bundle");
     },
   });
 

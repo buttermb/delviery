@@ -7,8 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Bell, Mail, MessageSquare, Save, Loader2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-
+import { toast } from 'sonner';
 interface NotificationTemplate {
   event: string;
   enabled: boolean;
@@ -72,17 +71,10 @@ export const NotificationSettings = () => {
         channels: notificationChannels
       }));
 
-      toast({
-        title: 'Settings Saved',
-        description: 'Notification settings have been updated successfully.',
-      });
+      toast.success("Notification settings have been updated successfully.");
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Save failed';
-      toast({
-        variant: 'destructive',
-        title: 'Save Failed',
-        description: errorMessage,
-      });
+      toast.error("Save Failed");
     } finally {
       setSaving(false);
     }

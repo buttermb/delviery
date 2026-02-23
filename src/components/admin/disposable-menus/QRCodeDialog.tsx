@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Download, Copy, Share2, CheckCircle2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useState } from 'react';
 
 interface QRCodeDialogProps {
@@ -55,10 +55,7 @@ export function QRCodeDialog({ open, onClose, menuTitle, accessUrl, menuId }: QR
       link.href = canvas.toDataURL('image/png');
       link.click();
 
-      toast({
-        title: 'QR Code Downloaded',
-        description: 'QR code has been saved to your downloads',
-      });
+      toast.success("QR code has been saved to your downloads");
     };
 
     img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
@@ -67,10 +64,7 @@ export function QRCodeDialog({ open, onClose, menuTitle, accessUrl, menuId }: QR
   const copyLink = () => {
     navigator.clipboard.writeText(accessUrl);
     setCopied(true);
-    toast({
-      title: 'Link Copied',
-      description: 'Access link copied to clipboard',
-    });
+    toast.success("Access link copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -82,10 +76,7 @@ export function QRCodeDialog({ open, onClose, menuTitle, accessUrl, menuId }: QR
           text: `Check out ${menuTitle}`,
           url: accessUrl,
         });
-        toast({
-          title: 'Shared Successfully',
-          description: 'Menu link has been shared',
-        });
+        toast.success("Menu link has been shared");
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
           logger.error('Error sharing:', error);

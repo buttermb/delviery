@@ -7,7 +7,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import {
   Upload,
@@ -35,7 +35,6 @@ export default function ImagesPage() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   
   const [view, setView] = useState<'grid' | 'list'>('grid');
@@ -130,7 +129,7 @@ export default function ImagesPage() {
       return publicUrl;
     },
     onSuccess: () => {
-      toast({ title: 'Image uploaded and assigned successfully!' });
+      toast.success("Image uploaded and assigned successfully!");
       queryClient.invalidateQueries({ queryKey: queryKeys.productImages.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
       setUploadDialogOpen(false);
@@ -138,11 +137,7 @@ export default function ImagesPage() {
     },
     onError: (error: unknown) => {
       logger.error('Image upload failed', error, { component: 'ImagesPage' });
-      toast({ 
-        title: 'Upload failed', 
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive'
-      });
+      toast.error("Upload failed");
     }
   });
 
@@ -161,18 +156,14 @@ export default function ImagesPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Image deleted successfully!' });
+      toast.success("Image deleted successfully!");
       queryClient.invalidateQueries({ queryKey: queryKeys.productImages.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
       setSelectedImage(null);
     },
     onError: (error: unknown) => {
       logger.error('Image deletion failed', error, { component: 'ImagesPage' });
-      toast({
-        title: 'Delete failed',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive'
-      });
+      toast.error("Delete failed");
     }
   });
 
@@ -183,21 +174,13 @@ export default function ImagesPage() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast({ 
-        title: 'Invalid file type',
-        description: 'Please upload an image file',
-        variant: 'destructive'
-      });
+      toast.error("Please upload an image file");
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Maximum file size is 5MB',
-        variant: 'destructive'
-      });
+      toast.error("Maximum file size is 5MB");
       return;
     }
 

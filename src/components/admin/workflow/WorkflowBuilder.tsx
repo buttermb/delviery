@@ -24,8 +24,7 @@ import {
   ArrowRight,
   Circle,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
+import { toast } from 'sonner';
 interface WorkflowNode {
   id: string;
   type: 'trigger' | 'action' | 'condition';
@@ -62,7 +61,6 @@ const ACTION_TYPES = [
 ];
 
 export function WorkflowBuilder() {
-  const { toast } = useToast();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -106,10 +104,7 @@ export function WorkflowBuilder() {
     setWorkflows(workflows.map(w => 
       w.id === workflowId ? { ...w, enabled: !w.enabled } : w
     ));
-    toast({
-      title: 'Workflow updated',
-      description: 'Workflow status has been changed',
-    });
+    toast.success("Workflow status has been changed");
   };
 
   return (

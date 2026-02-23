@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import {
   Search,
@@ -86,7 +86,6 @@ const STATUS_OPTIONS = [
 export default function StorefrontOrders() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -173,7 +172,7 @@ export default function StorefrontOrders() {
 
         // Retry on network errors
         if (isNetworkError && retryCount < MAX_RETRIES) {
-          toast({ title: 'Connection issue, retrying...' });
+          toast.success("Connection issue, retrying...");
           await new Promise(resolve => setTimeout(resolve, 1000));
           return updateStatusMutation.mutateAsync({ orderId, status, retryCount: retryCount + 1 });
         }
@@ -182,15 +181,11 @@ export default function StorefrontOrders() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
-      toast({ title: 'Order status updated!' });
+      toast.success("Order status updated!");
     },
     onError: (error) => {
       logger.error('Failed to update order status', error, { component: 'StorefrontOrders' });
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update order status.',
-        variant: 'destructive',
-      });
+      toast.error("Error");
     },
   });
 

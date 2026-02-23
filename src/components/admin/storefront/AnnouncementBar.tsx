@@ -26,7 +26,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
@@ -92,7 +92,6 @@ interface AnnouncementBarProps {
 
 export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -205,9 +204,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
       queryClient.invalidateQueries({
         queryKey: ['storefront-announcements', tenantId, storeId],
       });
-      toast({
-        title: editingAnnouncement ? 'Announcement updated!' : 'Announcement created!',
-      });
+      toast.success(editingAnnouncement ? 'Announcement updated!' : 'Announcement created!');
       setIsDialogOpen(false);
       resetForm();
     },
@@ -215,11 +212,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
       logger.error('Failed to save announcement', err, {
         component: 'AnnouncementBar',
       });
-      toast({
-        title: 'Error saving announcement',
-        description: err instanceof Error ? err.message : 'Unknown error',
-        variant: 'destructive',
-      });
+      toast.error("Error saving announcement");
     },
   });
 
@@ -240,16 +233,13 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
       queryClient.invalidateQueries({
         queryKey: ['storefront-announcements', tenantId, storeId],
       });
-      toast({ title: 'Announcement deleted' });
+      toast.success("Announcement deleted");
     },
     onError: (err) => {
       logger.error('Failed to delete announcement', err, {
         component: 'AnnouncementBar',
       });
-      toast({
-        title: 'Error deleting announcement',
-        variant: 'destructive',
-      });
+      toast.error("Error deleting announcement");
     },
   });
 
@@ -284,7 +274,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
       .eq('tenant_id', tenantId);
 
     if (updateError) {
-      toast({ title: 'Error updating status', variant: 'destructive' });
+      toast.error("Error updating status");
       return;
     }
 

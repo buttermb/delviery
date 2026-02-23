@@ -1,20 +1,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Copy, ExternalLink, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export function CourierLoginInfo() {
-  const { toast } = useToast();
   const courierLoginUrl = `${window.location.origin}/courier/login`;
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied!',
-      description: 'Login URL copied to clipboard',
-    });
+    toast.success("Login URL copied to clipboard");
   };
 
   return (

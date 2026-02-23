@@ -20,7 +20,7 @@ import {
     DialogFooter,
     DialogDescription,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
     Plus,
@@ -52,7 +52,6 @@ interface BannerManagerProps {
 }
 
 export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -119,12 +118,12 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-banners', storeId] });
-            toast({ title: editingBanner ? 'Banner updated!' : 'Banner created!' });
+            toast.success(editingBanner ? 'Banner updated!' : 'Banner created!');
             setIsDialogOpen(false);
             resetForm();
         },
         onError: (err) => {
-            toast({ title: 'Error saving banner', description: err.message, variant: 'destructive' });
+            toast.error("Error saving banner");
         },
     });
 
@@ -136,7 +135,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-banners', storeId] });
-            toast({ title: 'Banner deleted' });
+            toast.success("Banner deleted");
         },
     });
 
@@ -174,7 +173,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
             .eq('id', banner.id);
 
         if (error) {
-            toast({ title: 'Error updating status', variant: 'destructive' });
+            toast.error("Error updating status");
             return;
         }
 

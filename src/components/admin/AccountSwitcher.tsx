@@ -10,8 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Building } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
+import { toast } from 'sonner';
 interface Account {
   id: string;
   company_name: string;
@@ -21,7 +20,6 @@ interface Account {
 
 export function AccountSwitcher() {
   const { account, isSuperAdmin, switchAccount } = useAccount();
-  const { toast } = useToast();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -49,16 +47,9 @@ export function AccountSwitcher() {
     setLoading(true);
     try {
       await switchAccount(accountId);
-      toast({
-        title: 'Account switched',
-        description: 'Viewing data for selected account'
-      });
+      toast.success("Viewing data for selected account");
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to switch account',
-        variant: 'destructive'
-      });
+      toast.error("Failed to switch account");
     } finally {
       setLoading(false);
     }

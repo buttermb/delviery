@@ -23,7 +23,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Shield, Plus, Edit, Trash2, Users, Loader2, AlertTriangle } from 'lucide-react';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
@@ -78,8 +78,6 @@ export function RoleManagement() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -178,7 +176,7 @@ export function RoleManagement() {
     },
     onSuccess: (roleData) => {
       queryClient.invalidateQueries({ queryKey: ['roles', tenantId] });
-      toast({ title: 'Role created', description: 'Role has been successfully created.' });
+      toast.success("Role has been successfully created.");
 
       // Log activity for audit trail
       if (tenantId && roleData) {
@@ -254,7 +252,7 @@ export function RoleManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roles', tenantId] });
-      toast({ title: 'Role updated', description: 'Role has been successfully updated.' });
+      toast.success("Role has been successfully updated.");
 
       // Log activity for audit trail
       if (tenantId && editingRole) {
@@ -301,7 +299,7 @@ export function RoleManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roles', tenantId] });
-      toast({ title: 'Role deleted', description: 'The role has been deleted successfully.' });
+      toast.success("The role has been deleted successfully.");
       setRoleToDelete(null);
       setIsDeleteDialogOpen(false);
     },
@@ -344,7 +342,7 @@ export function RoleManagement() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      toast({ title: 'Error', description: 'Role name is required', variant: 'destructive' });
+      toast.error("Role name is required");
       return;
     }
 

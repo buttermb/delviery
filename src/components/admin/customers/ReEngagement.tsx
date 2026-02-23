@@ -73,8 +73,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
-
+import { toast } from 'sonner';
 // ============================================================================
 // Types
 // ============================================================================
@@ -318,8 +317,6 @@ function useAtRiskCustomers(tenantId: string | undefined, riskFilter: CustomerRi
 
 function useAddCustomerNote(tenantId: string | undefined) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({ customerId, content }: { customerId: string; content: string }) => {
       if (!tenantId) throw new Error('No tenant ID');
@@ -334,19 +331,12 @@ function useAddCustomerNote(tenantId: string | undefined) {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: 'Note added',
-        description: 'Re-engagement note has been saved to the customer profile.',
-      });
+      toast.success("Re-engagement note has been saved to the customer profile.");
       queryClient.invalidateQueries({ queryKey: queryKeys.customerNotes.all });
     },
     onError: (error) => {
       logger.error('[ReEngagement] Failed to add note', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save note. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error("Failed to save note. Please try again.");
     },
   });
 }
@@ -357,8 +347,6 @@ function useAddCustomerNote(tenantId: string | undefined) {
 
 function useCreatePromoOffer(tenantId: string | undefined) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({
       customerId,
@@ -400,20 +388,13 @@ function useCreatePromoOffer(tenantId: string | undefined) {
       });
     },
     onSuccess: () => {
-      toast({
-        title: 'Offer created',
-        description: 'Promotional offer has been created for the customer.',
-      });
+      toast.success("Promotional offer has been created for the customer.");
       queryClient.invalidateQueries({ queryKey: queryKeys.coupons.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.customerNotes.all });
     },
     onError: (error) => {
       logger.error('[ReEngagement] Failed to create offer', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create promotional offer. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error("Failed to create promotional offer. Please try again.");
     },
   });
 }
@@ -424,8 +405,6 @@ function useCreatePromoOffer(tenantId: string | undefined) {
 
 function useSendMessage(tenantId: string | undefined) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({
       customerId,
@@ -460,19 +439,12 @@ function useSendMessage(tenantId: string | undefined) {
       });
     },
     onSuccess: () => {
-      toast({
-        title: 'Message queued',
-        description: 'Re-engagement message has been queued for delivery.',
-      });
+      toast.success("Re-engagement message has been queued for delivery.");
       queryClient.invalidateQueries({ queryKey: queryKeys.customerNotes.all });
     },
     onError: (error) => {
       logger.error('[ReEngagement] Failed to send message', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to queue message. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error("Failed to queue message. Please try again.");
     },
   });
 }

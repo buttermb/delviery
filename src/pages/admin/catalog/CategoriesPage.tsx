@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { TruncatedText } from '@/components/shared/TruncatedText';
 import {
   Plus,
@@ -81,7 +81,6 @@ export default function CategoriesPage() {
   const { navigateToAdmin, navigate, tenantSlug } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -297,7 +296,7 @@ export default function CategoriesPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Category created successfully!' });
+      toast.success("Category created successfully!");
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.lists() });
       setCreateDialogOpen(false);
       setNewCategory({
@@ -327,7 +326,7 @@ export default function CategoriesPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Category updated successfully!' });
+      toast.success("Category updated successfully!");
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.lists() });
       setEditingCategory(null);
     },
@@ -349,7 +348,7 @@ export default function CategoriesPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Category deleted successfully!' });
+      toast.success("Category deleted successfully!");
       setDeleteDialogOpen(false);
       setCategoryToDelete(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.lists() });

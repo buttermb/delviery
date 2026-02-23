@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Zap, Plus, Edit, Play } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
@@ -32,7 +32,6 @@ export default function Automation() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<AutomationRule | null>(null);
   const [formData, setFormData] = useState({
@@ -99,15 +98,11 @@ export default function Automation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-rules', tenantId] });
-      toast({ title: 'Rule created', description: 'Automation rule has been created.' });
+      toast.success("Automation rule has been created.");
       resetForm();
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: humanizeError(error, 'Failed to create rule'),
-        variant: 'destructive',
-      });
+      toast.error("Error");
     },
   });
 
@@ -141,15 +136,11 @@ export default function Automation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automation-rules', tenantId] });
-      toast({ title: 'Automation updated', description: 'Automation rule has been updated.' });
+      toast.success("Automation rule has been updated.");
       resetForm();
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: humanizeError(error, 'Failed to update automation'),
-        variant: 'destructive',
-      });
+      toast.error("Error");
     },
   });
 

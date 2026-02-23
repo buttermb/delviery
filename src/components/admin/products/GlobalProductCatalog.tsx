@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
     Search,
     Loader2,
@@ -54,7 +54,6 @@ const CATEGORIES = ['flower', 'vape', 'edible', 'concentrate', 'pre-roll', 'topi
 
 export function GlobalProductCatalog() {
     const { tenant } = useTenant();
-    const { toast } = useToast();
     const queryClient = useQueryClient();
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -128,14 +127,14 @@ export function GlobalProductCatalog() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['global-product-imports'] });
-            toast({ title: 'Product imported!', description: 'Check your Products tab to set pricing and publish.' });
+            toast.success("Check your Products tab to set pricing and publish.");
             setIsImportDialogOpen(false);
             setSelectedProduct(null);
             setImportPrice('');
             setAutoSync(false);
         },
         onError: (err) => {
-            toast({ title: 'Import failed', description: err.message, variant: 'destructive' });
+            toast.error("Import failed");
         },
     });
 

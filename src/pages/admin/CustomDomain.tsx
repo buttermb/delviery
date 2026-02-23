@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Globe, Plus, Check, X, Loader2 } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { formatSmartDate } from '@/lib/formatters';
@@ -18,7 +18,6 @@ export default function CustomDomain() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [domain, setDomain] = useState('');
 
   const { data: domains, isLoading } = useQuery({
@@ -68,7 +67,7 @@ export default function CustomDomain() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-domains', tenantId] });
-      toast({ title: 'Domain added', description: 'Domain has been added. Please configure DNS settings.' });
+      toast.success("Domain has been added. Please configure DNS settings.");
       setDomain('');
     },
     onError: (error) => {
@@ -83,11 +82,7 @@ export default function CustomDomain() {
   const handleAddDomain = (e: React.FormEvent) => {
     e.preventDefault();
     if (!domain.trim()) {
-      toast({
-        title: 'Invalid Domain',
-        description: 'Please enter a valid domain name',
-        variant: 'destructive',
-      });
+      toast.error("Please enter a valid domain name");
       return;
     }
     addDomainMutation.mutate(domain.trim());

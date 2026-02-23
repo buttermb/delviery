@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { handleError } from '@/utils/errorHandling/handlers';
@@ -51,7 +51,6 @@ export default function FrontedInventory() {
   const { account } = useAccount();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const [frontedItems, setFrontedItems] = useState<FrontedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -97,11 +96,7 @@ export default function FrontedInventory() {
 
       if (error) {
         logger.error('Error loading fronted inventory:', error);
-        toast({
-          title: 'Database Error',
-          description: `Failed to load fronted inventory: ${error.message}`,
-          variant: 'destructive'
-        });
+        toast.error("Failed to load fronted inventory: ${error.message}");
         return;
       }
 

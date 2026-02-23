@@ -27,7 +27,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
     Plus,
@@ -72,7 +72,6 @@ const FILTER_TYPES = [
 ];
 
 export function StorefrontCarouselBuilder({ storeId }: CarouselBuilderProps) {
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const [editingCarousel, setEditingCarousel] = useState<Carousel | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -124,7 +123,7 @@ export function StorefrontCarouselBuilder({ storeId }: CarouselBuilderProps) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['store-carousels', storeId] });
-            toast({ title: 'Carousel created!' });
+            toast.success("Carousel created!");
             setIsCreateOpen(false);
             setNewCarousel({
                 title: '',
@@ -137,7 +136,7 @@ export function StorefrontCarouselBuilder({ storeId }: CarouselBuilderProps) {
             });
         },
         onError: (error) => {
-            toast({ title: 'Failed to create carousel', description: String(error), variant: 'destructive' });
+            toast.error("Failed to create carousel");
         },
     });
 
@@ -153,7 +152,7 @@ export function StorefrontCarouselBuilder({ storeId }: CarouselBuilderProps) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['store-carousels', storeId] });
-            toast({ title: 'Carousel updated!' });
+            toast.success("Carousel updated!");
             setEditingCarousel(null);
         },
     });
@@ -169,7 +168,7 @@ export function StorefrontCarouselBuilder({ storeId }: CarouselBuilderProps) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['store-carousels', storeId] });
-            toast({ title: 'Carousel deleted' });
+            toast.success("Carousel deleted");
         },
     });
 

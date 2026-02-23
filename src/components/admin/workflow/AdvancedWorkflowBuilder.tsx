@@ -19,8 +19,7 @@ import { WorkflowMonitoringDashboard } from './WorkflowMonitoringDashboard';
 import { DeadLetterQueue } from './DeadLetterQueue';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
-
+import { toast } from 'sonner';
 // Enhanced workflow types inspired by Activepieces/Windmill
 interface WorkflowExecution {
   id: string;
@@ -36,7 +35,6 @@ interface WorkflowExecution {
 
 export function AdvancedWorkflowBuilder() {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('builder');
   const [executions, setExecutions] = useState<WorkflowExecution[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,11 +60,7 @@ export function AdvancedWorkflowBuilder() {
       if (error) throw error;
       setExecutions((data as WorkflowExecution[]) || []);
     } catch (error: unknown) {
-      toast({
-        title: 'Error loading executions',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive',
-      });
+      toast.error("Error loading executions");
     } finally {
       setLoading(false);
     }

@@ -31,7 +31,7 @@ import {
   GripVertical,
   Send
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 import { consumeCredits } from '@/lib/credits/creditService';
@@ -75,7 +75,6 @@ const INITIAL_VIEW_STATE = {
 // ----------------------------------------------------------------------------
 
 export function RouteOptimizer() {
-  const { toast } = useToast();
   const { session } = useAuth(); // Assuming useAuth gives us the session/tenant
 
   // State
@@ -132,10 +131,7 @@ export function RouteOptimizer() {
   };
 
   const handleAssignRoute = (courierId: string, courierName: string) => {
-    toast({
-      title: 'Route Assigned',
-      description: `Successfully assigned ${stops.length} stops to ${courierName}.`,
-    });
+    toast.success("Successfully assigned ${stops.length} stops to ${courierName}.");
     // In a real app, this would save the route to the DB with the assigned courier_id
     // logger.info('Route Assigned', { courierId, stopCount: stops.length });
   };
@@ -146,20 +142,12 @@ export function RouteOptimizer() {
 
   const handleOptimize = async () => {
     if (stops.length < 2) {
-      toast({
-        title: 'Not enough stops',
-        description: 'Add at least 2 delivery stops to optimize',
-        variant: 'destructive',
-      });
+      toast.error("Add at least 2 delivery stops to optimize");
       return;
     }
 
     if (!session?.user?.id) {
-      toast({
-        title: 'Authentication Error',
-        description: 'You must be logged in to optimize routes.',
-        variant: 'destructive',
-      });
+      toast.error("You must be logged in to optimize routes.");
       return;
     }
 
@@ -173,11 +161,7 @@ export function RouteOptimizer() {
       const creditResult = await consumeCredits(tenantId, 'route_optimization', undefined, 'Optimized delivery route');
 
       if (!creditResult.success && creditResult.errorMessage !== 'No response from credit consumption') {
-        toast({
-          title: 'Credit limit reached',
-          description: creditResult.errorMessage || 'You do not have enough credits to optimize this route.',
-          variant: 'destructive'
-        });
+        toast.error("Credit limit reached");
         setIsOptimizing(false);
         return;
       }
@@ -250,19 +234,11 @@ export function RouteOptimizer() {
         });
       }
 
-      toast({
-        title: 'Route Optimized',
-        description: 'Stops reordered for efficiency. 1 Credit utilized.',
-        variant: 'default'
-      });
+      toast.success("Stops reordered for efficiency. 1 Credit utilized.");
 
     } catch (error) {
       logger.error('Optimization failed', error as Error);
-      toast({
-        title: 'Optimization Failed',
-        description: 'Could not calculate optimal route. Please try again.',
-        variant: 'destructive'
-      });
+      toast.error("Could not calculate optimal route. Please try again.");
     } finally {
       setIsOptimizing(false);
     }

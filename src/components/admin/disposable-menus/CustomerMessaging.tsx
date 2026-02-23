@@ -16,7 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 import { formatPhoneNumber } from '@/lib/formatters';
 import {
@@ -73,20 +73,12 @@ export const CustomerMessaging = () => {
 
   const handleSendMessage = async () => {
     if (!message.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Message Required',
-        description: 'Please enter a message to send.',
-      });
+      toast.error("Please enter a message to send.");
       return;
     }
 
     if (channel === 'email' && !subject.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Subject Required',
-        description: 'Please enter an email subject.',
-      });
+      toast.error("Please enter an email subject.");
       return;
     }
 
@@ -96,11 +88,7 @@ export const CustomerMessaging = () => {
       const messageCount = filteredCustomers.length;
       const limitCheck = checkLimit(limitType, messageCount);
       if (!limitCheck.allowed) {
-        toast({
-          variant: 'destructive',
-          title: `Monthly ${channel.toUpperCase()} Limit Reached`,
-          description: limitCheck.message,
-        });
+        toast.error("Monthly ${channel.toUpperCase()} Limit Reached");
         return;
       }
     }
@@ -117,19 +105,12 @@ export const CustomerMessaging = () => {
         }
       }
 
-      toast({
-        title: 'Messages Sent',
-        description: `Successfully sent ${filteredCustomers.length} ${channel} messages.`,
-      });
+      toast.success("Successfully sent ${filteredCustomers.length} ${channel} messages.");
 
       setMessage('');
       setSubject('');
     } catch (error: unknown) {
-      toast({
-        variant: 'destructive',
-        title: 'Send Failed',
-        description: error instanceof Error ? error.message : 'Failed to send message',
-      });
+      toast.error("Send Failed");
     } finally {
       setSending(false);
     }

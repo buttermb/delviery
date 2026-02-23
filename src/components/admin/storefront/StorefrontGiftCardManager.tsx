@@ -17,7 +17,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Plus, Loader2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 
@@ -44,7 +44,6 @@ interface GiftCardManagerProps {
 }
 
 export function StorefrontGiftCardManager({ storeId }: GiftCardManagerProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isIssueDialogOpen, setIsIssueDialogOpen] = useState(false);
   const [issueForm, setIssueForm] = useState<IssueFormData>(initialFormData);
@@ -71,17 +70,13 @@ export function StorefrontGiftCardManager({ storeId }: GiftCardManagerProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gift-cards', storeId] });
-      toast({ title: 'Gift Card Issued Successfully' });
+      toast.success("Gift Card Issued Successfully");
       setIsIssueDialogOpen(false);
       setIssueForm(initialFormData);
     },
     onError: (err: Error) => {
       logger.error('Gift card issue failed', { error: err.message });
-      toast({
-        title: 'Error issuing card',
-        description: err.message,
-        variant: 'destructive',
-      });
+      toast.error("Error issuing card");
     },
   });
 

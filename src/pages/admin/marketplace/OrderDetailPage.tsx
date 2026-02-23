@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import {
     ShoppingCart,
@@ -47,7 +47,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 export default function OrderDetailPage() {
     const { orderId } = useParams<{ orderId: string }>();
     const { tenant } = useTenantAdminAuth();
-    const { toast } = useToast();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [trackingNumber, setTrackingNumber] = useState('');
@@ -113,20 +112,13 @@ export default function OrderDetailPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-order-detail', orderId] });
             queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
-            toast({
-                title: 'Status Updated',
-                description: 'Order status has been updated',
-            });
+            toast.success("Order status has been updated");
             setShowTrackingDialog(false);
             setTrackingNumber('');
         },
         onError: (error: unknown) => {
             logger.error('Failed to update order status', error, { component: 'OrderDetailPage' });
-            toast({
-                title: 'Error',
-                description: humanizeError(error, 'Failed to update order'),
-                variant: 'destructive',
-            });
+            toast.error("Error");
         },
     });
 
@@ -145,19 +137,12 @@ export default function OrderDetailPage() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-order-detail', orderId] });
-            toast({
-                title: 'Notes Updated',
-                description: 'Seller notes have been saved',
-            });
+            toast.success("Seller notes have been saved");
             setShowNotesDialog(false);
         },
         onError: (error: unknown) => {
             logger.error('Failed to update notes', error, { component: 'OrderDetailPage' });
-            toast({
-                title: 'Error',
-                description: humanizeError(error, 'Failed to update notes'),
-                variant: 'destructive',
-            });
+            toast.error("Error");
         },
     });
 
@@ -184,16 +169,12 @@ export default function OrderDetailPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            toast({ title: "Message sent", description: "The buyer has been notified." });
+            toast.success("The buyer has been notified.");
             setIsMessageDialogOpen(false);
             setMessageText('');
         },
         onError: (error) => {
-            toast({
-                title: "Error sending message",
-                description: humanizeError(error),
-                variant: "destructive"
-            });
+            toast.error("Error sending message");
         }
     });
 
@@ -216,18 +197,11 @@ export default function OrderDetailPage() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-order-detail', orderId] });
             queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
-            toast({
-                title: 'Payment Recorded',
-                description: 'Order marked as paid',
-            });
+            toast.success("Order marked as paid");
         },
         onError: (error: unknown) => {
             logger.error('Failed to mark order as paid', error, { component: 'OrderDetailPage' });
-            toast({
-                title: 'Error',
-                description: humanizeError(error, 'Failed to update payment status'),
-                variant: 'destructive',
-            });
+            toast.error("Error");
         },
     });
 

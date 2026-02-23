@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import {
@@ -60,7 +60,6 @@ export function StoreShareDialog({
   store,
   onRegenerateToken,
 }: StoreShareDialogProps) {
-  const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
@@ -112,9 +111,9 @@ export function StoreShareDialog({
     if (!shareUrl) return;
     try {
       await downloadQRCodePNG(shareUrl, `store-qr-${store.slug}.png`, { size: 512 });
-      toast({ title: 'QR Code downloaded!' });
+      toast.success("QR Code downloaded!");
     } catch {
-      toast({ title: 'Download failed', variant: 'destructive' });
+      toast.error("Download failed");
     }
   };
 
@@ -123,9 +122,9 @@ export function StoreShareDialog({
     setRegenerating(true);
     try {
       await onRegenerateToken();
-      toast({ title: 'New link generated!', description: 'Previous links will no longer work.' });
+      toast.success("Previous links will no longer work.");
     } catch {
-      toast({ title: 'Failed to generate new link', variant: 'destructive' });
+      toast.error("Failed to generate new link");
     } finally {
       setRegenerating(false);
     }

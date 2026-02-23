@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button';
 import { BarcodeScanner } from '@/components/inventory/BarcodeScanner';
 import { ArrowLeft, DollarSign, Trash2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { useToast } from '@/hooks/use-toast';
-
+import { toast } from 'sonner';
 interface ScannedSale {
   barcode: string;
   product_name: string;
@@ -21,7 +20,6 @@ export default function RecordFrontedSale() {
   const { navigateToAdmin, navigate } = useTenantNavigation();
   const { id } = useParams();
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const [scannedItems, setScannedItems] = useState<ScannedSale[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -38,11 +36,7 @@ export default function RecordFrontedSale() {
       const product = result.data;
 
       if (!product) {
-        toast({
-          title: 'Product Not Found',
-          description: `No product found with barcode: ${barcode}`,
-          variant: 'destructive'
-        });
+        toast.error("No product found with barcode: ${barcode}");
         return;
       }
 
@@ -59,7 +53,7 @@ export default function RecordFrontedSale() {
         }]);
       }
 
-      toast({ title: 'Scanned', description: `${product.name} added` });
+      toast.success("${product.name} added");
     } catch (error) {
       logger.error('Error scanning barcode', error, { component: 'RecordFrontedSale', barcode });
     }
@@ -67,7 +61,7 @@ export default function RecordFrontedSale() {
 
   const handleRecordSale = async () => {
     if (!tenant?.id) {
-      toast({ title: 'Error', description: 'Tenant not found', variant: 'destructive' });
+      toast.error("Tenant not found");
       return;
     }
 
@@ -106,13 +100,13 @@ export default function RecordFrontedSale() {
 
       await supabase.from('fronted_inventory_scans').insert(scanRecords);
 
-      toast({ title: 'Success!', description: `${totalSold} units recorded as sold` });
+      toast.success("${totalSold} units recorded as sold");
       if (tenant?.slug) {
         navigate(`/${tenant.slug}/admin/inventory/fronted/${id}`);
       }
     } catch (error) {
       logger.error('Error recording sale', error, { component: 'RecordFrontedSale', frontedInventoryId: id });
-      toast({ title: 'Error', description: 'Failed to record sales', variant: 'destructive' });
+      toast.error("Failed to record sales");
     } finally {
       setLoading(false);
     }

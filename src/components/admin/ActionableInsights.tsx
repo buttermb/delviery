@@ -3,7 +3,6 @@
  * Displays business intelligence and actionable recommendations
  */
 
-import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,10 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   TrendingUp, ArrowRight, AlertTriangle, CheckCircle2, Info
 } from 'lucide-react';
-import { useAccount } from '@/contexts/AccountContext';
 import { useNavigate, useParams } from 'react-router-dom';
-// SendSMS removed per plan - can be re-added if needed
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Insight {
   id: string;
@@ -29,10 +25,8 @@ interface Insight {
 }
 
 export function ActionableInsights() {
-  useAccount();
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const [smsOpen, setSmsOpen] = useState<{ customerId: string; phone: string; name: string } | null>(null);
 
   const getFullPath = (href: string) => {
     if (!tenantSlug) return href;
@@ -61,15 +55,8 @@ export function ActionableInsights() {
       title: '12 customers haven\'t ordered in 30+ days',
       description: 'Re-engage these customers with a special offer or check-in message.',
       action: {
-        label: 'Send Re-engagement Messages',
-        onClick: () => {
-          // Mock - would open SMS dialog with customer list
-          setSmsOpen({
-            customerId: 'mock-id',
-            phone: '+1234567890',
-            name: 'Inactive Customers',
-          });
-        },
+        label: 'View Customers',
+        onClick: () => navigate(getFullPath('/admin/customers')),
       },
       priority: 'medium',
     },
@@ -124,7 +111,6 @@ export function ActionableInsights() {
   }
 
   return (
-    <>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -166,22 +152,6 @@ export function ActionableInsights() {
           ))}
         </CardContent>
       </Card>
-
-      {/* SMS Dialog for re-engagement */}
-      {smsOpen && (
-        <Dialog open={!!smsOpen} onOpenChange={(open) => !open && setSmsOpen(null)}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Send Re-engagement Message</DialogTitle>
-            </DialogHeader>
-            {/* SendSMS removed per plan - can be re-added if needed */}
-            <div className="p-4 text-center text-muted-foreground">
-              SMS functionality temporarily unavailable
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-    </>
   );
 }
 

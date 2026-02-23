@@ -16,8 +16,7 @@ import {
   Save,
   Loader2
 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-
+import { toast } from 'sonner';
 interface SecuritySettings {
   auto_block_enabled: boolean;
   auto_block_threshold: number;
@@ -56,16 +55,9 @@ export const AutomatedSecuritySettings = () => {
       // In production, this would be saved to a database table
       localStorage.setItem('disposable_menus_security_settings', JSON.stringify(settings));
 
-      toast({
-        title: 'Settings Saved',
-        description: 'Security automation settings have been updated',
-      });
+      toast.success("Security automation settings have been updated");
     } catch (error: unknown) {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to save settings',
-        description: error instanceof Error ? error.message : 'Unknown error',
-      });
+      toast.error("Failed to save settings");
     } finally {
       setSaving(false);
     }

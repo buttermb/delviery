@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
@@ -97,7 +97,6 @@ const initialFormData: CouponFormData = {
 export default function StorefrontCoupons() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
   const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
@@ -174,21 +173,12 @@ export default function StorefrontCoupons() {
       setIsDialogOpen(false);
       setFormData(initialFormData);
       setEditingCoupon(null);
-      toast({
-        title: editingCoupon ? 'Coupon updated' : 'Coupon created',
-        description: `Coupon ${formData.code.toUpperCase()} has been saved.`,
-      });
+      toast.success("Coupon ${formData.code.toUpperCase()} has been saved.");
     },
     onError: (error: unknown) => {
       logger.error('Failed to save coupon', error, { component: 'StorefrontCoupons' });
       const rawMessage = error instanceof Error ? error.message : '';
-      toast({
-        title: 'Error',
-        description: rawMessage?.includes('duplicate')
-          ? 'A coupon with this code already exists'
-          : humanizeError(error, 'Failed to save coupon'),
-        variant: 'destructive',
-      });
+      toast.error("Error");
     },
   });
 
@@ -205,9 +195,7 @@ export default function StorefrontCoupons() {
     },
     onSuccess: (_, { isActive }) => {
       queryClient.invalidateQueries({ queryKey: ['storefront-coupons'] });
-      toast({
-        title: isActive ? 'Coupon activated' : 'Coupon deactivated',
-      });
+      toast.success(isActive ? 'Coupon activated' : 'Coupon deactivated');
     },
   });
 
@@ -224,7 +212,7 @@ export default function StorefrontCoupons() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['storefront-coupons'] });
-      toast({ title: 'Coupon deleted' });
+      toast.success("Coupon deleted");
     },
   });
 
@@ -264,11 +252,7 @@ export default function StorefrontCoupons() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.code || !formData.discount_value) {
-      toast({
-        title: 'Missing fields',
-        description: 'Please fill in the required fields',
-        variant: 'destructive',
-      });
+      toast.error("Please fill in the required fields");
       return;
     }
     saveCouponMutation.mutate(formData);

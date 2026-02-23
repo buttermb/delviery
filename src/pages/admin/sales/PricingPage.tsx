@@ -30,7 +30,7 @@ import { Plus, DollarSign, TrendingDown, Edit } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { handleError } from '@/utils/errorHandling/handlers';
 
 type ColumnDef<T> = {
@@ -54,7 +54,6 @@ interface PricingTier {
 export default function PricingPage() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTier, setEditingTier] = useState<PricingTier | null>(null);
@@ -217,7 +216,7 @@ export default function PricingPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Pricing updated successfully' });
+      toast.success("Pricing updated successfully");
       setIsDialogOpen(false);
       setEditingTier(null);
       setFormData({

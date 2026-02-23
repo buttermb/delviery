@@ -29,8 +29,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { InvoiceDownloadButton } from '@/components/admin/InvoicePDF';
-import { useToast } from '@/hooks/use-toast';
-
+import { toast } from 'sonner';
 interface InvoiceItem {
   id: string;
   description: string;
@@ -60,7 +59,6 @@ interface InvoiceData {
 
 export function AdvancedInvoice() {
   const { navigateToAdmin } = useTenantNavigation();
-  const { toast } = useToast();
   const [invoice, setInvoice] = useState<InvoiceData>({
     invoiceNumber: `INV-${Date.now()}`,
     issueDate: new Date().toISOString().split('T')[0],
@@ -134,19 +132,12 @@ export function AdvancedInvoice() {
   };
 
   const handleSave = () => {
-    toast({
-      title: 'Invoice saved',
-      description: 'Invoice has been saved as draft',
-    });
+    toast.success("Invoice has been saved as draft");
   };
 
   const handleSend = () => {
     if (!invoice.customerEmail) {
-      toast({
-        title: 'Email required',
-        description: 'Please enter a customer email address',
-        variant: 'destructive',
-      });
+      toast.error("Please enter a customer email address");
       return;
     }
 
@@ -168,10 +159,7 @@ ${invoice.companyName}
 
     window.open(`mailto:${invoice.customerEmail}?subject=${subject}&body=${body}`, '_blank');
 
-    toast({
-      title: 'Email opened',
-      description: 'Opened default email client with invoice details',
-    });
+    toast.success("Opened default email client with invoice details");
     setInvoice({ ...invoice, status: 'sent' });
   };
 

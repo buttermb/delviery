@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Webhook, Plus, Edit, Loader2, History } from 'lucide-react';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
@@ -49,7 +49,6 @@ export default function Webhooks() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingWebhook, setEditingWebhook] = useState<WebhookConfig | null>(null);
   const [selectedWebhookId, setSelectedWebhookId] = useState<string | null>(null);
@@ -111,7 +110,7 @@ export default function Webhooks() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['webhooks', tenantId] });
-      toast({ title: 'Webhook created', description: 'Webhook has been created successfully.' });
+      toast.success("Webhook has been created successfully.");
       resetForm();
     },
     onError: (error) => {
@@ -151,7 +150,7 @@ export default function Webhooks() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['webhooks', tenantId] });
-      toast({ title: 'Webhook updated', description: 'Webhook has been updated successfully.' });
+      toast.success("Webhook has been updated successfully.");
       resetForm();
     },
     onError: (error) => {

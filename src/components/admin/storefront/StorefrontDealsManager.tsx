@@ -29,7 +29,7 @@ import {
     DialogFooter,
     DialogDescription,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
     Plus,
@@ -77,7 +77,6 @@ const DAYS = [
 ];
 
 export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -166,16 +165,12 @@ export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-deals', storeId] });
-            toast({ title: editingDeal ? 'Deal updated!' : 'Deal created!' });
+            toast.success(editingDeal ? 'Deal updated!' : 'Deal created!');
             setIsDialogOpen(false);
             resetForm();
         },
         onError: (err) => {
-            toast({
-                title: 'Error saving deal',
-                description: err.message,
-                variant: 'destructive'
-            });
+            toast.error("Error saving deal");
         },
     });
 
@@ -187,7 +182,7 @@ export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-deals', storeId] });
-            toast({ title: 'Deal deleted' });
+            toast.success("Deal deleted");
         },
     });
 
@@ -199,7 +194,7 @@ export function StorefrontDealsManager({ storeId }: DealsManagerProps) {
             .eq('id', deal.id);
 
         if (error) {
-            toast({ title: 'Error updating status', variant: 'destructive' });
+            toast.error("Error updating status");
             return;
         }
 

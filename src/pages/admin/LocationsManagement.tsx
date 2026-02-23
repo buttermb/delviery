@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { MapPin, Plus, Edit, Trash2, Building, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { handleError } from '@/utils/errorHandling/handlers';
@@ -23,7 +23,6 @@ import { formatPhoneNumber } from '@/lib/formatters';
 
 export default function LocationsManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
-  const { toast } = useToast();
   const [locations, setLocations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -82,10 +81,7 @@ export default function LocationsManagement() {
 
         if (error) throw error;
 
-        toast({
-          title: 'Success',
-          description: 'Location updated successfully'
-        });
+        toast.success("Location updated successfully");
       } else {
         const { error } = await supabase
           .from('locations')
@@ -96,10 +92,7 @@ export default function LocationsManagement() {
 
         if (error) throw error;
 
-        toast({
-          title: 'Success',
-          description: 'Location added successfully'
-        });
+        toast.success("Location added successfully");
       }
 
       setIsDialogOpen(false);
@@ -147,10 +140,7 @@ export default function LocationsManagement() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: 'Location deleted successfully'
-      });
+      toast.success("Location deleted successfully");
 
       loadLocations();
       setDeleteDialogOpen(false);

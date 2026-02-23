@@ -19,7 +19,7 @@ import {
   Lock,
   CheckCircle
 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -62,11 +62,7 @@ export const SecurityMonitoringPanel = () => {
           
           // Show toast for critical events
           if (newEvent.severity === 'critical' || newEvent.severity === 'high') {
-            toast({
-              variant: 'destructive',
-              title: 'Security Alert',
-              description: `${newEvent.event_type || 'Security Event'}: ${newEvent.description || 'New threat detected'}`,
-            });
+            toast.error("${newEvent.event_type || ");
           }
           
           refetch();
@@ -77,18 +73,10 @@ export const SecurityMonitoringPanel = () => {
           logger.debug('Security monitoring subscribed successfully', { component: 'SecurityMonitoringPanel' });
         } else if (status === 'CHANNEL_ERROR') {
           logger.error('Security monitoring channel error', new Error('Channel error'), { component: 'SecurityMonitoringPanel' });
-          toast({
-            variant: 'destructive',
-            title: 'Monitoring Error',
-            description: 'Failed to connect to security monitoring. Retrying...',
-          });
+          toast.error("Failed to connect to security monitoring. Retrying...");
         } else if (status === 'TIMED_OUT') {
           logger.error('Security monitoring subscription timed out', new Error('Subscription timeout'), { component: 'SecurityMonitoringPanel' });
-          toast({
-            variant: 'destructive',
-            title: 'Connection Timeout',
-            description: 'Security monitoring connection timed out',
-          });
+          toast.error("Security monitoring connection timed out");
         }
       });
 
@@ -121,18 +109,11 @@ export const SecurityMonitoringPanel = () => {
       });
 
     if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to block IP',
-        description: humanizeError(error),
-      });
+      toast.error("Failed to block IP");
       return;
     }
 
-    toast({
-      title: 'IP Blocked',
-      description: `${ipAddress} has been blocked successfully`,
-    });
+    toast.success("${ipAddress} has been blocked successfully");
 
     loadBlockedIPs();
   };
@@ -148,18 +129,11 @@ export const SecurityMonitoringPanel = () => {
     setIsUnblocking(false);
 
     if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to unblock IP',
-        description: humanizeError(error),
-      });
+      toast.error("Failed to unblock IP");
       return;
     }
 
-    toast({
-      title: 'IP Unblocked',
-      description: 'IP address has been unblocked',
-    });
+    toast.success("IP address has been unblocked");
 
     setUnblockDialogOpen(false);
     setIpToUnblock(null);
@@ -173,18 +147,11 @@ export const SecurityMonitoringPanel = () => {
       .eq('id', eventId);
 
     if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to acknowledge event',
-        description: humanizeError(error),
-      });
+      toast.error("Failed to acknowledge event");
       return;
     }
 
-    toast({
-      title: 'Event Acknowledged',
-      description: 'Security event marked as acknowledged',
-    });
+    toast.success("Security event marked as acknowledged");
 
     refetch();
   };

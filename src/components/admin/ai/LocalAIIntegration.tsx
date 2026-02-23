@@ -24,8 +24,7 @@ import {
   FileText,
   Zap,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
+import { toast } from 'sonner';
 // Demo Mode: Simulated AI processing
 // In production, integrate with @xenova/transformers, Ollama, or Lovable AI
 async function runLocalAI(prompt: string, model: string): Promise<string> {
@@ -51,7 +50,6 @@ interface AIModel {
 }
 
 export function LocalAIIntegration() {
-  const { toast } = useToast();
   const [selectedModel, setSelectedModel] = useState<string>('sentiment');
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
@@ -90,11 +88,7 @@ export function LocalAIIntegration() {
 
   const handleProcess = async () => {
     if (!input.trim()) {
-      toast({
-        title: 'Input required',
-        description: 'Please enter some text to process',
-        variant: 'destructive',
-      });
+      toast.error("Please enter some text to process");
       return;
     }
 
@@ -104,16 +98,9 @@ export function LocalAIIntegration() {
     try {
       const result = await runLocalAI(input, selectedModel);
       setOutput(result);
-      toast({
-        title: 'AI processing complete',
-        description: 'Text processed successfully',
-      });
+      toast.success("Text processed successfully");
     } catch (error: unknown) {
-      toast({
-        title: 'Processing failed',
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive',
-      });
+      toast.error("Processing failed");
     } finally {
       setIsProcessing(false);
     }
@@ -252,10 +239,7 @@ export function LocalAIIntegration() {
                     size="sm"
                     onClick={() => {
                       navigator.clipboard.writeText(output);
-                      toast({
-                        title: 'Copied',
-                        description: 'Output copied to clipboard',
-                      });
+                      toast.success("Output copied to clipboard");
                     }}
                   >
                     <FileText className="h-4 w-4 mr-2" />

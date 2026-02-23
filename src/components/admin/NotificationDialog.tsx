@@ -38,7 +38,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Bell, Mail, MessageSquare, Globe, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 
 const notificationSchema = z.object({
@@ -59,8 +59,6 @@ interface NotificationDialogProps {
 export function NotificationDialog({ trigger }: NotificationDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const { toast } = useToast();
-
   const form = useForm<NotificationForm>({
     resolver: zodResolver(notificationSchema),
     defaultValues: {
@@ -130,20 +128,13 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
         type: data.type,
       });
 
-      toast({
-        title: 'Notifications sent',
-        description: `Sent to ${targetTenants.length} tenants`,
-      });
+      toast.success("Sent to ${targetTenants.length} tenants");
 
       setOpen(false);
       form.reset();
     } catch (error: unknown) {
       logger.error('Failed to send notifications', error instanceof Error ? error : new Error(String(error)), { component: 'NotificationDialog' });
-      toast({
-        title: 'Failed to send notifications',
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive',
-      });
+      toast.error("Failed to send notifications");
     } finally {
       setIsSending(false);
     }

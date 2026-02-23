@@ -18,8 +18,7 @@ import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import Printer from "lucide-react/dist/esm/icons/printer";
 import QrCode from "lucide-react/dist/esm/icons/qr-code";
 import { QRCodeSVG } from 'qrcode.react';
-import { toast } from '@/hooks/use-toast';
-
+import { toast } from 'sonner';
 export interface ProductQRGeneratorProps {
   open: boolean;
   onClose: () => void;
@@ -91,19 +90,12 @@ export function ProductQRGenerator({
       link.href = canvas.toDataURL('image/png');
       link.click();
 
-      toast({
-        title: 'QR Code Downloaded',
-        description: 'Product QR code has been saved to your downloads',
-      });
+      toast.success("Product QR code has been saved to your downloads");
     };
 
     img.onerror = () => {
       logger.error('Failed to load SVG for QR code download');
-      toast({
-        title: 'Download Failed',
-        description: 'Failed to generate QR code image',
-        variant: 'destructive',
-      });
+      toast.error("Failed to generate QR code image");
     };
 
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
@@ -113,18 +105,11 @@ export function ProductQRGenerator({
     try {
       await navigator.clipboard.writeText(productUrl);
       setCopied(true);
-      toast({
-        title: 'Link Copied',
-        description: 'Product link copied to clipboard',
-      });
+      toast.success("Product link copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       logger.error('Failed to copy link:', error);
-      toast({
-        title: 'Copy Failed',
-        description: 'Failed to copy link to clipboard',
-        variant: 'destructive',
-      });
+      toast.error("Failed to copy link to clipboard");
     }
   };
 
@@ -136,10 +121,7 @@ export function ProductQRGenerator({
           text: `Check out ${product.name}`,
           url: productUrl,
         });
-        toast({
-          title: 'Shared Successfully',
-          description: 'Product link has been shared',
-        });
+        toast.success("Product link has been shared");
       } catch (error) {
         // User cancelled share - don't show error
         if ((error as Error).name !== 'AbortError') {
@@ -155,11 +137,7 @@ export function ProductQRGenerator({
   const printQRCode = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      toast({
-        title: 'Print Failed',
-        description: 'Please allow pop-ups to print the QR code',
-        variant: 'destructive',
-      });
+      toast.error("Please allow pop-ups to print the QR code");
       return;
     }
 

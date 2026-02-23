@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import {
   RefreshCw,
@@ -121,7 +121,6 @@ function showBrowserNotification(title: string, body: string): void {
 export function StorefrontLiveOrders() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -214,16 +213,13 @@ export function StorefrontLiveOrders() {
         ? 'You have a new storefront order.'
         : `You have ${newCount} new storefront orders.`;
 
-      toast({
-        title: 'New Order!',
-        description: message,
-      });
+      toast.success("New Order!");
 
       showBrowserNotification('New Storefront Order!', message);
     }
 
     previousOrderCountRef.current = pendingOrders;
-  }, [orders, playNewOrderSound, toast]);
+  }, [orders, playNewOrderSound]);
 
   // Set up realtime subscription on storefront_orders (marketplace_orders) table
   useEffect(() => {
@@ -275,18 +271,11 @@ export function StorefrontLiveOrders() {
     },
     onSuccess: (_, { newStatus }) => {
       queryClient.invalidateQueries({ queryKey: ['storefront-live-orders'] });
-      toast({
-        title: 'Order updated',
-        description: `Status changed to ${STATUS_LABELS[newStatus] || newStatus}`,
-      });
+      toast.success("Status changed to ${STATUS_LABELS[newStatus] || newStatus}");
     },
     onError: (error) => {
       logger.error('Failed to update order status', error, { component: 'StorefrontLiveOrders' });
-      toast({
-        title: 'Error',
-        description: 'Failed to update order status',
-        variant: 'destructive',
-      });
+      toast.error("Failed to update order status");
     },
     onSettled: () => {
       setUpdatingOrderId(null);

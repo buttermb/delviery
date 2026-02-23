@@ -36,7 +36,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { showCopyToast } from '@/utils/toastHelpers';
 import { usePagination } from '@/hooks/usePagination';
 import { StandardPagination } from '@/components/shared/StandardPagination';
@@ -75,7 +75,6 @@ interface GiftCardTableProps {
 type StatusFilter = 'all' | 'active' | 'disabled' | 'depleted';
 
 export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -136,19 +135,13 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['gift-cards', storeId] });
-      toast({
-        title: `${variables.ids.length} card(s) ${variables.newStatus === 'active' ? 'activated' : 'deactivated'}`,
-      });
+      toast.success("${variables.ids.length} card(s) ${variables.newStatus === ");
       setSelectedIds(new Set());
       setBulkAction(null);
     },
     onError: (err: Error) => {
       logger.error('Bulk status update failed', { error: err.message });
-      toast({
-        title: 'Error updating cards',
-        description: err.message,
-        variant: 'destructive',
-      });
+      toast.error("Error updating cards");
       setBulkAction(null);
     },
   });

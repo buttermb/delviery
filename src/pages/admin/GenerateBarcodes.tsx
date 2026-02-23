@@ -29,7 +29,7 @@ import {
   Eye,
   Grid3x3
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   createPackageQRData,
   type QRCodeData
@@ -51,8 +51,6 @@ interface GeneratedBarcode {
 
 export default function GenerateBarcodes() {
   const { tenant, loading: tenantLoading } = useTenantAdminAuth();
-  const { toast } = useToast();
-
   // Generation mode
   const [mode, setMode] = useState<GenerationMode>('product');
   const [barcodeType, setBarcodeType] = useState<BarcodeType>('CODE128');
@@ -99,11 +97,7 @@ export default function GenerateBarcodes() {
   // Generate barcodes based on mode
   const handleGenerate = async () => {
     if (!tenant) {
-      toast({
-        title: 'Error',
-        description: 'Tenant not found',
-        variant: 'destructive'
-      });
+      toast.error("Tenant not found");
       return;
     }
 
@@ -183,18 +177,11 @@ export default function GenerateBarcodes() {
       }
 
       setGeneratedBarcodes(newBarcodes);
-      toast({
-        title: 'Success!',
-        description: `Generated ${newBarcodes.length} ${mode === 'package' ? 'packages' : 'barcodes'}`
-      });
+      toast.success("Generated ${newBarcodes.length} ${mode === ");
     } catch (error: unknown) {
       logger.error('Error generating barcodes', error, { component: 'GenerateBarcodes' });
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate barcodes';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive'
-      });
+      toast.error("Error");
     } finally {
       setLoading(false);
     }
@@ -205,10 +192,7 @@ export default function GenerateBarcodes() {
     if (generatedBarcodes.length === 0) return;
 
     setPdfGenerating(true);
-    toast({
-      title: 'Generating PDF...',
-      description: 'Please wait while we create your label sheet',
-    });
+    toast.success("Please wait while we create your label sheet");
 
     try {
       // Defer heavy operation to avoid blocking UI
@@ -219,11 +203,7 @@ export default function GenerateBarcodes() {
       await handlePrintSheet();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate PDFs';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive'
-      });
+      toast.error("Error");
     } finally {
       setPdfGenerating(false);
     }
@@ -289,10 +269,7 @@ export default function GenerateBarcodes() {
       }
 
       pdf.save(`barcode_sheet_${Date.now()}.pdf`);
-      toast({
-        title: 'Success',
-        description: 'Barcode sheet downloaded'
-      });
+      toast.success("Barcode sheet downloaded");
     } finally {
       setPdfGenerating(false);
     }
@@ -301,10 +278,7 @@ export default function GenerateBarcodes() {
   // Handle print preview with async loading
   const handlePrintPreview = async () => {
     setPdfGenerating(true);
-    toast({
-      title: 'Preparing preview...',
-      description: 'Please wait',
-    });
+    toast.success("Please wait");
 
     try {
       // Small delay to show loading state

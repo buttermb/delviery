@@ -19,7 +19,7 @@ import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
 
@@ -97,7 +97,6 @@ export function ProductImageGallery({
   className,
 }: ProductImageGalleryProps) {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -160,17 +159,13 @@ export function ProductImageGallery({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-      toast({ title: 'Images updated successfully' });
+      toast.success("Images updated successfully");
     },
     onError: (error) => {
       logger.error('Failed to update product images', error as Error, {
         component: 'ProductImageGallery',
       });
-      toast({
-        title: 'Failed to update images',
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive',
-      });
+      toast.error("Failed to update images");
     },
   });
 

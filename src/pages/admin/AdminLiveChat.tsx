@@ -50,7 +50,7 @@ import {
   ResizableHandle,
 } from '@/components/ui/resizable';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { validateChatSession, validateChatMessage } from '@/utils/realtimeValidation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { cn } from '@/lib/utils';
@@ -169,7 +169,6 @@ const AdminLiveChat = function AdminLiveChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
-  const { toast } = useToast();
 
   // Filter quick responses by category
   const filteredQuickResponses = quickResponseCategory === 'All'
@@ -209,15 +208,11 @@ const AdminLiveChat = function AdminLiveChat() {
       }
     } catch (error) {
       logger.error('Error loading chat sessions', error as Error, { component: 'AdminLiveChat' });
-      toast({
-        title: "Error",
-        description: "Failed to load chat sessions",
-        variant: "destructive"
-      });
+      toast.error("Failed to load chat sessions");
     } finally {
       setIsLoading(false);
     }
-  }, [toast, tenant?.id]);
+  }, [tenant?.id]);
 
   // Setup realtime subscriptions
   useEffect(() => {
@@ -311,11 +306,7 @@ const AdminLiveChat = function AdminLiveChat() {
         }
       } catch (error) {
         logger.error('Error loading messages', error as Error, { component: 'AdminLiveChat', sessionId: selectedSession });
-        toast({
-          title: "Error",
-          description: "Failed to load messages",
-          variant: "destructive"
-        });
+        toast.error("Failed to load messages");
       }
     };
 
@@ -390,7 +381,7 @@ const AdminLiveChat = function AdminLiveChat() {
         );
       }
     };
-  }, [selectedSession, toast]);
+  }, [selectedSession]);
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -512,11 +503,7 @@ const AdminLiveChat = function AdminLiveChat() {
 
     } catch (error) {
       logger.error('Error sending message', error as Error, { component: 'AdminLiveChat' });
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive"
-      });
+      toast.error("Failed to send message");
       setInput(messageText); // Restore input on error
     } finally {
       setIsSending(false);
@@ -531,11 +518,7 @@ const AdminLiveChat = function AdminLiveChat() {
 
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Maximum file size is 10MB",
-        variant: "destructive"
-      });
+      toast.error("Maximum file size is 10MB");
       return;
     }
 
@@ -589,11 +572,7 @@ const AdminLiveChat = function AdminLiveChat() {
       loadSessions();
     } catch (error) {
       logger.error('Error taking over chat', error as Error, { component: 'AdminLiveChat' });
-      toast({
-        title: "Error",
-        description: "Failed to take over chat",
-        variant: "destructive"
-      });
+      toast.error("Failed to take over chat");
     }
   };
 
@@ -624,17 +603,10 @@ const AdminLiveChat = function AdminLiveChat() {
       }
 
       loadSessions();
-      toast({
-        title: "Chat closed",
-        description: "The chat session has been closed"
-      });
+      toast.success("The chat session has been closed");
     } catch (error) {
       logger.error('Error closing chat', error as Error, { component: 'AdminLiveChat' });
-      toast({
-        title: "Error",
-        description: "Failed to close chat",
-        variant: "destructive"
-      });
+      toast.error("Failed to close chat");
     }
   };
 

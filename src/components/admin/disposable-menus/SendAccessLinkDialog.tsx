@@ -14,7 +14,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, MessageSquare, Loader2, Copy, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { CreditCostBadge, CreditCostIndicator } from '@/components/credits';
 import { useCredits } from '@/hooks/useCredits';
@@ -54,11 +54,7 @@ export function SendAccessLinkDialog({
       if (isFreeTier) {
         const creditResult = await performAction(actionKey, whitelistEntry.id, 'menu_access');
         if (!creditResult.success) {
-          toast({
-            variant: 'destructive',
-            title: 'Insufficient Credits',
-            description: creditResult.errorMessage || 'Not enough credits for this action',
-          });
+          toast.error("Insufficient Credits");
           setLoading(false);
           return;
         }
@@ -81,18 +77,11 @@ export function SendAccessLinkDialog({
 
       setPreview(data.preview);
       
-      toast({
-        title: 'Access Link Sent',
-        description: `Link sent via ${method} to ${whitelistEntry.customer_name}`,
-      });
+      toast.success("Link sent via ${method} to ${whitelistEntry.customer_name}");
     } catch (error: unknown) {
       logger.error('Error sending access link', error, { component: 'SendAccessLinkDialog' });
       const errorMessage = error instanceof Error ? error.message : 'Could not send access link';
-      toast({
-        variant: 'destructive',
-        title: 'Failed to Send',
-        description: errorMessage,
-      });
+      toast.error("Failed to Send");
     } finally {
       setLoading(false);
     }
@@ -101,10 +90,7 @@ export function SendAccessLinkDialog({
   const handleCopyLink = () => {
     navigator.clipboard.writeText(accessUrl);
     setCopied(true);
-    toast({
-      title: 'Link Copied',
-      description: 'Access link copied to clipboard',
-    });
+    toast.success("Access link copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 

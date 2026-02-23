@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
 import {
@@ -67,7 +67,6 @@ interface ProductSetting {
 export default function StorefrontProducts() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -196,11 +195,7 @@ export default function StorefrontProducts() {
     },
     onError: (error) => {
       logger.error('Failed to toggle visibility', error, { component: 'StorefrontProducts' });
-      toast({
-        title: 'Error',
-        description: 'Failed to update product visibility.',
-        variant: 'destructive',
-      });
+      toast.error("Failed to update product visibility.");
     },
   });
 
@@ -234,15 +229,11 @@ export default function StorefrontProducts() {
       queryClient.invalidateQueries({ queryKey: ['marketplace-product-settings'] });
       // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
-      toast({ title: 'Price updated!' });
+      toast.success("Price updated!");
     },
     onError: (error) => {
       logger.error('Failed to update price', error, { component: 'StorefrontProducts' });
-      toast({
-        title: 'Error',
-        description: 'Failed to update price.',
-        variant: 'destructive',
-      });
+      toast.error("Failed to update price.");
     },
   });
 
@@ -287,13 +278,11 @@ export default function StorefrontProducts() {
       // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
       setSelectedProducts(new Set());
-      toast({
-        title: `${selectedProducts.size} ${selectedProducts.size === 1 ? 'product' : 'products'} ${isVisible ? 'shown' : 'hidden'}`,
-      });
+      toast.success("${selectedProducts.size} ${selectedProducts.size === 1 ? ");
     },
     onError: (error: Error) => {
       logger.error('Failed to update product visibility', { error });
-      toast({ title: 'Failed to update visibility', description: humanizeError(error), variant: 'destructive' });
+      toast.error("Failed to update visibility");
     },
   });
 
@@ -370,11 +359,7 @@ export default function StorefrontProducts() {
     },
     onError: (error) => {
       logger.error('Failed to update order', error, { component: 'StorefrontProducts' });
-      toast({
-        title: 'Error',
-        description: 'Failed to update display order.',
-        variant: 'destructive',
-      });
+      toast.error("Failed to update display order.");
     },
   });
 

@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import Search from "lucide-react/dist/esm/icons/search";
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
@@ -113,7 +113,6 @@ export function StoreOrdersTab({
   maxHeight,
 }: StoreOrdersTabProps) {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
 
@@ -199,15 +198,11 @@ export function StoreOrdersTab({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-orders'] });
       queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
-      toast({ title: 'Order status updated!' });
+      toast.success("Order status updated!");
     },
     onError: (error) => {
       logger.error('Failed to update order status', error, { component: 'StoreOrdersTab' });
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update order status.',
-        variant: 'destructive',
-      });
+      toast.error("Error");
     },
   });
 

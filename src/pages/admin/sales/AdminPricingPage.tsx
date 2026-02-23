@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { DollarSign, Edit, Save, X } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
@@ -26,7 +26,6 @@ interface Product {
 export default function AdminPricingPage() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -64,18 +63,14 @@ export default function AdminPricingPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Pricing updated successfully!' });
+      toast.success("Pricing updated successfully!");
       queryClient.invalidateQueries({ queryKey: queryKeys.pricing.products(tenantId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.lists() });
       setEditingId(null);
       setEditData({});
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Update failed',
-        description: humanizeError(error),
-        variant: 'destructive'
-      });
+      toast.error("Update failed");
     }
   });
 

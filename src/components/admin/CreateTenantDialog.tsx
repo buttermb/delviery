@@ -36,7 +36,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Loader2 } from 'lucide-react';
 
@@ -83,7 +83,6 @@ interface CreateTenantDialogProps {
 export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const form = useForm<CreateTenantForm>({
@@ -231,21 +230,14 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
         });
       }
 
-      toast({
-        title: 'Tenant created',
-        description: `${data.business_name} has been created successfully`,
-      });
+      toast.success("${data.business_name} has been created successfully");
 
       queryClient.invalidateQueries({ queryKey: ['super-admin-tenants'] });
       queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
       setOpen(false);
       form.reset();
     } catch (error: unknown) {
-      toast({
-        title: 'Failed to create tenant',
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive',
-      });
+      toast.error("Failed to create tenant");
     } finally {
       setIsSaving(false);
     }

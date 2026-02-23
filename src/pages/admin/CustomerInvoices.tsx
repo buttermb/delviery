@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
 import { callAdminFunction } from '@/utils/adminFunctionHelper';
@@ -56,7 +56,6 @@ interface Invoice {
 
 export default function CustomerInvoices() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
-  const { toast } = useToast();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -272,11 +271,7 @@ export default function CustomerInvoices() {
     const { subtotal, tax, total } = calculateTotals();
 
     if (total < 0 || subtotal < 0) {
-      toast({
-        title: 'Validation Error',
-        description: 'Invoice total cannot be negative',
-        variant: 'destructive',
-      });
+      toast.error("Invoice total cannot be negative");
       return;
     }
 
@@ -346,10 +341,7 @@ export default function CustomerInvoices() {
         if (error) throw error;
       }
 
-      toast({
-        title: 'Success',
-        description: 'Invoice created successfully'
-      });
+      toast.success("Invoice created successfully");
 
       setIsDialogOpen(false);
       setFormData({
@@ -367,11 +359,7 @@ export default function CustomerInvoices() {
       loadInvoices(1, false);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive'
-      });
+      toast.error("Error");
     } finally {
       setIsSubmitting(false);
     }

@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
     ShoppingCart,
     Search,
@@ -49,7 +49,6 @@ import { PageHeader } from '@/components/shared/PageHeader';
 
 export default function OrdersPage() {
     const { tenant } = useTenantAdminAuth();
-    const { toast } = useToast();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const tenantId = tenant?.id;
@@ -148,18 +147,11 @@ export default function OrdersPage() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-orders', tenantId] });
-            toast({
-                title: 'Status Updated',
-                description: 'Order status has been updated',
-            });
+            toast.success("Order status has been updated");
         },
         onError: (error: unknown) => {
             logger.error('Failed to update order status', error, { component: 'OrdersPage' });
-            toast({
-                title: 'Error',
-                description: error instanceof Error ? error.message : 'Failed to update order',
-                variant: 'destructive',
-            });
+            toast.error("Error");
         },
     });
 
@@ -180,18 +172,11 @@ export default function OrdersPage() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-orders', tenantId] });
-            toast({
-                title: 'Payment Recorded',
-                description: 'Order marked as paid',
-            });
+            toast.success("Order marked as paid");
         },
         onError: (error: unknown) => {
             logger.error('Failed to mark order as paid', error, { component: 'OrdersPage' });
-            toast({
-                title: 'Error',
-                description: error instanceof Error ? error.message : 'Failed to update payment status',
-                variant: 'destructive',
-            });
+            toast.error("Error");
         },
     });
 

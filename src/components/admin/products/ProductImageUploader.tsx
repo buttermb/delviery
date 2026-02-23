@@ -12,7 +12,7 @@ import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Star from "lucide-react/dist/esm/icons/star";
 import AlertCircle from "lucide-react/dist/esm/icons/alert-circle";
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   validateImageDimensions,
   IMAGE_DIMENSION_CONSTRAINTS,
@@ -91,7 +91,6 @@ export function ProductImageUploader({
   disabled = false,
   className,
 }: ProductImageUploaderProps) {
-  const { toast } = useToast();
   const [dragActive, setDragActive] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<Map<string, number>>(new Map());
   const [draggedImageId, setDraggedImageId] = useState<string | null>(null);
@@ -111,11 +110,7 @@ export function ProductImageUploader({
       try {
         // Client-side 2MB limit for product images
         if (file.size > MAX_PRODUCT_IMAGE_SIZE_BYTES) {
-          toast({
-            title: 'File too large',
-            description: `Maximum file size is ${MAX_PRODUCT_IMAGE_SIZE_MB}MB. Selected file is ${(file.size / (1024 * 1024)).toFixed(1)}MB.`,
-            variant: 'destructive',
-          });
+          toast.error("Maximum file size is ${MAX_PRODUCT_IMAGE_SIZE_MB}MB. Selected file is ${(file.size / (1024 * 1024)).toFixed(1)}MB.");
           return null;
         }
 
@@ -127,11 +122,7 @@ export function ProductImageUploader({
         });
 
         if (!fileValidation.isValid) {
-          toast({
-            title: 'Invalid file',
-            description: fileValidation.error,
-            variant: 'destructive',
-          });
+          toast.error("Invalid file");
           return null;
         }
 
@@ -142,11 +133,7 @@ export function ProductImageUploader({
         );
 
         if (!dimensionResult.valid) {
-          toast({
-            title: 'Invalid image dimensions',
-            description: dimensionResult.error,
-            variant: 'destructive',
-          });
+          toast.error("Invalid image dimensions");
           return null;
         }
 
@@ -236,11 +223,7 @@ export function ProductImageUploader({
           { component: 'ProductImageUploader' }
         );
 
-        toast({
-          title: 'Upload failed',
-          description: error instanceof Error ? error.message : 'Unknown error occurred',
-          variant: 'destructive',
-        });
+        toast.error("Upload failed");
 
         // Clean up progress
         setUploadingFiles((prev) => {
@@ -252,7 +235,7 @@ export function ProductImageUploader({
         return null;
       }
     },
-    [toast]
+    []
   );
 
   /**
@@ -264,11 +247,7 @@ export function ProductImageUploader({
 
       const fileArray = Array.from(files).filter((f) => f.type.startsWith('image/'));
       if (fileArray.length === 0) {
-        toast({
-          title: 'Invalid files',
-          description: 'Please select image files only',
-          variant: 'destructive',
-        });
+        toast.error("Please select image files only");
         return;
       }
 
@@ -279,11 +258,7 @@ export function ProductImageUploader({
 
         // Check if we can add more images
         if (!isMain && additionalImages.length >= maxAdditionalImages) {
-          toast({
-            title: 'Maximum images reached',
-            description: `You can only upload ${maxAdditionalImages} additional images`,
-            variant: 'destructive',
-          });
+          toast.error("You can only upload ${maxAdditionalImages} additional images");
           break;
         }
 
@@ -306,7 +281,6 @@ export function ProductImageUploader({
       uploadFile,
       onMainImageChange,
       onAdditionalImagesChange,
-      toast,
     ]
   );
 
@@ -350,8 +324,8 @@ export function ProductImageUploader({
    */
   const removeMainImage = useCallback(() => {
     onMainImageChange(undefined);
-    toast({ title: 'Main image removed' });
-  }, [onMainImageChange, toast]);
+    toast.success("Main image removed");
+  }, [onMainImageChange]);
 
   /**
    * Remove an additional image by index
@@ -360,9 +334,9 @@ export function ProductImageUploader({
     (index: number) => {
       const newImages = additionalImages.filter((_, i) => i !== index);
       onAdditionalImagesChange(newImages);
-      toast({ title: 'Image removed' });
+      toast.success("Image removed");
     },
-    [additionalImages, onAdditionalImagesChange, toast]
+    [additionalImages, onAdditionalImagesChange]
   );
 
   /**
@@ -381,9 +355,9 @@ export function ProductImageUploader({
 
       onMainImageChange(newMainImage);
       onAdditionalImagesChange(newAdditionalImages);
-      toast({ title: 'Main image updated' });
+      toast.success("Main image updated");
     },
-    [mainImage, additionalImages, onMainImageChange, onAdditionalImagesChange, toast]
+    [mainImage, additionalImages, onMainImageChange, onAdditionalImagesChange]
   );
 
   /**

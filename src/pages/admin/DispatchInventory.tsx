@@ -21,7 +21,7 @@ import { BarcodeScanner } from '@/components/inventory/BarcodeScanner';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
 import { Trash2, DollarSign, Calendar, AlertTriangle, Clock } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { calculateExpectedProfit } from '@/utils/barcodeHelpers';
 import { useQuery } from '@tanstack/react-query';
 import { addDays, format } from 'date-fns';
@@ -61,7 +61,6 @@ export default function DispatchInventory() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const { execute: executeCreditAction } = useCreditGatedAction();
-  const { toast } = useToast();
   const [scannedProducts, setScannedProducts] = useState<ScannedProduct[]>([]);
   const [selectedClient, setSelectedClient] = useState<SelectedClient | null>(null);
   const [dealType, setDealType] = useState('fronted');
@@ -118,11 +117,7 @@ export default function DispatchInventory() {
       const error = result.error;
 
       if (error || !product) {
-        toast({
-          title: 'Product Not Found',
-          description: `No product found with barcode: ${barcode}`,
-          variant: 'destructive'
-        });
+        toast.error("No product found with barcode: ${barcode}");
         return;
       }
 
@@ -152,17 +147,10 @@ export default function DispatchInventory() {
         ]);
       }
 
-      toast({
-        title: 'Product Scanned',
-        description: `${product.name} added to dispatch`
-      });
+      toast.success("${product.name} added to dispatch");
     } catch (error) {
       logger.error('Error scanning product:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to scan product',
-        variant: 'destructive'
-      });
+      toast.error("Failed to scan product");
     }
   };
 
@@ -216,29 +204,17 @@ export default function DispatchInventory() {
 
   const handleDispatch = async () => {
     if (scannedProducts.length === 0) {
-      toast({
-        title: 'No Products',
-        description: 'Please scan products to dispatch',
-        variant: 'destructive'
-      });
+      toast.error("Please scan products to dispatch");
       return;
     }
 
     if (!selectedClient) {
-      toast({
-        title: 'Missing Information',
-        description: 'Please select a client to front inventory to',
-        variant: 'destructive'
-      });
+      toast.error("Please select a client to front inventory to");
       return;
     }
 
     if (!paymentDueDate) {
-      toast({
-        title: 'Missing Information',
-        description: 'Please select a payment due date',
-        variant: 'destructive'
-      });
+      toast.error("Please select a payment due date");
       return;
     }
 
@@ -290,19 +266,12 @@ export default function DispatchInventory() {
           });
         }
 
-        toast({
-          title: 'Success!',
-          description: `${calculateTotals().totalUnits} units dispatched to ${result.client_name}. Expected revenue: ${formatCurrency(result.total_expected_revenue)}`
-        });
+        toast.success("${calculateTotals().totalUnits} units dispatched to ${result.client_name}. Expected revenue: ${formatCurrency(result.total_expected_revenue)}");
 
         navigateToAdmin('inventory/fronted');
       } catch (error) {
         logger.error('Error dispatching inventory:', error);
-        toast({
-          title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to dispatch inventory',
-          variant: 'destructive'
-        });
+        toast.error("Error");
       } finally {
         setLoading(false);
       }
@@ -399,10 +368,7 @@ export default function DispatchInventory() {
         .eq('tenant_id', tenant.id);
     }
 
-    toast({
-      title: 'Success!',
-      description: `${calculateTotals().totalUnits} units dispatched to ${selectedClient.business_name}`
-    });
+    toast.success("${calculateTotals().totalUnits} units dispatched to ${selectedClient.business_name}");
 
     navigateToAdmin('inventory/fronted');
   };

@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import {
@@ -75,7 +75,6 @@ export default function StorefrontDashboard() {
   const { tenant } = useTenantAdminAuth();
   const { tenantSlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -232,12 +231,7 @@ export default function StorefrontDashboard() {
     },
     onSuccess: (_, isActive) => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-stores'] });
-      toast({
-        title: isActive ? 'Store is now live!' : 'Store paused',
-        description: isActive
-          ? 'Customers can now browse and order from your store.'
-          : 'Your store is now hidden from customers.',
-      });
+      toast.success(isActive);
     },
   });
 
@@ -272,18 +266,11 @@ export default function StorefrontDashboard() {
         clearSelection();
       }
 
-      toast({
-        title: 'Store deleted',
-        description: 'Your store has been permanently deleted.',
-      });
+      toast.success("Your store has been permanently deleted.");
     },
     onError: (error) => {
       logger.error('Failed to delete store', error, { component: 'StorefrontDashboard' });
-      toast({
-        title: 'Error',
-        description: 'Failed to delete store. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error("Failed to delete store. Please try again.");
     },
   });
 
@@ -313,21 +300,14 @@ export default function StorefrontDashboard() {
       setCreateDialogOpen(false);
       selectStore(newStore.id);
       setShowListView(false);
-      toast({
-        title: 'Store created!',
-        description: 'Your new store has been set up. Configure it to go live.',
-      });
+      toast.success("Your new store has been set up. Configure it to go live.");
     },
     onError: (error: any) => {
       logger.error('Failed to create store', error, { component: 'StorefrontDashboard' });
       const message = error?.message?.includes('duplicate')
         ? 'A store with this URL already exists.'
         : 'Failed to create store. Please try again.';
-      toast({
-        title: 'Error',
-        description: message,
-        variant: 'destructive',
-      });
+      toast.error("Error");
     },
   });
 

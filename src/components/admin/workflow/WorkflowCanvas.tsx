@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { VisualWorkflowEditor } from './VisualWorkflowEditor';
 import { NodePalette } from './NodePalette';
 import { WorkflowVersionHistory } from './WorkflowVersionHistory';
@@ -70,8 +70,6 @@ interface Workflow {
 
 export function WorkflowCanvas() {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
-  
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [templates, setTemplates] = useState<Workflow[]>([]);
   const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
@@ -105,11 +103,7 @@ export function WorkflowCanvas() {
       setWorkflows((data as unknown as Workflow[]) || []);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Error loading workflows';
-      toast({
-        title: 'Error loading workflows',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error("Error loading workflows");
     } finally {
       setLoading(false);
     }
@@ -222,19 +216,12 @@ export function WorkflowCanvas() {
           });
       }
 
-      toast({
-        title: 'Workflow saved',
-        description: 'Your workflow has been saved successfully',
-      });
+      toast.success("Your workflow has been saved successfully");
 
       loadWorkflows();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Error saving workflow';
-      toast({
-        title: 'Error saving workflow',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error("Error saving workflow");
     }
   };
 
@@ -283,11 +270,7 @@ export function WorkflowCanvas() {
 
   const handleTestWorkflow = async () => {
     if (!selectedWorkflow?.id) {
-      toast({
-        title: 'Save first',
-        description: 'Please save the workflow before testing',
-        variant: 'destructive',
-      });
+      toast.error("Please save the workflow before testing");
       return;
     }
 
@@ -320,17 +303,10 @@ export function WorkflowCanvas() {
         throw new Error(errorMessage);
       }
 
-      toast({
-        title: 'Workflow executed',
-        description: `Status: ${result?.status || 'completed'}`,
-      });
+      toast.success("Status: ${result?.status || ");
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Execution failed';
-      toast({
-        title: 'Execution failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error("Execution failed");
     }
   };
 
@@ -356,19 +332,12 @@ export function WorkflowCanvas() {
 
       setSelectedWorkflow(updatedWorkflow);
 
-      toast({
-        title: 'Visual workflow updated',
-        description: 'Click Save to persist changes to database',
-      });
+      toast.success("Click Save to persist changes to database");
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Update failed';
-      toast({
-        title: 'Update failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error("Update failed");
     }
-  }, [selectedWorkflow, toast]);
+  }, [selectedWorkflow]);
 
   const handleNodeDragStart = (event: React.DragEvent, nodeType: string, config: Record<string, unknown>) => {
     event.dataTransfer.setData('application/reactflow', JSON.stringify({ 

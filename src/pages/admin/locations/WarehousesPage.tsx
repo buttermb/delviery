@@ -23,7 +23,7 @@ import { Plus, Warehouse, Package, AlertTriangle, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 
 type ColumnDef<T> = {
@@ -44,7 +44,6 @@ export default function WarehousesPage() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -191,28 +190,20 @@ export default function WarehousesPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: `Warehouse "${formData.name}" added successfully` });
+      toast.success("Warehouse ");
       setIsDialogOpen(false);
       setFormData({ name: '', address: '' });
       queryClient.invalidateQueries({ queryKey: queryKeys.warehouses.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
     },
     onError: (error: unknown) => {
-      toast({
-        title: 'Failed to add warehouse',
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
-        variant: 'destructive'
-      });
+      toast.error("Failed to add warehouse");
     }
   });
 
   const handleSave = () => {
     if (!formData.name.trim()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please enter a warehouse name',
-        variant: 'destructive'
-      });
+      toast.error("Please enter a warehouse name");
       return;
     }
 

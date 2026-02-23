@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Key, Plus, Copy, Loader2 } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { humanizeError } from '@/lib/humanizeError';
@@ -19,7 +19,6 @@ export default function ApiAccess() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -58,22 +57,18 @@ export default function ApiAccess() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['api-keys', tenantId] });
-      toast({ title: 'API key created', description: 'New API key has been generated.' });
+      toast.success("New API key has been generated.");
       setFormData({ name: '', permissions: [] });
       setIsDialogOpen(false);
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: humanizeError(error, 'Failed to create API key'),
-        variant: 'destructive',
-      });
+      toast.error("Error");
     },
   });
 
   const handleCopy = (key: string) => {
     navigator.clipboard.writeText(key);
-    toast({ title: 'Copied', description: 'API key copied to clipboard' });
+    toast.success("API key copied to clipboard");
   };
 
   if (isLoading) {

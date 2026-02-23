@@ -8,7 +8,7 @@ import { SaveButton } from '@/components/ui/SaveButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
@@ -17,7 +17,6 @@ export default function WhiteLabel() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [formData, setFormData] = useState({
     brand_name: '',
     logo_url: '',
@@ -90,7 +89,7 @@ export default function WhiteLabel() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['white-label', tenantId] });
       queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
-      toast({ title: 'Branding updated', description: 'White label settings have been saved.' });
+      toast.success("White label settings have been saved.");
     },
     onError: (error) => {
       handleError(error, {
@@ -176,7 +175,7 @@ export default function WhiteLabel() {
                         .getPublicUrl(filePath);
 
                       setFormData({ ...formData, logo_url: data.publicUrl });
-                      toast({ title: "Success", description: "Logo uploaded successfully" });
+                      toast.success("Logo uploaded successfully");
                     } catch (error) {
                       handleError(error, {
                         component: 'WhiteLabel.uploadLogo',

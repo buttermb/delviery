@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import {
   Plus,
@@ -46,7 +46,6 @@ export default function BatchesPage() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { execute: executeCreditAction } = useCreditGatedAction();
 
@@ -140,7 +139,7 @@ export default function BatchesPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Batch created successfully!' });
+      toast.success("Batch created successfully!");
       queryClient.invalidateQueries({ queryKey: queryKeys.batches.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
       setCreateDialogOpen(false);
@@ -156,11 +155,7 @@ export default function BatchesPage() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to create batch', error, { component: 'BatchesPage' });
-      toast({
-        title: 'Failed to create batch',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive'
-      });
+      toast.error("Failed to create batch");
     }
   });
 

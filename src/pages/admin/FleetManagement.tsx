@@ -11,7 +11,7 @@ import { AssignDeliveryToRunnerDialog } from "@/components/admin/AssignDeliveryT
 import { LiveDeliveryMap } from "@/components/admin/LiveDeliveryMap";
 import { RouteOptimizationPreview } from "@/components/admin/RouteOptimizationPreview";
 import { AddRunnerDialog } from "@/components/admin/AddRunnerDialog";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 import { queryKeys } from "@/lib/queryKeys";
@@ -151,10 +151,7 @@ export default function FleetManagement() {
   };
 
   const handleApplyRoute = () => {
-    toast({
-      title: "Success",
-      description: "Route applied successfully! Runner has been notified.",
-    });
+    toast.success("Route applied successfully! Runner has been notified.");
   };
 
   return (

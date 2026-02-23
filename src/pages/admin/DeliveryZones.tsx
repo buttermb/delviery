@@ -15,7 +15,7 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 
 import { useTenantContext } from '@/hooks/useTenantContext';
 import { useDeliveryZones } from '@/hooks/useDeliveryZones';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { formatCurrency } from '@/lib/formatters';
 import { SEOHead } from '@/components/SEOHead';
@@ -99,7 +99,6 @@ const DEFAULT_ZOOM = 4;
 
 export default function DeliveryZones() {
   const { tenantId, hasPermission, isReady } = useTenantContext();
-  const { toast } = useToast();
   const {
     zones,
     isLoading,
@@ -346,10 +345,10 @@ export default function DeliveryZones() {
 
       if (isEditMode && selectedZone) {
         await updateZone({ zoneId: selectedZone.id, formData });
-        toast({ title: 'Zone updated', description: `"${values.name}" has been updated.` });
+        toast.success("Zone updated");
       } else {
         await createZone(formData);
-        toast({ title: 'Zone created', description: `"${values.name}" has been created.` });
+        toast.success("Zone created");
       }
 
       // Clear drawn items and reset form
@@ -359,11 +358,7 @@ export default function DeliveryZones() {
       setSelectedZone(null);
     } catch (error) {
       logger.error('Failed to save zone', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save zone. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error("Failed to save zone. Please try again.");
     }
   };
 
@@ -396,17 +391,13 @@ export default function DeliveryZones() {
 
     try {
       await deleteZone(zoneToDelete.id);
-      toast({ title: 'Zone deleted', description: `"${zoneToDelete.name}" has been deleted.` });
+      toast.success("Zone deleted");
       setDeleteDialogOpen(false);
       setZoneToDelete(null);
       setSelectedZone(null);
     } catch (error) {
       logger.error('Failed to delete zone', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete zone. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error("Failed to delete zone. Please try again.");
     }
   };
 
@@ -414,17 +405,10 @@ export default function DeliveryZones() {
   const handleToggleZone = async (zone: DeliveryZone) => {
     try {
       await toggleZone({ zoneId: zone.id, isActive: !zone.is_active });
-      toast({
-        title: zone.is_active ? 'Zone deactivated' : 'Zone activated',
-        description: `"${zone.name}" is now ${zone.is_active ? 'inactive' : 'active'}.`,
-      });
+      toast.success(zone.is_active ? 'Zone deactivated' : 'Zone activated');
     } catch (error) {
       logger.error('Failed to toggle zone', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update zone status.',
-        variant: 'destructive',
-      });
+      toast.error("Failed to update zone status.");
     }
   };
 
