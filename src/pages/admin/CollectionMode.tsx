@@ -309,6 +309,8 @@ interface ClientCardProps {
   onEmail: () => void;
   onRecordPayment: () => void;
   onAddNote: () => void;
+  isActivityPending: boolean;
+  isPaymentPending: boolean;
 }
 
 function ClientCard({
@@ -319,7 +321,9 @@ function ClientCard({
   onText,
   onEmail,
   onRecordPayment,
-  onAddNote
+  onAddNote,
+  isActivityPending,
+  isPaymentPending
 }: ClientCardProps) {
   const { data: activities, isLoading: activitiesLoading } = useClientActivities(isExpanded ? client.id : null);
 
@@ -402,6 +406,7 @@ function ClientCard({
             variant="ghost"
             className="h-8 px-2 text-xs hover:bg-emerald-500/20 hover:text-emerald-400"
             onClick={onCall}
+            disabled={isActivityPending}
           >
             <Phone className="h-3.5 w-3.5 mr-1" />
             Call
@@ -411,6 +416,7 @@ function ClientCard({
             variant="ghost"
             className="h-8 px-2 text-xs hover:bg-blue-500/20 hover:text-blue-400"
             onClick={onText}
+            disabled={isActivityPending}
           >
             <MessageSquare className="h-3.5 w-3.5 mr-1" />
             Text
@@ -420,6 +426,7 @@ function ClientCard({
             variant="ghost"
             className="h-8 px-2 text-xs hover:bg-amber-500/20 hover:text-amber-400"
             onClick={onEmail}
+            disabled={isActivityPending}
           >
             <Mail className="h-3.5 w-3.5 mr-1" />
             Email
@@ -429,6 +436,7 @@ function ClientCard({
             variant="default"
             className="h-8 px-2 text-xs bg-emerald-600 hover:bg-emerald-700"
             onClick={onRecordPayment}
+            disabled={isPaymentPending}
           >
             <DollarSign className="h-3.5 w-3.5 mr-1" />
             Record Payment
@@ -980,6 +988,8 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
               onEmail={() => handleEmail(client)}
               onRecordPayment={() => setPaymentDialogClient(client)}
               onAddNote={() => setNoteDialogClient(client)}
+              isActivityPending={logActivity.isPending}
+              isPaymentPending={recordPayment.isPending}
             />
           )}
           emptyState={{

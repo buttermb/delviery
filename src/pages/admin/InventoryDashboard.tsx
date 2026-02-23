@@ -663,6 +663,7 @@ export default function InventoryDashboard() {
                         <Button
                           size="sm"
                           onClick={() => reorderMutation.mutate(product.id)}
+                          disabled={reorderMutation.isPending}
                           className="ml-4 shrink-0"
                         >
                           <ShoppingCart className="h-4 w-4 mr-2" />

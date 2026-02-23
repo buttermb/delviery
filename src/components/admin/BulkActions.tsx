@@ -113,11 +113,11 @@ export function BulkActions({
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={handleSetActive} variant="outline" size="sm">
+          <Button onClick={handleSetActive} variant="outline" size="sm" disabled={bulkUpdate.isPending}>
             <ToggleRight className="mr-2 h-4 w-4" />
             Set Active
           </Button>
-          <Button onClick={handleSetInactive} variant="outline" size="sm">
+          <Button onClick={handleSetInactive} variant="outline" size="sm" disabled={bulkUpdate.isPending}>
             <ToggleLeft className="mr-2 h-4 w-4" />
             Set Inactive
           </Button>
@@ -125,6 +125,7 @@ export function BulkActions({
             onClick={handleBulkDelete}
             variant="destructive"
             size="sm"
+            disabled={bulkDelete.isPending}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
