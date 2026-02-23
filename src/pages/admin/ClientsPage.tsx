@@ -16,6 +16,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 
 interface Client {
     id: string;
@@ -41,7 +42,7 @@ export default function ClientsPage() {
 
     // Filter state — persisted in URL for back-button & navigation support
     const [filters, setFilters] = useUrlFilters<ClientFilters>(CLIENTS_FILTER_CONFIG);
-    const searchTerm = filters.q;
+    const searchTerm = sanitizeSearchInput(filters.q);
     const statusFilter = (filters.status || 'active') as 'active' | 'archived';
 
     const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
