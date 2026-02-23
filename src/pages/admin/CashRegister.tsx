@@ -917,12 +917,12 @@ function CashRegisterContent() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Header skeleton */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div className="space-y-2">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-4 w-64" />
+            <Skeleton className="h-6 sm:h-8 w-40 sm:w-48" />
+            <Skeleton className="h-4 w-52 sm:w-64" />
           </div>
         </div>
         {/* Quick Add skeleton */}
@@ -973,7 +973,7 @@ function CashRegisterContent() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Offline Alert */}
       {!isOnline && (
         <Alert variant="destructive">
@@ -986,16 +986,16 @@ function CashRegisterContent() {
         </Alert>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <CreditCard className="h-8 w-8 text-primary" />
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2">
+            <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             Cash Register
-            {!isOnline && <WifiOff className="h-5 w-5 text-destructive" />}
+            {!isOnline && <WifiOff className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />}
           </h1>
-          <p className="text-muted-foreground">Point of sale transaction management</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Point of sale transaction management</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {activeShift && (
             <Badge variant="secondary" className="flex items-center gap-1.5 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
@@ -1007,22 +1007,22 @@ function CashRegisterContent() {
             size="sm"
             onClick={() => setRefundDialogOpen(true)}
             disabled={processPayment.isPending}
-            className="md:min-h-[44px] md:px-4"
+            className="min-h-[44px] px-3 sm:px-4"
           >
-            <RotateCcw className="h-4 w-4 mr-1" />
-            Refund/Return
-            <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden sm:inline">F4</kbd>
+            <RotateCcw className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Refund/Return</span>
+            <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden md:inline">F4</kbd>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setKeyboardHelpOpen(true)}
-            className="text-xs md:min-h-[44px] md:px-4"
+            className="text-xs min-h-[44px] px-3 sm:px-4"
           >
-            <Keyboard className="h-4 w-4 mr-1" />
-            Shortcuts
+            <Keyboard className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Shortcuts</span>
           </Button>
-          <span className="text-sm text-muted-foreground hidden sm:inline">
+          <span className="text-sm text-muted-foreground hidden md:inline">
             Press <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">?</kbd> for help
           </span>
         </div>
@@ -1049,7 +1049,7 @@ function CashRegisterContent() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6 gap-1.5 sm:gap-2">
               {topProducts.map((product) => {
                 const outOfStock = (product.stock_quantity ?? 0) <= 0;
                 return (
@@ -1058,7 +1058,7 @@ function CashRegisterContent() {
                       variant="outline"
                       onClick={() => addToCart(product)}
                       disabled={outOfStock || isAddingToCart === product.id}
-                      className="h-auto py-3 px-2 flex flex-col items-center gap-1 hover:border-primary hover:bg-primary/5 relative min-h-[44px] md:min-h-[56px] md:py-4 md:px-3"
+                      className="h-auto py-2 px-1.5 sm:py-3 sm:px-2 flex flex-col items-center gap-1 hover:border-primary hover:bg-primary/5 relative min-h-[44px] md:min-h-[56px] md:py-4 md:px-3"
                     >
                       {isAddingToCart === product.id ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
@@ -1093,12 +1093,12 @@ function CashRegisterContent() {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center justify-between text-base sm:text-lg">
               <span className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
+                <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
                 Current Transaction
               </span>
               {cart.length > 0 && (
@@ -1107,7 +1107,7 @@ function CashRegisterContent() {
                   size="sm"
                   onClick={handleClearCart}
                   disabled={processPayment.isPending}
-                  className="text-destructive hover:text-destructive md:min-h-[44px]"
+                  className="text-destructive hover:text-destructive min-h-[44px]"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Clear
@@ -1116,7 +1116,7 @@ function CashRegisterContent() {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
             {/* Customer Selection */}
             <div className="space-y-2">
               <POSCustomerSelector
@@ -1153,31 +1153,31 @@ function CashRegisterContent() {
               <div className="space-y-2 max-h-48 md:max-h-64 lg:max-h-80 overflow-auto">
                 <div className="text-sm font-medium">Items ({cart.reduce((sum, item) => sum + item.quantity, 0)})</div>
                 {cart.map((item) => (
-                  <div key={item.id} className="flex items-center gap-2 p-2 border rounded">
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{item.name}</div>
+                  <div key={item.id} className="flex items-center gap-1.5 sm:gap-2 p-2 border rounded">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm truncate">{item.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {formatCurrency(item.price)} × {item.quantity}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                       <DisabledTooltip disabled={item.quantity <= 1} reason="Minimum quantity is 1">
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-10 w-10 lg:h-11 lg:w-11"
+                          className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11"
                           onClick={() => updateQuantity(item.id, -1)}
                           disabled={item.quantity <= 1}
                         >
                           <Minus className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>
                       </DisabledTooltip>
-                      <span className="w-8 text-center text-sm md:text-base">{item.quantity}</span>
+                      <span className="w-6 sm:w-8 text-center text-sm md:text-base">{item.quantity}</span>
                       <DisabledTooltip disabled={item.quantity >= item.stock_quantity} reason="Maximum stock reached">
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-10 w-10 lg:h-11 lg:w-11"
+                          className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11"
                           onClick={() => updateQuantity(item.id, 1)}
                           disabled={item.quantity >= item.stock_quantity}
                         >
@@ -1187,13 +1187,13 @@ function CashRegisterContent() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-10 w-10 lg:h-11 lg:w-11"
+                        className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11"
                         onClick={() => removeFromCart(item.id)}
                       >
                         <Trash2 className="h-3 w-3 md:h-4 md:w-4 text-destructive" />
                       </Button>
                     </div>
-                    <span className="font-bold text-sm w-16 text-right">{formatCurrency(item.subtotal)}</span>
+                    <span className="font-bold text-xs sm:text-sm w-14 sm:w-16 text-right shrink-0">{formatCurrency(item.subtotal)}</span>
                   </div>
                 ))}
               </div>
@@ -1251,7 +1251,7 @@ function CashRegisterContent() {
                 size="sm"
                 onClick={() => setDiscountDialogOpen(true)}
                 disabled={processPayment.isPending}
-                className="w-full md:min-h-[44px]"
+                className="w-full min-h-[44px]"
               >
                 <Percent className="h-4 w-4 mr-2" />
                 {discountAmount > 0 ? 'Edit Discount' : 'Add Discount'}
@@ -1278,18 +1278,18 @@ function CashRegisterContent() {
             {/* Actions */}
             <div className="flex gap-2">
               <Button
-                className="flex-1 md:min-h-[44px]"
+                className="flex-1 min-h-[44px]"
                 variant="outline"
                 onClick={() => setProductDialogOpen(true)}
                 disabled={processPayment.isPending}
               >
-                <ShoppingCart className="h-4 w-4 mr-2" />
+                <ShoppingCart className="h-4 w-4 mr-1 sm:mr-2" />
                 Add Item
-                <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden sm:inline">F3</kbd>
+                <kbd className="ml-1.5 px-1 py-0.5 bg-muted rounded text-[10px] font-mono hidden md:inline">F3</kbd>
               </Button>
               <DisabledTooltip disabled={cart.length === 0 && !processPayment.isPending} reason="Add items to cart before processing payment">
                 <Button
-                  className="flex-1 md:min-h-[44px]"
+                  className="flex-1 min-h-[44px]"
                   variant="default"
                   onClick={async () => {
                     await executeCreditAction('pos_process_sale', async () => {
@@ -1307,7 +1307,7 @@ function CashRegisterContent() {
                     <>
                       <DollarSign className="h-4 w-4 mr-2" />
                       {!isOnline ? 'Queue Payment' : 'Pay'}
-                      <span className="ml-1.5 hidden sm:inline text-[10px] font-mono opacity-75">F8 Cash · F9 Card</span>
+                      <span className="ml-1.5 hidden md:inline text-[10px] font-mono opacity-75">F8 Cash · F9 Card</span>
                     </>
                   )}
                 </Button>
@@ -1323,17 +1323,17 @@ function CashRegisterContent() {
           </CardHeader>
           <CardContent>
             {transactions && transactions.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {(transactions as POSTransaction[]).map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-4 lg:p-5 border rounded-lg">
-                    <div>
-                      <div className="font-medium">Transaction #{transaction.id.slice(0, 8)}</div>
-                      <div className="text-sm text-muted-foreground">
+                  <div key={transaction.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-3 sm:p-4 lg:p-5 border rounded-lg">
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm sm:text-base truncate">Transaction #{transaction.id.slice(0, 8)}</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">
                         {formatSmartDate(transaction.created_at, { includeTime: true })}
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-lg font-bold">{formatCurrency(transaction.total_amount)}</div>
+                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                      <div className="text-base sm:text-lg font-bold">{formatCurrency(transaction.total_amount)}</div>
                       <Badge variant={transaction.payment_status === 'completed' ? 'default' : 'secondary'}>
                         {transaction.payment_status}
                       </Badge>
@@ -1379,13 +1379,13 @@ function CashRegisterContent() {
 
       {/* Product Selection Dialog */}
       <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Select Product</DialogTitle>
             <DialogDescription>Search by name, SKU, or barcode</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -1399,7 +1399,7 @@ function CashRegisterContent() {
               </div>
               {categories.length > 0 && (
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-full sm:w-40">
                     <Tag className="h-4 w-4 mr-2" />
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
@@ -1412,7 +1412,7 @@ function CashRegisterContent() {
                 </Select>
               )}
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
               {filteredProducts.length === 0 ? (
                 <div className="col-span-2 text-center py-8">
                   <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
