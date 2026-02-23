@@ -300,7 +300,7 @@ export default function CustomerDetails() {
 
   // Customer Lifetime Value: compute from orders for accuracy
   const totalOrdersCount = orders.length;
-  const totalSpentFromOrders: number = orders.reduce((sum: number, o) => sum + (Number((o as Record<string, unknown>).total_amount) || 0), 0);
+  const totalSpentFromOrders: number = orders.reduce<number>((sum, o) => sum + (Number((o as Record<string, unknown>).total_amount) || 0), 0);
   const computedTotalSpent: number = totalSpentFromOrders > 0 ? totalSpentFromOrders : Number(customer?.total_spent || 0);
   const averageOrderValue: number = totalOrdersCount > 0 ? computedTotalSpent / totalOrdersCount : 0;
 

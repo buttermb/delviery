@@ -1686,7 +1686,7 @@ export function OrderDetailsPage() {
                 customerNotesField="delivery_notes"
                 additionalFilter={{ field: 'tenant_id', value: tenant?.id || '' }}
                 queryKeysToInvalidate={[
-                  queryKeys.orders.detail(tenant?.id || '', orderId || ''),
+                  [...queryKeys.orders.detail(tenant?.id || '', orderId || '')],
                 ]}
                 readOnly={isCancelled}
               />

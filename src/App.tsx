@@ -28,8 +28,7 @@ import { TenantAdminAuthProvider } from "./contexts/TenantAdminAuthContext";
 import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
 import { EncryptionProvider } from "./contexts/EncryptionContext";
 import { CreditProvider } from "./contexts/CreditContext";
-import { lazy, Suspense, useEffect } from "react";
-import { lazyWithRetry } from "@/utils/lazyWithRetry";
+import { Suspense, useEffect } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { SkipToContent } from "./components/SkipToContent";
 import { LoadingFallback } from "./components/LoadingFallback";
@@ -85,346 +84,92 @@ function SuspenseProgressFallback() {
   return <LoadingFallback />;
 }
 
-// Eager load critical pages
-import NotFoundPage from "./pages/NotFoundPage";
-const AdminNotFoundPage = lazy(() => import("./pages/admin/AdminNotFoundPage"));
-const ButtonMonitorPage = lazy(() => import("./pages/debug/ButtonMonitorPage"));
-
-// Marketing & Public Pages
-const MarketingHome = lazy(() => import("./pages/MarketingHome"));
-const PricingPage = lazy(() => import("./pages/PricingPage"));
-const Contact = lazy(() => import("./pages/Contact"));
-const Features = lazy(() => import("./pages/Features"));
-const FAQPage = lazy(() => import("./pages/FAQPage"));
-const SupportPage = lazy(() => import("./pages/SupportPage"));
-const TermsPage = lazy(() => import("./pages/TermsPage"));
-const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
-const About = lazy(() => import("./pages/About"));
-const InteractiveDemoPage = lazy(() => import("./pages/InteractiveDemoPage"));
-const DemoRequest = lazy(() => import("./pages/DemoRequest"));
-const DemoConfirmation = lazy(() => import("./pages/DemoConfirmation"));
-const IntegrationsPage = lazy(() => import("./pages/IntegrationsPage"));
-const DocsPage = lazy(() => import("./pages/DocsPage"));
-const GettingStartedPage = lazy(() => import("./pages/docs/GettingStartedPage"));
-const ApiReferencePage = lazy(() => import("./pages/docs/ApiReferencePage"));
-const AuthenticationPage = lazy(() => import("./pages/docs/AuthenticationPage"));
-const SecurityDocsPage = lazy(() => import("./pages/docs/SecurityPage"));
-const StatusPage = lazy(() => import("./pages/StatusPage"));
-const Careers = lazy(() => import("./pages/Careers"));
-const Press = lazy(() => import("./pages/Press"));
-const Blog = lazy(() => import("./pages/Blog"));
-const Security = lazy(() => import("./pages/Security"));
-const Cookie = lazy(() => import("./pages/Cookie"));
-const LoginDirectory = lazy(() => import("./pages/LoginDirectory"));
-const PublicMarketplacePage = lazy(() => import("./pages/marketplace/PublicMarketplacePage"));
-const PublicListingDetailPage = lazy(() => import("./pages/marketplace/PublicListingDetailPage"));
-const ClientPortalPage = lazy(() => import("./pages/customer/ClientPortalPage"));
-
-// Three-Tier Auth System Pages
-const SuperAdminLoginPage = lazy(() => import("./pages/super-admin/LoginPage"));
-const SuperAdminDashboardPage = lazy(() => import("./pages/super-admin/DashboardPage"));
-const SuperAdminTenantsListPage = lazy(() => import("./pages/super-admin/TenantsListPage"));
-const SuperAdminCreateTenantPage = lazy(() => import("./pages/super-admin/CreateTenantPage"));
-const SuperAdminTenantDetailPage = lazy(() => import("./pages/super-admin/TenantDetailPage"));
-const SuperAdminSettingsPage = lazy(() => import("./pages/super-admin/SettingsPage"));
-const SuperAdminMonitoringPage = lazy(() => import("./pages/super-admin/MonitoringPage"));
-const SuperAdminAnalyticsPage = lazy(() => import("./pages/super-admin/AnalyticsPage"));
-const SuperAdminDataExplorerPage = lazy(() => import("./pages/super-admin/DataExplorerPage"));
-const SuperAdminAPIUsagePage = lazy(() => import("./pages/super-admin/APIUsagePage"));
-const SuperAdminAuditLogsPage = lazy(() => import("./pages/super-admin/AuditLogsPage"));
-const SuperAdminRevenueAnalyticsPage = lazy(() => import("./pages/super-admin/RevenueAnalyticsPage"));
-const SuperAdminReportBuilderPage = lazy(() => import("./pages/super-admin/ReportBuilderPage"));
-const SuperAdminExecutiveDashboardPage = lazy(() => import("./pages/super-admin/ExecutiveDashboardPage"));
-const SuperAdminWorkflowsPage = lazy(() => import("./pages/super-admin/WorkflowsPage"));
-const SuperAdminCommunicationPage = lazy(() => import("./pages/super-admin/CommunicationPage"));
-const SuperAdminFeatureFlagsPage = lazy(() => import("./pages/super-admin/FeatureFlagsPage"));
-const SuperAdminSystemConfigPage = lazy(() => import("./pages/super-admin/SystemConfigPage"));
-const SuperAdminSecurityPage = lazy(() => import("./pages/super-admin/SecurityPage"));
-const ForumApprovalsPage = lazy(() => import("./pages/super-admin/ForumApprovalsPage"));
-const AdminUsersPage = lazy(() => import("./pages/super-admin/AdminUsersPage"));
-const SuperAdminToolsPage = lazy(() => import("./pages/super-admin/ToolsPage"));
-const MarketplaceModerationPage = lazy(() => import("./pages/super-admin/MarketplaceModerationPage"));
-
-// Super Admin Credit Management Pages
-const SuperAdminCreditsOverviewPage = lazy(() => import("./pages/super-admin/CreditsOverviewPage"));
-const SuperAdminTenantCreditsPage = lazy(() => import("./pages/super-admin/TenantCreditsPage"));
-const SuperAdminCreditAuditLogPage = lazy(() => import("./pages/super-admin/CreditAuditLogPage"));
-const SuperAdminPromoCodeManagementPage = lazy(() => import("./pages/super-admin/PromoCodeManagementPage"));
-const SuperAdminCreditPackagesPage = lazy(() => import("./pages/super-admin/CreditPackagesPage"));
-const SuperAdminCreditAnalyticsPage = lazy(() => import("./pages/super-admin/CreditAnalyticsPage"));
-const SuperAdminReferralManagementPage = lazy(() => import("./pages/super-admin/ReferralManagementPage"));
-const SuperAdminProtectedRouteNew = lazy(() => import("./components/auth/SuperAdminProtectedRoute").then(m => ({ default: m.SuperAdminProtectedRoute })));
-const SuperAdminLayout = lazyWithRetry(() => import("./layouts/SuperAdminLayout").then(m => ({ default: m.SuperAdminLayout })));
-const SignUpPage = lazyWithRetry(() => import("./pages/saas/SignUpPage"));
-const SelectPlanPage = lazyWithRetry(() => import("./pages/saas/SelectPlanPage"));
-const SaasLoginPage = lazyWithRetry(() => import("./pages/saas/LoginPage").then(m => ({ default: m.LoginPage })));
-const VerifyEmailPage = lazyWithRetry(() => import("./pages/saas/VerifyEmailPage"));
+// All lazy-loaded page components — extracted to src/routes/lazyImports.ts
+import {
+  NotFoundPage, AdminNotFoundPage, ButtonMonitorPage,
+  MarketingHome, PricingPage, Contact, Features, FAQPage, SupportPage,
+  TermsPage, PrivacyPage, About, InteractiveDemoPage, DemoRequest, DemoConfirmation,
+  IntegrationsPage, DocsPage, GettingStartedPage, ApiReferencePage, AuthenticationPage,
+  SecurityDocsPage, StatusPage, Careers, Press, Blog, Security, Cookie, LoginDirectory,
+  PublicMarketplacePage, PublicListingDetailPage, ClientPortalPage,
+  SuperAdminLoginPage, SuperAdminDashboardPage, SuperAdminTenantsListPage,
+  SuperAdminCreateTenantPage, SuperAdminTenantDetailPage, SuperAdminSettingsPage,
+  SuperAdminMonitoringPage, SuperAdminAnalyticsPage, SuperAdminDataExplorerPage,
+  SuperAdminAPIUsagePage, SuperAdminAuditLogsPage, SuperAdminRevenueAnalyticsPage,
+  SuperAdminReportBuilderPage, SuperAdminExecutiveDashboardPage, SuperAdminWorkflowsPage,
+  SuperAdminCommunicationPage, SuperAdminFeatureFlagsPage, SuperAdminSystemConfigPage,
+  SuperAdminSecurityPage, ForumApprovalsPage, AdminUsersPage, SuperAdminToolsPage,
+  MarketplaceModerationPage, SuperAdminCreditsOverviewPage, SuperAdminTenantCreditsPage,
+  SuperAdminCreditAuditLogPage, SuperAdminPromoCodeManagementPage,
+  SuperAdminCreditPackagesPage, SuperAdminCreditAnalyticsPage,
+  SuperAdminReferralManagementPage, SuperAdminProtectedRouteNew, SuperAdminLayout,
+  SignUpPage, SelectPlanPage, SaasLoginPage, VerifyEmailPage,
+  TenantAdminWelcomePage, SetupWizardPage, TenantAdminVerifyEmailPage,
+  PasswordResetPage, SignupSuccessPage, AccountSettingsPage, ChangePasswordPage,
+  TenantAdminLoginPage, TenantAdminProtectedRoute, AdminLayout,
+  TenantAdminDashboardPage, HotboxPage, FinancialCommandCenterPage, CollectionModePage,
+  TenantAdminSelectPlanPage, TrialExpiredPage, HelpPage, HelpHubPage,
+  DisposableMenus, DisposableMenuAnalytics, MenuAnalytics, MenuMigration,
+  ClientDetail, GenerateBarcodes, NewWholesaleOrder, NewPurchaseOrder, OfflineOrderCreate,
+  ReportsPage, BoardReportPage, StrategicDashboardPage, ExpansionAnalysisPage,
+  TeamManagement, FrontedInventory, FrontedInventoryDetails, CustomerInvoices,
+  RunnerLocationTracking, LiveMap, LocationsManagement, AdminLiveChat, AdminNotifications,
+  OrderAnalyticsPage, SalesDashboardPage, CustomerReports, DispatchInventory,
+  FrontedInventoryAnalytics, ClientsPage, ClientDetailPage, InvoicesPage,
+  CreateInvoicePage, InvoiceDetailPage, CreatePreOrderPage, PreOrderDetailPage,
+  ProductDetailsPage, CRMSettingsPage, InvitesPage, InvoicePublicPage,
+  DeliveryTrackingPage, AdvancedReportingPage,
+  VendorLoginPage, VendorDashboardPage, VendorOrderDetailPage, ProtectedVendorRoute,
+  GlobalSearch, RiskFactorManagement, SystemSettings, VendorManagement, VendorDashboard,
+  PurchaseOrders, ImagesPage, BatchesPage, CategoriesPage, ReceivingPage,
+  WarehousesPage, RunnersPage, AdminPricingPage, PricingTiersPage, DeveloperTools,
+  ButtonTester, ReviewsPage, DeliveryZonesPage, AnalyticsPage,
+  AdvancedInvoicePage, LocalAIPage, WorkflowAutomationPage,
+  MarketplaceDashboard, StoreSettings, ProductVisibilityManager, CouponManager,
+  MarketplaceCategoryManager, ProductSyncPage,
+  ShopLayout, ShopStorefrontPage, ShopProductCatalogPage, ShopProductDetailPage,
+  ShopCartPage, ShopCheckoutPage, ShopOrderConfirmationPage, ShopAccountPage,
+  ShopOrderTrackingPage, ShopOrderDetailPage, ShopDealsPage, SinglePageCheckout,
+  EncryptedStorePage, StoreLandingPage, StoreMenuPage, StoreProductPage,
+  RevenueReportsPage, RouteOptimizationPage, DeliveryAnalyticsPage,
+  CashRegisterPage, POSAnalyticsPage, POSShiftsPage, ZReportPage,
+  POSHubPage, OrdersHubPage, OrderDetailsPage, InventoryHubPage, CustomerHubPage,
+  AnalyticsHubPage, SettingsHubPage, FinanceHubPage, StorefrontHubPage,
+  OperationsHubPage, FulfillmentHubPage, DashboardHubPage, SmartTVDashboard,
+  MarketingHubPage, RoleManagement, ActivityLogsPage, LocationAnalyticsPage,
+  BulkOperationsPage, APIAccessPage, WebhooksPage, CustomIntegrationsPage,
+  DataExportPage, AuditTrailPage, CompliancePage, WhiteLabelPage, CustomDomainPage,
+  PrioritySupportPage, CreditPurchaseSuccessPage, CreditPurchaseCancelledPage,
+  CreditAnalyticsPage, CustomerDetails, StockAlertsPage, InventoryTransfersPage,
+  InventoryAuditPage, CustomerAnalyticsPage, AdvancedAnalyticsPage,
+  RealtimeDashboardPage, CustomReportsPage, CommissionTrackingPage,
+  SellerProfilePage, MyListingsPage, ListingForm, ListingDetailPage,
+  MarketplaceOrdersPage, OrderDetailPage, VendorPayoutsPage, MessagesPage,
+  PlatformAdminLayout, AllTenantsPage, DesignSystemPage, PlatformPayoutsPage,
+  CourierLoginPage, CourierDashboardPage, CourierEarningsPage, CourierHistoryPage,
+  CourierActiveOrderPage, UnifiedActiveDeliveryPage, CourierSettingsPage, ProtectedCourierRoute,
+  CustomerLoginPage, CustomerSignUpPage, CustomerVerifyEmailPage,
+  CustomerForgotPasswordPage, CustomerResetPasswordPage, CustomerLoginLanding,
+  CustomerProtectedRoute, CustomerPortal, CustomerDashboardPage, CustomerSettingsPage,
+  ShoppingCartPage, CheckoutPage, OrderTrackingPage, SecureMenuAccess, SecureMenuView,
+  WholesaleMarketplacePage, WholesaleCartPage, WholesaleCheckoutPage,
+  CustomerWholesaleOrdersPage, WholesaleOrderDetailPage,
+  BusinessFinderPage, BusinessMenuPage, UnifiedOrdersPage,
+  CommunityAuthPage, CommunityProtectedRoute, CommunityLayout, CommunityHomePage,
+  CategoryPage, PostDetailPage, CreatePostPage, UserProfilePage, SearchPage, ApprovalPage,
+  InvitationAcceptPage, MenuAccess, ComingSoonPage, MobileTestPage,
+  TenantAdminAuthCallback, SuperAdminAuthCallback, CustomerAuthCallback,
+  MFAChallengePage, AuthConfirmPage, SecureAccountPage,
+  FeatureCompliancePage, FeatureLogisticsPage, FeatureEcommercePage,
+} from "@/routes/lazyImports";
 import { EncodedUrlRedirect } from "./components/EncodedUrlRedirect";
 import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
-const TenantAdminWelcomePage = lazy(() => import("./pages/tenant-admin/WelcomePage"));
-const SetupWizardPage = lazy(() => import("./pages/admin/SetupWizardPage"));
-const TenantAdminVerifyEmailPage = lazy(() => import("./pages/tenant-admin/VerifyEmailPage"));
-const PasswordResetPage = lazy(() => import("./pages/auth/PasswordResetPage").then(m => ({ default: m.PasswordResetPage })));
-const SignupSuccessPage = lazy(() => import("./pages/auth/SignupSuccessPage").then(m => ({ default: m.SignupSuccessPage })));
-const AccountSettingsPage = lazy(() => import("./pages/auth/AccountSettingsPage").then(m => ({ default: m.AccountSettingsPage })));
-const ChangePasswordPage = lazy(() => import("./pages/auth/ChangePasswordPage").then(m => ({ default: m.ChangePasswordPage })));
-
-// Tenant Admin Pages
-const TenantAdminLoginPage = lazy(() => import("./pages/tenant-admin/LoginPage"));
-const TenantAdminProtectedRoute = lazy(() => import("./components/auth/TenantAdminProtectedRoute").then(m => ({ default: m.TenantAdminProtectedRoute })));
-const AdminLayout = lazyWithRetry(() => import("./pages/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
-const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/DashboardPage"));
-const HotboxPage = lazy(() => import("./pages/admin/HotboxPage"));
-const FinancialCommandCenterPage = lazy(() => import("./pages/admin/FinancialCommandCenter"));
-const CollectionModePage = lazy(() => import("./pages/admin/CollectionMode"));
-// TenantAdminSettingsPage removed — SettingsHubPage serves /settings directly
-const TenantAdminSelectPlanPage = lazy(() => import("./pages/tenant-admin/SelectPlanPage"));
-const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
-const HelpPage = lazy(() => import("./pages/HelpPage"));
-const HelpHubPage = lazy(() => import("./pages/admin/hubs/HelpHubPage"));
-
-// Tenant Admin Feature Pages
-const DisposableMenus = lazy(() => import("./pages/admin/DisposableMenus"));
-const DisposableMenuAnalytics = lazy(() => import("./pages/admin/DisposableMenuAnalytics"));
-const MenuAnalytics = lazy(() => import("./pages/admin/MenuAnalytics"));
-const MenuMigration = lazy(() => import("./pages/admin/MenuMigration").then(m => ({ default: m.MenuMigration })));
-const ClientDetail = lazy(() => import("./pages/admin/ClientDetail"));
-const GenerateBarcodes = lazy(() => import("./pages/admin/GenerateBarcodes"));
-const NewWholesaleOrder = lazy(() => import("./pages/admin/NewWholesaleOrder"));
-const NewPurchaseOrder = lazy(() => import("./pages/admin/NewPurchaseOrder"));
-const OfflineOrderCreate = lazy(() => import("./pages/admin/OfflineOrderCreate"));
-const ReportsPage = lazy(() => import("./pages/admin/ReportsPage"));
-const BoardReportPage = lazy(() => import("./pages/admin/BoardReportPage"));
-const StrategicDashboardPage = lazy(() => import("./pages/admin/StrategicDashboardPage"));
-const ExpansionAnalysisPage = lazy(() => import("./pages/admin/ExpansionAnalysisPage"));
-
-const TeamManagement = lazy(() => import("./pages/admin/TeamManagement"));
-const FrontedInventory = lazy(() => import("./pages/admin/FrontedInventory"));
-const FrontedInventoryDetails = lazy(() => import("./pages/admin/FrontedInventoryDetails"));
-const CustomerInvoices = lazy(() => import("./pages/admin/CustomerInvoices"));
-const RunnerLocationTracking = lazy(() => import("./pages/admin/RunnerLocationTracking"));
-const LiveMap = lazy(() => import("./pages/admin/LiveMap"));
-const LocationsManagement = lazy(() => import("./pages/admin/LocationsManagement"));
-
-const AdminLiveChat = lazy(() => import("./pages/admin/AdminLiveChat"));
-const AdminNotifications = lazy(() => import("./pages/admin/AdminNotifications"));
-const OrderAnalyticsPage = lazy(() => import("./pages/tenant-admin/OrderAnalyticsPage"));
-const SalesDashboardPage = lazy(() => import("./pages/tenant-admin/SalesDashboardPage"));
-const CustomerReports = lazy(() => import("./pages/admin/CustomerReports"));
-const DispatchInventory = lazy(() => import("./pages/admin/DispatchInventory"));
-const FrontedInventoryAnalytics = lazy(() => import("./pages/admin/FrontedInventoryAnalytics"));
-const ClientsPage = lazy(() => import("./pages/admin/ClientsPage"));
-const ClientDetailPage = lazy(() => import("./pages/admin/ClientDetailPage"));
-const InvoicesPage = lazy(() => import("./pages/admin/InvoicesPage").then(m => ({ default: m.InvoicesPage })));
-const CreateInvoicePage = lazy(() => import("./pages/admin/CreateInvoicePage"));
-const InvoiceDetailPage = lazy(() => import("./pages/admin/InvoiceDetailPage"));
-const CreatePreOrderPage = lazy(() => import("./pages/admin/CreatePreOrderPage"));
-const PreOrderDetailPage = lazy(() => import("./pages/admin/PreOrderDetailPage"));
-const ProductDetailsPage = lazy(() => import("./pages/admin/ProductDetailsPage"));
-const CRMSettingsPage = lazy(() => import("./pages/admin/CRMSettingsPage"));
-const InvitesPage = lazy(() => import("./pages/admin/InvitesPage"));
-const InvoicePublicPage = lazy(() => import("./pages/portal/InvoicePublicPage"));
-const DeliveryTrackingPage = lazy(() => import("./pages/portal/DeliveryTrackingPage"));
-const AdvancedReportingPage = lazy(() => import("./pages/admin/AdvancedReportingPage"));
-const VendorLoginPage = lazy(() => import("./pages/vendor/VendorLoginPage").then(m => ({ default: m.VendorLoginPage })));
-const VendorDashboardPage = lazy(() => import("./pages/vendor/VendorDashboardPage"));
-const VendorOrderDetailPage = lazy(() => import("./pages/vendor/VendorOrderDetailPage").then(m => ({ default: m.VendorOrderDetailPage })));
-const ProtectedVendorRoute = lazy(() => import("./components/vendor/ProtectedVendorRoute"));
-const GlobalSearch = lazy(() => import("./pages/admin/GlobalSearch"));
-const RiskFactorManagement = lazy(() => import("./pages/admin/RiskFactorManagement"));
-const SystemSettings = lazy(() => import("./pages/admin/SystemSettings"));
-const VendorManagement = lazy(() => import("./pages/admin/VendorManagement").then(m => ({ default: m.VendorManagement })));
-const VendorDashboard = lazy(() => import("./pages/admin/VendorDashboard"));
-const PurchaseOrders = lazy(() => import("./pages/admin/PurchaseOrders"));
-const ImagesPage = lazy(() => import("./pages/admin/catalog/ImagesPage"));
-const BatchesPage = lazy(() => import("./pages/admin/catalog/BatchesPage"));
-const CategoriesPage = lazy(() => import("./pages/admin/catalog/CategoriesPage"));
-const ReceivingPage = lazy(() => import("./pages/admin/operations/ReceivingPage"));
-const WarehousesPage = lazy(() => import("./pages/admin/locations/WarehousesPage"));
-const RunnersPage = lazy(() => import("./pages/admin/locations/RunnersPage"));
-const AdminPricingPage = lazy(() => import("./pages/admin/sales/PricingPage"));
-const PricingTiersPage = lazy(() => import("./pages/admin/wholesale/PricingTiersPage"));
-const DeveloperTools = lazy(() => import("./pages/admin/DeveloperTools"));
-const ButtonTester = lazy(() => import("./pages/admin/ButtonTester"));
-const ReviewsPage = lazy(() => import("./pages/admin/ReviewsPage"));
-const DeliveryZonesPage = lazy(() => import("./pages/admin/DeliveryZones"));
-
-// GitHub Repos Integration Pages
-const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage"));
-
-const AdvancedInvoicePage = lazy(() => import("./pages/admin/AdvancedInvoicePage"));
-const LocalAIPage = lazy(() => import("./pages/admin/LocalAIPage"));
-const WorkflowAutomationPage = lazy(() => import("./pages/admin/WorkflowAutomationPage"));
-
-// Marketplace Admin (B2C)
-const MarketplaceDashboard = lazy(() => import("./pages/admin/marketplace/MarketplaceDashboard"));
-const StoreSettings = lazy(() => import("./pages/admin/marketplace/StoreSettings"));
-const ProductVisibilityManager = lazy(() => import("./pages/admin/marketplace/ProductVisibilityManager"));
-const CouponManager = lazy(() => import("./pages/admin/marketplace/CouponManager"));
-const MarketplaceCategoryManager = lazy(() => import("./pages/admin/marketplace/MarketplaceCategoryManager"));
-const ProductSyncPage = lazy(() => import("./pages/admin/marketplace/ProductSyncPage"));
-
-// Customer-Facing Shop Pages
-const ShopLayout = lazy(() => import("./pages/shop/ShopLayout"));
-const ShopStorefrontPage = lazy(() => import("./pages/shop/StorefrontPage"));
-const ShopProductCatalogPage = lazy(() => import("./pages/shop/ProductCatalogPage").then(m => ({ default: m.ProductCatalogPage })));
-const ShopProductDetailPage = lazy(() => import("./pages/shop/ProductDetailPage").then(m => ({ default: m.ProductDetailPage })));
-const ShopCartPage = lazy(() => import("./pages/shop/CartPage"));
-const ShopCheckoutPage = lazy(() => import("./pages/shop/CheckoutPage"));
-const ShopOrderConfirmationPage = lazy(() => import("./pages/shop/OrderConfirmationPage"));
-const ShopAccountPage = lazy(() => import("./pages/shop/AccountPage"));
-const ShopOrderTrackingPage = lazy(() => import("./pages/shop/OrderTrackingPage"));
-const ShopOrderDetailPage = lazy(() => import("./pages/shop/OrderDetailPage").then(m => ({ default: m.OrderDetailPage })));
-const ShopDealsPage = lazy(() => import("./pages/shop/DealsPage"));
-const SinglePageCheckout = lazy(() => import("./components/shop/SinglePageCheckout"));
-const EncryptedStorePage = lazy(() => import("./pages/shop/EncryptedStorePage"));
-const StoreLandingPage = lazy(() => import("./pages/store/StoreLandingPage"));
-const StoreMenuPage = lazy(() => import("./pages/store/StoreMenuPage"));
-const StoreProductPage = lazy(() => import("./pages/store/StoreProductPage"));
-const RevenueReportsPage = lazy(() => import("./pages/tenant-admin/RevenueReportsPage"));
-const RouteOptimizationPage = lazy(() => import("./pages/tenant-admin/RouteOptimizationPage"));
-const DeliveryAnalyticsPage = lazy(() => import("./pages/tenant-admin/DeliveryAnalyticsPage"));
-const CashRegisterPage = lazy(() => import("./pages/tenant-admin/CashRegisterPage").then(m => ({ default: m.CashRegisterPage })));
-const POSAnalyticsPage = lazy(() => import("./pages/tenant-admin/POSAnalyticsPage"));
-const POSShiftsPage = lazy(() => import("./pages/tenant-admin/POSShiftsPage"));
-const ZReportPage = lazy(() => import("./pages/tenant-admin/ZReportPage"));
-const POSHubPage = lazy(() => import("./pages/admin/hubs/POSHubPage"));
-const OrdersHubPage = lazy(() => import("./pages/admin/hubs/OrdersHubPage"));
-const OrderDetailsPage = lazy(() => import("./pages/admin/OrderDetailsPage"));
-const InventoryHubPage = lazy(() => import("./pages/admin/hubs/InventoryHubPage"));
-const CustomerHubPage = lazy(() => import("./pages/admin/hubs/CustomerHubPage"));
-const AnalyticsHubPage = lazy(() => import("./pages/admin/hubs/AnalyticsHubPage"));
-const SettingsHubPage = lazy(() => import("./pages/admin/hubs/SettingsHubPage"));
-const FinanceHubPage = lazy(() => import("./pages/admin/hubs/FinanceHubPage"));
-const StorefrontHubPage = lazy(() => import("./pages/admin/hubs/StorefrontHubPage"));
-const OperationsHubPage = lazy(() => import("./pages/admin/hubs/OperationsHubPage"));
-const FulfillmentHubPage = lazy(() => import("./pages/admin/hubs/FulfillmentHubPage"));
-const DashboardHubPage = lazy(() => import("./pages/admin/hubs/DashboardHubPage").then(m => ({ default: m.DashboardHubPage })));
-
-// Smart TV Dashboard (Big Screen Operations View)
-const SmartTVDashboard = lazy(() => import("./pages/admin/SmartTVDashboard"));
-
-const MarketingHubPage = lazy(() => import("./pages/admin/hubs/MarketingHubPage"));
-const RoleManagement = lazy(() => import("./pages/admin/RoleManagement"));
-const ActivityLogsPage = lazy(() => import("./pages/tenant-admin/ActivityLogsPage").then(m => ({ default: m.ActivityLogsPage })));
-const LocationAnalyticsPage = lazy(() => import("./pages/tenant-admin/LocationAnalyticsPage"));
-const BulkOperationsPage = lazy(() => import("./pages/tenant-admin/BulkOperationsPage"));
-const APIAccessPage = lazy(() => import("./pages/tenant-admin/APIAccessPage"));
-const WebhooksPage = lazy(() => import("./pages/tenant-admin/WebhooksPage"));
-const CustomIntegrationsPage = lazy(() => import("./pages/tenant-admin/CustomIntegrationsPage"));
-const DataExportPage = lazy(() => import("./pages/tenant-admin/DataExportPage"));
-const AuditTrailPage = lazy(() => import("./pages/tenant-admin/AuditTrailPage"));
-const CompliancePage = lazy(() => import("./pages/tenant-admin/CompliancePage"));
-const WhiteLabelPage = lazy(() => import("./pages/tenant-admin/WhiteLabelPage"));
-const CustomDomainPage = lazy(() => import("./pages/tenant-admin/CustomDomainPage"));
-const PrioritySupportPage = lazy(() => import("./pages/tenant-admin/PrioritySupportPage"));
-const CreditPurchaseSuccessPage = lazy(() => import("./pages/tenant-admin/credits/CreditPurchaseSuccessPage"));
-const CreditPurchaseCancelledPage = lazy(() => import("./pages/tenant-admin/credits/CreditPurchaseCancelledPage"));
-const CreditAnalyticsPage = lazy(() => import("./pages/tenant-admin/credits/CreditAnalyticsPage").then(m => ({ default: m.CreditAnalyticsPage })));
-const CustomerDetails = lazy(() => import("./pages/admin/CustomerDetails"));
-const StockAlertsPage = lazy(() => import("./pages/tenant-admin/StockAlertsPage"));
-const InventoryTransfersPage = lazy(() => import("./pages/tenant-admin/InventoryTransfersPage"));
-const InventoryAuditPage = lazy(() => import("./pages/admin/InventoryAudit"));
-const CustomerAnalyticsPage = lazy(() => import("./pages/tenant-admin/CustomerAnalyticsPage"));
-const AdvancedAnalyticsPage = lazy(() => import("./pages/tenant-admin/AdvancedAnalyticsPage"));
-const RealtimeDashboardPage = lazy(() => import("./pages/tenant-admin/RealtimeDashboardPage"));
-const CustomReportsPage = lazy(() => import("./pages/tenant-admin/CustomReportsPage"));
-const CommissionTrackingPage = lazy(() => import("./pages/tenant-admin/CommissionTrackingPage"));
-
-// Marketplace Pages
-const SellerProfilePage = lazy(() => import("./pages/tenant-admin/marketplace/SellerProfilePage"));
-const MyListingsPage = lazy(() => import("./pages/tenant-admin/marketplace/MyListingsPage"));
-const ListingForm = lazy(() => import("./pages/tenant-admin/marketplace/ListingForm").then(m => ({ default: m.ListingForm })));
-const ListingDetailPage = lazy(() => import("./pages/tenant-admin/marketplace/ListingDetailPage"));
-const MarketplaceOrdersPage = lazy(() => import("./pages/admin/marketplace/OrdersPage"));
-const OrderDetailPage = lazy(() => import("./pages/admin/marketplace/OrderDetailPage"));
-const VendorPayoutsPage = lazy(() => import('@/pages/tenant-admin/marketplace/VendorPayoutsPage'));
-const MessagesPage = lazy(() => import("./pages/tenant-admin/marketplace/MessagesPage"));
-
-// Platform Admin Routes
-const PlatformAdminLayout = lazy(() => import('@/layouts/PlatformAdminLayout'));
-const AllTenantsPage = lazy(() => import('@/pages/platform-admin/AllTenantsPage'));
-const DesignSystemPage = lazy(() => import('@/pages/platform-admin/DesignSystemPage'));
-
-// Courier Pages
-const CourierLoginPage = lazy(() => import("./pages/courier/LoginPage"));
-const CourierDashboardPage = lazy(() => import("./pages/courier/DashboardPage"));
-const CourierEarningsPage = lazy(() => import("./pages/courier/EarningsPage"));
-const CourierHistoryPage = lazy(() => import("./pages/courier/HistoryPage"));
-const CourierActiveOrderPage = lazy(() => import("./pages/courier/ActiveOrderPage"));
-const UnifiedActiveDeliveryPage = lazy(() => import("./pages/courier/UnifiedActiveDeliveryPage"));
-const CourierSettingsPage = lazy(() => import("./pages/courier/SettingsPage"));
-const ProtectedCourierRoute = lazy(() => import("./components/ProtectedCourierRoute").then(m => ({ default: m.default })));
-
-// Customer Pages
-const CustomerLoginPage = lazy(() => import("./pages/customer/LoginPage"));
-const CustomerSignUpPage = lazy(() => import("./pages/customer/SignUpPage"));
-const CustomerVerifyEmailPage = lazy(() => import("./pages/customer/VerifyEmailPage"));
-const CustomerForgotPasswordPage = lazy(() => import("./pages/customer/ForgotPasswordPage"));
-const CustomerResetPasswordPage = lazy(() => import("./pages/customer/ResetPasswordPage"));
-const CustomerLoginLanding = lazy(() => import("./pages/customer/CustomerLoginLanding"));
-
-// Community Pages
-const CommunityAuthPage = lazy(() => import("./pages/community/AuthPage").then(m => ({ default: m.AuthPage })));
-
-const PlatformPayoutsPage = lazy(() => import("@/pages/platform-admin/PlatformPayoutsPage"));
-
-// Invitation Pages
-const InvitationAcceptPage = lazy(() => import("./pages/InvitationAcceptPage"));
-const CustomerProtectedRoute = lazy(() => import("./components/auth/CustomerProtectedRoute").then(m => ({ default: m.CustomerProtectedRoute })));
-const CommunityProtectedRoute = lazy(() => import("./components/auth/CommunityProtectedRoute").then(m => ({ default: m.CommunityProtectedRoute })));
-const CustomerPortal = lazy(() => import("./pages/customer/CustomerPortal"));
-const CustomerDashboardPage = lazy(() => import("./pages/customer/DashboardPage"));
-const CustomerSettingsPage = lazy(() => import("./pages/customer/SettingsPage"));
-const ShoppingCartPage = lazy(() => import("./pages/customer/ShoppingCartPage"));
-const CheckoutPage = lazy(() => import("./pages/customer/CheckoutPage"));
-const OrderTrackingPage = lazy(() => import("./pages/customer/OrderTrackingPage"));
-// const OrdersListPage = lazy(() => import("./pages/customer/OrdersListPage")); // Available for future use
-const SecureMenuAccess = lazy(() => import("./pages/customer/SecureMenuAccess").then(m => ({ default: m.SecureMenuAccess })));
-const SecureMenuView = lazy(() => import("./pages/customer/SecureMenuView"));
-const WholesaleMarketplacePage = lazy(() => import("./pages/customer/WholesaleMarketplacePage"));
-const WholesaleCartPage = lazy(() => import("./pages/customer/WholesaleCartPage"));
-const WholesaleCheckoutPage = lazy(() => import("./pages/customer/WholesaleCheckoutPage"));
-const CustomerWholesaleOrdersPage = lazy(() => import("./pages/customer/WholesaleOrdersPage"));
-const WholesaleOrderDetailPage = lazy(() => import("./pages/customer/WholesaleOrderDetailPage"));
-const BusinessFinderPage = lazy(() => import("./pages/customer/retail/BusinessFinderPage"));
-const BusinessMenuPage = lazy(() => import("./pages/customer/retail/BusinessMenuPage"));
-const UnifiedOrdersPage = lazy(() => import("./pages/customer/UnifiedOrdersPage"));
-
-// Community Forum Pages
-const CommunityLayout = lazy(() => import("./pages/community/CommunityLayout").then(m => ({ default: m.CommunityLayout })));
-const CommunityHomePage = lazy(() => import("./pages/community/HomePage").then(m => ({ default: m.HomePage })));
-const CategoryPage = lazy(() => import("./pages/community/CategoryPage").then(m => ({ default: m.CategoryPage })));
-const PostDetailPage = lazy(() => import("./pages/community/PostDetailPage").then(m => ({ default: m.PostDetailPage })));
-const CreatePostPage = lazy(() => import("./pages/community/CreatePostPage").then(m => ({ default: m.CreatePostPage })));
-const UserProfilePage = lazy(() => import("./pages/community/UserProfilePage").then(m => ({ default: m.UserProfilePage })));
-const SearchPage = lazy(() => import("./pages/community/SearchPage").then(m => ({ default: m.SearchPage })));
-const ApprovalPage = lazy(() => import("./pages/community/ApprovalPage").then(m => ({ default: m.ApprovalPage })));
-
-// Public Menu Access
-const MenuAccess = lazy(() => import("./pages/MenuAccess"));
-const ComingSoonPage = lazy(() => import("./pages/ComingSoonPage"));
-
-// Auth Callback Pages
-const TenantAdminAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage").then(m => ({ default: m.TenantAdminAuthCallback })));
-const SuperAdminAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage").then(m => ({ default: m.SuperAdminAuthCallback })));
-const CustomerAuthCallback = lazy(() => import("./pages/auth/AuthCallbackPage").then(m => ({ default: m.CustomerAuthCallback })));
-const MFAChallengePage = lazy(() => import("./pages/auth/MFAChallengePage"));
-const AuthConfirmPage = lazy(() => import("./pages/auth/AuthConfirmPage"));
-const SecureAccountPage = lazy(() => import("./pages/auth/SecureAccountPage").then(m => ({ default: m.SecureAccountPage })));
-
-// Feature Pages (Marketing)
-const FeatureCompliancePage = lazy(() => import("./pages/features/CompliancePage"));
-const FeatureLogisticsPage = lazy(() => import("./pages/features/LogisticsPage"));
-const FeatureEcommercePage = lazy(() => import("./pages/features/EcommercePage"));
 
 // Use the singleton QueryClient from centralized config
 const queryClient = appQueryClient;
 
 // Setup global error handlers
 setupGlobalErrorHandlers();
-
-const MobileTestPage = lazy(() => import("@/pages/mobile/MobileTestPage"));
 
 const App = () => {
   // Enable automatic version checking and cache busting

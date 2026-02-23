@@ -87,6 +87,7 @@ interface Order {
     phone: string | null;
   };
   order_items?: OrderItem[];
+  [key: string]: unknown;
 }
 
 type OrderSortField = 'created_at' | 'total_amount' | 'status' | 'customer';
