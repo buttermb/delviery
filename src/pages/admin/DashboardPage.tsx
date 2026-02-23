@@ -27,6 +27,9 @@ import Activity from "lucide-react/dist/esm/icons/activity";
 import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import Warehouse from "lucide-react/dist/esm/icons/warehouse";
+import Clock from "lucide-react/dist/esm/icons/clock";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
 import X from "lucide-react/dist/esm/icons/x";
 import Sparkles from "lucide-react/dist/esm/icons/sparkles";
@@ -381,7 +384,7 @@ export function DashboardPage() {
                   <KPICard
                     title="Pending Orders"
                     value={stats?.pendingOrders ?? 0}
-                    icon={<AlertTriangle className="h-5 w-5" />}
+                    icon={<Clock className="h-5 w-5" />}
                     description="Awaiting processing"
                     variant={stats?.pendingOrders && stats.pendingOrders > 0 ? 'warning' : 'default'}
                     href="/admin/orders?status=pending"
@@ -405,7 +408,7 @@ export function DashboardPage() {
                   <KPICard
                     title={`Orders (${PERIOD_LABELS[period]})`}
                     value={stats?.totalOrdersMTD ?? 0}
-                    icon={<ShoppingCart className="h-5 w-5" />}
+                    icon={<TrendingUp className="h-5 w-5" />}
                     description={`Total in selected period`}
                     variant="default"
                     href="/admin/orders"
@@ -485,7 +488,7 @@ export function DashboardPage() {
                   <KPICard
                     title="Out of Stock"
                     value={stats?.outOfStockItems ?? 0}
-                    icon={<AlertTriangle className="h-5 w-5" />}
+                    icon={<XCircle className="h-5 w-5" />}
                     description="Needs restocking"
                     variant={stats?.outOfStockItems && stats.outOfStockItems > 0 ? 'destructive' : 'default'}
                     href="/admin/inventory-hub?tab=alerts"
