@@ -1439,9 +1439,38 @@ export default function ProductManagement() {
               </Button>
             </div>
           ) : productsLoading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            viewMode === "grid" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-0">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="border rounded-lg p-4 space-y-3">
+                    <Skeleton className="h-32 w-full rounded" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <div className="flex justify-between">
+                      <Skeleton className="h-6 w-16" />
+                      <Skeleton className="h-6 w-20" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2 p-4 sm:p-0">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 py-3 border-b last:border-b-0">
+                    <Skeleton className="h-5 w-5 rounded" />
+                    <Skeleton className="h-10 w-10 rounded-md" />
+                    <div className="flex-1 space-y-1">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-12" />
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </div>
+                ))}
+              </div>
+            )
           ) : filteredProducts.length > 0 ? (
             viewMode === "grid" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-0">
