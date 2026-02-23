@@ -81,7 +81,7 @@ export function CouponAnalytics({ open, onOpenChange, coupons }: CouponAnalytics
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : usageStats ? (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <Card>
                 <CardHeader>

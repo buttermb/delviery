@@ -73,7 +73,7 @@ export default function AdvancedAnalytics() {
     return (
       <div className="p-6 space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Advanced Analytics</h1>
+          <h1 className="text-xl font-bold">Advanced Analytics</h1>
           <p className="text-muted-foreground">Deep insights and business intelligence</p>
         </div>
         <EnhancedLoadingState variant="dashboard" />
@@ -171,7 +171,7 @@ export default function AdvancedAnalytics() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Advanced Analytics</h1>
+          <h1 className="text-xl font-bold">Advanced Analytics</h1>
           <p className="text-muted-foreground">Deep insights and business intelligence</p>
         </div>
         <DropdownMenu>

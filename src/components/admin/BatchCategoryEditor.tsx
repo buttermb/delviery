@@ -75,7 +75,7 @@ export function BatchCategoryEditor({ open, onOpenChange, products, onApply }: B
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 py-4">
           {/* Current Categories Summary */}
           <div className="space-y-2">
             <Label>Current Categories</Label>

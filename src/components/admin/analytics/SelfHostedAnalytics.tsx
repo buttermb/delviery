@@ -102,7 +102,7 @@ function MetricCard({ title, value, icon, trend, trendLabel, variant = 'default'
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
@@ -113,7 +113,7 @@ function LoadingSkeleton() {
           </Card>
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-48" />
@@ -146,7 +146,7 @@ function OrdersTab({ data }: { data: UnifiedAnalyticsData }) {
   ].filter(d => d.value > 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total Orders"
@@ -173,7 +173,7 @@ function OrdersTab({ data }: { data: UnifiedAnalyticsData }) {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Daily Orders & Revenue</CardTitle>
@@ -279,7 +279,7 @@ function InventoryTab({ data }: { data: UnifiedAnalyticsData }) {
   const { inventory } = data;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total Products"
@@ -305,7 +305,7 @@ function InventoryTab({ data }: { data: UnifiedAnalyticsData }) {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Top Products by Stock</CardTitle>
@@ -395,7 +395,7 @@ function CustomersTab({ data }: { data: UnifiedAnalyticsData }) {
   const { customers } = data;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total Customers"
@@ -421,7 +421,7 @@ function CustomersTab({ data }: { data: UnifiedAnalyticsData }) {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Customer Growth</CardTitle>
@@ -524,7 +524,7 @@ function FinanceTab({ data }: { data: UnifiedAnalyticsData }) {
   const { finance } = data;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Today's Revenue"
@@ -550,7 +550,7 @@ function FinanceTab({ data }: { data: UnifiedAnalyticsData }) {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Revenue & Profit</CardTitle>
@@ -760,7 +760,7 @@ export function SelfHostedAnalytics() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -818,7 +818,7 @@ export function SelfHostedAnalytics() {
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="space-y-4">
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
@@ -845,7 +845,7 @@ export function SelfHostedAnalytics() {
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
                 <CardTitle>Daily Revenue (Last 30 Days)</CardTitle>
@@ -905,7 +905,7 @@ export function SelfHostedAnalytics() {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Inventory Alerts</CardTitle>

@@ -293,7 +293,7 @@ export default function BatchesPage() {
         <EnhancedLoadingState variant="table" count={5} message="Loading batches..." />
       ) : tableMissing ? (
         <Card>
-          <CardContent className="py-12 text-center">
+          <CardContent className="py-6 text-center">
             <AlertTriangle className="h-12 w-12 mx-auto text-yellow-500 mb-4" />
             <h3 className="text-lg font-semibold mb-2">Feature Not Available</h3>
             <p className="text-muted-foreground mb-4">

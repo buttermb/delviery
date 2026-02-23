@@ -499,7 +499,7 @@ export function DashboardHubPage() {
 
   if (!tenant || !tenantSlug) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-4">
         <Skeleton className="h-8 w-48" />
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -513,7 +513,7 @@ export function DashboardHubPage() {
   const lastUpdated = new Date().toLocaleTimeString();
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-4">
       <HubBreadcrumbs hubName="dashboard-hub" hubHref="dashboard-hub" />
 
       {/* Header */}
@@ -698,11 +698,11 @@ export function DashboardHubPage() {
       )}
 
       {/* Charts + Activity Feed (Tasks 2 & 4) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Charts -- 2 columns */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4">
           <RevenueLineChart />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <OrdersDonutChart />
             <TopProductsBarChart />
           </div>

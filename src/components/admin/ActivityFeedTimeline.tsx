@@ -92,7 +92,7 @@ export function ActivityFeedTimeline({ entries, isLoading, maxHeight = '600px' }
 
   if (entries.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
+      <div className="text-center py-6 text-muted-foreground">
         <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
         <p className="text-sm font-medium">No activity found</p>
         <p className="text-xs mt-1">Activity will appear here as actions are performed.</p>

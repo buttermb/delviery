@@ -380,7 +380,7 @@ export function CustomerManagement() {
               <thead className="bg-muted/50 border-b">
                 <tr>
                   {["", "Customer", "Type", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
-                    <th key={i} scope="col" className="px-6 py-3 text-left">
+                    <th key={i} scope="col" className="px-4 py-2.5 text-left">
                       <Skeleton className="h-3 w-16" />
                     </th>
                   ))}
@@ -389,8 +389,8 @@ export function CustomerManagement() {
               <tbody className="divide-y">
                 {Array.from({ length: 6 }).map((_, rowIdx) => (
                   <tr key={rowIdx}>
-                    <td className="px-6 py-4"><Skeleton className="h-4 w-4" /></td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-4" /></td>
+                    <td className="px-4 py-2.5">
                       <div className="flex items-center gap-3">
                         <Skeleton className="h-10 w-10 rounded-full" />
                         <div className="space-y-1">
@@ -399,13 +399,13 @@ export function CustomerManagement() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4"><Skeleton className="h-5 w-16 rounded-full" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-4 w-16" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-4 w-12" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-5 w-14 rounded-full" /></td>
-                    <td className="px-6 py-4"><Skeleton className="h-5 w-16 rounded-full" /></td>
-                    <td className="px-6 py-4 text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-16" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-12" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-14 rounded-full" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                    <td className="px-4 py-2.5 text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></td>
                   </tr>
                 ))}
               </tbody>
@@ -471,7 +471,7 @@ export function CustomerManagement() {
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <h1 className="text-2xl sm:text-3xl font-bold">Customer Management</h1>
@@ -601,7 +601,7 @@ export function CustomerManagement() {
             <table className="w-full">
               <thead className="bg-muted/50 border-b">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     <input
                       type="checkbox"
                       className="rounded"
@@ -614,28 +614,28 @@ export function CustomerManagement() {
                       }}
                     />
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Customer
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Type
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Total Spent
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Points
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Last Order
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Tags
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Status
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -643,7 +643,7 @@ export function CustomerManagement() {
               <tbody className="bg-background divide-y divide-border">
                 {paginatedCustomers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <input
                         type="checkbox"
                         className="rounded"
@@ -657,7 +657,7 @@ export function CustomerManagement() {
                         }}
                       />
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
                           {customer.first_name?.[0] || ''}{customer.last_name?.[0] || '?'}
@@ -692,32 +692,32 @@ export function CustomerManagement() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
                         {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold">
+                    <td className="px-4 py-2.5 text-sm font-semibold">
                       {formatCurrency(customer.total_spent)}
                     </td>
-                    <td className="px-6 py-4 text-sm">
+                    <td className="px-4 py-2.5 text-sm">
                       <span className="flex items-center gap-1">
                         <Award className="w-4 h-4 text-yellow-600" />
                         {customer.loyalty_points || 0}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                    <td className="px-4 py-2.5 text-sm text-muted-foreground">
                       {customer.last_purchase_at
                         ? formatSmartDate(customer.last_purchase_at)
                         : 'Never'}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <CustomerTagBadges customerId={customer.id} maxVisible={2} />
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       {getCustomerStatus(customer)}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-4 py-2.5 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm">

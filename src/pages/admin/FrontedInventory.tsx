@@ -156,9 +156,9 @@ export default function FrontedInventory() {
         description="Track fronted and consignment inventory"
       />
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">📊 Fronted Inventory Tracking</h1>
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-bold">📊 Fronted Inventory Tracking</h1>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigateToAdmin('inventory/barcodes')}>
               Generate Barcodes
@@ -170,7 +170,7 @@ export default function FrontedInventory() {
         </div>
 
         {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Out</CardTitle>

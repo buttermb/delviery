@@ -1035,7 +1035,7 @@ const AdminLiveChat = function AdminLiveChat() {
                 </div>
               </div>
             ) : (
-              <div className="h-full flex items-center justify-center text-center p-8">
+              <div className="h-full flex items-center justify-center text-center p-4">
                 <div>
                   <MessageSquare className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No Chat Selected</h3>
@@ -1072,7 +1072,7 @@ function SessionList({
 }: SessionListProps) {
   if (sessions.length === 0) {
     return (
-      <div className="p-8 text-center text-muted-foreground">
+      <div className="p-4 text-center text-muted-foreground">
         <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-50" />
         <p className="text-sm">No conversations</p>
       </div>

@@ -244,21 +244,21 @@ export default function CustomerForm() {
 
   return (
     <div className="min-h-dvh bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6">
         <SEOHead
           title={isEdit ? 'Edit Customer' : 'Add Customer'}
           description="Customer form"
         />
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigateToAdmin('customer-management')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">
+              <h1 className="text-xl font-bold text-foreground">
                 {isEdit ? 'Edit Customer' : 'Add New Customer'}
               </h1>
               <p className="text-muted-foreground mt-1">

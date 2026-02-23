@@ -166,9 +166,9 @@ const AdminNotifications = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Test Notifications</h1>
+        <h1 className="text-xl font-bold mb-2">Test Notifications</h1>
         <p className="text-muted-foreground">
           Test SMS and email notifications using Klaviyo integration
         </p>

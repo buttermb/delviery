@@ -298,7 +298,7 @@ export default function OrdersPage() {
         return (
             <div className="space-y-6">
                 <Card className="border-warning bg-warning/5">
-                    <CardContent className="py-12">
+                    <CardContent className="py-6">
                         <div className="text-center">
                             <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-warning" />
                             <h3 className="text-lg font-semibold mb-2">No Marketplace Profile</h3>
@@ -410,11 +410,11 @@ export default function OrdersPage() {
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <div className="text-center py-12">
+                        <div className="text-center py-6">
                             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
                         </div>
                     ) : filteredOrders.length === 0 ? (
-                        <div className="text-center py-12">
+                        <div className="text-center py-6">
                             <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                             <h3 className="text-lg font-semibold mb-2">No Orders Found</h3>
                             <p className="text-sm text-muted-foreground">

@@ -235,7 +235,7 @@ export default function OrderDetailPage() {
         return (
             <div className="space-y-6">
                 <Card>
-                    <CardContent className="py-12">
+                    <CardContent className="py-6">
                         <div className="flex items-center justify-center">
                             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                         </div>
@@ -249,7 +249,7 @@ export default function OrderDetailPage() {
         return (
             <div className="space-y-6">
                 <Card>
-                    <CardContent className="py-12">
+                    <CardContent className="py-6">
                         <div className="text-center">
                             <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                             <h3 className="text-lg font-semibold mb-2">Order Not Found</h3>

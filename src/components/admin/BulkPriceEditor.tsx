@@ -126,7 +126,7 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
       description={`Adjust prices for ${products.length} product${products.length !== 1 ? 's' : ''}`}
       className="max-w-2xl max-h-[90vh] overflow-y-auto"
     >
-      <div className="space-y-6 py-4">
+      <div className="space-y-4 py-4">
         {/* Price Field Selection */}
         <div className="space-y-2">
           <Label>Price Type</Label>

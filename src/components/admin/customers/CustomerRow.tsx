@@ -66,7 +66,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
 
   return (
     <tr className="group hover:bg-muted/50 transition-colors duration-200">
-      <td className="px-6 py-4">
+      <td className="px-4 py-2.5">
         <input
           type="checkbox"
           className="rounded"
@@ -75,7 +75,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
           onChange={(e) => onSelectChange(customer.id, e.target.checked)}
         />
       </td>
-      <td className="px-6 py-4">
+      <td className="px-4 py-2.5">
         <div className="flex items-center">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold transition-colors duration-200 group-hover:bg-primary/20">
             {customer.first_name?.[0]}{customer.last_name?.[0]}
@@ -102,29 +102,29 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
           </div>
         </div>
       </td>
-      <td className="px-6 py-4">
+      <td className="px-4 py-2.5">
         <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
           {customer.customer_type === 'medical' ? '🏥 Medical' : 'Recreational'}
         </Badge>
       </td>
-      <td className="px-6 py-4 text-sm font-semibold">
+      <td className="px-4 py-2.5 text-sm font-semibold">
         ${customer.total_spent?.toFixed(2) || '0.00'}
       </td>
-      <td className="px-6 py-4 text-sm">
+      <td className="px-4 py-2.5 text-sm">
         <span className="flex items-center gap-1">
           <Award className="w-4 h-4 text-yellow-600" />
           {customer.loyalty_points || 0}
         </span>
       </td>
-      <td className="px-6 py-4 text-sm text-muted-foreground">
+      <td className="px-4 py-2.5 text-sm text-muted-foreground">
         {customer.last_purchase_at
           ? formatSmartDate(customer.last_purchase_at)
           : 'Never'}
       </td>
-      <td className="px-6 py-4">
+      <td className="px-4 py-2.5">
         {getCustomerStatus(customer)}
       </td>
-      <td className="px-6 py-4 text-right">
+      <td className="px-4 py-2.5 text-right">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-all duration-200 hover:shadow-sm" aria-label={`Actions for ${displayName(customer.first_name, customer.last_name)}`}>

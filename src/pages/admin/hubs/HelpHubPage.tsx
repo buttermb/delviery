@@ -222,7 +222,7 @@ export default function HelpHubPage() {
                 {/* Getting Started Tab */}
                 <TabsContent value="getting-started" className="m-0 p-6">
                     <ModuleErrorBoundary moduleName="Getting Started">
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         {/* Onboarding Progress */}
                         <Card>
                             <CardHeader>
@@ -295,7 +295,7 @@ export default function HelpHubPage() {
                 {/* Documentation Tab */}
                 <TabsContent value="docs" className="m-0 p-6">
                     <ModuleErrorBoundary moduleName="Documentation">
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         {/* Quick Links */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -373,7 +373,7 @@ export default function HelpHubPage() {
                 {/* Support Tab */}
                 <TabsContent value="support" className="m-0 p-6">
                     <ModuleErrorBoundary moduleName="Support">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {/* Submit Ticket */}
                         <Card>
                             <CardHeader>
@@ -464,7 +464,7 @@ export default function HelpHubPage() {
                 {/* Feedback Tab */}
                 <TabsContent value="feedback" className="m-0 p-6">
                     <ModuleErrorBoundary moduleName="Feedback">
-                    <div className="max-w-2xl mx-auto space-y-6">
+                    <div className="max-w-2xl mx-auto space-y-4">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Share Your Feedback</CardTitle>
