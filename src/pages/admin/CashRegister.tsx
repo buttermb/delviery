@@ -1168,6 +1168,7 @@ function CashRegisterContent() {
                           className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11"
                           onClick={() => updateQuantity(item.id, -1)}
                           disabled={item.quantity <= 1}
+                          aria-label="Decrease quantity"
                         >
                           <Minus className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>
@@ -1180,6 +1181,7 @@ function CashRegisterContent() {
                           className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11"
                           onClick={() => updateQuantity(item.id, 1)}
                           disabled={item.quantity >= item.stock_quantity}
+                          aria-label="Increase quantity"
                         >
                           <Plus className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>
@@ -1189,6 +1191,7 @@ function CashRegisterContent() {
                         variant="ghost"
                         className="h-9 w-9 sm:h-10 sm:w-10 lg:h-11 lg:w-11"
                         onClick={() => removeFromCart(item.id)}
+                        aria-label="Remove item"
                       >
                         <Trash2 className="h-3 w-3 md:h-4 md:w-4 text-destructive" />
                       </Button>

@@ -378,6 +378,7 @@ export default function ExpenseTracking() {
                           setExpenseToDelete(expense.id);
                           setDeleteDialogOpen(true);
                         }}
+                        aria-label="Delete expense"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

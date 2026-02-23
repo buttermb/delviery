@@ -235,7 +235,7 @@ export default function RecordFrontedReturn() {
     <div className="container mx-auto p-4 max-w-4xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(`/${tenant?.slug}/admin/inventory/fronted/${id}`)}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(`/${tenant?.slug}/admin/inventory/fronted/${id}`)} aria-label="Back to fronted inventory details">
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
@@ -338,6 +338,7 @@ export default function RecordFrontedReturn() {
                   variant="ghost"
                   size="icon"
                   onClick={() => removeReturn(returnItem.barcode)}
+                  aria-label="Remove return item"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

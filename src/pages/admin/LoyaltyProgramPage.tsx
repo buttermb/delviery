@@ -18,6 +18,7 @@ import {
   Zap,
   Edit,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -713,7 +714,10 @@ export default function LoyaltyProgramPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsTierOpen(false)}>Cancel</Button>
-            <Button disabled={upsertTierMutation.isPending} onClick={() => upsertTierMutation.mutate(tierForm)}>Save Tier</Button>
+            <Button disabled={upsertTierMutation.isPending} onClick={() => upsertTierMutation.mutate(tierForm)}>
+              {upsertTierMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Save Tier
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -774,7 +778,10 @@ export default function LoyaltyProgramPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsRewardOpen(false)}>Cancel</Button>
-            <Button disabled={upsertRewardMutation.isPending} onClick={() => upsertRewardMutation.mutate(rewardForm)}>Save Reward</Button>
+            <Button disabled={upsertRewardMutation.isPending} onClick={() => upsertRewardMutation.mutate(rewardForm)}>
+              {upsertRewardMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Save Reward
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

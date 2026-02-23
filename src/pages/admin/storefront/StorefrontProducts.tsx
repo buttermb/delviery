@@ -25,7 +25,8 @@ import {
   EyeOff,
   Save,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Loader2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { queryKeys } from '@/lib/queryKeys';
@@ -464,7 +465,7 @@ export default function StorefrontProducts() {
                 onClick={() => bulkVisibilityMutation.mutate(true)}
                 disabled={bulkVisibilityMutation.isPending}
               >
-                <Eye className="w-4 h-4 mr-2" />
+                {bulkVisibilityMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Eye className="w-4 h-4 mr-2" />}
                 Show All
               </Button>
               <Button
@@ -473,7 +474,7 @@ export default function StorefrontProducts() {
                 onClick={() => bulkVisibilityMutation.mutate(false)}
                 disabled={bulkVisibilityMutation.isPending}
               >
-                <EyeOff className="w-4 h-4 mr-2" />
+                {bulkVisibilityMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <EyeOff className="w-4 h-4 mr-2" />}
                 Hide All
               </Button>
               <Button

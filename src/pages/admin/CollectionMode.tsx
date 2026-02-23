@@ -874,7 +874,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
         <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border">
           <div className="container p-4">
             <div className="flex items-center gap-4 mb-4">
-              <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('command-center')}>
+              <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('command-center')} aria-label="Back to command center">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>

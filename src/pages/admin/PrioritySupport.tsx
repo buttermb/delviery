@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Headphones, Plus, MessageCircle, Clock, CheckCircle, Trash2 } from 'lucide-react';
+import { Headphones, Plus, MessageCircle, Clock, CheckCircle, Trash2, Loader2 } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -237,6 +237,7 @@ export default function PrioritySupport() {
                       setTicketToDelete(ticket.id);
                       setDeleteDialogOpen(true);
                     }}
+                    aria-label="Delete ticket"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -302,6 +303,7 @@ export default function PrioritySupport() {
                 Cancel
               </Button>
               <Button type="submit" disabled={createTicketMutation.isPending}>
+                {createTicketMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Create Ticket
               </Button>
             </DialogFooter>

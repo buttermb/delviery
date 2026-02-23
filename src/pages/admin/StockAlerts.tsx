@@ -14,6 +14,7 @@ import PackagePlus from 'lucide-react/dist/esm/icons/package-plus';
 import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
 import CheckCheck from 'lucide-react/dist/esm/icons/check-check';
 import ShoppingCart from 'lucide-react/dist/esm/icons/shopping-cart';
+import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LowStockToPODialog } from '@/components/admin/inventory/LowStockToPODialog';
 import { toast } from 'sonner';
@@ -366,7 +367,7 @@ export function StockAlerts() {
                       disabled={restockMutation.isPending}
                       className="gap-1 text-xs h-8 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 dark:bg-emerald-950 dark:hover:bg-emerald-900 dark:border-emerald-800 dark:text-emerald-300"
                     >
-                      <PackagePlus className="h-3 w-3" />
+                      {restockMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <PackagePlus className="h-3 w-3" />}
                       Restock
                     </Button>
 

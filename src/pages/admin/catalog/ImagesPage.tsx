@@ -268,6 +268,7 @@ export default function ImagesPage() {
                 variant={view === 'grid' ? 'default' : 'outline'}
                 size="icon"
                 onClick={() => setView('grid')}
+                aria-label="Grid view"
               >
                 <Grid3x3 className="h-4 w-4" />
               </Button>
@@ -275,6 +276,7 @@ export default function ImagesPage() {
                 variant={view === 'list' ? 'default' : 'outline'}
                 size="icon"
                 onClick={() => setView('list')}
+                aria-label="List view"
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -353,6 +355,7 @@ export default function ImagesPage() {
                       e.stopPropagation();
                       window.open(image.image_url, '_blank');
                     }}
+                    aria-label="Download image"
                   >
                     <Download className="h-4 w-4" />
                   </Button>

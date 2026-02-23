@@ -466,7 +466,7 @@ export default function NewWholesaleOrder() {
       <div className="max-w-5xl mx-auto p-4 sm:p-4 space-y-4">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('wholesale-orders')}>
+          <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('wholesale-orders')} aria-label="Back to wholesale orders">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
@@ -720,6 +720,7 @@ export default function NewWholesaleOrder() {
                                 variant="ghost"
                                 className="h-11 w-11 sm:h-6 sm:w-6 shrink-0"
                                 onClick={() => handleUpdateQty(product.id, 0)}
+                                aria-label="Remove product"
                               >
                                 <X className="h-3 w-3" />
                               </Button>
@@ -733,6 +734,7 @@ export default function NewWholesaleOrder() {
                                   variant="outline"
                                   className="h-11 w-11"
                                   onClick={() => handleUpdateQty(product.id, product.qty - 1)}
+                                  aria-label="Decrease quantity"
                                 >
                                   <Minus className="h-3 w-3" />
                                 </Button>
@@ -746,6 +748,7 @@ export default function NewWholesaleOrder() {
                                   variant="outline"
                                   className="h-11 w-11"
                                   onClick={() => handleUpdateQty(product.id, product.qty + 1)}
+                                  aria-label="Increase quantity"
                                 >
                                   <Plus className="h-3 w-3" />
                                 </Button>

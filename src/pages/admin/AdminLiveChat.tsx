@@ -885,6 +885,7 @@ const AdminLiveChat = function AdminLiveChat() {
                         variant="ghost"
                         size="icon"
                         onClick={removeAttachment}
+                        aria-label="Remove attachment"
                       >
                         <X className="w-4 h-4" />
                       </Button>
@@ -912,6 +913,7 @@ const AdminLiveChat = function AdminLiveChat() {
                           size="icon"
                           onClick={() => fileInputRef.current?.click()}
                           disabled={isSending || isUploading}
+                          aria-label="Attach file"
                         >
                           <Paperclip className="w-4 h-4" />
                         </Button>

@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Zap, Plus, Edit, Play } from 'lucide-react';
+import { Zap, Plus, Edit, Play, Loader2 } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
@@ -360,6 +360,7 @@ export default function Automation() {
                 type="submit"
                 disabled={createRuleMutation.isPending || updateRuleMutation.isPending}
               >
+                {(createRuleMutation.isPending || updateRuleMutation.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingRule ? 'Update' : 'Create'}
               </Button>
             </DialogFooter>

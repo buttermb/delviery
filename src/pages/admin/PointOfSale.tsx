@@ -531,6 +531,7 @@ export default function PointOfSale() {
             size="icon"
             onClick={() => setIsFullScreen(!isFullScreen)}
             title={isFullScreen ? "Exit Full Screen (Esc)" : "Full Screen"}
+            aria-label={isFullScreen ? "Exit full screen" : "Full screen"}
           >
             {isFullScreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
           </Button>

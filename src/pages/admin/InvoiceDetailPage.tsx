@@ -20,7 +20,8 @@ import {
     Copy,
     Ban,
     FileText,
-    DollarSign
+    DollarSign,
+    Loader2
 } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/utils/formatters";
@@ -287,6 +288,7 @@ export default function InvoiceDetailPage() {
                                                     disabled={voidInvoiceMutation.isPending}
                                                     className="bg-orange-600 text-white hover:bg-orange-700"
                                                 >
+                                                    {voidInvoiceMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                                                     Void Invoice
                                                 </AlertDialogAction>
                                             </AlertDialogFooter>

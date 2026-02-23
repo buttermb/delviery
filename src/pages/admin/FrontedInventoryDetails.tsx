@@ -143,7 +143,7 @@ export default function FrontedInventoryDetails() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigateToAdmin("inventory/fronted")}>
+          <Button variant="ghost" size="icon" onClick={() => navigateToAdmin("inventory/fronted")} aria-label="Back to fronted inventory">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>

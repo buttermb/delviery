@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { FileText, Plus, Edit, Download, Trash2 } from 'lucide-react';
+import { FileText, Plus, Edit, Download, Trash2, Loader2 } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
@@ -385,6 +385,7 @@ export default function CustomReports() {
                 type="submit"
                 disabled={createReportMutation.isPending || updateReportMutation.isPending}
               >
+                {(createReportMutation.isPending || updateReportMutation.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingReport ? 'Update' : 'Create'}
               </Button>
             </DialogFooter>

@@ -1213,6 +1213,7 @@ export function StorefrontBuilder({
                             onClick={handleCreateStore}
                             disabled={!newStoreName || !newStoreSlug || isValidatingSlug || isCreatingWithCredits || createStoreMutation.isPending}
                         >
+                            {(isCreatingWithCredits || createStoreMutation.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                             {isCreatingWithCredits || createStoreMutation.isPending ? 'Creating...' : 'Create Store (500 credits)'}
                         </Button>
                     </DialogFooter>

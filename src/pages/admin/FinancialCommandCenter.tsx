@@ -159,6 +159,7 @@ export default function FinancialCommandCenter() {
               size="icon"
               className="h-11 w-11 sm:h-8 sm:w-8 border-zinc-700 hover:bg-zinc-800"
               onClick={() => navigateToAdmin('settings')}
+              aria-label="Settings"
             >
               <Settings className="h-3.5 w-3.5" />
             </Button>

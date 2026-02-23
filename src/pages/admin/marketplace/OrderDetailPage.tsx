@@ -27,7 +27,8 @@ import {
     Truck,
     FileText,
     Send,
-    User
+    User,
+    Loader2
 } from 'lucide-react';
 import {
     Dialog,
@@ -314,6 +315,7 @@ export default function OrderDetailPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => navigate(`/${tenant?.slug}/admin/marketplace/orders`)}
+                        aria-label="Back to orders"
                     >
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
@@ -365,7 +367,7 @@ export default function OrderDetailPage() {
                                         <DialogFooter>
                                             <Button variant="outline" onClick={() => setIsMessageDialogOpen(false)}>Cancel</Button>
                                             <Button onClick={() => sendMessageMutation.mutate()} disabled={!messageText.trim() || sendMessageMutation.isPending}>
-                                                <Send className="h-4 w-4 mr-2" />
+                                                {sendMessageMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
                                                 Send Message
                                             </Button>
                                         </DialogFooter>
@@ -570,7 +572,7 @@ export default function OrderDetailPage() {
                                     onClick={() => markPaidMutation.mutate()}
                                     disabled={markPaidMutation.isPending}
                                 >
-                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    {markPaidMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
                                     Mark as Paid
                                 </Button>
                             )}
@@ -590,7 +592,7 @@ export default function OrderDetailPage() {
                                         onClick={() => updateStatusMutation.mutate({ newStatus: 'accepted' })}
                                         disabled={updateStatusMutation.isPending}
                                     >
-                                        <CheckCircle className="h-4 w-4 mr-2" />
+                                        {updateStatusMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
                                         Accept Order
                                     </Button>
                                     <Button
@@ -599,7 +601,7 @@ export default function OrderDetailPage() {
                                         onClick={() => updateStatusMutation.mutate({ newStatus: 'rejected' })}
                                         disabled={updateStatusMutation.isPending}
                                     >
-                                        <XCircle className="h-4 w-4 mr-2" />
+                                        {updateStatusMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XCircle className="h-4 w-4 mr-2" />}
                                         Reject Order
                                     </Button>
                                 </>
@@ -610,7 +612,7 @@ export default function OrderDetailPage() {
                                     onClick={() => updateStatusMutation.mutate({ newStatus: 'processing' })}
                                     disabled={updateStatusMutation.isPending}
                                 >
-                                    <Package className="h-4 w-4 mr-2" />
+                                    {updateStatusMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Package className="h-4 w-4 mr-2" />}
                                     Start Processing
                                 </Button>
                             )}
@@ -656,7 +658,7 @@ export default function OrderDetailPage() {
                                                 onClick={() => updateStatusMutation.mutate({ newStatus: 'shipped', trackingNum: trackingNumber })}
                                                 disabled={updateStatusMutation.isPending || !trackingNumber}
                                             >
-                                                <Truck className="h-4 w-4 mr-2" />
+                                                {updateStatusMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Truck className="h-4 w-4 mr-2" />}
                                                 Mark as Shipped
                                             </Button>
                                         </DialogFooter>
@@ -669,7 +671,7 @@ export default function OrderDetailPage() {
                                     onClick={() => updateStatusMutation.mutate({ newStatus: 'delivered' })}
                                     disabled={updateStatusMutation.isPending}
                                 >
-                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    {updateStatusMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
                                     Mark as Delivered
                                 </Button>
                             )}
@@ -722,7 +724,7 @@ export default function OrderDetailPage() {
                             onClick={() => updateNotesMutation.mutate(sellerNotes)}
                             disabled={updateNotesMutation.isPending}
                         >
-                            <Send className="h-4 w-4 mr-2" />
+                            {updateNotesMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
                             Save Notes
                         </Button>
                     </DialogFooter>

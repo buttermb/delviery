@@ -558,6 +558,7 @@ export default function OfflineOrderCreate() {
                             size="icon"
                             className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => updateQuantity(item.productId, -1)}
+                            aria-label="Decrease quantity"
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
@@ -569,6 +570,7 @@ export default function OfflineOrderCreate() {
                             size="icon"
                             className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => updateQuantity(item.productId, 1)}
+                            aria-label="Increase quantity"
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -577,6 +579,7 @@ export default function OfflineOrderCreate() {
                             size="icon"
                             className="h-11 w-11 sm:h-6 sm:w-6 text-destructive"
                             onClick={() => removeFromCart(item.productId)}
+                            aria-label="Remove item"
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -697,6 +700,7 @@ export default function OfflineOrderCreate() {
                               onClick={() => retryOrder(order.id)}
                               disabled={!isOnline}
                               title="Retry sync"
+                              aria-label="Retry sync"
                             >
                               <RefreshCw className="h-4 w-4" />
                             </Button>
@@ -707,6 +711,7 @@ export default function OfflineOrderCreate() {
                             className="h-11 w-11 sm:h-8 sm:w-8 text-destructive"
                             onClick={() => removeOfflineOrder(order.id)}
                             title="Remove order"
+                            aria-label="Remove order"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

@@ -240,6 +240,7 @@ export default function AdminPricingPage() {
                             variant="default"
                             onClick={() => saveChanges(product.id)}
                             disabled={updatePricing.isPending}
+                            aria-label="Save changes"
                           >
                             <Save className="h-4 w-4" />
                           </Button>
@@ -247,6 +248,7 @@ export default function AdminPricingPage() {
                             size="icon"
                             variant="ghost"
                             onClick={cancelEditing}
+                            aria-label="Cancel editing"
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -256,6 +258,7 @@ export default function AdminPricingPage() {
                           size="icon"
                           variant="ghost"
                           onClick={() => startEditing(product)}
+                          aria-label="Edit pricing"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>

@@ -191,7 +191,7 @@ export default function ClientDetail() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("wholesale-clients")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("wholesale-clients")} aria-label="Back to clients">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>

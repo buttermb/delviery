@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, AlertCircle, DollarSign, Package, Plus } from "lucide-react";
+import { MessageSquare, AlertCircle, DollarSign, Package, Plus, Loader2 } from "lucide-react";
 import { showSuccessToast, showErrorToast } from "@/utils/toastHelpers";
 import { formatSmartDate } from "@/lib/formatters";
 import {
@@ -167,6 +167,7 @@ export function ClientNotesPanel({ clientId }: ClientNotesPanelProps) {
               onClick={handleAddNote}
               disabled={!newNote.trim() || addNoteMutation.isPending}
             >
+              {addNoteMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {addNoteMutation.isPending ? "Saving..." : "Save Note"}
             </Button>
           </div>

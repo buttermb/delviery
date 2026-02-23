@@ -231,6 +231,7 @@ export default function InvitesPage() {
                                                     size="icon"
                                                     onClick={() => handleArchive(invite.id, invite.email)}
                                                     title="Revoke Invite"
+                                                    aria-label="Revoke invite"
                                                 >
                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                 </Button>

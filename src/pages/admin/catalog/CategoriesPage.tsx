@@ -431,6 +431,7 @@ export default function CategoriesPage() {
               size="icon"
               className="h-11 w-11 shrink-0"
               onClick={() => toggleCategory(category.id)}
+              aria-label={isExpanded ? "Collapse category" : "Expand category"}
             >
               {isExpanded ? (
                 <ChevronDown className="h-4 w-4" />
@@ -504,6 +505,7 @@ export default function CategoriesPage() {
               className="h-11 w-11"
               onClick={() => navigateToFilteredProducts(category.id)}
               title="View products"
+              aria-label="View products"
             >
               <ExternalLink className="h-4 w-4" />
             </Button>
@@ -512,6 +514,7 @@ export default function CategoriesPage() {
               size="icon"
               className="h-11 w-11"
               onClick={() => setEditingCategory(category)}
+              aria-label="Edit category"
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -523,6 +526,7 @@ export default function CategoriesPage() {
                 setCategoryToDelete({ id: category.id, name: category.name });
                 setDeleteDialogOpen(true);
               }}
+              aria-label="Delete category"
             >
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>

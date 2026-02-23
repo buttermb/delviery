@@ -19,7 +19,8 @@ import {
   Truck,
   ClipboardList,
   AlertTriangle,
-  MapPin
+  MapPin,
+  Loader2
 } from 'lucide-react';
 import {
   Dialog,
@@ -564,6 +565,7 @@ export default function ReceivingPage() {
               onClick={() => createReceipt.mutate(newReceipt)}
               disabled={!newReceipt.shipment_number || !newReceipt.vendor || createReceipt.isPending}
             >
+              {createReceipt.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {createReceipt.isPending ? 'Creating...' : 'Create Receipt'}
             </Button>
           </DialogFooter>
@@ -646,6 +648,7 @@ export default function ReceivingPage() {
               }}
               disabled={updateReceiptStatus.isPending}
             >
+              {updateReceiptStatus.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Complete QC
             </Button>
           </DialogFooter>

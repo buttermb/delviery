@@ -182,6 +182,7 @@ export function MenusListPage() {
                                     size="icon"
                                     className="rounded-r-none h-10 w-10"
                                     onClick={() => setViewMode('grid')}
+                                    aria-label="Grid view"
                                 >
                                     <LayoutGrid className="h-4 w-4" />
                                 </Button>
@@ -190,6 +191,7 @@ export function MenusListPage() {
                                     size="icon"
                                     className="rounded-l-none h-10 w-10"
                                     onClick={() => setViewMode('list')}
+                                    aria-label="List view"
                                 >
                                     <List className="h-4 w-4" />
                                 </Button>
