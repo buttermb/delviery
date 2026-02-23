@@ -717,7 +717,7 @@ export function ShiftManager() {
 
       {/* Z-Report Dialog */}
       <Dialog open={isZReportOpen} onOpenChange={setIsZReportOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>End of Day Report</DialogTitle>
             <DialogDescription>

@@ -741,7 +741,7 @@ export default function SuperAdminEnhanced() {
 
         {/* Tenant Detail Dialog */}
         <Dialog open={tenantDetailOpen} onOpenChange={setTenantDetailOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Tenant Details</DialogTitle>
               <DialogDescription>

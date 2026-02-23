@@ -1817,7 +1817,7 @@ export function OrderDetailsPage() {
       {/* Delivery Exceptions Dialog — hidden on print */}
       <div className="print:hidden">
         <Dialog open={showDeliveryExceptionsDialog} onOpenChange={setShowDeliveryExceptionsDialog}>
-          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Report Delivery Issue</DialogTitle>
               <DialogDescription>

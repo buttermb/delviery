@@ -280,7 +280,7 @@ export function WorkflowMonitoringDashboard() {
         open={!!selectedExecution}
         onOpenChange={(open) => !open && setSelectedExecution(null)}
       >
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Execution Details</DialogTitle>
           </DialogHeader>

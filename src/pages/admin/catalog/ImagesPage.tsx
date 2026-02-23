@@ -404,7 +404,7 @@ export default function ImagesPage() {
 
       {/* Image Detail Dialog */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>{selectedImage?.name}</DialogTitle>
           </DialogHeader>

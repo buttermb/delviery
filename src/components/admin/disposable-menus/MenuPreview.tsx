@@ -479,7 +479,7 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
 
       {/* Image Zoom Dialog */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl p-0">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl p-0">
           {selectedImage && (
             <img
               src={selectedImage}

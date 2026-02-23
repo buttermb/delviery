@@ -495,7 +495,7 @@ export function ProductQR({
     if (asDialog) {
       return (
         <Dialog open={open} onOpenChange={onClose}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-auto">
             {loadingContent}
           </DialogContent>
         </Dialog>
@@ -894,7 +894,7 @@ export function ProductQR({
   if (asDialog) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <QrCode className="h-5 w-5" />

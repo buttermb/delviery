@@ -312,6 +312,11 @@ export default function CouponManagementPage() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
+          ) : filteredCoupons.length === 0 && searchTerm ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>No coupons matching &ldquo;{searchTerm}&rdquo;</p>
+            </div>
           ) : filteredCoupons.length === 0 ? (
             <EnhancedEmptyState
               icon={Tag}

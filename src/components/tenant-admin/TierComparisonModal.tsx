@@ -42,7 +42,7 @@ export function TierComparisonModal({ open, onOpenChange, currentTier }: TierCom
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-5xl h-[80vh] flex flex-col">
+            <DialogContent className="max-w-[95vw] sm:max-w-5xl h-[80vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">Business Tier Comparison</DialogTitle>
                     <DialogDescription>

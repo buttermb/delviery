@@ -521,7 +521,7 @@ export function ProductStorefrontPreview({
           {showLabel && <span className="ml-2">Preview on Storefront</span>}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <DialogTitle className="flex items-center gap-2">
             <Store className="h-5 w-5" />

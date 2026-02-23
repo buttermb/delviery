@@ -847,7 +847,7 @@ const SecureMenuView = () => {
 
       {/* Image Zoom Dialog */}
       <Dialog open={!!zoomedImage} onOpenChange={() => setZoomedImage(null)}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl p-0 overflow-hidden">
           <DialogTitle className="sr-only">{zoomedImage?.name}</DialogTitle>
           {zoomedImage && (
             <div className="relative">
@@ -869,7 +869,7 @@ const SecureMenuView = () => {
 
       {/* Product Detail Dialog */}
       <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl">{selectedProduct?.name}</DialogTitle>
             {selectedProduct?.strain_type && (

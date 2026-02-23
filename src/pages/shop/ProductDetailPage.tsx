@@ -1065,7 +1065,7 @@ export function ProductDetailPage() {
 
       {/* Image Zoom Dialog */}
       <Dialog open={showZoom} onOpenChange={setShowZoom}>
-        <DialogContent className="max-w-4xl p-0 bg-black/95 border-none">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl p-0 bg-black/95 border-none">
           <DialogHeader className="sr-only">
             <DialogTitle>Product Image</DialogTitle>
           </DialogHeader>
