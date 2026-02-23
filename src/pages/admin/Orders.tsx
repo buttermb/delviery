@@ -94,7 +94,16 @@ interface Order {
 type OrderSortField = 'created_at' | 'total_amount' | 'status' | 'customer';
 type SortOrder = 'asc' | 'desc';
 
-const ORDERS_FILTER_CONFIG = [
+interface OrderFilters {
+  q: string;
+  status: string;
+  from: string;
+  to: string;
+  sort: string;
+  dir: string;
+}
+
+const ORDERS_FILTER_CONFIG: Array<{ key: keyof OrderFilters; defaultValue: string }> = [
   { key: 'q', defaultValue: '' },
   { key: 'status', defaultValue: 'all' },
   { key: 'from', defaultValue: '' },
@@ -135,12 +144,12 @@ export default function Orders() {
   });
 
   // Filter state — persisted in URL for back-button & navigation support
-  const [filters, setFilters, clearUrlFilters] = useUrlFilters(ORDERS_FILTER_CONFIG);
-  const searchQuery = filters.q as string;
-  const statusFilter = filters.status as string;
+  const [filters, setFilters, clearUrlFilters] = useUrlFilters<OrderFilters>(ORDERS_FILTER_CONFIG);
+  const searchQuery = filters.q;
+  const statusFilter = filters.status;
   const dateRange = useMemo(() => ({
-    from: (filters.from as string) ? parseISO(filters.from as string) : undefined,
-    to: (filters.to as string) ? parseISO(filters.to as string) : undefined,
+    from: filters.from ? parseISO(filters.from) : undefined,
+    to: filters.to ? parseISO(filters.to) : undefined,
   }), [filters.from, filters.to]);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
