@@ -26,7 +26,12 @@ interface Client {
     status: string;
 }
 
-const CLIENTS_FILTER_CONFIG = [
+interface ClientFilters {
+    q: string;
+    status: string;
+}
+
+const CLIENTS_FILTER_CONFIG: Array<{ key: keyof ClientFilters; defaultValue: string }> = [
     { key: 'q', defaultValue: '' },
     { key: 'status', defaultValue: 'active' },
 ];
@@ -35,8 +40,8 @@ export default function ClientsPage() {
     const { navigateToAdmin } = useTenantNavigation();
 
     // Filter state — persisted in URL for back-button & navigation support
-    const [filters, setFilters] = useUrlFilters(CLIENTS_FILTER_CONFIG);
-    const searchTerm = filters.q as string;
+    const [filters, setFilters] = useUrlFilters<ClientFilters>(CLIENTS_FILTER_CONFIG);
+    const searchTerm = filters.q;
     const statusFilter = (filters.status || 'active') as 'active' | 'archived';
 
     const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
