@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
   DollarSign, Calendar, Tag, Plus, Loader2, Receipt,
-  TrendingDown, Filter, X
+  TrendingDown, Filter, X, Trash2
 } from 'lucide-react';
 import {
   Dialog,
@@ -36,6 +36,7 @@ import { logger } from '@/lib/logger';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 const EXPENSE_CATEGORIES = [
   'Supplies',
@@ -72,6 +73,8 @@ export default function ExpenseTracking() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
@@ -133,6 +136,34 @@ export default function ExpenseTracking() {
     }
   });
 
+  const deleteExpenseMutation = useMutation({
+    mutationFn: async (expenseId: string) => {
+      if (!tenantId) throw new Error('No tenant');
+      const { error } = await supabase
+        .from('expenses' as any)
+        .delete()
+        .eq('id', expenseId)
+        .eq('tenant_id', tenantId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses', tenantId] });
+      showSuccessToast('Expense Deleted', 'The expense has been removed');
+      setDeleteDialogOpen(false);
+      setExpenseToDelete(null);
+    },
+    onError: (error) => {
+      logger.error('Failed to delete expense', error, { component: 'ExpenseTracking' });
+      showErrorToast('Failed to delete expense', error instanceof Error ? error.message : 'Unknown error');
+    }
+  });
+
+  const handleDeleteExpense = async () => {
+    if (expenseToDelete) {
+      await deleteExpenseMutation.mutateAsync(expenseToDelete);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.description || !formData.amount) {
@@ -175,11 +206,11 @@ export default function ExpenseTracking() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-xl font-bold flex items-center gap-2">
             <Receipt className="h-8 w-8 text-red-500" />
             Expense Tracking
           </h1>
@@ -312,8 +343,21 @@ export default function ExpenseTracking() {
                         </span>
                       </div>
                     </div>
-                    <div className="text-lg font-bold text-red-600 ml-4">
-                      -{formatCurrency(parseFloat(expense.amount || 0))}
+                    <div className="flex items-center gap-2 ml-4">
+                      <div className="text-lg font-bold text-red-600">
+                        -{formatCurrency(parseFloat(expense.amount || 0))}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => {
+                          setExpenseToDelete(expense.id);
+                          setDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -404,6 +448,14 @@ export default function ExpenseTracking() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteExpense}
+        itemType="expense"
+        isLoading={deleteExpenseMutation.isPending}
+      />
     </div>
   );
 }

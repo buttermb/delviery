@@ -10,10 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Bell, Plus, Edit, Loader2 } from 'lucide-react';
+import { Bell, Plus, Edit, Loader2, Trash2 } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { logger } from '@/lib/logger';
 
 interface NotificationTemplate {
   id: string;
@@ -33,6 +35,8 @@ export default function Notifications() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<NotificationTemplate | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<NotificationTemplate | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     type: 'email',
@@ -146,6 +150,36 @@ export default function Notifications() {
     },
   });
 
+  const deleteTemplateMutation = useMutation({
+    mutationFn: async (templateId: string) => {
+      if (!tenantId) throw new Error('Tenant ID required');
+      const { error } = await supabase
+        .from('notification_templates' as any)
+        .delete()
+        .eq('id', templateId)
+        .eq('tenant_id', tenantId);
+      if (error) {
+        if (error.code === '42P01') {
+          throw new Error('Notification templates table does not exist.');
+        }
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notification-templates', tenantId] });
+      toast({ title: 'Template deleted', description: 'Notification template has been removed.' });
+      setDeleteDialogOpen(false);
+      setTemplateToDelete(null);
+    },
+    onError: (error) => {
+      handleError(error, {
+        component: 'Notifications.deleteTemplate',
+        toastTitle: 'Error',
+        showToast: true
+      });
+    },
+  });
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -189,10 +223,10 @@ export default function Notifications() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Notification Templates</h1>
+          <h1 className="text-xl font-bold">Notification Templates</h1>
           <p className="text-muted-foreground">Manage notification templates and triggers</p>
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>
@@ -214,6 +248,12 @@ export default function Notifications() {
                   <div className="flex gap-2">
                     <Button variant="ghost" size="sm" onClick={() => handleEdit(template)}>
                       <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive" onClick={() => {
+                      setTemplateToDelete(template);
+                      setDeleteDialogOpen(true);
+                    }}>
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -317,6 +357,19 @@ export default function Notifications() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={async () => {
+          if (templateToDelete) {
+            await deleteTemplateMutation.mutateAsync(templateToDelete.id);
+          }
+        }}
+        itemType="template"
+        itemName={templateToDelete?.name}
+        isLoading={deleteTemplateMutation.isPending}
+      />
     </div>
   );
 }

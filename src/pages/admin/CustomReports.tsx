@@ -11,8 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Plus, Edit, Download } from 'lucide-react';
+import { FileText, Plus, Edit, Download, Trash2 } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 interface CustomReport {
@@ -33,6 +34,8 @@ export default function CustomReports() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<CustomReport | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [reportToDelete, setReportToDelete] = useState<CustomReport | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -147,6 +150,36 @@ export default function CustomReports() {
     },
   });
 
+  const deleteReportMutation = useMutation({
+    mutationFn: async (reportId: string) => {
+      if (!tenantId) throw new Error('Tenant ID required');
+      const { error } = await supabase
+        .from('custom_reports' as any)
+        .delete()
+        .eq('id', reportId)
+        .eq('tenant_id', tenantId);
+      if (error) {
+        if (error.code === '42P01') {
+          throw new Error('Custom reports table does not exist.');
+        }
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['custom-reports', tenantId] });
+      toast({ title: 'Report deleted', description: 'Custom report has been removed.' });
+      setDeleteDialogOpen(false);
+      setReportToDelete(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: humanizeError(error, 'Failed to delete report'),
+        variant: 'destructive',
+      });
+    },
+  });
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -190,10 +223,10 @@ export default function CustomReports() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Custom Reports</h1>
+          <h1 className="text-xl font-bold">Custom Reports</h1>
           <p className="text-muted-foreground">Create and manage custom SQL reports</p>
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>
@@ -268,6 +301,12 @@ export default function CustomReports() {
                       }
                     }}>
                       <Download className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive" onClick={() => {
+                      setReportToDelete(report);
+                      setDeleteDialogOpen(true);
+                    }}>
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -367,6 +406,19 @@ export default function CustomReports() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={async () => {
+          if (reportToDelete) {
+            await deleteReportMutation.mutateAsync(reportToDelete.id);
+          }
+        }}
+        itemType="report"
+        itemName={reportToDelete?.name}
+        isLoading={deleteReportMutation.isPending}
+      />
     </div>
   );
 }

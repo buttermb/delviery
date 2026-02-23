@@ -11,9 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Headphones, Plus, MessageCircle, Clock, CheckCircle } from 'lucide-react';
+import { Headphones, Plus, MessageCircle, Clock, CheckCircle, Trash2 } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { logger } from '@/lib/logger';
 
 export default function PrioritySupport() {
   const { tenant } = useTenantAdminAuth();
@@ -26,6 +28,8 @@ export default function PrioritySupport() {
     description: '',
     priority: 'high',
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
 
   const { data: tickets, isLoading } = useQuery({
     queryKey: ['support-tickets', tenantId],
@@ -89,6 +93,36 @@ export default function PrioritySupport() {
     },
   });
 
+  const deleteTicketMutation = useMutation({
+    mutationFn: async (ticketId: string) => {
+      if (!tenantId) throw new Error('Tenant ID required');
+      const { error } = await supabase
+        .from('support_tickets' as any)
+        .delete()
+        .eq('id', ticketId)
+        .eq('tenant_id', tenantId);
+      if (error) {
+        if (error.code === '42P01') {
+          throw new Error('Support tickets table does not exist.');
+        }
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['support-tickets', tenantId] });
+      toast({ title: 'Ticket deleted', description: 'Support ticket has been removed.' });
+      setDeleteDialogOpen(false);
+      setTicketToDelete(null);
+    },
+    onError: (error) => {
+      handleError(error, {
+        component: 'PrioritySupport.deleteTicket',
+        toastTitle: 'Error',
+        showToast: true
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createTicketMutation.mutate(formData);
@@ -102,10 +136,10 @@ export default function PrioritySupport() {
   const resolvedTickets = tickets?.filter((t: any) => t.status === 'resolved').length || 0;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Priority Support</h1>
+          <h1 className="text-xl font-bold">Priority Support</h1>
           <p className="text-muted-foreground">Enterprise-level support ticket management</p>
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>
@@ -174,6 +208,17 @@ export default function PrioritySupport() {
                       </div>
                     </div>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive ml-2"
+                    onClick={() => {
+                      setTicketToDelete(ticket.id);
+                      setDeleteDialogOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               ))}
             </div>
@@ -241,6 +286,18 @@ export default function PrioritySupport() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={async () => {
+          if (ticketToDelete) {
+            await deleteTicketMutation.mutateAsync(ticketToDelete);
+          }
+        }}
+        itemType="ticket"
+        isLoading={deleteTicketMutation.isPending}
+      />
     </div>
   );
 }
