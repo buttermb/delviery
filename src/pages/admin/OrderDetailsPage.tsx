@@ -27,6 +27,8 @@ import { OrderThreadedNotes } from '@/components/admin/orders/OrderThreadedNotes
 import { OrderNotesSection } from '@/components/admin/orders/OrderNotesSection';
 import { OrderTimeline } from '@/components/admin/orders/OrderTimeline';
 import { OrderAuditLog } from '@/components/admin/orders/OrderAuditLog';
+import { OrderCustomerCard } from '@/components/admin/orders/OrderCustomerCard';
+import type { OrderCustomerData } from '@/components/admin/orders/OrderCustomerCard';
 import { OrderAnalyticsInsights } from '@/components/admin/orders/OrderAnalyticsInsights';
 import { OrderSourceInfo } from '@/components/admin/orders/OrderSourceInfo';
 import { StorefrontSessionLink } from '@/components/admin/orders/StorefrontSessionLink';
@@ -1495,43 +1497,28 @@ export function OrderDetailsPage() {
               </div>
             )}
 
-            {/* Customer Info */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Customer
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{customerName}</span>
-                </div>
-                {customerEmail && (
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{customerEmail}</span>
-                  </div>
-                )}
-                {customerPhone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{customerPhone}</span>
-                  </div>
-                )}
-                {order.customer_id && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full mt-2 print:hidden"
-                    onClick={() => navigateToAdmin(`customers/${order.customer_id}`)}
-                  >
-                    View Customer Profile
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            {/* Customer Info — enhanced card with stats and actions */}
+            <OrderCustomerCard
+              customer={
+                order.customer
+                  ? {
+                      customer_id: order.customer_id || order.customer.id,
+                      first_name: order.customer.first_name,
+                      last_name: order.customer.last_name,
+                      email: order.customer.email,
+                      phone: order.customer.phone,
+                    } as OrderCustomerData
+                  : order.user
+                    ? {
+                        id: order.user.id,
+                        full_name: order.user.full_name,
+                        email: order.user.email,
+                        phone: order.user.phone,
+                      } as OrderCustomerData
+                    : null
+              }
+              showActions={!isCancelled}
+            />
 
             {/* Timeline */}
             <Card>
