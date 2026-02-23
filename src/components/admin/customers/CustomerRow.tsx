@@ -65,7 +65,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
   const navigate = useNavigate();
 
   return (
-    <tr className="hover:bg-muted/50 transition-colors">
+    <tr className="group hover:bg-muted/50 transition-colors duration-200">
       <td className="px-6 py-4">
         <input
           type="checkbox"
@@ -77,7 +77,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
       </td>
       <td className="px-6 py-4">
         <div className="flex items-center">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold transition-colors duration-200 group-hover:bg-primary/20">
             {customer.first_name?.[0]}{customer.last_name?.[0]}
           </div>
           <div className="ml-4">
@@ -94,7 +94,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
                 <>
                   {customer.email || formatPhoneNumber(customer.phone, { fallback: '' }) || 'No contact'}
                   {customer.email && (
-                    <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-200" />
                   )}
                 </>
               )}
@@ -127,7 +127,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
       <td className="px-6 py-4 text-right">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" aria-label={`Actions for ${displayName(customer.first_name, customer.last_name)}`}>
+            <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-all duration-200 hover:shadow-sm" aria-label={`Actions for ${displayName(customer.first_name, customer.last_name)}`}>
               <MoreHorizontal className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
