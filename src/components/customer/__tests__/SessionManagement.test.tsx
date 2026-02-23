@@ -21,8 +21,15 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 const mockToast = vi.fn();
-vi.mock('@/hooks/use-toast', () => ({
-  toast: (...args: unknown[]) => mockToast(...args),
+vi.mock('sonner', () => ({
+  toast: Object.assign(mockToast, {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
+  }),
 }));
 
 vi.mock('@/lib/logger', () => ({

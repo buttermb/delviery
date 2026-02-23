@@ -42,10 +42,14 @@ vi.mock('@/lib/utils/apiClient', () => ({
 }));
 
 const mockToast = vi.fn();
-vi.mock('@/hooks/use-toast', () => ({
-  toast: (...args: unknown[]) => mockToast(...args),
-  useToast: () => ({
-    toast: mockToast,
+vi.mock('sonner', () => ({
+  toast: Object.assign(mockToast, {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
   }),
 }));
 

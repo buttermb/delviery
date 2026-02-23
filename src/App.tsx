@@ -45,7 +45,7 @@ import { RoleProtectedRoute } from "./components/auth/RoleProtectedRoute";
 import { TenantContextGuard } from "./components/auth/TenantContextGuard";
 import { runProductionHealthCheck } from "@/utils/productionHealthCheck";
 import { productionLogger } from "@/utils/productionLogger";
-import { toast } from "./hooks/use-toast";
+import { toast } from "sonner";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 
@@ -233,10 +233,8 @@ const App = () => {
 
             // Show toast for critical issues
             if (!result.supabase || !result.realtime) {
-              toast({
-                title: 'Connection Issues Detected',
+              toast.error('Connection Issues Detected', {
                 description: 'Some features may not work properly. Please refresh the page.',
-                variant: 'destructive',
               });
             }
           }

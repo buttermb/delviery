@@ -3,7 +3,6 @@ import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
 import { Loader2 } from 'lucide-react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { PlatformSidebar } from '@/components/admin/PlatformSidebar';
-import { Toaster } from '@/components/ui/toaster';
 
 export default function PlatformAdminLayout() {
     const { isPlatformAdmin, isLoading } = usePlatformAdmin();
@@ -35,9 +34,6 @@ export default function PlatformAdminLayout() {
                             </div>
                         </div>
                     </main>
-                </div>
-                <div className="print:hidden">
-                    <Toaster />
                 </div>
             </div>
         </SidebarProvider>

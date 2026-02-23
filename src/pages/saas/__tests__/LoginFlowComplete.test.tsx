@@ -18,8 +18,6 @@ import { MemoryRouter } from 'react-router-dom';
 const mockSignInWithPassword = vi.fn();
 const mockFrom = vi.fn();
 const mockNavigate = vi.fn();
-const mockToast = vi.fn();
-
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     auth: {
@@ -78,9 +76,15 @@ vi.mock('@/lib/encryption/clientEncryption', () => ({
   },
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({
-    toast: mockToast,
+const mockToast = vi.fn();
+vi.mock('sonner', () => ({
+  toast: Object.assign(mockToast, {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
   }),
 }));
 
