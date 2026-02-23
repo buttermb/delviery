@@ -923,11 +923,17 @@ export function SmartDashboard() {
                 description: searchQuery || statusFilter !== 'all'
                   ? 'Try adjusting your search or filters'
                   : 'Create a disposable menu to share with your customers',
-                primaryAction: (!searchQuery && statusFilter === 'all') ? {
-                  label: 'Create Menu',
-                  onClick: () => setWizardOpen(true),
-                  icon: Plus
-                } : undefined,
+                primaryAction: searchQuery || statusFilter !== 'all'
+                  ? {
+                      label: 'Clear Filters',
+                      onClick: () => { setSearchQuery(''); setStatusFilter('all'); },
+                    }
+                  : {
+                      label: 'Create Menu',
+                      onClick: () => setWizardOpen(true),
+                      icon: Plus,
+                    },
+                compact: true,
                 designSystem: 'tenant-admin'
               }}
             />
