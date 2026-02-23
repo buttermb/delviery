@@ -88,7 +88,7 @@ export const OrderRow = React.memo<OrderRowProps>(({
   onDelete,
 }) => {
   return (
-    <tr className={`group hover:bg-muted/50 transition-colors ${isNew ? 'animate-new-order-highlight bg-primary/5 border-l-4 border-l-primary' : ''}`}>
+    <tr className={`group hover:bg-muted/50 transition-colors duration-200 ${isNew ? 'animate-new-order-highlight bg-primary/5 border-l-4 border-l-primary' : ''}`}>
       {/* Checkbox */}
       <td className="w-[50px] px-4 py-3">
         <div onClick={(e) => e.stopPropagation()}>
@@ -110,7 +110,7 @@ export const OrderRow = React.memo<OrderRowProps>(({
             text={order.order_number || order.id}
             label="Order Number"
             showLabel={false}
-            className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all duration-200"
           />
         </div>
       </td>
@@ -137,7 +137,7 @@ export const OrderRow = React.memo<OrderRowProps>(({
                 text={order.user.email}
                 label="Email"
                 showLabel={false}
-                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-200"
               />
             </div>
           )}
@@ -148,7 +148,7 @@ export const OrderRow = React.memo<OrderRowProps>(({
                 text={order.user.phone}
                 label="Phone"
                 showLabel={false}
-                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all duration-200"
               />
             </div>
           )}
@@ -159,7 +159,7 @@ export const OrderRow = React.memo<OrderRowProps>(({
       <td className="px-4 py-3">
         <div onClick={(e) => e.stopPropagation()}>
           <Select value={order.status} onValueChange={onStatusChange}>
-            <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0" aria-label={`Change status for order ${order.order_number || order.id.slice(0, 8)}`}>
+            <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 transition-colors duration-200 focus:ring-0 p-0" aria-label={`Change status for order ${order.order_number || order.id.slice(0, 8)}`}>
               <SelectValue>{getStatusBadge(order.status)}</SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -199,7 +199,7 @@ export const OrderRow = React.memo<OrderRowProps>(({
           <Button
             size="sm"
             variant="ghost"
-            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:shadow-sm"
             onClick={onView}
             aria-label={`View order ${order.order_number || order.id.slice(0, 8)}`}
           >
@@ -210,7 +210,7 @@ export const OrderRow = React.memo<OrderRowProps>(({
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:shadow-sm"
                 aria-label={`More actions for order ${order.order_number || order.id.slice(0, 8)}`}
               >
                 <MoreHorizontal className="h-4 w-4" />
