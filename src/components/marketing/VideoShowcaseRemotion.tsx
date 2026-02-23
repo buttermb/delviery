@@ -18,6 +18,7 @@
  */
 
 import { useRef, useEffect, useState, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 
 const FEATURE_PILLS = [
   'Dashboard Analytics',
@@ -81,7 +82,7 @@ export function VideoShowcaseRemotion() {
   const togglePlayback = () => {
     if (!videoRef.current) return;
     if (videoRef.current.paused) {
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      videoRef.current.play().then(() => setIsPlaying(true)).catch((err) => { logger.warn('Video autoplay failed', err); });
     } else {
       videoRef.current.pause();
       setIsPlaying(false);

@@ -39,7 +39,7 @@ export function PackageScanner({
     // Clean up any existing instance
     if (scannerRef.current) {
       if (scannerRef.current.isScanning) {
-        scannerRef.current.stop().catch(() => { });
+        scannerRef.current.stop().catch((err) => { logger.warn('Failed to stop scanner', err); });
         scannerRef.current.clear();
       }
     }

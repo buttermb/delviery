@@ -95,7 +95,7 @@ export function StoreShareDialog({
       setQrLoading(true);
       generateQRCodeDataURL(shareUrl, { size: 256 })
         .then(setQrCodeDataUrl)
-        .catch(() => {})
+        .catch((err) => { logger.warn('QR code generation failed', err); })
         .finally(() => setQrLoading(false));
     }
   }, [useEncryptedLink]);
