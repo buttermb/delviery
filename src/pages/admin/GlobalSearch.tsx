@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { escapePostgresLike } from "@/lib/utils/searchSanitize";
+import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -78,7 +78,7 @@ const GlobalSearch = () => {
       if (!searchTerm || searchTerm.length < 2 || !tenant) return null;
 
       const searchLower = searchTerm.toLowerCase();
-      const escapedSearch = escapePostgresLike(searchLower);
+      const escapedSearch = sanitizeSearchInput(searchLower);
 
       const usersPromise = supabase
         .from("profiles")
