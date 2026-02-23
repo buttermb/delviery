@@ -25,7 +25,8 @@ export function useClientMessages(clientId: string | undefined) {
                 .select('*')
                 .eq('client_id', clientId)
                 .eq('account_id', accountId)
-                .order('created_at', { ascending: true }); // Chronological order for chat
+                .order('created_at', { ascending: true })
+                .limit(200); // Chronological order for chat
 
             if (error) {
                 logger.error('Failed to fetch client messages', error, { component: 'useClientMessages', clientId, accountId });

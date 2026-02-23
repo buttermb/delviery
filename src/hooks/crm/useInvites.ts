@@ -26,7 +26,8 @@ export function useInvites(status?: 'pending' | 'accepted' | 'archived') {
                 .from('crm_invites')
                 .select('*, client:crm_clients(*)')
                 .eq('account_id', accountId)
-                .order('created_at', { ascending: false });
+                .order('created_at', { ascending: false })
+                .limit(500);
 
             if (status) {
                 query = query.eq('status', status);

@@ -26,7 +26,8 @@ export function useClientActivity(clientId: string | undefined) {
                 .select('*')
                 .eq('client_id', clientId)
                 .eq('account_id', accountId)
-                .order('created_at', { ascending: false });
+                .order('created_at', { ascending: false })
+                .limit(100);
 
             if (error) {
                 logger.error('Failed to fetch client activity', error, { component: 'useClientActivity', clientId, accountId });

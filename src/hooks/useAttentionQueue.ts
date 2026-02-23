@@ -78,7 +78,8 @@ export function useAttentionQueue() {
             .from('menu_orders')
             .select('id, total_amount, created_at')
             .eq('tenant_id', tenant.id)
-            .eq('status', 'pending');
+            .eq('status', 'pending')
+            .limit(100);
           return (data as unknown as OrderRow[]) || [];
         } catch { return []; }
       };
@@ -89,7 +90,8 @@ export function useAttentionQueue() {
             .from('orders')
             .select('id, total_amount, created_at')
             .eq('tenant_id', tenant.id)
-            .eq('status', 'pending');
+            .eq('status', 'pending')
+            .limit(100);
           return (data as unknown as OrderRow[]) || [];
         } catch { return []; }
       };
@@ -100,7 +102,8 @@ export function useAttentionQueue() {
             .from('deliveries')
             .select('id, created_at')
             .eq('tenant_id', tenant.id)
-            .eq('status', 'in_transit');
+            .eq('status', 'in_transit')
+            .limit(100);
           return (data as unknown as DeliveryRow[]) || [];
         } catch { return []; }
       };
@@ -111,7 +114,8 @@ export function useAttentionQueue() {
             .from('deliveries')
             .select('id, created_at')
             .eq('tenant_id', tenant.id)
-            .eq('status', 'in_transit');
+            .eq('status', 'in_transit')
+            .limit(100);
           return (data as unknown as DeliveryRow[]) || [];
         } catch { return []; }
       };
@@ -122,7 +126,8 @@ export function useAttentionQueue() {
             .from('products')
             .select('id, name')
             .eq('tenant_id', tenant.id)
-            .lte('stock_quantity', 0);
+            .lte('stock_quantity', 0)
+            .limit(100);
           return (data as unknown as ProductRow[]) || [];
         } catch { return []; }
       };
@@ -134,7 +139,8 @@ export function useAttentionQueue() {
             .select('id, name, stock_quantity')
             .eq('tenant_id', tenant.id)
             .gt('stock_quantity', 0)
-            .lt('stock_quantity', 10);
+            .lt('stock_quantity', 10)
+            .limit(100);
           return (data as unknown as ProductRow[]) || [];
         } catch { return []; }
       };
@@ -145,7 +151,8 @@ export function useAttentionQueue() {
             .from('customers')
             .select('id, first_name, last_name, balance')
             .eq('tenant_id', tenant.id)
-            .gt('balance', 0);
+            .gt('balance', 0)
+            .limit(100);
           return (data as unknown as CustomerRow[]) || [];
         } catch { return []; }
       };

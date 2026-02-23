@@ -80,7 +80,8 @@ export function useInvoices() {
                 .from('crm_invoices')
                 .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('account_id', accountId)
-                .order(sortCol, { ascending: sort?.ascending ?? false });
+                .order(sortCol, { ascending: sort?.ascending ?? false })
+                .limit(500);
             if (error) throw error;
             return (data || []).map((row: Record<string, unknown>) => normalizeInvoice(row));
         },

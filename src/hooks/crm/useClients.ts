@@ -39,7 +39,8 @@ export function useClients(status?: 'active' | 'archived') {
                 .from('crm_clients')
                 .select('id, account_id, name, email, phone, open_balance, status, created_at, updated_at')
                 .eq('account_id', accountId)
-                .order('created_at', { ascending: false });
+                .order('created_at', { ascending: false })
+                .limit(500);
 
             if (status) {
                 query = query.eq('status', status);

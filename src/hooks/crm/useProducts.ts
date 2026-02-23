@@ -26,7 +26,7 @@ export const useProducts = () => {
             const selectQuery = (query as any).select("id, name, price, sku, description, stock_quantity, available_quantity, low_stock_alert");
             const accountQuery = selectQuery.eq("account_id", accountId);
             const statusQuery = accountQuery.eq("status", "active");
-            const result = await statusQuery.order("name");
+            const result = await statusQuery.order("name").limit(500);
 
             if (result.error) throw result.error;
 

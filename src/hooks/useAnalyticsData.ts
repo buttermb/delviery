@@ -318,7 +318,8 @@ async function fetchProductsData(tenantId: string): Promise<Omit<InventoryAnalyt
   const { data: products, error } = await (supabase as any)
     .from('products')
     .select('id, name, sku, stock_quantity, low_stock_alert, price, category, in_stock')
-    .eq('tenant_id', tenantId);
+    .eq('tenant_id', tenantId)
+    .limit(1000);
 
   if (error) {
     logger.error('Failed to fetch products for analytics', { error, tenantId });
@@ -391,7 +392,8 @@ async function fetchCustomersData(
   const { data: customers, error } = await supabase
     .from('customers')
     .select('id, first_name, last_name, email, created_at')
-    .eq('tenant_id', tenantId);
+    .eq('tenant_id', tenantId)
+    .limit(5000);
 
   if (error) {
     logger.error('Failed to fetch customers for analytics', { error, tenantId });
