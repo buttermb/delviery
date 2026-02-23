@@ -847,9 +847,10 @@ function CashRegisterContent() {
 
       // Escape - Clear cart or close dialogs
       if (e.key === 'Escape') {
-        const anyDialogOpen = productDialogOpen || discountDialogOpen || receiptDialogOpen || keyboardHelpOpen || refundDialogOpen;
+        const anyDialogOpen = productDialogOpen || customerDialogOpen || discountDialogOpen || receiptDialogOpen || keyboardHelpOpen || refundDialogOpen;
         if (anyDialogOpen) {
           setProductDialogOpen(false);
+          setCustomerDialogOpen(false);
           setDiscountDialogOpen(false);
           setReceiptDialogOpen(false);
           setKeyboardHelpOpen(false);
@@ -869,7 +870,7 @@ function CashRegisterContent() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- processPayment.mutateAsync is stable
-  }, [cart, processPayment.isPending, executeCreditAction, productDialogOpen, discountDialogOpen, receiptDialogOpen, keyboardHelpOpen, refundDialogOpen, resetTransaction]);
+  }, [cart, processPayment.isPending, executeCreditAction, productDialogOpen, customerDialogOpen, discountDialogOpen, receiptDialogOpen, keyboardHelpOpen, refundDialogOpen, resetTransaction]);
 
   // Barcode scanner support
   useEffect(() => {
