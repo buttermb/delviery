@@ -232,8 +232,12 @@ export function OrderNotesSection({
                     onChange={(e) => setEditedInternalNotes(e.target.value)}
                     placeholder="Add internal notes about this order (e.g., special handling instructions, follow-up reminders)..."
                     rows={4}
+                    maxLength={2000}
                     className="resize-none"
                   />
+                  <p className="text-xs text-muted-foreground text-right">
+                    {editedInternalNotes.length}/2000
+                  </p>
                   <div className="flex justify-end gap-2">
                     <Button
                       variant="outline"
@@ -310,8 +314,12 @@ export function OrderNotesSection({
                     onChange={(e) => setEditedCustomerNotes(e.target.value)}
                     placeholder="Add notes for the customer (e.g., delivery updates, special messages)..."
                     rows={4}
+                    maxLength={2000}
                     className="resize-none"
                   />
+                  <p className="text-xs text-muted-foreground text-right">
+                    {editedCustomerNotes.length}/2000
+                  </p>
                   <div className="flex justify-end gap-2">
                     <Button
                       variant="outline"
