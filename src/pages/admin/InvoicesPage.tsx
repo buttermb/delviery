@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { CRMInvoice, CRMSettings } from "@/types/crm";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { TruncatedText } from "@/components/shared/TruncatedText";
+import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
 import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePagination } from "@/hooks/usePagination";
@@ -548,6 +549,8 @@ export function InvoicesPage() {
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [sort, setSort] = useState<InvoiceSortState>({ column: 'created_at', ascending: false });
+    const [voidDialogOpen, setVoidDialogOpen] = useState(false);
+    const [invoiceToVoid, setInvoiceToVoid] = useState<{ id: string; number: string } | null>(null);
 
     const { useInvoicesQuery, useMarkInvoicePaid, useMarkInvoiceSent, useVoidInvoice, useDuplicateInvoice } = useInvoices();
     const { data: invoices, isLoading } = useInvoicesQuery(sort);
@@ -1057,7 +1060,8 @@ export function InvoicesPage() {
                                                                 className="py-3 text-destructive focus:text-destructive"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    handleVoidInvoice.execute(invoice.id);
+                                                                    setInvoiceToVoid({ id: invoice.id, number: invoice.invoice_number });
+                                                                    setVoidDialogOpen(true);
                                                                 }}
                                                             >
                                                                 <Ban className="mr-2 h-4 w-4" />
@@ -1254,7 +1258,8 @@ export function InvoicesPage() {
                                                                 className="text-destructive focus:text-destructive"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    handleVoidInvoice.execute(invoice.id);
+                                                                    setInvoiceToVoid({ id: invoice.id, number: invoice.invoice_number });
+                                                                    setVoidDialogOpen(true);
                                                                 }}
                                                             >
                                                                 <Ban className="mr-2 h-4 w-4" />
@@ -1287,6 +1292,25 @@ export function InvoicesPage() {
                     </div>
                 )}
             </Card>
+
+            <ConfirmDialog
+                isOpen={voidDialogOpen}
+                onConfirm={() => {
+                    if (invoiceToVoid) {
+                        handleVoidInvoice.execute(invoiceToVoid.id);
+                    }
+                    setVoidDialogOpen(false);
+                    setInvoiceToVoid(null);
+                }}
+                onCancel={() => {
+                    setVoidDialogOpen(false);
+                    setInvoiceToVoid(null);
+                }}
+                title="Void Invoice"
+                description={`Are you sure you want to void invoice ${invoiceToVoid?.number ?? ""}? This action cannot be undone.`}
+                confirmLabel="Void Invoice"
+                variant="destructive"
+            />
         </div>
     );
 }
