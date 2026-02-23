@@ -151,6 +151,7 @@ export function ProductCard({
                 variant="ghost"
                 size="icon"
                 className="text-[hsl(var(--tenant-text-light))] hover:text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]"
+                aria-label={`More actions for ${product.name}`}
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
@@ -248,6 +249,7 @@ export function ProductCard({
               size="sm"
               onClick={() => onEdit(product.id)}
               className="flex-1 border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-surface))]"
+              aria-label={`Edit ${product.name}`}
             >
               <Edit className="h-4 w-4 mr-2" />
               Edit
@@ -258,6 +260,7 @@ export function ProductCard({
               size="sm"
               onClick={() => onAddToMenu(product.id)}
               className="flex-1 bg-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/90 text-white"
+              aria-label={`Add ${product.name} to menu`}
             >
               <Package className="h-4 w-4 mr-2" />
               Menu
