@@ -303,6 +303,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
           <Input
             ref={inputRef}
             value={input}
+            aria-label="Type a message"
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             onFocus={() => {

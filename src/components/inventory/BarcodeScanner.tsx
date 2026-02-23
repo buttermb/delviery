@@ -116,6 +116,7 @@ export function BarcodeScanner({ onScan, continuous = true }: BarcodeScannerProp
           <div className="flex gap-2">
             <Input
               placeholder="Enter barcode manually..."
+              aria-label="Enter barcode manually"
               value={manualEntry}
               onChange={(e) => setManualEntry(e.target.value)}
               onKeyPress={(e) => {

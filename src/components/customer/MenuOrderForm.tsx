@@ -70,7 +70,7 @@ export const MenuOrderForm = ({
       <div className="container mx-auto px-4 py-6 max-w-3xl">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={onBack}>
+          <Button variant="ghost" size="icon" aria-label="Go back" onClick={onBack}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl font-bold">Place Order</h1>

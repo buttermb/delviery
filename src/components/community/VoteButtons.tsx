@@ -35,6 +35,7 @@ export function VoteButtons({
       <Button
         variant="ghost"
         size="icon"
+        aria-label="Upvote"
         className={cn(
           'h-8 w-8 hover:bg-orange-500/10',
           userVote === 1 && 'text-orange-500'
@@ -64,6 +65,7 @@ export function VoteButtons({
       <Button
         variant="ghost"
         size="icon"
+        aria-label="Downvote"
         className={cn(
           'h-8 w-8 hover:bg-blue-500/10',
           userVote === -1 && 'text-blue-500'

@@ -250,6 +250,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
                           <Button
                             variant="outline"
                             size="icon"
+                            aria-label="Decrease quantity"
                             className="min-h-[44px] min-w-[44px] h-11 w-11"
                             onClick={() => {
                               haptics.light();
@@ -265,6 +266,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
                           <Button
                             variant="outline"
                             size="icon"
+                            aria-label="Increase quantity"
                             className="min-h-[44px] min-w-[44px] h-11 w-11"
                             onClick={() => {
                               haptics.light();
