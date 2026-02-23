@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Flag, Plus, Search } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export default function FeatureFlagsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -81,11 +81,7 @@ export default function FeatureFlagsPage() {
         queryClient.setQueryData(['super-admin-feature-flags'], context.previousFlags);
       }
       logger.error('Failed to toggle feature flag', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to update feature flag. Please try again.',
-      });
+      toast.error('Failed to update feature flag. Please try again.');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['super-admin-feature-flags'] });

@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Menu, LogOut, DollarSign, Clock, Settings, Package, Truck } from 'lucide-react';
 import CourierKeyboardShortcuts from '@/components/courier/CourierKeyboardShortcuts';
@@ -42,7 +42,6 @@ export default function CourierDashboardPage() {
   const { courier, loading, isOnline, toggleOnlineStatus, role } = useCourier();
   const [availableOrders, setAvailableOrders] = useState<Order[]>([]);
   const [_loadingOrders, setLoadingOrders] = useState(true);
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const { data: runnerStats } = useRunnerStats(role === 'runner' ? courier?.id : undefined);
@@ -80,8 +79,7 @@ export default function CourierDashboardPage() {
             // Only show notification if order is actually available (RLS filtered)
             if (payload.new.status === 'pending' && !payload.new.courier_id) {
               loadAvailableOrders();
-              toast({
-                title: '🚀 New Order Available!',
+              toast.success('New Order Available!', {
                 description: 'A new delivery order is waiting for you',
               });
             }
@@ -160,18 +158,15 @@ export default function CourierDashboardPage() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Order Accepted!',
+      toast.success('Order Accepted!', {
         description: 'Navigate to pickup location',
       });
 
       loadAvailableOrders();
       navigate(`/courier/order/${orderId}`);
     } catch (error: unknown) {
-      toast({
-        title: 'Failed to Accept Order',
+      toast.error('Failed to Accept Order', {
         description: humanizeError(error, 'Order may have been taken by another courier'),
-        variant: 'destructive',
       });
     }
   };

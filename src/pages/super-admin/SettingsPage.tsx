@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Key, Bell, Shield, User } from "lucide-react";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { safeFetch } from "@/utils/safeFetch";
 
@@ -27,31 +27,19 @@ export default function SuperAdminSettingsPage() {
     try {
       // Validate inputs
       if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-        toast({
-          title: "Missing Fields",
-          description: "Please fill in all password fields",
-          variant: "destructive",
-        });
+        toast.error('Please fill in all password fields');
         setLoading(false);
         return;
       }
 
       if (passwordData.newPassword !== passwordData.confirmPassword) {
-        toast({
-          title: "Passwords Don't Match",
-          description: "New password and confirmation must match",
-          variant: "destructive",
-        });
+        toast.error('New password and confirmation must match');
         setLoading(false);
         return;
       }
 
       if (passwordData.newPassword.length < 8) {
-        toast({
-          title: "Password Too Short",
-          description: "Password must be at least 8 characters long",
-          variant: "destructive",
-        });
+        toast.error('Password must be at least 8 characters long');
         setLoading(false);
         return;
       }
@@ -77,10 +65,7 @@ export default function SuperAdminSettingsPage() {
         throw new Error(result.error || "Failed to update password");
       }
 
-      toast({
-        title: "Password Updated",
-        description: "Your password has been updated successfully",
-      });
+      toast.success('Your password has been updated successfully');
 
       // Clear form
       setPasswordData({
@@ -89,11 +74,7 @@ export default function SuperAdminSettingsPage() {
         confirmPassword: "",
       });
     } catch (error: unknown) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update password",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to update password');
     } finally {
       setLoading(false);
     }

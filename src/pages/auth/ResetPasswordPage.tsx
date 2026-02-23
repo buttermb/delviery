@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, CheckCircle2, XCircle, Key, Eye, EyeOff, Check, X } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { usePasswordReset } from "@/hooks/usePasswordReset";
 import { logger } from "@/lib/logger";
 import { AuthErrorAlert, getAuthErrorMessage } from "@/components/auth/AuthErrorAlert";
@@ -103,8 +103,7 @@ export function ResetPasswordPage() {
       const result = await confirmReset({ token, newPassword: password });
       if (result.success) {
         setSuccess(true);
-        toast({
-          title: "Password Reset Successful",
+        toast.success("Password Reset Successful", {
           description: result.message,
         });
       }

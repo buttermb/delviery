@@ -11,7 +11,7 @@ import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast as _toast } from 'sonner';
 import {
   ShoppingCart,
   ArrowLeft,
@@ -35,7 +35,6 @@ type CustomerMode = 'retail' | 'wholesale';
 export default function WholesaleOrderDetailPage() {
   const { slug, orderId } = useParams<{ slug: string; orderId: string }>();
   const { tenant: _tenant } = useCustomerAuth();
-  const { toast: _toast } = useToast();
   const navigate = useNavigate();
   const [mode, setMode] = useReactState<CustomerMode>('wholesale');
 

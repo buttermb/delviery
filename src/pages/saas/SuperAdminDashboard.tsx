@@ -28,7 +28,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { calculateHealthScore } from '@/lib/tenant';
@@ -44,7 +44,6 @@ import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function SuperAdminDashboard() {
-  const { toast } = useToast();
   const [selectedTenant, setSelectedTenant] = useState<any>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -148,10 +147,7 @@ export default function SuperAdminDashboard() {
       sessionStorage.setItem('super_admin_original', 'true');
       sessionStorage.setItem('impersonated_tenant_id', tenant.id);
 
-      toast({
-        title: 'Tenant Session Created',
-        description: `Now viewing as ${tenant.business_name}. Your super admin access is preserved.`,
-      });
+      toast.success(`Now viewing as ${tenant.business_name}. Your super admin access is preserved.`);
 
       // In production, generate temporary JWT and redirect to tenant dashboard
       // window.location.href = `/tenant/${tenant.id}/dashboard?impersonate=true`;
@@ -174,10 +170,7 @@ export default function SuperAdminDashboard() {
         })
         .eq('id', tenant.id);
 
-      toast({
-        title: 'Tenant Suspended',
-        description: `${tenant.business_name} has been suspended`,
-      });
+      toast.success(`${tenant.business_name} has been suspended`);
     } catch (error) {
       handleError(error, { component: 'SuperAdminDashboard', toastTitle: 'Error suspending tenant' });
     }
@@ -409,10 +402,7 @@ export default function SuperAdminDashboard() {
 
                         if (error) throw error;
 
-                        toast({
-                          title: 'Feature flag updated',
-                          description: `${flag.name} is now ${!flag.enabled ? 'enabled' : 'disabled'}`,
-                        });
+                        toast.success(`${flag.name} is now ${!flag.enabled ? 'enabled' : 'disabled'}`);
                       } catch (error) {
                         handleError(error, { component: 'SuperAdminDashboard', toastTitle: 'Update failed' });
                       }

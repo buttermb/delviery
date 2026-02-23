@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, ShoppingCart, Search, Loader2, Star } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { validateRouteUUID } from "@/lib/utils/uuidValidation";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
@@ -226,15 +226,12 @@ export default function CustomerMenuViewPage() {
         addToGuestCart(productId, quantity, selectedWeight);
       }
 
-      toast({
-        title: "Added to cart",
+      toast.success("Added to cart", {
         description: "Item added to your cart",
       });
     } catch (error: unknown) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error instanceof Error ? error.message : "Failed to add item to cart",
-        variant: "destructive",
       });
     }
   };

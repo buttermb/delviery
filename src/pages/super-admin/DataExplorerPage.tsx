@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Database, Play, Download, History, AlertCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
 // Store recent queries in localStorage
@@ -77,11 +77,7 @@ export default function DataExplorerPage() {
 
   const handleRunQuery = () => {
     if (!query.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Please enter a query',
-      });
+      toast.error('Please enter a query');
       return;
     }
 
@@ -92,11 +88,7 @@ export default function DataExplorerPage() {
 
   const handleExportResults = () => {
     if (!results || results.length === 0) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No results to export',
-      });
+      toast.error('No results to export');
       return;
     }
 
@@ -118,17 +110,10 @@ export default function DataExplorerPage() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      toast({
-        title: 'Success',
-        description: 'Results exported successfully',
-      });
+      toast.success('Results exported successfully');
     } catch (error) {
       logger.error('Export failed', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to export results',
-      });
+      toast.error('Failed to export results');
     }
   };
 

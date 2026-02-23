@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShoppingBag, Loader2, Sparkles, Eye, EyeOff } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
@@ -40,8 +40,7 @@ export default function CustomerLoginPage() {
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
     async (qEmail, qPassword, qSlug) => {
       await login(qEmail, qPassword, qSlug || '');
-      toast({
-        title: "Welcome!",
+      toast.success("Welcome!", {
         description: "Logged in successfully",
       });
       const intendedDestination = intendedDestinationUtils.consume();
@@ -71,8 +70,7 @@ export default function CustomerLoginPage() {
 
     if (verified === 'true' && emailParam) {
       setEmail(emailParam);
-      toast({
-        title: 'Email Verified!',
+      toast.success('Email Verified!', {
         description: 'Please enter your password to complete login.',
       });
       // Clean up URL
@@ -157,8 +155,7 @@ export default function CustomerLoginPage() {
         }
 
         const result = await response.json();
-        toast({
-          title: "Magic Link Sent!",
+        toast.success("Magic Link Sent!", {
           description: result.message || "Check your email for the login link.",
         });
         setIsMagicLinkMode(false); // Reset to avoid confusion
@@ -168,9 +165,8 @@ export default function CustomerLoginPage() {
 
         resetOnSuccess();
 
-        toast({
-          title: "Welcome!",
-          description: `Logged in successfully`,
+        toast.success("Welcome!", {
+          description: "Logged in successfully",
         });
 
         const intendedDestination = intendedDestinationUtils.consume();

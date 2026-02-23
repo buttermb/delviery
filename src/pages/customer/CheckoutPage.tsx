@@ -26,7 +26,7 @@ import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/formatters";
 import { useGuestCart } from "@/hooks/useGuestCart";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { SuccessState } from "@/components/shared/SuccessState";
 import type { RenderCartItem } from "@/types/cart";
 import type { LucideIcon } from "lucide-react";
@@ -185,18 +185,12 @@ export default function CheckoutPage() {
   // Handle place order
   const handlePlaceOrder = async () => {
     if (cartItems.length === 0) {
-      toast({
-        title: "Cart is empty",
-        variant: "destructive",
-      });
+      toast.error("Cart is empty");
       return;
     }
 
     if (!deliveryInfo.addressId && !user) {
-      toast({
-        title: "Please provide delivery address",
-        variant: "destructive",
-      });
+      toast.error("Please provide delivery address");
       return;
     }
 
@@ -222,15 +216,12 @@ export default function CheckoutPage() {
         localStorage.removeItem("guest_cart");
       }
 
-      toast({
-        title: "Order placed successfully!",
+      toast.success("Order placed successfully!", {
         description: `Order #${orderNum} has been placed.`,
       });
     } catch (error: unknown) {
-      toast({
-        title: "Error placing order",
+      toast.error("Error placing order", {
         description: error instanceof Error ? error.message : "Unknown error occurred",
-        variant: "destructive",
       });
     }
   };
@@ -469,10 +460,8 @@ export default function CheckoutPage() {
                                 if (isAddingAddress) return;
 
                                 if (!newAddress.street || !newAddress.city || !newAddress.zip) {
-                                  toast({
-                                    title: "Missing Information",
+                                  toast.error("Missing Information", {
                                     description: "Please fill in all required fields",
-                                    variant: "destructive",
                                   });
                                   return;
                                 }
@@ -499,18 +488,15 @@ export default function CheckoutPage() {
                                     queryClient.invalidateQueries({ queryKey: ["customer-addresses", user.id] });
                                   }
 
-                                  toast({
-                                    title: "Address Added",
+                                  toast.success("Address Added", {
                                     description: "New address has been saved",
                                   });
 
                                   setNewAddress({ street: "", city: "", state: "NY", zip: "", borough: "" });
                                   setShowAddAddressDialog(false);
                                 } catch (error: unknown) {
-                                  toast({
-                                    title: "Error",
+                                  toast.error("Error", {
                                     description: error instanceof Error ? error.message : "Failed to save address",
-                                    variant: "destructive",
                                   });
                                 } finally {
                                   setIsAddingAddress(false);

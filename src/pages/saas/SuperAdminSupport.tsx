@@ -38,7 +38,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { humanizeError } from '@/lib/humanizeError';
@@ -61,7 +61,6 @@ interface SupportTicket {
 
 export default function SuperAdminSupport() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('open');
@@ -97,11 +96,7 @@ export default function SuperAdminSupport() {
       const { data, error } = await query;
 
       if (error) {
-        toast({
-          title: "Error fetching tickets",
-          description: humanizeError(error),
-          variant: "destructive"
-        });
+        toast.error(humanizeError(error));
         throw error;
       }
 
@@ -137,10 +132,7 @@ export default function SuperAdminSupport() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Ticket resolved',
-        description: 'Ticket has been marked as resolved',
-      });
+      toast.success('Ticket has been marked as resolved');
       queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
       queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
     } catch (error) {

@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Store,
   Search,
@@ -44,7 +44,6 @@ export default function BusinessMenuPage() {
   const { tenant: _tenant } = useCustomerAuth();
   // Use businessSlug if provided (from route), otherwise use slug (current tenant)
   const targetBusinessSlug = businessSlug || slug;
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
@@ -205,17 +204,14 @@ export default function BusinessMenuPage() {
       if (user) {
         queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
       }
-      toast({
-        title: 'Added to Cart',
+      toast.success('Added to Cart', {
         description: user ? 'Item added to your cart' : 'Item added to cart. Sign in to save your cart.',
       });
     },
     onError: (error: unknown) => {
       logger.error('Failed to add to cart', error, { component: 'BusinessMenuPage' });
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: error instanceof Error ? error.message : 'Failed to add item to cart',
-        variant: 'destructive',
       });
     },
   });

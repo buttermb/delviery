@@ -19,7 +19,7 @@ import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { formatCurrency, formatPhoneNumber } from "@/lib/formatters";
 import { formatSmartDate } from "@/lib/utils/formatDate";
 import { getStatusColor, getStatusVariant } from "@/lib/utils/statusColors";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { showInfoToast } from "@/utils/toastHelpers";
 import { FeatureList } from "@/components/admin/FeatureList";
 import { ImpersonationMode } from "@/components/super-admin/ImpersonationMode";
@@ -175,18 +175,11 @@ export default function TenantDetailPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
-      toast({
-        title: "Success",
-        description: `Tenant ${suspendMutation.variables ? "suspended" : "activated"}`,
-      });
+      toast.success(`Tenant ${suspendMutation.variables ? "suspended" : "activated"}`);
     },
     onError: (error: unknown) => {
       const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMessage,
-      });
+      toast.error(errorMessage);
     },
   });
 
@@ -213,18 +206,11 @@ export default function TenantDetailPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
-      toast({
-        title: "Plan Changed",
-        description: "Subscription plan updated successfully",
-      });
+      toast.success('Subscription plan updated successfully');
     },
     onError: (error: unknown) => {
       const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMessage,
-      });
+      toast.error(errorMessage);
     },
   });
 
@@ -942,10 +928,7 @@ export default function TenantDetailPage() {
                                       document.body.removeChild(a);
                                       URL.revokeObjectURL(url);
 
-                                      toast({
-                                        title: "Invoice Downloaded",
-                                        description: `Invoice ${invoice.invoice_number} downloaded successfully`,
-                                      });
+                                      toast.success(`Invoice ${invoice.invoice_number} downloaded successfully`);
                                     }}
                                     className="text-[hsl(var(--super-admin-text))]/70 hover:text-[hsl(var(--super-admin-primary))]"
                                   >
@@ -1199,17 +1182,10 @@ export default function TenantDetailPage() {
             queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
             queryClient.invalidateQueries({ queryKey: ["subscription-plan", tenant.subscription_plan] });
 
-            toast({
-              title: "Subscription Cancelled",
-              description: "The subscription has been cancelled successfully. The tenant retains access until the end of the billing period.",
-            });
+            toast.success('The subscription has been cancelled successfully. The tenant retains access until the end of the billing period.');
           } catch (error: unknown) {
             logger.error("Failed to cancel subscription", error, { component: "TenantDetailPage", tenantId: tenant?.id });
-            toast({
-              title: "Error",
-              description: error instanceof Error ? error.message : "Failed to cancel subscription",
-              variant: "destructive",
-            });
+            toast.error(error instanceof Error ? error.message : 'Failed to cancel subscription');
           }
         }}
         itemName={tenant?.business_name}

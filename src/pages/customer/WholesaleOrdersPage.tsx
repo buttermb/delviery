@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast as _toast } from 'sonner';
 import { 
   ShoppingCart, 
   Search, 
@@ -44,7 +44,6 @@ type CustomerMode = 'retail' | 'wholesale';
 export default function WholesaleOrdersPage() {
   const { slug } = useParams<{ slug: string }>();
   const { tenant } = useCustomerAuth();
-  const { toast: _toast } = useToast();
   const navigate = useNavigate();
   const tenantId = tenant?.id;
   const buyerTenantId = tenantId;

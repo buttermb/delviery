@@ -29,7 +29,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ArrowRight, CheckCircle2, WifiOff, Eye, EyeOff, Wand2, Leaf, Star, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RateLimitWarning } from '@/components/auth/RateLimitWarning';
@@ -58,7 +58,6 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_isSendingMagicLink, setIsSendingMagicLink] = useState(false);
   const [_magicLinkSent, _setMagicLinkSent] = useState(false);
@@ -84,24 +83,17 @@ export function LoginPage() {
     const unsubscribe = onConnectionStatusChange((status) => {
       setConnectionStatus(status);
       if (status === 'offline') {
-        toast({
-          title: 'No Internet Connection',
-          description: 'Please check your connection and try again.',
-          variant: 'destructive',
-        });
+        toast.error('Please check your connection and try again.');
       }
     });
     return unsubscribe;
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     if (signupSuccess) {
-      toast({
-        title: 'Account created successfully!',
-        description: 'Please sign in with your new credentials.',
-      });
+      toast.success('Account created successfully! Please sign in with your new credentials.');
     }
-  }, [signupSuccess, toast]);
+  }, [signupSuccess]);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -114,11 +106,7 @@ export function LoginPage() {
 
   const handleForgotPassword = async () => {
     if (!forgotPasswordEmail || !forgotPasswordEmail.includes('@')) {
-      toast({
-        title: 'Invalid Email',
-        description: 'Please enter a valid email address.',
-        variant: 'destructive',
-      });
+      toast.error('Please enter a valid email address.');
       return;
     }
 
@@ -131,18 +119,11 @@ export function LoginPage() {
       if (error) throw error;
 
       setResetEmailSent(true);
-      toast({
-        title: 'Reset Email Sent',
-        description: 'Check your inbox for password reset instructions.',
-      });
+      toast.success('Check your inbox for password reset instructions.');
     } catch (error: unknown) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
       logger.error('Password reset error', errorObj);
-      toast({
-        title: 'Error',
-        description: errorObj.message || 'Failed to send reset email. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error(errorObj.message || 'Failed to send reset email. Please try again.');
     } finally {
       setIsSendingReset(false);
     }
@@ -242,7 +223,7 @@ export function LoginPage() {
         retryConfig: { maxRetries: 3, initialDelay: 1000 },
         onRetry: (attempt) => {
           setRetryCount(attempt);
-          toast({ title: 'Retrying...', description: `Attempt ${attempt} of 3` });
+          toast(`Retrying... Attempt ${attempt} of 3`);
         }
       });
 
@@ -270,10 +251,7 @@ export function LoginPage() {
       authFlowLogger.completeFlow(flowId, { tenantId: authResponse.tenant?.id });
       resetOnSuccess();
 
-      toast({
-        title: 'Welcome back!',
-        description: `Redirecting to ${authResponse.tenant.business_name}...`,
-      });
+      toast.success(`Welcome back! Redirecting to ${authResponse.tenant.business_name}...`);
 
       // Check for intended destination (user tried to access a protected page before login)
       const intendedDestination = intendedDestinationUtils.consume();

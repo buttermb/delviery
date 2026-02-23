@@ -17,7 +17,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
 import FloraIQLogo from '@/components/FloraIQLogo';
@@ -32,8 +32,6 @@ interface LocationState {
 export function SignupSuccessPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
-
   const state = location.state as LocationState | null;
   const email = state?.email || '';
 
@@ -131,10 +129,8 @@ export function SignupSuccessPage() {
 
   const handleResendEmail = async () => {
     if (!email) {
-      toast({
-        title: 'Email Unknown',
+      toast.error('Email Unknown', {
         description: 'Unable to resend verification. Please try signing up again.',
-        variant: 'destructive',
       });
       return;
     }
@@ -153,25 +149,20 @@ export function SignupSuccessPage() {
 
       if (error) {
         logger.error('[SignupSuccess] Resend failed', { email, error: error.message });
-        toast({
-          title: 'Failed to Resend',
+        toast.error('Failed to Resend', {
           description: humanizeError(error),
-          variant: 'destructive',
         });
       } else {
         logger.info('[SignupSuccess] Verification email resent', { email });
-        toast({
-          title: 'Email Sent',
+        toast.success('Email Sent', {
           description: 'A new verification email has been sent to your inbox.',
         });
         startCooldown();
       }
     } catch (error) {
       logger.error('[SignupSuccess] Resend error', { error });
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to resend verification email. Please try again.',
-        variant: 'destructive',
       });
     } finally {
       setIsResending(false);

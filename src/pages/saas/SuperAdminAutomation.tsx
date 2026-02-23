@@ -18,7 +18,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
 interface AutomationRule {
@@ -34,7 +34,6 @@ interface AutomationRule {
 
 export default function SuperAdminAutomation() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [runningRules, setRunningRules] = useState<Set<string>>(new Set());
   const [rules, setRules] = useState<AutomationRule[]>([
     {
@@ -84,10 +83,7 @@ export default function SuperAdminAutomation() {
       prev.map((r) => (r.id === ruleId ? { ...r, enabled } : r))
     );
 
-    toast({
-      title: enabled ? 'Rule enabled' : 'Rule disabled',
-      description: `Automation rule has been ${enabled ? 'activated' : 'deactivated'}`,
-    });
+    toast.success(`Automation rule has been ${enabled ? 'activated' : 'deactivated'}`);
   };
 
   const handleRunNow = async (ruleId: string) => {
@@ -102,10 +98,7 @@ export default function SuperAdminAutomation() {
         // Check if it's a network/CORS error (common in preview environments)
         if (error.message?.includes('fetch') || error.message?.includes('CORS') || error.message?.includes('network')) {
           logger.debug('⚠️ Network error in preview - function may still be executing on server');
-          toast({
-            title: '⚙️ Rule triggered',
-            description: 'Automation running in background. Check edge function logs to verify execution.',
-          });
+          toast('Automation running in background. Check edge function logs to verify execution.');
           
           // Update last run time optimistically
           setRules((prev) =>
@@ -126,10 +119,7 @@ export default function SuperAdminAutomation() {
         throw new Error(errorMessage);
       }
 
-      toast({
-        title: '✅ Rule executed',
-        description: data?.message || 'Automation rule completed successfully',
-      });
+      toast.success(data?.message || 'Automation rule completed successfully');
 
       // Update last run time
       setRules((prev) =>
@@ -143,11 +133,7 @@ export default function SuperAdminAutomation() {
       logger.error('Rule execution error', error, { component: 'SuperAdminAutomation' });
       
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast({
-        title: 'Failed to run rule',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error(errorMessage);
     } finally {
       setRunningRules(prev => {
         const next = new Set(prev);

@@ -33,7 +33,7 @@ import {
   MapPin,
   Clock,
 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 type RevokeTarget = { type: 'single'; sessionId: string } | { type: 'all-others' } | null;
 
@@ -113,14 +113,12 @@ export function SessionsPage() {
 
     if (revokeTarget.type === 'single') {
       revokeSession(revokeTarget.sessionId);
-      toast({
-        title: 'Session Revoked',
+      toast.success('Session Revoked', {
         description: 'The session has been revoked successfully.',
       });
     } else {
       revokeAllOthers();
-      toast({
-        title: 'All Sessions Revoked',
+      toast.success('All Sessions Revoked', {
         description: 'All other sessions have been revoked. You remain logged in on this device.',
       });
     }

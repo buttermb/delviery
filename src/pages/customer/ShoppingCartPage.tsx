@@ -21,7 +21,7 @@ import {
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { useGuestCart } from "@/hooks/useGuestCart";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { validateRouteUUID as _validateRouteUUID } from "@/lib/utils/uuidValidation";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
@@ -149,26 +149,20 @@ export default function ShoppingCartPage() {
           .eq("id", item.id)
           .then(() => {
             queryClient.invalidateQueries({ queryKey: ["cart", user.id] });
-            toast({
-              title: "Item removed",
-            });
+            toast.success("Item removed");
           });
       }
     } else {
       removeFromGuestCart(productId, selectedWeight);
-      toast({
-        title: "Item removed",
-      });
+      toast.success("Item removed");
     }
   };
 
   // Proceed to checkout
   const handleCheckout = () => {
     if (cartItems.length === 0) {
-      toast({
-        title: "Cart is empty",
+      toast.error("Cart is empty", {
         description: "Add items to your cart before checkout",
-        variant: "destructive",
       });
       return;
     }

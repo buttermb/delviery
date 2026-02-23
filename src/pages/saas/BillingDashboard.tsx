@@ -27,7 +27,7 @@ import {
 import { CreditCard, TrendingUp, Download, Plus, Users, Menu, Package, MapPin } from 'lucide-react';
 import { useTenant } from '@/contexts/TenantContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { getPlanPrice, getPlanDisplayName, checkLimit } from '@/lib/tenant';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -40,7 +40,6 @@ import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function BillingDashboard() {
   const { tenant, refresh } = useTenant();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>('');
@@ -158,10 +157,7 @@ export default function BillingDashboard() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Plan Upgraded!',
-        description: `Successfully upgraded to ${getPlanDisplayName(selectedPlan)} plan`,
-      });
+      toast.success(`Successfully upgraded to ${getPlanDisplayName(selectedPlan)} plan`);
 
       refresh();
       setUpgradeDialogOpen(false);

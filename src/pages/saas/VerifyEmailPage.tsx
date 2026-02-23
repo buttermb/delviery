@@ -6,7 +6,7 @@ import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import { Label } from '@/components/ui/label';
 import { Mail, Check, Loader2, AlertCircle, ArrowLeft, Leaf, Star, ShieldCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { handleError } from '@/utils/errorHandling/handlers';
 import FloraIQLogo from '@/components/FloraIQLogo';
 import { motion } from 'framer-motion';
@@ -14,7 +14,6 @@ import { motion } from 'framer-motion';
 export default function VerifyEmailPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const [code, setCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [email, setEmail] = useState<string>('');
@@ -29,11 +28,7 @@ export default function VerifyEmailPage() {
 
   const handleVerify = async () => {
     if (!code || code.length !== 6) {
-      toast({
-        title: 'Invalid Code',
-        description: 'Please enter the 6-digit verification code',
-        variant: 'destructive',
-      });
+      toast.error('Please enter the 6-digit verification code');
       return;
     }
 
@@ -66,10 +61,7 @@ export default function VerifyEmailPage() {
             .eq('email', email);
         }
 
-        toast({
-          title: 'Email Verified!',
-          description: 'Your account has been activated',
-        });
+        toast.success('Your account has been activated');
 
         if (tenant?.slug) {
           navigate(`/${tenant.slug}/admin/welcome`);
@@ -93,10 +85,7 @@ export default function VerifyEmailPage() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Code Resent',
-        description: 'Check your email for the new verification code',
-      });
+      toast.success('Check your email for the new verification code');
     } catch (error) {
       handleError(error, { component: 'VerifyEmailPage', toastTitle: 'Failed to Resend' });
     }

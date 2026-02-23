@@ -12,7 +12,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Building2, ArrowLeft, Shield } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { handleError } from '@/utils/errorHandling/handlers';
 
 const SuperAdminLogin = () => {
@@ -63,10 +63,7 @@ const SuperAdminLogin = () => {
         throw new Error("You don't have platform super admin access. Please contact support.");
       }
 
-      toast({
-        title: "Welcome, Super Admin!",
-        description: "Logged in successfully",
-      });
+      toast.success('Logged in successfully');
 
       // Redirect to super admin dashboard
       navigate("/saas/admin", { replace: true });

@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Package,
   Search,
@@ -40,7 +40,6 @@ type CustomerMode = 'retail' | 'wholesale';
 export default function WholesaleMarketplacePage() {
   const { slug: _slug } = useParams<{ slug: string }>();
   const { customer, tenant } = useCustomerAuth();
-  const { toast } = useToast();
   const _navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -146,17 +145,14 @@ export default function WholesaleMarketplacePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-cart', buyerTenantId] });
-      toast({
-        title: 'Added to Cart',
+      toast.success('Added to Cart', {
         description: 'Item added to wholesale cart',
       });
     },
     onError: (error: unknown) => {
       logger.error('Failed to add to cart', error, { component: 'WholesaleMarketplacePage' });
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: error instanceof Error ? error.message : 'Failed to add item to cart',
-        variant: 'destructive',
       });
     },
   });
@@ -353,8 +349,7 @@ export default function WholesaleMarketplacePage() {
                         onClick={() => {
                           // Navigate to listing detail page (if exists) or show details in modal
                           // For now, just show a toast with listing info
-                          toast({
-                            title: listing.product_name,
+                          toast(listing.product_name, {
                             description: listing.description?.substring(0, 100) + '...',
                           });
                         }}

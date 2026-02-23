@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
 import { Button } from "@/components/ui/button";
 
@@ -109,8 +109,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
         // Clear redirect timestamps on success
         sessionStorage.removeItem('auth_redirect_timestamps');
 
-        toast({
-          title: "Welcome!",
+        toast.success("Welcome!", {
           description: "You've been signed in with Google.",
         });
 
@@ -152,9 +151,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
         setStatus("error");
         setErrorMessage(error instanceof Error ? error.message : "Authentication failed");
 
-        toast({
-          variant: "destructive",
-          title: "Authentication failed",
+        toast.error("Authentication failed", {
           description: error instanceof Error ? error.message : "Please try again",
         });
 

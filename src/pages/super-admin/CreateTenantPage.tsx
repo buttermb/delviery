@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { ArrowLeft, Building2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export default function CreateTenantPage() {
   const navigate = useNavigate();
@@ -62,19 +62,12 @@ export default function CreateTenantPage() {
     },
     onSuccess: (result) => {
       logger.info('Tenant created successfully', { result });
-      toast({
-        title: 'Tenant Created',
-        description: 'The tenant has been created successfully.',
-      });
+      toast.success('The tenant has been created successfully.');
       navigate(`/super-admin/tenants/${(result as any).tenant_id || ''}`);
     },
     onError: (error) => {
       logger.error('Failed to create tenant', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create tenant. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error('Failed to create tenant. Please try again.');
     },
   });
 
@@ -82,11 +75,7 @@ export default function CreateTenantPage() {
     e.preventDefault();
 
     if (!formData.business_name || !formData.owner_email || !formData.owner_name) {
-      toast({
-        title: 'Missing Information',
-        description: 'Please fill in all required fields.',
-        variant: 'destructive',
-      });
+      toast.error('Please fill in all required fields.');
       return;
     }
 

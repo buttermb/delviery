@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { TwoFactorVerification } from "@/components/auth/TwoFactorVerification";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Shield, Lock } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
@@ -18,8 +18,7 @@ export default function MFAChallengePage({ portal }: MFAChallengePageProps) {
   const handleVerified = () => {
     logger.info("MFA verification successful", { portal });
 
-    toast({
-      title: "Authentication Complete",
+    toast.success("Authentication Complete", {
       description: "You have been securely signed in.",
     });
 

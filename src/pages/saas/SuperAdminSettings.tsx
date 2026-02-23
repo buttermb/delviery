@@ -21,12 +21,11 @@ import {
   Bell,
   Database,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function SuperAdminSettings() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const _queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
@@ -50,10 +49,7 @@ export default function SuperAdminSettings() {
       // For now, save to localStorage
       localStorage.setItem('platform_settings', JSON.stringify(platformSettings));
 
-      toast({
-        title: 'Settings saved',
-        description: 'Platform settings have been updated',
-      });
+      toast.success('Platform settings have been updated');
     } catch (error) {
       handleError(error, { component: 'SuperAdminSettings', toastTitle: 'Failed to save' });
     } finally {

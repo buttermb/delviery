@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Shield,
   Search,
@@ -39,7 +39,6 @@ import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 
 export default function MarketplaceModerationPage() {
   const { superAdmin } = useSuperAdminAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -142,23 +141,16 @@ export default function MarketplaceModerationPage() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-profiles-moderation'] });
-      toast({
-        title: variables.action === 'approve' ? 'License Approved' : 'License Rejected',
-        description: variables.action === 'approve' 
+      toast.success(variables.action === 'approve'
           ? 'Profile verified and activated'
-          : 'License verification rejected',
-      });
+          : 'License verification rejected');
       setShowVerificationDialog(false);
       setSelectedProfile(null);
       setVerificationNotes('');
     },
     onError: (error: unknown) => {
       logger.error('Failed to verify license', error, { component: 'MarketplaceModerationPage' });
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to verify license',
-        variant: 'destructive',
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to verify license');
     },
   });
 

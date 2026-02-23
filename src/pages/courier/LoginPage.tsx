@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Loader2, Package, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
@@ -26,7 +26,6 @@ export default function CourierLoginPage() {
   const [step, setStep] = useState<'credentials' | 'pin'>('credentials');
   const [courierId, setCourierId] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline();
   const { validateToken } = useCsrfToken();
 
@@ -34,10 +33,8 @@ export default function CourierLoginPage() {
     e.preventDefault();
 
     if (!validateToken()) {
-      toast({
-        title: 'Security Error',
+      toast.error('Security Error', {
         description: 'Invalid security token. Please refresh the page and try again.',
-        variant: 'destructive',
       });
       return;
     }
@@ -83,18 +80,15 @@ export default function CourierLoginPage() {
 
       if (courierData && courierData.is_active) {
         if (!courierData.admin_pin) {
-          toast({
-            title: "PIN Not Set",
+          toast.error("PIN Not Set", {
             description: "Please contact admin to set up your PIN.",
-            variant: "destructive",
           });
           await supabase.auth.signOut();
           return;
         }
         setCourierId(courierData.id);
         setStep('pin');
-        toast({
-          title: "Enter Your PIN",
+        toast("Enter Your PIN", {
           description: "Enter your 6-digit PIN to continue",
         });
         return;
@@ -109,18 +103,15 @@ export default function CourierLoginPage() {
 
       if (runnerData && runnerData.status === 'active') {
         if (!runnerData.admin_pin) {
-          toast({
-            title: "PIN Not Set",
+          toast.error("PIN Not Set", {
             description: "Please contact admin to set up your PIN.",
-            variant: "destructive",
           });
           await supabase.auth.signOut();
           return;
         }
         setCourierId(runnerData.id);
         setStep('pin');
-        toast({
-          title: "Enter Your PIN",
+        toast("Enter Your PIN", {
           description: "Enter your 6-digit PIN to continue",
         });
         return;
@@ -131,10 +122,8 @@ export default function CourierLoginPage() {
       throw new Error('Not authorized as a courier or runner');
     } catch (error: unknown) {
       logger.error('Login error', error);
-      toast({
-        title: "Login Failed",
+      toast.error("Login Failed", {
         description: humanizeError(error, "Invalid email or password"),
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -143,10 +132,8 @@ export default function CourierLoginPage() {
 
   const handlePinVerification = async () => {
     if (pin.length !== 6) {
-      toast({
-        title: "Invalid PIN",
+      toast.error("Invalid PIN", {
         description: "PIN must be 6 digits",
-        variant: "destructive",
       });
       return;
     }
@@ -180,18 +167,15 @@ export default function CourierLoginPage() {
       // Store session token
       localStorage.setItem('courier_pin_session', sessionData);
 
-      toast({
-        title: "Login Successful",
+      toast.success("Login Successful", {
         description: "Welcome back!",
       });
 
       navigate('/courier/dashboard');
     } catch (error: unknown) {
       logger.error('PIN verification error', error);
-      toast({
-        title: "Verification Failed",
+      toast.error("Verification Failed", {
         description: humanizeError(error, "Invalid PIN"),
-        variant: "destructive",
       });
       setPin('');
     } finally {

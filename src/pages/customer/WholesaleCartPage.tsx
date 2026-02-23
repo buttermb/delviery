@@ -12,7 +12,7 @@ import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   ShoppingCart, 
   Plus,
@@ -33,7 +33,6 @@ type CustomerMode = 'retail' | 'wholesale';
 export default function WholesaleCartPage() {
   const { slug } = useParams<{ slug: string }>();
   const { tenant } = useCustomerAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -114,10 +113,8 @@ export default function WholesaleCartPage() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to update cart', error, { component: 'WholesaleCartPage' });
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: error instanceof Error ? error.message : 'Failed to update cart',
-        variant: 'destructive',
       });
     },
   });
@@ -134,17 +131,14 @@ export default function WholesaleCartPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-cart', buyerTenantId] });
-      toast({
-        title: 'Item Removed',
+      toast.success('Item Removed', {
         description: 'Item removed from cart',
       });
     },
     onError: (error: unknown) => {
       logger.error('Failed to remove item', error, { component: 'WholesaleCartPage' });
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: error instanceof Error ? error.message : 'Failed to remove item',
-        variant: 'destructive',
       });
     },
   });

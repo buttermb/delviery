@@ -5,7 +5,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, CheckCircle2, XCircle, Key } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { verifyResetToken, resetPasswordWithToken } from "@/utils/passwordReset";
 import { handleError } from "@/utils/errorHandling/handlers";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
@@ -60,9 +60,7 @@ export function PasswordResetPage() {
           setEmail(result.email);
         } else {
           setValid(false);
-          toast({
-            variant: "destructive",
-            title: "Invalid Token",
+          toast.error("Invalid Token", {
             description: result.error || "This reset link is invalid or has expired",
           });
         }
@@ -85,36 +83,28 @@ export function PasswordResetPage() {
     e.preventDefault();
 
     if (!validateToken()) {
-      toast({
-        variant: "destructive",
-        title: "Security Error",
+      toast.error("Security Error", {
         description: "Invalid security token. Please refresh the page and try again.",
       });
       return;
     }
 
     if (password !== confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Password Mismatch",
+      toast.error("Password Mismatch", {
         description: "Passwords do not match",
       });
       return;
     }
 
     if (password.length < 8) {
-      toast({
-        variant: "destructive",
-        title: "Password Too Short",
+      toast.error("Password Too Short", {
         description: "Password must be at least 8 characters",
       });
       return;
     }
 
     if (breachResult?.blocked) {
-      toast({
-        variant: "destructive",
-        title: "Password not allowed",
+      toast.error("Password not allowed", {
         description: "This password has been found in too many data breaches. Please choose a different password.",
       });
       return;
@@ -128,8 +118,7 @@ export function PasswordResetPage() {
 
       if (result.success) {
         setSuccess(true);
-        toast({
-          title: "Password Reset",
+        toast.success("Password Reset", {
           description: result.message,
         });
 
@@ -148,9 +137,7 @@ export function PasswordResetPage() {
           }
         }, 2000);
       } else {
-        toast({
-          variant: "destructive",
-          title: "Error",
+        toast.error("Error", {
           description: result.message,
         });
       }

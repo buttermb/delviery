@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { apiFetch } from '@/lib/utils/apiClient';
 
 export default function CustomerVerifyEmailPage() {
@@ -55,18 +55,14 @@ export default function CustomerVerifyEmailPage() {
     if (e) e.preventDefault();
 
     if (!code || code.length !== 6) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid Code',
+      toast.error('Invalid Code', {
         description: 'Please enter the 6-digit verification code',
       });
       return;
     }
 
     if (!email) {
-      toast({
-        variant: 'destructive',
-        title: 'Email Required',
+      toast.error('Email Required', {
         description: 'Please enter your email address',
       });
       return;
@@ -94,8 +90,7 @@ export default function CustomerVerifyEmailPage() {
       const result = await response.json();
 
       if (result.already_verified) {
-        toast({
-          title: 'Already Verified',
+        toast.success('Already Verified', {
           description: 'Your email is already verified. You can log in now.',
         });
         navigate(`/${tenantSlug}/customer/login`);
@@ -103,8 +98,7 @@ export default function CustomerVerifyEmailPage() {
       }
 
       setVerified(true);
-      toast({
-        title: 'Email Verified!',
+      toast.success('Email Verified!', {
         description: 'Your email has been verified successfully. Logging you in...',
       });
 
@@ -146,9 +140,7 @@ export default function CustomerVerifyEmailPage() {
       }
     } catch (error: unknown) {
       logger.error('Email verification error', error, { component: 'CustomerVerifyEmailPage' });
-      toast({
-        variant: 'destructive',
-        title: 'Verification Failed',
+      toast.error('Verification Failed', {
         description: error instanceof Error ? error.message : 'Invalid verification code. Please try again.',
       });
     } finally {
@@ -158,9 +150,7 @@ export default function CustomerVerifyEmailPage() {
 
   const handleResend = async () => {
     if (!email) {
-      toast({
-        variant: 'destructive',
-        title: 'Email Required',
+      toast.error('Email Required', {
         description: 'Please enter your email address to resend the code',
       });
       return;
@@ -177,9 +167,7 @@ export default function CustomerVerifyEmailPage() {
         .maybeSingle();
 
       if (!customerUser) {
-        toast({
-          variant: 'destructive',
-          title: 'Account Not Found',
+        toast.error('Account Not Found', {
           description: 'No account found with this email address.',
         });
         return;
@@ -205,15 +193,12 @@ export default function CustomerVerifyEmailPage() {
         throw new Error(error.error || 'Failed to resend code');
       }
 
-      toast({
-        title: 'Code Resent',
+      toast.success('Code Resent', {
         description: 'A new verification code has been sent to your email.',
       });
     } catch (error: unknown) {
       logger.error('Resend verification code error', error, { component: 'CustomerVerifyEmailPage' });
-      toast({
-        variant: 'destructive',
-        title: 'Failed to Resend',
+      toast.error('Failed to Resend', {
         description: error instanceof Error ? error.message : 'Please try again later.',
       });
     } finally {

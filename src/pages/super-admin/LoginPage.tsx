@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Shield, Loader2, Lock, ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { Link } from "react-router-dom";
 import { useSuperAdminAuth } from "@/contexts/SuperAdminAuthContext";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
@@ -60,10 +60,7 @@ export default function SuperAdminLoginPage() {
     try {
       await login(email, password);
 
-      toast({
-        title: "Welcome, Super Admin!",
-        description: "Logged in successfully",
-      });
+      toast.success('Logged in successfully');
 
       const intendedDestination = intendedDestinationUtils.consume();
       const redirectTo = intendedDestination || "/super-admin/dashboard";

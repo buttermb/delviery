@@ -48,7 +48,7 @@ import {
 } from 'lucide-react';
 import { exportTenantsToCSV, exportTenantsToJSON } from '@/utils/tenantExport';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { calculateHealthScore } from '@/lib/tenant';
@@ -101,7 +101,6 @@ import { SUBSCRIPTION_PLANS, SubscriptionPlan } from '@/utils/subscriptionPlans'
 
 export default function SuperAdminEnhanced() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { user, signOut } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -299,10 +298,7 @@ export default function SuperAdminEnhanced() {
       localStorage.setItem(STORAGE_KEYS.SUPER_ADMIN_TENANT_ID, tenantId);
       localStorage.setItem('impersonating_tenant', 'true');
 
-      toast({
-        title: 'Logged in as tenant',
-        description: `You are now viewing as ${tenant.business_name}`,
-      });
+      toast.success(`You are now viewing as ${tenant.business_name}`);
 
       // Navigate to tenant's admin dashboard using their slug
       navigate(`/${tenant.slug}/admin/dashboard`);
@@ -342,10 +338,7 @@ export default function SuperAdminEnhanced() {
   const handleLogout = async () => {
     await signOut();
     navigate('/saas/login');
-    toast({
-      title: 'Logged out',
-      description: 'You have been signed out successfully',
-    });
+    toast.success('You have been signed out successfully');
   };
 
   return (
@@ -768,11 +761,11 @@ export default function SuperAdminEnhanced() {
           onBulkEmail={() => {
             // Open notification dialog with selected tenants
             // This would require updating NotificationDialog to accept initial selection
-            toast({ title: "Bulk Email", description: `Drafting email to ${selectedTenants.length} tenants` });
+            toast(`Drafting email to ${selectedTenants.length} tenants`);
           }}
           onBulkSuspend={async () => {
             // Implement bulk suspend logic
-            toast({ title: "Bulk Suspend", description: `Suspending ${selectedTenants.length} tenants` });
+            toast(`Suspending ${selectedTenants.length} tenants`);
             setSelectedTenants([]);
           }}
           onBulkUnsuspend={() => { }}
@@ -888,7 +881,6 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
 
 // Feature Management Component
 function FeatureManagement({ tenant }: { tenant: any }) {
-  const { toast } = useToast();
   const [features, setFeatures] = useState(tenant?.features || {});
 
   const handleToggleFeature = async (featureKey: string, enabled: boolean) => {
@@ -903,10 +895,7 @@ function FeatureManagement({ tenant }: { tenant: any }) {
       if (error) throw error;
 
       setFeatures(updatedFeatures);
-      toast({
-        title: 'Feature updated',
-        description: `${featureKey} ${enabled ? 'enabled' : 'disabled'}`,
-      });
+      toast.success(`${featureKey} ${enabled ? 'enabled' : 'disabled'}`);
     } catch (error) {
       handleError(error, { component: 'SuperAdminEnhanced', toastTitle: 'Failed to update feature' });
     }
@@ -1084,7 +1073,6 @@ function UsageMonitoring({ tenant }: { tenant: any }) {
 
 // Billing Management Component
 function BillingManagement({ tenant }: { tenant: any }) {
-  const { toast } = useToast();
   const [_selectedPlan, setSelectedPlan] = useState<string>(tenant?.subscription_plan || SUBSCRIPTION_PLANS.STARTER);
 
   const plans = [
@@ -1106,10 +1094,7 @@ function BillingManagement({ tenant }: { tenant: any }) {
       if (error) throw error;
 
       setSelectedPlan(newPlan);
-      toast({
-        title: 'Plan updated',
-        description: `Changed to ${newPlan} plan`,
-      });
+      toast.success(`Changed to ${newPlan} plan`);
     } catch (error) {
       handleError(error, { component: 'SuperAdminEnhanced', toastTitle: 'Failed to change plan' });
     }

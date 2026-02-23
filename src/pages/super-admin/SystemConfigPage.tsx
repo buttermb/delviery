@@ -12,11 +12,10 @@ import { Switch } from '@/components/ui/switch';
 import { PageHeader } from '@/components/super-admin/ui/PageHeader';
 import { SEOHead } from '@/components/SEOHead';
 import { Settings, Save } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useState } from 'react';
 
 export default function SystemConfigPage() {
-  const { toast } = useToast();
   const [config, setConfig] = useState({
     platformName: 'Delivery Platform',
     supportEmail: 'support@example.com',
@@ -28,10 +27,7 @@ export default function SystemConfigPage() {
   });
 
   const handleSave = () => {
-    toast({
-      title: 'Settings Saved',
-      description: 'System configuration has been updated',
-    });
+    toast.success('System configuration has been updated');
   };
 
   return (

@@ -15,13 +15,12 @@ import { Palette, Upload, Globe, Mail, MessageSquare, Image, Save } from 'lucide
 import { Badge } from '@/components/ui/badge';
 import { useTenant } from '@/contexts/TenantContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { hasFeature } from '@/lib/tenant';
 import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function WhiteLabelSettings() {
   const { tenant, refresh } = useTenant();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -92,10 +91,7 @@ export default function WhiteLabelSettings() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Settings Saved',
-        description: 'White-label settings have been updated',
-      });
+      toast.success('White-label settings have been updated');
 
       refresh();
       queryClient.invalidateQueries({ queryKey: ['tenant', tenant.id] });
@@ -125,14 +121,8 @@ export default function WhiteLabelSettings() {
       const { data } = supabase.storage.from('whitelabel-assets').getPublicUrl(fileName);
 
       setLogo(data.publicUrl);
-      toast({
-        title: 'Logo Uploaded',
-        description: 'Logo has been uploaded successfully',
-      });
-      toast({
-        title: 'Logo Uploaded',
-        description: 'Logo has been uploaded successfully',
-      });
+      toast.success('Logo has been uploaded successfully');
+      toast.success('Logo has been uploaded successfully');
     } catch (error) {
       handleError(error, { component: 'WhiteLabelSettings', toastTitle: 'Upload Failed' });
     }

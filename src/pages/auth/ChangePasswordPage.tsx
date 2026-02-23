@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Key, Eye, EyeOff, CheckCircle2, XCircle, Shield } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -55,28 +55,22 @@ export function ChangePasswordPage() {
     e.preventDefault();
 
     if (!currentPassword) {
-      toast({
-        title: 'Current password required',
+      toast.error('Current password required', {
         description: 'Please enter your current password to verify your identity.',
-        variant: 'destructive',
       });
       return;
     }
 
     if (newPassword.length < 8) {
-      toast({
-        title: 'Password too short',
+      toast.error('Password too short', {
         description: 'New password must be at least 8 characters.',
-        variant: 'destructive',
       });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
+      toast.error("Passwords don't match", {
         description: 'New password and confirmation must match.',
-        variant: 'destructive',
       });
       return;
     }
@@ -105,8 +99,7 @@ export function ChangePasswordPage() {
 
       logger.info('Password updated successfully', { adminId: admin?.id });
       setSuccess(true);
-      toast({
-        title: 'Password updated',
+      toast.success('Password updated', {
         description: 'Your password has been changed successfully.',
       });
 

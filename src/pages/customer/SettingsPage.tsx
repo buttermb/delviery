@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Settings, Key, User, Bell, Trash2, Download, AlertTriangle } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
@@ -46,40 +46,32 @@ export default function CustomerSettingsPage() {
     try {
       // Validate inputs
       if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-        toast({
-          title: "Missing Fields",
+        toast.error("Missing Fields", {
           description: "Please fill in all password fields",
-          variant: "destructive",
         });
         setLoading(false);
         return;
       }
 
       if (passwordData.newPassword !== passwordData.confirmPassword) {
-        toast({
-          title: "Passwords Don't Match",
+        toast.error("Passwords Don't Match", {
           description: "New password and confirmation must match",
-          variant: "destructive",
         });
         setLoading(false);
         return;
       }
 
       if (passwordData.newPassword.length < 8) {
-        toast({
-          title: "Password Too Short",
+        toast.error("Password Too Short", {
           description: "Password must be at least 8 characters long",
-          variant: "destructive",
         });
         setLoading(false);
         return;
       }
 
       if (breachResult?.blocked) {
-        toast({
-          title: "Password not allowed",
+        toast.error("Password not allowed", {
           description: "This password has been found in too many data breaches. Please choose a different password.",
-          variant: "destructive",
         });
         setLoading(false);
         return;
@@ -106,8 +98,7 @@ export default function CustomerSettingsPage() {
         throw new Error(result.error || "Failed to update password");
       }
 
-      toast({
-        title: "Password Updated",
+      toast.success("Password Updated", {
         description: "Your password has been updated successfully",
       });
 
@@ -119,10 +110,8 @@ export default function CustomerSettingsPage() {
       });
     } catch (error: unknown) {
       logger.error("Password update error", error, { component: "CustomerSettingsPage" });
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error instanceof Error ? error.message : "Failed to update password",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -153,8 +142,7 @@ export default function CustomerSettingsPage() {
 
       if (result.download_url) {
         window.open(result.download_url, '_blank');
-        toast({
-          title: 'Data Export Ready',
+        toast.success('Data Export Ready', {
           description: 'Your data export is ready. The download link will expire in 7 days.',
         });
       } else {
@@ -167,16 +155,13 @@ export default function CustomerSettingsPage() {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        toast({
-          title: 'Data Export Complete',
+        toast.success('Data Export Complete', {
           description: 'Your data has been downloaded.',
         });
       }
     } catch (error: unknown) {
       logger.error('Data export error', error, { component: 'CustomerSettingsPage' });
-      toast({
-        variant: 'destructive',
-        title: 'Export Failed',
+      toast.error('Export Failed', {
         description: error instanceof Error ? error.message : 'Failed to export your data. Please try again.',
       });
     } finally {
@@ -204,8 +189,7 @@ export default function CustomerSettingsPage() {
         throw new Error(error.error || 'Failed to delete account');
       }
 
-      toast({
-        title: 'Account Deleted',
+      toast.success('Account Deleted', {
         description: 'Your account has been deleted. You will be logged out.',
       });
 
@@ -213,9 +197,7 @@ export default function CustomerSettingsPage() {
       navigate(`/${tenantSlug}/customer/login`);
     } catch (error: unknown) {
       logger.error('Account deletion error', error, { component: 'CustomerSettingsPage' });
-      toast({
-        variant: 'destructive',
-        title: 'Deletion Failed',
+      toast.error('Deletion Failed', {
         description: error instanceof Error ? error.message : 'Failed to delete your account. Please try again.',
       });
       setDeleting(false);

@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   ShoppingCart, 
   ArrowLeft,
@@ -58,7 +58,6 @@ export default function WholesaleCheckoutPage() {
   const { shouldAutoApprove } = useFeatureFlags();
   const { slug } = useParams<{ slug: string }>();
   const { customer, tenant } = useCustomerAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -234,8 +233,7 @@ export default function WholesaleCheckoutPage() {
       queryClient.invalidateQueries({ queryKey: ['marketplace-cart', buyerTenantId] });
       queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
       
-      toast({
-        title: shouldAutoApprove('ORDERS') ? 'Order Auto‑Approved' : 'Order Placed!',
+      toast.success(shouldAutoApprove('ORDERS') ? 'Order Auto\u2011Approved' : 'Order Placed!', {
         description: shouldAutoApprove('ORDERS')
           ? `Created ${orders.length} order(s) and marked as confirmed.`
           : `Successfully created ${orders.length} order(s)`,
@@ -246,10 +244,8 @@ export default function WholesaleCheckoutPage() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to create order', error, { component: 'WholesaleCheckoutPage' });
-      toast({
-        title: 'Order Failed',
+      toast.error('Order Failed', {
         description: error instanceof Error ? error.message : 'Failed to create order',
-        variant: 'destructive',
       });
     },
   });

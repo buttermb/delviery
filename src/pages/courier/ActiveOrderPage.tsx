@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   ArrowLeft,
   MapPin,
@@ -45,7 +45,6 @@ export default function CourierActiveOrderPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     loadOrder();
@@ -96,10 +95,8 @@ export default function CourierActiveOrderPage() {
       setOrder(orderData);
     } catch (error) {
       logger.error('Failed to load order:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to load order details',
-        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -124,8 +121,7 @@ export default function CourierActiveOrderPage() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Status Updated',
+      toast.success('Status Updated', {
         description: `Order marked as ${newStatus}`,
       });
 
@@ -134,10 +130,8 @@ export default function CourierActiveOrderPage() {
       }
     } catch (error) {
       logger.error('Failed to update status:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Failed to update order status',
-        variant: 'destructive',
       });
     } finally {
       setUpdating(false);
