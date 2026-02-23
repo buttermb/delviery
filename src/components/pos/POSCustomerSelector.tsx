@@ -24,6 +24,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { QuickCreateCustomerDialog } from './QuickCreateCustomerDialog';
 import { displayName } from '@/lib/formatters';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 
 export interface POSCustomer {
   id: string;
@@ -60,7 +61,7 @@ export function POSCustomerSelector({
   const filteredCustomers = useMemo(() => {
     if (!searchQuery.trim()) return customers;
 
-    const query = searchQuery.toLowerCase().trim();
+    const query = sanitizeSearchInput(searchQuery).toLowerCase();
     return customers.filter((customer) => {
       const fullName = displayName(customer.first_name, customer.last_name).toLowerCase();
       const phone = (customer.phone || '').toLowerCase();
