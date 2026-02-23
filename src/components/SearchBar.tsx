@@ -118,7 +118,7 @@ export function SearchBar({ variant = 'full' }: SearchBarProps) {
                 placeholder="Search for strains, edibles, concentrates..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
               />
               {loading && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
             </div>

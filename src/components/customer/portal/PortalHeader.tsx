@@ -58,7 +58,7 @@ export function PortalHeader({ client }: PortalHeaderProps) {
                 type="text"
                 value={portalUrl}
                 readOnly
-                className="flex-1 bg-transparent border-none outline-none text-sm text-muted-foreground"
+                className="flex-1 bg-transparent border-none outline-none text-sm text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring rounded"
               />
               <Button
                 size="sm"

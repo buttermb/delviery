@@ -123,7 +123,7 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor: _accent
                     id="nav-desktop-search"
                     type="text"
                     placeholder="Search products..."
-                    className="bg-transparent border-none outline-none text-sm text-white placeholder:text-white/50 w-full group-focus-within:text-neutral-900 group-focus-within:placeholder:text-neutral-400"
+                    className="bg-transparent border-none outline-none text-sm text-white placeholder:text-white/50 w-full group-focus-within:text-neutral-900 group-focus-within:placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-ring rounded"
                     onClick={() => navigate(`/shop/${storeSlug}/products${previewParam}`)}
                   />
                 </div>
@@ -210,7 +210,7 @@ export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor: _accent
                   id="nav-mobile-search"
                   type="text"
                   placeholder="Search..."
-                  className="bg-transparent border-none outline-none text-base text-white placeholder:text-white/50 w-full"
+                  className="bg-transparent border-none outline-none text-base text-white placeholder:text-white/50 w-full focus-visible:ring-2 focus-visible:ring-white/50 rounded"
                   onClick={() => navigate(`/shop/${storeSlug}/products${previewParam}`)}
                 />
               </div>

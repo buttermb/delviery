@@ -199,7 +199,7 @@ export function ReviewSection() {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Share your experience..."
-              className="w-full h-32 px-4 py-3 bg-black/50 border border-white/[0.1] text-white placeholder-white/30 rounded-lg focus:outline-none focus:border-emerald-500/50 transition-colors resize-none font-light"
+              className="w-full h-32 px-4 py-3 bg-black/50 border border-white/[0.1] text-white placeholder-white/30 rounded-lg focus:outline-none focus:border-emerald-500/50 focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-colors resize-none font-light"
             />
 
             <div className="flex gap-4 mt-6">
