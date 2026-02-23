@@ -36,6 +36,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { OrderExportButton, OrderMergeDialog, OrderSLAIndicator } from "@/components/admin/orders";
 import { OrderEditModal } from "@/components/admin/OrderEditModal";
+import { OrderHoverCard } from "@/components/admin/OrderHoverCard";
 import { OrderRefundModal } from "@/components/admin/orders/OrderRefundModal";
 import { isOrderEditable } from "@/lib/utils/orderEditability";
 import Merge from "lucide-react/dist/esm/icons/merge";
@@ -788,11 +789,28 @@ export default function Orders() {
       className: "max-w-[150px]",
       cell: (order) => (
         <div className="flex items-center gap-2 max-w-[150px] min-w-0">
-          <TruncatedText
-            text={order.order_number || order.id.slice(0, 8)}
-            maxWidthClass="max-w-[110px]"
-            className={newOrderIds.has(order.id) ? 'font-bold text-primary' : ''}
-          />
+          <OrderHoverCard
+            order={{
+              id: order.id,
+              order_number: order.order_number,
+              status: order.status,
+              total_amount: order.total_amount,
+              created_at: order.created_at,
+              customer_name: order.user?.full_name || undefined,
+              customer_email: order.user?.email || undefined,
+              items: order.order_items?.map(item => ({
+                product_name: item.product_name,
+                quantity: item.quantity,
+                unit_price: item.price,
+              })),
+            }}
+          >
+            <TruncatedText
+              text={order.order_number || order.id.slice(0, 8)}
+              maxWidthClass="max-w-[110px]"
+              className={newOrderIds.has(order.id) ? 'font-bold text-primary' : ''}
+            />
+          </OrderHoverCard>
           <CopyButton text={order.order_number || order.id} label="Order Number" showLabel={false} className="h-5 w-5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       )
