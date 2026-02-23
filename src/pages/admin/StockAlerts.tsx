@@ -390,6 +390,13 @@ export function StockAlerts() {
               icon={CheckCircle}
               title="All Stock Levels Healthy"
               description="No low stock items detected. Great job keeping inventory stocked!"
+              compact
+              designSystem="tenant-admin"
+              primaryAction={{
+                label: 'Refresh Alerts',
+                onClick: () => refetch(),
+                icon: RefreshCw,
+              }}
             />
           )}
         </CardContent>
