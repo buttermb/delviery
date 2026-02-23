@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/shared/SearchInput";
+import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
 import { toast } from "sonner";
 import {
   Package,
@@ -321,7 +322,7 @@ export default function ProductManagement() {
 
   // Derived filtered products
   const filteredProducts = useMemo(() => {
-    const searchLower = debouncedSearchTerm.toLowerCase();
+    const searchLower = sanitizeSearchInput(debouncedSearchTerm).toLowerCase();
     const applyCategoryFilter = categoryFilter !== "all";
     const applyStockFilter = stockStatusFilter !== "all";
 
