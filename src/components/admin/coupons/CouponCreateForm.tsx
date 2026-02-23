@@ -234,7 +234,7 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
                 }
               >
                 <SelectTrigger className="min-h-[44px] touch-manipulation">
-                  <SelectValue />
+                  <SelectValue placeholder="Select coupon type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="percentage">Percentage Off</SelectItem>

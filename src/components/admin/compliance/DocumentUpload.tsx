@@ -203,7 +203,7 @@ export function DocumentUpload({
               }
             >
               <SelectTrigger className="min-h-[44px] touch-manipulation">
-                <SelectValue />
+                <SelectValue placeholder="Select document type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="license">License</SelectItem>

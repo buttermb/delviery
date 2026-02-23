@@ -132,7 +132,7 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
           <Label>Price Type</Label>
           <Select value={priceField} onValueChange={(v) => setPriceField(v as PriceField)}>
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder="Select price type" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="wholesale">Wholesale Price Only</SelectItem>
@@ -147,7 +147,7 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
           <Label>Adjustment Type</Label>
           <Select value={adjustmentType} onValueChange={(v) => setAdjustmentType(v as AdjustmentType)}>
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder="Select adjustment" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="percentage_increase">

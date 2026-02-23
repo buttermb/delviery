@@ -140,7 +140,7 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
         </div>
         <Select value={granularity} onValueChange={(v) => setGranularity(v as Granularity)}>
           <SelectTrigger className="w-28">
-            <SelectValue />
+            <SelectValue placeholder="Granularity" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="daily">Daily</SelectItem>

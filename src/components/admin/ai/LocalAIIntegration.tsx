@@ -183,7 +183,7 @@ export function LocalAIIntegration() {
           <CardContent className="space-y-4">
             <Select value={selectedModel} onValueChange={setSelectedModel}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select model" />
               </SelectTrigger>
               <SelectContent>
                 {models.map((model) => (

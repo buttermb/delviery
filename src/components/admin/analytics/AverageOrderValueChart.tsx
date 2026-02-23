@@ -131,7 +131,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
                 </div>
                 <Select value={timeRange} onValueChange={(v) => setTimeRange(v as '7' | '30' | '90')}>
                     <SelectTrigger className="w-24">
-                        <SelectValue />
+                        <SelectValue placeholder="Time range" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="7">7 days</SelectItem>

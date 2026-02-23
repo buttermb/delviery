@@ -164,7 +164,7 @@ export function AppointmentForm({
                 }
               >
                 <SelectTrigger className="min-h-[44px] touch-manipulation">
-                  <SelectValue />
+                  <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="15">15 minutes</SelectItem>
@@ -186,7 +186,7 @@ export function AppointmentForm({
               }
             >
               <SelectTrigger className="min-h-[44px] touch-manipulation">
-                <SelectValue />
+                <SelectValue placeholder="Select appointment type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="consultation">Consultation</SelectItem>

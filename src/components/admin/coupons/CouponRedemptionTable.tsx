@@ -231,7 +231,7 @@ export function CouponRedemptionTable({ className, maxRows }: CouponRedemptionTa
               }}>
                 <SelectTrigger className="w-full sm:w-[140px]" aria-label="Filter by date range">
                   <Calendar className="h-4 w-4 mr-2" />
-                  <SelectValue />
+                  <SelectValue placeholder="Select date range" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Time</SelectItem>
