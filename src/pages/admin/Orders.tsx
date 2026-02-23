@@ -35,6 +35,7 @@ import { CustomerLink } from "@/components/admin/cross-links";
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
 import { OrderExportButton, OrderMergeDialog, OrderSLAIndicator } from "@/components/admin/orders";
 import { OrderEditModal } from "@/components/admin/OrderEditModal";
 import { OrderHoverCard } from "@/components/admin/OrderHoverCard";
@@ -166,6 +167,7 @@ export default function Orders() {
   const [editOrder, setEditOrder] = useState<Order | null>(null);
   const [refundModalOpen, setRefundModalOpen] = useState(false);
   const [refundOrder, setRefundOrder] = useState<Order | null>(null);
+  const [cancelConfirmOrder, setCancelConfirmOrder] = useState<Order | null>(null);
   const sortField = (filters.sort || 'created_at') as OrderSortField;
   const sortOrder = (filters.dir || 'desc') as SortOrder;
 
@@ -739,7 +741,7 @@ export default function Orders() {
         setEditModalOpen(true);
         break;
       case 'cancel':
-        handleCancelOrder(order);
+        setCancelConfirmOrder(order);
         break;
       case 'refund':
         setRefundOrder(order);
@@ -1391,6 +1393,21 @@ export default function Orders() {
         onConfirm={handleConfirmDelete}
         itemName={deleteConfirmation.type === 'bulk' ? `${selectedOrders.length} ${selectedOrders.length === 1 ? 'order' : 'orders'}` : 'this order'}
         description="This action cannot be undone."
+      />
+
+      <ConfirmDialog
+        isOpen={!!cancelConfirmOrder}
+        onConfirm={() => {
+          if (cancelConfirmOrder) {
+            handleCancelOrder(cancelConfirmOrder);
+          }
+          setCancelConfirmOrder(null);
+        }}
+        onCancel={() => setCancelConfirmOrder(null)}
+        title="Cancel Order"
+        description={`Are you sure you want to cancel order #${cancelConfirmOrder?.order_number || cancelConfirmOrder?.id.slice(0, 8) || ''}? This action cannot be undone.`}
+        confirmLabel="Cancel Order"
+        variant="destructive"
       />
 
       <BulkAssignRunnerDialog
