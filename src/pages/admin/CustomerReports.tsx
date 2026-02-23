@@ -188,7 +188,7 @@ export default function CustomerReports() {
             <CardContent>
               <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{stats.activeCustomers}</div>
               <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">
-                {((stats.activeCustomers / stats.totalCustomers) * 100).toFixed(1)}% of total
+                {stats.totalCustomers > 0 ? ((stats.activeCustomers / stats.totalCustomers) * 100).toFixed(1) : '0.0'}% of total
               </p>
             </CardContent>
           </Card>
@@ -216,7 +216,7 @@ export default function CustomerReports() {
             <CardContent>
               <div className="text-3xl font-bold font-mono text-[hsl(var(--tenant-text))]">{stats.medicalPatients}</div>
               <p className="text-xs text-[hsl(var(--tenant-text-light))] mt-2">
-                {((stats.medicalPatients / stats.totalCustomers) * 100).toFixed(1)}% of total
+                {stats.totalCustomers > 0 ? ((stats.medicalPatients / stats.totalCustomers) * 100).toFixed(1) : '0.0'}% of total
               </p>
             </CardContent>
           </Card>
@@ -271,28 +271,34 @@ export default function CustomerReports() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {stats.topCustomers.map((customer, index) => (
-                <div
-                  key={customer.id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
-                      {index + 1}
+              {stats.topCustomers && stats.topCustomers.length > 0 ? (
+                stats.topCustomers.map((customer, index) => (
+                  <div
+                    key={customer.id}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-medium">
+                          {customer.first_name} {customer.last_name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{customer.email}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">
-                        {customer.first_name} {customer.last_name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{customer.email}</p>
+                    <div className="text-right">
+                      <p className="font-bold text-lg">{formatCurrency(customer.total_spent)}</p>
+                      <Badge variant="default">{customer.loyalty_tier}</Badge>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-lg">{formatCurrency(customer.total_spent)}</p>
-                    <Badge variant="default">{customer.loyalty_tier}</Badge>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No customer data available yet.</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
