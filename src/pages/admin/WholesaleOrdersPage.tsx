@@ -1050,13 +1050,27 @@ export default function WholesaleOrdersPage() {
             onRowClick={handleRowClick}
             emptyState={{
               icon: Package,
-              title: "No Orders Found",
-              description: searchQuery ? "No orders match your search." : "Create a new order to get started.",
-              primaryAction: {
+              title: searchQuery
+                ? "No orders match your search"
+                : hasActiveFilters
+                  ? "No orders found"
+                  : viewMode === 'selling' ? "No wholesale orders yet" : "No purchase orders yet",
+              description: searchQuery
+                ? `No results for "${searchQuery}". Try a different search term or clear your search.`
+                : hasActiveFilters
+                  ? "Try adjusting your filters to find orders."
+                  : viewMode === 'selling'
+                    ? "Wholesale orders will appear here once you start selling to clients."
+                    : "Purchase orders will appear here once you start ordering from vendors.",
+              primaryAction: hasActiveFilters ? {
+                label: "Clear Filters",
+                onClick: handleClearFilters
+              } : {
                 label: viewMode === 'selling' ? 'New Order' : 'New PO',
                 onClick: () => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/${viewMode === 'selling' ? 'new' : 'new-po'}`),
                 icon: Plus
-              }
+              },
+              designSystem: "tenant-admin"
             }}
           />
 
