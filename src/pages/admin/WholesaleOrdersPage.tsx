@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 import { quickExportCSV } from '@/lib/utils/exportUtils';
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -142,7 +143,7 @@ export default function WholesaleOrdersPage() {
 
   // Filter state — persisted in URL for back-button & navigation support
   const [filters, setFilters, clearUrlFilters] = useUrlFilters<WholesaleOrderFilters>(WHOLESALE_FILTER_CONFIG);
-  const searchQuery = filters.q;
+  const searchQuery = sanitizeSearchInput(filters.q);
   const statusFilter = filters.status;
   const viewMode = (filters.view || 'selling') as 'selling' | 'buying';
 
