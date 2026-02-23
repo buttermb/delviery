@@ -223,7 +223,7 @@ export function LoginPage() {
         retryConfig: { maxRetries: 3, initialDelay: 1000 },
         onRetry: (attempt) => {
           setRetryCount(attempt);
-          toast(`Retrying... Attempt ${attempt} of 3`);
+          toast.info(`Retrying... Attempt ${attempt} of 3`);
         }
       });
 

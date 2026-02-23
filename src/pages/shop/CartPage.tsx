@@ -107,13 +107,13 @@ export default function CartPage() {
   // Handle remove item
   const handleRemoveItem = (productId: string, variant?: string) => {
     removeItem(productId, variant);
-    toast('Item removed from cart');
+    toast.success('Item removed from cart');
   };
 
   // Handle clear cart
   const handleClearCart = () => {
     clearCart();
-    toast('Cart cleared');
+    toast.success('Cart cleared');
   };
 
   // Apply coupon via shared cart hook
@@ -143,7 +143,7 @@ export default function CartPage() {
   // Remove coupon
   const removeCoupon = () => {
     removeSharedCoupon();
-    toast('Coupon removed');
+    toast.success('Coupon removed');
   };
 
   // Calculate totals

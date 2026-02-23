@@ -117,7 +117,7 @@ export function CheckoutPage() {
   // Handle cancelled Stripe checkout return
   useEffect(() => {
     if (searchParams.get('cancelled') === 'true') {
-      toast('Payment cancelled', {
+      toast.warning('Payment cancelled', {
         description: 'Your payment was not completed. You can try again or choose a different payment method.',
       });
       // Remove the cancelled param from URL without navigation
@@ -215,7 +215,7 @@ export function CheckoutPage() {
   // Redirect to cart if empty
   useEffect(() => {
     if (isInitialized && cartItems.length === 0) {
-      toast('Your cart is empty', { description: 'Add some items before checkout.' });
+      toast.warning('Your cart is empty', { description: 'Add some items before checkout.' });
       navigate(`/shop/${storeSlug}/cart`);
     }
   }, [isInitialized, cartItems.length, navigate, storeSlug]);
@@ -591,7 +591,7 @@ export function CheckoutPage() {
           // Retry on network errors
           if (isNetworkError && attempt < 3) { // Hardcoded 3 for simplicity or import constant
             setOrderRetryCount(attempt);
-            toast(`Connection issue, retrying (${attempt}/3)...`);
+            toast.warning(`Connection issue, retrying (${attempt}/3)...`);
             await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
             return attemptOrder(attempt + 1);
           }
@@ -1402,7 +1402,7 @@ export function CheckoutPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => { removeCoupon(); toast('Coupon removed'); }}
+                    onClick={() => { removeCoupon(); toast.success('Coupon removed'); }}
                     className={isLuxuryTheme ? 'text-red-400 hover:text-red-300 hover:bg-white/5' : 'text-red-500 hover:text-red-600'}
                   >
                     Remove

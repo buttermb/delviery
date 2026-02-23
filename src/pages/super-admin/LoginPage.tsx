@@ -30,8 +30,7 @@ export default function SuperAdminLoginPage() {
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
     async (qEmail, qPassword) => {
       await login(qEmail, qPassword);
-      toast({
-        title: "Welcome, Super Admin!",
+      toast.success("Welcome, Super Admin!", {
         description: "Logged in successfully",
       });
       const intendedDestination = intendedDestinationUtils.consume();

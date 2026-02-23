@@ -349,7 +349,7 @@ export default function WholesaleMarketplacePage() {
                         onClick={() => {
                           // Navigate to listing detail page (if exists) or show details in modal
                           // For now, just show a toast with listing info
-                          toast(listing.product_name, {
+                          toast.success(listing.product_name, {
                             description: listing.description?.substring(0, 100) + '...',
                           });
                         }}

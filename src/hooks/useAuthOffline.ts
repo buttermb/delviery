@@ -80,7 +80,7 @@ export function useAuthOffline(
     if (isOnline && queuedAttempt && onRetryLoginRef.current) {
       const { email, password, tenantSlug } = queuedAttempt;
       logger.info('Auth: Retrying queued login attempt');
-      toast('Connection restored. Attempting to sign in.');
+      toast.info('Connection restored. Attempting to sign in.');
 
       onRetryLoginRef.current(email, password, tenantSlug)
         .then(() => {
@@ -103,7 +103,7 @@ export function useAuthOffline(
     };
     setQueuedAttempt(attempt);
     logger.info('Auth: Login attempt queued for when connection restores');
-    toast('Your login will be attempted when the connection is restored.');
+    toast.info('Your login will be attempted when the connection is restored.');
   }, []);
 
   const clearQueuedAttempt = useCallback(() => {

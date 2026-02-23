@@ -88,7 +88,7 @@ export default function CourierLoginPage() {
         }
         setCourierId(courierData.id);
         setStep('pin');
-        toast("Enter Your PIN", {
+        toast.info("Enter Your PIN", {
           description: "Enter your 6-digit PIN to continue",
         });
         return;
@@ -111,7 +111,7 @@ export default function CourierLoginPage() {
         }
         setCourierId(runnerData.id);
         setStep('pin');
-        toast("Enter Your PIN", {
+        toast.info("Enter Your PIN", {
           description: "Enter your 6-digit PIN to continue",
         });
         return;

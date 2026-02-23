@@ -761,11 +761,11 @@ export default function SuperAdminEnhanced() {
           onBulkEmail={() => {
             // Open notification dialog with selected tenants
             // This would require updating NotificationDialog to accept initial selection
-            toast(`Drafting email to ${selectedTenants.length} tenants`);
+            toast.info(`Drafting email to ${selectedTenants.length} tenants`);
           }}
           onBulkSuspend={async () => {
             // Implement bulk suspend logic
-            toast(`Suspending ${selectedTenants.length} tenants`);
+            toast.warning(`Suspending ${selectedTenants.length} tenants`);
             setSelectedTenants([]);
           }}
           onBulkUnsuspend={() => { }}

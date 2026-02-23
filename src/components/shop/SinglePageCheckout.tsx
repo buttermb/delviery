@@ -115,7 +115,7 @@ export function SinglePageCheckout() {
   // Redirect if cart empty
   useEffect(() => {
     if (isInitialized && cartItems.length === 0) {
-      toast('Your cart is empty');
+      toast.warning('Your cart is empty');
       navigate(`/shop/${storeSlug}/cart`);
     }
   }, [isInitialized, cartItems.length]);

@@ -78,7 +78,7 @@ export function usePushNotifications() {
       setIsSubscribed(false);
       localStorage.removeItem('notifications_enabled');
 
-      toast("You won't receive push notifications");
+      toast.info("You won't receive push notifications");
     } catch (error) {
       logger.error('Error unsubscribing:', error);
       toast.error('Failed to disable notifications');

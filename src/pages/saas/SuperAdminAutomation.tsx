@@ -98,7 +98,7 @@ export default function SuperAdminAutomation() {
         // Check if it's a network/CORS error (common in preview environments)
         if (error.message?.includes('fetch') || error.message?.includes('CORS') || error.message?.includes('network')) {
           logger.debug('⚠️ Network error in preview - function may still be executing on server');
-          toast('Automation running in background. Check edge function logs to verify execution.');
+          toast.info('Automation running in background. Check edge function logs to verify execution.');
           
           // Update last run time optimistically
           setRules((prev) =>
