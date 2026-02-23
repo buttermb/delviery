@@ -984,33 +984,34 @@ export default function Orders() {
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Orders Management</h1>
               <LastUpdated date={new Date()} onRefresh={handleRefresh} isLoading={isLoading} className="mt-1" />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {canExport('orders') && (
                 <OrderExportButton
                   orders={sortedOrders}
                   filenamePrefix="orders-export"
                   variant="outline"
-                  className="min-h-[48px] touch-manipulation"
+                  className="min-h-[44px] sm:min-h-[48px] touch-manipulation text-xs sm:text-sm"
                   disabled={sortedOrders.length === 0}
                 />
               )}
               {canEdit('orders') && (
                 <Button
                   variant="outline"
-                  className="min-h-[48px] touch-manipulation"
+                  className="min-h-[44px] sm:min-h-[48px] touch-manipulation text-xs sm:text-sm"
                   onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/orders/offline-create`)}
                 >
-                  <WifiOff className="mr-2 h-4 w-4" />
-                  Offline Order
+                  <WifiOff className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Offline Order</span>
                 </Button>
               )}
               {canEdit('orders') && (
                 <Button
                   variant="default"
-                  className="min-h-[48px] touch-manipulation shadow-lg shadow-primary/20"
+                  className="min-h-[44px] sm:min-h-[48px] touch-manipulation shadow-lg shadow-primary/20 text-xs sm:text-sm"
                   onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/wholesale-orders/new`)}
                 >
-                  + New Order
+                  <Plus className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">New Order</span>
                 </Button>
               )}
               <TakeTourButton
@@ -1018,7 +1019,7 @@ export default function Orders() {
                 steps={ordersTutorial.steps}
                 variant="outline"
                 size="sm"
-                className="min-h-[48px]"
+                className="min-h-[44px] sm:min-h-[48px]"
               />
             </div>
           </div>
@@ -1087,18 +1088,19 @@ export default function Orders() {
                     variant="outline"
                     size="sm"
                     onClick={handleClearFilters}
-                    className="h-10 px-3 text-muted-foreground hover:text-destructive hover:border-destructive/50"
+                    className="h-10 px-2 sm:px-3 text-muted-foreground hover:text-destructive hover:border-destructive/50 text-xs sm:text-sm whitespace-nowrap"
                   >
-                    <X className="mr-1 h-4 w-4" />
-                    Clear all filters
+                    <X className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Clear all filters</span>
+                    <span className="sm:hidden">Clear</span>
                   </Button>
                 )}
               </div>
 
               {/* Active filter badges */}
               {hasActiveFilters && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Active filters:</span>
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="text-xs text-muted-foreground hidden sm:inline">Active filters:</span>
                   {searchQuery && (
                     <Badge variant="secondary" className="gap-1 pr-1 text-xs">
                       Search: &quot;{searchQuery}&quot;
@@ -1166,8 +1168,8 @@ export default function Orders() {
 
             {/* Error banner — cached data still available */}
             {isError && orders.length > 0 && (
-              <div className="flex items-center justify-between gap-4 rounded-lg border border-destructive bg-destructive/5 px-4 py-3 mb-4">
-                <p className="text-destructive text-sm">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 rounded-lg border border-destructive bg-destructive/5 px-3 sm:px-4 py-2.5 sm:py-3 mb-4">
+                <p className="text-destructive text-xs sm:text-sm">
                   Failed to refresh orders. Showing cached data.
                 </p>
                 <Button
@@ -1236,34 +1238,34 @@ export default function Orders() {
                     onClick: () => toast.success("Order archived")
                   }}
                 >
-                  <div className={`flex items-start justify-between ${newOrderIds.has(order.id) ? 'animate-new-order-highlight rounded-lg' : ''}`}>
+                  <div className={`flex items-start justify-between gap-2 p-1 ${newOrderIds.has(order.id) ? 'animate-new-order-highlight rounded-lg' : ''}`}>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
                         <Checkbox
                           checked={selectedOrders.includes(order.id)}
                           onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
                           onClick={(e) => e.stopPropagation()}
-                          className="mr-2"
+                          className="mr-1 sm:mr-2 h-5 w-5 touch-manipulation"
                         />
-                        <span className="font-mono font-bold text-primary">
+                        <span className="font-mono font-bold text-primary text-sm">
                           #{order.order_number || order.id.slice(0, 8)}
                         </span>
                         {getSourceBadge(order.order_source)}
                       </div>
-                      <p className="text-sm font-medium truncate min-w-0">
+                      <p className="text-sm font-medium truncate min-w-0 pl-7">
                         <CustomerLink
                           customerId={order.user_id}
                           customerName={order.user?.full_name || order.user?.email || order.user?.phone || 'Unknown'}
                           customerEmail={order.user?.email}
                         />
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate pl-7">
                         {formatSmartDate(order.created_at)} • {displayValue(order.delivery_method, 'N/A')}
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
                       {getStatusBadge(order.status)}
-                      <span className="font-bold font-mono">{formatCurrency(order.total_amount)}</span>
+                      <span className="font-bold font-mono text-sm">{formatCurrency(order.total_amount)}</span>
                     </div>
                   </div>
                 </SwipeableItem>
@@ -1272,7 +1274,7 @@ export default function Orders() {
 
             {/* Search results count */}
             {!(isError && orders.length === 0) && sortedOrders.length > 0 && hasActiveFilters && (
-              <div className="text-sm text-muted-foreground px-2 pt-2">
+              <div className="text-xs sm:text-sm text-muted-foreground px-1 sm:px-2 pt-2">
                 Showing {filteredOrders.length} of {orders.length} orders
               </div>
             )}
@@ -1547,7 +1549,7 @@ export default function Orders() {
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant="outline"
-                    size="sm"
+                    className="min-h-[44px] touch-manipulation"
                     onClick={() => handlePrintOrder(selectedOrder)}
                   >
                     <Printer className="mr-2 h-4 w-4" />
@@ -1555,7 +1557,7 @@ export default function Orders() {
                   </Button>
                   <Button
                     variant="outline"
-                    size="sm"
+                    className="min-h-[44px] touch-manipulation"
                     onClick={() => handleGenerateInvoice(selectedOrder)}
                   >
                     <FileText className="mr-2 h-4 w-4" />
@@ -1566,14 +1568,14 @@ export default function Orders() {
 
               {/* Main Actions */}
               <div className="grid grid-cols-2 gap-3 pt-2">
-                <Button className="w-full" onClick={() => {
+                <Button className="w-full min-h-[48px] touch-manipulation" onClick={() => {
                   setIsDrawerOpen(false);
                   navigate(`orders/${selectedOrder.id}`);
                 }}>
                   Full Details
                 </Button>
                 <DrawerClose asChild>
-                  <Button variant="outline" className="w-full">Close</Button>
+                  <Button variant="outline" className="w-full min-h-[48px] touch-manipulation">Close</Button>
                 </DrawerClose>
               </div>
             </div>
