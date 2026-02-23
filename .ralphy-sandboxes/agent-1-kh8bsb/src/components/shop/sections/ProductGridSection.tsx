@@ -1,0 +1,359 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, Package } from "lucide-react";
+import { useInventoryBatch } from "@/hooks/useInventoryBatch";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useShopCart } from "@/hooks/useShopCart";
+import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
+import { queryKeys } from "@/lib/queryKeys";
+import { StorefrontProductCard } from "@/components/shop/StorefrontProductCard";
+
+// Local product type for data from RPC/queries that gets normalized
+interface LocalProduct {
+    id?: string;
+    product_id?: string;
+    name?: string;
+    product_name?: string;
+    price?: number;
+    base_price?: number;
+    description?: string;
+    images?: string[];
+    category?: string;
+    in_stock?: boolean;
+    strain_type?: string;
+    quantity_available?: number;
+}
+
+export interface ProductGridSectionProps {
+    content: {
+        heading: string;
+        subheading: string;
+        show_search: boolean;
+        show_categories: boolean;
+        initial_categories_shown: number;
+        show_premium_filter: boolean;
+        // Feature toggles from Easy Mode
+        show_sale_badges?: boolean;
+        show_new_badges?: boolean;
+        show_strain_badges?: boolean;
+        show_stock_warnings?: boolean;
+    };
+    styles: {
+        background_color: string;
+        text_color: string;
+        accent_color: string;
+    };
+    storeId?: string;
+}
+
+export function ProductGridSection({ content, styles, storeId }: ProductGridSectionProps) {
+    const {
+        heading = "Shop Premium Flower",
+        subheading = "Premium indoor-grown flower from licensed NYC cultivators",
+        show_search = true,
+        show_categories: _show_categories = true,
+        initial_categories_shown = 2,
+        show_premium_filter = true,
+        // Feature toggles - default to true if not specified
+        show_sale_badges = true,
+        show_new_badges = true,
+        show_strain_badges = true,
+        show_stock_warnings = true,
+    } = content || {};
+
+    const {
+        background_color = "#f4f4f5", // zinc-100/muted
+        text_color = "#000000",
+        accent_color = "#10b981" // emerald-500
+    } = styles || {};
+
+    const [showAllCategories, setShowAllCategories] = useState(false);
+    const _isMobile = useIsMobile();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [premiumFilter, setPremiumFilter] = useState(false);
+
+    // Cart integration
+    const { addItem } = useShopCart({
+        storeId: storeId,
+        onCartChange: () => { },
+    });
+
+    const handleQuickAdd = (e: React.MouseEvent, product: LocalProduct & { id: string }) => {
+        e.preventDefault();
+
+        addItem({
+            productId: product.id,
+            name: product.name || '',
+            price: product.price || 0,
+            quantity: 1,
+            imageUrl: product.images?.[0],
+        });
+        toast.success('Added to cart', {
+            description: `${product.name} has been added to your cart.`
+        });
+    };
+
+    // Fetch products - normalized to LocalProduct[]
+    const { data: allProducts = [], isLoading, error } = useQuery<LocalProduct[]>({
+        queryKey: queryKeys.shopProducts.list(storeId),
+        queryFn: async () => {
+            if (storeId) {
+                // Public Storefront View - try RPC first, fallback to direct query
+                try {
+                    const { data, error } = await supabase
+                        .rpc('get_marketplace_products', { p_store_id: storeId });
+
+                    if (error) {
+                        // RPC might not exist, fallback to direct query
+                        logger.warn('RPC get_marketplace_products failed, using fallback', { message: error.message });
+                        const { data: fallbackData, error: fallbackError } = await supabase
+                            .from('marketplace_product_settings')
+                            .select(`
+                                product_id,
+                                is_visible,
+                                custom_price,
+                                products:product_id (
+                                    id, name, description, price, category, images, in_stock
+                                )
+                            `)
+                            .eq('store_id', storeId)
+                            .eq('is_visible', true);
+
+                        if (fallbackError) throw fallbackError;
+
+                        return ((fallbackData as unknown[]) || []).map((item: unknown) => {
+                            const row = item as Record<string, unknown>;
+                            const products = row.products as Record<string, unknown> | null;
+                            return {
+                                id: row.product_id as string,
+                                name: products?.name as string | undefined,
+                                price: (row.custom_price as number) || (products?.price as number) || 0,
+                                images: (products?.images as string[]) || [],
+                                category: products?.category as string | undefined,
+                                description: products?.description as string | undefined,
+                                in_stock: products?.in_stock as boolean | undefined,
+                            };
+                        }) as LocalProduct[];
+                    }
+
+                    // Normalize RPC data to LocalProduct interface
+                    return ((data as unknown[]) || []).map((item: unknown) => {
+                        const p = item as Record<string, unknown>;
+                        return {
+                            id: (p.product_id || p.id) as string,
+                            name: (p.product_name || p.name) as string,
+                            price: (p.base_price || p.price || 0) as number,
+                            description: p.description as string | undefined,
+                            images: (p.images as string[]) || [],
+                            category: p.category as string | undefined,
+                            in_stock: ((p.quantity_available as number) || 0) > 0,
+                            strain_type: (p.strain_type as string) || '',
+                        };
+                    }) as LocalProduct[];
+                } catch (err) {
+                    logger.error('Error fetching marketplace products', err);
+                    return [];
+                }
+            } else {
+                // Admin Builder Preview (uses generic products)
+                const { data, error } = await supabase
+                    .from("products")
+                    .select("*")
+                    .eq("in_stock", true)
+                    .limit(20);
+                if (error) throw error;
+                // Map generic products to LocalProduct shape
+                return (data || []).map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    description: p.description,
+                    images: p.images,
+                    category: p.category,
+                    in_stock: p.in_stock,
+                    strain_type: p.strain_type || '',
+                })) as LocalProduct[];
+            }
+        },
+        retry: 1,
+    });
+
+    const productIds = allProducts.map(p => p.id).filter((id): id is string => !!id);
+    const { data: _inventoryMap = {} } = useInventoryBatch(productIds);
+
+    // Dynamic Categories
+    const uniqueCategories = Array.from(new Set(allProducts.map((p) => p.category))).filter((c): c is string => !!c);
+
+    // Icon Mapping Helper
+    const getCategoryIcon = (category: string) => {
+        const lower = category.toLowerCase();
+        if (lower.includes('flower')) return Leaf;
+        if (lower.includes('edible')) return Cookie;
+        if (lower.includes('pre-roll')) return Cigarette;
+        if (lower.includes('concentrate') || lower.includes('extract')) return Droplets;
+        if (lower.includes('vape') || lower.includes('cart')) return Wind;
+        return Leaf; // Default
+    };
+
+    const categories = uniqueCategories.map(cat => ({
+        key: cat,
+        label: cat.charAt(0).toUpperCase() + cat.slice(1),
+        icon: getCategoryIcon(cat),
+        desc: "" // Could map descriptions if needed
+    }));
+
+    let filteredProducts: LocalProduct[] = searchQuery
+        ? allProducts.filter((p) => {
+            const query = searchQuery.toLowerCase();
+            return (
+                (p.name || '').toLowerCase().includes(query) ||
+                (p.description || '').toLowerCase().includes(query)
+            );
+        })
+        : allProducts;
+
+    if (premiumFilter) {
+        filteredProducts = filteredProducts.filter((p) => {
+            const price = p.price ?? 0;
+            return price >= 40 || p.description?.toLowerCase().includes('premium');
+        });
+    }
+
+
+    return (
+        <section className="py-16 md:py-32 overflow-hidden" style={{ backgroundColor: background_color, color: text_color }}>
+            <div className="container px-4 mx-auto max-w-full">
+                <div className="text-center space-y-4 md:space-y-6 mb-12 md:mb-20">
+                    <h2 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-wider">{heading}</h2>
+                    <p className="text-lg md:text-2xl max-w-3xl mx-auto font-medium opacity-70">
+                        {subheading}
+                    </p>
+                </div>
+
+                {show_search && (
+                    <div className="max-w-2xl mx-auto mb-12">
+                        <label htmlFor="product-grid-search" className="sr-only">Search products</label>
+                        <input
+                            id="product-grid-search"
+                            type="text"
+                            placeholder="Search products..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full px-4 py-3 rounded-full border border-neutral-200 focus:outline-none focus:ring-2"
+                            style={{ borderColor: `${text_color}20`, backgroundColor: `${text_color}05` }}
+                        />
+                    </div>
+                )}
+
+                {show_premium_filter && (
+                    <div className="flex justify-center mb-8">
+                        <Button
+                            variant={premiumFilter ? "default" : "outline"}
+                            onClick={() => setPremiumFilter(!premiumFilter)}
+                            className={premiumFilter ? "text-white" : ""}
+                            style={{
+                                backgroundColor: premiumFilter ? accent_color : 'transparent',
+                                borderColor: premiumFilter ? accent_color : `${text_color}30`,
+                                color: premiumFilter ? '#ffffff' : text_color
+                            }}
+                        >
+                            {premiumFilter ? "✓ Premium Only" : "Show Premium Only"}
+                        </Button>
+                    </div>
+                )}
+
+                {isLoading ? (
+                    <div className="flex justify-center py-20">
+                        <Loader2 className="w-8 h-8 animate-spin" style={{ color: accent_color }} />
+                    </div>
+                ) : error ? (
+                    <div className="text-center py-20">
+                        <p>Unable to load products.</p>
+                    </div>
+                ) : allProducts.length === 0 ? (
+                    <div className="text-center py-20">
+                        <Package className="w-16 h-16 mx-auto mb-4 opacity-40" style={{ color: text_color }} />
+                        <h3 className="text-xl font-semibold mb-2 opacity-70">This store doesn&apos;t have any products yet</h3>
+                        <p className="opacity-50">Check back soon for new arrivals</p>
+                    </div>
+                ) : filteredProducts.length === 0 ? (
+                    <div className="text-center py-20 opacity-50">
+                        <p>No products match your search.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-12 md:space-y-16">
+                        {categories
+                            .slice(0, showAllCategories ? categories.length : (initial_categories_shown || 2))
+                            .map((category) => {
+                                const products = filteredProducts.filter(p => p.category === category.key);
+                                if (products.length === 0) return null;
+
+                                const Icon = category.icon;
+
+                                return (
+                                    <div key={category.key} className="space-y-4 md:space-y-6">
+                                        {/* Category Header */}
+                                        <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${accent_color}1a` }}>
+                                                    <Icon className="w-5 h-5 md:w-6 md:h-6" style={{ color: accent_color }} />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-2xl md:text-3xl font-bold">{category.label}</h3>
+                                                    {category.desc && <p className="text-sm opacity-70">{category.desc}</p>}
+                                                </div>
+                                        </div>
+
+                                        {/* Responsive Product Grid */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                                                {products.map((product, index) => (
+                                                    <div key={product.id || index}>
+                                                        <StorefrontProductCard
+                                                            product={{
+                                                                product_id: product.id || '',
+                                                                product_name: product.name || '',
+                                                                category: product.category || '',
+                                                                strain_type: product.strain_type || '',
+                                                                price: Number(product.price) || 0,
+                                                                description: product.description || '',
+                                                                image_url: product.images?.[0] || null,
+                                                                images: product.images || [],
+                                                                thc_content: null,
+                                                                cbd_content: null,
+                                                                is_visible: true,
+                                                                display_order: 0,
+                                                                stock_quantity: product.in_stock ? 100 : 0
+                                                            }}
+                                                            storeSlug=""
+                                                            isPreviewMode={false}
+                                                            onQuickAdd={(e) => handleQuickAdd(e, { ...product, id: product.id || '' })}
+                                                            isAdded={false}
+                                                            onToggleWishlist={() => { }}
+                                                            isInWishlist={false}
+                                                            onQuickView={() => { }}
+                                                            index={index}
+                                                            accentColor={accent_color}
+                                                            showSaleBadge={show_sale_badges}
+                                                            showNewBadge={show_new_badges}
+                                                            showStrainBadge={show_strain_badges}
+                                                            showStockWarning={show_stock_warnings}
+                                                        />
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        {!showAllCategories && categories.length > (initial_categories_shown || 2) && (
+                            <div className="flex justify-center pt-8">
+                                <Button size="lg" onClick={() => setShowAllCategories(true)}>Show More Categories</Button>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </section>
+    );
+}

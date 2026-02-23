@@ -2,7 +2,7 @@
 ## 42 tasks | Overnight autonomous run
 ## Usage: powershell -ExecutionPolicy Bypass -File .\ralph-r4.ps1
 
-$MAX_LOOPS = 55
+$MAX_LOOPS = 550
 $iteration = 0
 
 Write-Host ""

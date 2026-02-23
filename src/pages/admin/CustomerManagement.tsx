@@ -204,16 +204,27 @@ export function CustomerManagement() {
   const handleDelete = async () => {
     if (!customerToDelete || !tenant) return;
 
+    // Snapshot current cache and optimistically remove customer
+    const queryKey = queryKeys.customers.list(tenant.id, { filterType, filterStatus });
+    const previousCustomers = queryClient.getQueryData<Customer[]>(queryKey);
+    queryClient.setQueryData<Customer[]>(queryKey, (old) =>
+      old?.filter((c) => c.id !== customerToDelete.id)
+    );
+
+    // Close dialog and drawer immediately for snappy UX
+    setDeleteDialogOpen(false);
+    setSelectedCustomerForDrawer(null);
+
     try {
       setIsDeleting(true);
-      
+
       // Check if customer has existing orders
       const { count: orderCount } = await supabase
         .from("orders")
         .select("*", { count: 'exact', head: true })
         .eq("customer_id", customerToDelete.id)
         .eq("tenant_id", tenant.id);
-      
+
       if (orderCount && orderCount > 0) {
         // Customer has orders - use soft delete
         const { error } = await supabase
@@ -243,16 +254,20 @@ export function CustomerManagement() {
       }
 
       invalidateOnEvent(queryClient, 'CUSTOMER_DELETED', tenant.id, { customerId: customerToDelete.id });
-      setDeleteDialogOpen(false);
       setCustomerToDelete(null);
-      setSelectedCustomerForDrawer(null); // Close drawer if open
     } catch (error: unknown) {
+      // Rollback optimistic update on failure
+      if (previousCustomers) {
+        queryClient.setQueryData(queryKey, previousCustomers);
+      }
       logger.error("Failed to delete customer", error, { component: "CustomerManagement" });
       toast.error("Failed to delete customer", {
         description: error instanceof Error ? error.message : "An error occurred"
       });
     } finally {
       setIsDeleting(false);
+      // Always re-fetch from server to ensure consistency
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
     }
   };
 

@@ -1,0 +1,109 @@
+- Tenants relation provides store business_name
+- Status timeline handles cancelled state separately
+- Boolean(shouldFetch) ensures enabled is strictly boolean for useQuery
+
+## task-207: Create delivery runner mobile view
+- Created src/pages/mobile/RunnerView.tsx with mobile-optimized UI for delivery runners
+- Shows assigned deliveries in route order with numbered badges
+- Each delivery card displays customer name, address, items, special instructions, total amount
+- Navigate button opens Google Maps (Android) or Apple Maps (iOS) with address or coordinates
+- Call button allows direct phone call to customer
+- Status update buttons: Pick Up -> Start Delivery -> Delivered (using mutation pattern)
+- Photo proof of delivery modal with camera capture and delivery notes
+- Offline support with localStorage queue for status updates
+- Auto-sync offline queue when connection restored
+- Supabase realtime subscription for live delivery updates
+- Used useOnlineStatus hook for connection detection
+- Maps delivery status from orders table to delivery status types
+- Expandable delivery cards show full item list and instructions
+
+## task-208: Create delivery notification chain
+- Created src/hooks/useDeliveryNotifications.ts for automated delivery notifications
+- Follows useNotificationDispatcher and useOrderStatusNotification patterns
+- Listens to delivery_status_changed events from eventBus
+- Notification chain by status:
+  - assigned: Notifies runner with customer info and order number
+  - picked_up: Notifies customer "Your order is on its way!" + optional SMS
+  - nearby: Geo-proximity notification "Your delivery is almost there!" + optional SMS
+  - delivered: Notifies customer + admin of completion + optional SMS
+  - failed/cancelled: Notifies admin, cancelled also notifies customer
+- SMS notifications via existing send-sms Edge Function (Twilio)
+- checkNearbyAndNotify() calculates Haversine distance between runner and customer
+- nearbyThresholdMeters config (default 500m) for proximity triggering
+- Uses Set to prevent duplicate nearby notifications per delivery
+- Fetches delivery info from unified_orders with fallback to orders table
+- All queries filter by tenant_id for multi-tenant isolation
+- ESLint warning fixed by copying ref value for cleanup function
+- Publishes notification_sent event after each notification
+
+
+## task-209: Create delivery proof of delivery
+- Created src/components/admin/delivery/ProofOfDelivery.tsx for capturing proof of delivery
+- Component captures photo evidence, customer signature, recipient name, and delivery notes
+- Uses react-signature-canvas for signature capture on canvas
+- Photo upload supports both file selection and device camera capture
+- Form validation with react-hook-form + zod schema
+- Geolocation capture for delivery location verification (lat/lng with accuracy)
+- Uploads images to Supabase Storage "delivery-proofs" bucket
+- Stores proof in delivery_proofs table (with graceful fallback if table doesn't exist yet)
+- Generates text-based delivery receipt for compliance documentation
+- Compliance alert reminds runner of age verification (21+) requirements
+- Uses useTenantAdminAuth for tenant context (tenant_id filtering)
+- DeliveryProofData interface exported for consumer components
+- All logging via logger from @/lib/logger — no console.log
+- Proper error handling with toast notifications
+- Loading states during submission and location capture
+- Tabs UI separates photo and signature capture for better mobile UX
+
+## 2026-02-12 06:13:52 - DeliveryScheduler Component
+Created src/components/admin/delivery/DeliveryScheduler.tsx
+- Calendar view showing scheduled deliveries by week
+- Time slot management with capacity limits per slot
+- Slot availability visualization with utilization percentages
+- Block full slots automatically
+- CRUD operations for time slot configuration
+- Created migration 20260212120000_add_delivery_time_slots.sql with RLS policies
+- Uses useTenantContext for tenant isolation
+- Uses TanStack Query with proper queryKeys
+- Follows all FloraIQ coding conventions
+
+## task-216: Create delivery runner performance tracking
+- Created `src/hooks/useRunnerMetrics.ts` with three main hooks:
+  - `useRunnerMetrics(options)`: Fetches individual runner performance metrics
+  - `useWeeklyPerformanceReport(weekOffset)`: Generates weekly team performance reports
+  - `useRunnerLeaderboard(options)`: Returns ranked list of runners by composite score
+- Metrics tracked:
+  - Deliveries completed (total and weekly)
+  - Average delivery time (from pickup to delivery)
+  - On-time rate (within 60 minutes threshold)
+  - Customer ratings (from runner.rating field)
+  - Exceptions count (from delivery_exceptions table)
+  - Distance covered (calculated via Haversine formula from location history)
+  - Week-over-week change percentage
+- Created supporting components:
+  - `RunnerMetricsPanel`: Displays individual runner metrics (full and compact modes)
+  - `WeeklyPerformanceReport`: Weekly team report with runner breakdown and insights
+  - `RunnerLeaderboard`: Ranked runner list with period selector (week/month/all)
+- Extended `queryKeys.runners` with `metrics`, `leaderboard`, and `weeklyReport` factories
+- All queries filter by `tenant_id` via `useTenantContext()`
+- Used `logger` from `@/lib/logger` for all debug/error logging
+- Composite score formula: 30% deliveries + 30% on-time + 20% avg time + 20% rating
+- Error handling for missing tables (delivery_exceptions, runner_location_history)
+- Components export from `src/components/admin/delivery/index.ts`
+
+## task-210: Create Supabase migration for delivery_proofs table
+- Migration file already exists at supabase/migrations/add_delivery_proofs.sql
+- Contains: id, tenant_id, delivery_id, order_id, photo_url, signature_url, recipient_name, notes, location_lat, location_lng, captured_at, created_at
+- RLS policies for tenant isolation implemented
+- Marked as passes: true
+
+## task-217: Create delivery compliance checks
+- Four files implemented: types (`src/types/delivery-compliance.ts`), hook (`src/hooks/useDeliveryCompliance.ts`), component (`src/components/admin/delivery/DeliveryComplianceChecklist.tsx`), migration (`supabase/migrations/20260212130000_create_delivery_compliance_checks.sql`)
+- Six compliance check types: age_verification, id_on_file, licensed_zone, time_restriction, quantity_limit, customer_status
+- Hook provides: fetch checks, create/verify/override mutations, batch initialization, auto-verify system checks, can_complete_delivery RPC
+- Component features: progress bar, collapsible check details, manual verify/fail buttons, admin override dialog with reason, audit log viewer, blocking alert
+- Migration includes: delivery_compliance_checks table, delivery_compliance_audit_log table, RLS policies, trigger-based audit logging, can_complete_delivery RPC function
+- Fixed rule violations: changed .single() to .maybeSingle() (3 occurrences), fixed import ordering (React -> Third-party -> Types -> Components -> Utils), removed unused queryKeys import, moved sonner import to third-party group, separated DEFAULT_COMPLIANCE_SETTINGS value import from type imports
+- Exported DeliveryComplianceChecklist from delivery barrel file (index.ts)
+- TypeScript compilation passes with no errors
+- Marked as passes: true

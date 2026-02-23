@@ -96,37 +96,36 @@
 - [x] Task 80: Add empty state to DisposableMenus.tsx -- Enhanced ResponsiveGrid emptyState in SmartDashboard with contextual messaging (search/filter/no menus), Link icon, "Clear Filters" or "Create Menu" primary action based on filter state, compact and designSystem="tenant-admin".
 - [x] Task 81: Add toast notifications to ProductManagement mutations -- Already implemented: all mutations (create, update, delete, publish, inline edit, batch delete, scan) use toast from sonner with success/error/warning notifications.
 - [x] Task 82: Add toast notifications to CustomerManagement mutations -- Already implemented: all mutations (delete, export, import, create, update, notes CRUD) use toast from sonner with success/error notifications.
-- [ ] Task 83: Add toast notifications to InvoicesPage mutations -- 
-- [ ] Task 84: Add toast notifications to VendorManagement mutations -- 
-- [ ] Task 85: Improve mobile responsiveness on DashboardPage.tsx -- 
-- [ ] Task 86: Improve mobile responsiveness on Orders.tsx -- 
-- [ ] Task 87: Improve mobile responsiveness on ClientsPage.tsx -- 
-- [ ] Task 88: Improve mobile responsiveness on ProductManagement.tsx -- 
-- [ ] Task 89: Improve mobile responsiveness on CashRegister.tsx -- 
-- [ ] Task 90: Improve mobile responsiveness on CustomerDetails.tsx -- 
-- [ ] Task 91: Add breadcrumb to OrderDetailsPage.tsx -- Add breadcrumb: Dashboard > Orders > Order #XYZ using Breadcrumbs
-      component.
-- [ ] Task 92: Add breadcrumb to ProductDetailsPage.tsx -- Add breadcrumb: Dashboard > Products > Product Name.
-- [ ] Task 93: Add breadcrumb to CustomerDetails.tsx -- Add breadcrumb: Dashboard > Customers > Customer Name.
-- [ ] Task 94: Add breadcrumb to VendorDetailPage.tsx -- Add breadcrumb: Dashboard > Vendors > Vendor Name.
-- [ ] Task 95: Add breadcrumb to InvoiceDetailPage.tsx -- Add breadcrumb: Dashboard > Invoices > Invoice #XYZ.
-- [ ] Task 96: Add confirmation dialog to product delete -- 
-- [ ] Task 97: Add confirmation dialog to customer delete -- 
-- [ ] Task 98: Add confirmation dialog to order cancel -- 
-- [ ] Task 99: Add confirmation dialog to invoice void -- 
-- [ ] Task 100: Add confirmation dialog to vendor delete -- 
-- [ ] Task 101: Add aria-labels to OrderRow actions -- 
-- [ ] Task 102: Add aria-labels to ProductCard actions -- 
-- [ ] Task 103: Add aria-labels to CustomerRow actions -- 
-- [ ] Task 104: Add hover transitions to ProductCard.tsx -- 
-- [ ] Task 105: Add hover transitions to OrderRow.tsx -- 
-- [ ] Task 106: Add hover transitions to CustomerRow.tsx -- 
-- [ ] Task 107: Add text truncation with tooltips to OrderRow.tsx -- 
-- [ ] Task 108: Add text truncation with tooltips to ProductCard.tsx -- 
-- [ ] Task 109: Add consistent icons in DashboardPage.tsx -- 
-- [ ] Task 110: Create PageTransition wrapper component -- 
-- [ ] Task 111: Add optimistic update to product mutations -- 
-- [ ] Task 112: Add optimistic update to order status mutations -- 
+- [x] Task 83: Add toast notifications to InvoicesPage mutations -- Already implemented: all mutations (markAsPaid, markAsSent, voidInvoice, duplicateInvoice) use toast from sonner via useAsyncAction with success/error messages. PDF and copy operations also have toast notifications.
+- [x] Task 84: Add toast notifications to VendorManagement mutations -- Replaced useToast from use-toast with toast from sonner for all mutation success notifications (create, update, delete vendor).
+- [x] Task 85: Improve mobile responsiveness on DashboardPage.tsx -- Responsive title (text-xl sm:text-2xl), 2-col KPI grids on mobile, scrollable period toggles, responsive section headings (text-base sm:text-lg), responsive KPICard value text (text-lg sm:text-2xl) with truncation.
+- [x] Task 86: Improve mobile responsiveness on Orders.tsx -- Wrapped header buttons with flex-wrap, icon-only on small screens for Offline Order/New Order, responsive touch targets (44px/48px), compact "Clear" filter button on mobile, improved mobile card spacing with touch-friendly checkboxes, responsive error banner layout, responsive filter badges and results count text.
+- [x] Task 87: Improve mobile responsiveness on ClientsPage.tsx -- Responsive title (text-xl sm:text-2xl), reduced container padding on mobile (py-4 sm:py-8), full-width search/filter controls on mobile, text truncation on email/name fields with min-w-0, touch-friendly 44px min button targets, responsive skeleton to match, sm breakpoints for earlier layout switches.
+- [x] Task 88: Improve mobile responsiveness on ProductManagement.tsx -- Responsive title (text-xl sm:text-2xl md:text-3xl), icon-only header buttons on mobile (Generate Barcodes, Add Product), 2-col stats grid on mobile with reduced padding (p-3 sm:p-6), responsive stat values (text-lg sm:text-2xl) with truncation, touch-friendly 44px min button targets, responsive product dialog width (95vw sm:max-w-3xl), 2-col product grid on sm breakpoint, responsive skeleton loaders to match.
+- [x] Task 89: Improve mobile responsiveness on CashRegister.tsx -- Responsive title (text-xl sm:text-2xl md:text-3xl), reduced container padding (p-4 sm:p-6), icon-only header buttons on mobile (Refund/Return, Shortcuts), flex-wrap header buttons, responsive product grid gaps, compact cart item layout with truncation and smaller touch targets on mobile (h-9 w-9 sm:h-10), responsive transaction cards (flex-col on mobile), responsive product dialog width (95vw sm:max-w-2xl), stacked search/category filter on mobile, 44px min touch targets on all action buttons, responsive skeleton loader to match.
+- [x] Task 90: Improve mobile responsiveness on CustomerDetails.tsx -- Responsive title (text-xl sm:text-2xl md:text-3xl), reduced container padding (p-4 sm:p-6), stacked header on mobile (flex-col sm:flex-row) with smaller avatar (w-14 sm:w-20), 2-col stats grid on mobile with reduced padding (p-3 sm:p-6) and responsive values (text-lg sm:text-2xl), scrollable tabs with overflow-x-auto, responsive financial tracking grid (grid-cols-1 sm:grid-cols-3), touch-friendly 44px min button targets, flex-wrap action buttons, responsive skeleton loader to match, responsive dialog width (95vw sm:max-w-md).
+- [x] Task 91: Add breadcrumb to OrderDetailsPage.tsx -- Already implemented: useBreadcrumbLabel sets "Order #XYZ" label in BreadcrumbContext, AdminLayout renders Breadcrumbs component which auto-generates trail from URL path (Tenant > Orders > Order #XYZ).
+- [x] Task 92: Add breadcrumb to ProductDetailsPage.tsx -- Already implemented: useBreadcrumbLabel sets product name label in BreadcrumbContext, AdminLayout renders Breadcrumbs component which auto-generates trail from URL path (Tenant > Products > Product Name).
+- [x] Task 93: Add breadcrumb to CustomerDetails.tsx -- Already implemented: useBreadcrumbLabel sets customer display name in BreadcrumbContext, AdminLayout renders Breadcrumbs component which auto-generates trail from URL path (Tenant > Customers > Customer Name).
+- [x] Task 94: Add breadcrumb to VendorDetailPage.tsx -- Already implemented: useBreadcrumbLabel sets vendor name label in BreadcrumbContext, AdminLayout renders Breadcrumbs component which auto-generates trail from URL path (Tenant > Vendors > Vendor Name).
+- [x] Task 95: Add breadcrumb to InvoiceDetailPage.tsx -- Already implemented: useBreadcrumbLabel sets "Invoice #XYZ" label in BreadcrumbContext, AdminLayout renders Breadcrumbs component which auto-generates trail from URL path (Tenant > Invoices > Invoice #XYZ).
+- [x] Task 96: Add confirmation dialog to product delete -- Already implemented: ConfirmDeleteDialog imported (line 53), state variables deleteDialogOpen/productToDelete/isDeleting (lines 246-248), confirmDelete handler with order usage pre-checks (line 626), dialog rendered with proper props (line 1546).
+- [x] Task 97: Add confirmation dialog to customer delete -- Already implemented in CustomerManagement.tsx: ConfirmDeleteDialog imported (line 39), deleteDialogOpen state (line 100), dialog rendered (line 875). ClientsPage.tsx has no delete functionality.
+- [x] Task 98: Add confirmation dialog to order cancel -- Added ConfirmDialog with destructive variant to handleOrderAction 'cancel' case in Orders.tsx. Shows order number in confirmation message before calling handleCancelOrder.
+- [x] Task 99: Add confirmation dialog to invoice void -- Added ConfirmDialog with destructive variant to void invoice actions in both mobile and desktop views. Shows invoice number in confirmation message before calling handleVoidInvoice.
+- [x] Task 100: Add confirmation dialog to vendor delete -- Already implemented: ConfirmDeleteDialog imported (line 19), deleteDialogOpen/vendorToDelete/isDeleting state (lines 67-69), handleDeleteClick handler (line 176), handleDelete with tenant_id filter (line 181), dialog rendered with proper props (line 427).
+- [x] Task 101: Add aria-labels to OrderRow actions -- Added aria-labels to View button, More actions dropdown trigger, and Status select trigger in OrderRow.tsx, all including order number for screen reader context.
+- [x] Task 102: Add aria-labels to ProductCard actions -- Added aria-labels to More actions dropdown trigger, Edit button, and Add to Menu button in ProductCard.tsx, all including product name for screen reader context.
+- [x] Task 103: Add aria-labels to CustomerRow actions -- Added aria-labels to checkbox (Select customer name) and More actions dropdown trigger (Actions for customer name) in CustomerRow.tsx, including customer name for screen reader context.
+- [x] Task 104: Add hover transitions to ProductCard.tsx -- Added transition-colors/transition-all duration-200 to stock status bar (group-hover background), quick action buttons (hover:shadow-sm), and dropdown trigger for smooth hover effects.
+- [x] Task 105: Add hover transitions to OrderRow.tsx -- Added transition-all duration-200 to row hover, action buttons (hover:shadow-sm), copy buttons, status select trigger, and dropdown trigger for smooth hover effects.
+- [x] Task 106: Add hover transitions to CustomerRow.tsx -- Added group class to tr for group-hover, transition-colors duration-200 to row hover, group-hover:bg-primary/20 to avatar circle, opacity-0 group-hover:opacity-100 transition-all duration-200 hover:shadow-sm to dropdown trigger, upgraded CopyButton transition to transition-all duration-200.
+- [x] Task 107: Add text truncation with tooltips to OrderRow.tsx -- Added Tooltip wrappers with truncation to customer name, email, phone, and delivery method fields. Added max-w constraints and min-w-0/shrink-0 for proper overflow handling.
+- [x] Task 108: Add text truncation with tooltips to ProductCard.tsx -- Wrapped strain_name with TruncatedText component for consistent truncation with tooltip on hover. Product name, category badge, and SKU already used TruncatedText.
+- [x] Task 109: Add consistent icons in DashboardPage.tsx -- Replaced duplicate icons with distinct ones: Clock for Pending Orders, TrendingUp for Orders (period), XCircle for Out of Stock. Each KPI card now has a unique, semantically appropriate icon.
+- [x] Task 110: Create PageTransition wrapper component -- Created PageTransition component using framer-motion with fade+slide animations (opacity 0→1, y 8→0→-8), 200ms easeOut transition, className support via cn().
+- [x] Task 111: Add optimistic update to product mutations -- Wired useOptimisticList's updateOptimistic into handleInlineUpdate and deleteOptimistic into confirmDelete for instant UI feedback with automatic rollback on failure.
+- [x] Task 112: Add optimistic update to order status mutations -- Converted updateStatusMutation to use onMutate for immediate UI update before server confirms, with snapshot rollback in onError and onSettled invalidation for server consistency.
 - [ ] Task 113: Add optimistic update to customer mutations -- 
 - [ ] Task 114: Add retry logic to product queries -- In useProduct.ts add retry: 2 and retryDelay: 1000 to useQuery options.
 - [ ] Task 115: Add retry logic to order queries -- In order list query hook add retry: 2 and retryDelay: 1000 to

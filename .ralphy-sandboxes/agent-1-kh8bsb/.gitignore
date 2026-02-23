@@ -1,0 +1,82 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.local
+.env.*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Test results
+playwright-report/
+test-results/
+
+# Ralphy worktrees
+.ralphy-worktrees/
+.ralphy/
+nul
+
+# Lint & build output
+eslint-output.json
+eslint-pages.json
+eslint_output.txt
+lint-output.txt
+lint.txt
+lint2.txt
+lint_final.txt
+lint_full.txt
+lint_output.txt
+lint_output3.txt
+pages_lint.json
+pages_with_errors.txt
+lint_report.txt
+lint_report_2.txt
+build-check.log
+build-vendor-forms.log
+build-vendor-maps.log
+test-output.txt
+test-adminlayout-output.txt
+verify-output.txt
+
+# Generated docs (keep in git only if intentional)
+IMPLEMENTATION_*.md
+FINAL_*.md
+USEMEMO_*.md
+VIEW_TRANSITIONS_*.md
+LODASH_MIGRATION.md
+
+# Old task YAML files
+floraiq*.yaml
+admin_improvements.yaml
+audit_tasks.yaml
+overnight-polish.yaml
+logic-polish.yaml
+polish-batch-*.yaml
+ralphy-tasks.yaml
+storefront-ux.yaml
+
+# Ralph loop artifacts
+progress-archive.txt
+.archive/
+ralph.ps1
+spec.md
+implementation_plan.md

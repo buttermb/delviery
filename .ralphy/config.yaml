@@ -1,10 +1,10 @@
 project:
   name: vite_react_shadcn_ts
   language: TypeScript
-  framework: Express
-  description: ""
+  framework: React + Vite
+  description: FloraIQ multi-tenant cannabis wholesale SaaS
 commands:
-  test: bun test
+  test: npx vitest --run
   lint: npm run lint
   build: npm run build
 rules:
@@ -15,8 +15,19 @@ rules:
   - Use useTenantAdminAuth() for tenant context
   - Use .maybeSingle() not .single()
   - "Commit with message: feat: [task title]"
-  - Read CLAUDE.md for project rules
   - Never create files named nul, con, prn, aux - Windows reserved names
   - Never run git add on dist/ or nul files
+  - Read CLAUDE.md for project rules
+  - Use logger from @/lib/logger never console.log
+  - Use @/ imports always
+  - Filter all Supabase queries by tenant_id
+  - Use sonner toast not useToast
+  - Use (supabase as any) for untyped tables
+  - If component does not exist mark task SKIP
+  - Commit after each task with descriptive message
 boundaries:
-  never_touch: null
+  never_touch:
+    - src/integrations/supabase/client.ts
+    - src/integrations/supabase/types.ts
+    - supabase/config.toml
+    - .env
