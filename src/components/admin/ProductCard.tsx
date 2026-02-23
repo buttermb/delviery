@@ -150,7 +150,7 @@ export function ProductCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-[hsl(var(--tenant-text-light))] hover:text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]"
+                className="text-[hsl(var(--tenant-text-light))] hover:text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))] transition-colors duration-200"
                 aria-label={`More actions for ${product.name}`}
               >
                 <MoreVertical className="h-4 w-4" />
@@ -228,7 +228,7 @@ export function ProductCard({
         </div>
 
         {/* Stock Status */}
-        <div className="flex items-center justify-between p-3 bg-[hsl(var(--tenant-surface))] rounded-lg mb-4">
+        <div className="flex items-center justify-between p-3 bg-[hsl(var(--tenant-surface))] rounded-lg mb-4 transition-colors duration-200 group-hover:bg-[hsl(var(--tenant-surface))]/80">
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-[hsl(var(--tenant-text-light))]" />
             <span className="text-sm font-medium text-[hsl(var(--tenant-text))]">
@@ -248,7 +248,7 @@ export function ProductCard({
               variant="outline"
               size="sm"
               onClick={() => onEdit(product.id)}
-              className="flex-1 border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-surface))]"
+              className="flex-1 border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-surface))] transition-all duration-200 hover:shadow-sm"
               aria-label={`Edit ${product.name}`}
             >
               <Edit className="h-4 w-4 mr-2" />
@@ -259,7 +259,7 @@ export function ProductCard({
             <Button
               size="sm"
               onClick={() => onAddToMenu(product.id)}
-              className="flex-1 bg-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/90 text-white"
+              className="flex-1 bg-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/90 text-white transition-all duration-200 hover:shadow-sm"
               aria-label={`Add ${product.name} to menu`}
             >
               <Package className="h-4 w-4 mr-2" />
