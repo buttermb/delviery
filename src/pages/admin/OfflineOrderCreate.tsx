@@ -39,6 +39,7 @@ import { OfflineBadge } from '@/components/ui/offline-indicator';
 import { SEOHead } from '@/components/SEOHead';
 
 import type { CustomerMatch } from '@/hooks/useCustomerLookup';
+import { useParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useOfflineOrderCreation, OfflineOrderItem, OfflineOrderData } from '@/hooks/useOfflineOrderCreation';
@@ -57,6 +58,7 @@ interface ProductForOrder {
 export default function OfflineOrderCreate() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const {
     offlineOrders,
     isOnline,
@@ -292,7 +294,7 @@ export default function OfflineOrderCreate() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/admin/orders')}
+              onClick={() => navigate(`/${tenantSlug}/admin/orders`)}
               className="h-8 w-8 p-0"
             >
               <ArrowLeft className="h-4 w-4" />

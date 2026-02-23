@@ -8,6 +8,7 @@ import {
   ArrowUpDown, Pencil
 } from 'lucide-react';
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,6 +74,7 @@ interface MenuCardProps {
 
 export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const navigate = useTenantNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [burnDialogOpen, setBurnDialogOpen] = useState(false);
   const [manageAccessOpen, setManageAccessOpen] = useState(false);
@@ -116,7 +118,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
 
   const openMenu = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    window.open(`/m/${menu.encrypted_url_token}`, '_blank');
+    window.open(`/m/${menu.encrypted_url_token}`, '_blank', 'noopener,noreferrer');
   };
 
   // Security badges
@@ -342,7 +344,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                             from_menu: menu.id,
                             menu_name: menu.name || 'My Storefront',
                           });
-                          navigate(`/admin/storefront/builder?${params.toString()}`);
+                          navigate(`/${tenantSlug}/admin/storefront/builder?${params.toString()}`);
                         }}
                         className="text-violet-600 focus:text-violet-700 focus:bg-violet-50"
                       >

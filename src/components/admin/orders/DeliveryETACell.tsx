@@ -11,6 +11,7 @@
  */
 
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Clock, Truck, MapPin, Phone, AlertTriangle, ExternalLink } from 'lucide-react';
 import { formatSmartDate } from '@/lib/formatters';
 
@@ -63,6 +64,7 @@ function getDeliveryStatusColor(status: string): string {
 export function DeliveryETACell({ eta, orderStatus }: DeliveryETACellProps) {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const navigate = useTenantNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
   // Only show for delivery-related statuses
   const isInDelivery = ['in_transit', 'out_for_delivery'].includes(orderStatus);
@@ -129,7 +131,7 @@ export function DeliveryETACell({ eta, orderStatus }: DeliveryETACellProps) {
             icon: ExternalLink,
             onClick: () => {
               setIsPanelOpen(false);
-              navigate(`/admin/delivery-tracking/${eta.deliveryId}`);
+              navigate(`/${tenantSlug}/admin/delivery-tracking/${eta.deliveryId}`);
             },
           },
         ]}

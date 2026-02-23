@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
@@ -45,6 +46,7 @@ function getAvailabilityStatus(courier: Courier): AvailabilityStatus {
 export default function Couriers() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddCourierOpen, setIsAddCourierOpen] = useState(false);
@@ -204,7 +206,7 @@ export default function Couriers() {
             size="sm"
             variant="ghost"
             className="min-h-[44px] min-w-[44px]"
-            onClick={() => navigate(`/admin/couriers/${courier.id}`)}
+            onClick={() => navigate(`/${tenantSlug}/admin/couriers/${courier.id}`)}
           >
             <Eye className="h-4 w-4" />
           </Button>
@@ -240,7 +242,7 @@ export default function Couriers() {
             <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
-                onClick={() => navigate('/admin/fulfillment-hub?tab=pending')}
+                onClick={() => navigate(`/${tenantSlug}/admin/fulfillment-hub?tab=pending`)}
               >
                 <Package className="h-4 w-4 mr-2" />
                 Assign to Orders
@@ -311,7 +313,7 @@ export default function Couriers() {
                         size="sm"
                         variant="ghost"
                         className="min-h-[44px] min-w-[44px]"
-                        onClick={() => navigate(`/admin/couriers/${courier.id}`)}
+                        onClick={() => navigate(`/${tenantSlug}/admin/couriers/${courier.id}`)}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>

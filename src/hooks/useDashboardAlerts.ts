@@ -26,7 +26,7 @@ interface UseDashboardAlertsResult {
 const STORAGE_KEY_PREFIX = 'dashboard_alerts_dismissed_';
 
 export function useDashboardAlerts(): UseDashboardAlertsResult {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, tenantSlug } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
   // Track dismissed alert IDs in localStorage
@@ -79,7 +79,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
             title: 'Out of Stock',
             message: `${item.name} is currently out of stock`,
             actionLabel: 'Reorder Now',
-            actionHref: `/admin/inventory/products?search=${encodeURIComponent(item.name || '')}`,
+            actionHref: `/${tenantSlug}/admin/inventory/products?search=${encodeURIComponent(item.name || '')}`,
             daysUntil: 0,
             entityId: item.id,
             entityType: 'product',
@@ -93,7 +93,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
             title: 'Low Stock Alert',
             message: `${item.name} has only ${currentQty.toFixed(1)} units remaining`,
             actionLabel: 'View Product',
-            actionHref: `/admin/inventory/products?search=${encodeURIComponent(item.name || '')}`,
+            actionHref: `/${tenantSlug}/admin/inventory/products?search=${encodeURIComponent(item.name || '')}`,
             entityId: item.id,
             entityType: 'product',
             createdAt: now,
@@ -125,7 +125,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
           title: 'Order Needs Attention',
           message: `Order for ${clientName} pending for ${ageDays} day${ageDays === 1 ? '' : 's'}`,
           actionLabel: 'View Order',
-          actionHref: `/admin/wholesale-orders?id=${order.id}`,
+          actionHref: `/${tenantSlug}/admin/wholesale-orders?id=${order.id}`,
           entityId: order.id,
           entityType: 'order',
           createdAt: now,
@@ -151,7 +151,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
           title: 'Overdue Invoice',
           message: `Invoice ${invoice.invoice_number || invoice.id?.slice(0, 8)} is ${daysOverdue} day${daysOverdue === 1 ? '' : 's'} overdue`,
           actionLabel: 'Follow Up',
-          actionHref: `/admin/invoices?id=${invoice.id}`,
+          actionHref: `/${tenantSlug}/admin/invoices?id=${invoice.id}`,
           daysUntil: -daysOverdue,
           entityId: invoice.id,
           entityType: 'invoice',

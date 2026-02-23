@@ -387,7 +387,7 @@ export function DashboardPage() {
                     icon={<Clock className="h-5 w-5" />}
                     description="Awaiting processing"
                     variant={stats?.pendingOrders && stats.pendingOrders > 0 ? 'warning' : 'default'}
-                    href="/admin/orders?status=pending"
+                    href={`/${tenantSlug}/admin/orders?status=pending`}
                   />
                   <KPICard
                     title="Today's Orders"
@@ -395,7 +395,7 @@ export function DashboardPage() {
                     icon={<ShoppingCart className="h-5 w-5" />}
                     description="Orders placed today"
                     variant="default"
-                    href="/admin/orders"
+                    href={`/${tenantSlug}/admin/orders`}
                   />
                   <KPICard
                     title="Completed Today"
@@ -403,7 +403,7 @@ export function DashboardPage() {
                     icon={<CheckCircle2 className="h-5 w-5" />}
                     description="Successfully delivered"
                     variant="success"
-                    href="/admin/orders?status=completed"
+                    href={`/${tenantSlug}/admin/orders?status=completed`}
                   />
                   <KPICard
                     title={`Orders (${PERIOD_LABELS[period]})`}
@@ -411,7 +411,7 @@ export function DashboardPage() {
                     icon={<TrendingUp className="h-5 w-5" />}
                     description={`Total in selected period`}
                     variant="default"
-                    href="/admin/orders"
+                    href={`/${tenantSlug}/admin/orders`}
                   />
                 </>
               )}
@@ -435,7 +435,7 @@ export function DashboardPage() {
                     icon={<Users className="h-5 w-5" />}
                     description="All registered customers"
                     variant="default"
-                    href="/admin/customer-hub"
+                    href={`/${tenantSlug}/admin/customer-hub`}
                   />
                   <KPICard
                     title="New Customers"
@@ -443,7 +443,7 @@ export function DashboardPage() {
                     icon={<UserPlus className="h-5 w-5" />}
                     description={`Joined in the last ${PERIOD_LABELS[period]}`}
                     variant="success"
-                    href="/admin/customer-hub"
+                    href={`/${tenantSlug}/admin/customer-hub`}
                   />
                   <KPICard
                     title="Active Sessions"
@@ -451,7 +451,7 @@ export function DashboardPage() {
                     icon={<Activity className="h-5 w-5" />}
                     description="Online in last 15 minutes"
                     variant="default"
-                    href="/admin/analytics-hub"
+                    href={`/${tenantSlug}/admin/analytics-hub`}
                   />
                 </>
               )}
@@ -475,7 +475,7 @@ export function DashboardPage() {
                     icon={<Package className="h-5 w-5" />}
                     description="In catalog"
                     variant="default"
-                    href="/admin/inventory-hub"
+                    href={`/${tenantSlug}/admin/inventory-hub`}
                   />
                   <KPICard
                     title="Low Stock"
@@ -483,7 +483,7 @@ export function DashboardPage() {
                     icon={<PackageX className="h-5 w-5" />}
                     description="Below reorder threshold"
                     variant={stats?.lowStockItems && stats.lowStockItems > 0 ? 'warning' : 'default'}
-                    href="/admin/inventory-hub?tab=alerts"
+                    href={`/${tenantSlug}/admin/inventory-hub?tab=alerts`}
                   />
                   <KPICard
                     title="Out of Stock"
@@ -491,7 +491,7 @@ export function DashboardPage() {
                     icon={<XCircle className="h-5 w-5" />}
                     description="Needs restocking"
                     variant={stats?.outOfStockItems && stats.outOfStockItems > 0 ? 'destructive' : 'default'}
-                    href="/admin/inventory-hub?tab=alerts"
+                    href={`/${tenantSlug}/admin/inventory-hub?tab=alerts`}
                   />
                   <KPICard
                     title="Inventory Value"
@@ -499,7 +499,7 @@ export function DashboardPage() {
                     icon={<Warehouse className="h-5 w-5" />}
                     description="Total stock value"
                     variant="default"
-                    href="/admin/finance-hub"
+                    href={`/${tenantSlug}/admin/finance-hub`}
                   />
                 </>
               )}

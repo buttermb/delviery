@@ -28,7 +28,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { wholesaleOrderFlowManager, WholesaleOrderStatus } from '@/lib/orders/wholesaleOrderFlowManager';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams } from 'react-router-dom';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { LastUpdated } from '@/components/ui/last-updated';
 import { humanizeError } from '@/lib/humanizeError';
@@ -64,6 +64,7 @@ interface ColumnProps {
 
 function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: ColumnProps) {
     const navigate = useTenantNavigate();
+    const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
     const handleCopyId = (e: React.MouseEvent, id: string) => {
@@ -92,7 +93,7 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: Co
                         <Card
                             key={order.id}
                             className="cursor-pointer hover:shadow-md transition-all active:scale-[0.98] group"
-                            onClick={() => navigate(`/admin/orders/${order.id}`)}
+                            onClick={() => navigate(`/${tenantSlug}/admin/orders/${order.id}`)}
                         >
                             <CardContent className="p-2.5 space-y-2">
                                 <div className="flex items-start justify-between">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useParams } from "react-router-dom";
 import { useTenantNavigate } from "@/hooks/useTenantNavigate";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -52,6 +53,7 @@ interface ConvertPreOrderDialogProps {
 export function ConvertPreOrderDialog({ preOrder, trigger, open: controlledOpen, onOpenChange: setControlledOpen }: ConvertPreOrderDialogProps) {
     const [internalOpen, setInternalOpen] = useState(false);
     const navigate = useTenantNavigate();
+    const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const convertPreOrder = useConvertPreOrderToInvoice();
     const logActivity = useLogActivity();
 
@@ -88,7 +90,7 @@ export function ConvertPreOrderDialog({ preOrder, trigger, open: controlledOpen,
 
             toast.success("Pre-order converted to invoice");
             setOpen(false);
-            navigate(`/admin/crm/invoices/${invoice.id}`);
+            navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`);
         } catch (error: unknown) {
             logger.error('Failed to convert pre-order to invoice', error, { 
                 component: 'ConvertPreOrderDialog',
