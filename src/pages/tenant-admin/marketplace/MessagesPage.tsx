@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import {
   MessageSquare,
@@ -74,7 +74,6 @@ interface Conversation {
 
 export default function MessagesPage() {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -217,7 +216,7 @@ export default function MessagesPage() {
     },
     onError: (error: Error) => {
       logger.error('Failed to mark messages as read', { error });
-      toast({ title: 'Failed to mark as read', description: humanizeError(error), variant: 'destructive' });
+      toast.error('Failed to mark as read', { description: humanizeError(error) });
     },
   });
 
@@ -254,18 +253,11 @@ export default function MessagesPage() {
       queryClient.invalidateQueries({ queryKey: ['marketplace-messages', tenantId] });
       setReplyText('');
       setReplyingTo(null);
-      toast({
-        title: 'Message sent',
-        description: 'Your reply has been sent to the buyer',
-      });
+      toast.success('Message sent', { description: 'Your reply has been sent to the buyer' });
     },
     onError: (error: unknown) => {
       logger.error('Failed to send message', error, { component: 'MessagesPage' });
-      toast({
-        title: 'Error',
-        description: humanizeError(error, 'Failed to send message'),
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: humanizeError(error, 'Failed to send message') });
     },
   });
 

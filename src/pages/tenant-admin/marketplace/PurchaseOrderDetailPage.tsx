@@ -6,7 +6,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import {
     ArrowLeft,
@@ -38,7 +38,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 export default function PurchaseOrderDetailPage() {
     const { orderId } = useParams<{ orderId: string }>();
     const { tenant } = useTenantAdminAuth();
-    const { toast } = useToast();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [messageText, setMessageText] = useState('');
@@ -84,14 +83,10 @@ export default function PurchaseOrderDetailPage() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-purchase-detail', orderId] });
-            toast({ title: 'Order marked as received' });
+            toast.success('Order marked as received');
         },
         onError: (error) => {
-            toast({
-                title: "Error",
-                description: humanizeError(error),
-                variant: "destructive"
-            });
+            toast.error('Error', { description: humanizeError(error) });
         }
     });
 
@@ -113,16 +108,12 @@ export default function PurchaseOrderDetailPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            toast({ title: "Message sent", description: "The seller has been notified." });
+            toast.success('Message sent', { description: 'The seller has been notified.' });
             setIsMessageDialogOpen(false);
             setMessageText('');
         },
         onError: (error) => {
-            toast({
-                title: "Error sending message",
-                description: humanizeError(error),
-                variant: "destructive"
-            });
+            toast.error('Error sending message', { description: humanizeError(error) });
         }
     });
 

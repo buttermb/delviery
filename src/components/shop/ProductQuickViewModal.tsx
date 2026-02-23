@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
     ShoppingCart,
     Plus,
@@ -53,7 +53,6 @@ export function ProductQuickViewModal({
 }: ProductQuickViewModalProps) {
     const { storeSlug } = useParams();
     const { store, setCartItemCount } = useShop();
-    const { toast } = useToast();
     const [quantity, setQuantity] = useState(1);
 
     const { addItem } = useShopCart({
@@ -97,8 +96,7 @@ export function ProductQuickViewModal({
             imageUrl: product.image_url,
         });
 
-        toast({
-            title: 'Added to cart',
+        toast.success('Added to cart', {
             description: `${quantity}x ${product.product_name}`,
         });
 

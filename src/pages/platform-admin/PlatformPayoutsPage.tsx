@@ -17,7 +17,7 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import {
     Dialog,
@@ -31,7 +31,6 @@ import { Textarea } from '@/components/ui/textarea';
 
 export default function PlatformPayoutsPage() {
     const { isPlatformAdmin } = usePlatformAdmin();
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const [rejectDialog, setRejectDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
     const [rejectReason, setRejectReason] = useState('');
@@ -73,11 +72,11 @@ export default function PlatformPayoutsPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            toast({ title: "Payout Approved", description: "Funds marked as transferred." });
+            toast.success("Payout Approved", { description: "Funds marked as transferred." });
             queryClient.invalidateQueries({ queryKey: ['admin-payouts-pending'] });
         },
         onError: (error) => {
-            toast({ title: "Error", description: humanizeError(error), variant: "destructive" });
+            toast.error("Error", { description: humanizeError(error) });
         }
     });
 
@@ -96,13 +95,13 @@ export default function PlatformPayoutsPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            toast({ title: "Payout Rejected", description: "Vendor has been notified." });
+            toast.success("Payout Rejected", { description: "Vendor has been notified." });
             setRejectDialog({ open: false, id: null });
             setRejectReason('');
             queryClient.invalidateQueries({ queryKey: ['admin-payouts-pending'] });
         },
         onError: (error) => {
-            toast({ title: "Error", description: humanizeError(error), variant: "destructive" });
+            toast.error("Error", { description: humanizeError(error) });
         }
     });
 

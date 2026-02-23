@@ -10,7 +10,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { ForceLightMode } from "@/components/marketing/ForceLightMode";
 import { useFormPersistence } from "@/hooks/useFormPersistence";
 
@@ -24,7 +24,6 @@ const INITIAL_FORM = {
 };
 
 export default function Contact() {
-  const { toast } = useToast();
   const [formData, setFormData] = useState(INITIAL_FORM);
   const { restoreForm, clearSavedForm } = useFormPersistence("contact_form", formData);
   const [loading, setLoading] = useState(false);
@@ -40,8 +39,7 @@ export default function Contact() {
     setLoading(true);
 
     setTimeout(() => {
-      toast({
-        title: "Message sent!",
+      toast.success("Message sent!", {
         description: "We'll get back to you within 1 hour during business hours.",
       });
       clearSavedForm();

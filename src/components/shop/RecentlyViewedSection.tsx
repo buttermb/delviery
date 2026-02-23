@@ -12,7 +12,7 @@ import { logger } from '@/lib/logger';
 import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useShopCart } from '@/hooks/useShopCart';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
 
 interface RecentlyViewedSectionProps {
@@ -38,8 +38,6 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
         storeId: store?.id,
         onCartChange: () => { },
     });
-    const { toast } = useToast();
-
     // Fetch product details
     const { data: products = [], isLoading } = useQuery({
         queryKey: ['recently-viewed-products', store?.id, productIds],
@@ -103,9 +101,8 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
             minExpiryDays: product.min_expiry_days,
             variant: product.strain_type
         });
-        toast({
-            title: 'Added to cart',
-            description: `${product.product_name} has been added to your cart.`
+        toast.success('Added to cart', {
+            description: `${product.product_name} has been added to your cart.`,
         });
     };
 

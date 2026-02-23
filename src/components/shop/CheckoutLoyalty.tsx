@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useCheckoutLoyalty } from '@/hooks/useLoyaltyPoints';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { Gift, Star, Sparkles, Loader2, Info, X } from 'lucide-react';
@@ -34,7 +34,6 @@ export function CheckoutLoyalty({
   redeemedPoints = 0,
   redeemedDiscount = 0,
 }: CheckoutLoyaltyProps) {
-  const { toast } = useToast();
   const [pointsToRedeem, setPointsToRedeem] = useState(0);
   const [showRedemption, setShowRedemption] = useState(false);
 
@@ -84,15 +83,12 @@ export function CheckoutLoyalty({
       setShowRedemption(false);
       setPointsToRedeem(0);
 
-      toast({
-        title: 'Points Redeemed!',
+      toast.success('Points Redeemed!', {
         description: `You saved ${formatCurrency(result.discount_amount)} with ${pointsToRedeem} points.`,
       });
     } catch (error) {
-      toast({
-        title: 'Failed to redeem points',
+      toast.error('Failed to redeem points', {
         description: error instanceof Error ? error.message : 'Please try again',
-        variant: 'destructive',
       });
     }
   };
@@ -100,8 +96,7 @@ export function CheckoutLoyalty({
   // Handle removal of redeemed points
   const handleRemoveRedemption = () => {
     onPointsRemoved();
-    toast({
-      title: 'Points removed',
+    toast.info('Points removed', {
       description: 'Loyalty discount has been removed from your order.',
     });
   };

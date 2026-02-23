@@ -13,7 +13,7 @@
  */
 
 import { logger } from '@/lib/logger';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 /**
  * Centralized error handling utilities
@@ -101,9 +101,7 @@ export const parseError = (error: unknown): ErrorDetails => {
 export const showErrorToast = (error: unknown) => {
   const details = parseError(error);
   
-  toast({
-    variant: 'destructive',
-    title: details.title,
+  toast.error(details.title, {
     description: details.description,
   });
 

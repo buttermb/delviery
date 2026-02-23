@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Package,
   Plus,
@@ -45,7 +45,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 export default function MyListingsPage() {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -125,18 +124,11 @@ export default function MyListingsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-listings', tenantId] });
-      toast({
-        title: 'Status Updated',
-        description: 'Listing status has been updated',
-      });
+      toast.success('Status Updated', { description: 'Listing status has been updated' });
     },
     onError: (error: unknown) => {
       logger.error('Failed to update listing status', error, { component: 'MyListingsPage' });
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update listing',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: error instanceof Error ? error.message : 'Failed to update listing' });
     },
   });
 
@@ -152,18 +144,11 @@ export default function MyListingsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-listings', tenantId] });
-      toast({
-        title: 'Listing Deleted',
-        description: 'Listing has been removed',
-      });
+      toast.success('Listing Deleted', { description: 'Listing has been removed' });
     },
     onError: (error: unknown) => {
       logger.error('Failed to delete listing', error, { component: 'MyListingsPage' });
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to delete listing',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: error instanceof Error ? error.message : 'Failed to delete listing' });
     },
   });
 

@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import {
     Trash2,
@@ -23,7 +23,6 @@ import { PageHeader } from '@/components/shared/PageHeader';
 export default function MarketplaceCartPage() {
     const { tenant } = useTenantAdminAuth();
     const navigate = useNavigate();
-    const { toast } = useToast();
     const queryClient = useQueryClient();
     const [isCheckingOut, setIsCheckingOut] = useState(false);
 
@@ -64,11 +63,11 @@ export default function MarketplaceCartPage() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-cart'] });
-            toast({ title: "Item removed" });
+            toast.success('Item removed');
         },
         onError: (error: Error) => {
             logger.error('Failed to remove cart item', { error });
-            toast({ title: "Failed to remove item", description: humanizeError(error), variant: "destructive" });
+            toast.error('Failed to remove item', { description: humanizeError(error) });
         },
     });
 
@@ -145,19 +144,12 @@ export default function MarketplaceCartPage() {
                 .delete()
                 .eq('buyer_tenant_id', tenant!.id);
 
-            toast({
-                title: "Order Placed Successfully!",
-                description: `We've created ${Object.keys(itemsBySeller).length} order(s) for your items.`,
-            });
+            toast.success('Order Placed Successfully!', { description: `We've created ${Object.keys(itemsBySeller).length} order(s) for your items.` });
 
             navigate(`/${tenant?.slug}/admin/marketplace/orders`); // Redirect to My Orders
 
         } catch (error: any) {
-            toast({
-                title: "Checkout Failed",
-                description: humanizeError(error),
-                variant: "destructive"
-            });
+            toast.error('Checkout Failed', { description: humanizeError(error) });
         } finally {
             setIsCheckingOut(false);
         }

@@ -30,7 +30,7 @@ import { useContextAwareHotItems } from '@/hooks/useContextAwareHotItems';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useWishlist } from '@/hooks/useWishlist';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { CartPreviewPopup } from '../CartPreviewPopup';
 import type { StorefrontHotItem } from '@/types/storefront-hot-items';
 import { formatSmartDate } from '@/lib/formatters';
@@ -63,7 +63,6 @@ export function HotItemsSection({
 }: HotItemsSectionProps) {
   const { storeSlug } = useParams();
   const { isPreviewMode } = useShop();
-  const { toast } = useToast();
   const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
   const [lastAddedItem, setLastAddedItem] = useState<{
     name: string;
@@ -125,10 +124,8 @@ export function HotItemsSection({
         });
       }, 2000);
     } catch {
-      toast({
-        title: 'Failed to add',
+      toast.error('Failed to add', {
         description: 'Please try again',
-        variant: 'destructive',
       });
     }
   };

@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, CheckCircle2, Loader2, Mail } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { SEOHead } from '@/components/SEOHead';
 
 interface InvitationDetails {
@@ -21,7 +21,6 @@ interface InvitationDetails {
 export default function InvitationAcceptPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
   const [invitation, setInvitation] = useState<InvitationDetails | null>(null);
@@ -79,8 +78,7 @@ export default function InvitationAcceptPage() {
         });
         await supabase.auth.signOut();
         setIsAuthenticated(false);
-        toast({
-          title: "Account Mismatch",
+        toast.info("Account Mismatch", {
           description: "You were logged in with a different email. Please log in with the invited email.",
           duration: 6000,
         });
@@ -101,10 +99,8 @@ export default function InvitationAcceptPage() {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
-        toast({
-          title: 'Authentication Required',
+        toast.error('Authentication Required', {
           description: 'Please sign in to accept this invitation',
-          variant: 'destructive'
         });
         // Store token for after login
         sessionStorage.setItem('pending_invitation', token);
@@ -127,8 +123,7 @@ export default function InvitationAcceptPage() {
         throw new Error(errorMessage);
       }
 
-      toast({
-        title: 'Success!',
+      toast.success('Success!', {
         description: `You've joined ${invitation?.tenant.business_name}`,
       });
 
@@ -137,10 +132,8 @@ export default function InvitationAcceptPage() {
     } catch (error: unknown) {
       logger.error('Error accepting invitation', error, { component: 'InvitationAcceptPage' });
       const errorMessage = error instanceof Error ? error.message : 'Failed to accept invitation';
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: errorMessage,
-        variant: 'destructive'
       });
     } finally {
       setAccepting(false);

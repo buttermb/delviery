@@ -6,7 +6,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ReportBuilder } from '@/components/reports/ReportBuilder';
 import { Plus, Play, Calendar, Mail, Trash2, FileText } from 'lucide-react';
 import { REPORT_TYPES } from '@/lib/constants/reportFields';
@@ -15,7 +15,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 
 export default function CustomReportsPage() {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
   const [showBuilder, setShowBuilder] = useState(false);
@@ -48,10 +47,10 @@ export default function CustomReportsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-reports', tenantId] });
-      toast({ title: 'Report deleted' });
+      toast.success('Report deleted');
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: humanizeError(error), variant: 'destructive' });
+      toast.error('Error', { description: humanizeError(error) });
     },
   });
 
@@ -76,10 +75,10 @@ export default function CustomReportsPage() {
       return data;
     },
     onSuccess: () => {
-      toast({ title: 'Report generated', description: 'Your report is ready to view.' });
+      toast.success('Report generated', { description: 'Your report is ready to view.' });
     },
     onError: (error: Error) => {
-      toast({ title: 'Error', description: humanizeError(error), variant: 'destructive' });
+      toast.error('Error', { description: humanizeError(error) });
     },
   });
 

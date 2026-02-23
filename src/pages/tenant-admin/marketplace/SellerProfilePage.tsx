@@ -11,14 +11,13 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ProfileForm } from './ProfileForm';
 import { Building2, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 
 export default function SellerProfilePage() {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
@@ -272,10 +271,7 @@ export default function SellerProfilePage() {
         <CardContent>
           <ProfileForm onSuccess={() => {
             queryClient.invalidateQueries({ queryKey: ['marketplace-profile', tenantId] });
-            toast({
-              title: 'Profile Created',
-              description: 'Your profile is pending verification. You\'ll be notified once approved.',
-            });
+            toast.success('Profile Created', { description: 'Your profile is pending verification. You\'ll be notified once approved.' });
           }} />
         </CardContent>
       </Card>

@@ -14,12 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, RefreshCw, Eye, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { callAdminFunction } from '@/utils/adminFunctionHelper';
 import { supabase } from '@/integrations/supabase/client';
 
 export function PanicResetTool() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedTenantId, setSelectedTenantId] = useState<string>('');
   const [resetType, setResetType] = useState<string>('orders');
@@ -74,8 +73,7 @@ export function PanicResetTool() {
       return data;
     },
     onSuccess: (data) => {
-      toast({
-        title: 'Reset Complete',
+      toast.success('Reset Complete', {
         description: (data as any)?.message || 'Data has been reset successfully',
       });
       setConfirmation('');
@@ -84,20 +82,16 @@ export function PanicResetTool() {
     },
     onError: (error: unknown) => {
       logger.error('Panic reset error', error);
-      toast({
-        title: 'Reset Failed',
+      toast.error('Reset Failed', {
         description: error instanceof Error ? error.message : 'An error occurred during reset',
-        variant: 'destructive',
       });
     },
   });
 
   const handlePreview = () => {
     if (!selectedTenantId) {
-      toast({
-        title: 'Select Tenant',
+      toast.error('Select Tenant', {
         description: 'Please select a tenant first',
-        variant: 'destructive',
       });
       return;
     }
@@ -107,19 +101,15 @@ export function PanicResetTool() {
 
   const handleReset = () => {
     if (!selectedTenantId) {
-      toast({
-        title: 'Select Tenant',
+      toast.error('Select Tenant', {
         description: 'Please select a tenant first',
-        variant: 'destructive',
       });
       return;
     }
 
     if (confirmation !== 'CONFIRM_RESET') {
-      toast({
-        title: 'Confirmation Required',
+      toast.error('Confirmation Required', {
         description: 'Please type CONFIRM_RESET to proceed',
-        variant: 'destructive',
       });
       return;
     }

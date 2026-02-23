@@ -11,7 +11,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Package,
   Edit,
@@ -35,7 +35,6 @@ const asListing = (data: any): MarketplaceListing => data as MarketplaceListing;
 export default function ListingDetailPage() {
   const { listingId } = useParams<{ listingId: string }>();
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [_decryptedLabResults, _setDecryptedLabResults] = useState<any>(null);
   const [_decrypting, setDecrypting] = useState(false);
@@ -72,22 +71,14 @@ export default function ListingDetailPage() {
     try {
       // Note: In real implementation, you'd need the actual encryption key
       // that was used to encrypt the data. This is a placeholder.
-      toast({
-        title: 'Decryption',
-        description: 'Lab results decryption requires the original encryption key. This feature is for demonstration.',
-        variant: 'default',
-      });
+      toast.info('Decryption', { description: 'Lab results decryption requires the original encryption key. This feature is for demonstration.' });
 
       // In production, you'd do:
       // const decrypted = await decryptLabResults(listing.lab_results.encrypted, key);
       // setDecryptedLabResults(decrypted);
     } catch (error) {
       logger.error('Failed to decrypt lab results', error, { component: 'ListingDetailPage' });
-      toast({
-        title: 'Decryption Failed',
-        description: 'Failed to decrypt lab results',
-        variant: 'destructive',
-      });
+      toast.error('Decryption Failed', { description: 'Failed to decrypt lab results' });
     } finally {
       setDecrypting(false);
     }

@@ -24,7 +24,7 @@ import {
   EyeOff,
   Loader2,
 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
@@ -158,10 +158,10 @@ export default function SecuritySettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-sessions', admin?.id] });
-      toast({ title: 'Session revoked', description: 'The device has been signed out.' });
+      toast.success('Session revoked', { description: 'The device has been signed out.' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to revoke session', description: humanizeError(error), variant: 'destructive' });
+      toast.error('Failed to revoke session', { description: humanizeError(error) });
     },
   });
 
@@ -181,10 +181,10 @@ export default function SecuritySettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-sessions', admin?.id] });
-      toast({ title: 'All sessions revoked', description: 'You have been signed out of all other devices.' });
+      toast.success('All sessions revoked', { description: 'You have been signed out of all other devices.' });
     },
     onError: (error) => {
-      toast({ title: 'Failed to revoke sessions', description: humanizeError(error), variant: 'destructive' });
+      toast.error('Failed to revoke sessions', { description: humanizeError(error) });
     },
   });
 
@@ -192,38 +192,22 @@ export default function SecuritySettings() {
 
   const handleUpdatePassword = async () => {
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      toast({
-        title: 'Missing fields',
-        description: 'Please fill in all password fields',
-        variant: 'destructive',
-      });
+      toast.error('Missing fields', { description: 'Please fill in all password fields' });
       return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast({
-        title: 'Passwords don\'t match',
-        description: 'New password and confirmation must match',
-        variant: 'destructive',
-      });
+      toast.error('Passwords don\'t match', { description: 'New password and confirmation must match' });
       return;
     }
 
     if (passwordData.newPassword.length < 8) {
-      toast({
-        title: 'Password too short',
-        description: 'Password must be at least 8 characters',
-        variant: 'destructive',
-      });
+      toast.error('Password too short', { description: 'Password must be at least 8 characters' });
       return;
     }
 
     if (breachResult?.blocked) {
-      toast({
-        title: 'Password not allowed',
-        description: 'This password has been found in too many data breaches. Please choose a different password.',
-        variant: 'destructive',
-      });
+      toast.error('Password not allowed', { description: 'This password has been found in too many data breaches. Please choose a different password.' });
       return;
     }
 
@@ -246,7 +230,7 @@ export default function SecuritySettings() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Failed to update password');
 
-      toast({ title: 'Password updated', description: 'Your password has been changed successfully.' });
+      toast.success('Password updated', { description: 'Your password has been changed successfully.' });
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
       handleError(error, { component: 'SecuritySettings', toastTitle: 'Failed to update password' });

@@ -12,10 +12,9 @@ import {
   Clock,
   HelpCircle
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export default function SupportPage() {
-  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -25,8 +24,7 @@ export default function SupportPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: 'Message sent!',
+    toast.success('Message sent!', {
       description: "We'll respond within 24 hours.",
     });
     setFormData({ name: '', email: '', orderNumber: '', message: '' });

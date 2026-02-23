@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Database, ArrowRight, Download, Upload, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,7 +29,6 @@ interface MigrationStep {
 }
 
 export function TenantMigration() {
-  const { toast } = useToast();
   const [sourceTenant, setSourceTenant] = useState<string>('');
   const [targetTenant, setTargetTenant] = useState<string>('');
   const [migrationType, setMigrationType] = useState<'copy' | 'move' | 'export' | 'import'>('copy');
@@ -60,10 +59,8 @@ export function TenantMigration() {
 
   const handleMigration = async () => {
     if (!sourceTenant) {
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Please select a source tenant',
-        variant: 'destructive',
       });
       return;
     }
@@ -93,22 +90,19 @@ export function TenantMigration() {
     }
 
     setIsRunning(false);
-    toast({
-      title: 'Migration Complete',
+    toast.success('Migration Complete', {
       description: 'Tenant data has been migrated successfully',
     });
   };
 
   const handleExport = () => {
-    toast({
-      title: 'Export Started',
+    toast.info('Export Started', {
       description: 'Preparing tenant data export...',
     });
   };
 
   const handleImport = () => {
-    toast({
-      title: 'Import Started',
+    toast.info('Import Started', {
       description: 'Upload and import tenant data...',
     });
   };

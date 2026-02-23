@@ -7,7 +7,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Package,
   Upload,
@@ -92,7 +92,6 @@ const BULK_OPERATIONS: BulkOperation[] = [
 export default function BulkOperationsPage() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [selectedOperation, setSelectedOperation] = useState<string | null>(null);
@@ -139,10 +138,7 @@ export default function BulkOperationsPage() {
         case 'update-price':
           if (params.priceChangeType === 'percentage') {
             // This would require fetching current prices first
-            toast({
-              title: 'Price update',
-              description: `Would update prices for ${productIds.length} products by ${params.priceChange}%`,
-            });
+            toast.success('Price update', { description: `Would update prices for ${productIds.length} products by ${params.priceChange}%` });
           } else {
             updates.price = params.priceChange;
           }
@@ -174,7 +170,7 @@ export default function BulkOperationsPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Bulk operation completed successfully!' });
+      toast.success('Bulk operation completed successfully!');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setOperationDialogOpen(false);
       setSelectedProducts(new Set());
@@ -182,11 +178,7 @@ export default function BulkOperationsPage() {
     },
     onError: (error: unknown) => {
       logger.error('Bulk operation failed', error, { component: 'BulkOperations' });
-      toast({
-        title: 'Bulk operation failed',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        variant: 'destructive'
-      });
+      toast.error('Bulk operation failed', { description: error instanceof Error ? error.message : 'An error occurred' });
     }
   });
 

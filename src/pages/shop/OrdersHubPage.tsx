@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
@@ -72,7 +72,6 @@ export function OrdersHubPage() {
   const { storeSlug } = useParams();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
-  const { toast } = useToast();
 
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -167,14 +166,11 @@ export function OrdersHubPage() {
       localStorage.setItem(`shop_cart_${store.id}`, JSON.stringify(cart));
       setCartItemCount(cart.reduce((sum: number, c: { quantity: number }) => sum + c.quantity, 0));
 
-      toast({
-        title: 'Items added to cart',
-        description: `${order.items.length} ${order.items.length === 1 ? 'item' : 'items'} from order #${order.order_number}`,
-      });
+      toast.success('Items added to cart', { description: `${order.items.length} ${order.items.length === 1 ? 'item' : 'items'} from order #${order.order_number}` });
       navigate(`/shop/${storeSlug}/cart`);
     } catch (error) {
       logger.error('Failed to reorder', error);
-      toast({ title: 'Failed to reorder', variant: 'destructive' });
+      toast.error('Failed to reorder');
     }
   };
 

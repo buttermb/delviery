@@ -52,7 +52,7 @@ import {
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
 import { formatSmartDate } from '@/lib/formatters';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { TIER_PRICES, TIER_NAMES, getFeaturesByCategory, type SubscriptionTier } from '@/lib/featureConfig';
 import { businessTierToSubscriptionTier } from '@/lib/tierMapping';
@@ -125,7 +125,6 @@ export default function BillingSettings() {
   const { currentTier, currentTierName } = useFeatureAccess();
   const { isTrial, needsPaymentMethod } = useSubscriptionStatus();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -159,10 +158,7 @@ export default function BillingSettings() {
     if (success === 'true' && paymentMethod === 'true') {
       logger.info('[BillingSettings] Payment method added successfully via Stripe');
 
-      toast({
-        title: 'Payment Method Added',
-        description: 'Your payment method has been successfully added.',
-      });
+      toast.success('Payment Method Added', { description: 'Your payment method has been successfully added.' });
 
       // Clean up URL params
       setSearchParams({});
@@ -170,7 +166,7 @@ export default function BillingSettings() {
       // Refresh tenant data
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
     }
-  }, [searchParams, setSearchParams, queryClient, toast]);
+  }, [searchParams, setSearchParams, queryClient]);
 
   // Check Stripe configuration health
   const { data: stripeHealth } = useQuery({
@@ -270,10 +266,7 @@ export default function BillingSettings() {
     onSuccess: (data) => {
       if (data?.url) {
         window.open(data.url, '_blank');
-        toast({
-          title: 'Redirecting to Stripe',
-          description: 'Opening checkout in new tab...',
-        });
+        toast.success('Redirecting to Stripe', { description: 'Opening checkout in new tab...' });
       }
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
       setUpgradeDialogOpen(false);
@@ -281,11 +274,7 @@ export default function BillingSettings() {
     },
     onError: (error: Error) => {
       logger.error('Error updating subscription', { error: error.message });
-      toast({
-        title: 'Upgrade Failed',
-        description: humanizeError(error),
-        variant: 'destructive',
-      });
+      toast.error('Upgrade Failed', { description: humanizeError(error) });
       setUpgradeLoading(false);
     }
   });
@@ -295,10 +284,7 @@ export default function BillingSettings() {
 
     const currentSubscriptionTier = businessTierToSubscriptionTier(currentTier);
     if (currentSubscriptionTier === targetPlan) {
-      toast({
-        title: 'Already on this plan',
-        description: `You're already on the ${TIER_NAMES[targetPlan]} plan.`,
-      });
+      toast.info('Already on this plan', { description: `You're already on the ${TIER_NAMES[targetPlan]} plan.` });
       return;
     }
 
@@ -314,11 +300,7 @@ export default function BillingSettings() {
     );
 
     if (!targetPlan) {
-      toast({
-        title: 'Error',
-        description: 'Selected plan not found.',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: 'Selected plan not found.' });
       return;
     }
 
@@ -340,17 +322,10 @@ export default function BillingSettings() {
 
       if (data?.url) {
         window.open(data.url, '_blank');
-        toast({
-          title: 'Success',
-          description: 'Opening Stripe Customer Portal...',
-        });
+        toast.success('Success', { description: 'Opening Stripe Customer Portal...' });
       }
     } catch (error: unknown) {
-      toast({
-        title: 'Error',
-        description: humanizeError(error, 'Failed to open customer portal'),
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: humanizeError(error, 'Failed to open customer portal') });
     } finally {
       setUpgradeLoading(false);
     }
@@ -373,17 +348,10 @@ export default function BillingSettings() {
 
       if (data?.url) {
         window.open(data.url, '_blank');
-        toast({
-          title: 'Manage Subscription',
-          description: 'Opening Stripe portal to manage your subscription...',
-        });
+        toast.success('Manage Subscription', { description: 'Opening Stripe portal to manage your subscription...' });
       }
     } catch (error: unknown) {
-      toast({
-        title: 'Error',
-        description: humanizeError(error, 'Failed to open customer portal'),
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: humanizeError(error, 'Failed to open customer portal') });
     } finally {
       setUpgradeLoading(false);
     }
@@ -462,17 +430,10 @@ export default function BillingSettings() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast({
-        title: 'Invoice Downloaded',
-        description: `Invoice ${invoiceData.invoiceNumber} downloaded successfully`,
-      });
+      toast.success('Invoice Downloaded', { description: `Invoice ${invoiceData.invoiceNumber} downloaded successfully` });
     } catch (error) {
       logger.error('Failed to download invoice', { error });
-      toast({
-        title: 'Download Failed',
-        description: 'Could not download the invoice. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error('Download Failed', { description: 'Could not download the invoice. Please try again.' });
     } finally {
       setDownloadingInvoice(null);
     }

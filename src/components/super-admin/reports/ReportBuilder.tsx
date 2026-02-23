@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FileText, Save, Play, Download } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface ReportConfig {
   name: string;
@@ -33,7 +33,6 @@ interface ReportConfig {
 }
 
 export function ReportBuilder() {
-  const { toast } = useToast();
   const [config, setConfig] = useState<ReportConfig>({
     name: '',
     description: '',
@@ -66,23 +65,19 @@ export function ReportBuilder() {
 
   const handleSave = () => {
     if (!config.name) {
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: 'Please enter a report name',
-        variant: 'destructive',
       });
       return;
     }
 
-    toast({
-      title: 'Report Saved',
+    toast.success('Report Saved', {
       description: 'Report configuration has been saved',
     });
   };
 
   const handleRun = () => {
-    toast({
-      title: 'Running Report',
+    toast.info('Running Report', {
       description: 'Generating report...',
     });
   };

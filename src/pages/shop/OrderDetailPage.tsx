@@ -26,7 +26,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { showCopyToast, showErrorToast } from '@/utils/toastHelpers';
 import { motion } from 'framer-motion';
 import {
@@ -75,7 +75,6 @@ export function OrderDetailPage() {
   const { storeSlug, orderId } = useParams();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('');
@@ -173,15 +172,11 @@ export function OrderDetailPage() {
 
       if (cancelError) throw cancelError;
 
-      toast({ title: 'Order cancelled', description: `Order #${order.order_number} has been cancelled.` });
+      toast.success('Order cancelled', { description: `Order #${order.order_number} has been cancelled.` });
       refetch();
     } catch (err) {
       logger.error('Failed to cancel order', err);
-      toast({
-        title: 'Cancellation failed',
-        description: 'Unable to cancel order. Please try again or contact support.',
-        variant: 'destructive',
-      });
+      toast.error('Cancellation failed', { description: 'Unable to cancel order. Please try again or contact support.' });
     } finally {
       setIsCancelling(false);
       setCancellationReason('');
@@ -206,10 +201,7 @@ export function OrderDetailPage() {
     });
 
     setCartItemCount(addedCount);
-    toast({
-      title: 'Items added to cart',
-      description: `${order.items.length} ${order.items.length === 1 ? 'item' : 'items'} from order #${order.order_number}`,
-    });
+    toast.success('Items added to cart', { description: `${order.items.length} ${order.items.length === 1 ? 'item' : 'items'} from order #${order.order_number}` });
     navigate(`/shop/${storeSlug}/cart`);
   };
 
@@ -440,7 +432,7 @@ export function OrderDetailPage() {
                             imageUrl: item.image_url || null,
                             variant: item.variant,
                           });
-                          toast({ title: `${item.name} added to cart` });
+                          toast.success(`${item.name} added to cart`);
                         }}
                       >
                         <ShoppingCart className="w-3 h-3 mr-1" />

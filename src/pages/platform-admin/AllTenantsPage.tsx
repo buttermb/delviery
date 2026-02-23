@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import {
     Table,
@@ -36,7 +36,6 @@ export default function AllTenantsPage() {
         enabled: isPlatformAdmin,
     });
 
-    const { toast } = useToast();
     const _queryClient = useQueryClient();
 
     const accessMutation = useMutation({
@@ -48,12 +47,12 @@ export default function AllTenantsPage() {
             return data as { success: boolean; slug: string };
         },
         onSuccess: (data) => {
-            toast({ title: "Access Granted", description: "Redirecting to tenant dashboard..." });
+            toast.success("Access Granted", { description: "Redirecting to tenant dashboard..." });
             // Force a hard reload to ensure auth context picks up the new tenant
             window.location.href = `/${data.slug}/admin/dashboard`;
         },
         onError: (error) => {
-            toast({ title: "Access Failed", description: humanizeError(error), variant: "destructive" });
+            toast.error("Access Failed", { description: humanizeError(error) });
         }
     });
 

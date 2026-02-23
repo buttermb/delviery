@@ -19,7 +19,7 @@ import {
   Minimize,
   Eye,
 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
@@ -53,7 +53,7 @@ export default function AppearanceSettings() {
       root.classList.add(theme);
     }
 
-    toast({ title: 'Theme updated' });
+    toast.success('Theme updated');
   }, [theme]);
 
   return (
@@ -189,7 +189,7 @@ export default function AppearanceSettings() {
                 checked={compactMode}
                 onCheckedChange={(checked) => {
                   setCompactMode(checked);
-                  toast({ title: checked ? 'Compact mode enabled' : 'Compact mode disabled' });
+                  toast.success(checked ? 'Compact mode enabled' : 'Compact mode disabled');
                 }}
               />
             </div>
@@ -210,7 +210,7 @@ export default function AppearanceSettings() {
                   } else {
                     document.documentElement.classList.remove('no-animations');
                   }
-                  toast({ title: checked ? 'Animations enabled' : 'Animations disabled' });
+                  toast.success(checked ? 'Animations enabled' : 'Animations disabled');
                 }}
               />
             </div>
@@ -234,7 +234,7 @@ export default function AppearanceSettings() {
               setSidebarCollapsed(false);
               setCompactMode(false);
               setAnimationsEnabled(true);
-              toast({ title: 'Settings reset to defaults' });
+              toast.success('Settings reset to defaults');
             }}
           >
             Reset All

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Building2, Loader2, ArrowLeft, Eye, EyeOff, AlertTriangle, HelpCircle, Info } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
@@ -46,8 +46,7 @@ export default function TenantAdminLoginPage() {
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
     async (qEmail, qPassword, qSlug) => {
       await login(qEmail, qPassword, qSlug || '');
-      toast({
-        title: "Welcome back!",
+      toast.success("Welcome back!", {
         description: `Logged in to ${tenant?.business_name || tenantSlug}`,
       });
       // Check for intended destination (user tried to access a protected page before login)
@@ -105,8 +104,7 @@ export default function TenantAdminLoginPage() {
     try {
       await login(email, password, tenantSlug, rememberMe);
 
-      toast({
-        title: "Welcome back!",
+      toast.success("Welcome back!", {
         description: `Logged in to ${tenant?.business_name || tenantSlug}`,
       });
 
@@ -215,8 +213,7 @@ export default function TenantAdminLoginPage() {
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-8">
           <TwoFactorVerification
             onVerified={() => {
-              toast({
-                title: "Authentication Successful",
+              toast.success("Authentication Successful", {
                 description: "You have been securely logged in.",
               });
               // Redirect to intended destination or dashboard after MFA verification
@@ -244,8 +241,7 @@ export default function TenantAdminLoginPage() {
             onUnlocked={() => {
               setAccountLocked(false);
               setLockDurationSeconds(0);
-              toast({
-                title: "Account Unlocked",
+              toast.success("Account Unlocked", {
                 description: "You can now try logging in again.",
               });
             }}

@@ -28,7 +28,7 @@ import { formatSmartDate } from "@/lib/formatters";
 import { useFeatureAccess } from "@/hooks/useFeatureAccess";
 import { TIER_NAMES, TIER_PRICES, getFeaturesByCategory, type SubscriptionTier } from "@/lib/featureConfig";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -50,7 +50,6 @@ export default function TenantAdminBillingPage() {
   const { currentTier } = useFeatureAccess();
   const tenantId = tenant?.id;
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier | null>(null);
@@ -70,10 +69,7 @@ export default function TenantAdminBillingPage() {
     if (success === 'true' && paymentMethod === 'true') {
       logger.info('[BillingPage] Payment method added successfully via Stripe');
 
-      toast({
-        title: 'Payment Method Added',
-        description: 'Your payment method has been successfully added.',
-      });
+      toast.success('Payment Method Added', { description: 'Your payment method has been successfully added.' });
 
       // Clean up URL params
       setSearchParams({});
@@ -81,7 +77,7 @@ export default function TenantAdminBillingPage() {
       // Refresh tenant data
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
     }
-  }, [searchParams, setSearchParams, queryClient, toast]);
+  }, [searchParams, setSearchParams, queryClient]);
 
   // Check Stripe configuration health
   const { data: stripeHealth } = useQuery({
@@ -226,10 +222,7 @@ export default function TenantAdminBillingPage() {
     onSuccess: (data) => {
       if (data?.url) {
         window.open(data.url, '_blank');
-        toast({
-          title: 'Redirecting to Stripe',
-          description: 'Opening checkout in new tab...',
-        });
+        toast.success('Redirecting to Stripe', { description: 'Opening checkout in new tab...' });
       }
       queryClient.invalidateQueries({ queryKey: ['tenant'] });
       setUpgradeDialogOpen(false);
@@ -245,11 +238,7 @@ export default function TenantAdminBillingPage() {
         description = '⚠️ Stripe is not properly configured. The secret key must start with "sk_", not "pk_". Please contact support or check your integration settings.';
       }
 
-      toast({
-        title: 'Upgrade Failed',
-        description,
-        variant: 'destructive',
-      });
+      toast.error('Upgrade Failed', { description });
 
       setUpgradeLoading(false);
     }
@@ -265,20 +254,13 @@ export default function TenantAdminBillingPage() {
     const targetIndex = tierHierarchy.indexOf(targetPlan);
 
     if (currentIndex === targetIndex && !isOnTrial) {
-      toast({
-        title: 'Already on this plan',
-        description: `You're already on the ${TIER_NAMES[targetPlan]} plan.`,
-      });
+      toast.info('Already on this plan', { description: `You're already on the ${TIER_NAMES[targetPlan]} plan.` });
       return;
     }
 
     // Guard: Check Stripe health before proceeding
     if (!stripeHealth?.valid) {
-      toast({
-        title: 'Stripe Not Configured',
-        description: stripeHealth?.error || 'Payment processing is not available. Please contact support.',
-        variant: 'destructive',
-      });
+      toast.error('Stripe Not Configured', { description: stripeHealth?.error || 'Payment processing is not available. Please contact support.' });
       return;
     }
 
@@ -298,20 +280,8 @@ export default function TenantAdminBillingPage() {
       }
 
       if (violations.length > 0) {
-        toast({
-          title: "Cannot Downgrade Yet",
-          description: (
-            <div className="flex flex-col gap-2">
-              <p>Your current usage exceeds the limits of the {targetPlanObj.name} plan:</p>
-              <ul className="list-disc pl-4 text-xs">
-                {violations.map((v, i) => (
-                  <li key={i}>{v}</li>
-                ))}
-              </ul>
-              <p className="text-xs mt-1">Please archive or delete items to proceed.</p>
-            </div>
-          ),
-          variant: "destructive",
+        toast.error("Cannot Downgrade Yet", {
+          description: `Your current usage exceeds the limits of the ${targetPlanObj.name} plan: ${violations.join(', ')}. Please archive or delete items to proceed.`,
           duration: 10000,
         });
         return;
@@ -337,11 +307,7 @@ export default function TenantAdminBillingPage() {
         availablePlans: subscriptionPlans.map(p => ({ id: p.id, name: p.name })),
         component: 'BillingPage'
       });
-      toast({
-        title: 'Error',
-        description: `Selected plan "${selectedPlan}" not found. Available plans: ${subscriptionPlans.map(p => p.name).join(', ')}`,
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: `Selected plan "${selectedPlan}" not found. Available plans: ${subscriptionPlans.map(p => p.name).join(', ')}` });
       return;
     }
 
@@ -355,11 +321,7 @@ export default function TenantAdminBillingPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast({
-          title: 'Not Authenticated',
-          description: 'Please log in to manage payment methods.',
-          variant: 'destructive',
-        });
+        toast.error('Not Authenticated', { description: 'Please log in to manage payment methods.' });
         return;
       }
 
@@ -387,10 +349,7 @@ export default function TenantAdminBillingPage() {
       if (data?.url) {
         logger.info('[BillingPage] Opening portal URL:', { url: data.url, component: 'BillingPage' });
         window.open(data.url, '_blank');
-        toast({
-          title: 'Success',
-          description: 'Opening Stripe Customer Portal...',
-        });
+        toast.success('Success', { description: 'Opening Stripe Customer Portal...' });
       } else {
         logger.error('[BillingPage] No URL in portal response:', data, { component: 'BillingPage' });
         throw new Error('No portal URL returned from Stripe');
@@ -398,11 +357,7 @@ export default function TenantAdminBillingPage() {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to open payment method management. Please ensure Stripe is configured.';
       logger.error('[BillingPage] Payment method management error:', { errorMessage, error, component: 'BillingPage' });
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: errorMessage });
     } finally {
       setUpgradeLoading(false);
     }

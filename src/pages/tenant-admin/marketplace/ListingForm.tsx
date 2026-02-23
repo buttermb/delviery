@@ -32,7 +32,7 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { X, Loader2, Plus, Trash2, FileText, Image as ImageIcon, Lock } from 'lucide-react';
 import { encryptLabResults } from '@/lib/encryption/sensitive-fields';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -110,7 +110,6 @@ interface ListingFormProps {
 export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
   const { shouldAutoApprove } = useFeatureFlags();
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const { slug } = useParams<{ slug: string }>();
@@ -240,12 +239,11 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
         has_lab_results: !!(productData.thc_percent || productData.cbd_percent),
       });
 
-      toast({
-        title: 'Product data loaded',
+      toast.success('Product data loaded', {
         description: 'Form pre-filled with product information. Review and adjust as needed.',
       });
     }
-  }, [existingListing, productData, listingId, form, toast]);
+  }, [existingListing, productData, listingId, form]);
 
   // Upload image to Supabase Storage
   const uploadImage = async (file: File): Promise<string> => {
@@ -381,8 +379,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
       }
     },
     onSuccess: () => {
-      toast({
-        title: existingListing ? 'Listing Saved' : (shouldAutoApprove('LISTINGS') ? 'Listing Auto‑Approved' : 'Listing Saved'),
+      toast.success(existingListing ? 'Listing Saved' : (shouldAutoApprove('LISTINGS') ? 'Listing Auto\u2011Approved' : 'Listing Saved'), {
         description: existingListing
           ? 'Listing updated successfully'
           : (shouldAutoApprove('LISTINGS') ? 'Your listing is live and visible immediately.' : 'Listing created successfully'),
@@ -394,10 +391,8 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
     },
     onError: (error: unknown) => {
       logger.error('Failed to save listing', error, { component: 'ListingForm' });
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: error instanceof Error ? error.message : 'Failed to save listing',
-        variant: 'destructive',
       });
     },
   });
@@ -405,20 +400,16 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
   const onSubmit = async (data: ListingFormData) => {
     // Validate images
     if (data.images.length === 0) {
-      toast({
-        title: 'Validation Error',
+      toast.error('Validation Error', {
         description: 'Please upload at least one product image',
-        variant: 'destructive',
       });
       return;
     }
 
     // Validate lab results if has_lab_results is true
     if (data.has_lab_results && !data.lab_results) {
-      toast({
-        title: 'Validation Error',
+      toast.error('Validation Error', {
         description: 'Please provide lab results or uncheck the lab results option',
-        variant: 'destructive',
       });
       return;
     }
@@ -432,20 +423,16 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
 
     const currentImages = form.getValues('images') || [];
     if (currentImages.length + files.length > 6) {
-      toast({
-        title: 'Too Many Images',
+      toast.error('Too Many Images', {
         description: 'Maximum 6 images allowed',
-        variant: 'destructive',
       });
       return;
     }
 
     for (const file of files) {
       if (!file.type.startsWith('image/')) {
-        toast({
-          title: 'Invalid File',
+        toast.error('Invalid File', {
           description: 'Only image files are allowed',
-          variant: 'destructive',
         });
         continue;
       }
@@ -455,10 +442,8 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
         const current = form.getValues('images') || [];
         form.setValue('images', [...current, url]);
       } catch (error) {
-        toast({
-          title: 'Upload Failed',
+        toast.error('Upload Failed', {
           description: error instanceof Error ? error.message : 'Failed to upload image',
-          variant: 'destructive',
         });
       }
     }
@@ -938,15 +923,12 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
                                 try {
                                   const url = await uploadLabCertificate(file);
                                   field.onChange(url);
-                                  toast({
-                                    title: 'Certificate Uploaded',
+                                  toast.success('Certificate Uploaded', {
                                     description: 'Lab certificate uploaded successfully',
                                   });
                                 } catch (error) {
-                                  toast({
-                                    title: 'Upload Failed',
+                                  toast.error('Upload Failed', {
                                     description: error instanceof Error ? error.message : 'Failed to upload certificate',
-                                    variant: 'destructive',
                                   });
                                 }
                               }

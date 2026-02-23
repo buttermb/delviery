@@ -37,7 +37,7 @@ import {
   Loader2,
   Brain,
 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -185,10 +185,10 @@ export default function IntegrationsSettings() {
       queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
       setNewWebhookUrl('');
       setAddWebhookOpen(false);
-      toast({ title: 'Webhook added' });
+      toast.success('Webhook added');
     },
     onError: (error) => {
-      toast({ title: 'Failed to add webhook', description: humanizeError(error), variant: 'destructive' });
+      toast.error('Failed to add webhook', { description: humanizeError(error) });
     },
   });
 
@@ -204,10 +204,10 @@ export default function IntegrationsSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
-      toast({ title: 'Webhook deleted' });
+      toast.success('Webhook deleted');
     },
     onError: (error) => {
-      toast({ title: 'Failed to delete webhook', description: humanizeError(error), variant: 'destructive' });
+      toast.error('Failed to delete webhook', { description: humanizeError(error) });
     },
   });
 
@@ -237,7 +237,7 @@ export default function IntegrationsSettings() {
         queryClient.setQueryData(['webhooks', tenant?.id], context.previousWebhooks);
       }
       logger.error('Failed to toggle webhook', { error });
-      toast({ title: 'Failed to toggle webhook', description: humanizeError(error), variant: 'destructive' });
+      toast.error('Failed to toggle webhook', { description: humanizeError(error) });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
@@ -250,7 +250,7 @@ export default function IntegrationsSettings() {
         i.id === id ? { ...i, status: 'connected' as const } : i
       )
     );
-    toast({ title: 'Integration connected', description: `${id} has been connected successfully` });
+    toast.success('Integration connected', { description: `${id} has been connected successfully` });
   };
 
   const handleDisconnect = (id: string) => {
@@ -259,21 +259,21 @@ export default function IntegrationsSettings() {
         i.id === id ? { ...i, status: 'disconnected' as const } : i
       )
     );
-    toast({ title: 'Integration disconnected' });
+    toast.success('Integration disconnected');
   };
 
   const handleCopyApiKey = () => {
     navigator.clipboard.writeText(apiKey);
-    toast({ title: 'API key copied to clipboard' });
+    toast.success('API key copied to clipboard');
   };
 
   const handleRegenerateApiKey = () => {
-    toast({ title: 'API key regenerated', description: 'Your old key is no longer valid' });
+    toast.success('API key regenerated', { description: 'Your old key is no longer valid' });
   };
 
   const handleAddWebhook = () => {
     if (!newWebhookUrl) {
-      toast({ title: 'URL required', variant: 'destructive' });
+      toast.error('URL required');
       return;
     }
 
@@ -281,7 +281,7 @@ export default function IntegrationsSettings() {
       new URL(newWebhookUrl); // Validate URL
       addWebhookMutation.mutate(newWebhookUrl);
     } catch {
-      toast({ title: 'Invalid URL', variant: 'destructive' });
+      toast.error('Invalid URL');
     }
   };
 

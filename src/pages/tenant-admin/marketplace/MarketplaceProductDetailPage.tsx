@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import {
     ArrowLeft,
@@ -40,7 +40,6 @@ export default function MarketplaceProductDetailPage() {
     const { productId } = useParams<{ productId: string }>();
     const { tenant } = useTenantAdminAuth();
     const navigate = useNavigate();
-    const { toast } = useToast();
     const queryClient = useQueryClient();
 
     const [quantity, setQuantity] = useState(1);
@@ -106,19 +105,12 @@ export default function MarketplaceProductDetailPage() {
             }
         },
         onSuccess: () => {
-            toast({
-                title: "Added to Cart",
-                description: `${quantity} ${product?.unit_of_measure}(s) of ${product?.product_name} added to your cart.`
-            });
+            toast.success('Added to Cart', { description: `${quantity} ${product?.unit_of_measure}(s) of ${product?.product_name} added to your cart.` });
             queryClient.invalidateQueries({ queryKey: ['marketplace-cart-count'] });
             // navigate(`/${tenant?.slug}/admin/marketplace/cart`); // Optional: redirect to cart or stay
         },
         onError: (error) => {
-            toast({
-                title: "Error adding to cart",
-                description: humanizeError(error),
-                variant: "destructive"
-            });
+            toast.error('Error adding to cart', { description: humanizeError(error) });
         }
     });
 
@@ -140,16 +132,12 @@ export default function MarketplaceProductDetailPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            toast({ title: "Message sent", description: "The seller has been notified." });
+            toast.success('Message sent', { description: 'The seller has been notified.' });
             setIsMessageDialogOpen(false);
             setMessageText('');
         },
         onError: (error) => {
-            toast({
-                title: "Error sending message",
-                description: humanizeError(error),
-                variant: "destructive"
-            });
+            toast.error('Error sending message', { description: humanizeError(error) });
         }
     });
 

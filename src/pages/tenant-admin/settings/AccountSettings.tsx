@@ -24,7 +24,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { User, Mail, Camera, Trash2, CheckCircle, Layout } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { SidebarModeSwitcher } from '@/components/sidebar/SidebarModeSwitcher';
@@ -49,11 +49,11 @@ export default function AccountSettings() {
       }
     },
     onSuccess: () => {
-      toast({ title: 'Name updated', description: 'Your display name has been saved.' });
+      toast.success('Name updated', { description: 'Your display name has been saved.' });
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : 'Failed to update name.';
-      toast({ title: 'Error', description: message, variant: 'destructive' });
+      toast.error('Error', { description: message });
     },
   });
 
@@ -107,14 +107,10 @@ export default function AccountSettings() {
       }
 
       setAvatarUrl(publicUrl);
-      toast({ title: 'Avatar updated', description: 'Your profile picture has been changed.' });
+      toast.success('Avatar updated', { description: 'Your profile picture has been changed.' });
     } catch (error: unknown) {
       logger.error('Avatar upload failed', error);
-      toast({
-        title: 'Upload failed',
-        description: error instanceof Error ? error.message : 'Failed to upload avatar',
-        variant: 'destructive'
-      });
+      toast.error('Upload failed', { description: error instanceof Error ? error.message : 'Failed to upload avatar' });
     }
   };
 

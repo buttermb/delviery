@@ -6,7 +6,7 @@
 
 import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Share2, Link2, Check } from 'lucide-react';
 
@@ -30,7 +30,6 @@ export function ShareButtons({
     compact = false,
     className = '',
 }: ShareButtonsProps) {
-    const { toast } = useToast();
     const [copied, setCopied] = useState(false);
 
     const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
@@ -45,7 +44,7 @@ export function ShareButtons({
         try {
             await navigator.clipboard.writeText(shareUrl);
             setCopied(true);
-            toast({ title: 'Link copied!', description: 'The store link has been copied to your clipboard.' });
+            toast.success('Link copied!', { description: 'The store link has been copied to your clipboard.' });
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {
             logger.warn('Failed to copy to clipboard', err);
@@ -59,10 +58,10 @@ export function ShareButtons({
             document.execCommand('copy');
             document.body.removeChild(textarea);
             setCopied(true);
-            toast({ title: 'Link copied!' });
+            toast.success('Link copied!');
             setTimeout(() => setCopied(false), 2000);
         }
-    }, [shareUrl, toast]);
+    }, [shareUrl]);
 
     const handleNativeShare = useCallback(async () => {
         if (typeof navigator !== 'undefined' && navigator.share) {

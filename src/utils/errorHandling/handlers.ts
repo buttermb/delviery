@@ -1,4 +1,4 @@
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { getErrorMessage, isAuthError } from './typeGuards';
 
@@ -37,15 +37,11 @@ export function handleError(error: unknown, options: ErrorHandlerOptions = {}) {
         // Check for specific error types to provide better messages
         if (isAuthError(error)) {
             // Auth errors are usually user-facing
-            toast({
-                variant: "destructive",
-                title: "Authentication Error",
+            toast.error("Authentication Error", {
                 description: message,
             });
         } else {
-            toast({
-                variant: "destructive",
-                title: toastTitle,
+            toast.error(toastTitle, {
                 description: message,
             });
         }

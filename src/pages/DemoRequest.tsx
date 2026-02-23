@@ -10,7 +10,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { useFormPersistence } from "@/hooks/useFormPersistence";
 
 const INITIAL_FORM = {
@@ -28,7 +28,6 @@ const INITIAL_FORM = {
 
 export default function DemoRequest() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(INITIAL_FORM);
   const { restoreForm, clearSavedForm } = useFormPersistence("demo_request_form", formData);
@@ -44,8 +43,7 @@ export default function DemoRequest() {
     setLoading(true);
 
     setTimeout(() => {
-      toast({
-        title: "Demo scheduled!",
+      toast.success("Demo scheduled!", {
         description: "We've sent a confirmation email.",
       });
       clearSavedForm();

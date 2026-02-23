@@ -31,7 +31,7 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { X, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
 import { compressImage, isCompressibleImage, COMPRESSION_PRESETS } from '@/lib/utils/image-compression';
 
@@ -77,7 +77,6 @@ interface ProfileFormProps {
 
 export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
   const { tenant } = useTenantAdminAuth();
-  const { toast } = useToast();
   const [uploading, setUploading] = useState<string | null>(null);
   const [selectedShippingStates, setSelectedShippingStates] = useState<string[]>(initialData?.shipping_states || []);
 
@@ -201,19 +200,12 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
       }
     },
     onSuccess: () => {
-      toast({
-        title: 'Profile Saved',
-        description: 'Your marketplace profile has been saved and is pending verification.',
-      });
+      toast.success('Profile Saved', { description: 'Your marketplace profile has been saved and is pending verification.' });
       onSuccess?.();
     },
     onError: (error: unknown) => {
       logger.error('Failed to save profile', error, { component: 'ProfileForm' });
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to save profile',
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: error instanceof Error ? error.message : 'Failed to save profile' });
     },
   });
 
@@ -222,11 +214,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
     data.shipping_states = selectedShippingStates;
     
     if (data.shipping_states.length === 0) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please select at least one shipping state',
-        variant: 'destructive',
-      });
+      toast.error('Validation Error', { description: 'Please select at least one shipping state' });
       return;
     }
 
@@ -239,20 +227,12 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
 
     // Validate file type
     if (type === 'license' && file.type !== 'application/pdf') {
-      toast({
-        title: 'Invalid File',
-        description: 'License document must be a PDF file',
-        variant: 'destructive',
-      });
+      toast.error('Invalid File', { description: 'License document must be a PDF file' });
       return;
     }
 
     if ((type === 'logo' || type === 'cover') && !file.type.startsWith('image/')) {
-      toast({
-        title: 'Invalid File',
-        description: 'Logo and cover must be image files',
-        variant: 'destructive',
-      });
+      toast.error('Invalid File', { description: 'Logo and cover must be image files' });
       return;
     }
 
@@ -262,16 +242,9 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
         type === 'logo' ? 'logo_url' : type === 'cover' ? 'cover_image_url' : 'license_document_url',
         url
       );
-      toast({
-        title: 'Upload Successful',
-        description: 'File uploaded successfully',
-      });
+      toast.success('Upload Successful', { description: 'File uploaded successfully' });
     } catch (error) {
-      toast({
-        title: 'Upload Failed',
-        description: error instanceof Error ? error.message : 'Failed to upload file',
-        variant: 'destructive',
-      });
+      toast.error('Upload Failed', { description: error instanceof Error ? error.message : 'Failed to upload file' });
     }
   };
 

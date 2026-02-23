@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Construction, ArrowLeft, Bell } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface ComingSoonPageProps {
   pageName?: string;
@@ -21,11 +21,9 @@ export default function ComingSoonPage({
   description
 }: ComingSoonPageProps) {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const notifyMe = () => {
-    toast({
-      title: 'Notification set!',
+    toast.success('Notification set!', {
       description: `We'll notify you when ${pageName} is ready.`,
     });
   };

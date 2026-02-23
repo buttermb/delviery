@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Star, Loader2, CheckCircle, PenLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
@@ -43,7 +43,6 @@ export function ReviewForm({
   customerName: defaultName,
   customerEmail: defaultEmail,
 }: ReviewFormProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -79,8 +78,7 @@ export function ReviewForm({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({
-        title: 'Review submitted!',
+      toast.success('Review submitted!', {
         description: 'Thank you for your feedback. Your review will appear after moderation.',
       });
       setIsOpen(false);
@@ -93,10 +91,8 @@ export function ReviewForm({
     },
     onError: (error) => {
       logger.error('Failed to submit review', error, { component: 'ReviewForm' });
-      toast({
-        title: 'Failed to submit review',
+      toast.error('Failed to submit review', {
         description: 'Please try again later.',
-        variant: 'destructive',
       });
     },
   });
