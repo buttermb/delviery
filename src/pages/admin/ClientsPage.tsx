@@ -40,19 +40,19 @@ const CLIENTS_FILTER_CONFIG: Array<{ key: keyof ClientFilters; defaultValue: str
 
 function ClientsPageSkeleton() {
     return (
-        <div className="container mx-auto py-8 space-y-6">
+        <div className="container mx-auto py-4 sm:py-8 px-4 sm:px-6 space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
                 <div className="space-y-2">
-                    <Skeleton className="h-9 w-40" />
-                    <Skeleton className="h-4 w-72" />
+                    <Skeleton className="h-7 sm:h-9 w-32 sm:w-40" />
+                    <Skeleton className="h-4 w-56 sm:w-72" />
                 </div>
-                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-10 w-full sm:w-32" />
             </div>
             {/* Search and filter controls */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                <Skeleton className="h-10 w-full md:w-96" />
-                <Skeleton className="h-10 w-[180px]" />
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center justify-between">
+                <Skeleton className="h-10 w-full sm:w-96" />
+                <Skeleton className="h-10 w-full sm:w-[180px]" />
             </div>
             {/* Table skeleton */}
             <div className="border rounded-lg">
@@ -145,16 +145,16 @@ export default function ClientsPage() {
         {
             header: 'Contact',
             cell: (client) => (
-                <div className="flex flex-col gap-1 text-sm">
+                <div className="flex flex-col gap-1 text-sm min-w-0">
                     {client.email && (
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            <Mail className="h-3 w-3" />
-                            {client.email}
+                        <div className="flex items-center gap-2 text-muted-foreground min-w-0">
+                            <Mail className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{client.email}</span>
                         </div>
                     )}
                     {client.phone && (
                         <div className="flex items-center gap-2 text-muted-foreground">
-                            <Phone className="h-3 w-3" />
+                            <Phone className="h-3 w-3 shrink-0" />
                             {client.phone}
                         </div>
                     )}
@@ -195,12 +195,12 @@ export default function ClientsPage() {
     const renderMobileCard = (client: Client) => (
         <div className="space-y-3">
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
                         <User className="h-5 w-5 text-primary" />
                     </div>
-                    <div>
-                        <div className="font-medium">{client.name}</div>
+                    <div className="min-w-0">
+                        <div className="font-medium truncate">{client.name}</div>
                         <Badge variant={client.status === 'active' ? 'default' : 'secondary'} className="mt-1">
                             {client.status}
                         </Badge>
@@ -210,14 +210,14 @@ export default function ClientsPage() {
 
             <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground">
                 {client.email && (
-                    <div className="flex items-center gap-2">
-                        <Mail className="h-3 w-3" />
-                        {client.email}
+                    <div className="flex items-center gap-2 min-w-0">
+                        <Mail className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{client.email}</span>
                     </div>
                 )}
                 {client.phone && (
                     <div className="flex items-center gap-2">
-                        <Phone className="h-3 w-3" />
+                        <Phone className="h-3 w-3 shrink-0" />
                         {client.phone}
                     </div>
                 )}
@@ -228,25 +228,25 @@ export default function ClientsPage() {
                     <DollarSign className="h-4 w-4" />
                     {formatCurrency(client.open_balance)}
                 </div>
-                <Button variant="outline" size="sm">View Details</Button>
+                <Button variant="outline" size="sm" className="min-h-[44px] min-w-[44px]">View Details</Button>
             </div>
         </div>
     );
 
     return (
-        <div className="container mx-auto py-8 space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="container mx-auto py-4 sm:py-8 px-4 sm:px-6 space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
-                    <p className="text-muted-foreground">
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Clients</h1>
+                    <p className="text-sm sm:text-base text-muted-foreground">
                         Manage your client relationships and track their activity.
                     </p>
                 </div>
                 <CreateClientDialog />
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="relative w-full md:w-96">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center justify-between">
+                <div className="relative w-full sm:w-96">
                     <SearchInput
                         placeholder="Search clients..."
                         onSearch={handleSearchChange}
@@ -257,7 +257,7 @@ export default function ClientsPage() {
                     value={statusFilter}
                     onValueChange={(value: 'active' | 'archived') => handleStatusFilterChange(value)}
                 >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue placeholder="Filter by status" />
                     </SelectTrigger>
                     <SelectContent>
