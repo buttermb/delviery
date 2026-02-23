@@ -22,6 +22,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, Dr
 import { triggerHaptic } from '@/lib/utils/mobile';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 import { LastUpdated } from "@/components/shared/LastUpdated";
 import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
 import { OrderBulkStatusConfirmDialog } from "@/components/admin/orders/OrderBulkStatusConfirmDialog";
@@ -141,7 +142,7 @@ export default function Orders() {
 
   // Filter state — persisted in URL for back-button & navigation support
   const [filters, setFilters, clearUrlFilters] = useUrlFilters<OrderFilters>(ORDERS_FILTER_CONFIG);
-  const searchQuery = filters.q;
+  const searchQuery = sanitizeSearchInput(filters.q);
   const statusFilter = filters.status;
   const dateRange = useMemo(() => ({
     from: filters.from ? parseISO(filters.from) : undefined,
