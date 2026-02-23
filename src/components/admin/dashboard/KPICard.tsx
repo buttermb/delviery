@@ -41,7 +41,7 @@ export function KPICard({ title, value, icon, description, variant = 'default', 
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-lg sm:text-2xl font-bold truncate">{value}</div>
         {trend && (
           <div className="flex items-center gap-1 mt-1">
             {trend.value >= 0 ? (

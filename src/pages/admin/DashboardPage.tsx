@@ -54,7 +54,7 @@ function RevenueWidgetFallback() {
   return (
     <div className="space-y-4">
       <Skeleton className="h-7 w-32" />
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <KPICardSkeleton key={i} />
         ))}
@@ -101,28 +101,28 @@ function DashboardPageSkeleton() {
       {/* Revenue section skeleton */}
       <div className="space-y-4">
         <Skeleton className="h-6 w-28" />
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)}
         </div>
       </div>
       {/* Orders section skeleton */}
       <div className="space-y-4">
         <Skeleton className="h-6 w-20" />
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)}
         </div>
       </div>
       {/* Customers section skeleton */}
       <div className="space-y-4">
         <Skeleton className="h-6 w-28" />
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)}
         </div>
       </div>
       {/* Inventory section skeleton */}
       <div className="space-y-4">
         <Skeleton className="h-6 w-24" />
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)}
         </div>
       </div>
@@ -200,18 +200,19 @@ export function DashboardPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground text-sm">
             Real-time overview of your operations
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible scrollbar-none">
           <ToggleGroup
             type="single"
             value={period}
             onValueChange={(val) => { if (val) setPeriod(val as DashboardPeriod); }}
             size="sm"
             variant="outline"
+            className="shrink-0"
           >
             {(Object.keys(PERIOD_LABELS) as DashboardPeriod[]).map((key) => (
               <ToggleGroupItem key={key} value={key} aria-label={`Show ${PERIOD_LABELS[key]} data`}>
@@ -368,11 +369,11 @@ export function DashboardPage() {
 
           {/* Orders Section */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
               <ShoppingCart className="h-5 w-5 text-blue-600" />
               Orders
             </h2>
-            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
               ) : (
@@ -416,11 +417,11 @@ export function DashboardPage() {
 
           {/* Customers Section */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
               <Users className="h-5 w-5 text-indigo-600" />
               Customers
             </h2>
-            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
               {isLoading ? (
                 Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)
               ) : (
@@ -456,11 +457,11 @@ export function DashboardPage() {
 
           {/* Inventory Section */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
               <Package className="h-5 w-5 text-purple-600" />
               Inventory
             </h2>
-            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
               ) : (
