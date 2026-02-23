@@ -54,6 +54,7 @@ import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
+import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
 
 /**
  * Format payment terms based on number of days
@@ -470,10 +471,12 @@ export function InvoicesPage() {
     const mod = useModifierKey();
 
     const filteredInvoices = (() => {
+        const sanitizedSearch = sanitizeSearchInput(searchQuery).toLowerCase();
         const filtered = invoices?.filter((invoice) => {
             const matchesSearch =
-                invoice.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (invoice.client?.name || "").toLowerCase().includes(searchQuery.toLowerCase());
+                !sanitizedSearch ||
+                invoice.invoice_number.toLowerCase().includes(sanitizedSearch) ||
+                (invoice.client?.name || "").toLowerCase().includes(sanitizedSearch);
 
             const isOverdue = invoice.due_date
                 && new Date(invoice.due_date) < new Date()
