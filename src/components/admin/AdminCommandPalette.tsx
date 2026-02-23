@@ -20,6 +20,7 @@ import {
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useDataSearch, SearchResult } from '@/hooks/useDataSearch';
+import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 import { Loader2, X, History } from 'lucide-react';
 import {
     LayoutDashboard,
@@ -114,8 +115,9 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
     // Debounced data search
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (search.length >= 2) {
-                searchData(search);
+            const sanitized = sanitizeSearchInput(search);
+            if (sanitized.length >= 2) {
+                searchData(sanitized);
             } else {
                 clearResults();
             }
