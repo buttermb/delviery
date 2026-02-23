@@ -57,6 +57,7 @@ import { CustomerQuickViewCard } from "@/components/tenant-admin/CustomerQuickVi
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { TruncatedText } from "@/components/shared/TruncatedText";
+import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
 
 type WholesaleClientRow = Database['public']['Tables']['wholesale_clients']['Row'];
 
@@ -144,9 +145,10 @@ export default function WholesaleClients() {
     }
   });
 
+  const sanitizedSearch = sanitizeSearchInput(searchTerm).toLowerCase();
   const filteredClients = clients?.filter(client =>
-    client.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.contact_name.toLowerCase().includes(searchTerm.toLowerCase())
+    client.business_name.toLowerCase().includes(sanitizedSearch) ||
+    client.contact_name.toLowerCase().includes(sanitizedSearch)
   ) || [];
 
   const handleSort = (field: ClientSortField) => {
