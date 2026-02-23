@@ -322,11 +322,11 @@ export function StorefrontLiveOrdersKanban({
 
     if (isLoading) {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {COLUMNS.map((col) => (
-                    <div key={col.id} className={cn('rounded-lg p-4', col.color)}>
+                    <div key={col.id} className={cn('rounded-lg p-3', col.color)}>
                         <div className="h-6 w-24 bg-muted rounded animate-pulse mb-4" />
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             {[1, 2].map((i) => (
                                 <div key={i} className="h-32 bg-muted rounded animate-pulse" />
                             ))}

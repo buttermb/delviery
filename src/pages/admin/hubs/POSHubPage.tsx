@@ -26,7 +26,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 const POSAnalyticsPage = lazy(() => import('@/pages/tenant-admin/POSAnalyticsPage'));
 
 const TabSkeleton = () => (
-    <div className="p-6 space-y-4">
+    <div className="p-4 space-y-4">
         <Skeleton className="h-8 w-1/3" />
         <Skeleton className="h-64 w-full" />
     </div>

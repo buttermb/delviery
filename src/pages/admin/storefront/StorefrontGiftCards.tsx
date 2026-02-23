@@ -44,7 +44,7 @@ export default function StorefrontGiftCards() {
 
   if (storeLoading) {
     return (
-      <div className="p-6 space-y-4">
+      <div className="p-4 space-y-4">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-4 w-72" />
         <Skeleton className="h-64 w-full" />

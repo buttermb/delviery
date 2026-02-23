@@ -9,7 +9,7 @@ import { UserPlus } from "lucide-react";
  */
 export default function CustomersExamplePage() {
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div>
         <h1 className="text-3xl font-bold mb-2">Customers</h1>
         <p className="text-muted-foreground">Manage your customer base</p>

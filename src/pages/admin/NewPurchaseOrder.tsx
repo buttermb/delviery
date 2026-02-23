@@ -260,7 +260,7 @@ export default function NewPurchaseOrder() {
                     )}
 
                     {step === 2 && (
-                        <Card className="p-6 space-y-6">
+                        <Card className="p-4 space-y-4">
                             <div>
                                 <h2 className="text-lg font-semibold mb-4">Order Items</h2>
 

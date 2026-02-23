@@ -173,7 +173,7 @@ export default function POSAnalyticsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">POS Analytics</h1>
