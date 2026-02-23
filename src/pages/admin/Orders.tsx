@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, MoreHorizontal, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Edit, RotateCcw, Filter } from 'lucide-react';
+import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Filter } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -38,6 +38,8 @@ import { OrderExportButton, OrderMergeDialog, OrderSLAIndicator } from "@/compon
 import { OrderEditModal } from "@/components/admin/OrderEditModal";
 import { OrderHoverCard } from "@/components/admin/OrderHoverCard";
 import { OrderRefundModal } from "@/components/admin/orders/OrderRefundModal";
+import { OrderActionsDropdown } from "@/components/admin/orders/OrderActionsDropdown";
+import type { OrderAction } from "@/components/admin/orders/OrderActionsDropdown";
 import { isOrderEditable } from "@/lib/utils/orderEditability";
 import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
@@ -52,13 +54,6 @@ import { formatSmartDate } from "@/lib/utils/formatDate";
 import { formatCurrency, displayValue } from "@/lib/formatters";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { format, isWithinInterval, startOfDay, endOfDay, parseISO } from "date-fns";
 import type { OrderWithSLATimestamps } from "@/types/sla";
 
@@ -733,6 +728,28 @@ export default function Orders() {
     }
   };
 
+  const handleOrderAction = useCallback((action: OrderAction, orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    switch (action) {
+      case 'edit':
+        setEditOrder(order);
+        setEditModalOpen(true);
+        break;
+      case 'cancel':
+        handleCancelOrder(order);
+        break;
+      case 'refund':
+        setRefundOrder(order);
+        setRefundModalOpen(true);
+        break;
+      case 'duplicate':
+        navigate(`orders/${order.id}?action=duplicate`);
+        break;
+    }
+  }, [orders, navigate]);
+
   // Helper
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -928,68 +945,16 @@ export default function Orders() {
           >
             <Eye className="h-4 w-4" />
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate(`orders/${order.id}`)}>
-                <Eye className="mr-2 h-4 w-4" />
-                View Details
-              </DropdownMenuItem>
-              {isOrderEditable(order.status) && canEdit('orders') && (
-                <DropdownMenuItem onClick={() => {
-                  setEditOrder(order);
-                  setEditModalOpen(true);
-                }}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit Order
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => handlePrintOrder(order)}>
-                <Printer className="mr-2 h-4 w-4" />
-                Print Order
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleGenerateInvoice(order)}>
-                <FileText className="mr-2 h-4 w-4" />
-                Generate Invoice
-              </DropdownMenuItem>
-              {['delivered', 'completed'].includes(order.status) && canEdit('orders') && (
-                <DropdownMenuItem onClick={() => {
-                  setRefundOrder(order);
-                  setRefundModalOpen(true);
-                }}>
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  Refund Order
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              {order.status !== 'cancelled' && canEdit('orders') && (
-                <DropdownMenuItem
-                  onClick={() => handleCancelOrder(order)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Cancel Order
-                </DropdownMenuItem>
-              )}
-              {canDelete('orders') && (
-                <DropdownMenuItem
-                  onClick={() => handleDelete(order.id)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Order
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <OrderActionsDropdown
+            orderId={order.id}
+            orderStatus={order.status}
+            onAction={handleOrderAction}
+            disabledActions={[
+              ...(!canEdit('orders') ? ['edit' as OrderAction, 'cancel' as OrderAction, 'refund' as OrderAction] : []),
+            ]}
+            size="sm"
+            triggerClassName="opacity-0 group-hover:opacity-100 transition-opacity"
+          />
         </div>
       )
     }
