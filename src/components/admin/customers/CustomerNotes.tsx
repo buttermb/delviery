@@ -261,6 +261,9 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
               autoFocus
               aria-label="Edit note"
             />
+            <p className="text-xs text-muted-foreground text-right">
+              {editedText.length}/1000
+            </p>
             <div className="flex items-center gap-2">
               <Select value={editedType} onValueChange={(v) => setEditedType(v as NoteType)}>
                 <SelectTrigger className="w-[140px]">
@@ -437,6 +440,9 @@ export function CustomerNotes({ customerId, className }: CustomerNotesProps) {
               maxLength={1000}
               autoFocus
             />
+            <p className="text-xs text-muted-foreground text-right">
+              {newNote.length}/1000
+            </p>
             <div className="flex items-center gap-2">
               <Select value={newNoteType} onValueChange={(v) => setNewNoteType(v as NoteType)}>
                 <SelectTrigger className="w-[140px]">
