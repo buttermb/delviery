@@ -3,7 +3,7 @@
  * View and manage orders from the online store
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -134,7 +134,7 @@ export default function StorefrontOrders() {
   });
 
   // Filter orders by search
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = useMemo(() => orders.filter((order) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -143,7 +143,7 @@ export default function StorefrontOrders() {
       order.customer_email?.toLowerCase().includes(query) ||
       order.customer_phone?.includes(query)
     );
-  });
+  }), [orders, searchQuery]);
 
   // Update order status mutation with retry logic
   const updateStatusMutation = useMutation({

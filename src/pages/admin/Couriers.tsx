@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
@@ -99,27 +99,28 @@ export default function Couriers() {
     }
   };
 
-  const filteredCouriers = couriers.filter(courier =>
+  const filteredCouriers = useMemo(() => couriers.filter(courier =>
     courier.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     courier.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     courier.phone?.includes(searchQuery)
-  );
+  ), [couriers, searchQuery]);
 
-  const avgRating = couriers.length > 0
-    ? (couriers.reduce((acc, c) => acc + (c.rating || 0), 0) / couriers.length).toFixed(1)
-    : '0.0';
+  const { avgRating, availableForAssignment } = useMemo(() => {
+    const avg = couriers.length > 0
+      ? (couriers.reduce((acc, c) => acc + (c.rating || 0), 0) / couriers.length).toFixed(1)
+      : '0.0';
+    const available = couriers.filter(c =>
+      c.is_online && c.is_active && c.age_verified
+    ).length;
+    return { avgRating: avg, availableForAssignment: available };
+  }, [couriers]);
 
-  // Calculate availability stats
-  const availableForAssignment = couriers.filter(c =>
-    c.is_online && c.is_active && c.age_verified
-  ).length;
-
-  const stats = [
+  const stats = useMemo(() => [
     { label: 'Total Couriers', value: couriers.length, icon: Users, color: 'text-accent' },
     { label: 'Available', value: availableForAssignment, icon: UserCheck, color: 'text-green-600' },
     { label: 'Offline', value: couriers.filter(c => c.is_active && !c.is_online).length, icon: Clock, color: 'text-muted-foreground' },
     { label: 'Avg Rating', value: avgRating, icon: Star, color: 'text-accent' },
-  ];
+  ], [couriers, availableForAssignment, avgRating]);
 
   const columns: ResponsiveColumn<Courier>[] = [
     {

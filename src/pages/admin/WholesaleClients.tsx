@@ -146,10 +146,10 @@ export default function WholesaleClients() {
   });
 
   const sanitizedSearch = sanitizeSearchInput(searchTerm).toLowerCase();
-  const filteredClients = clients?.filter(client =>
+  const filteredClients = useMemo(() => clients?.filter(client =>
     client.business_name.toLowerCase().includes(sanitizedSearch) ||
     client.contact_name.toLowerCase().includes(sanitizedSearch)
-  ) || [];
+  ) || [], [clients, sanitizedSearch]);
 
   const handleSort = (field: ClientSortField) => {
     if (sortField === field) {

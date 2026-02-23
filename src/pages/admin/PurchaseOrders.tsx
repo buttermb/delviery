@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -152,19 +152,21 @@ export default function PurchaseOrders() {
   const deleteMutation = deletePurchaseOrder;
   const updateStatusMutation = updatePurchaseOrderStatus;
 
-  const filteredPOs = purchaseOrders?.filter((po) => {
+  const filteredPOs = useMemo(() => purchaseOrders?.filter((po) => {
     const matchesSearch =
       po.po_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       po.notes?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSearch;
-  }) || [];
+  }) || [], [purchaseOrders, searchTerm]);
 
   // Calculate summary stats
-  const totalPOs = purchaseOrders?.length || 0;
-  const draftCount = purchaseOrders?.filter(po => po.status === 'draft').length || 0;
-  const pendingCount = purchaseOrders?.filter(po => ['sent', 'submitted', 'confirmed', 'approved'].includes(po.status || '')).length || 0;
-  const totalValue = purchaseOrders?.reduce((sum, po) => sum + Number(po.total || 0), 0) || 0;
+  const { totalPOs, draftCount, pendingCount, totalValue } = useMemo(() => ({
+    totalPOs: purchaseOrders?.length || 0,
+    draftCount: purchaseOrders?.filter(po => po.status === 'draft').length || 0,
+    pendingCount: purchaseOrders?.filter(po => ['sent', 'submitted', 'confirmed', 'approved'].includes(po.status || '')).length || 0,
+    totalValue: purchaseOrders?.reduce((sum, po) => sum + Number(po.total || 0), 0) || 0,
+  }), [purchaseOrders]);
 
   const handleCreate = () => {
     setEditingPO(null);

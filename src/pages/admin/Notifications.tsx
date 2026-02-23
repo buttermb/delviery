@@ -285,7 +285,7 @@ export default function Notifications() {
         </Card>
       )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) resetForm(); else setIsDialogOpen(open); }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingTemplate ? 'Edit Template' : 'Create Template'}</DialogTitle>

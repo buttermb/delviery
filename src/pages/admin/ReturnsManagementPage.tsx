@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -161,7 +161,7 @@ export default function ReturnsManagementPage() {
     },
   });
 
-  const filteredReturns = returns?.filter((ra) => {
+  const filteredReturns = useMemo(() => returns?.filter((ra) => {
     const matchesSearch =
       ra.ra_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ra.order_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -169,7 +169,7 @@ export default function ReturnsManagementPage() {
       ra.notes?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSearch;
-  }) || [];
+  }) || [], [returns, searchTerm]);
 
   const handleCreate = () => {
     setEditingRA(null);

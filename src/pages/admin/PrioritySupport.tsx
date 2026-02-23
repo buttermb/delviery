@@ -123,6 +123,17 @@ export default function PrioritySupport() {
     },
   });
 
+  const resetForm = () => {
+    setFormData({ subject: '', description: '', priority: 'high' });
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      resetForm();
+    }
+    setIsDialogOpen(open);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createTicketMutation.mutate(formData);
@@ -231,7 +242,7 @@ export default function PrioritySupport() {
         </CardContent>
       </Card>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Support Ticket</DialogTitle>
@@ -276,7 +287,7 @@ export default function PrioritySupport() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => handleDialogOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={createTicketMutation.isPending}>

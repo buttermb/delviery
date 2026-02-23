@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { queryKeys } from '@/lib/queryKeys';
@@ -180,13 +180,13 @@ export default function DeliveryManagement() {
     }
   };
 
-  const filteredDeliveries = deliveries.filter(d => {
+  const filteredDeliveries = useMemo(() => deliveries.filter(d => {
     if (statusFilter !== 'all' && d.status !== statusFilter) return false;
     if (searchQuery && !d.address.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
     return true;
-  });
+  }), [deliveries, statusFilter, searchQuery]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -210,12 +210,12 @@ export default function DeliveryManagement() {
     }
   };
 
-  const stats = {
+  const stats = useMemo(() => ({
     scheduled: deliveries.filter(d => d.status === 'pending' || d.status === 'confirmed').length,
     inProgress: deliveries.filter(d => d.status === 'out_for_delivery').length,
     completed: deliveries.filter(d => d.status === 'delivered').length,
     onlineCouriers: couriers.filter(c => c.is_online).length
-  };
+  }), [deliveries, couriers]);
 
   // --- COLUMNS FOR TABS ---
 

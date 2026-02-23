@@ -20,6 +20,7 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -51,6 +52,8 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
   const { tenant } = useTenantAdminAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addedZones, setAddedZones] = useState<AddedZone[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [zoneToDelete, setZoneToDelete] = useState<number | null>(null);
 
   const form = useForm<DeliveryZoneFormData>({
     resolver: zodResolver(deliveryZoneSchema),
@@ -123,6 +126,14 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
     }
   };
 
+  const handleConfirmDelete = async () => {
+    if (zoneToDelete !== null) {
+      await removeZone(zoneToDelete);
+      setDeleteDialogOpen(false);
+      setZoneToDelete(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -155,7 +166,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
                 variant="ghost"
                 size="icon"
                 className="h-11 w-11 sm:h-7 sm:w-7"
-                onClick={() => removeZone(i)}
+                onClick={() => { setZoneToDelete(i); setDeleteDialogOpen(true); }}
               >
                 <Trash2 className="h-3 w-3 text-red-500" />
               </Button>
@@ -254,6 +265,14 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
           Skip for now
         </button>
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemType="delivery zone"
+        itemName={addedZones[zoneToDelete ?? 0]?.name}
+      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Webhook, Plus, Edit, Trash2, Loader2, Link2, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { WebhookLogs } from './WebhookLogs';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 
@@ -49,6 +50,8 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingWebhook, setEditingWebhook] = useState<WebhookConfig | null>(null);
   const [selectedWebhookId, setSelectedWebhookId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [webhookToDelete, setWebhookToDelete] = useState<WebhookConfig | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     url: '',
@@ -303,9 +306,8 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm('Are you sure you want to delete this webhook?')) {
-                            deleteWebhookMutation.mutate(webhook.id);
-                          }
+                          setWebhookToDelete(webhook);
+                          setDeleteDialogOpen(true);
                         }}
                         disabled={deleteWebhookMutation.isPending}
                       >
@@ -347,6 +349,24 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
       {selectedWebhookId && (
         <WebhookLogs webhookId={selectedWebhookId} limit={20} />
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setWebhookToDelete(null);
+        }}
+        onConfirm={() => {
+          if (webhookToDelete) {
+            deleteWebhookMutation.mutate(webhookToDelete.id);
+            setDeleteDialogOpen(false);
+            setWebhookToDelete(null);
+          }
+        }}
+        itemName={webhookToDelete?.name}
+        itemType="webhook"
+        isLoading={deleteWebhookMutation.isPending}
+      />
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">

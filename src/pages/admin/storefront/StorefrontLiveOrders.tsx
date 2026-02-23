@@ -4,7 +4,7 @@
  * Features: realtime subscription, sound/browser notifications, status progression, delivery/pickup badges
  */
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -314,7 +314,7 @@ export function StorefrontLiveOrders() {
   };
 
   // Filter orders by search
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = useMemo(() => orders.filter((order) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -322,12 +322,14 @@ export function StorefrontLiveOrders() {
       order.customer_name?.toLowerCase().includes(query) ||
       order.customer_email?.toLowerCase().includes(query)
     );
-  });
+  }), [orders, searchQuery]);
 
   // Stats
-  const pendingCount = orders.filter(o => o.status === 'pending').length;
-  const preparingCount = orders.filter(o => o.status === 'preparing' || o.status === 'confirmed').length;
-  const readyCount = orders.filter(o => o.status === 'ready').length;
+  const { pendingCount, preparingCount, readyCount } = useMemo(() => ({
+    pendingCount: orders.filter(o => o.status === 'pending').length,
+    preparingCount: orders.filter(o => o.status === 'preparing' || o.status === 'confirmed').length,
+    readyCount: orders.filter(o => o.status === 'ready').length,
+  }), [orders]);
 
   if (!store) {
     return (

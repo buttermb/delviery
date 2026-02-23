@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -64,6 +64,13 @@ const CHART_COLORS = [
   '#00C49F',
 ];
 
+const DEFAULT_EXPENSE_FORM = {
+  description: '',
+  amount: '',
+  category: 'Supplies',
+  notes: ''
+};
+
 export default function ExpenseTracking() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
@@ -75,12 +82,18 @@ export default function ExpenseTracking() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    description: '',
-    amount: '',
-    category: 'Supplies',
-    notes: ''
-  });
+  const [formData, setFormData] = useState(DEFAULT_EXPENSE_FORM);
+
+  const resetForm = useCallback(() => {
+    setFormData(DEFAULT_EXPENSE_FORM);
+  }, []);
+
+  const handleDialogOpenChange = useCallback((open: boolean) => {
+    if (!open) {
+      resetForm();
+    }
+    setIsAddDialogOpen(open);
+  }, [resetForm]);
 
   const { data: expenses, isLoading } = useQuery({
     queryKey: ['expenses', tenantId],
@@ -128,7 +141,7 @@ export default function ExpenseTracking() {
       queryClient.invalidateQueries({ queryKey: ['expenses', tenantId] });
       showSuccessToast('Expense Added', 'The expense has been recorded successfully');
       setIsAddDialogOpen(false);
-      setFormData({ description: '', amount: '', category: 'Supplies', notes: '' });
+      setFormData(DEFAULT_EXPENSE_FORM);
     },
     onError: (error) => {
       logger.error('Failed to add expense', error, { component: 'ExpenseTracking' });
@@ -379,7 +392,7 @@ export default function ExpenseTracking() {
       </div>
 
       {/* Add Expense Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      <Dialog open={isAddDialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -437,7 +450,7 @@ export default function ExpenseTracking() {
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => handleDialogOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting} className="gap-2">

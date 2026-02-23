@@ -74,6 +74,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 // ============================================================================
 // Types
@@ -528,6 +529,8 @@ export function ProductBundleManager({ productId, onBundleChange }: ProductBundl
   const [editingBundle, setEditingBundle] = useState<ProductBundle | null>(null);
   const [formData, setFormData] = useState<BundleFormData>(DEFAULT_FORM_DATA);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [bundleToDelete, setBundleToDelete] = useState<ProductBundle | null>(null);
 
   // Queries
   const { data: products = [], isLoading: productsLoading } = useAvailableProducts();
@@ -750,11 +753,18 @@ export function ProductBundleManager({ productId, onBundleChange }: ProductBundl
     saveBundleMutation.mutate();
   }, [saveBundleMutation]);
 
-  const handleDelete = useCallback((bundleId: string) => {
-    if (window.confirm('Are you sure you want to delete this bundle?')) {
-      deleteBundleMutation.mutate(bundleId);
+  const handleDeleteClick = useCallback((bundle: ProductBundle) => {
+    setBundleToDelete(bundle);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (bundleToDelete) {
+      deleteBundleMutation.mutate(bundleToDelete.id);
+      setDeleteDialogOpen(false);
+      setBundleToDelete(null);
     }
-  }, [deleteBundleMutation]);
+  }, [bundleToDelete, deleteBundleMutation]);
 
   const handleViewBundle = useCallback((bundleId: string) => {
     navigateToAdmin(`products/${bundleId}`);
@@ -934,7 +944,7 @@ export function ProductBundleManager({ productId, onBundleChange }: ProductBundl
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleDelete(bundle.id)}
+                  onClick={() => handleDeleteClick(bundle)}
                   className="text-destructive hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
@@ -945,6 +955,19 @@ export function ProductBundleManager({ productId, onBundleChange }: ProductBundl
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setBundleToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        itemName={bundleToDelete?.name}
+        itemType="bundle"
+        isLoading={deleteBundleMutation.isPending}
+      />
 
       {/* Create/Edit Bundle Dialog */}
       <Dialog

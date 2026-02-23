@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -294,7 +294,7 @@ export function CustomerManagement() {
     toast.success("Customer data exported");
   };
 
-  const filteredCustomers = customers.filter((customer) => {
+  const filteredCustomers = useMemo(() => customers.filter((customer) => {
     const fullName = displayName(customer.first_name, customer.last_name).toLowerCase();
     const search = debouncedSearchTerm.toLowerCase();
     const matchesSearch =
@@ -308,7 +308,7 @@ export function CustomerManagement() {
       (customerIdsByTags && customerIdsByTags.includes(customer.id));
 
     return matchesSearch && matchesTags;
-  });
+  }), [customers, debouncedSearchTerm, filterTagIds, customerIdsByTags]);
 
   // Use standardized pagination
   const {
@@ -327,11 +327,14 @@ export function CustomerManagement() {
   });
 
   // Calculate stats
-  const totalCustomers = customers.length;
-  const activeCustomers = customers.filter(c => c.status === 'active').length;
-  const medicalPatients = customers.filter(c => c.customer_type === 'medical').length;
-  const totalRevenue = customers.reduce((sum, c) => sum + (c.total_spent || 0), 0);
-  const avgLifetimeValue = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
+  const { totalCustomers, activeCustomers, medicalPatients, totalRevenue, avgLifetimeValue } = useMemo(() => {
+    const total = customers.length;
+    const active = customers.filter(c => c.status === 'active').length;
+    const medical = customers.filter(c => c.customer_type === 'medical').length;
+    const revenue = customers.reduce((sum, c) => sum + (c.total_spent || 0), 0);
+    const avgLTV = total > 0 ? revenue / total : 0;
+    return { totalCustomers: total, activeCustomers: active, medicalPatients: medical, totalRevenue: revenue, avgLifetimeValue: avgLTV };
+  }, [customers]);
 
   const getCustomerStatus = (customer: Customer) => {
     if (!customer.last_purchase_at) return <Badge variant="outline">New</Badge>;
