@@ -37,6 +37,7 @@ import { useInvites, useCreateInvite, useArchiveInvite } from "@/hooks/crm/useIn
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { logger } from "@/lib/logger";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -73,8 +74,9 @@ export default function InvitesPage() {
             toast.success(`Invite sent to ${values.email}`);
             setIsCreateDialogOpen(false);
             form.reset();
-        } catch {
-            // Error handled by hook
+        } catch (error: unknown) {
+            logger.error("Failed to send invite", error, { component: "InvitesPage", email: values.email });
+            toast.error("Failed to send invite. Please try again.");
         }
     };
 
@@ -88,6 +90,9 @@ export default function InvitesPage() {
                 try {
                     await archiveInvite.mutateAsync(id);
                     closeDialog();
+                } catch (error: unknown) {
+                    logger.error("Failed to revoke invite", error, { component: "InvitesPage", inviteId: id, email });
+                    toast.error("Failed to revoke invite. Please try again.");
                 } finally {
                     setLoading(false);
                 }

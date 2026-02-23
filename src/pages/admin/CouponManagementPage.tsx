@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -147,13 +147,15 @@ export default function CouponManagementPage() {
     },
   });
 
-  const filteredCoupons = coupons?.filter((coupon) => {
-    const matchesSearch =
-      coupon.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      coupon.description?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredCoupons = useMemo(() => {
+    return coupons?.filter((coupon) => {
+      const matchesSearch =
+        coupon.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        coupon.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch;
-  }) || [];
+      return matchesSearch;
+    }) || [];
+  }, [coupons, searchTerm]);
 
   const handleCreate = () => {
     setEditingCoupon(null);

@@ -478,15 +478,40 @@ export default function WholesaleClients() {
                                     type="number"
                                     defaultValue={client.credit_limit || 0}
                                     className="h-8"
+                                    disabled={updateClientMutation.isPending}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
-                                        handleUpdateClient(client.id, { credit_limit: Number(e.currentTarget.value) });
+                                        updateClientMutation.mutate(
+                                          { clientId: client.id, updates: { credit_limit: Number(e.currentTarget.value) } },
+                                          {
+                                            onSuccess: () => {
+                                              toast.success('Credit limit updated');
+                                              handleRefresh();
+                                            },
+                                            onError: (error) => {
+                                              logger.error('Error updating credit limit:', error);
+                                              toast.error('Failed to update credit limit');
+                                            },
+                                          }
+                                        );
                                       }
                                     }}
                                     onBlur={(e) => {
                                       const val = Number(e.target.value);
                                       if (val !== client.credit_limit) {
-                                        handleUpdateClient(client.id, { credit_limit: val });
+                                        updateClientMutation.mutate(
+                                          { clientId: client.id, updates: { credit_limit: val } },
+                                          {
+                                            onSuccess: () => {
+                                              toast.success('Credit limit updated');
+                                              handleRefresh();
+                                            },
+                                            onError: (error) => {
+                                              logger.error('Error updating credit limit:', error);
+                                              toast.error('Failed to update credit limit');
+                                            },
+                                          }
+                                        );
                                       }
                                     }}
                                   />

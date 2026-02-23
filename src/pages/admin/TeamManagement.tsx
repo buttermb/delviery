@@ -31,7 +31,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Users, Plus, MoreHorizontal, Shield, AlertTriangle, UserCheck, UserX, Loader2 } from 'lucide-react';
+import { Users, Plus, MoreHorizontal, Shield, AlertTriangle, AlertCircle, UserCheck, UserX, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { formatSmartDate } from '@/lib/formatters';
@@ -95,6 +95,7 @@ export default function TeamManagement() {
     data: teamMembers = [],
     isLoading: loadingMembers,
     error: membersError,
+    refetch: refetchMembers,
   } = useQuery({
     queryKey: queryKeys.team.members(tenant?.id),
     queryFn: async () => {
@@ -501,11 +502,14 @@ export default function TeamManagement() {
     );
   }
 
-  if (membersError) {
+  if (membersError && teamMembers.length === 0) {
     return (
       <div className="p-6">
         <Card className="border-destructive p-6">
           <p className="text-destructive">Failed to load team members. Please try again.</p>
+          <Button variant="outline" size="sm" className="mt-3" onClick={() => refetchMembers()}>
+            Retry
+          </Button>
         </Card>
       </div>
     );
@@ -523,6 +527,16 @@ export default function TeamManagement() {
   return (
     <div className="space-y-4">
       <SEOHead title="Team Management" description="Manage your team members and permissions" />
+
+      {membersError && teamMembers.length > 0 && (
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-center gap-2 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>Failed to load team members. Showing cached data.</span>
+          <Button variant="ghost" size="sm" onClick={() => refetchMembers()} className="ml-auto">
+            Retry
+          </Button>
+        </div>
+      )}
 
       <div className="flex items-center justify-between">
         <div>
