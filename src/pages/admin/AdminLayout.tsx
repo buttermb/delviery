@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useParams } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
+import { RouteErrorBoundary } from "@/components/admin/RouteErrorBoundary";
 import { AdaptiveSidebar } from "@/components/admin/sidebar/AdaptiveSidebar";
 import { OptimizedSidebar } from "@/components/sidebar/OptimizedSidebar";
 import { LiveBadgeProvider } from "@/components/admin/sidebar/LiveBadgeContext";
@@ -312,11 +312,11 @@ const AdminLayout = () => {
                 }}
               >
                 <div className="max-w-[1920px] mx-auto w-full">
-                  <AdminErrorBoundary>
+                  <RouteErrorBoundary routePath={location.pathname}>
                     <Suspense fallback={<LoadingFallback />}>
                       <Outlet />
                     </Suspense>
-                  </AdminErrorBoundary>
+                  </RouteErrorBoundary>
                 </div>
               </main>
             </div>

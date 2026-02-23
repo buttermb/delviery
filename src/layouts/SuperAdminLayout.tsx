@@ -4,7 +4,8 @@
  */
 
 import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { RouteErrorBoundary } from '@/components/admin/RouteErrorBoundary';
 import { TopNav } from '@/components/super-admin/navigation/TopNav';
 import { CommandPalette } from '@/components/super-admin/CommandPalette';
 import { NotificationsPanel } from '@/components/super-admin/NotificationsPanel';
@@ -19,6 +20,7 @@ import { safeStorage } from '@/utils/safeStorage';
 export function SuperAdminLayout() {
   const { superAdmin } = useSuperAdminAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   
@@ -233,7 +235,9 @@ export function SuperAdminLayout() {
         )}
       >
         <div className="max-w-7xl mx-auto w-full">
-          <Outlet />
+          <RouteErrorBoundary routePath={location.pathname}>
+            <Outlet />
+          </RouteErrorBoundary>
         </div>
       </main>
 
