@@ -96,7 +96,7 @@ export function ModernHero() {
           </div>
 
           <p className="text-lg text-slate-500 mb-10 max-w-xl mx-auto">
-            The only menu system built for operators who need to disappear.
+            The all-in-one menu system built for compliant cannabis distributors.
           </p>
 
           {/* CTAs */}

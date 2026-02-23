@@ -128,12 +128,12 @@ export default defineConfig(({ mode }) => ({
       },
       // Only generate manifest, don't register service worker
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'placeholder.svg'],
+      includeAssets: ['favicon.ico', 'floraiq-icon.svg'],
       manifest: {
-        name: 'Delivery Platform - Wholesale Management',
-        short_name: 'Delivery Platform',
-        description: 'Comprehensive wholesale and delivery management platform for your business.',
-        theme_color: '#000000',
+        name: 'FloraIQ - Cannabis Wholesale Platform',
+        short_name: 'FloraIQ',
+        description: 'All-in-one cannabis wholesale and delivery management platform.',
+        theme_color: '#059669',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'any',
@@ -141,16 +141,16 @@ export default defineConfig(({ mode }) => ({
         start_url: '/',
         icons: [
           {
-            src: '/placeholder.svg',
+            src: '/floraiq-icon.svg',
             sizes: '192x192',
             type: 'image/svg+xml',
-            purpose: 'any maskable'
+            purpose: 'any'
           },
           {
-            src: '/placeholder.svg',
+            src: '/floraiq-icon.svg',
             sizes: '512x512',
             type: 'image/svg+xml',
-            purpose: 'any maskable'
+            purpose: 'any'
           }
         ],
         categories: ['business', 'productivity'],
@@ -160,14 +160,14 @@ export default defineConfig(({ mode }) => ({
             short_name: 'Dashboard',
             description: 'Open dashboard',
             url: '/admin/dashboard',
-            icons: [{ src: '/placeholder.svg', sizes: '192x192' }]
+            icons: [{ src: '/floraiq-icon.svg', sizes: '192x192' }]
           },
           {
             name: 'Orders',
             short_name: 'Orders',
             description: 'View orders',
             url: '/admin/orders',
-            icons: [{ src: '/placeholder.svg', sizes: '192x192' }]
+            icons: [{ src: '/floraiq-icon.svg', sizes: '192x192' }]
           }
         ]
       }

@@ -177,7 +177,7 @@ const TenantAdminDashboardPage = lazy(() => import("./pages/tenant-admin/Dashboa
 const HotboxPage = lazy(() => import("./pages/admin/HotboxPage"));
 const FinancialCommandCenterPage = lazy(() => import("./pages/admin/FinancialCommandCenter"));
 const CollectionModePage = lazy(() => import("./pages/admin/CollectionMode"));
-const TenantAdminSettingsPage = lazy(() => import("./pages/tenant-admin/SettingsPage"));
+// TenantAdminSettingsPage removed — SettingsHubPage serves /settings directly
 const TenantAdminSelectPlanPage = lazy(() => import("./pages/tenant-admin/SelectPlanPage"));
 const TrialExpiredPage = lazy(() => import("./pages/tenant-admin/TrialExpired"));
 const HelpPage = lazy(() => import("./pages/HelpPage"));
@@ -865,7 +865,7 @@ const App = () => {
                                         <Route path="credits/analytics" element={<FeatureProtectedRoute feature="analytics_advanced"><CreditAnalyticsPage /></FeatureProtectedRoute>} />
                                         <Route path="credits/success" element={<CreditPurchaseSuccessPage />} />
                                         <Route path="credits/cancelled" element={<CreditPurchaseCancelledPage />} />
-                                        <Route path="settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="settings"><TenantAdminSettingsPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
+                                        <Route path="settings" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="settings"><SettingsHubPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
                                         <Route path="account-settings" element={<AccountSettingsPage />} />
 
                                         {/* Marketplace Routes (B2B) */}
@@ -928,8 +928,8 @@ const App = () => {
                                         <Route path="delivery-hub" element={<FeatureProtectedRoute feature="delivery_tracking"><Navigate to="fulfillment-hub" replace /></FeatureProtectedRoute>} />
                                         <Route path="fulfillment-hub" element={<FeatureProtectedRoute feature="delivery_tracking"><FulfillmentHubPage /></FeatureProtectedRoute>} />
                                         <Route path="finance-hub" element={<FeatureProtectedRoute featureId="financial-center"><FinanceHubPage /></FeatureProtectedRoute>} />
-                                        <Route path="settings-hub" element={<RoleProtectedRoute allowedRoles={['owner', 'admin']}><FeatureProtectedRoute featureId="settings"><SettingsHubPage /></FeatureProtectedRoute></RoleProtectedRoute>} />
-                                        <Route path="integrations-hub" element={<Navigate to="settings-hub?tab=integrations" replace />} />
+                                        <Route path="settings-hub" element={<Navigate to="../settings" replace />} />
+                                        <Route path="integrations-hub" element={<Navigate to="settings?tab=integrations" replace />} />
                                         <Route path="storefront-hub" element={<FeatureProtectedRoute featureId="storefront"><StorefrontHubPage /></FeatureProtectedRoute>} />
                                         <Route path="operations-hub" element={<FeatureProtectedRoute featureId="suppliers"><OperationsHubPage /></FeatureProtectedRoute>} />
                                         <Route path="compliance-hub" element={<Navigate to="operations-hub?tab=compliance" replace />} />
