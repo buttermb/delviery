@@ -8,6 +8,21 @@
 import { logger } from '@/lib/logger';
 
 // ============================================================================
+// Browser API type extensions
+// ============================================================================
+
+interface NavigatorWithExtensions extends Navigator {
+  connection?: { effectiveType?: string };
+  mozConnection?: { effectiveType?: string };
+  webkitConnection?: { effectiveType?: string };
+  deviceMemory?: number;
+}
+
+interface WindowWithWebkitAudio extends Window {
+  webkitAudioContext?: typeof AudioContext;
+}
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -192,7 +207,7 @@ function getWebGLFingerprint(): { hash: string; vendor: string; renderer: string
  */
 async function getAudioFingerprint(): Promise<string> {
   try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContext = window.AudioContext || (window as WindowWithWebkitAudio).webkitAudioContext;
     if (!AudioContext) return '';
 
     const context = new AudioContext();
@@ -315,9 +330,8 @@ function getPluginsHash(): string {
  */
 function getConnectionType(): string | null {
   try {
-    const connection = (navigator as any).connection || 
-                       (navigator as any).mozConnection || 
-                       (navigator as any).webkitConnection;
+    const nav = navigator as NavigatorWithExtensions;
+    const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
     return connection?.effectiveType || null;
   } catch {
     return null;
@@ -364,7 +378,7 @@ export async function generateFingerprint(): Promise<DeviceFingerprint> {
 
     // Collect hardware info
     const hardwareConcurrency = navigator.hardwareConcurrency || 0;
-    const deviceMemory = (navigator as any).deviceMemory || null;
+    const deviceMemory = (navigator as NavigatorWithExtensions).deviceMemory ?? null;
     const maxTouchPoints = navigator.maxTouchPoints || 0;
     const touchSupport = 'ontouchstart' in window || maxTouchPoints > 0;
 

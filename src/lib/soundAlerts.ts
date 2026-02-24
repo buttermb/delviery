@@ -7,6 +7,10 @@ import { Capacitor } from '@capacitor/core';
 import { logger } from '@/lib/logger';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 
+interface WindowWithWebkitAudio extends Window {
+  webkitAudioContext?: typeof AudioContext;
+}
+
 // Sound file paths (relative to public directory)
 const SOUND_FILES = {
     newOrder: '/sounds/new-order.mp3',
@@ -38,7 +42,7 @@ export function initAudio(): void {
     if (audioContext) return;
 
     try {
-        audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioContext = new (window.AudioContext || (window as WindowWithWebkitAudio).webkitAudioContext!)();
     } catch (error) {
         logger.warn('Web Audio API not supported', error);
     }
