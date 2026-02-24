@@ -608,7 +608,8 @@ function processInventoryMovements(
     if (!movementMap.has(date)) {
       movementMap.set(date, new Map());
     }
-    const typeMap = movementMap.get(date)!;
+    const typeMap = movementMap.get(date);
+    if (!typeMap) return;
     typeMap.set(h.change_type, (typeMap.get(h.change_type) ?? 0) + 1);
   });
 

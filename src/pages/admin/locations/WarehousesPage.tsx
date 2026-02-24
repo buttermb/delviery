@@ -92,7 +92,8 @@ export default function WarehousesPage() {
               product_count: 0,
             });
           }
-          const wh = warehouseMap.get(loc)!;
+          const wh = warehouseMap.get(loc);
+          if (!wh) return;
           wh.total_quantity += Number(item.stock_quantity || 0);
           wh.total_value += Number(item.stock_quantity || 0) * Number(item.cost_per_unit || 0);
           wh.product_count += 1;

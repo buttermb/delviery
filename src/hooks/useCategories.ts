@@ -48,11 +48,16 @@ function buildCategoryTree(categories: Category[]): CategoryTreeNode[] {
 
   // Second pass: build tree structure and calculate depths
   categories.forEach((cat) => {
-    const category = categoryMap.get(cat.id)!;
+    const category = categoryMap.get(cat.id);
+    if (!category) return;
     if (cat.parent_id && categoryMap.has(cat.parent_id)) {
-      const parent = categoryMap.get(cat.parent_id)!;
-      category.depth = parent.depth + 1;
-      parent.children.push(category);
+      const parent = categoryMap.get(cat.parent_id);
+      if (parent) {
+        category.depth = parent.depth + 1;
+        parent.children.push(category);
+      } else {
+        rootCategories.push(category);
+      }
     } else {
       rootCategories.push(category);
     }

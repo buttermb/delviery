@@ -251,7 +251,7 @@ export default function StorefrontProducts() {
 
       // Update existing
       if (existingIds.length > 0) {
-        const settingIds = existingIds.map((id) => settingsMap.get(id)!.id);
+        const settingIds = existingIds.map((id) => settingsMap.get(id)?.id).filter((id): id is string => !!id);
         const { error } = await supabase
           .from('marketplace_product_settings')
           .update({ is_visible: isVisible })

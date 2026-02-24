@@ -181,7 +181,8 @@ export default function RunnerLocationTracking() {
       if (!groups.has(dateKey)) {
         groups.set(dateKey, []);
       }
-      groups.get(dateKey)!.push(location);
+      const group = groups.get(dateKey);
+      if (group) group.push(location);
     }
 
     return groups;

@@ -39,7 +39,8 @@ export function groupOrdersByDate(orders: OrderData[]): DailyRevenue[] {
       });
     }
 
-    const day = dailyMap.get(date)!;
+    const day = dailyMap.get(date);
+    if (!day) return;
     day.revenue += Number(order.total_amount) || 0;
     day.orders += 1;
     day.customers.add(order.customer_id);

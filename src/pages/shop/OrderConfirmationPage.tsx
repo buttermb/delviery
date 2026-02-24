@@ -53,7 +53,8 @@ export function OrderConfirmationPage() {
 
   const orderNumber = stateData.orderNumber || stateData.orderId || searchParams.get('order') || null;
   const trackingToken = stateData.trackingToken || searchParams.get('token') || null;
-  const total = stateData.total || (searchParams.get('total') ? parseFloat(searchParams.get('total')!) : undefined);
+  const totalParam = searchParams.get('total');
+  const total = stateData.total || (totalParam ? parseFloat(totalParam) : undefined);
   const sessionId = searchParams.get('session_id');
 
   // Fetch order details to show items ordered
@@ -140,7 +141,7 @@ export function OrderConfirmationPage() {
       // Fire confetti
       const duration = 3000;
       const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }; // matches --z-base token
 
       const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 

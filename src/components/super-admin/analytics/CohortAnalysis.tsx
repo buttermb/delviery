@@ -40,7 +40,8 @@ export function CohortAnalysis() {
         if (!cohortMap.has(cohort)) {
           cohortMap.set(cohort, []);
         }
-        cohortMap.get(cohort)!.push(tenant);
+        const cohortList = cohortMap.get(cohort);
+        if (cohortList) cohortList.push(tenant);
       });
 
       // Calculate retention for each cohort

@@ -137,7 +137,7 @@ export function StockAlertSettings() {
   // Get threshold for a product (edited or current)
   const getThreshold = (productId: string, currentThreshold: number | null): number => {
     if (editingThresholds.has(productId)) {
-      return editingThresholds.get(productId)!;
+      return editingThresholds.get(productId) ?? (currentThreshold ?? 10);
     }
     return currentThreshold ?? 10;
   };

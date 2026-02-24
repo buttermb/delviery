@@ -233,7 +233,8 @@ function useProductPerformance(productId: string | undefined, productCategory?: 
           if (!segmentCounts.has(segmentKey)) {
             segmentCounts.set(segmentKey, new Set());
           }
-          segmentCounts.get(segmentKey)!.add(order.customer_id);
+          const segmentSet = segmentCounts.get(segmentKey);
+          if (segmentSet) segmentSet.add(order.customer_id);
         }
       });
 

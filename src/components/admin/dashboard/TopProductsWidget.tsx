@@ -96,7 +96,8 @@ export function TopProductsWidget() {
           });
         }
 
-        const product = productMap.get(productId)!;
+        const product = productMap.get(productId);
+        if (!product) return;
         product.total_quantity += Number(item.quantity_lbs || 0);
         product.total_value +=
           Number(item.quantity_lbs || 0) * Number(item.unit_price || 0);

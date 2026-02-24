@@ -89,7 +89,8 @@ export function LTVCalculator() {
         if (!cohortMap.has(cohort)) {
           cohortMap.set(cohort, { tenants: [] });
         }
-        const cohortData = cohortMap.get(cohort)!;
+        const cohortData = cohortMap.get(cohort);
+        if (!cohortData) return;
         cohortData.tenants.push(t);
       });
 

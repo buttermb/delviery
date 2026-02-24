@@ -33,7 +33,7 @@ const tableExistenceCache = new Map<string, boolean>();
 export async function checkTableExists(tableName: string): Promise<boolean> {
   // Check cache first
   if (tableExistenceCache.has(tableName)) {
-    return tableExistenceCache.get(tableName)!;
+    return tableExistenceCache.get(tableName) ?? false;
   }
 
   try {

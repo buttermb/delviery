@@ -151,7 +151,8 @@ export function subscribe<T extends EventName>(
     subscriptions.set(eventName, new Set());
   }
 
-  const callbacks = subscriptions.get(eventName)!;
+  const callbacks = subscriptions.get(eventName);
+  if (!callbacks) return () => unsubscribe(eventName, callback);
   callbacks.add(callback as EventCallback<EventName>);
 
   logger.debug(`[EventBus] Subscribed to event: ${eventName}`, {

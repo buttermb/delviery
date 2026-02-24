@@ -179,7 +179,8 @@ export function LowStockToPODialog({
         });
       }
 
-      const group = grouped.get(key)!;
+      const group = grouped.get(key);
+      if (!group) return;
       group.items.push(product);
 
       // Calculate estimated cost for this item
@@ -327,7 +328,8 @@ export function LowStockToPODialog({
         if (!vendorItems.has(vendorId)) {
           vendorItems.set(vendorId, []);
         }
-        vendorItems.get(vendorId)!.push(item);
+        const vendorItemList = vendorItems.get(vendorId);
+        if (vendorItemList) vendorItemList.push(item);
       });
 
       if (vendorItems.size === 0) {
