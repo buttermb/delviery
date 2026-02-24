@@ -36,7 +36,7 @@ import { queryKeys } from '@/lib/queryKeys';
 // Mobile Collapsible Section
 interface MobileSectionProps {
   title: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   badge?: React.ReactNode;
   defaultOpen?: boolean;
   children: React.ReactNode;

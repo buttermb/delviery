@@ -7,7 +7,7 @@ export { BuilderHeader } from './BuilderHeader';
 export { BuilderLeftPanel } from './BuilderLeftPanel';
 export { BuilderPreview } from './BuilderPreview';
 export { BuilderPropertyEditor } from './BuilderPropertyEditor';
-export { BuilderCreateStoreDialog } from './BuilderCreateStoreDialog';
+
 export { SortableSectionItem } from './SortableSectionItem';
 export { useStorefrontBuilder } from './useStorefrontBuilder';
 export {

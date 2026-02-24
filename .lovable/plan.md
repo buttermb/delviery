@@ -1,74 +1,95 @@
 
-# Fix All Remaining Build Errors
 
-## Objective
-Resolve all ~50+ TypeScript build errors across admin pages, platform pages, marketplace pages, and service files to achieve a clean build.
+# Fix All Build Errors -- Complete Plan
+
+## The Problem
+
+The project has **20+ TypeScript build errors** preventing it from compiling. The homepage shows a blank page with just a "Debug" button because the build is failing.
 
 ## Root Causes
 
-There are 4 main categories of errors:
+There are **4 distinct categories** of errors, all with straightforward fixes:
 
-1. **`useUrlFilters` returns `{}` for filter values** -- The generic type inference fails when `FILTER_CONFIG` arrays use inline objects. Filter values like `searchQuery`, `statusFilter` are typed as `{}` instead of `string`, causing `.toLowerCase()`, `.replace()`, and assignment errors across Orders.tsx, ClientsPage.tsx, WholesaleOrdersPage.tsx.
+### Category 1: Wrong Supabase cast pattern (majority of errors)
 
-2. **Supabase tables/RPCs not in generated types** -- Tables like `data_exports`, `referral_codes`, `marketplace_categories`, `marketplace_listings`, and RPCs like `log_vendor_price_change`, `admin_grant_tenant_access`, `get_platform_metrics`, `redeem_referral_code` aren't in the auto-generated types. Requires `(supabase as any)` casting.
+**29 files** use `.from('table_name' as any)` which casts the table name string but still goes through Supabase's type system, resulting in `SelectQueryError` return types. The correct pattern is `(supabase as any).from('table_name')` which bypasses type checking entirely.
 
-3. **Type mismatches in data access** -- Properties accessed on query results typed as `unknown` or `SelectQueryError` (e.g., `CustomerDetails.tsx` arithmetic on unknown, `RevenueReports.tsx` accessing `.total`, `WhiteLabelSettings.tsx` unknown values in theme object).
+**Affected files with build errors:**
+- `CommissionTracking.tsx` (3 errors) -- lines 50, 58, 89
+- `ExpenseTracking.tsx` (8 errors) -- lines 115, 138, 166
+- `Notifications.tsx` (errors) -- lines 55, 76, 116, 156
+- `DeliveryAnalytics.tsx` -- line 21
+- `LocationAnalytics.tsx` -- line 21
+- `AuditTrail.tsx` -- line 26
+- `CustomReports.tsx` -- lines 54, 76, 112, 148
+- `InventoryTransfers.tsx` -- lines 63, 96, 118
+- `PrioritySupport.tsx` -- lines 50, 72, 109
+- Plus ~20 more files with the same pattern that will also error
 
-4. **Component prop mismatches** -- `SearchInput` in `CollectionMode.tsx` passes `value`/`onChange` props that don't exist on `SearchInputProps` (it uses `defaultValue`/`onSearch`). `CashRegister.tsx` references `setCustomerDialogOpen` which is never declared.
+**Fix:** Find-and-replace across all 29 files: change `supabase.from('xxx' as any)` to `(supabase as any).from('xxx')`.
 
----
+### Category 2: Broken barrel exports (2 errors)
 
-## Changes by File
+- **`src/components/admin/quick-view/index.ts`** -- exports `OrderQuickViewModal` and `CustomerQuickViewModal` but those files don't exist in the directory. Only `QuickViewModal.tsx` and `ProductQuickViewModal.tsx` exist.
+- **`src/pages/admin/storefront/builder/index.ts`** -- exports `BuilderCreateStoreDialog` but that file doesn't exist.
 
-### Group 1: Fix `useUrlFilters` type inference (fixes ~15 errors across 3 files)
+**Fix:** Remove the 3 broken export lines.
 
-**Files:** `Orders.tsx`, `ClientsPage.tsx`, `WholesaleOrdersPage.tsx`
+### Category 3: Missing `icon` prop (4 errors)
 
-In each file, add `as const satisfies` or explicitly type the filter config, and cast the destructured filter values to `string`:
-- `const searchQuery = filters.q as string;`
-- `const statusFilter = (filters.status || 'all') as string;`
+**`FinancialCommandCenter.tsx`** lines 200, 208, 215, 222 -- The `MobileSectionProps` interface requires an `icon` prop, but the 4 `<MobileSection>` usages don't pass it.
 
-This fixes all `.toLowerCase()`, `.replace()`, `.includes()`, `ReactNode`, and assignment errors.
+**Fix:** Make `icon` optional in the interface (`icon?: React.ReactNode`) since the mobile sections work fine without icons.
 
-### Group 2: Cast Supabase calls for untyped tables/RPCs (fixes ~20 errors)
+### Category 4: `useInvoices.ts` `.limit()` error (1 error)
 
-**Files and fixes:**
-- **`DataExport.tsx` (line 85):** `(supabase as any).from('data_exports')`
-- **`NewPurchaseOrder.tsx` (lines 142, 168, 178):** `(supabase as any).from('purchase_orders')`, `(supabase as any).from('purchase_order_items')`, `(supabase as any).rpc('log_vendor_price_change', ...)`
-- **`OfflineOrderCreate.tsx` (line 91):** `(supabase as any).from('products')`
-- **`AllTenantsPage.tsx` (line 44):** `(supabase as any).rpc('admin_grant_tenant_access', ...)`
-- **`CommissionTrackingPage.tsx` (line 16):** `(supabase as any).rpc('get_platform_metrics')`
-- **`MarketplaceCategoryManager.tsx` (line 47):** Already uses `as any` but the return cast is wrong -- change `data as MarketplaceCategory[]` to `(data as unknown as MarketplaceCategory[])`
-- **`ProductVisibilityManager.tsx` (line 46):** `(supabase as any).from('marketplace_listings')`
-- **`BusinessMenuPage.tsx`:** Cast supabase calls with `(supabase as any)`
-- **`PublicMarketplacePage.tsx`:** Cast supabase calls with `(supabase as any)`
+**`src/hooks/crm/useInvoices.ts`** line 84 -- `.limit(500)` is called on a query result that TypeScript doesn't recognize as having that method (likely also a `SelectQueryError` from the same pattern).
 
-### Group 3: Fix type mismatches in data access
+**Fix:** Cast the supabase client call with `(supabase as any)` or use `(crmClient as any)`.
 
-- **`AdminQuickExport.tsx` (line 81):** The `profiles` query column `email` doesn't exist in generated types. Cast: `(supabase as any).from('profiles').select('user_id, full_name, email')`
-- **`CustomerDetails.tsx` (lines 159, 229-231, 299):** Cast arithmetic expressions: `(sum + (Number((o as Record<string, unknown>).total_amount) || 0))` and `computedTotalSpent` is already a number so `.toFixed(2)` should work after fixing line 229.
-- **`CustomerInsights.tsx` (line 42):** Change cast to go through `unknown` first: `(customer as unknown as Record<string, unknown>)`
-- **`RevenueReports.tsx` (line 98):** `order.total` doesn't exist on the typed result -- it already handles this with `order.total_amount?.toString() || order.total?.toString()`. Fix: cast order as `any` in the forEach or access via `(order as any).total`.
-- **`WhiteLabelSettings.tsx` (line 88):** Cast `whiteLabelConfig as any` before assigning to `white_label` field, or cast the theme color values to `string`.
+### Category 5: `ExpenseTracking.tsx` string/number mismatch (1 error)
 
-### Group 4: Fix component/state issues
+Line 371 -- passing `string | number` where `string` is expected (likely an expense ID).
 
-- **`CashRegister.tsx` (line 801):** Add missing state declaration: `const [customerDialogOpen, setCustomerDialogOpen] = useState(false);` near the other dialog state declarations.
-- **`CollectionMode.tsx` (line 952-956):** Change `SearchInput` props from `value={searchQuery} onChange={setSearchQuery}` to `defaultValue={searchQuery} onSearch={setSearchQuery}` to match the `SearchInputProps` interface.
-- **`Orders.tsx` (line 1425):** The `Order` type collision -- the local `Order` interface conflicts with an imported `Order` type. Fix by renaming the local interface to `LocalOrder` or casting `editOrder as any` when passing to `OrderEditModal`.
-- **`WholesaleOrdersPage.tsx` (lines 252, 258):** The filtered result type `(PurchaseOrder | WholesaleOrder)[]` can't be assigned to `PurchaseOrder[] | WholesaleOrder[]`. Fix by casting: `result as any` or typing the `filteredOrders` variable as `(PurchaseOrder | WholesaleOrder)[]`.
-- **`NewPurchaseOrder.tsx` (line 170):** Add missing `product_name` field to order items and remove `tenant_id` from the insert object (not in schema).
+**Fix:** Cast to `String(value)`.
 
----
+## Summary Table
 
-## Technical Summary
+| Category | Error Count | Fix |
+|----------|------------|-----|
+| Wrong Supabase cast pattern | ~15+ | `(supabase as any).from(...)` across 29 files |
+| Broken barrel exports | 3 | Delete broken export lines |
+| Missing icon prop | 4 | Make `icon` optional |
+| useInvoices `.limit()` | 1 | Cast client |
+| String/number mismatch | 1 | `String()` cast |
 
-| Category | Error Count | Fix Pattern |
-|---|---|---|
-| useUrlFilters `{}` types | ~15 | Cast filter values to `string` |
-| Untyped tables/RPCs | ~20 | `(supabase as any).from(...)` |
-| Data access type mismatches | ~10 | Cast through `unknown` or `any` |
-| Component/state issues | ~5 | Fix props, add missing state, rename types |
+## Technical Details
 
-## Estimated Files Modified
-~18 files total, all single-line or few-line fixes using the established `(supabase as any)` pattern and explicit string casts.
+### Files to modify (~32 files total):
+
+**Barrel exports (delete broken lines):**
+1. `src/components/admin/quick-view/index.ts` -- remove lines 2-3
+2. `src/pages/admin/storefront/builder/index.ts` -- remove line 10
+
+**Supabase cast fixes (change `.from('x' as any)` to `(supabase as any).from('x')`):**
+3. `src/pages/admin/CommissionTracking.tsx`
+4. `src/pages/admin/ExpenseTracking.tsx`
+5. `src/pages/admin/Notifications.tsx`
+6. `src/pages/admin/DeliveryAnalytics.tsx`
+7. `src/pages/admin/LocationAnalytics.tsx`
+8. `src/pages/admin/AuditTrail.tsx`
+9. `src/pages/admin/CustomReports.tsx`
+10. `src/pages/admin/InventoryTransfers.tsx`
+11. `src/pages/admin/PrioritySupport.tsx`
+12. `src/pages/tenant-admin/AdvancedAnalyticsPage.tsx`
+13. `src/pages/tenant-admin/settings/BusinessSettings.tsx`
+14. `src/pages/tenant-admin/marketplace/MessagesPage.tsx`
+15-32. Plus ~18 more files found in the search
+
+**Component fixes:**
+- `src/pages/admin/FinancialCommandCenter.tsx` -- make `icon` optional in `MobileSectionProps`
+- `src/hooks/crm/useInvoices.ts` -- fix `.limit()` call
+- `src/pages/admin/ExpenseTracking.tsx` line 371 -- `String()` cast
+
+**Estimated total: ~295 line-level replacements across 32 files, all mechanical find-and-replace style fixes.**
+
