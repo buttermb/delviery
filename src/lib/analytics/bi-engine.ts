@@ -50,7 +50,7 @@ export class BusinessIntelligenceEngine {
                 .eq('tenant_id', tenantId)
                 .gte('created_at', thirtyDaysAgo.toISOString());
 
-            const customerOrderCounts = (repeatCustomers || []).reduce((acc: Record<string, number>, order: any) => {
+            const customerOrderCounts = (repeatCustomers || []).reduce((acc: Record<string, number>, order) => {
                 if (order.user_id) {
                     acc[order.user_id] = (acc[order.user_id] || 0) + 1;
                 }
@@ -96,15 +96,17 @@ export class BusinessIntelligenceEngine {
 
             // Simple check - if product hasn't appeared in recent orders
             const productsSold = new Set();
-            recentOrders?.forEach((order: any) => {
-                if (order.order_data?.items) {
-                    order.order_data.items.forEach((item: any) => {
+            recentOrders?.forEach((order) => {
+                const orderData = order.order_data as Record<string, unknown> | null;
+                const items = orderData?.items as Array<{ product_id: string }> | undefined;
+                if (items) {
+                    items.forEach((item) => {
                         productsSold.add(item.product_id);
                     });
                 }
             });
 
-            products.forEach((product: any) => {
+            products.forEach((product) => {
                 if (!productsSold.has(product.id)) {
                     slowMovers.push(product);
                 }

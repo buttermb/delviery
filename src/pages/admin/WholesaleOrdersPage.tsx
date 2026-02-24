@@ -308,7 +308,7 @@ export default function WholesaleOrdersPage() {
         }
 
         const courierIds = [...new Set((ordersData || []).map(o => o.runner_id).filter(Boolean))];
-        let couriersMap: Record<string, any> = {};
+        let couriersMap: Record<string, { id: string; full_name: string; phone: string | null; vehicle_type: string | null }> = {};
 
         if (courierIds.length > 0) {
           const { data: couriersData } = await supabase
@@ -317,7 +317,7 @@ export default function WholesaleOrdersPage() {
             .in('id', courierIds);
 
           if (couriersData) {
-            couriersMap = Object.fromEntries(couriersData.map((c: any) => [c.id, c]));
+            couriersMap = Object.fromEntries(couriersData.map((c) => [c.id, c]));
           }
         }
 
@@ -541,7 +541,7 @@ export default function WholesaleOrdersPage() {
           'Created': formatSmartDate(po.created_at),
         };
       }
-    }) as any[], `wholesale-orders-${viewMode}.csv`);
+    }) as Record<string, string>[], `wholesale-orders-${viewMode}.csv`);
     // Note: filename parameter would need to be handled at the exportCSV call site
   };
 
@@ -823,9 +823,9 @@ export default function WholesaleOrdersPage() {
 
   const stats = {
     total: orders.length,
-    pending: orders.filter((o: any) => o.status === 'pending').length,
-    inTransit: orders.filter((o: any) => o.status === 'in_transit').length,
-    delivered: orders.filter((o: any) => o.status === 'delivered').length,
+    pending: orders.filter((o) => o.status === 'pending').length,
+    inTransit: orders.filter((o) => o.status === 'in_transit').length,
+    delivered: orders.filter((o) => o.status === 'delivered').length,
     totalRevenue: viewMode === 'selling'
       ? orders.reduce((sum, o) => sum + Number((o as WholesaleOrder).total_amount || 0), 0)
       : orders.reduce((sum, o) => sum + Number((o as PurchaseOrder).total || 0), 0),
@@ -1088,7 +1088,7 @@ export default function WholesaleOrdersPage() {
           <EditWholesaleOrderDialog
             open={editDialogOpen}
             onOpenChange={setEditDialogOpen}
-            order={selectedOrder as any}
+            order={selectedOrder as WholesaleOrder}
             onSuccess={handleRefresh}
           />
         )}

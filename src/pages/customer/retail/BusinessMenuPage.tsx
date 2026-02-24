@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,13 +51,13 @@ export default function BusinessMenuPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [mode, setMode] = useReactState<CustomerMode>('retail');
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const { addToGuestCart } = useGuestCart();
 
   // Load saved mode preference
   useEffect(() => {
     try {
-      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE as any) as CustomerMode | null;
+      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE) as CustomerMode | null;
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
@@ -145,14 +146,14 @@ export default function BusinessMenuPage() {
       }
 
       // Get unique categories
-      const uniqueCategories = Array.from(new Set((data || []).map((p: any) => p.category).filter(Boolean)));
+      const uniqueCategories = Array.from(new Set((data || []).map((p) => p.category).filter(Boolean)));
       return uniqueCategories;
     },
     enabled: !!businessId,
   });
 
   // Filter products by search query
-  const filteredProducts = products.filter((product: any) => {
+  const filteredProducts = products.filter((product) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -344,7 +345,7 @@ export default function BusinessMenuPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product: any) => (
+            {filteredProducts.map((product) => (
               <Card key={product.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   {product.image_url && (

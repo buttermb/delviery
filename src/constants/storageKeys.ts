@@ -128,6 +128,9 @@ export const STORAGE_KEYS = {
 
   // Form Persistence prefix
   FORM_PERSISTENCE_PREFIX: 'form_persistence_',
+
+  // Recent wholesale clients
+  RECENT_WHOLESALE_CLIENTS: 'wholesale_clients',
 } as const;
 
 /**

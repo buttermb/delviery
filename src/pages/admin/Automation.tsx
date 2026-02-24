@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Zap, Plus, Edit, Play, Loader2, AlertCircle } from 'lucide-react';
+import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { humanizeError } from '@/lib/humanizeError';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
@@ -22,9 +23,9 @@ interface AutomationRule {
   name: string;
   description?: string;
   trigger_type: string;
-  trigger_config: Record<string, any>;
+  trigger_config: Record<string, unknown>;
   action_type: string;
-  action_config: Record<string, any>;
+  action_config: Record<string, unknown>;
   enabled: boolean;
   last_run_at?: string;
   created_at: string;
@@ -53,7 +54,7 @@ export default function Automation() {
 
       try {
         const { data, error } = await supabase
-          .from('automation_rules' as any)
+          .from('automation_rules')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -64,7 +65,7 @@ export default function Automation() {
         return (data as unknown as AutomationRule[]) || [];
       } catch (error) {
         logger.error('Failed to fetch automation rules', error, { component: 'Automation' });
-        if (error instanceof Error && (error as any).code === '42P01') return [];
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -76,7 +77,7 @@ export default function Automation() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('automation_rules' as any)
+        .from('automation_rules')
         .insert({
           tenant_id: tenantId,
           name: rule.name,
@@ -113,7 +114,7 @@ export default function Automation() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('automation_rules' as any)
+        .from('automation_rules')
         .update({
           name: rule.name,
           description: rule.description || null,

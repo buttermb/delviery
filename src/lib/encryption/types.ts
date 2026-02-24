@@ -40,7 +40,7 @@ export interface EncryptedRecord {
 }
 
 export interface DecryptedRecord {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface SearchIndex {
@@ -53,8 +53,8 @@ export interface EncryptionHookResult {
   isReady: boolean;
   encrypt: (value: EncryptableValue) => string;
   decrypt: <T = string>(value: string) => T;
-  encryptObject: <T extends Record<string, any>>(obj: T) => EncryptedRecord;
-  decryptObject: <T extends Record<string, any>>(obj: EncryptedRecord) => T;
+  encryptObject: <T extends Record<string, unknown>>(obj: T) => EncryptedRecord;
+  decryptObject: <T extends Record<string, unknown>>(obj: EncryptedRecord) => T;
   createSearchHash: (value: string) => string;
   destroy: () => void;
   initialize: (password: string) => Promise<void>;

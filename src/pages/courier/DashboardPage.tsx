@@ -283,7 +283,7 @@ export default function CourierDashboardPage() {
           </CardHeader>
           <CardContent>
             <UnifiedDeliveryView
-              courierOrders={availableOrders as any}
+              courierOrders={availableOrders as unknown as React.ComponentProps<typeof UnifiedDeliveryView>['courierOrders']}
               onAcceptOrder={handleAcceptOrder}
               onCompleteDelivery={() => { }}
             />

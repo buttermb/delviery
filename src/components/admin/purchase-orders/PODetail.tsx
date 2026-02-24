@@ -76,7 +76,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
   });
 
   const { data: vendor } = useQuery({
-    queryKey: ["vendor", purchaseOrder.vendor_id],
+    queryKey: queryKeys.vendor.detail(purchaseOrder.vendor_id),
     queryFn: async () => {
       // Try vendors table first
       const { data: vendorData } = await supabase

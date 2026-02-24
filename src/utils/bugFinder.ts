@@ -17,7 +17,7 @@ export interface BugReport {
   stack?: string;
   component?: string;
   userAgent: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 export interface BugScanResult {
@@ -110,7 +110,7 @@ class BugFinder {
 
         // Check for errors
         if (!response.ok) {
-          let errorBody: any = null;
+          let errorBody: unknown = null;
           try {
             const clone = response.clone();
             errorBody = await clone.text();
@@ -165,7 +165,7 @@ class BugFinder {
   /**
    * Report a Supabase Edge Function error
    */
-  reportEdgeFunctionError(functionName: string, error: Error | string, context?: Record<string, any>) {
+  reportEdgeFunctionError(functionName: string, error: Error | string, context?: Record<string, unknown>) {
     const count = this.edgeFunctionErrors.get(functionName) || 0;
     this.edgeFunctionErrors.set(functionName, count + 1);
 
@@ -201,7 +201,7 @@ class BugFinder {
   /**
    * Report a 404 error
    */
-  report404(url: string, context?: Record<string, any>) {
+  report404(url: string, context?: Record<string, unknown>) {
     this.reportBug({
       type: '404',
       severity: 'medium',
@@ -215,7 +215,7 @@ class BugFinder {
   /**
    * Report a runtime error
    */
-  reportRuntimeError(error: Error, component?: string, context?: Record<string, any>) {
+  reportRuntimeError(error: Error, component?: string, context?: Record<string, unknown>) {
     this.reportBug({
       type: 'runtime',
       severity: 'high',
@@ -231,7 +231,7 @@ class BugFinder {
    */
   private reportBug(bug: Partial<BugReport>) {
     const bugReport: BugReport = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       ...bug,

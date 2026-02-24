@@ -134,7 +134,7 @@ export default function GenerateBarcodes() {
         for (let i = 0; i < sizes.length; i++) {
           const batchNumber = String(batch.batch_number || '');
           const productId = String(batch.product_id || '');
-          const productName = (batch.products as any)?.name || 'Unknown';
+          const productName = (batch.products as { name?: string })?.name || 'Unknown';
           const packageNumber = `PKG-${batchNumber}-${String(i + 1).padStart(3, '0')}`;
 
           // Create QR data for package
@@ -441,7 +441,7 @@ export default function GenerateBarcodes() {
                     <SelectContent>
                       {batches?.map(batch => {
                         const batchNumber = String(batch.batch_number || '');
-                        const productName = (batch.products as any)?.name || 'Unknown';
+                        const productName = (batch.products as { name?: string })?.name || 'Unknown';
                         const remainingQty = String(batch.remaining_quantity_lbs || 0);
                         return (
                           <SelectItem key={batch.id} value={batch.id}>

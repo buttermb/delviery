@@ -48,7 +48,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
             // Group orders by date and calculate daily AOV
             const dailyData = new Map<string, { total: number; count: number }>();
 
-            orders.forEach((order: any) => {
+            orders.forEach((order) => {
                 const date = new Date(order.created_at).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric'
@@ -66,7 +66,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
             }));
 
             // Calculate overall AOV and trend
-            const totalRevenue = orders.reduce((sum: number, o: any) => sum + (o.total || 0), 0);
+            const totalRevenue = orders.reduce((sum: number, o) => sum + (Number(o.total) || 0), 0);
             const currentAOV = orders.length > 0 ? totalRevenue / orders.length : 0;
 
             // Calculate trend (compare first half to second half)
@@ -74,8 +74,8 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
             if (midpoint > 0) {
                 const firstHalf = orders.slice(0, midpoint);
                 const secondHalf = orders.slice(midpoint);
-                const firstAOV = firstHalf.reduce((s: number, o: any) => s + (o.total || 0), 0) / firstHalf.length;
-                const secondAOV = secondHalf.reduce((s: number, o: any) => s + (o.total || 0), 0) / secondHalf.length;
+                const firstAOV = firstHalf.reduce((s: number, o) => s + (Number(o.total) || 0), 0) / firstHalf.length;
+                const secondAOV = secondHalf.reduce((s: number, o) => s + (Number(o.total) || 0), 0) / secondHalf.length;
                 const trend = firstAOV > 0 ? ((secondAOV - firstAOV) / firstAOV) * 100 : 0;
                 return { data: result, currentAOV: Math.round(currentAOV * 100) / 100, trend: Math.round(trend * 10) / 10 };
             }

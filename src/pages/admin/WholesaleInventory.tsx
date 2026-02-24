@@ -15,6 +15,15 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface InventoryDisplayItem {
+  id: string;
+  strain: string;
+  weight_lbs: number;
+  cost_per_lb: number;
+  value: number;
+  status: string;
+}
+
 export default function WholesaleInventory() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
@@ -44,7 +53,7 @@ export default function WholesaleInventory() {
   const warehouseMap = new Map();
 
   inventory.forEach(item => {
-    const location = (item as any).warehouse_location || "Unassigned";
+    const location = (item as unknown as Record<string, unknown>).warehouse_location as string || "Unassigned";
     if (!warehouseMap.has(location)) {
       warehouseMap.set(location, {
         id: location,
@@ -168,7 +177,7 @@ export default function WholesaleInventory() {
     return labels[status] || status;
   };
 
-  const columns = useMemo<ResponsiveColumn<any>[]>(() => [
+  const columns = useMemo<ResponsiveColumn<InventoryDisplayItem>[]>(() => [
     {
       header: "Strain",
       accessorKey: "strain",
@@ -196,7 +205,7 @@ export default function WholesaleInventory() {
     }
   ], []);
 
-  const renderMobileCard = (item: any) => (
+  const renderMobileCard = (item: InventoryDisplayItem) => (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-start">
         <span className="font-medium">{item.strain}</span>

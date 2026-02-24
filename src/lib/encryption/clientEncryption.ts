@@ -197,7 +197,7 @@ export class ClientEncryption {
    * @param obj - Object to encrypt
    * @returns Object with encrypted fields
    */
-  encryptObject<T extends Record<string, any>>(
+  encryptObject<T extends Record<string, unknown>>(
     obj: T
   ): Record<string, string> {
     const encrypted: Record<string, string> = {};
@@ -217,10 +217,10 @@ export class ClientEncryption {
    * @param encryptedObj - Object with encrypted fields
    * @returns Decrypted object
    */
-  decryptObject<T extends Record<string, any>>(
-    encryptedObj: Record<string, any>
+  decryptObject<T extends Record<string, unknown>>(
+    encryptedObj: Record<string, unknown>
   ): T {
-    const decrypted: Record<string, any> = {};
+    const decrypted: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(encryptedObj)) {
       if (key.endsWith('_encrypted')) {

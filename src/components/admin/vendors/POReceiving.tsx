@@ -282,6 +282,13 @@ export function POReceiving({
             .eq('tenant_id', tenant.id)
             .maybeSingle();
 
+          if (productError) {
+            logger.error('Failed to fetch product for stock update', productError, {
+              component: 'POReceiving',
+              productId,
+            });
+          }
+
           if (product && !productError) {
             const previousQuantity = product.stock_quantity || 0;
             const newQuantity = previousQuantity + receivedQty;

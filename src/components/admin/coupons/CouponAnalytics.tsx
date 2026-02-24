@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { logger } from '@/lib/logger';
 import {
@@ -24,7 +25,7 @@ export function CouponAnalytics({ open, onOpenChange, coupons }: CouponAnalytics
   const { tenant } = useTenantAdminAuth();
 
   const { data: usageStats, isLoading } = useQuery({
-    queryKey: ["coupon-analytics", tenant?.id],
+    queryKey: queryKeys.couponAnalyticsData.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return null;
 

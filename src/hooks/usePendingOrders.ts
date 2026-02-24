@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 export interface PendingOrder {
     id: string;
     customer_id: string;
-    items: any[];
+    items: Record<string, unknown>[];
     total_amount: number;
     status: string;
     created_at: string;
@@ -76,7 +76,7 @@ export function usePendingOrders(tenantId?: string) {
 
             if (error) throw error;
 
-            setOrders((data || []) as any);
+            setOrders((data || []) as unknown as PendingOrder[]);
         } catch (error) {
             logger.error('Error loading pending orders', error);
         } finally {

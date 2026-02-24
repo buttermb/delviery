@@ -120,7 +120,7 @@ export default function OrdersPage() {
         const query = searchQuery.toLowerCase();
         return (
             order.order_number?.toLowerCase().includes(query) ||
-            (order as any).buyer_business_name?.toLowerCase().includes(query) ||
+            (order as unknown as Record<string, unknown>).buyer_business_name?.toLowerCase().includes(query) ||
             order.tracking_number?.toLowerCase().includes(query)
         );
     });
@@ -129,7 +129,7 @@ export default function OrdersPage() {
     const updateStatusMutation = useMutation({
         mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
             if (!tenantId) throw new Error('No tenant');
-            const updateData: any = { status: newStatus };
+            const updateData: Record<string, unknown> = { status: newStatus };
 
             // Set timestamps based on status
             if (newStatus === 'shipped') {
@@ -401,7 +401,7 @@ export default function OrdersPage() {
                                     {filteredOrders.map((order) => (
                                         <TableRow key={order.id}>
                                             <TableCell className="font-medium">{order.order_number}</TableCell>
-                                            <TableCell>{(order as any).buyer_business_name || 'Guest'}</TableCell>
+                                            <TableCell>{(order as unknown as Record<string, unknown>).buyer_business_name || 'Guest'}</TableCell>
                                             <TableCell>
                                                 {Array.isArray(order.marketplace_order_items)
                                                     ? order.marketplace_order_items.length

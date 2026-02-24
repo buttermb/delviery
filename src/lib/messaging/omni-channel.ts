@@ -12,7 +12,7 @@ export interface Message {
     subject?: string;
     body: string;
     templateId?: string;
-    data?: any;
+    data?: Record<string, unknown>;
 }
 
 export class OmniChannelMessenger {

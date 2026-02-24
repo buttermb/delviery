@@ -117,8 +117,8 @@ export function BulkCreditCalculator({
   }, [actionKey, itemCount, itemBreakdown, perItemCost, actionInfo]);
 
   // Check if this action requires minimum balance (full coverage)
-  const requiresFullBalance = MIN_BALANCE_REQUIREMENTS.require_full_balance.includes(
-    actionKey as any
+  const requiresFullBalance = (MIN_BALANCE_REQUIREMENTS.require_full_balance as ReadonlyArray<string>).includes(
+    actionKey
   );
 
   // Calculate required balance (with buffer for high-cost actions)

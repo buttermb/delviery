@@ -317,7 +317,7 @@ export default function PointOfSale() {
               payment_status: 'completed',
               status: 'completed',
               notes: selectedCustomer ? `Customer: ${selectedCustomer.first_name} ${selectedCustomer.last_name}` : 'Walk-in customer'
-            } as any)
+            })
             .select()
             .maybeSingle();
 
@@ -457,7 +457,7 @@ export default function PointOfSale() {
       }));
 
       await orderFlowManager.transitionOrderStatus(order.id, 'in_pos', tenantId!);
-      setCart(cartItems as any);
+      setCart(cartItems as CartItem[]);
       if (order.customer_id) {
         const customer = customers.find(c => c.id === order.customer_id);
         if (customer) setSelectedCustomer(customer);

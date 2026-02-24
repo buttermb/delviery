@@ -40,7 +40,32 @@ export interface RedeemPromoResult {
   error?: string;
 }
 
+// DB row shapes for tables not in auto-generated types
+interface PromoCodeRow {
+  id: string;
+  code: string;
+  credits_amount: number;
+  max_uses: number | null;
+  uses_count: number;
+  is_active: boolean;
+  valid_from: string;
+  valid_until: string | null;
+  description: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+interface PromoRedemptionRow {
+  id: string;
+  promo_code_id: string;
+  tenant_id: string;
+  credits_granted: number;
+  redeemed_at: string;
+  promo_codes?: { code: string };
+}
+
 // Use `supabase as any` for tables not in auto-generated types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = supabase as any;
 
 // ============================================================================
@@ -174,7 +199,7 @@ export async function getTenantPromoRedemptions(
       return [];
     }
 
-    return (data as any[]).map((d: any) => ({
+    return (data as PromoRedemptionRow[]).map((d) => ({
       id: d.id,
       promoCodeId: d.promo_code_id,
       tenantId: d.tenant_id,
@@ -266,7 +291,7 @@ export async function getAllPromoCodes(): Promise<PromoCode[]> {
       return [];
     }
 
-    return (data as any[]).map(mapDbToPromoCode);
+    return (data as PromoCodeRow[]).map(mapDbToPromoCode);
   } catch (error) {
     logger.error('Error getting all promo codes', { error });
     return [];
@@ -297,12 +322,13 @@ export async function getPromoCodeStats(promoCodeId: string): Promise<{
       };
     }
 
-    const totalCreditsGranted = (data as any[]).reduce((sum: number, r: any) => sum + r.credits_granted, 0);
+    const rows = data as PromoRedemptionRow[];
+    const totalCreditsGranted = rows.reduce((sum, r) => sum + r.credits_granted, 0);
 
     return {
-      totalRedemptions: data.length,
+      totalRedemptions: rows.length,
       totalCreditsGranted,
-      recentRedemptions: (data as any[]).map((d: any) => ({
+      recentRedemptions: rows.map((d) => ({
         id: d.id,
         promoCodeId: d.promo_code_id,
         tenantId: d.tenant_id,
@@ -324,18 +350,18 @@ export async function getPromoCodeStats(promoCodeId: string): Promise<{
 // Helper Functions
 // ============================================================================
 
-function mapDbToPromoCode(data: Record<string, unknown>): PromoCode {
+function mapDbToPromoCode(data: PromoCodeRow): PromoCode {
   return {
-    id: data.id as string,
-    code: data.code as string,
-    creditsAmount: data.credits_amount as number,
-    maxUses: data.max_uses as number | undefined,
-    usesCount: data.uses_count as number,
-    isActive: data.is_active as boolean,
-    validFrom: new Date(data.valid_from as string),
-    validUntil: data.valid_until ? new Date(data.valid_until as string) : undefined,
-    description: data.description as string | undefined,
-    createdBy: data.created_by as string | undefined,
-    createdAt: new Date(data.created_at as string),
+    id: data.id,
+    code: data.code,
+    creditsAmount: data.credits_amount,
+    maxUses: data.max_uses ?? undefined,
+    usesCount: data.uses_count,
+    isActive: data.is_active,
+    validFrom: new Date(data.valid_from),
+    validUntil: data.valid_until ? new Date(data.valid_until) : undefined,
+    description: data.description ?? undefined,
+    createdBy: data.created_by ?? undefined,
+    createdAt: new Date(data.created_at),
   };
 }

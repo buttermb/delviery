@@ -129,6 +129,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
 
     const channel = supabase
       .channel(`menu-dashboard-analytics-${tenantId}`)
+      // Note: menu_access_logs lacks tenant_id column; filtered via RLS on menu_id FK
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',

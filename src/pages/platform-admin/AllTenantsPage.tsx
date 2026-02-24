@@ -97,7 +97,7 @@ export default function AllTenantsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {tenants.map((tenant: any) => (
+                        {tenants.map((tenant) => (
                             <TableRow key={tenant.id}>
                                 <TableCell className="font-medium">{tenant.business_name}</TableCell>
                                 <TableCell className="font-mono text-xs">{tenant.slug}</TableCell>

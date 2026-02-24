@@ -274,7 +274,7 @@ export function useGracePeriod(): UseGracePeriodReturn {
     if (isGraceExpired) return false;
     
     // Check if action is blocked during grace
-    if (GRACE_PERIOD.BLOCKED_ACTIONS.includes(actionKey as any)) return false;
+    if ((GRACE_PERIOD.BLOCKED_ACTIONS as ReadonlyArray<string>).includes(actionKey)) return false;
     
     // Check actions remaining
     return actionsRemaining > 0;

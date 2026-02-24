@@ -18,6 +18,8 @@ import {
   ArrowRight,
   Package
 } from "lucide-react";
+import type { User } from "@supabase/supabase-js";
+import type { RenderCartItem } from "@/types/cart";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { useGuestCart } from "@/hooks/useGuestCart";
@@ -25,6 +27,7 @@ import { toast } from "sonner";
 import { validateRouteUUID as _validateRouteUUID } from "@/lib/utils/uuidValidation";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
+import { queryKeys } from "@/lib/queryKeys";
 
 export default function ShoppingCartPage() {
   const navigate = useNavigate();
@@ -33,7 +36,7 @@ export default function ShoppingCartPage() {
   const tenantId = tenant?.id;
   const { guestCart, updateGuestCartItem, removeFromGuestCart } = useGuestCart();
   const [orderNotes, setOrderNotes] = useState("");
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   // Get current user session
   useEffect(() => {
@@ -44,7 +47,7 @@ export default function ShoppingCartPage() {
 
   // Fetch cart items from database (authenticated users)
   const { data: dbCartItems = [], isLoading: dbLoading } = useQuery({
-    queryKey: ["cart", user?.id, tenantId],
+    queryKey: queryKeys.cart.user(user?.id, tenantId),
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
@@ -59,7 +62,7 @@ export default function ShoppingCartPage() {
 
   // Fetch product details for guest cart items
   const { data: guestProducts = [], isLoading: guestLoading } = useQuery({
-    queryKey: ["guest-cart-products", guestCart.map(i => i.product_id).sort().join(",")],
+    queryKey: queryKeys.guestCartProducts.byIds(guestCart.map(i => i.product_id).sort().join(",")),
     queryFn: async () => {
       if (guestCart.length === 0) return [];
       const productIds = guestCart.map(item => item.product_id);
@@ -84,13 +87,13 @@ export default function ShoppingCartPage() {
         products: product
       };
     })
-    .filter(item => item !== null) as any[];
+    .filter((item): item is NonNullable<typeof item> => item !== null);
 
   const cartItems = user ? dbCartItems : guestCartItems;
   const isLoading = (user && dbLoading) || (!user && guestLoading);
 
   // Calculate item price
-  const getItemPrice = (item: any) => {
+  const getItemPrice = (item: RenderCartItem) => {
     const product = item?.products;
     if (!product) return 0;
     
@@ -130,7 +133,7 @@ export default function ShoppingCartPage() {
           .update({ quantity })
           .eq("id", itemId)
           .then(() => {
-            queryClient.invalidateQueries({ queryKey: ["cart", user.id, tenantId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.cart.user(user.id, tenantId) });
           });
       }
     } else {
@@ -149,7 +152,7 @@ export default function ShoppingCartPage() {
           .delete()
           .eq("id", item.id)
           .then(() => {
-            queryClient.invalidateQueries({ queryKey: ["cart", user.id, tenantId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.cart.user(user.id, tenantId) });
             toast.success("Item removed");
           });
       }
@@ -238,7 +241,7 @@ export default function ShoppingCartPage() {
             {/* LEFT: Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               {/* Cart Items List */}
-              {cartItems.map((item: any) => {
+              {(cartItems as RenderCartItem[]).map((item) => {
                 const product = item.products;
                 const price = getItemPrice(item);
                 const selectedWeight = item.selected_weight || "unit";

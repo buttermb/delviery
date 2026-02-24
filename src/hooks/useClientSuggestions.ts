@@ -113,7 +113,7 @@ export function useClientSuggestions() {
   const suggestions = useMemo((): ClientSuggestion[] => {
     const suggestions: ClientSuggestion[] = [];
 
-    clientsWithHistory.forEach((client: any) => {
+    clientsWithHistory.forEach((client) => {
       // Recurring order pattern - due for reorder
       if (client.order_frequency_days && client.days_since_last_order !== undefined) {
         const daysOverdue = client.days_since_last_order - client.order_frequency_days;

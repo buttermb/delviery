@@ -62,7 +62,7 @@ export function useUnifiedEarnings(
 
         if (error) throw error;
 
-        courierEarnings?.forEach((e: any) => {
+        courierEarnings?.forEach((e) => {
           earnings.push({
             id: e.id,
             order_number: e.orders?.order_number || 'N/A',
@@ -93,7 +93,7 @@ export function useUnifiedEarnings(
 
         if (error) throw error;
 
-        runnerDeliveries?.forEach((d: any) => {
+        runnerDeliveries?.forEach((d) => {
           earnings.push({
             id: d.id,
             order_number: d.order?.order_number || 'N/A',

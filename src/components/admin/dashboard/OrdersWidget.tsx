@@ -135,7 +135,7 @@ export function OrdersWidget() {
       if (error) throw error;
 
       // Map orders to expected format
-      return (ordersData || []).map((order: any) => ({
+      return (ordersData || []).map((order) => ({
         id: order.id,
         order_number: order.order_number,
         total_amount: order.total_amount,

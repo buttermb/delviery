@@ -31,6 +31,7 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { humanizeError } from '@/lib/humanizeError';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface LoyaltyConfig {
   program_name?: string;
@@ -121,7 +122,7 @@ export default function LoyaltyProgramPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["loyalty-config"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loyaltyProgram.allConfig });
       toast.success('Program configuration saved');
       setIsConfigOpen(false);
     },
@@ -134,12 +135,12 @@ export default function LoyaltyProgramPage() {
     mutationFn: async (data: Partial<LoyaltyTier>) => {
       const { error } = await supabase
         .from("loyalty_tiers")
-        .upsert({ ...data, tenant_id: tenant?.id } as any)
+        .upsert({ ...data, tenant_id: tenant?.id })
         .select();
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["loyalty-tiers"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loyaltyProgram.allTiers });
       toast.success('Tier saved successfully');
       setTierForm({ name: "", color: "#000000", multiplier: 1, min_points: 0, benefits: [] });
       setEditingTier(null);
@@ -154,12 +155,12 @@ export default function LoyaltyProgramPage() {
     mutationFn: async (data: Partial<LoyaltyReward>) => {
       const { error } = await supabase
         .from("loyalty_rewards")
-        .upsert({ ...data, tenant_id: tenant?.id } as any)
+        .upsert({ ...data, tenant_id: tenant?.id })
         .select();
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["loyalty-rewards"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loyaltyProgram.allRewards });
       toast.success('Reward saved successfully');
       setRewardForm({ reward_name: "", reward_description: "", points_required: 100, reward_type: "discount", is_active: true });
       setEditingReward(null);
@@ -176,7 +177,7 @@ export default function LoyaltyProgramPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["loyalty-tiers"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loyaltyProgram.allTiers });
       toast.success('Tier deleted');
     },
     onError: (error) => {
@@ -190,11 +191,11 @@ export default function LoyaltyProgramPage() {
 
   const deleteRewardMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase.from("loyalty_rewards") as any).delete().eq("id", id).eq("tenant_id", tenant?.id);
+      const { error } = await supabase.from("loyalty_rewards").delete().eq("id", id).eq("tenant_id", tenant?.id);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["loyalty-rewards"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.loyaltyProgram.allRewards });
       toast.success('Reward deleted');
     },
     onError: (error) => {
@@ -236,7 +237,7 @@ export default function LoyaltyProgramPage() {
 
   // Fetch loyalty config
   const { data: config } = useQuery({
-    queryKey: ["loyalty-config", tenant?.id],
+    queryKey: queryKeys.loyaltyProgram.config(tenant?.id),
     queryFn: async (): Promise<LoyaltyConfig | null> => {
       const { data, error } = await supabase
         .from("loyalty_program_config")
@@ -255,7 +256,7 @@ export default function LoyaltyProgramPage() {
 
   // Fetch loyalty tiers
   const { data: tiers } = useQuery({
-    queryKey: ["loyalty-tiers", tenant?.id],
+    queryKey: queryKeys.loyaltyProgram.tiers(tenant?.id),
     queryFn: async (): Promise<LoyaltyTier[]> => {
       const { data, error } = await supabase
         .from("loyalty_tiers")
@@ -274,10 +275,10 @@ export default function LoyaltyProgramPage() {
 
   // Fetch loyalty rewards
   const { data: rewards } = useQuery<LoyaltyReward[]>({
-    queryKey: ["loyalty-rewards", tenant?.id],
+    queryKey: queryKeys.loyaltyProgram.rewards(tenant?.id),
     queryFn: async () => {
-      const { data, error } = await (supabase
-        .from("loyalty_rewards") as any)
+      const { data, error } = await supabase
+        .from("loyalty_rewards")
         .select("*")
         .eq("tenant_id", tenant?.id)
         .order("points_required");
@@ -286,14 +287,14 @@ export default function LoyaltyProgramPage() {
         logger.error("Failed to fetch loyalty rewards", error, { component: "LoyaltyProgramPage" });
       }
 
-      return (data as any) || [];
+      return (data as unknown as LoyaltyReward[]) || [];
     },
     enabled: !!tenant?.id,
   });
 
   // Fetch loyalty stats
   const { data: stats } = useQuery({
-    queryKey: ["loyalty-stats", tenant?.id],
+    queryKey: queryKeys.loyaltyProgram.stats(tenant?.id),
     queryFn: async () => {
       try {
         const { data: pointsData } = await supabase

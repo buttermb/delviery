@@ -16,6 +16,19 @@ import { TruncatedText } from '@/components/shared/TruncatedText';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface OrderWithItems {
+  total_amount: number | null;
+  total?: number | null;
+  status: string | null;
+  created_at: string | null;
+  order_items?: Array<{
+    product_name: string | null;
+    quantity: number | null;
+    price: number | null;
+  }>;
+  [key: string]: unknown;
+}
+
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 export default function RevenueReports() {
@@ -26,11 +39,13 @@ export default function RevenueReports() {
 
   // Realtime Subscription for Revenue Updates
   useEffect(() => {
+    if (!tenantId) return;
+
     const channel = supabase
-      .channel('revenue-reports-updates')
+      .channel(`revenue-reports-updates-${tenantId}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
+        { event: '*', schema: 'public', table: 'orders', filter: `tenant_id=eq.${tenantId}` },
         () => queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.revenueReports() })
       )
       .subscribe((status) => {
@@ -40,7 +55,7 @@ export default function RevenueReports() {
       });
 
     return () => { supabase.removeChannel(channel); };
-  }, [queryClient]);
+  }, [queryClient, tenantId]);
 
   const { data: rawOrders, isLoading } = useQuery({
     queryKey: queryKeys.revenueReports.byTenant(tenantId, dateRange),
@@ -73,11 +88,11 @@ export default function RevenueReports() {
       try {
         const { data, error } = await query;
         if (error) throw error;
-        return data || [];
+        return (data || []) as unknown as OrderWithItems[];
       } catch (error) {
-        if (isPostgrestError(error) && error.code === '42P01') return [];
+        if (isPostgrestError(error) && error.code === '42P01') return [] as OrderWithItems[];
         logger.error("Failed to fetch orders", error);
-        return [];
+        return [] as OrderWithItems[];
       }
     },
     enabled: !!tenantId,
@@ -96,7 +111,7 @@ export default function RevenueReports() {
     const revenueByDate: Record<string, { date: string; revenue: number; orders: number }> = {};
 
     rawOrders.forEach(order => {
-      const orderTotal = parseFloat(order.total_amount?.toString() || (order as any).total?.toString() || '0');
+      const orderTotal = parseFloat(order.total_amount?.toString() || order.total?.toString() || '0');
       const status = order.status || 'unknown';
 
       // Status counts include all orders
@@ -119,8 +134,8 @@ export default function RevenueReports() {
       }
 
       // Products - count all orders for product analytics
-      if ((order as any).order_items && Array.isArray((order as any).order_items)) {
-        (order as any).order_items.forEach((item: any) => {
+      if (order.order_items && Array.isArray(order.order_items)) {
+        order.order_items.forEach((item) => {
           const name = item.product_name || 'Unknown Product';
           productSales[name] = (productSales[name] || 0) + (item.quantity || 0);
         });

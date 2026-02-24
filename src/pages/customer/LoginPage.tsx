@@ -88,7 +88,9 @@ export default function CustomerLoginPage() {
           .eq("slug", tenantSlug)
           .maybeSingle();
 
-        if (data && !error) {
+        if (error) {
+          logger.error('Failed to fetch tenant', error, { component: 'CustomerLoginPage', tenantSlug });
+        } else if (data) {
           setTenant(data);
         }
         setTenantLoading(false);

@@ -150,7 +150,7 @@ export default function PurchaseOrderDetailPage() {
     };
 
     const seller = order.marketplace_profiles;
-    const shippingAddress = order.shipping_address as any || {};
+    const shippingAddress = (order.shipping_address as Record<string, string> | null) || {};
 
     return (
         <div className="space-y-6 container mx-auto py-6">
@@ -224,7 +224,7 @@ export default function PurchaseOrderDetailPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {order.marketplace_order_items.map((item: any) => (
+                                    {order.marketplace_order_items.map((item) => (
                                         <TableRow key={item.id}>
                                             <TableCell>
                                                 <div className="font-medium">{item.product_name}</div>

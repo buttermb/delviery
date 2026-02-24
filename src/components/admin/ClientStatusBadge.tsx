@@ -67,7 +67,7 @@ export function ClientStatusBadge({
     }
 
     // Account Status
-    const config: Record<string, { label: string; color: string; icon: any }> = {
+    const config: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
         active: {
             label: 'Active',
             color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',

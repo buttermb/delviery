@@ -194,9 +194,10 @@ export function initializeGlobalButtonMonitoring() {
 
   // Expose to window for console access (development only)
   if (import.meta.env.DEV && typeof window !== 'undefined') {
-    (window as any).buttonMonitor = buttonMonitor;
-    (window as any).getButtonHealth = () => buttonMonitor.getHealthReport();
-    (window as any).getBrokenButtons = (threshold = 0.3) => buttonMonitor.getBrokenButtons(threshold);
+    const devWindow = window as unknown as Record<string, unknown>;
+    devWindow.buttonMonitor = buttonMonitor;
+    devWindow.getButtonHealth = () => buttonMonitor.getHealthReport();
+    devWindow.getBrokenButtons = (threshold = 0.3) => buttonMonitor.getBrokenButtons(threshold);
     logger.debug('🔍 Button Monitor available in console: window.buttonMonitor');
   }
 

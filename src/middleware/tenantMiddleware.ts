@@ -9,7 +9,7 @@ import { apiFetch } from "@/lib/utils/apiClient";
 export interface TenantContext {
   tenantSlug: string;
   tenantId: string;
-  tenant: any;
+  tenant: Record<string, unknown>;
 }
 
 /**
@@ -74,7 +74,7 @@ export function getTenantSlugFromLocation(): string | null {
  * Validate tenant exists and is active
  * This should be called from an API endpoint or Edge Function
  */
-export async function validateTenant(tenantSlug: string): Promise<{ valid: boolean; tenant?: any; error?: string }> {
+export async function validateTenant(tenantSlug: string): Promise<{ valid: boolean; tenant?: Record<string, unknown>; error?: string }> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const response = await apiFetch(`${supabaseUrl}/functions/v1/validate-tenant`, {

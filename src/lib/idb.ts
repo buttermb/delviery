@@ -18,7 +18,7 @@ interface FloraIQDB extends DBSchema {
         key: string;
         value: {
             id: string;
-            data: any; // Encrypted data or plain object
+            data: unknown; // Encrypted data or plain object
             encrypted: boolean;
             createdAt: number;
             synced: boolean;
@@ -29,7 +29,7 @@ interface FloraIQDB extends DBSchema {
         value: {
             url: string;
             method: string;
-            body: any;
+            body: unknown;
             timestamp: number;
             retryCount: number;
         };
@@ -75,13 +75,13 @@ export const db = {
         const db = await initDB();
         return db.getAll('products');
     },
-    async saveProduct(product: any) {
+    async saveProduct(product: FloraIQDB['products']['value']) {
         const db = await initDB();
         return db.put('products', product);
     },
 
     // Secure Order Methods
-    async saveOrder(order: any) {
+    async saveOrder(order: Record<string, unknown> & { id: string; createdAt?: number }) {
         const db = await initDB();
         let dataToStore = order;
         let isEncrypted = false;

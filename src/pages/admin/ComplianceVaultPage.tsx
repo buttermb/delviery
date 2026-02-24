@@ -154,7 +154,7 @@ export default function ComplianceVaultPage() {
         <TabsContent value={activeTab} className="space-y-4">
           {selectedDocument ? (
             <DocumentDetail
-              document={selectedDocument as any}
+              document={selectedDocument as unknown as Parameters<typeof DocumentDetail>[0]['document']}
               onBack={() => setSelectedDocument(null)}
               onUpdate={() => {
                 queryClient.invalidateQueries({ queryKey: queryKeys.compliance.documents() });
@@ -165,7 +165,7 @@ export default function ComplianceVaultPage() {
             <DocumentList
               documents={filteredDocuments}
               isLoading={isLoading}
-              onSelect={(doc) => setSelectedDocument(doc as any)}
+              onSelect={(doc) => setSelectedDocument(doc as unknown as ComplianceDocument)}
             />
           )}
         </TabsContent>

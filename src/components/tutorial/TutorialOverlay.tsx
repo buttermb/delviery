@@ -6,6 +6,9 @@ import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getFocusableElements } from '@/hooks/useKeyboardNavigation';
 
+// Dev-only flag to prevent duplicate tutorial warnings
+let tutorialWarned = false;
+
 export interface TutorialStep {
   id: string;
   target: string; // CSS selector or data-tutorial attribute
@@ -144,11 +147,11 @@ export function TutorialOverlay({
           left: window.innerWidth / 2 - 160,
         });
         // Log warning for debugging (only in dev, and only once per step)
-        if (process.env.NODE_ENV === 'development' && !(window as any).__tutorialWarned) {
+        if (process.env.NODE_ENV === 'development' && !tutorialWarned) {
           logger.warn(`Tutorial target not found: ${currentStepData.target}. Centering content.`, { component: 'TutorialOverlay', step: currentStepData.id });
-          (window as any).__tutorialWarned = true;
+          tutorialWarned = true;
           setTimeout(() => {
-            (window as any).__tutorialWarned = false;
+            tutorialWarned = false;
           }, 1000);
         }
       }
@@ -193,8 +196,9 @@ export function TutorialOverlay({
 
     // Only use MutationObserver if target not found initially (much more efficient)
     let observer: MutationObserver | null = null;
+    let observerCleanupTimeout: NodeJS.Timeout | null = null;
     const target = findTarget();
-    
+
     if (!target && retryCountRef.current < MAX_RETRIES) {
       // Only observe if we need to wait for the element to appear
       observer = new MutationObserver(() => {
@@ -230,15 +234,12 @@ export function TutorialOverlay({
       });
 
       // Stop observing after 5 seconds to prevent infinite watching
-      const observerTimeout = setTimeout(() => {
+      observerCleanupTimeout = setTimeout(() => {
         if (observer) {
           observer.disconnect();
           observer = null;
         }
       }, 5000);
-
-      // Store timeout for cleanup
-      (observer as any)._timeout = observerTimeout;
     }
 
     return () => {
@@ -250,10 +251,9 @@ export function TutorialOverlay({
       window.removeEventListener('resize', handleResize);
       if (observer) {
         observer.disconnect();
-        // Clear observer timeout if it exists
-        if ((observer as any)._timeout) {
-          clearTimeout((observer as any)._timeout);
-        }
+      }
+      if (observerCleanupTimeout) {
+        clearTimeout(observerCleanupTimeout);
       }
       // Reset retry count on cleanup
       retryCountRef.current = 0;

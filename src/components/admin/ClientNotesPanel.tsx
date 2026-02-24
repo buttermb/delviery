@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +38,7 @@ export function ClientNotesPanel({ clientId }: ClientNotesPanelProps) {
 
   // Fetch notes
   const { data: notes = [], isLoading } = useQuery({
-    queryKey: ["client-notes", clientId],
+    queryKey: queryKeys.clientNotes.byClient(clientId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wholesale_client_notes")
@@ -68,7 +69,7 @@ export function ClientNotesPanel({ clientId }: ClientNotesPanelProps) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["client-notes", clientId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientNotes.byClient(clientId) });
       setNewNote("");
       setNoteType("general");
       setIsAdding(false);

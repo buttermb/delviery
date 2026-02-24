@@ -92,7 +92,7 @@ export default function OrderDetailPage() {
     // Update order status
     const updateStatusMutation = useMutation({
         mutationFn: async ({ newStatus, trackingNum }: { newStatus: string; trackingNum?: string }) => {
-            const updateData: any = { status: newStatus };
+            const updateData: Record<string, unknown> = { status: newStatus };
 
             if (newStatus === 'shipped' && trackingNum) {
                 updateData.tracking_number = trackingNum;
@@ -354,7 +354,7 @@ export default function OrderDetailPage() {
                                         <DialogHeader>
                                             <DialogTitle>Message Buyer</DialogTitle>
                                             <DialogDescription>
-                                                Send a message to {(order as any).buyer_tenant?.business_name || 'Buyer'} about Order #{order.order_number}.
+                                                Send a message to {(order as unknown as Record<string, unknown>).buyer_tenant?.business_name || 'Buyer'} about Order #{order.order_number}.
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="space-y-4 py-4">
@@ -394,7 +394,7 @@ export default function OrderDetailPage() {
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        orderItems.map((item: any) => (
+                                        orderItems.map((item) => (
                                             <TableRow key={item.id}>
                                                 <TableCell className="font-medium">{item.product_name}</TableCell>
                                                 <TableCell>{item.quantity} {item.unit_type || 'unit'}</TableCell>
@@ -561,10 +561,10 @@ export default function OrderDetailPage() {
                                 <Label className="text-xs text-muted-foreground mb-1">Payment Terms</Label>
                                 <div className="text-sm">{order.payment_terms || 'Prepaid'}</div>
                             </div>
-                            {(order as any).paid_at && (
+                            {(order as unknown as Record<string, unknown>).paid_at && (
                                 <div>
                                     <Label className="text-xs text-muted-foreground mb-1">Paid At</Label>
-                                    <div className="text-sm">{formatSmartDate((order as any).paid_at as string)}</div>
+                                    <div className="text-sm">{formatSmartDate((order as unknown as Record<string, unknown>).paid_at as string)}</div>
                                 </div>
                             )}
                             {order.payment_status !== 'paid' && (
@@ -689,7 +689,7 @@ export default function OrderDetailPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-sm">
-                                <div className="font-medium mb-1">{(order as any).buyer_business_name || 'Guest/Unknown'}</div>
+                                <div className="font-medium mb-1">{(order as unknown as Record<string, unknown>).buyer_business_name || 'Guest/Unknown'}</div>
                                 <div className="text-muted-foreground">Order #{order.order_number}</div>
                             </div>
                         </CardContent>

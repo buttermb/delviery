@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { X, ToggleLeft, ToggleRight, Trash2, Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
@@ -31,7 +32,7 @@ export function BulkActions({
       if (error) throw error;
     },
     onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ["admin-products"] });
+      await queryClient.refetchQueries({ queryKey: queryKeys.adminProducts.all });
       onClearSelection();
     },
     onError: (error: unknown) => {
@@ -50,7 +51,7 @@ export function BulkActions({
       if (error) throw error;
     },
     onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ["admin-products"] });
+      await queryClient.refetchQueries({ queryKey: queryKeys.adminProducts.all });
       toast.success(`${selectedCount} ${selectedCount === 1 ? 'product' : 'products'} deleted`);
       onClearSelection();
     },

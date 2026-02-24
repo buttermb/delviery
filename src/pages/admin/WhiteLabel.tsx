@@ -50,20 +50,21 @@ export default function WhiteLabel() {
   // Initialize form data when branding data loads
   useEffect(() => {
     if (branding && typeof branding === 'object' && !Array.isArray(branding)) {
-      const data = branding as any;
+      const data = branding as Record<string, unknown>;
+      const theme = (data.theme && typeof data.theme === 'object' ? data.theme : {}) as Record<string, unknown>;
       setFormData({
-        brand_name: data.brand_name || '',
-        logo_url: data.logo || data.logo_url || '',
-        primary_color: data.theme?.primaryColor || data.primary_color || '#000000',
-        secondary_color: data.theme?.secondaryColor || data.secondary_color || '#ffffff',
-        custom_css: data.theme?.customCSS || data.custom_css || '',
-        enabled: data.enabled || false,
+        brand_name: (data.brand_name as string) || '',
+        logo_url: (data.logo as string) || (data.logo_url as string) || '',
+        primary_color: (theme.primaryColor as string) || (data.primary_color as string) || '#000000',
+        secondary_color: (theme.secondaryColor as string) || (data.secondary_color as string) || '#ffffff',
+        custom_css: (theme.customCSS as string) || (data.custom_css as string) || '',
+        enabled: Boolean(data.enabled),
       });
     }
   }, [branding]);
 
   const updateBrandingMutation = useMutation({
-    mutationFn: async (brandingData: any) => {
+    mutationFn: async (brandingData: typeof formData) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
       // Structure the JSONB data according to the schema

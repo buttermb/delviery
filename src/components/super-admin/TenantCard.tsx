@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate } from "@/lib/utils/formatDate";
-import { calculateHealthScore } from "@/lib/tenant";
+import { calculateHealthScore, type Tenant as LibTenant } from "@/lib/tenant";
 import { getStatusColor, getHealthTextColor, getStatusVariant } from "@/lib/utils/statusColors";
 import {
   DropdownMenu,
@@ -40,7 +40,7 @@ export const TenantCard = memo(function TenantCard({
   onLoginAs,
   onViewBilling 
 }: TenantCardProps) {
-  const health = calculateHealthScore(tenant as any);
+  const health = calculateHealthScore(tenant as unknown as LibTenant);
   const healthScore = health.score;
   const healthColor = getHealthTextColor(healthScore);
   

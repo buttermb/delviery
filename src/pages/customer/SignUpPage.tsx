@@ -113,7 +113,9 @@ export default function CustomerSignUpPage() {
           .eq("slug", tenantSlug)
           .maybeSingle();
 
-        if (data && !error) {
+        if (error) {
+          logger.error('Failed to fetch tenant', error, { component: 'CustomerSignUpPage', tenantSlug });
+        } else if (data) {
           setTenant(data as unknown as Tenant);
         }
         setTenantLoading(false);

@@ -83,6 +83,13 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
         .eq('status', 'active')
         .order('current_quantity', { ascending: true });
 
+      if (alertError) {
+        logger.warn('stock_alerts query failed, falling back to products', {
+          component: 'useLowStockAlerts',
+          error: alertError,
+        });
+      }
+
       // If stock_alerts table exists and has data, use it
       if (!alertError && alerts && alerts.length > 0) {
         return (alerts as StockAlertRow[]).map((alert) => {

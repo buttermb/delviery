@@ -6,6 +6,7 @@ import { Search, Package, ArrowRight, Users, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Badge } from "@/components/ui/badge";
 import { formatSmartDate } from '@/lib/formatters';
@@ -23,7 +24,7 @@ export function TraceabilityView({
   const { tenant } = useTenantAdminAuth();
 
   const { data: traceData, refetch } = useQuery({
-    queryKey: ["traceability", batchId, tenant?.id],
+    queryKey: queryKeys.traceability.byBatch(batchId, tenant?.id),
     queryFn: async () => {
       if (!batchId) return null;
 

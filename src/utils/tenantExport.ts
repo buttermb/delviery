@@ -3,7 +3,7 @@
  * Functions to export tenant data to various formats
  */
 
-export function exportTenantsToCSV(tenants: any[]) {
+export function exportTenantsToCSV(tenants: Array<Record<string, unknown>>) {
   const headers = ['Business Name', 'Owner Email', 'Plan', 'Status', 'MRR', 'Created At'];
   const rows = tenants.map(t => [
     t.business_name,
@@ -28,7 +28,7 @@ export function exportTenantsToCSV(tenants: any[]) {
   URL.revokeObjectURL(url);
 }
 
-export function exportTenantsToJSON(tenants: any[]) {
+export function exportTenantsToJSON(tenants: Array<Record<string, unknown>>) {
   const jsonContent = JSON.stringify(tenants, null, 2);
   const blob = new Blob([jsonContent], { type: 'application/json' });
   const url = URL.createObjectURL(blob);

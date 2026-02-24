@@ -21,10 +21,10 @@ interface AccountSettings {
   tax_rate: number;
   state: string | null;
   operating_states: string[];
-  branding: any;
-  compliance_settings: any;
-  notification_settings: any;
-  integration_settings: any;
+  branding: Record<string, unknown> | null;
+  compliance_settings: Record<string, unknown> | null;
+  notification_settings: Record<string, unknown> | null;
+  integration_settings: Record<string, unknown> | null;
 }
 
 interface UserProfile {
@@ -72,27 +72,24 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
 
       if (profileError) throw profileError;
 
-      if (profile && (profile as any).account_id) {
-        // Get role from profile table (with fallback to user_roles)
-        const profileRole = (profile as any).role;
-        
-        // Fallback to user_roles table if role not in profile
+      if (profile && profile.account_id) {
+        // Fallback to user_roles table for role
         const { data: roleData } = await supabase
           .from('user_roles')
-          .select('role, account_id')
+          .select('role')
           .eq('user_id', userId)
-          .maybeSingle() as any;
+          .maybeSingle();
 
-        const role = profileRole || roleData?.role || 'customer';
-        const accountId = (profile as any).account_id || roleData?.account_id;
+        const role = roleData?.role || 'customer';
+        const accountId = profile.account_id;
 
         setUserProfile({
           id: profile.id,
           user_id: profile.user_id,
           account_id: accountId,
-          role: role as any,
+          role: role as UserProfile['role'],
           full_name: profile.full_name,
-          email: (profile as any).email || null
+          email: null
         });
 
         if (accountId) {

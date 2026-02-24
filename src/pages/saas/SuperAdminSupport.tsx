@@ -41,6 +41,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -102,7 +103,7 @@ export default function SuperAdminSupport() {
       }
 
       // Map database results
-      return (data || []).map((ticket: any) => ({
+      return (data || []).map((ticket) => ({
         id: ticket.id,
         tenant_id: ticket.tenant_id,
         subject: ticket.subject,
@@ -138,7 +139,7 @@ export default function SuperAdminSupport() {
       queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.supportTickets() });
     } catch (error) {
       // If table doesn't exist, just show success (mock behavior for dev)
-      if ((error as any)?.code === '42P01') {
+      if (isPostgrestError(error) && error.code === '42P01') {
         toast.success('Ticket resolved', {
           description: 'Ticket has been marked as resolved',
         });
@@ -156,7 +157,7 @@ export default function SuperAdminSupport() {
       low: 'secondary',
     };
 
-    const icons: Record<string, any> = {
+    const icons: Record<string, React.ComponentType<{ className?: string }>> = {
       high: AlertCircle,
       medium: Clock,
       low: CheckCircle,

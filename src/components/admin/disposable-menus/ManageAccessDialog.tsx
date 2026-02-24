@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -388,7 +388,7 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
         <SendAccessLinkDialog
           open={!!sendLinkCustomer}
           onClose={() => setSendLinkCustomer(null)}
-          whitelistEntry={sendLinkCustomer as any}
+          whitelistEntry={sendLinkCustomer as unknown as React.ComponentProps<typeof SendAccessLinkDialog>['whitelistEntry']}
           menuTitle={menu.name}
         />
       )}

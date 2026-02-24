@@ -154,7 +154,7 @@ export default function CustomDomain() {
         <CardContent>
           {domains && domains.length > 0 ? (
             <div className="space-y-4">
-              {domains.map((domainItem: any) => (
+              {domains.map((domainItem: { id: string; domain: string; status: string; ssl_status?: string; created_at: string }) => (
                 <div key={domainItem.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-4">
                     <Globe className="h-5 w-5" />

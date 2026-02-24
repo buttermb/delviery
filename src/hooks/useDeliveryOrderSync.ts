@@ -185,6 +185,12 @@ export function useDeliveryOrderSync(
         return true;
       }
 
+      logger.warn('[DeliveryOrderSync] unified_orders update failed, falling back to orders table', {
+        component: 'useDeliveryOrderSync',
+        orderId,
+        error: unifiedError,
+      });
+
       // Fallback to orders table
       const { error: ordersError } = await supabase
         .from('orders')

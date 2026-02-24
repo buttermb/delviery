@@ -67,7 +67,7 @@ export function ConversationList({
 
             // Get last message for each conversation
             const conversationsWithDetails = await Promise.all(
-                (data || []).map(async (conv: any) => {
+                (data || []).map(async (conv) => {
                     // Get last message
                     const { data: lastMessageData } = await supabase
                         .from('messages')

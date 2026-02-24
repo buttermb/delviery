@@ -248,9 +248,10 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         const error = await response.json().catch(() => ({ error: "Login failed" }));
         // Check if email verification is required
         if (response.status === 403 && error.requires_verification) {
-          const verificationError = new Error(error.message || "Email not verified");
-          (verificationError as any).requires_verification = true;
-          (verificationError as any).customer_user_id = error.customer_user_id;
+          const verificationError: Error & { requires_verification?: boolean; customer_user_id?: string } = Object.assign(
+            new Error(error.message || "Email not verified"),
+            { requires_verification: true, customer_user_id: error.customer_user_id as string }
+          );
           throw verificationError;
         }
         throw new Error(error.error || "Login failed");
@@ -285,7 +286,6 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       // Store user ID for encryption
       if (data.customer?.id) {
         safeStorage.setItem('floraiq_user_id', data.customer.id);
-        safeStorage.setItem('floraiq_user_id', data.customer.id);
       }
 
       // Initialize encryption with user's password
@@ -308,19 +308,20 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       // For now, manual filtering provides security without requiring Supabase auth
     } catch (error: unknown) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
+      const errorRecord = error as Record<string, unknown> | null;
 
       // Get category from error or use unknown
-      const errorCategory = (error as any)?.category || ErrorCategory.UNKNOWN;
+      const errorCategory = (typeof errorRecord?.category === 'string' ? errorRecord.category : ErrorCategory.UNKNOWN) as string;
 
       // Log flow failure
-      authFlowLogger.failFlow((error as any)?.flowId || '', errorObj, errorCategory);
+      authFlowLogger.failFlow(typeof errorRecord?.flowId === 'string' ? errorRecord.flowId : '', errorObj, errorCategory);
 
       // Enhanced error logging with context
       logger.error("Customer login error", errorObj, {
         component: 'CustomerAuthContext',
         email: email,
         tenantSlug: tenantSlug,
-        attempts: (error as any)?.attempts,
+        attempts: typeof errorRecord?.attempts === 'number' ? errorRecord.attempts : undefined,
         errorCategory,
       });
 

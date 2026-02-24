@@ -56,7 +56,7 @@ export default function SelectPlanPage() {
         .select('is_free_tier')
         .eq('id', tenant.id)
         .maybeSingle();
-      setIsFreeTier((data as any)?.is_free_tier || false);
+      setIsFreeTier(data?.is_free_tier || false);
     };
     checkFreeTier();
   }, [tenant?.id]);
@@ -72,9 +72,9 @@ export default function SelectPlanPage() {
         .eq('id', tenant.id)
         .maybeSingle();
 
-      if ((freshTenant as any)?.payment_method_added && (freshTenant as any)?.subscription_status === 'active') {
+      if (freshTenant?.payment_method_added && freshTenant?.subscription_status === 'active') {
         logger.info('[SELECT_PLAN] Already has active subscription, redirecting to dashboard');
-        navigate(`/${(freshTenant as any).slug || tenant.slug}/admin/dashboard`, { replace: true });
+        navigate(`/${freshTenant.slug || tenant.slug}/admin/dashboard`, { replace: true });
       }
     };
 

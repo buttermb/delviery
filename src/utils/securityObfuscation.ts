@@ -90,14 +90,14 @@ export const addFingerprintNoise = () => {
         args[1] += Math.random() * 0.001;
         args[2] += Math.random() * 0.001;
       }
-      return originalFillText.apply(this, args as any);
+      return originalFillText.apply(this, args as [string, number, number]);
     };
   }
   
   // Add noise to audio context
   if (typeof AudioContext !== 'undefined') {
     const OriginalAudioContext = window.AudioContext;
-    (window as any).AudioContext = function(...args: any[]) {
+    (window as unknown as Record<string, unknown>).AudioContext = function(...args: ConstructorParameters<typeof AudioContext>) {
       const context = new OriginalAudioContext(...args);
       // Add random offset to sample rate
       const originalSampleRate = context.sampleRate;
@@ -120,7 +120,7 @@ export const obfuscateConsole = () => {
   const methods = ['log', 'debug', 'info', 'warn', 'error', 'trace', 'table', 'group', 'groupEnd'];
   
   methods.forEach(method => {
-    (console as any)[method] = noop;
+    (console as unknown as Record<string, unknown>)[method] = noop;
   });
 };
 

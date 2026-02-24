@@ -114,6 +114,14 @@ async function restoreInventoryForCancelledOrders(
         .select('id, product_id, quantity')
         .eq('order_id', orderId);
 
+      if (legacyError) {
+        logger.warn('order_items query failed, trying unified_order_items', {
+          component: 'useOrderBulkStatusUpdate',
+          orderId,
+          error: legacyError,
+        });
+      }
+
       if (!legacyError && legacyItems && legacyItems.length > 0) {
         orderItems = legacyItems;
       } else {
@@ -255,6 +263,14 @@ async function decrementInventoryForDeliveredOrders(
         .from('order_items')
         .select('id, product_id, quantity')
         .eq('order_id', orderId);
+
+      if (legacyError) {
+        logger.warn('order_items query failed for inventory decrement, trying unified_order_items', {
+          component: 'useOrderBulkStatusUpdate',
+          orderId,
+          error: legacyError,
+        });
+      }
 
       if (!legacyError && legacyItems && legacyItems.length > 0) {
         orderItems = legacyItems;

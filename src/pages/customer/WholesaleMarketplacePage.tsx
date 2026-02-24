@@ -50,7 +50,7 @@ export default function WholesaleMarketplacePage() {
   // Load saved mode preference
   useEffect(() => {
     try {
-      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE as any) as CustomerMode | null;
+      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE) as CustomerMode | null;
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
@@ -93,7 +93,7 @@ export default function WholesaleMarketplacePage() {
   });
 
   // Filter listings by search query
-  const filteredListings = listings.filter((listing: any) => {
+  const filteredListings = listings.filter((listing) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -155,7 +155,7 @@ export default function WholesaleMarketplacePage() {
     },
   });
 
-  const handleAddToCart = (listing: any) => {
+  const handleAddToCart = (listing: typeof listings[number]) => {
     const quantity = 1; // Default quantity, could be made configurable
     const unitPrice = listing.base_price as number;
     
@@ -252,7 +252,7 @@ export default function WholesaleMarketplacePage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredListings.map((listing: any) => {
+            {filteredListings.map((listing) => {
               const profile = listing.marketplace_profiles;
               const hasLabResults = listing.lab_results && listing.lab_results_encrypted;
 

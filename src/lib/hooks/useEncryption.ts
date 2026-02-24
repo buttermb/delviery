@@ -66,7 +66,7 @@ export function useEncryption(): EncryptionHookResult {
   /**
    * Encrypt a value
    */
-  const encrypt = useCallback((value: any): string => {
+  const encrypt = useCallback((value: unknown): string => {
     if (!isReady) {
       throw new Error('Encryption not ready');
     }

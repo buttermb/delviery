@@ -165,8 +165,8 @@ export function OrdersListPage() {
       }
 
       // Fetch user profiles for orders
-      const ordersList = (ordersData || []) as any[];
-      const userIds = [...new Set(ordersList.map((o: any) => o.user_id).filter(Boolean))] as string[];
+      const ordersList = ordersData || [];
+      const userIds = [...new Set(ordersList.map((o) => o.user_id).filter(Boolean))] as string[];
       let profilesMap: Record<string, { full_name: string | null; email: string | null; phone: string | null }> = {};
 
       if (userIds.length > 0) {
@@ -189,7 +189,7 @@ export function OrdersListPage() {
       }
 
       // Fetch order items for product filtering
-      const orderIds = ordersList.map((o: any) => o.id);
+      const orderIds = ordersList.map((o) => o.id);
       let orderProductsMap: Record<string, string[]> = {};
 
       if (orderIds.length > 0) {
@@ -218,7 +218,7 @@ export function OrdersListPage() {
           .in('order_id', orderIds);
 
         if (deliveriesData) {
-          deliveryStatusMap = (deliveriesData as any[]).reduce((acc: Record<string, string>, d: any) => {
+          deliveryStatusMap = deliveriesData.reduce((acc: Record<string, string>, d) => {
             if (d.order_id) acc[d.order_id] = d.status || 'pending';
             return acc;
           }, {} as Record<string, string>);
@@ -226,7 +226,7 @@ export function OrdersListPage() {
       }
 
       // Merge orders with related data
-      return ordersList.map((order: any) => ({
+      return ordersList.map((order) => ({
         id: order.id,
         order_number: order.order_number || '',
         created_at: order.created_at || '',

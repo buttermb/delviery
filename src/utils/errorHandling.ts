@@ -48,7 +48,7 @@ export const parseError = (error: unknown): ErrorDetails => {
 
   // Supabase errors
   if (error && typeof error === 'object' && 'message' in error) {
-    const errorMessage = (error as any).message;
+    const errorMessage = (error as Record<string, unknown>).message as string | undefined;
     
     if (errorMessage?.includes('JWT')) {
       return {
@@ -115,7 +115,7 @@ export const showErrorToast = (error: unknown) => {
  * Safe console wrapper - only logs in development
  * Automatically stripped in production builds
  */
-export const safeLog = (...args: any[]) => {
+export const safeLog = (...args: unknown[]) => {
   if (import.meta.env.DEV) {
     logger.debug('Safe log', args);
   }
@@ -125,7 +125,7 @@ export const safeLog = (...args: any[]) => {
  * Safe error logging - only logs in development
  * Automatically stripped in production builds
  */
-export const safeError = (...args: any[]) => {
+export const safeError = (...args: unknown[]) => {
   if (import.meta.env.DEV) {
     logger.error('Safe error', args);
   }
@@ -149,7 +149,7 @@ export const retryWithBackoff = async <T>(
       
       // Don't retry on client errors (4xx)
       if (error && typeof error === 'object' && 'status' in error) {
-        const status = (error as any).status;
+        const status = (error as Record<string, unknown>).status as number;
         if (status >= 400 && status < 500) {
           throw error;
         }

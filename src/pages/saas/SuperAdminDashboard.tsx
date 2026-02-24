@@ -31,7 +31,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { calculateHealthScore } from '@/lib/tenant';
+import { calculateHealthScore, type Tenant } from '@/lib/tenant';
 import { useState } from 'react';
 
 import {
@@ -45,7 +45,8 @@ import { handleError } from '@/utils/errorHandling/handlers';
 import { queryKeys } from '@/lib/queryKeys';
 
 export default function SuperAdminDashboard() {
-  const [selectedTenant, setSelectedTenant] = useState<any>(null);
+  interface TenantWithHealth { healthScore: { score: number; reasons: string[] }; [key: string]: unknown; id: string; business_name: string; owner_email: string; subscription_plan: string; subscription_status: string; created_at: string }
+  const [selectedTenant, setSelectedTenant] = useState<TenantWithHealth | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -113,7 +114,7 @@ export default function SuperAdminDashboard() {
 
       return data.map((tenant) => ({
         ...tenant,
-        healthScore: calculateHealthScore(tenant as any),
+        healthScore: calculateHealthScore(tenant as unknown as Tenant),
       }));
     },
   });
@@ -133,12 +134,12 @@ export default function SuperAdminDashboard() {
     tenant.owner_email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleViewTenant = (tenant: any) => {
+  const handleViewTenant = (tenant: TenantWithHealth) => {
     setSelectedTenant(tenant);
     setViewDialogOpen(true);
   };
 
-  const handleLoginAsTenant = async (tenant: any) => {
+  const handleLoginAsTenant = async (tenant: TenantWithHealth) => {
     if (!confirm(`Login as ${tenant.business_name}? This creates a temporary tenant admin session.`)) {
       return;
     }
@@ -159,7 +160,7 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  const handleSuspendTenant = async (tenant: any) => {
+  const handleSuspendTenant = async (tenant: TenantWithHealth) => {
     if (!confirm(`Suspend ${tenant.business_name}?`)) return;
 
     try {
@@ -181,7 +182,7 @@ export default function SuperAdminDashboard() {
     {
       accessorKey: 'business_name',
       header: 'Business',
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: { original: TenantWithHealth } }) => (
         <div>
           <div className="font-medium">{row.original.business_name}</div>
           <div className="text-sm text-muted-foreground">{row.original.owner_email}</div>
@@ -191,7 +192,7 @@ export default function SuperAdminDashboard() {
     {
       accessorKey: 'subscription_plan',
       header: 'Plan',
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: { original: TenantWithHealth } }) => (
         <Badge variant="outline">
           {row.original.subscription_plan.toUpperCase()}
         </Badge>
@@ -200,7 +201,7 @@ export default function SuperAdminDashboard() {
     {
       accessorKey: 'subscription_status',
       header: 'Status',
-      cell: ({ row }: any) => {
+      cell: ({ row }: { row: { original: TenantWithHealth } }) => {
         const status = row.original.subscription_status;
         const variant =
           status === SUBSCRIPTION_STATUS.ACTIVE ? 'default' :
@@ -212,7 +213,7 @@ export default function SuperAdminDashboard() {
     {
       accessorKey: 'mrr',
       header: 'MRR',
-      cell: ({ row }: any) => {
+      cell: ({ row }: { row: { original: TenantWithHealth } }) => {
         const prices: Record<string, number> = {
           [SUBSCRIPTION_PLANS.STARTER]: 99,
           [SUBSCRIPTION_PLANS.PROFESSIONAL]: 299,
@@ -225,7 +226,7 @@ export default function SuperAdminDashboard() {
     {
       accessorKey: 'healthScore',
       header: 'Health',
-      cell: ({ row }: any) => {
+      cell: ({ row }: { row: { original: TenantWithHealth } }) => {
         const { score } = row.original.healthScore || { score: 100 };
         const color =
           score >= 80 ? 'text-emerald-500' :
@@ -248,12 +249,12 @@ export default function SuperAdminDashboard() {
     {
       accessorKey: 'created_at',
       header: 'Joined',
-      cell: ({ row }: any) => formatSmartDate(row.original.created_at),
+      cell: ({ row }: { row: { original: TenantWithHealth } }) => formatSmartDate(row.original.created_at),
     },
     {
       id: 'actions',
       header: 'Actions',
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: { original: TenantWithHealth } }) => (
         <div className="flex gap-2">
           <Button
             variant="ghost"
@@ -380,7 +381,7 @@ export default function SuperAdminDashboard() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Feature Flags</h2>
           <div className="space-y-3">
-            {featureFlags.map((flag: any) => (
+            {featureFlags.map((flag) => (
               <div key={flag.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div>
                   <div className="font-medium">{flag.name}</div>

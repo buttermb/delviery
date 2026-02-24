@@ -63,7 +63,7 @@ export default function CreateTenantPage() {
     onSuccess: (result) => {
       logger.info('Tenant created successfully', { result });
       toast.success('The tenant has been created successfully.');
-      navigate(`/super-admin/tenants/${(result as any).tenant_id || ''}`);
+      navigate(`/super-admin/tenants/${(result as Record<string, unknown>)?.tenant_id || ''}`);
     },
     onError: (error) => {
       logger.error('Failed to create tenant', error);

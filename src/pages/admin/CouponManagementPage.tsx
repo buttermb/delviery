@@ -83,9 +83,9 @@ export default function CouponManagementPage() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      let query = (supabase
+      let query = supabase
         .from("coupon_codes")
-        .select("*") as any)
+        .select("*")
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false });
 

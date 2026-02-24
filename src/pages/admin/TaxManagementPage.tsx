@@ -136,7 +136,7 @@ export default function TaxManagementPage() {
       </div>
 
       {/* Period Selector */}
-      <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as any)}>
+      <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as 'month' | 'quarter' | 'year')}>
         <TabsList>
           <TabsTrigger value="month">This Month</TabsTrigger>
           <TabsTrigger value="quarter">This Quarter</TabsTrigger>

@@ -61,7 +61,7 @@ class AuthFlowLogger {
    * Start a new auth flow
    */
   startFlow(action: AuthAction, metadata?: Record<string, unknown>): string {
-    const flowId = `${action}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const flowId = `${action}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     const startTime = performance.now();
 
     const metrics: AuthFlowMetrics = {

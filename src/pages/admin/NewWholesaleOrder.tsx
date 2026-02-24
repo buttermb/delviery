@@ -79,6 +79,35 @@ interface OrderData {
   tierId: string;
 }
 
+interface PricingTier {
+  id: string;
+  name: string;
+  discount_percentage: number;
+}
+
+interface WholesaleProductItem {
+  id: string;
+  product_name: string;
+  base_price: number;
+  retail_price: number;
+  cost_per_unit: number;
+  quantity_available: number;
+  category: string | null;
+  image_url: string | null;
+  source: 'products';
+  strain_type?: string;
+}
+
+interface CourierItem {
+  id: string;
+  full_name: string;
+  phone: string | null;
+  vehicle_type: string | null;
+  is_online: boolean;
+  is_active: boolean;
+  status?: string;
+}
+
 const QUICK_QTY_PRESETS = [1, 5, 10, 25];
 
 export default function NewWholesaleOrder() {
@@ -96,8 +125,9 @@ export default function NewWholesaleOrder() {
         .select('integration_settings')
         .eq('account_id', tenant.id)
         .maybeSingle();
-      const settings = (data?.integration_settings as any) || {};
-      return settings?.wholesale_pricing_tiers?.tiers || [];
+      const settings = (data?.integration_settings as Record<string, unknown>) || {};
+      const pricingConfig = settings?.wholesale_pricing_tiers as { tiers?: PricingTier[] } | undefined;
+      return pricingConfig?.tiers || [];
     },
     enabled: !!tenant?.id,
   });
@@ -138,7 +168,7 @@ export default function NewWholesaleOrder() {
     if (!productSearch) return inventory;
     const query = productSearch.toLowerCase();
     return inventory.filter(
-      (p: any) =>
+      (p: WholesaleProductItem) =>
         p.product_name?.toLowerCase().includes(query) ||
         p.strain_type?.toLowerCase().includes(query)
     );
@@ -212,14 +242,14 @@ export default function NewWholesaleOrder() {
   // Helper to calculate tiered price
   const calculatePrice = useCallback((basePrice: number, tierId: string) => {
     if (!tierId) return basePrice;
-    const tier = pricingTiers.find((t: any) => t.id === tierId);
+    const tier = pricingTiers.find((t: PricingTier) => t.id === tierId);
     if (!tier || !tier.discount_percentage) return basePrice;
     const discount = tier.discount_percentage / 100;
     return basePrice * (1 - discount);
   }, [pricingTiers]);
 
   // Product handlers
-  const handleAddProduct = useCallback((product: any) => {
+  const handleAddProduct = useCallback((product: WholesaleProductItem) => {
     setOrderData((prev) => {
       const existing = prev.products.find((p) => p.id === product.id);
       if (existing) {
@@ -409,7 +439,7 @@ export default function NewWholesaleOrder() {
   };
 
   // Get selected runner
-  const selectedRunner = couriers.find((r: any) => r.id === orderData.runnerId);
+  const selectedRunner = couriers.find((r: CourierItem) => r.id === orderData.runnerId);
 
   // Minimum order quantity constant (in lbs per product)
   const MINIMUM_ORDER_QUANTITY_LBS = 1;
@@ -563,7 +593,7 @@ export default function NewWholesaleOrder() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No Tier (Standard Price)</SelectItem>
-                      {pricingTiers.map((tier: any) => (
+                      {pricingTiers.map((tier: PricingTier) => (
                         <SelectItem key={tier.id} value={tier.id}>
                           {tier.name} ({tier.discount_percentage}% Off)
                         </SelectItem>
@@ -633,7 +663,7 @@ export default function NewWholesaleOrder() {
                           compact
                         />
                       ) : (
-                        filteredInventory.map((product: any) => {
+                        filteredInventory.map((product: WholesaleProductItem) => {
                           const inCart = orderData.products.find((p) => p.id === product.id);
                           const stockQty = product.quantity_available ?? 0;
                           const isOutOfStock = stockQty <= 0;
@@ -938,7 +968,7 @@ export default function NewWholesaleOrder() {
                       ) : couriers.length === 0 ? (
                         <div className="p-2 text-center text-muted-foreground">No couriers available</div>
                       ) : (
-                        couriers.map((courier: any) => (
+                        couriers.map((courier: CourierItem) => (
                           <SelectItem key={courier.id} value={courier.id}>
                             <div className="flex items-center gap-2">
                               <span>{courier.full_name}</span>

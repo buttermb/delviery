@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,7 +12,7 @@ export function CashFlowProjection() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: cashFlowData, isLoading } = useQuery({
-    queryKey: ["cashflow-projection", tenant?.id],
+    queryKey: queryKeys.cashflowProjection.byTenant(tenant?.id),
     queryFn: async () => {
       const { data: orders } = await supabase
         .from("orders")

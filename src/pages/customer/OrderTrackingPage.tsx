@@ -66,7 +66,7 @@ export default function OrderTrackingPage() {
 
   // Fetch order details (try orders table first, then marketplace_orders for storefront orders)
   const { data: order, isLoading } = useQuery({
-    queryKey: ["customer-order", orderId, tenantId, customerId, customerEmail],
+    queryKey: queryKeys.customerOrderTracking.byId(orderId, tenantId, customerId, customerEmail),
     queryFn: async (): Promise<OrderWithDetails | null> => {
       if (!orderId || !tenantId) return null;
 

@@ -55,12 +55,12 @@ export function usePrefetchDashboard() {
               .limit(100);
 
             const lowStock = (inventory || []).filter(
-              (item: any) => {
+              (item) => {
                 const currentStock = item.available_quantity ?? item.stock_quantity ?? 0;
                 const reorderPoint = item.low_stock_alert ?? 10;
                 return Number(currentStock) <= Number(reorderPoint);
               }
-            ).map((item: any) => ({
+            ).map((item) => ({
               id: item.id,
               product_name: item.name,
               quantity_lbs: item.available_quantity ?? item.stock_quantity ?? 0,

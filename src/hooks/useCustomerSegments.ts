@@ -317,7 +317,7 @@ export function useCustomerSegment({
 
       const segmentData: CustomerSegmentData = {
         customerId,
-        customerName: (customer as any)?.full_name ?? null,
+        customerName: customer?.full_name ?? null,
         segment,
         activitySegment,
         isVip,

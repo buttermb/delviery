@@ -212,7 +212,7 @@ export default function CustomerForm() {
               customers: (currentUsage.customers || 0) + 1,
             },
             updated_at: new Date().toISOString(),
-          } as any)
+          })
           .eq('id', tenant.id);
 
         toast.success('Customer created successfully');

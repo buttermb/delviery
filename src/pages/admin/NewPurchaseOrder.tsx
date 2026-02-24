@@ -84,7 +84,7 @@ export default function NewPurchaseOrder() {
     const handleBack = () => setStep(prev => prev - 1);
 
     // Item management
-    const handleAddItem = (product: any) => {
+    const handleAddItem = (product: { id: string; name: string; cost_per_unit: number }) => {
         setPoData(prev => {
             if (prev.items.find(i => i.id === product.id)) {
                 return {

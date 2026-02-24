@@ -27,7 +27,7 @@ interface ReportConfig {
   description: string;
   metrics: string[];
   dimensions: string[];
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
   chartType: 'line' | 'bar' | 'pie' | 'table';
   dateRange: string;
 }
@@ -169,7 +169,7 @@ export function ReportBuilder() {
             <Label>Chart Type</Label>
             <Select
               value={config.chartType}
-              onValueChange={(value: any) => setConfig({ ...config, chartType: value })}
+              onValueChange={(value) => setConfig({ ...config, chartType: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select chart type" />

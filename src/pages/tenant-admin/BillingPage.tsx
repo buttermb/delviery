@@ -94,7 +94,7 @@ export default function TenantAdminBillingPage() {
 
   // Fetch invoices using Edge Function
   const { data: invoices } = useQuery({
-    queryKey: ["tenant-invoices", tenantId],
+    queryKey: queryKeys.tenantInvoices.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -145,7 +145,7 @@ export default function TenantAdminBillingPage() {
         .from('subscription_plans')
         .select('*')
         .eq('is_active', true)
-        .order('price_monthly') as { data: Database['public']['Tables']['subscription_plans']['Row'][] | null; error: any };
+        .order('price_monthly') as unknown as { data: Database['public']['Tables']['subscription_plans']['Row'][] | null; error: { message: string; code: string } | null };
 
       if (error) {
         logger.error('[BillingPage] Error fetching subscription plans:', error, { component: 'BillingPage' });
@@ -164,7 +164,7 @@ export default function TenantAdminBillingPage() {
 
   // Fetch subscription plan details
   const { data: plan } = useQuery({
-    queryKey: ["subscription-plan", tenant?.subscription_plan],
+    queryKey: queryKeys.superAdminTenantDetail.subscriptionPlan(tenant?.subscription_plan),
     queryFn: async () => {
       if (!tenant?.subscription_plan) return null;
 

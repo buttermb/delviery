@@ -437,9 +437,11 @@ class PaymentService {
         .eq('id', frontedId);
 
       // Update client balance
-      if ((frontedItem as any).client_id) {
+      const frontedRecord = frontedItem as Record<string, unknown>;
+      const clientData = frontedRecord.client as { business_name?: string } | null;
+      if (frontedRecord.client_id) {
         await this.adjustClientBalance({
-          clientId: (frontedItem as any).client_id,
+          clientId: frontedRecord.client_id as string,
           amount,
           operation: 'subtract'
         });
@@ -450,7 +452,7 @@ class PaymentService {
         newStatus,
         paymentReceived: newTotalReceived,
         remaining: Math.max(0, remaining),
-        clientName: (frontedItem as any).client?.business_name
+        clientName: clientData?.business_name
       };
     } catch (error) {
       logger.error('Legacy fronted payment failed', error, { frontedId });
@@ -621,11 +623,11 @@ class PaymentService {
         total: 0
       };
 
-      for (const item of (frontedItems as any[])) {
-        const remaining = ((item as any).expected_revenue || 0) - ((item as any).payment_received || 0);
+      for (const item of frontedItems) {
+        const remaining = (item.expected_revenue || 0) - (item.payment_received || 0);
         if (remaining <= 0) continue;
 
-        const dueDate = (item as any).payment_due_date ? new Date((item as any).payment_due_date) : new Date((item as any).created_at);
+        const dueDate = item.payment_due_date ? new Date(item.payment_due_date) : new Date(item.created_at);
         const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
 
         if (daysOverdue <= 0) {

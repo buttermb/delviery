@@ -53,7 +53,7 @@ export default function BatchRecallPage() {
           return [];
         }
 
-        return (data || []).map((recall: any) => ({
+        return (data || []).map((recall) => ({
           ...recall,
           batch_id: recall.batch_number || recall.batch_id,
           reason: recall.recall_reason || recall.reason,
@@ -129,7 +129,7 @@ export default function BatchRecallPage() {
             <RecallList
               recalls={recalls || []}
               isLoading={isLoading}
-              onSelect={(recall) => setSelectedRecall(recall as any)}
+              onSelect={(recall) => setSelectedRecall(recall as unknown as Recall)}
               onCreate={() => {
                 setSelectedRecall(null);
                 setIsFormOpen(true);

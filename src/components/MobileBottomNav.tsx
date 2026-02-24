@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { haptics } from '@/utils/haptics';
@@ -31,7 +32,7 @@ const MobileBottomNav = ({ onCartClick: _onCartClick, onAuthClick }: MobileBotto
   const scrollDirection = useScrollDirection();
 
   const { data: cartItems = [] } = useQuery({
-    queryKey: ["cart", user?.id],
+    queryKey: queryKeys.customerCart.byUser(user?.id),
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase

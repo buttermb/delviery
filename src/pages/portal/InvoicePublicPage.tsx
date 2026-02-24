@@ -172,7 +172,7 @@ export default function InvoicePublicPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {invoice.line_items.map((item: any, index: number) => (
+                                    {invoice.line_items.map((item: { description?: string; product_name?: string; quantity: number; unit_price: number; total?: number }, index: number) => (
                                         <TableRow key={index} className="border-slate-100">
                                             <TableCell className="pl-6 font-medium text-slate-900">
                                                 {item.description || item.product_name}

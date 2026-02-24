@@ -53,20 +53,19 @@ export default function SupplierManagementPage() {
     queryFn: async () => {
       if (!tenant?.id) return [];
       
-      // Build query with explicit typing to avoid deep type instantiation
-      const baseQuery = supabase
+      // Build query
+      let query = supabase
         .from("wholesale_suppliers")
-        .select("*") as any;
-      
-      let query = baseQuery.eq("tenant_id", tenant.id);
-      
+        .select("*")
+        .eq("tenant_id", tenant.id);
+
       // Apply status filter
       if (filter === "active") {
         query = query.eq("status", "active");
       } else if (filter === "inactive") {
         query = query.eq("status", "inactive");
       }
-      
+
       const { data, error } = await query.order("created_at", { ascending: false });
       
       if (error) {

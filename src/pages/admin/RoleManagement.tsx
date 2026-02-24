@@ -115,7 +115,7 @@ export function RoleManagement() {
 
             return {
               ...role,
-              permissions: (permData || []).map((p: any) => p.permission),
+              permissions: (permData || []).map((p) => p.permission),
             };
           })
         );

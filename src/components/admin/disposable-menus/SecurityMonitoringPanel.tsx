@@ -22,6 +22,7 @@ import {
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
+import type { Json } from '@/integrations/supabase/types';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 
 export const SecurityMonitoringPanel = () => {
@@ -316,10 +317,10 @@ export const SecurityMonitoringPanel = () => {
                             </span>
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
-                            {jsonToString(blocked.reason as any) || 'Suspicious activity detected'}
+                            {jsonToString(blocked.reason) || 'Suspicious activity detected'}
                           </p>
                           <div className="text-xs text-muted-foreground">
-                            Blocked {format(new Date(String(jsonToStringOrNumber(blocked.created_at as any))), 'MMM dd, yyyy HH:mm')}
+                            Blocked {format(new Date(String(jsonToStringOrNumber(blocked.created_at as Json))), 'MMM dd, yyyy HH:mm')}
                           </div>
                         </div>
                         <Button

@@ -338,13 +338,13 @@ export function EnhancedMenuDashboard() {
                       Burned: {menu.burned_at && format(new Date(menu.burned_at), 'MMM d, yyyy')}
                       {menu.burn_reason && ` • Reason: ${menu.burn_reason}`}
                     </div>
-                    {(menu as any).regenerated_from && (
+                    {(menu as unknown as Record<string, unknown>).regenerated_from && (
                       <div className="text-sm text-green-600 mt-1">
                         Regenerated as new menu
                       </div>
                     )}
                   </div>
-                  {(menu as any).regenerated_from && (
+                  {(menu as unknown as Record<string, unknown>).regenerated_from && (
                     <Button variant="outline" size="sm">
                       View New Menu
                     </Button>

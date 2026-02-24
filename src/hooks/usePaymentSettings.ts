@@ -121,7 +121,7 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
       const { data: tenantSettings, error: settingsError } = await supabase
         .from('tenant_payment_settings')
         .select('*')
-        .eq('tenant_id', (menu as any).tenant_id)
+        .eq('tenant_id', menu.tenant_id)
         .maybeSingle();
 
       if (settingsError) {
@@ -137,7 +137,7 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
       }
 
       // Apply per-menu overrides if they exist
-      const menuPaymentSettings = (menu as any).payment_settings;
+      const menuPaymentSettings = (menu as unknown as Record<string, unknown>).payment_settings;
       if (menuPaymentSettings && typeof menuPaymentSettings === 'object') {
         settings = { ...settings, ...(menuPaymentSettings as Partial<PaymentSettings>) };
       }

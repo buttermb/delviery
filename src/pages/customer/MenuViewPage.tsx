@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, ShoppingCart, Search, Loader2, Star } from "lucide-react";
+import type { User } from "@supabase/supabase-js";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ import { MenuProductGrid } from "@/components/customer/MenuProductGrid";
 import { SmartSearchOverlay } from "@/components/customer/SmartSearchOverlay";
 import { useMenuInventorySync } from "@/hooks/useMenuInventorySync";
 import { logger } from "@/lib/logger";
+import { queryKeys } from "@/lib/queryKeys";
 
 export default function CustomerMenuViewPage() {
   const { menuId: menuIdParam } = useParams<{ menuId: string }>();
@@ -30,7 +32,7 @@ export default function CustomerMenuViewPage() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { addToGuestCart } = useGuestCart();
   const queryClient = useQueryClient();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   // Get current user session
   useEffect(() => {
@@ -41,13 +43,13 @@ export default function CustomerMenuViewPage() {
 
   // Fetch menu details
   const { data: menu, isLoading: menuLoading } = useQuery({
-    queryKey: ["customer-menu", menuId, tenantId, customerId],
-    queryFn: async (): Promise<any> => {
+    queryKey: queryKeys.customerMenu.detail(menuId || undefined, tenantId, customerId),
+    queryFn: async () => {
       if (!menuId || !tenantId || !customerId) return null;
 
       // Verify customer has access
-      const { data: access } = await (supabase
-        .from("menu_access") as any)
+      const { data: access } = await supabase
+        .from("menu_access")
         .select("*")
         .eq("menu_id", menuId as string)
         .eq("customer_id", customerId)
@@ -86,7 +88,7 @@ export default function CustomerMenuViewPage() {
 
   // Fetch menu products
   const { data: products } = useQuery({
-    queryKey: ["customer-menu-products", menuId, tenantId],
+    queryKey: queryKeys.customerMenu.products(menuId || undefined, tenantId),
     queryFn: async () => {
       if (!menuId || !tenantId) return [];
 
@@ -117,7 +119,7 @@ export default function CustomerMenuViewPage() {
   // For simplicity in this refactor, we'll fetch the cart count separately or use the hook
   // But to keep it consistent with previous code, let's just use a simple query for cart items if user is logged in
   const { data: cartItems } = useQuery({
-    queryKey: ["cart", user?.id, tenantId],
+    queryKey: queryKeys.cart.user(user?.id, tenantId),
     queryFn: async () => {
       if (!user?.id) return [];
       const { data } = await supabase
@@ -144,7 +146,7 @@ export default function CustomerMenuViewPage() {
     if (!searchTerm) return products;
 
     const searchLower = searchTerm.toLowerCase();
-    return products.filter((item: any) => {
+    return products.filter((item) => {
       const product = item.products;
       if (!product) return false;
       return product.name.toLowerCase().includes(searchLower) ||
@@ -174,7 +176,7 @@ export default function CustomerMenuViewPage() {
         productName: change.productName,
       });
       // Refresh products query to update UI
-      queryClient.invalidateQueries({ queryKey: ["customer-menu-products", menuId, tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerMenu.products(menuId || undefined, tenantId) });
     }, [queryClient, menuId, tenantId]),
     onProductRestored: useCallback((change) => {
       logger.info('[CustomerMenuViewPage] Product restored', {
@@ -182,7 +184,7 @@ export default function CustomerMenuViewPage() {
         productName: change.productName,
       });
       // Refresh products query to update UI
-      queryClient.invalidateQueries({ queryKey: ["customer-menu-products", menuId, tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerMenu.products(menuId || undefined, tenantId) });
     }, [queryClient, menuId, tenantId]),
   });
 
@@ -221,7 +223,7 @@ export default function CustomerMenuViewPage() {
           });
 
         if (error) throw error;
-        queryClient.invalidateQueries({ queryKey: ["cart", user.id, tenantId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.cart.user(user.id, tenantId) });
       } else {
         addToGuestCart(productId, quantity, selectedWeight);
       }
@@ -278,12 +280,12 @@ export default function CustomerMenuViewPage() {
       <SmartSearchOverlay
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        products={mappedProducts as any}
+        products={mappedProducts}
         onProductSelect={(id) => {
           // Find product and scroll to it or filter
-          const product = mappedProducts.find((p: any) => p.id === id);
+          const product = mappedProducts.find((p) => p.id === id);
           if (product) {
-            setSearchTerm((product as any).name);
+            setSearchTerm(product.name);
           }
         }}
       />
@@ -366,7 +368,7 @@ export default function CustomerMenuViewPage() {
                   All
                 </Button>
                 {/* Extract unique categories from products */}
-                {Array.from(new Set(products?.map((p: any) => p.products?.category).filter(Boolean))).map((category: any) => (
+                {Array.from(new Set(products?.map((p) => p.products?.category).filter(Boolean))).map((category) => (
                   <Button
                     key={category}
                     variant="secondary"
@@ -385,7 +387,7 @@ export default function CustomerMenuViewPage() {
 
       <div className="container mx-auto p-4 md:p-6 space-y-6">
         <MenuProductGrid
-          products={(mappedProducts as any).filter((p: any) => {
+          products={mappedProducts.filter((p) => {
             if (!searchTerm) return true;
             const searchLower = searchTerm.toLowerCase();
             return p.name.toLowerCase().includes(searchLower) ||

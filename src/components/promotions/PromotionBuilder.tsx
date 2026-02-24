@@ -110,7 +110,7 @@ export function PromotionBuilder({ initialData, onChange, onSave }: PromotionBui
         onChange?.(updated as PromotionData);
     };
 
-    const updateCondition = (key: string, value: any) => {
+    const updateCondition = (key: string, value: unknown) => {
         const updated = {
             ...formData,
             conditions: { ...formData.conditions, [key]: value },

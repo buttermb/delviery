@@ -460,9 +460,9 @@ function TagSelectorContent({
                   >
                     {tag.name}
                   </Badge>
-                  {(tag as any).description && (
+                  {(tag as unknown as Record<string, unknown>).description && (
                     <span className="text-xs text-muted-foreground truncate ml-auto">
-                      {(tag as any).description}
+                      {(tag as unknown as Record<string, unknown>).description}
                     </span>
                   )}
                 </button>

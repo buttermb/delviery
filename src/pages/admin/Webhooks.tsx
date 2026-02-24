@@ -235,7 +235,7 @@ export default function Webhooks() {
 
       {webhooks && webhooks.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {(webhooks as any[]).map((webhook: WebhookConfig) => (
+          {(webhooks as unknown as WebhookConfig[]).map((webhook) => (
             <Card
               key={webhook.id}
               className={`cursor-pointer transition-colors ${

@@ -375,7 +375,7 @@ export function rowsToProducts(rows: ParsedRow[]): Partial<ParsedProduct>[] {
   return rows.map(row => {
     const product: Partial<ParsedProduct> = {
       name: String(row.parsed.name || '').trim(),
-      category: (String(row.parsed.category || '').trim() || undefined) as any,
+      category: (String(row.parsed.category || '').trim() || undefined) as ParsedProduct['category'],
       strainType: parseStrainType(row.parsed.strainType),
       thcPercentage: parsePercentage(row.parsed.thc),
       cbdPercentage: parsePercentage(row.parsed.cbd),

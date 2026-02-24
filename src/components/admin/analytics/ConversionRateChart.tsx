@@ -139,7 +139,7 @@ export function ConversionRateChart({ storeId, className }: ConversionRateChartP
                                 width={120}
                             />
                             <Tooltip
-                                formatter={(value: number, _name: string, props: any) => [
+                                formatter={(value: number, _name: string, props: { payload: { rate: number } }) => [
                                     `${value.toLocaleString()} (${props.payload.rate}%)`,
                                     'Count'
                                 ]}

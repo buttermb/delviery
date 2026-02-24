@@ -34,13 +34,13 @@ export default function RealtimeDashboard() {
       try {
         const [ordersResult, customersResult] = await Promise.all([
           supabase
-            .from('orders' as any)
+            .from('orders')
             .select('*')
             .eq('tenant_id', tenantId)
             .in('status', ['pending', 'confirmed', 'preparing', 'in_transit'])
             .limit(50),
           supabase
-            .from('customers' as any)
+            .from('customers')
             .select('*')
             .eq('tenant_id', tenantId)
             .limit(1),
@@ -49,7 +49,7 @@ export default function RealtimeDashboard() {
         const orders = ordersResult.error && ordersResult.error.code === '42P01' ? [] : ordersResult.data || [];
         const customers = customersResult.error && customersResult.error.code === '42P01' ? [] : customersResult.data || [];
 
-        const totalRevenue = orders.reduce((sum: number, o: any) => sum + parseFloat(o.total || 0), 0);
+        const totalRevenue = orders.reduce((sum: number, o) => sum + parseFloat(String(o.total || 0)), 0);
 
         return {
           activeOrders: orders.length,
@@ -253,7 +253,7 @@ export default function RealtimeDashboard() {
   );
 }
 
-function ShoppingBagIcon(props: any) {
+function ShoppingBagIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

@@ -23,15 +23,19 @@ export const useProducts = () => {
             if (!accountId) throw new Error('Account ID required');
 
             // Break chain to avoid deep type instantiation
-            const query = supabase.from("products");
-            const selectQuery = (query as any).select("id, name, price, sku, description, stock_quantity, available_quantity, low_stock_alert");
-            const accountQuery = selectQuery.eq("account_id", accountId);
-            const statusQuery = accountQuery.eq("status", "active");
-            const result = await statusQuery.order("name").limit(500);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase deep type instantiation workaround
+            const query = supabase.from("products") as any;
+            const result = await query
+              .select("id, name, price, sku, description, stock_quantity, available_quantity, low_stock_alert")
+              .eq("account_id", accountId)
+              .eq("status", "active")
+              .order("name")
+              .limit(500);
 
             if (result.error) throw result.error;
 
-            return ((result.data as any[]) || []).map((item: any) => {
+            interface ProductRow { id: string; name: string; price: number; sku?: string; description?: string; stock_quantity?: number; available_quantity?: number; low_stock_alert?: number }
+            return ((result.data as ProductRow[]) || []).map((item) => {
                 const available = item.available_quantity ?? item.stock_quantity ?? 0;
                 const threshold = item.low_stock_alert ?? 10;
                 return {

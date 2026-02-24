@@ -6,7 +6,7 @@
 import { invokeEdgeFunction } from './edgeFunctionHelper';
 import { supabase } from '@/integrations/supabase/client';
 
-export interface AdminApiOptions<T = any> {
+export interface AdminApiOptions<T = unknown> {
   resource: 'api_keys' | 'audit_trail' | 'automation_rules' | 'custom_integrations' | 'webhooks' | 'custom_reports';
   action: 'list' | 'create' | 'update' | 'delete';
   data?: T;
@@ -16,7 +16,7 @@ export interface AdminApiOptions<T = any> {
 /**
  * Call admin API operations through the edge function
  */
-export async function adminApiCall<T = any>(options: AdminApiOptions): Promise<{ data: T | null; error: Error | null }> {
+export async function adminApiCall<T = unknown>(options: AdminApiOptions): Promise<{ data: T | null; error: Error | null }> {
   // Get Supabase session token
   const { data: { session } } = await supabase.auth.getSession();
   
@@ -36,7 +36,7 @@ export async function adminApiCall<T = any>(options: AdminApiOptions): Promise<{
 /**
  * List records from a resource
  */
-export async function listAdminRecords<T = any>(resource: AdminApiOptions['resource']): Promise<{ data: T[] | null; error: Error | null }> {
+export async function listAdminRecords<T = unknown>(resource: AdminApiOptions['resource']): Promise<{ data: T[] | null; error: Error | null }> {
   return adminApiCall<T[]>({
     resource,
     action: 'list'
@@ -46,7 +46,7 @@ export async function listAdminRecords<T = any>(resource: AdminApiOptions['resou
 /**
  * Create a new record
  */
-export async function createAdminRecord<T = any>(resource: AdminApiOptions['resource'], data: any): Promise<{ data: T | null; error: Error | null }> {
+export async function createAdminRecord<T = unknown>(resource: AdminApiOptions['resource'], data: Record<string, unknown>): Promise<{ data: T | null; error: Error | null }> {
   return adminApiCall<T>({
     resource,
     action: 'create',
@@ -57,7 +57,7 @@ export async function createAdminRecord<T = any>(resource: AdminApiOptions['reso
 /**
  * Update an existing record
  */
-export async function updateAdminRecord<T = any>(resource: AdminApiOptions['resource'], id: string, data: any): Promise<{ data: T | null; error: Error | null }> {
+export async function updateAdminRecord<T = unknown>(resource: AdminApiOptions['resource'], id: string, data: Record<string, unknown>): Promise<{ data: T | null; error: Error | null }> {
   return adminApiCall<T>({
     resource,
     action: 'update',
@@ -69,7 +69,7 @@ export async function updateAdminRecord<T = any>(resource: AdminApiOptions['reso
 /**
  * Delete a record
  */
-export async function deleteAdminRecord(resource: AdminApiOptions['resource'], id: string): Promise<{ data: any | null; error: Error | null }> {
+export async function deleteAdminRecord(resource: AdminApiOptions['resource'], id: string): Promise<{ data: unknown | null; error: Error | null }> {
   return adminApiCall({
     resource,
     action: 'delete',

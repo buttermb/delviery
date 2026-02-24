@@ -43,9 +43,9 @@ export default function FrontedInventoryAnalytics() {
     averageMargin: 0,
     totalUnits: 0,
   });
-  const [topPerformers, setTopPerformers] = useState<any[]>([]);
-  const [topProducts, setTopProducts] = useState<any[]>([]);
-  const [timelineData, setTimelineData] = useState<any[]>([]);
+  const [topPerformers, setTopPerformers] = useState<{ name: string; profit: number; revenue: number; fronts: number }[]>([]);
+  const [topProducts, setTopProducts] = useState<{ name: string; units: number; revenue: number; fronts: number }[]>([]);
+  const [timelineData, setTimelineData] = useState<{ date: string; fronted: number; revenue: number }[]>([]);
 
   const loadAnalytics = useCallback(async () => {
     if (!tenant?.id) return;
@@ -198,8 +198,8 @@ export default function FrontedInventoryAnalytics() {
         }
 
         // Add revenue from payments
-        front.fronted_payments?.forEach((payment: any) => {
-          const paymentDate = new Date(payment.received_at);
+        (front.fronted_payments as unknown as Array<{ amount: number | null; received_at?: string }>)?.forEach((payment) => {
+          const paymentDate = new Date(payment.received_at || '');
           const dayIndex = last30Days.findIndex(
             (d) => format(paymentDate, "MMM dd") === d.date
           );

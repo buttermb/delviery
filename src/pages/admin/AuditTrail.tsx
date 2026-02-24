@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { History, Search, User, Clock, Shield } from 'lucide-react';
-
 import { handleError } from '@/utils/errorHandling/handlers';
+import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { formatSmartDate } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
@@ -24,7 +24,7 @@ export default function AuditTrail() {
 
       try {
         const { data, error } = await supabase
-          .from('audit_trail' as any)
+          .from('audit_trail')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
@@ -34,7 +34,7 @@ export default function AuditTrail() {
         if (error) throw error;
         return data || [];
       } catch (error) {
-        if ((error as any)?.code === '42P01') return [];
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         handleError(error, { component: 'AuditTrail', toastTitle: 'Failed to load audit trail' });
         throw error;
       }
@@ -54,7 +54,7 @@ export default function AuditTrail() {
     );
   }
 
-  const filteredLogs = (auditLogs || []).filter((log: any) => {
+  const filteredLogs = (auditLogs || []).filter((log) => {
     if (!searchTerm) return true;
     const search = searchTerm.toLowerCase();
     return (
@@ -100,7 +100,7 @@ export default function AuditTrail() {
         <CardContent>
           {filteredLogs.length > 0 ? (
             <div className="space-y-4">
-              {filteredLogs.map((log: any) => (
+              {filteredLogs.map((log) => (
                 <div key={log.id} className="flex items-start gap-4 p-4 border rounded-lg">
                   <Shield className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div className="flex-1">

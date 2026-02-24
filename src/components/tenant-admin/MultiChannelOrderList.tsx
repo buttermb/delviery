@@ -190,7 +190,7 @@ export function MultiChannelOrderList() {
                     if (sfError) {
                         logger.warn('Failed to fetch storefront orders', sfError, { component: 'MultiChannelOrderList' });
                     } else if (sfOrders) {
-                        const storefrontOrders = sfOrders.map((o: any) => ({
+                        const storefrontOrders = sfOrders.map((o) => ({
                             id: o.id,
                             channel: 'online' as OrderChannel,
                             customer_name: o.customer_name || 'Storefront Customer',

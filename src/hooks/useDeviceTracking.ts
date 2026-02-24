@@ -59,7 +59,7 @@ export function useDeviceTracking() {
         }
       } catch (error) {
         // Don't disrupt user experience on network errors
-        if ((error as any)?.message?.includes('network')) return;
+        if (error instanceof Error && error.message?.includes('network')) return;
 
         handleError(error, {
           component: 'useDeviceTracking',

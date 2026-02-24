@@ -4,6 +4,25 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 
+interface MenuAccessLogRow {
+  actions_taken: { action?: string; product_id?: string } | null;
+  session_duration_seconds?: number;
+}
+
+interface DisposableMenuProductRow {
+  product_id: string;
+  product?: {
+    id: string;
+    name: string;
+    image_url: string | null;
+    images?: string[];
+  } | null;
+}
+
+interface MenuOrderRow {
+  total_amount: number;
+}
+
 interface MenuAnalytics {
   total_views: number;
   total_orders: number;
@@ -57,28 +76,28 @@ export const useMenuAnalytics = (menuId: string) => {
 
       // Calculate analytics
       // Filter logs that are actual page views (where actions_taken is null or not an event)
-      const pageViewLogs = menu.menu_access_logs?.filter((log: any) =>
+      const pageViewLogs = menu.menu_access_logs?.filter((log: MenuAccessLogRow) =>
         !log.actions_taken || !log.actions_taken.action
       ) || [];
 
       // Filter logs that are events
-      const eventLogs = menu.menu_access_logs?.filter((log: any) =>
+      const eventLogs = menu.menu_access_logs?.filter((log: MenuAccessLogRow) =>
         log.actions_taken && log.actions_taken.action
       ) || [];
 
       const productsWithImages = menu.disposable_menu_products?.filter(
-        (mp: any) => mp.product?.image_url || mp.product?.images?.length > 0
+        (mp: DisposableMenuProductRow) => mp.product?.image_url || (mp.product?.images?.length ?? 0) > 0
       ).length || 0;
 
       const productsWithoutImages = (menu.disposable_menu_products?.length || 0) - productsWithImages;
 
       const totalRevenue = menu.menu_orders?.reduce(
-        (sum: number, order: any) => sum + (order.total_amount || 0),
+        (sum: number, order: MenuOrderRow) => sum + (order.total_amount || 0),
         0
       ) || 0;
 
-      const imageViews = eventLogs.filter((log: any) => log.actions_taken.action === 'image_viewed').length;
-      const imageZooms = eventLogs.filter((log: any) => log.actions_taken.action === 'image_zoomed').length;
+      const imageViews = eventLogs.filter((log: MenuAccessLogRow) => log.actions_taken?.action === 'image_viewed').length;
+      const imageZooms = eventLogs.filter((log: MenuAccessLogRow) => log.actions_taken?.action === 'image_zoomed').length;
 
       const analytics: MenuAnalytics = {
         total_views: pageViewLogs.length,
@@ -88,7 +107,7 @@ export const useMenuAnalytics = (menuId: string) => {
         products_without_images: productsWithoutImages,
         image_views: imageViews,
         image_zooms: imageZooms,
-        avg_time_on_menu: pageViewLogs.reduce((acc: number, log: any) => acc + (log.session_duration_seconds || 0), 0) / (pageViewLogs.length || 1),
+        avg_time_on_menu: pageViewLogs.reduce((acc: number, log: MenuAccessLogRow) => acc + (log.session_duration_seconds || 0), 0) / (pageViewLogs.length || 1),
         conversion_rate: pageViewLogs.length > 0
           ? ((menu.menu_orders?.length || 0) / pageViewLogs.length) * 100
           : 0
@@ -129,17 +148,17 @@ export const useProductImageAnalytics = (menuId: string) => {
         .not('actions_taken', 'is', null);
 
       // Calculate per-product analytics
-      const analytics: ProductImageAnalytics[] = menuProducts.map((mp: any) => {
+      const analytics: ProductImageAnalytics[] = menuProducts.map((mp: DisposableMenuProductRow) => {
         const hasImage = !!mp.product?.image_url;
 
-        const productLogs = logs?.filter((log: any) =>
+        const productLogs = logs?.filter((log: MenuAccessLogRow) =>
           log.actions_taken?.product_id === mp.product_id
         ) || [];
 
-        const viewCount = productLogs.filter((log: any) => log.actions_taken?.action === 'image_viewed').length;
-        const zoomCount = productLogs.filter((log: any) => log.actions_taken?.action === 'image_zoomed').length;
+        const viewCount = productLogs.filter((log: MenuAccessLogRow) => log.actions_taken?.action === 'image_viewed').length;
+        const zoomCount = productLogs.filter((log: MenuAccessLogRow) => log.actions_taken?.action === 'image_zoomed').length;
 
-        const addToCartCount = productLogs.filter((log: any) => log.actions_taken?.action === 'add_to_cart').length;
+        const addToCartCount = productLogs.filter((log: MenuAccessLogRow) => log.actions_taken?.action === 'add_to_cart').length;
         const conversionRate = viewCount > 0 ? (addToCartCount / viewCount) * 100 : 0;
 
         return {

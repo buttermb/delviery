@@ -11,7 +11,7 @@ export interface SecurityAlert {
   event_type: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
   description: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
   created_at: string;
   menu_name?: string;
 }
@@ -83,10 +83,13 @@ export const useSecurityAlerts = () => {
             return;
           }
 
-          const newEvent = payload.new as any;
+          const newEvent = payload.new as Record<string, unknown>;
 
           // Validate required fields
-          if (!newEvent.id || !newEvent.menu_id || !newEvent.event_type) {
+          const eventId = newEvent.id as string | undefined;
+          const menuId = newEvent.menu_id as string | undefined;
+          const eventType = newEvent.event_type as string | undefined;
+          if (!eventId || !menuId || !eventType) {
             logger.error('Missing required fields in security event');
             return;
           }
@@ -95,7 +98,7 @@ export const useSecurityAlerts = () => {
           const { data: menu } = await supabase
             .from('disposable_menus')
             .select('name, tenant_id')
-            .eq('id', newEvent.menu_id)
+            .eq('id', menuId)
             .maybeSingle();
 
           // Only show alerts for menus owned by this tenant
@@ -105,13 +108,13 @@ export const useSecurityAlerts = () => {
           }
 
           const alert: SecurityAlert = {
-            id: newEvent.id,
-            menu_id: newEvent.menu_id,
-            event_type: newEvent.event_type,
-            severity: newEvent.severity || 'low',
-            description: `${newEvent.event_type.replace(/_/g, ' ')} detected`,
-            metadata: newEvent.event_data || {},
-            created_at: newEvent.created_at,
+            id: eventId,
+            menu_id: menuId,
+            event_type: eventType,
+            severity: (newEvent.severity as SecurityAlert['severity']) || 'low',
+            description: `${eventType.replace(/_/g, ' ')} detected`,
+            metadata: (newEvent.event_data as Record<string, unknown>) || {},
+            created_at: newEvent.created_at as string,
             menu_name: menu?.name
           };
 

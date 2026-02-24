@@ -275,9 +275,7 @@ function CashRegisterContent() {
       if (!tenantId) return [];
 
       try {
-        // pos_transactions table may not be in generated types yet
-        const client = supabase as any;
-        const { data, error } = await client
+        const { data, error } = await supabase
           .from('pos_transactions')
           .select('*')
           .eq('tenant_id', tenantId)

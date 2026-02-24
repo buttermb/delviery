@@ -85,7 +85,7 @@ export function ExecutiveSummaryWidget() {
                     .gt('balance', 0),
             ]);
 
-            const unpaidInvoices = (invoicesResult.data as any)?.reduce((sum: number, i: any) => sum + Number(i.total || 0), 0) || 0;
+            const unpaidInvoices = invoicesResult.data?.reduce((sum, i) => sum + Number(i.total || 0), 0) || 0;
             const unpaidTabs = tabsResult.data?.reduce((sum, c) => sum + Number(c.balance || 0), 0) || 0;
             const arOutstanding = unpaidInvoices + unpaidTabs;
 

@@ -269,7 +269,7 @@ export function BigPlugRunnerPortal() {
       {activeDeliveries && activeDeliveries.length > 1 && (
         <Card className="p-4">
           <h3 className="font-semibold mb-3">NEXT UP</h3>
-          {activeDeliveries.slice(1).map((delivery: any) => (
+          {activeDeliveries.slice(1).map((delivery) => (
             <div key={delivery.id} className="p-3 border rounded-lg mb-2">
               <div className="font-medium">
                 #{delivery.orders?.order_number || 'N/A'}
@@ -293,7 +293,7 @@ function DeliveryCompleteDialog({
   onComplete, 
   isLoading 
 }: { 
-  delivery: any; 
+  delivery: Record<string, unknown>;
   onComplete: (collected: string) => void;
   isLoading?: boolean;
 }) {

@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 
 export interface OnboardingStep {
   id: string;
@@ -23,7 +24,7 @@ export interface UseOnboardingProgressResult {
 
 export function useOnboardingProgress(tenantId: string | undefined): UseOnboardingProgressResult {
   const { data: tenant } = useQuery({
-    queryKey: ["tenant", tenantId],
+    queryKey: queryKeys.tenantSingle.byId(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
       try {
@@ -57,13 +58,13 @@ export function useOnboardingProgress(tenantId: string | undefined): UseOnboardi
     enabled: !!tenantId,
   });
 
-  const usage = (tenant?.usage as any) || {};
+  const usage = (tenant?.usage ?? {}) as Record<string, number>;
 
   const steps: OnboardingStep[] = [
     { id: "account", label: "Account Created", completed: true },
-    { id: "products", label: "Products Added", completed: ((usage as any).products || 0) > 0 },
-    { id: "customers", label: "Customers Added", completed: ((usage as any).customers || 0) > 0 },
-    { id: "menu", label: "Menu Created", completed: ((usage as any).menus || 0) > 0 },
+    { id: "products", label: "Products Added", completed: (usage.products || 0) > 0 },
+    { id: "customers", label: "Customers Added", completed: (usage.customers || 0) > 0 },
+    { id: "menu", label: "Menu Created", completed: (usage.menus || 0) > 0 },
   ];
 
   const completedCount = steps.filter((s) => s.completed).length;

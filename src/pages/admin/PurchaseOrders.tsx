@@ -128,7 +128,7 @@ export default function PurchaseOrders() {
 
   // Fetch vendors for display
   const { data: vendors } = useQuery({
-    queryKey: ["vendors", tenant?.id],
+    queryKey: queryKeys.vendorsSimple.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

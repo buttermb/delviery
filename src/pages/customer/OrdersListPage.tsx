@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -75,7 +76,7 @@ export default function OrdersListPage() {
 
   // Fetch all orders
   const { data: orders, isLoading } = useQuery({
-    queryKey: ["customer-all-orders", tenantId, customerId],
+    queryKey: queryKeys.customerAllOrders.byTenantCustomer(tenantId, customerId),
     queryFn: async (): Promise<Array<Record<string, unknown>>> => {
       if (!tenantId || !customerId) return [];
 

@@ -6,6 +6,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +37,7 @@ export default function TrialExpiredPage() {
 
   // Fetch tenant stats
   const { data: tenantStats } = useQuery<TenantStats | null>({
-    queryKey: ["trial-expired-stats", tenant?.id],
+    queryKey: queryKeys.trialExpiredStats.byTenant(tenant?.id),
     queryFn: async (): Promise<TenantStats | null> => {
       if (!tenant?.id) return null;
 

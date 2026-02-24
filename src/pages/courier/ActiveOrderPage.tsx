@@ -106,7 +106,7 @@ export default function CourierActiveOrderPage() {
   const updateOrderStatus = async (newStatus: string) => {
     setUpdating(true);
     try {
-      const updates: any = { status: newStatus };
+      const updates: Record<string, unknown> = { status: newStatus };
 
       if (newStatus === 'picked_up') {
         updates.courier_picked_up_at = new Date().toISOString();

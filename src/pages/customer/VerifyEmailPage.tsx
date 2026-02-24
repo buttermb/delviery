@@ -27,7 +27,7 @@ export default function CustomerVerifyEmailPage() {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [verified, setVerified] = useState(false);
-  const [tenant, setTenant] = useState<any>(null);
+  const [tenant, setTenant] = useState<{ id: string; business_name: string; slug: string } | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
 
   useEffect(() => {
@@ -39,7 +39,9 @@ export default function CustomerVerifyEmailPage() {
           .eq('slug', tenantSlug)
           .maybeSingle();
 
-        if (data && !error) {
+        if (error) {
+          logger.error('Failed to fetch tenant', error, { component: 'CustomerVerifyEmailPage', tenantSlug });
+        } else if (data) {
           setTenant(data);
         }
         setTenantLoading(false);
@@ -106,7 +108,7 @@ export default function CustomerVerifyEmailPage() {
       try {
         // Get customer user to find tenant
         const { data: customerUser } = await supabase
-          .from('customer_users' as any)
+          .from('customer_users')
           .select('tenant_id')
           .eq('email', email.toLowerCase())
           .maybeSingle();
@@ -116,7 +118,7 @@ export default function CustomerVerifyEmailPage() {
           const { data: tenantData } = await supabase
             .from('tenants')
             .select('slug')
-            .eq('id', (customerUser as any).tenant_id)
+            .eq('id', customerUser.tenant_id)
             .maybeSingle();
 
           if (tenantData) {
@@ -161,7 +163,7 @@ export default function CustomerVerifyEmailPage() {
     try {
       // Get customer user ID
       const { data: customerUser } = await supabase
-        .from('customer_users' as any)
+        .from('customer_users')
         .select('id, tenant_id')
         .eq('email', email.toLowerCase())
         .maybeSingle();
@@ -180,8 +182,8 @@ export default function CustomerVerifyEmailPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          customer_user_id: (customerUser as any).id,
-          tenant_id: (customerUser as any).tenant_id,
+          customer_user_id: customerUser.id,
+          tenant_id: customerUser.tenant_id,
           email: email.toLowerCase(),
           tenant_name: tenant?.business_name,
         }),

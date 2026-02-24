@@ -42,7 +42,7 @@ export default function WholesaleOrderDetailPage() {
   // Load saved mode preference
   useEffect(() => {
     try {
-      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE as any) as CustomerMode | null;
+      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE) as CustomerMode | null;
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
@@ -279,7 +279,7 @@ export default function WholesaleOrderDetailPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      orderItems.map((item: any) => (
+                      orderItems.map((item) => (
                         <TableRow key={item.id}>
                           <TableCell className="font-medium">{item.product_name}</TableCell>
                           <TableCell>{item.quantity} {item.unit_type || 'unit'}</TableCell>

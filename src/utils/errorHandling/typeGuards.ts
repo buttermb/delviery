@@ -32,7 +32,7 @@ export function isAuthError(error: unknown): error is AuthError {
         'message' in error &&
         'status' in error &&
         'name' in error &&
-        (error as any).name === 'AuthError'
+        (error as Record<string, unknown>).name === 'AuthError'
     );
 }
 
@@ -44,7 +44,7 @@ export function hasMessage(error: unknown): error is { message: string } {
         typeof error === 'object' &&
         error !== null &&
         'message' in error &&
-        typeof (error as any).message === 'string'
+        typeof (error as Record<string, unknown>).message === 'string'
     );
 }
 

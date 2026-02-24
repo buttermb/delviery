@@ -61,13 +61,13 @@ export default function CouponManager() {
         queryFn: async () => {
             if (!tenant?.id) return [];
             const { data, error } = await supabase
-                .from('marketplace_coupons' as any)
+                .from('marketplace_coupons')
                 .select('*')
                 .eq('tenant_id', tenant.id)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            return data.map((c: any) => ({
+            return data.map((c) => ({
                 ...c,
                 type: c.discount_type, // Map DB field to UI field if needed
                 amount: c.discount_value
@@ -92,7 +92,7 @@ export default function CouponManager() {
             };
 
             const { error } = await supabase
-                .from('marketplace_coupons' as any)
+                .from('marketplace_coupons')
                 .insert([payload]);
 
             if (error) throw error;
@@ -110,7 +110,7 @@ export default function CouponManager() {
         mutationFn: async (id: string) => {
             if (!tenant?.id) throw new Error("No tenant");
             const { error } = await supabase
-                .from('marketplace_coupons' as any)
+                .from('marketplace_coupons')
                 .delete()
                 .eq('id', id)
                 .eq('tenant_id', tenant.id);
@@ -174,7 +174,7 @@ export default function CouponManager() {
                                 <Label htmlFor="type" className="text-right">Type</Label>
                                 <Select
                                     value={newCoupon.type}
-                                    onValueChange={(val: any) => setNewCoupon(prev => ({ ...prev, type: val }))}
+                                    onValueChange={(val) => setNewCoupon(prev => ({ ...prev, type: val }))}
                                 >
                                     <SelectTrigger className="col-span-3">
                                         <SelectValue placeholder="Select type" />

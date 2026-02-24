@@ -33,14 +33,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LastUpdated } from '@/components/shared/LastUpdated';
 import CopyButton from '@/components/CopyButton';
 import { formatSmartDate } from '@/lib/formatters';
+
+interface OrderDataItems {
+  items?: Array<{ quantity: number; name?: string; product_name?: string }>;
+}
+
+type MenuOrder = NonNullable<ReturnType<typeof useMenuOrders>['data']>[number];
+
 const DisposableMenuOrders = () => {
   const { tenant } = useTenantAdminAuth();
   const { navigateToAdmin } = useTenantNavigation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'processing' | 'completed' | 'cancelled'>('all');
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [selectedOrder, setSelectedOrder] = useState<MenuOrder | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [convertOrder, setConvertOrder] = useState<any>(null);
+  const [convertOrder, setConvertOrder] = useState<MenuOrder | null>(null);
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
@@ -101,7 +108,7 @@ const DisposableMenuOrders = () => {
     showSuccessToast('Export Complete', 'All orders exported to CSV');
   };
 
-  const handleViewOrder = (order: any) => {
+  const handleViewOrder = (order: MenuOrder) => {
     setSelectedOrder(order);
     setDetailsOpen(true);
   };
@@ -386,25 +393,30 @@ const DisposableMenuOrders = () => {
                     </div>
 
                     {/* Order Items Preview */}
-                    {order.order_data && typeof order.order_data === 'object' && 'items' in order.order_data && Array.isArray((order.order_data as any).items) && (order.order_data as any).items.length > 0 && (
-                      <div className="pt-3 border-t">
-                        <div className="text-xs text-muted-foreground mb-2">
-                          {(order.order_data as any).items.length} item(s)
+                    {(() => {
+                      const orderItems = (order.order_data && typeof order.order_data === 'object' && 'items' in order.order_data)
+                        ? (order.order_data as unknown as OrderDataItems).items
+                        : undefined;
+                      return orderItems && orderItems.length > 0 && (
+                        <div className="pt-3 border-t">
+                          <div className="text-xs text-muted-foreground mb-2">
+                            {orderItems.length} item(s)
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {orderItems.slice(0, 3).map((item, idx) => (
+                              <Badge key={idx} variant="outline" className="text-xs">
+                                {item.quantity}x {item.name || item.product_name}
+                              </Badge>
+                            ))}
+                            {orderItems.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{orderItems.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          {(order.order_data as any).items.slice(0, 3).map((item: any, idx: number) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
-                              {item.quantity}x {item.name || item.product_name}
-                            </Badge>
-                          ))}
-                          {(order.order_data as any).items.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{(order.order_data as any).items.length - 3} more
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 ))}
               </div>

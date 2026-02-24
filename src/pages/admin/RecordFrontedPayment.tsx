@@ -30,7 +30,14 @@ export default function RecordFrontedPayment() {
   const { tenant } = useTenantAdminAuth();
   const { recordFrontedPayment, isRecordingFrontedPayment } = useRecordPayment();
   
-  const [frontedItem, setFrontedItem] = useState<any>(null);
+  const [frontedItem, setFrontedItem] = useState<{
+    id: string;
+    expected_revenue: number | null;
+    payment_received: number | null;
+    product?: { name: string | null } | null;
+    client?: { id: string; business_name: string; outstanding_balance: number } | null;
+    [key: string]: unknown;
+  } | null>(null);
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [reference, setReference] = useState('');

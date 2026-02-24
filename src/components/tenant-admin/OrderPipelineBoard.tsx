@@ -257,7 +257,7 @@ export function OrderPipelineBoard() {
 
             setLastFetched(new Date());
 
-            return data.map((order: any) => ({
+            return data.map((order) => ({
                 id: order.id,
                 customer_name: order.wholesale_clients?.business_name || 'Unknown Client',
                 total_amount: Number(order.total_amount),

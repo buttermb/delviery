@@ -103,6 +103,12 @@ export const useLocations = (filters?: { status?: string }) => {
           p_tenant_id: tenant.id,
         });
 
+        if (error) {
+          logger.warn('get_location_operations_summary RPC failed, computing manually', {
+            component: 'useLocations',
+            error,
+          });
+        }
         if (!error && data) {
           return data as unknown as LocationOperationsSummary[];
         }

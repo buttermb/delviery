@@ -69,8 +69,8 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
         if (error) throw error;
 
         // Fetch profiles manually for accuracy
-        const userIds = [...new Set(orders.map((o: any) => o.user_id).filter(Boolean))];
-        const profilesMap: Record<string, any> = {};
+        const userIds = [...new Set(orders.map((o: { user_id?: string }) => o.user_id).filter(Boolean))] as string[];
+        const profilesMap: Record<string, { full_name?: string; email?: string }> = {};
 
         if (userIds.length > 0) {
           const { data: profiles } = await supabase
@@ -81,15 +81,16 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
           profiles?.forEach(p => { profilesMap[p.user_id] = p; });
         }
 
-        return orders.map((o: any) => ({
+        return orders.map((o: Record<string, unknown>) => ({
           ...o,
-          user_profile: profilesMap[o.user_id]
+          user_profile: profilesMap[(o.user_id as string) || '']
         }));
       }
 
       // Default fallback for other types
+      // Dynamic table - 'users' may refer to profiles table; cast needed for dynamic name
       let baseQuery = supabase
-        .from(exportType as any)
+        .from(exportType as 'products')
         .select('*')
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
@@ -121,19 +122,21 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
         filename = `orders-${dateRange}-${new Date().toISOString().split('T')[0]}.csv`;
         // Prepare CSV with new fields
         const header = 'Order ID,Order Number,Status,Total,Customer Name,Customer Email,Items Summary,Created At';
-        const rows = data.map((order: any) => {
-          const customerName = order.user_profile?.full_name || 'N/A';
-          const customerEmail = order.user_profile?.email || 'N/A';
+        const rows = data.map((order: Record<string, unknown>) => {
+          const profile = order.user_profile as { full_name?: string; email?: string } | undefined;
+          const customerName = profile?.full_name || 'N/A';
+          const customerEmail = profile?.email || 'N/A';
 
           // Format Items Summary: "2x Burger, 1x Coke"
-          const itemsSummary = order.order_items?.map((item: any) => {
+          const items = order.order_items as Array<{ quantity: number; product?: { name?: string }; product_name?: string }> | undefined;
+          const itemsSummary = items?.map((item) => {
             const productName = item.product?.name || item.product_name || 'Unknown Item';
             return `${item.quantity}x ${productName}`;
           }).join('; ') || '';
 
           return [
             order.id,
-            order.order_number || order.id.slice(0, 8),
+            order.order_number || (order.id as string).slice(0, 8),
             order.status,
             order.total_amount || 0,
             `"${customerName}"`,
@@ -147,7 +150,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
         filename = `users-${dateRange}-${new Date().toISOString().split('T')[0]}.csv`;
         csvContent = [
           'Email,Full Name,Phone,Age Verified,Order Count,Total Spent',
-          ...data.map((user: any) => [
+          ...data.map((user: Record<string, unknown>) => [
             user.email || 'N/A',
             user.full_name || 'N/A',
             user.phone || 'N/A',
@@ -160,7 +163,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
         filename = `products-${dateRange}-${new Date().toISOString().split('T')[0]}.csv`;
         csvContent = [
           'Name,Category,Price,Stock,Created At',
-          ...data.map((product: any) => [
+          ...data.map((product: Record<string, unknown>) => [
             product.name || 'N/A',
             product.category || 'N/A',
             product.price || 0,
@@ -223,7 +226,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
         {/* Date Range */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Date Range</label>
-          <Select value={dateRange} onValueChange={(v: any) => setDateRange(v)}>
+          <Select value={dateRange} onValueChange={(v: string) => setDateRange(v as typeof dateRange)}>
             <SelectTrigger>
               <SelectValue placeholder="Select date range" />
             </SelectTrigger>

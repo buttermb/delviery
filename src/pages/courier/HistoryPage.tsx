@@ -104,7 +104,7 @@ export default function CourierHistoryPage() {
         const { data, error } = await query;
         if (error) throw error;
 
-        data?.forEach((delivery: any) => {
+        data?.forEach((delivery) => {
           allRecords.push({
             id: delivery.id,
             order_number: delivery.order?.order_number || 'N/A',

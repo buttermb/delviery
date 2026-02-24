@@ -298,6 +298,14 @@ function useProductPerformance(productId: string | undefined, productCategory?: 
           .eq('tenant_id', tenant.id)
           .eq('category', productCategory);
 
+        if (categoryError) {
+          logger.warn('Failed to fetch category products for comparison', {
+            component: 'ProductPerformanceCard',
+            category: productCategory,
+            error: categoryError,
+          });
+        }
+
         if (!categoryError && categoryProducts && categoryProducts.length > 1) {
           const categoryProductIds = categoryProducts.map(p => p.id);
 

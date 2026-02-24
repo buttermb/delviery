@@ -14,7 +14,7 @@ export const useWholesaleClients = (options?: { includeArchived?: boolean }) => 
   const includeArchived = options?.includeArchived ?? false;
 
   return useQuery({
-    queryKey: ["wholesale-clients", tenant?.id, { includeArchived }],
+    queryKey: queryKeys.wholesaleData.clients(tenant?.id, { includeArchived }),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
@@ -43,7 +43,7 @@ export const useWholesaleOrders = () => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["wholesale-orders", tenant?.id],
+    queryKey: queryKeys.wholesaleData.orders(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
@@ -280,7 +280,7 @@ export const useUpdateDeliveryStatus = () => {
  */
 export const useWholesaleInventory = (tenantId?: string) => {
   return useQuery({
-    queryKey: ["products-inventory", tenantId],
+    queryKey: queryKeys.wholesaleData.productsInventory(tenantId),
     queryFn: async () => {
       if (!tenantId) throw new Error('No tenant context');
 
@@ -318,7 +318,7 @@ export const useWholesaleRunners = () => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["wholesale-runners", tenant?.id],
+    queryKey: queryKeys.wholesaleData.runners(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -345,7 +345,7 @@ export const useWholesaleCouriers = () => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["wholesale-couriers", tenant?.id],
+    queryKey: queryKeys.wholesaleData.couriers(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -370,7 +370,7 @@ export const useProductsForWholesale = () => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["products-for-wholesale", tenant?.id],
+    queryKey: queryKeys.wholesaleData.productsForWholesale(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -417,7 +417,7 @@ export const useWholesalePayments = () => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["wholesale-payments", tenant?.id],
+    queryKey: queryKeys.wholesaleData.payments(tenant?.id),
     queryFn: async (): Promise<WholesalePaymentWithClient[]> => {
       if (!tenant?.id) throw new Error('No tenant context');
 
@@ -442,7 +442,7 @@ export const useWholesaleDeliveries = () => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["wholesale-deliveries", tenant?.id],
+    queryKey: queryKeys.wholesaleData.deliveries(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
@@ -470,7 +470,7 @@ export const useClientDetail = (clientId: string) => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["wholesale-client", clientId, tenant?.id],
+    queryKey: queryKeys.wholesaleData.clientDetail(clientId, tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
@@ -494,7 +494,7 @@ export const useClientOrders = (clientId: string) => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["wholesale-client-orders", clientId, tenant?.id],
+    queryKey: queryKeys.wholesaleData.clientOrders(clientId, tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
@@ -519,18 +519,18 @@ export const useClientPayments = (clientId: string) => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["wholesale-client-payments", clientId, tenant?.id],
+    queryKey: queryKeys.wholesaleData.clientPayments(clientId, tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
        
-      const { data, error } = await (supabase
+      const { data, error } = await supabase
         .from("wholesale_payments")
         .select("id, client_id, amount, payment_method, payment_date, reference_number, notes, status, created_at")
         .eq("client_id", clientId)
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false })
-        .limit(20) as any);
+        .limit(20);
 
       if (error) throw error;
       return data || [];

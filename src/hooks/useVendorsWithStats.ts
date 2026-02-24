@@ -116,7 +116,7 @@ export function useVendorsWithStats() {
       const ratingMap = new Map<string, { total: number; count: number }>();
       if (ratings) {
         for (const rating of ratings) {
-          const r = rating as any;
+          const r = rating as unknown as { vendor_id: string; overall_score: number };
           const existing = ratingMap.get(r.vendor_id) || { total: 0, count: 0 };
           ratingMap.set(r.vendor_id, {
             total: existing.total + r.overall_score,
@@ -144,7 +144,7 @@ export function useVendorsWithStats() {
           zip_code: vendor.zip_code,
           license_number: vendor.license_number,
           payment_terms: vendor.payment_terms,
-          lead_time_days: (vendor as any).lead_time_days || null,
+          lead_time_days: (vendor as unknown as Record<string, unknown>).lead_time_days as number | null || null,
           status: vendor.status,
           notes: vendor.notes,
           product_count: productCountMap.get(vendor.name) || 0,
@@ -212,7 +212,7 @@ export function useVendorDetails(vendorName: string | null | undefined) {
       const avgRating =
         ratings && ratings.length > 0
           ? Math.round(
-              (ratings.reduce((sum: number, r: any) => sum + r.overall_score, 0) / ratings.length) * 10
+              (ratings.reduce((sum: number, r: { overall_score: number }) => sum + r.overall_score, 0) / ratings.length) * 10
             ) / 10
           : null;
 
@@ -228,7 +228,7 @@ export function useVendorDetails(vendorName: string | null | undefined) {
         zip_code: vendor.zip_code,
         license_number: vendor.license_number,
         payment_terms: vendor.payment_terms,
-        lead_time_days: (vendor as any).lead_time_days || null,
+        lead_time_days: (vendor as unknown as Record<string, unknown>).lead_time_days as number | null || null,
         status: vendor.status,
         notes: vendor.notes,
         product_count: productCount || 0,

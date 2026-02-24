@@ -91,7 +91,7 @@ export function validateEncryptedRecord(record: Record<string, unknown>): {
   if (!record.encryption_metadata) {
     errors.push('Missing encryption_metadata');
   } else {
-    const metadata = record.encryption_metadata as any;
+    const metadata = record.encryption_metadata as Record<string, unknown>;
     if (typeof metadata !== 'object' || metadata === null) {
       errors.push('Invalid encryption_metadata format');
     } else {

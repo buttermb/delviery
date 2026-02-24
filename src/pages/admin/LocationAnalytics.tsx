@@ -19,7 +19,7 @@ export default function LocationAnalytics() {
 
       try {
         const { data, error } = await supabase
-          .from('locations' as any)
+          .from('locations')
           .select('*, orders(*)')
           .eq('tenant_id', tenantId);
 
@@ -38,10 +38,10 @@ export default function LocationAnalytics() {
     return <EnhancedLoadingState variant="dashboard" message="Loading location analytics..." />;
   }
 
-  const locationStats = (locations || []).map((location: any) => ({
+  const locationStats = (locations || []).map((location) => ({
     name: location.name || location.location_name || 'Unknown',
-    orders: location.orders?.length || 0,
-    revenue: location.orders?.reduce((sum: number, o: any) => sum + parseFloat(o.total || 0), 0) || 0,
+    orders: (location.orders as unknown as { total: string | number }[] | null)?.length || 0,
+    revenue: (location.orders as unknown as { total: string | number }[] | null)?.reduce((sum: number, o) => sum + parseFloat(String(o.total || 0)), 0) || 0,
   }));
 
   const totalLocations = locations?.length || 0;

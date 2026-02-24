@@ -31,13 +31,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { queryKeys } from '@/lib/queryKeys';
 
 // Type helper to avoid excessive deep instantiation
-const asListing = (data: any): MarketplaceListing => data as MarketplaceListing;
+const asListing = (data: unknown): MarketplaceListing => data as MarketplaceListing;
 
 export default function ListingDetailPage() {
   const { listingId } = useParams<{ listingId: string }>();
   const { tenant } = useTenantAdminAuth();
   const navigate = useNavigate();
-  const [_decryptedLabResults, _setDecryptedLabResults] = useState<any>(null);
+  const [_decryptedLabResults, _setDecryptedLabResults] = useState<string | null>(null);
   const [_decrypting, setDecrypting] = useState(false);
 
   // Fetch listing details

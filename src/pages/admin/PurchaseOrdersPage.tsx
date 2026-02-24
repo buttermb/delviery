@@ -83,19 +83,17 @@ export default function PurchaseOrdersPage() {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      // Break type inference for complex query
-      const baseQuery: any = supabase
+      let query = supabase
         .from("purchase_orders")
         .select("*")
-        .eq("tenant_id", tenant.id);
-
-      let query = baseQuery.order("created_at", { ascending: false });
+        .eq("tenant_id", tenant.id)
+        .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
       }
 
-      const { data, error }: any = await query;
+      const { data, error } = await query;
 
       if (error) {
         logger.error('Failed to fetch purchase orders', error, { component: 'PurchaseOrdersPage' });

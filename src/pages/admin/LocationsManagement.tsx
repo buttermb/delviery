@@ -21,12 +21,25 @@ import { handleError } from '@/utils/errorHandling/handlers';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { formatPhoneNumber } from '@/lib/formatters';
 
+interface Location {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  phone?: string | null;
+  email?: string | null;
+  license_number?: string | null;
+  status?: string;
+}
+
 export default function LocationsManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
-  const [locations, setLocations] = useState<any[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingLocation, setEditingLocation] = useState<any>(null);
+  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [locationToDelete, setLocationToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -88,7 +101,7 @@ export default function LocationsManagement() {
           .insert({
             ...formData,
             tenant_id: tenant.id
-          } as any);
+          });
 
         if (error) throw error;
 
@@ -107,7 +120,7 @@ export default function LocationsManagement() {
     }
   };
 
-  const handleEdit = (location: any) => {
+  const handleEdit = (location: Location) => {
     setEditingLocation(location);
     setFormData({
       name: location.name,

@@ -129,11 +129,11 @@ export default function BulkOperationsPage() {
 
   // Execute bulk operation
   const executeBulkOperation = useMutation({
-    mutationFn: async ({ operation, productIds, params }: { operation: string; productIds: string[]; params: any }) => {
+    mutationFn: async ({ operation, productIds, params }: { operation: string; productIds: string[]; params: Record<string, unknown> }) => {
       if (!tenantId) throw new Error('Tenant ID missing');
 
       // Build update object based on operation
-      const updates: any = {};
+      const updates: Record<string, unknown> = {};
 
       switch (operation) {
         case 'update-price':

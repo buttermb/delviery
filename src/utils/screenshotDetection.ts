@@ -64,7 +64,7 @@ export const initScreenshotDetection = (
 
   // Method 3: Monitor for screenshot API (if available)
   if ('getScreenDetails' in window) {
-    (window as any).getScreenDetails().then(() => {
+    (window as unknown as Record<string, () => Promise<unknown>>).getScreenDetails().then(() => {
       notifyScreenshotAttempt(menuId, customerId, customerName, deviceFingerprint, 'api');
     }).catch(() => {
       // API not available or permission denied

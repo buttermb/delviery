@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { escapePostgresLike } from "@/lib/utils/searchSanitize";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ export default function CustomerLoginLanding() {
 
   // Query tenants table for business search
   const { data: businesses, isLoading } = useQuery({
-    queryKey: ["tenant-search", searchTerm],
+    queryKey: queryKeys.tenantSearchPage.byTerm(searchTerm),
     queryFn: async () => {
       let query = supabase
         .from("tenants")

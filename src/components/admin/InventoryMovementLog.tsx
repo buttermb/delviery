@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ export function InventoryMovementLog() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: movements = [], isLoading } = useQuery({
-    queryKey: ["inventory-movements", tenant?.id],
+    queryKey: queryKeys.inventoryMovementsLog.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -54,7 +55,7 @@ export function InventoryMovementLog() {
       }
 
       // Map to our interface
-      return (data || []).map((m: any) => ({
+      return (data || []).map((m) => ({
         id: m.id,
         product_name: m.wholesale_inventory?.strain_name || 'Unknown Product',
         movement_type: m.movement_type || 'adjustment',

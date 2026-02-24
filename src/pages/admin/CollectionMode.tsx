@@ -117,7 +117,7 @@ function useCollectionData() {
         .eq('tenant_id', tenant?.id);
 
       const paymentsByClient: Record<string, number> = {};
-      (payments as any[])?.forEach((p: any) => {
+      payments?.forEach((p) => {
         paymentsByClient[p.client_id] = (paymentsByClient[p.client_id] || 0) + Number(p.amount || 0);
       });
 
@@ -940,7 +940,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
           <Tabs
             defaultValue="all"
             value={activeTab}
-            onValueChange={(v) => setActiveTab(v as any)}
+            onValueChange={(v) => setActiveTab(v as 'all' | 'overdue' | 'due_this_week' | 'upcoming')}
             className="w-full md:w-auto"
           >
             <TabsList className="bg-muted border border-border w-full md:w-auto flex overflow-x-auto">

@@ -326,7 +326,7 @@ async function fetchProductsData(tenantId: string): Promise<Omit<InventoryAnalyt
     throw error;
   }
 
-  const productsList = (products ?? []) as any[];
+  const productsList = products ?? [];
 
   const totalProducts = productsList.length;
   const activeProducts = productsList.filter(p => p.in_stock !== false).length;

@@ -42,7 +42,7 @@ export const ViewLimitSettings = ({ settings, onChange }: ViewLimitSettingsProps
             <Input
               type="number"
               min="1"
-              value={String((settings?.max_views_per_period as any) || 5)}
+              value={String(settings?.max_views_per_period || 5)}
               onChange={(e) => updateSetting('max_views_per_period', parseInt(e.target.value))}
               className="mt-2"
             />
@@ -54,7 +54,7 @@ export const ViewLimitSettings = ({ settings, onChange }: ViewLimitSettingsProps
           <div>
             <Label>Tracking Period</Label>
             <Select
-              value={String((settings?.tracking_period as any) || 'week')}
+              value={String(settings?.tracking_period || 'week')}
               onValueChange={(value) => updateSetting('tracking_period', value)}
             >
               <SelectTrigger className="mt-2">
@@ -79,7 +79,7 @@ export const ViewLimitSettings = ({ settings, onChange }: ViewLimitSettingsProps
             </div>
             <Switch
               id="reset-on-period"
-              checked={Boolean((settings?.reset_on_period as any) !== false)}
+              checked={Boolean(settings?.reset_on_period !== false)}
               onCheckedChange={(checked) => updateSetting('reset_on_period', checked)}
             />
           </div>

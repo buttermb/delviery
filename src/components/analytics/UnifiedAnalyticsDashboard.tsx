@@ -53,21 +53,21 @@ export function UnifiedAnalyticsDashboard({ tenantId }: UnifiedAnalyticsProps) {
                 .limit(50);
 
             const transactions: Transaction[] = [
-                ...(wholesale as any[] || []).map(o => ({
+                ...(wholesale || []).map(o => ({
                     id: o.id,
                     source: 'wholesale' as const,
                     amount: Number(o.total_amount) || 0,
                     created_at: o.created_at,
                     status: o.status
                 })),
-                ...(pos as any[] || []).map(o => ({
+                ...(pos || []).map(o => ({
                     id: o.id,
                     source: 'pos' as const,
                     amount: Number(o.total_amount) || 0,
                     created_at: o.created_at,
                     status: o.payment_status || 'completed'
                 })),
-                ...(menu as any[] || []).map(o => ({
+                ...(menu || []).map(o => ({
                     id: o.id,
                     source: 'menu' as const,
                     amount: Number(o.total_amount) || 0,

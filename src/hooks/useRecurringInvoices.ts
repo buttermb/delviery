@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
+import { queryKeys } from "@/lib/queryKeys";
 
 export interface RecurringLineItem {
   description: string;
@@ -40,7 +41,7 @@ export function useRecurringInvoices() {
   const queryClient = useQueryClient();
 
   const { data: schedules = [], isLoading } = useQuery({
-    queryKey: ["recurring-schedules", tenant?.id],
+    queryKey: queryKeys.recurringSchedules.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -89,7 +90,7 @@ export function useRecurringInvoices() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["recurring-schedules", tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurringSchedules.byTenant(tenant?.id) });
       toast.success("Recurring invoice schedule created");
     },
     onError: (e) => toast.error(`Failed to create schedule: ${e.message}`)
@@ -122,7 +123,7 @@ export function useRecurringInvoices() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["recurring-schedules", tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurringSchedules.byTenant(tenant?.id) });
       toast.success("Schedule updated");
     },
     onError: () => toast.error("Failed to update schedule")
@@ -140,7 +141,7 @@ export function useRecurringInvoices() {
       if (error) throw error;
     },
     onSuccess: (_, { is_active }) => {
-      queryClient.invalidateQueries({ queryKey: ["recurring-schedules", tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurringSchedules.byTenant(tenant?.id) });
       toast.success(is_active ? "Schedule activated" : "Schedule paused");
     },
     onError: () => toast.error("Failed to update schedule")
@@ -158,7 +159,7 @@ export function useRecurringInvoices() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["recurring-schedules", tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurringSchedules.byTenant(tenant?.id) });
       toast.success("Schedule deleted");
     },
     onError: () => toast.error("Failed to delete schedule")

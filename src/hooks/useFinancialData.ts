@@ -89,27 +89,26 @@ export const useCashFlow = () => {
       const weekStart = startOfWeek(today);
       const weekEnd = endOfWeek(today);
 
-      // Today's collections - filtered by tenant_id (using any to avoid type depth issues)
-      const paymentsQuery: any = supabase.from("wholesale_payments").select("amount");
-      const { data: todayPayments } = await paymentsQuery.eq("tenant_id", tenant.id).gte("created_at", startOfToday.toISOString());
+      // Today's collections - filtered by tenant_id
+      const { data: todayPayments } = await supabase.from("wholesale_payments").select("amount")
+        .eq("tenant_id", tenant.id).gte("created_at", startOfToday.toISOString());
 
-      const collections_today = todayPayments?.reduce((sum: number, p: any) => sum + Number(p.amount), 0) || 0;
+      const collections_today = todayPayments?.reduce((sum: number, p) => sum + Number(p.amount), 0) || 0;
 
       // Expected this week - filtered by tenant_id
-      const ordersQuery: any = supabase.from("wholesale_orders").select("total_amount");
-      const { data: weekOrders } = await ordersQuery
+      const { data: weekOrders } = await supabase.from("wholesale_orders").select("total_amount")
         .eq("tenant_id", tenant.id)
         .gte("created_at", weekStart.toISOString())
         .lte("created_at", weekEnd.toISOString())
         .neq("status", "cancelled");
 
-      const expected_this_week = weekOrders?.reduce((sum: number, o: any) => sum + Number(o.total_amount), 0) || 0;
+      const expected_this_week = weekOrders?.reduce((sum: number, o) => sum + Number(o.total_amount), 0) || 0;
 
       // Outstanding balance - filtered by tenant_id
-      const clientsQuery: any = supabase.from("wholesale_clients").select("outstanding_balance");
-      const { data: clients } = await clientsQuery.eq("tenant_id", tenant.id);
+      const { data: clients } = await supabase.from("wholesale_clients").select("outstanding_balance")
+        .eq("tenant_id", tenant.id);
 
-      const outstanding = clients?.reduce((sum: number, c: any) => sum + Number(c.outstanding_balance), 0) || 0;
+      const outstanding = clients?.reduce((sum: number, c) => sum + Number(c.outstanding_balance), 0) || 0;
 
       return {
         incoming: {

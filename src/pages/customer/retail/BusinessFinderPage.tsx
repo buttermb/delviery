@@ -51,7 +51,7 @@ export default function BusinessFinderPage() {
   // Load saved mode preference
   useEffect(() => {
     try {
-      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE as any) as CustomerMode | null;
+      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE) as CustomerMode | null;
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
@@ -100,7 +100,7 @@ export default function BusinessFinderPage() {
   });
 
   // Filter businesses by search query
-  const filteredBusinesses = businesses.filter((business: any) => {
+  const filteredBusinesses = businesses.filter((business) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -208,7 +208,7 @@ export default function BusinessFinderPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredBusinesses.map((business: any) => (
+            {filteredBusinesses.map((business) => (
               <Card key={business.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">

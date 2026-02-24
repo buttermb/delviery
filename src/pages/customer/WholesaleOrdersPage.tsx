@@ -261,7 +261,7 @@ export default function WholesaleOrdersPage() {
                           <div className="flex items-center gap-2">
                             <Building2 className="h-4 w-4 text-muted-foreground" />
                             <span>{order.marketplace_profiles?.business_name || 'Unknown'}</span>
-                            {(order as any).marketplace_profiles?.verified_badge && (
+                            {order.marketplace_profiles?.verified_badge && (
                               <Badge variant="outline" className="border-success/30 text-success text-xs">
                                 Verified
                               </Badge>

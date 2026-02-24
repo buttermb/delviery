@@ -72,16 +72,17 @@ export function useStorefrontOrderAlerts({
                         table: 'storefront_orders',
                     },
                     (payload) => {
-                        const order = payload.new as any;
+                        const order = payload.new as Record<string, unknown>;
 
                         // Check if this order belongs to one of our stores
-                        if (!storeIdsRef.current.includes(order.store_id)) {
+                        const storeId = order.store_id as string;
+                        if (!storeIdsRef.current.includes(storeId)) {
                             return;
                         }
 
-                        const storeName = storeNameMap[order.store_id] || 'Storefront';
-                        const customerName = order.customer_name || 'Customer';
-                        const total = order.total || 0;
+                        const storeName = storeNameMap[storeId] || 'Storefront';
+                        const customerName = (order.customer_name as string) || 'Customer';
+                        const total = (order.total as number) || 0;
 
                         // Show toast notification
                         toast.success(`${customerName} placed an order for ${formatCurrency(total)}`, {
@@ -106,8 +107,8 @@ export function useStorefrontOrderAlerts({
                         queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
 
                         logger.info('New storefront order received', {
-                            orderId: order.id,
-                            storeId: order.store_id,
+                            orderId: order.id as string,
+                            storeId: storeId,
                             total,
                             component: 'useStorefrontOrderAlerts',
                         });

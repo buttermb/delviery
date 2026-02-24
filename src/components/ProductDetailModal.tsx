@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { sortProductWeights, getDefaultWeight, formatWeight } from "@/utils/productHelpers";
 import { cleanProductName } from "@/utils/productName";
 import ReactStars from 'react-rating-stars-component';
@@ -64,7 +65,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
 
   // Fetch reviews with photos
   const { data: reviews = [] } = useQuery<Review[]>({
-    queryKey: ["product-reviews", product?.id],
+    queryKey: queryKeys.productReviews.byProduct(product?.id),
     queryFn: async () => {
       if (!product?.id) return [];
       const { data, error } = await supabase
@@ -111,15 +112,15 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
           duration: 2000,
         });
         
-        queryClient.invalidateQueries({ queryKey: ["cart"] });
-        queryClient.invalidateQueries({ queryKey: ["guest-cart-products"] });
-        
+        queryClient.invalidateQueries({ queryKey: queryKeys.customerCart.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.guestCartProducts.all });
+
         // Keep modal open but show success state
         setTimeout(() => {
           setAdded(false);
           setQuantity(1);
         }, 2000);
-        
+
         setLoading(false);
         return;
       }
@@ -154,8 +155,8 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
       // Success feedback with animation
       setAdded(true);
       haptics.success();
-      queryClient.invalidateQueries({ queryKey: ["cart", user.id] });
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerCart.byUser(user.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerCart.all });
       toast.success("🎉 Added to cart!", {
         description: `${quantity}x ${product.name}`,
         duration: 2000,
@@ -226,7 +227,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
 
       setReviewRating(0);
       setReviewComment("");
-      queryClient.invalidateQueries({ queryKey: ["product-reviews", product.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.productReviews.byProduct(product.id) });
     } catch (error) {
       logger.error("Error submitting review", error as Error, { component: 'ProductDetailModal' });
       toast.error("Failed to submit review. Please try again later.");

@@ -41,10 +41,11 @@ export default function WhiteLabelSettings() {
       customCSS: '',
     }
   );
-  const [emailFrom, setEmailFrom] = useState((tenant?.white_label as any)?.emailFrom || '');
-  const [emailLogo, setEmailLogo] = useState((tenant?.white_label as any)?.emailLogo || '');
-  const [emailFooter, setEmailFooter] = useState((tenant?.white_label as any)?.emailFooter || '');
-  const [smsFrom, setSmsFrom] = useState((tenant?.white_label as any)?.smsFrom || '');
+  const wl = tenant?.white_label as Record<string, unknown> | null;
+  const [emailFrom, setEmailFrom] = useState((wl?.emailFrom as string) || '');
+  const [emailLogo, setEmailLogo] = useState((wl?.emailLogo as string) || '');
+  const [emailFooter, setEmailFooter] = useState((wl?.emailFooter as string) || '');
+  const [smsFrom, setSmsFrom] = useState((wl?.smsFrom as string) || '');
 
   if (!tenant) {
     return (
@@ -85,7 +86,7 @@ export default function WhiteLabelSettings() {
       const { error } = await supabase
         .from('tenants')
         .update({
-          white_label: whiteLabelConfig as any,
+          white_label: whiteLabelConfig as unknown as import('@/integrations/supabase/types').Json,
           updated_at: new Date().toISOString(),
         })
         .eq('id', tenant.id);

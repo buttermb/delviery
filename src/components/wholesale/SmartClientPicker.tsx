@@ -375,13 +375,18 @@ function RecentClientCard({
   );
 }
 
+interface ClientSuggestion extends WholesaleClient {
+  suggestion_type: string;
+  suggestion_reason: string;
+}
+
 // Suggestion Card
 function SuggestionCard({
   suggestion,
   getCreditHealth,
   onSelect,
 }: {
-  suggestion: any;
+  suggestion: ClientSuggestion;
   getCreditHealth: (client: WholesaleClient) => { color: string; bg: string; label: string };
   onSelect: (client: WholesaleClient) => void;
 }) {

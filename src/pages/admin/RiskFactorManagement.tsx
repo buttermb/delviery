@@ -16,9 +16,12 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { MapPin } from "lucide-react";
 import { handleError } from "@/utils/errorHandling/handlers";
+import type { Database } from "@/integrations/supabase/types";
+
+type RiskFactor = Database['public']['Tables']['risk_factors']['Row'];
 
 export default function RiskFactorManagement() {
-  const [riskFactors, setRiskFactors] = useState<any[]>([]);
+  const [riskFactors, setRiskFactors] = useState<RiskFactor[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -46,7 +49,7 @@ export default function RiskFactorManagement() {
     }
   };
 
-  const updateRiskFactor = async (id: string, updates: any) => {
+  const updateRiskFactor = async (id: string, updates: Partial<{ risk_level: number; crime_rate: number | null; delivery_issues: number | null; scam_reports: number | null; avg_income: number | null }>) => {
     try {
       const { error } = await supabase
         .from("risk_factors")

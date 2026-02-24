@@ -6,8 +6,8 @@ export interface TablePreferences {
     sortOrder?: "asc" | "desc";
     pageSize?: number;
     visibleColumns?: Record<string, boolean>;
-    customFilters?: Record<string, any>;
-    sorting?: any[];
+    customFilters?: Record<string, unknown>;
+    sorting?: Array<{ id: string; desc: boolean }>;
     columnVisibility?: Record<string, boolean>;
 }
 

@@ -34,6 +34,13 @@ import {
 import { formatSmartDate } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface CreditTransactionRecord {
+  amount: number;
+  action_type?: string;
+  created_at: string;
+  transaction_type: string;
+}
+
 export interface CreditUsageStatsProps {
   className?: string;
   showUpgradeButton?: boolean;
@@ -106,19 +113,19 @@ export function CreditUsageStats({
 
         // Calculate today's usage
         const todayTransactions = (transactions || []).filter(
-          (t: any) => new Date(t.created_at) >= todayStart
+          (t: CreditTransactionRecord) => new Date(t.created_at) >= todayStart
         );
         const todayUsage = todayTransactions.reduce(
-          (sum: number, t: any) => sum + Math.abs(t.amount),
+          (sum: number, t: CreditTransactionRecord) => sum + Math.abs(t.amount),
           0
         );
 
         // Calculate this week's usage
         const weekTransactions = (transactions || []).filter(
-          (t: any) => new Date(t.created_at) >= weekStart
+          (t: CreditTransactionRecord) => new Date(t.created_at) >= weekStart
         );
         const weekUsage = weekTransactions.reduce(
-          (sum: number, t: any) => sum + Math.abs(t.amount),
+          (sum: number, t: CreditTransactionRecord) => sum + Math.abs(t.amount),
           0
         );
 
@@ -129,13 +136,13 @@ export function CreditUsageStats({
         prevWeekEnd.setDate(prevWeekEnd.getDate() - 7);
 
         const prevWeekTransactions = (transactions || []).filter(
-          (t: any) => {
+          (t: CreditTransactionRecord) => {
             const date = new Date(t.created_at);
             return date >= prevWeekStart && date < prevWeekEnd;
           }
         );
         const prevWeekUsage = prevWeekTransactions.reduce(
-          (sum: number, t: any) => sum + Math.abs(t.amount),
+          (sum: number, t: CreditTransactionRecord) => sum + Math.abs(t.amount),
           0
         );
 
@@ -146,13 +153,13 @@ export function CreditUsageStats({
 
         // Calculate monthly usage
         const monthUsage = (transactions || []).reduce(
-          (sum: number, t: any) => sum + Math.abs(t.amount),
+          (sum: number, t: CreditTransactionRecord) => sum + Math.abs(t.amount),
           0
         );
 
         // Group by action type
         const byAction: Record<string, { total: number; count: number }> = {};
-        (transactions || []).forEach((t: any) => {
+        (transactions || []).forEach((t: CreditTransactionRecord) => {
           const action = t.action_type || 'unknown';
           if (!byAction[action]) {
             byAction[action] = { total: 0, count: 0 };
@@ -177,7 +184,7 @@ export function CreditUsageStats({
 
         // Group by category
         const byCategory: Record<string, { total: number; count: number }> = {};
-        (transactions || []).forEach((t: any) => {
+        (transactions || []).forEach((t: CreditTransactionRecord) => {
           const info = getCreditCostInfo(t.action_type);
           const category = info?.category || 'other';
           if (!byCategory[category]) {
@@ -205,11 +212,11 @@ export function CreditUsageStats({
           nextDate.setDate(nextDate.getDate() + 1);
 
           const dayTransactions = (transactions || []).filter(
-            (t: any) =>
+            (t: CreditTransactionRecord) =>
               new Date(t.created_at) >= date && new Date(t.created_at) < nextDate
           );
           const dayTotal = dayTransactions.reduce(
-            (sum: number, t: any) => sum + Math.abs(t.amount),
+            (sum: number, t: CreditTransactionRecord) => sum + Math.abs(t.amount),
             0
           );
 

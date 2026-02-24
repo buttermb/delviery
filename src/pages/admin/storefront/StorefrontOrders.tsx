@@ -59,13 +59,13 @@ interface MarketplaceOrder {
   customer_name: string | null;
   customer_email: string | null;
   customer_phone: string | null;
-  items: any[];
+  items: Array<{ product_name?: string; quantity?: number; price?: number; listing_id?: string }>;
   subtotal: number;
   delivery_fee: number;
   discount_amount: number;
   tip_amount: number;
   total: number;
-  delivery_address: any;
+  delivery_address: Record<string, unknown> | string | null;
   delivery_notes: string | null;
   payment_method: string;
   tracking_token: string;
@@ -150,7 +150,7 @@ export default function StorefrontOrders() {
     mutationFn: async ({ orderId, status, retryCount = 0 }: { orderId: string; status: string; retryCount?: number }) => {
       if (!store?.id) throw new Error('No store');
       const MAX_RETRIES = 2;
-      const updates: any = { status };
+      const updates: Record<string, unknown> = { status };
 
       // Set delivered_at timestamp when marking as delivered
       if (status === 'delivered') {

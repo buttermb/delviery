@@ -64,14 +64,14 @@ export async function encryptCustomerData(customer: Partial<DecryptedCustomer>):
 /**
  * Decrypt customer data from database
  */
-export async function decryptCustomerData(encryptedCustomer: any): Promise<DecryptedCustomer> {
+export async function decryptCustomerData(encryptedCustomer: Record<string, unknown>): Promise<DecryptedCustomer> {
   if (!encryptedCustomer.is_encrypted) {
     // Return plaintext customer (hybrid migration support)
-    return encryptedCustomer as DecryptedCustomer;
+    return encryptedCustomer as unknown as DecryptedCustomer;
   }
 
   const fieldsToDecrypt = getEncryptedFields('customers');
-  const decrypted: any = {
+  const decrypted: Record<string, unknown> = {
     id: encryptedCustomer.id,
     tenant_id: encryptedCustomer.tenant_id,
     account_id: encryptedCustomer.account_id,

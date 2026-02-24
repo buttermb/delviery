@@ -80,7 +80,7 @@ export default function PublicMarketplacePage() {
   });
 
   // Filter listings by search query
-  const filteredListings = listings.filter((listing: any) => {
+  const filteredListings = listings.filter((listing) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -218,7 +218,7 @@ export default function PublicMarketplacePage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredListings.map((listing: any) => (
+            {filteredListings.map((listing) => (
               <Card key={listing.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   {listing.images && listing.images.length > 0 && (

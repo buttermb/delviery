@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { BetterEmptyState } from '@/components/BetterEmptyState';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
@@ -48,7 +49,7 @@ export default function CommissionTracking() {
       try {
         // Try to get from commission_transactions table first
         const { data, error } = await supabase
-          .from('commission_transactions' as any)
+          .from('commission_transactions')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -56,7 +57,7 @@ export default function CommissionTracking() {
         if (error && error.code === '42P01') {
           // Table doesn't exist, calculate from orders
           const { data: orders, error: orderError } = await supabase
-            .from('orders' as any)
+            .from('orders')
             .select('*')
             .eq('tenant_id', tenantId);
 
@@ -75,7 +76,7 @@ export default function CommissionTracking() {
         if (error) throw error;
         return data || [];
       } catch (error) {
-        if ((error as any)?.code === '42P01') return [];
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         handleError(error, { component: 'CommissionTracking', toastTitle: 'Failed to load commissions' });
         throw error;
       }
@@ -87,7 +88,7 @@ export default function CommissionTracking() {
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, newStatus }: { id: string; newStatus: string }) => {
       const { error } = await supabase
-        .from('commission_transactions' as any)
+        .from('commission_transactions')
         .update({ status: newStatus })
         .eq('id', id)
         .eq('tenant_id', tenantId);

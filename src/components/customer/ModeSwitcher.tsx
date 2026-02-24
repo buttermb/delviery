@@ -35,7 +35,7 @@ export function ModeSwitcher({
   // Load saved mode preference
   useEffect(() => {
     try {
-      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE as any) as CustomerMode | null;
+      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE) as CustomerMode | null;
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
         onModeChange?.(savedMode);
@@ -64,7 +64,7 @@ export function ModeSwitcher({
     
     // Save to localStorage
     try {
-      safeStorage.setItem(STORAGE_KEYS.CUSTOMER_MODE as any, newMode);
+      safeStorage.setItem(STORAGE_KEYS.CUSTOMER_MODE, newMode);
     } catch {
       // Ignore storage errors
     }

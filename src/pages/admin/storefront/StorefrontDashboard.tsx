@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   Store,
   ShoppingCart,
@@ -94,7 +95,7 @@ export default function StorefrontDashboard() {
 
   // Fetch ALL stores for the tenant
   const { data: stores = [], isLoading: storesLoading } = useQuery({
-    queryKey: ['marketplace-stores', tenantId],
+    queryKey: queryKeys.marketplaceStores.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -126,7 +127,7 @@ export default function StorefrontDashboard() {
 
   // Fetch recent orders for active store
   const { data: recentOrders = [] } = useQuery({
-    queryKey: ['marketplace-recent-orders', activeStoreId],
+    queryKey: queryKeys.marketplaceStores.recentOrders(activeStoreId),
     queryFn: async () => {
       if (!activeStoreId) return [];
 
@@ -152,7 +153,7 @@ export default function StorefrontDashboard() {
 
   // Fetch product count for active store
   const { data: productStats } = useQuery({
-    queryKey: ['marketplace-product-stats', activeStoreId, tenantId],
+    queryKey: queryKeys.marketplaceStores.productStats(activeStoreId, tenantId),
     queryFn: async () => {
       if (!activeStoreId || !tenantId) return { total: 0, visible: 0 };
 
@@ -174,7 +175,7 @@ export default function StorefrontDashboard() {
 
   // Fetch revenue trend (today vs yesterday)
   const { data: revenueTrend } = useQuery({
-    queryKey: ['marketplace-revenue-trend', activeStoreId],
+    queryKey: queryKeys.marketplaceStores.revenueTrend(activeStoreId),
     queryFn: async () => {
       if (!activeStoreId) return { todayRevenue: 0, yesterdayRevenue: 0, percentChange: 0 };
 
@@ -230,7 +231,7 @@ export default function StorefrontDashboard() {
       if (error) throw error;
     },
     onSuccess: (_, isActive) => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-stores'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceStores.all });
       toast.success(isActive);
     },
   });
@@ -257,7 +258,7 @@ export default function StorefrontDashboard() {
       return storeId;
     },
     onSuccess: (deletedStoreId) => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-stores'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceStores.all });
       setDeleteDialogOpen(false);
       setStoreToDelete(null);
 
@@ -296,7 +297,7 @@ export default function StorefrontDashboard() {
       return newStore;
     },
     onSuccess: (newStore) => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-stores'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceStores.all });
       setCreateDialogOpen(false);
       selectStore(newStore.id);
       setShowListView(false);

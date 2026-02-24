@@ -69,7 +69,7 @@ export default function POSAnalyticsPage() {
         if (error) throw error;
         
         // Transform to include payment method from status
-        const results: POSTransaction[] = (data || []).map((order: any) => ({
+        const results: POSTransaction[] = (data || []).map((order) => ({
           id: order.id,
           order_number: order.order_number,
           total_amount: order.total_amount,
@@ -110,7 +110,7 @@ export default function POSAnalyticsPage() {
   }).filter(h => h.transactions > 0);
 
   // Daily sales trend
-  const dailySales = transactions.reduce((acc: any[], t) => {
+  const dailySales = transactions.reduce<Array<{ date: string; revenue: number; count: number }>>((acc, t) => {
     const date = new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const existing = acc.find(item => item.date === date);
     const revenue = Number(t.total_amount || 0);
@@ -125,7 +125,7 @@ export default function POSAnalyticsPage() {
   }, []);
 
   // Payment method breakdown
-  const paymentMethods = transactions.reduce((acc: any[], t) => {
+  const paymentMethods = transactions.reduce<Array<{ name: string; value: number; amount: number }>>((acc, t) => {
     const method = t.payment_method || 'Unknown';
     const existing = acc.find(item => item.name === method);
     
@@ -143,7 +143,7 @@ export default function POSAnalyticsPage() {
   }, []);
 
   // Cashier performance (using clients as proxy)
-  const cashierPerformance = transactions.reduce((acc: any[], t) => {
+  const cashierPerformance = transactions.reduce<Array<{ name: string; transactions: number; revenue: number; avgTransaction: number }>>((acc, t) => {
     const cashier = t.wholesale_clients?.business_name || 'Unknown';
     const existing = acc.find(item => item.name === cashier);
     const revenue = Number(t.total_amount || 0);

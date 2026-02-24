@@ -5,7 +5,7 @@ export interface GuestCartItem {
   product_id: string;
   quantity: number;
   selected_weight: string;
-  product?: any;
+  product?: Record<string, unknown>;
 }
 
 const GUEST_CART_KEY = 'guest_cart';

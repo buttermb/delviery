@@ -168,7 +168,7 @@ export function MigrationWizard() {
           
           {migration.state.step === 'importing' && (
             <ImportingStep
-              progress={migration.state.importProgress as any}
+              progress={migration.state.importProgress as unknown as Parameters<typeof ImportingStep>[0]["progress"]}
               isLoading={migration.isImportLoading}
             />
           )}

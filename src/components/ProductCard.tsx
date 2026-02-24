@@ -7,6 +7,7 @@ import { OptimizedProductImage } from "@/components/OptimizedProductImage";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queryKeys";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProductDetailModal } from "./ProductDetailModal";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
@@ -51,7 +52,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
   // Prefetch product reviews on hover
   const handleMouseEnter = useCallback(() => {
     prefetchQuery(
-      ["product-reviews", product.id],
+      queryKeys.productReviews.byProduct(product.id),
       async () => {
         const { data, error } = await supabase
           .from("reviews")
@@ -120,8 +121,8 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
         
         setAdded(true);
         setTimeout(() => setAdded(false), 2000);
-        queryClient.invalidateQueries({ queryKey: ["cart"] });
-        queryClient.invalidateQueries({ queryKey: ["guest-cart-products"] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.customerCart.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.guestCartProducts.all });
         setLoading(false);
         return;
       }
@@ -140,8 +141,8 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
       if (error) throw error;
 
       // Invalidate cart queries after successful insert
-      queryClient.invalidateQueries({ queryKey: ["cart", user.id] });
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerCart.byUser(user.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerCart.all });
 
       // Success feedback with confetti effect
       haptics.success();

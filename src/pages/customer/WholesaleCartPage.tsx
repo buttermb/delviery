@@ -43,7 +43,7 @@ export default function WholesaleCartPage() {
   // Load saved mode preference
   useEffect(() => {
     try {
-      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE as any) as CustomerMode | null;
+      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE) as CustomerMode | null;
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
@@ -222,7 +222,7 @@ export default function WholesaleCartPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {cartItems.map((item: any) => {
+                    {cartItems.map((item) => {
                       const listing = item.marketplace_listings;
                       const profile = listing?.marketplace_profiles;
                       const quantity = item.quantity as number;

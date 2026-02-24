@@ -325,7 +325,7 @@ export const useSendNotification = () => {
         templates: []
       };
       
-      const template = settings.templates?.find((t: any) => t.event === event);
+      const template = settings.templates?.find((t: { event: string; enabled: boolean }) => t.event === event);
 
       if (template && !template.enabled) {
         return { success: false, message: 'Notification disabled for this event' };

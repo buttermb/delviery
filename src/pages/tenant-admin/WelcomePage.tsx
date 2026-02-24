@@ -34,9 +34,9 @@ export default function TenantAdminWelcomePage() {
 
   // Use tenant usage data for setup status
   const setupStatus = {
-    hasProducts: ((tenant as any)?.usage?.products || 0) > 0,
-    hasCustomers: ((tenant as any)?.usage?.customers || 0) > 0,
-    hasMenus: ((tenant as any)?.usage?.menus || 0) > 0,
+    hasProducts: (tenant?.usage?.products || 0) > 0,
+    hasCustomers: (tenant?.usage?.customers || 0) > 0,
+    hasMenus: (tenant?.usage?.menus || 0) > 0,
     hasOrders: false, // Will be checked via orders existence
   };
 
@@ -87,7 +87,7 @@ export default function TenantAdminWelcomePage() {
   const progressPercentage = Math.round((completedSteps / steps.length) * 100);
 
   // Calculate days left in trial
-  const trialEndsAt = (tenant as any)?.trial_ends_at;
+  const trialEndsAt = tenant?.trial_ends_at;
   const daysLeft = trialEndsAt 
     ? Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : 14;

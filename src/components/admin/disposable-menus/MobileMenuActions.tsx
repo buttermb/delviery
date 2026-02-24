@@ -2,7 +2,7 @@
  * Mobile-optimized menu actions using bottom sheet
  * Touch-friendly with larger tap targets
  */
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Sheet, 
@@ -188,7 +188,7 @@ export function MobileMenuActions({ menu, trigger }: MobileMenuActionsProps) {
       />
 
       <MenuShareDialogEnhanced
-        menu={menu as any}
+        menu={menu as unknown as React.ComponentProps<typeof MenuShareDialogEnhanced>['menu']}
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
         whitelistEntry={undefined}

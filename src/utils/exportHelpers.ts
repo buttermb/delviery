@@ -5,7 +5,7 @@ import { format } from 'date-fns';
  */
 
 // Convert array of objects to CSV
-const arrayToCSV = (data: any[], headers: string[]): string => {
+const arrayToCSV = (data: Record<string, unknown>[], headers: string[]): string => {
   const csvRows = [];
   
   // Add headers
@@ -42,7 +42,7 @@ const downloadCSV = (csv: string, filename: string) => {
 /**
  * Export access logs to CSV
  */
-export const exportAccessLogs = (logs: any[]) => {
+export const exportAccessLogs = (logs: Array<Record<string, unknown> & { whitelist?: Record<string, unknown> }>) => {
   const data = logs.map(log => ({
     menu_name: log.menu_name || 'N/A',
     customer_name: log.whitelist?.customer_name || 'Anonymous',
@@ -75,7 +75,7 @@ export const exportAccessLogs = (logs: any[]) => {
 /**
  * Export orders to CSV
  */
-export const exportOrders = (orders: any[]) => {
+export const exportOrders = (orders: Array<Record<string, unknown> & { whitelist?: Record<string, unknown> }>) => {
   const data = orders.map(order => ({
     menu_name: order.menu_name || 'N/A',
     order_id: order.id,
@@ -110,7 +110,7 @@ export const exportOrders = (orders: any[]) => {
 /**
  * Export menu analytics summary to CSV
  */
-export const exportMenuAnalytics = (menu: any, accessLogs: any[], orders: any[]) => {
+export const exportMenuAnalytics = (menu: Record<string, unknown>, accessLogs: Array<Record<string, unknown>>, orders: Array<Record<string, unknown>>) => {
   const totalViews = accessLogs.length;
   const uniqueVisitors = new Set(accessLogs.map(log => log.access_whitelist_id || log.ip_address)).size;
   const totalOrders = orders.length;
@@ -160,7 +160,7 @@ export const exportMenuAnalytics = (menu: any, accessLogs: any[], orders: any[])
 /**
  * Export security events to CSV
  */
-export const exportSecurityEvents = (events: any[]) => {
+export const exportSecurityEvents = (events: Array<Record<string, unknown> & { menu?: Record<string, unknown>; whitelist?: Record<string, unknown> }>) => {
   const data = events.map(event => ({
     menu_name: event.menu?.name || 'N/A',
     event_type: event.event_type || 'unknown',
@@ -197,7 +197,7 @@ export const exportSecurityEvents = (events: any[]) => {
 /**
  * Export whitelist to CSV
  */
-export const exportWhitelist = (whitelist: any[], menuName: string) => {
+export const exportWhitelist = (whitelist: Array<Record<string, unknown>>, menuName: string) => {
   const data = whitelist.map(entry => ({
     customer_name: entry.customer_name || 'N/A',
     customer_phone: entry.customer_phone || 'N/A',

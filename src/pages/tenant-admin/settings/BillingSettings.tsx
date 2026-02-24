@@ -69,7 +69,7 @@ type Invoice = Database['public']['Tables']['invoices']['Row'];
 interface ExtendedInvoice extends Invoice {
   tax_rate?: number;
   notes?: string;
-  items?: any[]; // Fallback for differing structures
+  items?: Array<{ description?: string; name?: string; quantity?: number; amount?: number; unit_price?: number; total?: number }>; // Fallback for differing structures
 }
 
 type ExtendedTenant = Partial<Database['public']['Tables']queryKeys.tenants.all['Row']> & {
@@ -100,7 +100,7 @@ function mapInvoiceToPdfData(invoice: ExtendedInvoice, tenant: ExtendedTenant | 
     companyName: 'FloraIQ',
     companyAddress: '123 Business Ave, Suite 100',
     lineItems: Array.isArray(invoice.line_items)
-      ? (invoice.line_items as any[]).map(item => ({
+      ? (invoice.line_items as Array<{ description?: string; name?: string; quantity?: number; amount?: number; unit_price?: number; total?: number }>).map(item => ({
         description: item.description || item.name || 'Subscription',
         quantity: item.quantity || 1,
         unitPrice: item.amount || item.unit_price || invoice.total || 0,
@@ -192,6 +192,12 @@ export default function BillingSettings() {
           body: { action: 'list', tenant_id: tenantId },
         });
 
+        if (edgeError) {
+          logger.warn('invoice-management edge function failed, falling back to direct query', {
+            component: 'BillingSettings',
+            error: edgeError,
+          });
+        }
         if (!edgeError && edgeData?.invoices) {
           return edgeData.invoices;
         }

@@ -99,7 +99,7 @@ export function useSidebarConfig() {
   const securityFilteredConfig = useMemo(() => {
     return applyAllFilters(baseConfig, {
       role,
-      currentTier: currentTier as any,
+      currentTier,
       checkPermission,
       canAccessFeature: canAccessForFiltering, // Use conditional function
     });

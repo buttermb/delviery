@@ -44,7 +44,7 @@ export default function ApiAccess() {
   });
 
   const createKeyMutation = useMutation({
-    mutationFn: async (keyData: any) => {
+    mutationFn: async (keyData: { name: string; permissions: string[] }) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await createAdminRecord('api_keys', {
@@ -108,7 +108,7 @@ export default function ApiAccess() {
 
       {apiKeys && apiKeys.length > 0 ? (
         <div className="space-y-4">
-          {apiKeys.map((key: any) => (
+          {apiKeys.map((key: { id: string; name: string; key: string; created_at: string; permissions: string[] }) => (
             <Card key={key.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">

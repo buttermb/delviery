@@ -318,6 +318,12 @@ export function OrderPaymentStatusSync({
         return;
       }
 
+      logger.warn('unified_orders payment update failed, falling back to orders table', {
+        component: 'OrderPaymentStatusSync',
+        orderId,
+        error: unifiedError,
+      });
+
       // Fallback to orders table
       const { error: ordersError } = await supabase
         .from('orders')

@@ -70,24 +70,20 @@ export default function POReceivingPage() {
       if (!tenant?.id) return [];
 
       // Break type inference for complex query (same pattern as PurchaseOrdersPage)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const baseQuery: any = supabase
+      let baseQuery = supabase
         .from('purchase_orders')
         .select('*')
         .eq('tenant_id', tenant.id)
         .order('expected_delivery_date', { ascending: true });
 
-      let query = baseQuery;
-
       // Filter by status - approved POs are ready for receiving
       if (statusFilter === 'all') {
-        query = query.in('status', ['approved', 'submitted']);
+        baseQuery = baseQuery.in('status', ['approved', 'submitted']);
       } else {
-        query = query.eq('status', statusFilter);
+        baseQuery = baseQuery.eq('status', statusFilter);
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error }: any = await query;
+      const { data, error } = await baseQuery;
 
       if (error) {
         logger.error('Failed to fetch purchase orders for receiving', error, { component: 'POReceivingPage' });

@@ -9,7 +9,97 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
 // Cast for tables not in auto-generated types
-const sb = supabase as any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- tables not in generated types
+const sb = supabase as unknown as Record<string, (...args: unknown[]) => unknown> & typeof supabase;
+
+// ============================================================================
+// DB Row Shapes (not in generated types — used for RPC/query results)
+// ============================================================================
+
+interface TenantCreditRow {
+  tenant_id: string;
+  tenant_name: string;
+  tenant_slug: string;
+  balance: number;
+  tier_status: string;
+  is_free_tier: boolean;
+  credits_used_today: number;
+  credits_used_this_week: number;
+  credits_used_this_month: number;
+  lifetime_spent: number;
+  last_activity: string | null;
+  created_at: string;
+  credit_status: string;
+}
+
+interface CreditTransactionRow {
+  id: string;
+  tenant_id: string;
+  amount: number;
+  balance_after: number;
+  transaction_type: string;
+  action_type?: string;
+  reference_id?: string;
+  reference_type?: string;
+  description?: string;
+  metadata?: Record<string, unknown>;
+  created_at: string;
+  tenants?: { business_name: string; slug: string };
+}
+
+interface CreditGrantRow {
+  id: string;
+  tenant_id: string;
+  amount: number;
+  grant_type: string;
+  promo_code?: string;
+  expires_at?: string;
+  granted_at: string;
+  granted_by?: string;
+  is_used: boolean;
+  notes?: string;
+}
+
+interface PromoCodeRow {
+  id: string;
+  code: string;
+  credits_amount: number;
+  max_uses: number | null;
+  uses_count: number;
+  is_active: boolean;
+  valid_from: string;
+  valid_until: string | null;
+  description: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+interface PromoRedemptionRow {
+  tenant_id: string;
+  credits_granted: number;
+  redeemed_at: string;
+  tenants?: { business_name: string };
+}
+
+interface CreditPackageRow {
+  id: string;
+  name: string;
+  slug: string;
+  credits: number;
+  price_cents: number;
+  stripe_price_id: string | null;
+  stripe_product_id: string | null;
+  is_active: boolean;
+  sort_order: number;
+  badge: string | null;
+  description: string | null;
+}
+
+interface ReferralCodeRow {
+  tenant_id: string;
+  uses_count: number;
+  tenants?: { business_name: string };
+}
 
 // ============================================================================
 // Types
@@ -208,7 +298,7 @@ export async function getTenantsWithCredits(
       return { tenants: [], total: 0 };
     }
 
-    const tenants: TenantCreditInfo[] = (data || []).map((row: any) => ({
+    const tenants: TenantCreditInfo[] = (data || []).map((row: TenantCreditRow) => ({
       tenantId: row.tenant_id,
       tenantName: row.tenant_name || 'Unknown',
       tenantSlug: row.tenant_slug || '',
@@ -313,7 +403,7 @@ export async function getTenantCreditDetail(
         lastFreeGrantAt: credits?.last_free_grant_at,
         nextFreeGrantAt: credits?.next_free_grant_at,
       },
-      recentTransactions: (transactions || []).map((tx: any) => ({
+      recentTransactions: (transactions || []).map((tx: CreditTransactionRow) => ({
         id: tx.id,
         tenantId: tx.tenant_id,
         amount: tx.amount,
@@ -326,7 +416,7 @@ export async function getTenantCreditDetail(
         metadata: tx.metadata,
         createdAt: tx.created_at,
       })),
-      grants: (grants || []).map((g: any) => ({
+      grants: (grants || []).map((g: CreditGrantRow) => ({
         id: g.id,
         tenantId: g.tenant_id,
         amount: g.amount,
@@ -560,7 +650,7 @@ export async function getAllTransactions(options: {
     }
 
     return {
-      transactions: (data || []).map((tx: any) => ({
+      transactions: (data || []).map((tx: CreditTransactionRow) => ({
         id: tx.id,
         tenantId: tx.tenant_id,
         amount: tx.amount,
@@ -617,7 +707,7 @@ export async function getCreditAnalytics(options: {
 
     // Group by date
     const consumptionByDate = new Map<string, number>();
-    (consumptionData || []).forEach((tx: any) => {
+    (consumptionData || []).forEach((tx: Pick<CreditTransactionRow, 'created_at' | 'amount'>) => {
       const date = new Date(tx.created_at).toISOString().split('T')[0];
       consumptionByDate.set(date, (consumptionByDate.get(date) || 0) + Math.abs(tx.amount));
     });
@@ -631,9 +721,9 @@ export async function getCreditAnalytics(options: {
       .lte('created_at', endDate);
 
     const revenueByDate = new Map<string, number>();
-    (purchaseData || []).forEach((tx: any) => {
+    (purchaseData || []).forEach((tx: { created_at: string; metadata?: Record<string, unknown> }) => {
       const date = new Date(tx.created_at).toISOString().split('T')[0];
-      const amount = tx.metadata?.amount_paid || 0;
+      const amount = (tx.metadata?.amount_paid as number) || 0;
       revenueByDate.set(date, (revenueByDate.get(date) || 0) + amount);
     });
 
@@ -646,14 +736,14 @@ export async function getCreditAnalytics(options: {
       .lte('created_at', endDate);
 
     const categoryTotals = new Map<string, number>();
-    (categoryData || []).forEach((tx: any) => {
+    (categoryData || []).forEach((tx: Pick<CreditTransactionRow, 'action_type' | 'amount'>) => {
       const category = getActionCategory(tx.action_type || 'other');
       categoryTotals.set(category, (categoryTotals.get(category) || 0) + Math.abs(tx.amount));
     });
 
     // Get top actions
     const actionCounts = new Map<string, { count: number; credits: number }>();
-    (categoryData || []).forEach((tx: any) => {
+    (categoryData || []).forEach((tx: Pick<CreditTransactionRow, 'action_type' | 'amount'>) => {
       const action = tx.action_type || 'unknown';
       const current = actionCounts.get(action) || { count: 0, credits: 0 };
       actionCounts.set(action, {
@@ -742,7 +832,7 @@ export async function getAllPromoCodes(): Promise<PromoCodeAdmin[]> {
       return [];
     }
 
-    return (data || []).map((code: any) => ({
+    return (data || []).map((code: PromoCodeRow) => ({
       id: code.id,
       code: code.code,
       creditsAmount: code.credits_amount,
@@ -821,7 +911,7 @@ export async function updatePromoCode(
   updates: Partial<CreatePromoCodeRequest> & { isActive?: boolean }
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (updates.creditsAmount !== undefined) updateData.credits_amount = updates.creditsAmount;
     if (updates.maxUses !== undefined) updateData.max_uses = updates.maxUses;
     if (updates.validUntil !== undefined) updateData.valid_until = updates.validUntil;
@@ -866,7 +956,7 @@ export async function getPromoCodeRedemptions(codeId: string): Promise<Array<{
       return [];
     }
 
-    return (data || []).map((r: any) => ({
+    return (data || []).map((r: PromoRedemptionRow) => ({
       tenantId: r.tenant_id,
       tenantName: r.tenants?.business_name || 'Unknown',
       creditsGranted: r.credits_granted,
@@ -911,7 +1001,7 @@ export async function getAllCreditPackages(): Promise<CreditPackageDB[]> {
       return [];
     }
 
-    return (data || []).map((pkg: any) => ({
+    return (data || []).map((pkg: CreditPackageRow) => ({
       id: pkg.id,
       name: pkg.name,
       slug: pkg.slug,
@@ -1042,7 +1132,7 @@ export async function getReferralStats(): Promise<ReferralStats> {
 
     // Get credits earned per referrer
     const topReferrers = await Promise.all(
-      (topReferrersData || []).map(async (r: any) => {
+      (topReferrersData || []).map(async (r: ReferralCodeRow) => {
         const { data: earned } = await sb
           .from('referral_redemptions')
           .select('referrer_credits_granted')

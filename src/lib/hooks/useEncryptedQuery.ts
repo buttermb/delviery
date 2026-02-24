@@ -64,15 +64,15 @@ export function useEncryptedQuery<T = any>({
       // Decrypt data
       if (single) {
         const decrypted = encryptedData
-          ? decryptObject<T>(encryptedData as any)
+          ? decryptObject<T>(encryptedData as Record<string, unknown>)
           : null;
         setData(decrypted);
       } else {
         const dataArray = Array.isArray(encryptedData) ? encryptedData : [];
-        const decrypted = dataArray.map((record: any) =>
-          decryptObject<T>(record as any)
+        const decrypted = dataArray.map((record) =>
+          decryptObject<T>(record as Record<string, unknown>)
         );
-        setData(decrypted as any);
+        setData(decrypted as T | T[] | null);
       }
     } catch (err) {
       logger.error('Query error:', err);

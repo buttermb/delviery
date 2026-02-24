@@ -199,7 +199,7 @@ export default function DataExport() {
               </div>
             ) : exportHistory && exportHistory.length > 0 ? (
               <div className="space-y-2">
-                {exportHistory.map((exportItem: any) => (
+                {exportHistory.map((exportItem) => (
                   <div key={exportItem.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <div className="font-medium">{exportItem.data_type || 'Unknown'}</div>

@@ -54,7 +54,7 @@ export default function SupportTicketsPage() {
           return [];
         }
 
-        return (data || []) as any as Ticket[];
+        return (data || []) as unknown as Ticket[];
       } catch {
         return [];
       }
@@ -184,7 +184,7 @@ export default function SupportTicketsPage() {
             <TicketList
               tickets={filteredTickets}
               isLoading={isLoading}
-              onSelect={(ticket) => setSelectedTicket(ticket as any)}
+              onSelect={(ticket) => setSelectedTicket(ticket as unknown as Ticket)}
             />
           )}
         </TabsContent>

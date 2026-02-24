@@ -28,6 +28,14 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface MenuProductItem {
+  id: string;
+  product_name: string;
+  base_price: number;
+  quantity_lbs: number;
+  category: string | null;
+}
+
 interface QuickCreateMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -117,7 +125,7 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
   const filteredProducts = useMemo(() => {
     if (!productSearch) return products;
     const query = productSearch.toLowerCase();
-    return products.filter((p: any) =>
+    return products.filter((p: MenuProductItem) =>
       p.product_name?.toLowerCase().includes(query) ||
       p.category?.toLowerCase().includes(query)
     );
@@ -346,7 +354,7 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
                           No products found
                         </div>
                       ) : (
-                        filteredProducts.map((product: any) => {
+                        filteredProducts.map((product: MenuProductItem) => {
                           const isSelected = selectedProducts.includes(product.id);
                           return (
                             <button

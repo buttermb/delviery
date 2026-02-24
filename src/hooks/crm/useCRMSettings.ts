@@ -85,14 +85,14 @@ export function useUpdateCRMSettings() {
 
             if (!currentSettings) {
                 // Create settings if they don't exist
-                const payload: any = { ...values, account_id: accountId };
+                const createPayload: Record<string, unknown> = { ...values, account_id: accountId };
                 if (values.faqs !== undefined) {
-                    payload.faqs = values.faqs as unknown as Json;
+                    createPayload.faqs = values.faqs as unknown as Json;
                 }
 
                 const { data: newData, error: createError } = await supabase
                     .from('crm_settings')
-                    .insert(payload)
+                    .insert(createPayload as typeof values & { account_id: string })
                     .select()
                     .maybeSingle();
 
@@ -106,14 +106,14 @@ export function useUpdateCRMSettings() {
                 } as CRMSettings;
             }
 
-            const payload: any = { ...values };
+            const updatePayload: Record<string, unknown> = { ...values };
             if (values.faqs !== undefined) {
-                payload.faqs = values.faqs as unknown as Json;
+                updatePayload.faqs = values.faqs as unknown as Json;
             }
 
             const { data, error } = await supabase
                 .from('crm_settings')
-                .update(payload)
+                .update(updatePayload as Partial<CRMSettings>)
                 .eq('id', currentSettings.id)
                 .eq('account_id', accountId)
                 .select()

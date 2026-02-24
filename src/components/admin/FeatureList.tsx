@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -36,7 +37,7 @@ export function FeatureList({ features, readOnly = false, tenantId }: FeatureLis
     },
     onSuccess: (newFeatures) => {
       setLocalFeatures(newFeatures);
-      queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTenantDetail.tenant(tenantId) });
       toast.success('Tenant features have been updated successfully');
     },
     onError: (error: unknown) => {

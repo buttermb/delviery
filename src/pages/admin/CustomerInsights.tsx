@@ -23,7 +23,7 @@ export default function CustomerInsights() {
 
       try {
         const { data, error } = await supabase
-          .from('customers' as any)
+          .from('customers')
           .select('*')
           .eq('id', id)
           .eq('tenant_id', tenantId)
@@ -50,7 +50,7 @@ export default function CustomerInsights() {
 
       try {
         const { data, error } = await supabase
-          .from('orders' as any)
+          .from('orders')
           .select('*, order_items(*)')
           .eq('customer_id', id)
           .eq('tenant_id', tenantId)

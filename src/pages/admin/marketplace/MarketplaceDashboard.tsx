@@ -24,12 +24,25 @@ import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface RecentSale {
+    id: string;
+    customer_name: string;
+    total_amount: number;
+    order_number: string;
+    status: string;
+}
+
+interface ChartDataPoint {
+    date: string;
+    revenue: number;
+}
+
 interface AnalyticsData {
     total_revenue: number;
     total_orders: number;
     active_customers: number;
-    recent_sales: any[];
-    chart_data: any[];
+    recent_sales: RecentSale[];
+    chart_data: ChartDataPoint[];
 }
 
 export default function MarketplaceDashboard() {
@@ -43,7 +56,7 @@ export default function MarketplaceDashboard() {
         queryFn: async () => {
             if (!tenant?.id) return null;
             const { data, error } = await supabase
-                .from('marketplace_profiles' as any)
+                .from('marketplace_profiles')
                 .select('*')
                 .eq('tenant_id', tenant.id)
                 .maybeSingle();
@@ -52,7 +65,7 @@ export default function MarketplaceDashboard() {
                 logger.error('Failed to fetch marketplace profile', error);
                 return null;
             }
-            return data as any;
+            return data;
         },
         enabled: !!tenant?.id
     });
@@ -244,7 +257,7 @@ export default function MarketplaceDashboard() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-8">
-                            {analytics?.recent_sales?.map((order: any) => (
+                            {analytics?.recent_sales?.map((order) => (
                                 <div className="flex items-center" key={order.id}>
                                     <div className="ml-4 space-y-1 flex-1">
                                         <div className="flex justify-between items-center">

@@ -24,6 +24,37 @@ import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface TransferFormData {
+  product_id: string;
+  from_warehouse: string;
+  to_warehouse: string;
+  quantity_lbs: string;
+  notes: string;
+}
+
+interface TransferRow {
+  id: string;
+  product_id: string;
+  from_warehouse: string;
+  to_warehouse: string;
+  quantity_lbs: number;
+  notes: string | null;
+  status: string;
+  created_at: string;
+  product?: { name: string } | null;
+}
+
+interface ProductOption {
+  id: string;
+  name: string;
+  sku: string | null;
+}
+
+interface LocationOption {
+  id: string;
+  name: string;
+}
+
 export default function InventoryTransfers() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
@@ -61,7 +92,7 @@ export default function InventoryTransfers() {
       if (!tenantId) return [];
       try {
         const { data, error } = await supabase
-          .from('inventory_locations' as any)
+          .from('inventory_locations')
           .select('id, name')
           .eq('tenant_id', tenantId)
           .order('name');
@@ -94,7 +125,7 @@ export default function InventoryTransfers() {
 
       try {
         const { data, error } = await supabase
-          .from('inventory_transfers' as any)
+          .from('inventory_transfers')
           .select('*, product:products(*)')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
@@ -112,11 +143,11 @@ export default function InventoryTransfers() {
   });
 
   const createTransferMutation = useMutation({
-    mutationFn: async (transfer: any) => {
+    mutationFn: async (transfer: TransferFormData) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('inventory_transfers' as any)
+        .from('inventory_transfers')
         .insert({
           product_id: transfer.product_id,
           from_location_id: transfer.from_warehouse,
@@ -204,7 +235,7 @@ export default function InventoryTransfers() {
 
       {transfers && transfers.length > 0 ? (
         <div className="space-y-4">
-          {transfers.map((transfer: any) => (
+          {transfers.map((transfer: TransferRow) => (
             <Card key={transfer.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -276,7 +307,7 @@ export default function InventoryTransfers() {
                     <SelectValue placeholder="Select a product..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {products.map((product: any) => (
+                    {products.map((product: ProductOption) => (
                       <SelectItem key={product.id} value={product.id}>
                         {product.name} {product.sku ? `(${product.sku})` : ''}
                       </SelectItem>
@@ -294,7 +325,7 @@ export default function InventoryTransfers() {
                     <SelectValue placeholder="Select origin location..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {locations.map((loc: any) => (
+                    {locations.map((loc: LocationOption) => (
                       <SelectItem key={loc.id} value={loc.id}>
                         {loc.name}
                       </SelectItem>
@@ -313,8 +344,8 @@ export default function InventoryTransfers() {
                   </SelectTrigger>
                   <SelectContent>
                     {locations
-                      .filter((loc: any) => loc.id !== formData.from_warehouse)
-                      .map((loc: any) => (
+                      .filter((loc: LocationOption) => loc.id !== formData.from_warehouse)
+                      .map((loc: LocationOption) => (
                         <SelectItem key={loc.id} value={loc.id}>
                           {loc.name}
                         </SelectItem>

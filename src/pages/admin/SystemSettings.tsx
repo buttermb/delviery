@@ -29,6 +29,7 @@ import { Progress } from "@/components/ui/progress";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { handleError } from "@/utils/errorHandling/handlers";
+import { queryKeys } from "@/lib/queryKeys";
 
 const SystemSettings = () => {
   const queryClient = useQueryClient();
@@ -50,7 +51,7 @@ const SystemSettings = () => {
 
   // System Health Monitoring
   const { data: systemHealth } = useQuery({
-    queryKey: ["system-health", tenant?.id],
+    queryKey: queryKeys.systemSettings.health(tenant?.id),
     queryFn: async () => {
       if (!tenant) return null;
       const now = new Date();
@@ -66,7 +67,7 @@ const SystemSettings = () => {
 
       // Execute fraud flags query with type casting to avoid depth issues
       const errorCountPromise = (async () => {
-        return await (supabase.from("fraud_flags") as any).select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).is("resolved_at", null);
+        return await supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).is("resolved_at", null);
       })();
 
       const [
@@ -104,7 +105,7 @@ const SystemSettings = () => {
 
   // Database statistics
   const { data: dbStats } = useQuery({
-    queryKey: ["db-stats", tenant?.id],
+    queryKey: queryKeys.systemSettings.dbStats(tenant?.id),
     queryFn: async () => {
       if (!tenant) return null;
       const tenantId = tenant.id;
@@ -114,10 +115,9 @@ const SystemSettings = () => {
       const productsPromise = supabase.from("products").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
 
       // Break type inference for complex query
-      const fraudBase: any = supabase.from("fraud_flags").select("id", { count: "exact", head: true });
-      const fraudFlagsPromise = fraudBase.eq("tenant_id", tenantId);
+      const fraudFlagsPromise = supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
 
-      const results: any = await Promise.all([
+      const results = await Promise.all([
         usersPromise,
         ordersPromise,
         productsPromise,
@@ -146,7 +146,7 @@ const SystemSettings = () => {
     },
     onSuccess: () => {
       toast.success('Fraud detection rules have been updated successfully.');
-      queryClient.invalidateQueries({ queryKey: ["fraud-rules"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.systemSettings.fraudRules() });
     },
     onError: (error) => {
       handleError(error, {
@@ -206,7 +206,7 @@ const SystemSettings = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; icon: any; label: string }> = {
+    const variants: Record<string, { variant: 'default' | 'destructive' | 'secondary' | 'outline'; icon: React.ComponentType<{ className?: string }>; label: string }> = {
       healthy: { variant: "default", icon: CheckCircle, label: "Healthy" },
       attention: { variant: "secondary", icon: AlertTriangle, label: "Attention" },
       warning: { variant: "destructive", icon: AlertTriangle, label: "Warning" }

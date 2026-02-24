@@ -113,7 +113,7 @@ export default function ExpenseTracking() {
 
       try {
         const { data, error } = await supabase
-          .from('expenses' as any)
+          .from('expenses')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
@@ -136,7 +136,7 @@ export default function ExpenseTracking() {
       if (!tenantId) throw new Error('No tenant');
 
       const { error } = await supabase
-        .from('expenses' as any)
+        .from('expenses')
         .insert({
           tenant_id: tenantId,
           description: data.description,
@@ -164,7 +164,7 @@ export default function ExpenseTracking() {
     mutationFn: async (expenseId: string) => {
       if (!tenantId) throw new Error('No tenant');
       const { error } = await supabase
-        .from('expenses' as any)
+        .from('expenses')
         .delete()
         .eq('id', expenseId)
         .eq('tenant_id', tenantId);

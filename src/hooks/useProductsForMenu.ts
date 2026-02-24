@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 
 export interface ProductForMenu {
   id: string;
@@ -14,7 +15,7 @@ export interface ProductForMenu {
 
 export const useProductsForMenu = (tenantId?: string) => {
   return useQuery({
-    queryKey: ["products-for-menu", tenantId],
+    queryKey: queryKeys.productsForMenu.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) {
         throw new Error('Tenant ID is required');

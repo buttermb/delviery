@@ -203,7 +203,7 @@ export const AdminNotificationCenter = () => {
         .channel(`notif-center-${table}-${tenantId}`)
         .on(
           'postgres_changes',
-          { event: 'INSERT', schema: 'public', table },
+          { event: 'INSERT', schema: 'public', table, filter: `tenant_id=eq.${tenantId}` },
           (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
             if (!payload.new) return;
             const orderNum = getPayloadString(payload.new, 'order_number') ||
@@ -223,7 +223,7 @@ export const AdminNotificationCenter = () => {
         )
         .on(
           'postgres_changes',
-          { event: 'UPDATE', schema: 'public', table },
+          { event: 'UPDATE', schema: 'public', table, filter: `tenant_id=eq.${tenantId}` },
           (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
             if (!payload.new || !payload.old) return;
             const newStatus = getPayloadString(payload.new, 'status');
@@ -257,7 +257,7 @@ export const AdminNotificationCenter = () => {
       .channel(`notif-center-products-${tenantId}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'products' },
+        { event: 'UPDATE', schema: 'public', table: 'products', filter: `tenant_id=eq.${tenantId}` },
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           if (!payload.new) return;
           const name = getPayloadString(payload.new, 'name', 'Unknown Product');
@@ -292,7 +292,7 @@ export const AdminNotificationCenter = () => {
       .channel(`notif-center-payments-${tenantId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'payments' },
+        { event: 'INSERT', schema: 'public', table: 'payments', filter: `tenant_id=eq.${tenantId}` },
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           if (!payload.new) return;
           const amount = getPayloadNumber(payload.new, 'amount');
@@ -314,7 +314,7 @@ export const AdminNotificationCenter = () => {
       .channel(`notif-center-refunds-${tenantId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'refunds' },
+        { event: 'INSERT', schema: 'public', table: 'refunds', filter: `tenant_id=eq.${tenantId}` },
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           if (!payload.new) return;
           const amount = getPayloadNumber(payload.new, 'amount');
@@ -336,7 +336,7 @@ export const AdminNotificationCenter = () => {
       .channel(`notif-center-customers-${tenantId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'customers' },
+        { event: 'INSERT', schema: 'public', table: 'customers', filter: `tenant_id=eq.${tenantId}` },
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           if (!payload.new) return;
           const name = getPayloadString(payload.new, 'name') ||
@@ -360,7 +360,7 @@ export const AdminNotificationCenter = () => {
       .channel(`notif-center-menus-${tenantId}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'disposable_menus' },
+        { event: 'UPDATE', schema: 'public', table: 'disposable_menus', filter: `tenant_id=eq.${tenantId}` },
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           if (!payload.new || !payload.old) return;
           const newStatus = getPayloadString(payload.new, 'status');
@@ -386,7 +386,7 @@ export const AdminNotificationCenter = () => {
       .channel(`notif-center-fraud-${tenantId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'fraud_flags' },
+        { event: 'INSERT', schema: 'public', table: 'fraud_flags', filter: `tenant_id=eq.${tenantId}` },
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           if (!payload.new) return;
           addNotification({

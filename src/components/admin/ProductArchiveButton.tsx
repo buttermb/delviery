@@ -64,7 +64,7 @@ export function ProductArchiveButton({
         // Restore the product - set is_active to true
         const { error } = await supabase
           .from('products')
-          .update({ is_active: true } as any)
+          .update({ is_active: true } as unknown as Record<string, unknown>)
           .eq('id', product.id)
           .eq('tenant_id', tenantId);
 
@@ -80,7 +80,7 @@ export function ProductArchiveButton({
         // Archive the product - set is_active to false
         const { error } = await supabase
           .from('products')
-          .update({ is_active: false } as any)
+          .update({ is_active: false } as unknown as Record<string, unknown>)
           .eq('id', product.id)
           .eq('tenant_id', tenantId);
 
@@ -95,7 +95,7 @@ export function ProductArchiveButton({
             // Quick undo - restore the product
               const { error: restoreError } = await supabase
                 .from('products')
-                .update({ is_active: true } as any)
+                .update({ is_active: true } as unknown as Record<string, unknown>)
                 .eq('id', product.id)
                 .eq('tenant_id', tenantId);
 

@@ -135,6 +135,14 @@ function useSessionDetails(sessionId: string | null | undefined, tenantId: strin
         }
       );
 
+      if (rpcError) {
+        logger.warn('get_storefront_session_details RPC failed, falling back to direct query', {
+          component: 'StorefrontSessionLink',
+          sessionId,
+          error: rpcError,
+        });
+      }
+
       if (!rpcError && rpcData) {
         return rpcData as unknown as SessionDetails;
       }

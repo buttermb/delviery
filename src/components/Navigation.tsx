@@ -15,6 +15,7 @@ import {
 import { Menu, ShoppingCart, User, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import AuthModal from "./AuthModal";
@@ -40,7 +41,7 @@ const Navigation = () => {
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const { data: cartItems = [] } = useQuery<DbCartItem[]>({
-    queryKey: ["cart", user?.id],
+    queryKey: queryKeys.customerCart.byUser(user?.id),
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase

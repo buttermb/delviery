@@ -180,7 +180,7 @@ async function fetchCustomerComplianceData(
     .eq('id', tenantId)
     .maybeSingle();
 
-  const tenantSettings = (tenantData as any)?.metadata as TenantSettings | null;
+  const tenantSettings = (tenantData?.metadata as TenantSettings | null) ?? null;
   const requirements: ComplianceRequirements = {
     ...DEFAULT_REQUIREMENTS,
     ...(tenantSettings?.compliance_requirements || {}),
@@ -214,7 +214,7 @@ async function fetchCustomerComplianceData(
     ageVerification as AgeVerification | null,
     requirements,
     monthlySpent,
-    (storefrontSettings as any)?.delivery_zones
+    storefrontSettings?.delivery_zones
   );
 
   const failedChecks = checks.filter(

@@ -14,7 +14,7 @@ export interface WholesaleDelivery {
   failed_at: string | null;
   scheduled_pickup_time: string | null;
   notes: string | null;
-  current_location: any;
+  current_location: Record<string, unknown> | null;
   created_at: string;
   client_id: string;
   total_value: number;
@@ -108,8 +108,9 @@ export function useRunnerStats(runnerId?: string) {
 
       // Calculate stats
       const todayCount = todayDeliveries?.length || 0;
-      const todayEarnings = todayDeliveries?.reduce((sum, d: any) => {
-        return sum + (d.order?.total_amount || 0) * 0.05; // 5% commission example
+      const todayEarnings = todayDeliveries?.reduce((sum, d) => {
+        const order = d.order as { total_amount?: number } | null;
+        return sum + (order?.total_amount || 0) * 0.05; // 5% commission example
       }, 0) || 0;
 
       return {

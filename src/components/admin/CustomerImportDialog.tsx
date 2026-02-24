@@ -72,7 +72,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
             const workbook = read(buffer);
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
-            const jsonData: any[] = utils.sheet_to_json(worksheet, { defval: "" });
+            const jsonData = utils.sheet_to_json<Record<string, unknown>>(worksheet, { defval: "" });
 
             if (jsonData.length === 0) {
                 throw new Error("No records found in file");
@@ -102,7 +102,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
         }
     };
 
-    const sanitizePhone = (value: any): string => {
+    const sanitizePhone = (value: unknown): string => {
         if (value === null || value === undefined) return '';
         // If it's a number (from Excel), convert to string.
         // Note: Leading zeros might be lost by Excel itself before we get it if raw processing isn't careful.
@@ -111,7 +111,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
         return String(value).trim();
     };
 
-    const parseDate = (value: any): string | null => {
+    const parseDate = (value: unknown): string | null => {
         if (!value) return null;
 
         // Handle Excel Serial Number (e.g. 45318)
@@ -173,11 +173,11 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
 
         try {
             // Normalization and Validation
-            const validRecords: any[] = [];
-            const invalidRecords: { row: number, reason: string, data: any }[] = [];
+            const validRecords: Record<string, unknown>[] = [];
+            const invalidRecords: { row: number; reason: string; data: Record<string, unknown> }[] = [];
 
             rawRecords.forEach((record, index) => {
-                const normalized: any = {};
+                const normalized: Record<string, unknown> = {};
 
                 // Map fields using user selection
                 Object.entries(mapping).forEach(([systemKey, fileHeader]) => {
@@ -358,7 +358,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg mb-4">
                                 <div className="space-y-2">
                                     <Label>Date Format</Label>
-                                    <Select value={dateFormat} onValueChange={(v: any) => setDateFormat(v)}>
+                                    <Select value={dateFormat} onValueChange={(v) => setDateFormat(v)}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select date format" />
                                         </SelectTrigger>

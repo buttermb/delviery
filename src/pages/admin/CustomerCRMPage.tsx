@@ -31,6 +31,7 @@ import { useCRMDashboard } from "@/hooks/crm/useCRMDashboard";
 import { ActivityTimeline } from "@/components/crm/ActivityTimeline";
 import { formatCurrency } from "@/utils/formatters";
 import { formatSmartDate, displayName } from '@/lib/formatters';
+import type { CRMActivityLog } from '@/types/crm';
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
@@ -46,6 +47,12 @@ interface Customer {
   last_purchase_at: string | null;
   created_at: string;
   status: string;
+}
+
+interface EnrichedCustomer extends Customer {
+  lifecycle: string;
+  rfm: { r: number; f: number; m: number; rfm: string };
+  segment: string;
 }
 
 export default function CustomerCRMPage() {
@@ -94,7 +101,7 @@ export default function CustomerCRMPage() {
               return c;
             })
           );
-          return decrypted as any as Customer[];
+          return decrypted as unknown as Customer[];
         }
 
         return (data || []) as Customer[];
@@ -306,7 +313,7 @@ export default function CustomerCRMPage() {
                 <CardDescription>Latest actions across your CRM</CardDescription>
               </CardHeader>
               <CardContent>
-                <ActivityTimeline activities={(dashboardMetrics?.recentActivity || []) as any} />
+                <ActivityTimeline activities={(dashboardMetrics?.recentActivity || []) as unknown as CRMActivityLog[]} />
               </CardContent>
             </Card>
             <Card className="col-span-3">
@@ -331,11 +338,11 @@ export default function CustomerCRMPage() {
 
         <TabsContent value="overview" className="space-y-4">
           <ResponsiveTable
-            keyExtractor={(customer: any) => customer.id}
+            keyExtractor={(customer: EnrichedCustomer) => customer.id}
             columns={[
               {
                 header: 'Customer',
-                cell: (customer: any) => (
+                cell: (customer: EnrichedCustomer) => (
                   <div className="font-medium">
                     {displayName(customer.first_name, customer.last_name)}
                     {customer.email && (
@@ -349,7 +356,7 @@ export default function CustomerCRMPage() {
               {
                 header: 'Lifecycle',
                 accessorKey: 'lifecycle',
-                cell: (customer: any) => (
+                cell: (customer: EnrichedCustomer) => (
                   <Badge
                     variant={
                       customer.lifecycle === "active"
@@ -366,11 +373,11 @@ export default function CustomerCRMPage() {
               {
                 header: 'Segment',
                 accessorKey: 'segment',
-                cell: (customer: any) => <Badge variant="outline">{customer.segment}</Badge>
+                cell: (customer: EnrichedCustomer) => <Badge variant="outline">{customer.segment}</Badge>
               },
               {
                 header: 'RFM Score',
-                cell: (customer: any) => (
+                cell: (customer: EnrichedCustomer) => (
                   <code className="text-sm bg-muted px-2 py-1 rounded">
                     {customer.rfm.rfm}
                   </code>
@@ -379,7 +386,7 @@ export default function CustomerCRMPage() {
               {
                 header: 'Total Spent',
                 accessorKey: 'total_spent',
-                cell: (customer: any) => (
+                cell: (customer: EnrichedCustomer) => (
                   <div className="flex items-center gap-1">
                     <DollarSign className="h-3 w-3 text-muted-foreground" />
                     {customer.total_spent.toLocaleString("en-US", {
@@ -392,7 +399,7 @@ export default function CustomerCRMPage() {
               {
                 header: 'Last Purchase',
                 accessorKey: 'last_purchase_at',
-                cell: (customer: any) => customer.last_purchase_at
+                cell: (customer: EnrichedCustomer) => customer.last_purchase_at
                   ? formatSmartDate(customer.last_purchase_at)
                   : "Never"
               }
@@ -411,7 +418,7 @@ export default function CustomerCRMPage() {
                 : { label: "Add Your First Customer", onClick: () => navigateToAdmin('crm/clients/new'), icon: Plus },
               compact: true
             }}
-            mobileRenderer={(customer: any) => (
+            mobileRenderer={(customer: EnrichedCustomer) => (
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">

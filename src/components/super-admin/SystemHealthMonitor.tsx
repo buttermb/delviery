@@ -66,7 +66,7 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
 
       // Group metrics by type and get latest value
       const metricsByType = new Map<string, { value: number; metadata?: Record<string, unknown> }>();
-      metrics.forEach((m: any) => {
+      metrics.forEach((m) => {
         const existing = metricsByType.get(m.metric_type);
         if (!existing || new Date(m.timestamp) > new Date(existing.metadata?.timestamp as string || 0)) {
           metricsByType.set(m.metric_type, {

@@ -19,6 +19,16 @@ import { callAdminFunction } from '@/utils/adminFunctionHelper';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface PanicResetPreview {
+  tenant?: { business_name: string };
+  preview?: Record<string, number>;
+}
+
+interface PanicResetResult {
+  message?: string;
+  results?: Record<string, { deleted: number }>;
+}
+
 export function PanicResetTool() {
   const queryClient = useQueryClient();
   const [selectedTenantId, setSelectedTenantId] = useState<string>('');
@@ -43,7 +53,7 @@ export function PanicResetTool() {
   // Preview mutation
   const previewMutation = useMutation({
     mutationFn: async (tenantId: string) => {
-      const { data, error } = await callAdminFunction({
+      const { data, error } = await callAdminFunction<PanicResetPreview>({
         functionName: 'panic-reset',
         body: { action: 'preview', tenant_id: tenantId },
         errorMessage: 'Failed to load preview',
@@ -58,7 +68,7 @@ export function PanicResetTool() {
   // Reset mutation
   const resetMutation = useMutation({
     mutationFn: async ({ tenantId, resetType }: { tenantId: string; resetType: string }) => {
-      const { data, error } = await callAdminFunction({
+      const { data, error } = await callAdminFunction<PanicResetResult>({
         functionName: 'panic-reset',
         body: {
           action: 'reset',
@@ -75,7 +85,7 @@ export function PanicResetTool() {
     },
     onSuccess: (data) => {
       toast.success('Reset Complete', {
-        description: (data as any)?.message || 'Data has been reset successfully',
+        description: data?.message || 'Data has been reset successfully',
       });
       setConfirmation('');
       setShowPreview(false);
@@ -178,10 +188,10 @@ export function PanicResetTool() {
 
         {showPreview && previewMutation.data && (
           <Alert>
-            <AlertTitle>Preview: {(previewMutation.data as any)?.tenant?.business_name}</AlertTitle>
+            <AlertTitle>Preview: {previewMutation.data?.tenant?.business_name}</AlertTitle>
             <AlertDescription>
               <div className="mt-2 space-y-1">
-                {Object.entries((previewMutation.data as any)?.preview || {}).map(([table, count]) => (
+                {Object.entries(previewMutation.data?.preview || {}).map(([table, count]) => (
                   <div key={table} className="flex justify-between text-sm">
                     <span className="font-mono text-xs">{table}</span>
                     <Badge variant={(count as number) > 0 ? 'destructive' : 'outline'}>{count as number} records</Badge>
@@ -230,7 +240,7 @@ export function PanicResetTool() {
             <AlertTitle>Reset Complete</AlertTitle>
             <AlertDescription>
               <div className="mt-2 space-y-1 text-sm">
-                {Object.entries((resetMutation.data as any)?.results || {}).map(([table, result]: [string, any]) => (
+                {Object.entries(resetMutation.data?.results || {}).map(([table, result]) => (
                   <div key={table} className="flex justify-between">
                     <span className="font-mono text-xs">{table}</span>
                     <Badge variant={result.deleted > 0 ? 'default' : 'outline'}>

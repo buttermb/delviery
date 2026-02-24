@@ -141,7 +141,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
         .lt('due_date', now.toISOString())
         .limit(5);
 
-      (overdueInvoices || []).forEach((invoice: any) => {
+      (overdueInvoices || []).forEach((invoice) => {
         const daysOverdue = Math.ceil((now.getTime() - new Date(invoice.due_date).getTime()) / (1000 * 60 * 60 * 24));
 
         alerts.push({

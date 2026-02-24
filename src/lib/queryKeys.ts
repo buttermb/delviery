@@ -551,6 +551,7 @@ export const queryKeys = {
   // Vendor
   vendor: {
     all: ['vendor'] as const,
+    detail: (vendorId: string) => [...queryKeys.vendor.all, vendorId] as const,
     purchaseOrders: (vendorId: string) => [...queryKeys.vendor.all, 'purchase-orders', vendorId] as const,
     invoices: (vendorId: string) => [...queryKeys.vendor.all, 'invoices', vendorId] as const,
   },
@@ -2932,5 +2933,227 @@ export const queryKeys = {
   // Shop Store (key for shop-store invalidation)
   shopStore: {
     all: ['shop-store'] as const,
+  },
+  // Wholesale Data (tenant-scoped hooks in useWholesaleData)
+  wholesaleData: {
+    clients: (tenantId?: string, options?: Record<string, unknown>) =>
+      ['wholesale-clients', tenantId, options] as const,
+    orders: (tenantId?: string) =>
+      ['wholesale-orders', tenantId] as const,
+    payments: (tenantId?: string) =>
+      ['wholesale-payments', tenantId] as const,
+    deliveries: (tenantId?: string) =>
+      ['wholesale-deliveries', tenantId] as const,
+    runners: (tenantId?: string) =>
+      ['wholesale-runners', tenantId] as const,
+    couriers: (tenantId?: string) =>
+      ['wholesale-couriers', tenantId] as const,
+    productsInventory: (tenantId?: string) =>
+      ['products-inventory', tenantId] as const,
+    productsForWholesale: (tenantId?: string) =>
+      ['products-for-wholesale', tenantId] as const,
+    clientDetail: (clientId: string, tenantId?: string) =>
+      ['wholesale-client', clientId, tenantId] as const,
+    clientOrders: (clientId: string, tenantId?: string) =>
+      ['wholesale-client-orders', clientId, tenantId] as const,
+    clientPayments: (clientId: string, tenantId?: string) =>
+      ['wholesale-client-payments', clientId, tenantId] as const,
+  },
+
+  // Loyalty Program (admin page)
+  loyaltyProgram: {
+    allConfig: ['loyalty-config'] as const,
+    config: (tenantId?: string) =>
+      ['loyalty-config', tenantId] as const,
+    allTiers: ['loyalty-tiers'] as const,
+    tiers: (tenantId?: string) =>
+      ['loyalty-tiers', tenantId] as const,
+    allRewards: ['loyalty-rewards'] as const,
+    rewards: (tenantId?: string) =>
+      ['loyalty-rewards', tenantId] as const,
+    stats: (tenantId?: string) =>
+      ['loyalty-stats', tenantId] as const,
+  },
+
+  // Marketplace Stores (storefront dashboard)
+  marketplaceStores: {
+    all: ['marketplace-stores'] as const,
+    byTenant: (tenantId?: string) =>
+      ['marketplace-stores', tenantId] as const,
+    recentOrders: (storeId?: string) =>
+      ['marketplace-recent-orders', storeId] as const,
+    productStats: (storeId?: string, tenantId?: string) =>
+      ['marketplace-product-stats', storeId, tenantId] as const,
+    revenueTrend: (storeId?: string) =>
+      ['marketplace-revenue-trend', storeId] as const,
+  },
+
+  // Customer Menu (customer-facing menu view)
+  customerMenu: {
+    detail: (menuId?: string, tenantId?: string, customerId?: string) =>
+      ['customer-menu', menuId, tenantId, customerId] as const,
+    products: (menuId?: string, tenantId?: string) =>
+      ['customer-menu-products', menuId, tenantId] as const,
+  },
+
+  // Customer Addresses (checkout)
+  customerAddresses: {
+    byUser: (userId?: string) =>
+      ['customer-addresses', userId] as const,
+  },
+
+  // Recurring Invoice Schedules
+  recurringSchedules: {
+    byTenant: (tenantId?: string) =>
+      ['recurring-schedules', tenantId] as const,
+  },
+
+  // System Settings (admin)
+  systemSettings: {
+    health: (tenantId?: string) =>
+      ['system-health', tenantId] as const,
+    dbStats: (tenantId?: string) =>
+      ['db-stats', tenantId] as const,
+    fraudRules: () =>
+      ['fraud-rules'] as const,
+  },
+
+  // Super Admin Tenant Detail (extended)
+  superAdminTenantDetail: {
+    tenant: (tenantId?: string) =>
+      ['super-admin-tenant', tenantId] as const,
+    subscriptionPlan: (planName?: string) =>
+      ['subscription-plan', planName] as const,
+    invoices: (tenantId?: string) =>
+      ['tenant-invoices', tenantId] as const,
+    users: (tenantId?: string) =>
+      ['tenant-users', tenantId] as const,
+    activityLogs: (tenantId?: string) =>
+      ['tenant-activity-logs', tenantId] as const,
+  },
+
+  // Tenant Dashboard (extended)
+  tenantDashboardExt: {
+    today: (tenantId?: string) =>
+      ['tenant-dashboard-today', tenantId] as const,
+    recentActivity: (tenantId?: string) =>
+      ['recent-activity', tenantId] as const,
+    revenueStats: (tenantId?: string) =>
+      ['revenue-stats', tenantId] as const,
+  },
+
+  // Products for Menu (admin menu builder)
+  productsForMenu: {
+    byTenant: (tenantId?: string) =>
+      ['products-for-menu', tenantId] as const,
+  },
+
+  // Customer Order Tracking (customer-facing)
+  customerOrderTracking: {
+    byId: (orderId?: string, tenantId?: string, customerId?: string, customerEmail?: string) =>
+      ['customer-order', orderId, tenantId, customerId, customerEmail] as const,
+  },
+
+  // Customer All Orders (customer-facing list)
+  customerAllOrders: {
+    byTenantCustomer: (tenantId?: string, customerId?: string) =>
+      ['customer-all-orders', tenantId, customerId] as const,
+  },
+
+  // Customer Dashboard Orders
+  customerDashboardOrders: {
+    byTenantCustomer: (tenantId?: string, customerId?: string) =>
+      ['customer-orders', tenantId, customerId] as const,
+  },
+
+  // Customer Marketplace Profile (buyer check)
+  customerMarketplaceProfileCheck: {
+    byTenant: (tenantId?: string) =>
+      ['customer-marketplace-profile', tenantId] as const,
+  },
+
+  // Tenant Search (login landing)
+  tenantSearchPage: {
+    byTerm: (searchTerm?: string) =>
+      ['tenant-search', searchTerm] as const,
+  },
+
+  // Trial Expired Stats
+  trialExpiredStats: {
+    byTenant: (tenantId?: string) =>
+      ['trial-expired-stats', tenantId] as const,
+  },
+
+  // Client Notes (wholesale)
+  clientNotes: {
+    all: ['client-notes'] as const,
+    byClient: (clientId: string) =>
+      ['client-notes', clientId] as const,
+  },
+
+  // Admin Products (product management list)
+  adminProducts: {
+    all: ['admin-products'] as const,
+  },
+
+  // Coupon Analytics
+  couponAnalyticsData: {
+    byTenant: (tenantId?: string) =>
+      ['coupon-analytics', tenantId] as const,
+  },
+
+  // Customer Timeline (CRM)
+  customerTimeline: {
+    byCustomer: (customerId?: string) =>
+      ['customer-timeline', customerId] as const,
+  },
+
+  // Inventory Movements Log
+  inventoryMovementsLog: {
+    byTenant: (tenantId?: string) =>
+      ['inventory-movements', tenantId] as const,
+  },
+
+  // Traceability (recall)
+  traceability: {
+    byBatch: (batchId?: string | null, tenantId?: string) =>
+      ['traceability', batchId, tenantId] as const,
+  },
+
+  // Inventory Optimization (predictive)
+  inventoryOptimization: {
+    byTenant: (tenantId?: string) =>
+      ['inventory-optimization', tenantId] as const,
+  },
+
+  // Demand Forecast (predictive)
+  demandForecast: {
+    byTenant: (tenantId?: string) =>
+      ['demand-forecast', tenantId] as const,
+  },
+
+  // Cash Flow Projection (predictive)
+  cashflowProjection: {
+    byTenant: (tenantId?: string) =>
+      ['cashflow-projection', tenantId] as const,
+  },
+
+  // Product Reviews (storefront)
+  productReviews: {
+    all: ['product-reviews'] as const,
+    byProduct: (productId?: string) =>
+      ['product-reviews', productId] as const,
+  },
+
+  // Delivery Tracking (admin detail)
+  deliveryTrackingAdmin: {
+    byId: (deliveryId?: string) =>
+      ['delivery', deliveryId] as const,
+  },
+
+  // Vendors Simple List (purchase orders page)
+  vendorsSimple: {
+    byTenant: (tenantId?: string) =>
+      ['vendors', tenantId] as const,
   },
 } as const;

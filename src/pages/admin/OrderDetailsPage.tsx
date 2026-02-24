@@ -379,6 +379,12 @@ export function OrderDetailsPage() {
 
       if (!unifiedError) return;
 
+      logger.warn('unified_orders status update failed, falling back to orders table', {
+        component: 'OrderDetailsPage',
+        orderId,
+        error: unifiedError,
+      });
+
       // Fallback to orders table
       const { error } = await supabase
         .from('orders')
@@ -524,6 +530,12 @@ export function OrderDetailsPage() {
         .eq('tenant_id', tenant.id);
 
       if (!unifiedError) return;
+
+      logger.warn('unified_orders delivery notes update failed, falling back to orders table', {
+        component: 'OrderDetailsPage',
+        orderId,
+        error: unifiedError,
+      });
 
       // Fallback to orders table
       const { error } = await supabase

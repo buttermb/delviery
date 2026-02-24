@@ -8,8 +8,8 @@ import { invalidateOnEvent } from '@/lib/invalidation';
 import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 
-const normalizePreOrder = (row: any): CRMPreOrder => ({ ...row, line_items: Array.isArray(row.line_items) ? (row.line_items as unknown as LineItem[]) : [] });
-const normalizeInvoice = (row: any): CRMInvoice => ({ ...row, line_items: Array.isArray(row.line_items) ? (row.line_items as unknown as LineItem[]) : [], issue_date: row.invoice_date, tax: row.tax_amount });
+const normalizePreOrder = (row: Record<string, unknown>): CRMPreOrder => ({ ...(row as unknown as CRMPreOrder), line_items: Array.isArray(row.line_items) ? (row.line_items as unknown as LineItem[]) : [] });
+const normalizeInvoice = (row: Record<string, unknown>): CRMInvoice => ({ ...(row as unknown as CRMInvoice), line_items: Array.isArray(row.line_items) ? (row.line_items as unknown as LineItem[]) : [], issue_date: row.invoice_date as string, tax: row.tax_amount as number });
 
 export function usePreOrders() {
     const accountId = useAccountIdSafe();
@@ -57,7 +57,7 @@ export function useCreatePreOrder() {
     const queryClient = useQueryClient();
     const accountId = useAccountIdSafe();
     return useMutation({
-        mutationFn: async (values: any) => {
+        mutationFn: async (values: Record<string, unknown> & { account_id?: string; line_items?: LineItem[] }) => {
             const finalAccountId = values.account_id || accountId;
             if (!finalAccountId) throw new Error('Account ID required');
             const { data, error } = await supabase.from('crm_pre_orders').insert({ ...values, account_id: finalAccountId, line_items: values.line_items }).select('*, client:crm_clients(*)').maybeSingle();
@@ -118,7 +118,7 @@ export function useConvertPreOrderToInvoice() {
     const queryClient = useQueryClient();
     const accountId = useAccountIdSafe();
     return useMutation({
-        mutationFn: async ({ preOrderId, invoiceData }: { preOrderId: string; invoiceData: any }) => {
+        mutationFn: async ({ preOrderId, invoiceData }: { preOrderId: string; invoiceData: Record<string, unknown> & { tax_rate?: number } }) => {
             if (!accountId) throw new Error('Account ID required');
             const { data: preOrder, error: fetchError } = await supabase.from('crm_pre_orders').select('*').eq('id', preOrderId).eq('account_id', accountId).maybeSingle();
             if (fetchError) throw fetchError;

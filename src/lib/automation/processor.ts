@@ -5,7 +5,7 @@ export interface AutomationResult {
     triggered: boolean;
     message?: string;
     action?: string;
-    data?: any;
+    data?: unknown;
 }
 
 /**

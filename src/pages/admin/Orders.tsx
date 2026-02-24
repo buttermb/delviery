@@ -277,7 +277,7 @@ export default function Orders() {
       // Merge regular orders with user info (including SLA timestamp fields)
       const regularOrdersWithUsers = (ordersData || []).map(order => ({
         ...order,
-        delivery_method: (order as any).delivery_method || '',
+        delivery_method: (order as unknown as Record<string, unknown>).delivery_method as string || '',
         accepted_at: order.accepted_at || null,
         courier_assigned_at: order.courier_assigned_at || null,
         courier_accepted_at: order.courier_accepted_at || null,

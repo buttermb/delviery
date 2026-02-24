@@ -131,9 +131,20 @@ export const maskToken = (token: string, visibleChars: number = 8): string => {
 /**
  * Validate menu security settings
  */
-export const validateSecuritySettings = (settings: any): { valid: boolean; errors: string[] } => {
+interface MenuSecuritySettings {
+  require_geofence?: boolean;
+  geofence_lat?: number;
+  geofence_lng?: number;
+  geofence_radius?: number;
+  time_restrictions?: boolean;
+  allowed_hours?: { start: number; end: number };
+  require_whitelist?: boolean;
+  invite_only?: boolean;
+}
+
+export const validateSecuritySettings = (settings: MenuSecuritySettings): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
-  
+
   if (settings.require_geofence) {
     if (!settings.geofence_lat || !settings.geofence_lng) {
       errors.push('Geofence requires valid coordinates');
@@ -142,18 +153,18 @@ export const validateSecuritySettings = (settings: any): { valid: boolean; error
       errors.push('Geofence requires valid radius');
     }
   }
-  
+
   if (settings.time_restrictions && settings.allowed_hours) {
     const { start, end } = settings.allowed_hours;
     if (start === undefined || end === undefined || start < 0 || start > 23 || end < 0 || end > 23) {
       errors.push('Invalid time restrictions (hours must be 0-23)');
     }
   }
-  
+
   if (settings.require_whitelist && !settings.invite_only) {
     errors.push('Whitelist enforcement requires invite-only mode');
   }
-  
+
   return { valid: errors.length === 0, errors };
 };
 

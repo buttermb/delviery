@@ -49,10 +49,10 @@ export const safeNestedAccess = (
 ): Json | undefined => {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return undefined;
   
-  let current: any = obj;
+  let current: Json | undefined = obj;
   for (const key of path) {
     if (!current || typeof current !== 'object' || Array.isArray(current)) return undefined;
-    current = current[key];
+    current = (current as Record<string, Json>)[key];
   }
   return current as Json;
 };

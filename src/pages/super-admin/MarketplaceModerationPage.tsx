@@ -43,7 +43,8 @@ export default function MarketplaceModerationPage() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedProfile, setSelectedProfile] = useState<any>(null);
+  type MarketplaceProfile = NonNullable<typeof profiles>[number];
+  const [selectedProfile, setSelectedProfile] = useState<MarketplaceProfile | null>(null);
   const [verificationNotes, setVerificationNotes] = useState('');
   const [showVerificationDialog, setShowVerificationDialog] = useState(false);
   const [verificationAction, setVerificationAction] = useState<'approve' | 'reject' | null>(null);
@@ -85,7 +86,7 @@ export default function MarketplaceModerationPage() {
   });
 
   // Filter profiles by search query
-  const filteredProfiles = profiles.filter((profile: any) => {
+  const filteredProfiles = profiles.filter((profile) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -115,7 +116,7 @@ export default function MarketplaceModerationPage() {
 
       const isSeller = currentProfile?.can_sell !== false; // Default to seller if not explicitly set
 
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         license_verified: action === 'approve',
         license_verified_at: action === 'approve' ? new Date().toISOString() : null,
         license_verified_by: superAdmin?.id || null,
@@ -155,7 +156,7 @@ export default function MarketplaceModerationPage() {
     },
   });
 
-  const handleVerify = (profile: any, action: 'approve' | 'reject') => {
+  const handleVerify = (profile: MarketplaceProfile, action: 'approve' | 'reject') => {
     setSelectedProfile(profile);
     setVerificationAction(action);
     setVerificationNotes(profile.license_verification_notes || '');
@@ -286,7 +287,7 @@ export default function MarketplaceModerationPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredProfiles.map((profile: any) => (
+                  {filteredProfiles.map((profile) => (
                     <TableRow key={profile.id}>
                       <TableCell>
                         <div>

@@ -63,7 +63,7 @@ export default function ZReportPage() {
               <SelectValue placeholder="Select a shift..." />
             </SelectTrigger>
             <SelectContent>
-              {shifts?.map((shift: any) => (
+              {shifts?.map((shift) => (
                 <SelectItem key={shift.id} value={shift.id}>
                   <div className="flex items-center justify-between gap-4">
                     <span>

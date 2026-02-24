@@ -144,15 +144,15 @@ export default function InventoryDashboard() {
         throw error;
       }
 
-      const productsList = (products || []) as any[];
+      const productsList = products || [];
       const totalProducts = productsList.length;
-      const totalQuantity = productsList.reduce((sum: number, p: any) => sum + (p.stock_quantity || 0), 0);
+      const totalQuantity = productsList.reduce((sum, p) => sum + (p.stock_quantity || 0), 0);
       const totalStockValue = productsList.reduce(
-        (sum: number, p: any) => sum + (p.stock_quantity || 0) * (p.price || 0),
+        (sum, p) => sum + (p.stock_quantity || 0) * (p.price || 0),
         0
       );
-      const outOfStockCount = productsList.filter((p: any) => (p.stock_quantity || 0) === 0).length;
-      const lowStockCount = productsList.filter((p: any) => {
+      const outOfStockCount = productsList.filter((p) => (p.stock_quantity || 0) === 0).length;
+      const lowStockCount = productsList.filter((p) => {
         const qty = p.stock_quantity || 0;
         const minLevel = p.min_stock_level || 10;
         return qty > 0 && qty <= minLevel;
@@ -230,7 +230,7 @@ export default function InventoryDashboard() {
       let adequate = 0;
       let overstocked = 0;
 
-      (products as any[])?.forEach((p: any) => {
+      products?.forEach((p) => {
         const qty = p.stock_quantity || 0;
         const minLevel = p.min_stock_level || 10;
         const maxLevel = minLevel * 5;
@@ -278,7 +278,7 @@ export default function InventoryDashboard() {
         throw error;
       }
 
-      return (data || []).map((p: any) => ({
+      return (data || []).map((p) => ({
         ...p,
         min_stock_level: p.min_stock_level || 10,
       })) as LowStockProduct[];

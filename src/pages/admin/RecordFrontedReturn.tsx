@@ -211,7 +211,7 @@ export default function RecordFrontedReturn() {
             scan_type: returnItem.condition === "good" ? "return" : "damage",
             quantity: 1,
             notes: returnItem.reason || notes,
-          } as any);
+          });
         }
 
         toast.success(
@@ -241,7 +241,7 @@ export default function RecordFrontedReturn() {
         <div>
           <h1 className="text-xl font-bold">Scan Returns</h1>
           <p className="text-muted-foreground">
-            {(front as any).products?.name} • Front #{id.slice(0, 8)}
+            {front.products?.name} • Front #{id.slice(0, 8)}
           </p>
         </div>
       </div>

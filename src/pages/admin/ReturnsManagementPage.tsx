@@ -106,7 +106,7 @@ export default function ReturnsManagementPage() {
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter) as any;
+        query = query.eq("status", statusFilter);
       }
 
       const { data, error } = await query;
@@ -121,7 +121,7 @@ export default function ReturnsManagementPage() {
         return [];
       }
 
-      return (data || []) as any as ReturnAuthorization[];
+      return (data || []) as unknown as ReturnAuthorization[];
     },
   });
 

@@ -63,7 +63,7 @@ export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQue
 
             // Fetch responses for each review
             const reviewsWithResponses = await Promise.all(
-                (data || []).map(async (review: any) => {
+                (data || []).map(async (review) => {
                     const { data: responseData } = await supabase
                         .from('review_responses')
                         .select('*')

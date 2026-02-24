@@ -114,7 +114,9 @@ export function CustomerForgotPasswordPage() {
           .eq('slug', tenantSlug)
           .maybeSingle();
 
-        if (data && !error) {
+        if (error) {
+          logger.error('Failed to fetch tenant', error, { component: 'ForgotPasswordPage', tenantSlug });
+        } else if (data) {
           setTenant({ id: data.id, slug: data.slug, name: data.business_name || data.slug });
         }
         setTenantLoading(false);

@@ -53,7 +53,7 @@ export default function Notifications() {
 
       try {
         const { data, error } = await supabase
-          .from('notification_templates' as any)
+          .from('notification_templates')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -74,7 +74,7 @@ export default function Notifications() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('notification_templates' as any)
+        .from('notification_templates')
         .insert({
           tenant_id: tenantId,
           name: template.name,
@@ -114,7 +114,7 @@ export default function Notifications() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('notification_templates' as any)
+        .from('notification_templates')
         .update({
           name: template.name,
           type: template.type,
@@ -154,7 +154,7 @@ export default function Notifications() {
     mutationFn: async (templateId: string) => {
       if (!tenantId) throw new Error('Tenant ID required');
       const { error } = await supabase
-        .from('notification_templates' as any)
+        .from('notification_templates')
         .delete()
         .eq('id', templateId)
         .eq('tenant_id', tenantId);

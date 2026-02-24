@@ -102,7 +102,7 @@ export default function CustomReportsPage() {
 
       {reports && reports.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {reports.map((report: any) => (
+          {reports.map((report) => (
             <Card key={report.id}>
               <CardHeader>
                 <div className="flex items-start justify-between">

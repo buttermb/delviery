@@ -71,11 +71,12 @@ export const syncQueue = {
         toast.success('Offline changes processing...');
     },
 
-    async add(url: string, method: string, body: any) {
+    async add(url: string, method: string, body: unknown) {
         // Enforce idempotency: Inject UUID if not present and body is an object
         if (body && typeof body === 'object' && !Array.isArray(body)) {
-            if (!body.idempotencyKey && !body.idempotency_key) {
-                body = { ...body, idempotencyKey: uuidv4() };
+            const record = body as Record<string, unknown>;
+            if (!record.idempotencyKey && !record.idempotency_key) {
+                body = { ...record, idempotencyKey: uuidv4() };
             }
         }
 

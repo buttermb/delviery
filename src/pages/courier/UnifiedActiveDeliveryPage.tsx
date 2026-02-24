@@ -22,7 +22,7 @@ export default function UnifiedActiveDeliveryPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { role } = useCourier();
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const { updateStatus, updating } = useDeliveryStatus();
 
@@ -216,7 +216,7 @@ export default function UnifiedActiveDeliveryPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {data.order_items.map((item: any) => (
+                {data.order_items.map((item) => (
                   <div key={item.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">

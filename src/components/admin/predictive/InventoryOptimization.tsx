@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Package, AlertCircle, CheckCircle, TrendingUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,7 +11,7 @@ export function InventoryOptimization() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: recommendations, isLoading } = useQuery({
-    queryKey: ["inventory-optimization", tenant?.id],
+    queryKey: queryKeys.inventoryOptimization.byTenant(tenant?.id),
     queryFn: async () => {
       const { data: products } = await supabase
         .from("products")

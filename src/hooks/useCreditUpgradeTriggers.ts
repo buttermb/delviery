@@ -137,7 +137,7 @@ export function useCreditUpgradeTriggers(): UseCreditUpgradeTriggersReturn {
       };
     }
     
-    const usage = (tenant as any)?.usage || {};
+    const usage = (tenant?.usage ?? {}) as Record<string, number>;
     const createdAt = tenant?.created_at ? new Date(tenant.created_at) : null;
     const daysOnPlatform = createdAt 
       ? Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24))

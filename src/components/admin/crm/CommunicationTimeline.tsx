@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -37,7 +38,7 @@ export function CommunicationTimeline({ customers }: CommunicationTimelineProps)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
 
   const { data: timeline, isLoading } = useQuery({
-    queryKey: ["customer-timeline", selectedCustomerId],
+    queryKey: queryKeys.customerTimeline.byCustomer(selectedCustomerId),
     queryFn: async () => {
       if (!selectedCustomerId || !tenant?.id) return [];
 

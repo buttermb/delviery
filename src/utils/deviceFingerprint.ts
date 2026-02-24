@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import type { SupabaseClient } from '@supabase/supabase-js';
 /**
  * Device fingerprinting utility
  * Generates a unique fingerprint for the user's device
@@ -95,7 +96,7 @@ export function getReferralCode(): string | null {
   return params.get('ref');
 }
 
-export async function recordDeviceFingerprint(userId: string, supabase: any) {
+export async function recordDeviceFingerprint(userId: string, supabase: SupabaseClient) {
   try {
     const deviceInfo = generateDeviceFingerprint();
 

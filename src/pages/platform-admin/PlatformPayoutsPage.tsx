@@ -135,7 +135,7 @@ export default function PlatformPayoutsPage() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            payouts.map((payout: any) => (
+                            payouts.map((payout: { id: string; seller_tenant_id: string; amount: number; status: string; created_at: string; paid_at?: string; tenant?: { business_name: string } }) => (
                                 <TableRow key={payout.id}>
                                     <TableCell>
                                         <div className="font-medium">{payout.tenant?.business_name}</div>

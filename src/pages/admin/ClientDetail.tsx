@@ -25,6 +25,15 @@ import { formatCurrency, displayValue } from '@/lib/formatters';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface ClientOrder {
+  id: string;
+  order_number: string;
+  status: string;
+  total_amount: number;
+  notes: string | null;
+  created_at: string;
+}
+
 export default function ClientDetail() {
   const { id } = useParams<{ id: string; tenantSlug: string }>();
   const navigate = useTenantNavigate();
@@ -139,16 +148,21 @@ export default function ClientDetail() {
     );
   }
 
-  // Calculate metrics from real data - cast orders to any to handle schema mismatches
-  const orderData = orders as any[];
+  // Calculate metrics from real data
+  const orderData = orders as ClientOrder[];
   const paidOrders = orderData.filter(o => o.status === "delivered");
   const totalSpent = paidOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
   const avgOrderSize = orderData.length > 0
     ? orderData.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) / orderData.length
     : 0;
 
-  // Cast client to any to handle schema mismatches
-  const clientData = client as any;
+  // Extended client shape — includes fields not in the narrow select
+  const clientData = client as typeof client & {
+    client_type?: string;
+    reliability_score?: number;
+    monthly_volume?: number;
+    risk_score?: number;
+  };
   const displayClient = {
     id: clientData.id,
     business_name: clientData.business_name,
@@ -196,7 +210,7 @@ export default function ClientDetail() {
             <div className="flex items-center gap-3 mt-1">
               <Badge variant="outline">{getClientTypeLabel(displayClient.client_type)}</Badge>
               <CustomerRiskBadge
-                score={(client as { risk_score?: number } & typeof client).risk_score ?? null}
+                score={clientData.risk_score ?? null}
                 showLabel={true}
               />
               <span className="text-sm text-muted-foreground">{displayClient.address}</span>
@@ -377,17 +391,17 @@ export default function ClientDetail() {
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-4">Recent Orders</h2>
         <ResponsiveTable
-          keyExtractor={(order: any) => order.id || order.order_number}
+          keyExtractor={(order: ClientOrder) => order.id || order.order_number}
           columns={[
             {
               header: 'Order #',
               accessorKey: 'order_number',
-              cell: (order: any) => <span className="font-mono">{order.order_number}</span>
+              cell: (order: ClientOrder) => <span className="font-mono">{order.order_number}</span>
             },
             {
               header: 'Date',
               accessorKey: 'created_at',
-              cell: (order: any) => order.created_at ? format(new Date(order.created_at), "MMM d") : ""
+              cell: (order: ClientOrder) => order.created_at ? format(new Date(order.created_at), "MMM d") : ""
             },
             {
               header: 'Weight',
@@ -396,12 +410,12 @@ export default function ClientDetail() {
             {
               header: 'Amount',
               accessorKey: 'total_amount',
-              cell: (order: any) => <span className="font-mono">{formatCurrency(Number(order.total_amount))}</span>
+              cell: (order: ClientOrder) => <span className="font-mono">{formatCurrency(Number(order.total_amount))}</span>
             },
             {
               header: 'Status',
               accessorKey: 'status',
-              cell: (order: any) => {
+              cell: (order: ClientOrder) => {
                 const isDelivered = order.status === "delivered";
                 const isPending = order.status === "pending" || order.status === "assigned" || order.status === "in_transit";
 
@@ -436,7 +450,7 @@ export default function ClientDetail() {
             description: "This client hasn't placed any orders yet.",
             compact: true
           }}
-          mobileRenderer={(order: any) => (
+          mobileRenderer={(order: ClientOrder) => (
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="font-mono font-semibold">{order.order_number}</span>

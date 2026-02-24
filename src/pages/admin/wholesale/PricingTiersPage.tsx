@@ -99,7 +99,7 @@ export default function PricingTiersPage() {
         enabled: !!tenant?.id,
     });
 
-    const tiers: PricingTier[] = (settings?.integration_settings as any)?.pricing_tiers || DEFAULT_TIERS;
+    const tiers: PricingTier[] = (settings?.integration_settings as unknown as Record<string, unknown>)?.pricing_tiers as PricingTier[] || DEFAULT_TIERS;
 
     // Mutation to save tiers
     const saveTiersMutation = useMutation({
@@ -113,7 +113,7 @@ export default function PricingTiersPage() {
                 .eq('account_id', tenant.id)
                 .maybeSingle();
 
-            const currentIntegrationSettings = (currentSettings?.integration_settings as any) || {};
+            const currentIntegrationSettings = (currentSettings?.integration_settings as unknown as Record<string, unknown>) || {};
 
             const { error } = await supabase
                 .from('account_settings')

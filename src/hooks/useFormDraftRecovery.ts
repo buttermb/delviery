@@ -9,7 +9,7 @@ interface FormDraftRecoveryOptions {
   /** Time before draft expires in milliseconds (default: 24 hours) */
   expirationTime?: number;
   /** Callback when draft is recovered */
-  onRecover?: (data: any) => void;
+  onRecover?: (data: unknown) => void;
   /** Callback when draft is discarded */
   onDiscard?: () => void;
 }
@@ -41,7 +41,7 @@ interface UseFormDraftRecoveryReturn<T> {
 
 const DRAFT_PREFIX = 'form_draft_';
 
-export function useFormDraftRecovery<T extends Record<string, any>>(
+export function useFormDraftRecovery<T extends Record<string, unknown>>(
   options: FormDraftRecoveryOptions
 ): UseFormDraftRecoveryReturn<T> {
   const {

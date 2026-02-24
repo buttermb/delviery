@@ -156,6 +156,15 @@ function useProductVendors(productId: string | undefined, vendorName: string | n
                     .select('purchase_order_id')
                     .eq('product_id', productId);
 
+                if (poItemsError) {
+                    logger.error('Failed to fetch PO items for vendor', poItemsError, {
+                        component: 'ProductVendorCard',
+                        productId,
+                        vendorId: vendor.id,
+                    });
+                    continue;
+                }
+
                 const hasSuppliedProduct = poItems && poItems.length > 0 &&
                     purchaseOrders?.some(po =>
                         poItems.some(item => item.purchase_order_id === po.id)

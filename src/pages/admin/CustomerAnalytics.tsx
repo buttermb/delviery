@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Users, TrendingUp, DollarSign } from 'lucide-react';
+import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -42,7 +43,7 @@ export default function CustomerAnalytics() {
         if (error) throw error;
         return (data || []) as unknown as Customer[];
       } catch (error: unknown) {
-        if (error instanceof Error && 'code' in error && (error as any).code === '42P01') return [];
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },
@@ -64,7 +65,7 @@ export default function CustomerAnalytics() {
         if (error) throw error;
         return (data || []) as unknown as Order[];
       } catch (error: unknown) {
-        if (error instanceof Error && 'code' in error && (error as any).code === '42P01') return [];
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
       }
     },

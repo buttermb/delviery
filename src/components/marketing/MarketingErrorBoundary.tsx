@@ -24,7 +24,7 @@ export class MarketingErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     logger.error(`[Marketing Error - ${this.props.section}]:`, error, errorInfo);
   }
 

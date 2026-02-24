@@ -6,14 +6,15 @@ import { PerformanceMonitor as PM } from '@/utils/performance';
 
 export default function PerformanceMonitor() {
   const [metrics, setMetrics] = useState(PM.getMetrics());
-  const [memoryInfo, setMemoryInfo] = useState<any>(null);
+  const [memoryInfo, setMemoryInfo] = useState<{ usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } | null>(null);
   const [resourceTiming, setResourceTiming] = useState<PerformanceResourceTiming[]>([]);
 
   const refreshMetrics = () => {
     setMetrics(PM.getMetrics());
     
-    if ((performance as any).memory) {
-      setMemoryInfo((performance as any).memory);
+    const perfWithMemory = performance as Performance & { memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } };
+    if (perfWithMemory.memory) {
+      setMemoryInfo(perfWithMemory.memory);
     }
 
     const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];

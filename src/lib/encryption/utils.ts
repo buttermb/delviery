@@ -61,28 +61,28 @@ export function getSearchIndexFieldName(originalFieldName: string): string {
 /**
  * Validate encryption metadata
  */
-export function validateEncryptionMetadata(metadata: any): metadata is EncryptionMetadata {
+export function validateEncryptionMetadata(metadata: unknown): metadata is EncryptionMetadata {
+  if (typeof metadata !== 'object' || metadata === null) return false;
+  const m = metadata as Record<string, unknown>;
   return (
-    typeof metadata === 'object' &&
-    metadata !== null &&
-    typeof metadata.version === 'number' &&
-    typeof metadata.algorithm === 'string' &&
-    typeof metadata.timestamp === 'string'
+    typeof m.version === 'number' &&
+    typeof m.algorithm === 'string' &&
+    typeof m.timestamp === 'string'
   );
 }
 
 /**
  * Check if a record has encrypted fields
  */
-export function hasEncryptedFields(record: Record<string, any>): boolean {
+export function hasEncryptedFields(record: Record<string, unknown>): boolean {
   return Object.keys(record).some(key => isEncryptedField(key));
 }
 
 /**
  * Filter out encrypted fields from a record (for display purposes)
  */
-export function filterEncryptedFields(record: Record<string, any>): Record<string, any> {
-  const filtered: Record<string, any> = {};
+export function filterEncryptedFields(record: Record<string, unknown>): Record<string, unknown> {
+  const filtered: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
     if (!isEncryptedField(key) && !isSearchIndexField(key) && key !== 'encryption_metadata') {
       filtered[key] = value;

@@ -36,7 +36,7 @@ export async function showServiceWorkerNotification(
       badge: options.badge || '/logo.svg',
       data: options.data,
       requireInteraction: options.requireInteraction || false
-    } as any); // Cast to any to support vibrate at runtime
+    } as NotificationOptions);
 
     logger.debug('Service worker notification shown:', title);
   } catch (error) {

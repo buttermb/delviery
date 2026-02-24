@@ -93,7 +93,7 @@ export default function StoreSettings() {
         // Better to not clear if we want to keep editing, but query invalidation will refresh 'profile'
     };
 
-    const handleChange = (field: keyof MarketplaceProfile, value: any) => {
+    const handleChange = (field: keyof MarketplaceProfile, value: string | boolean | string[] | null) => {
         setFormState(prev => ({ ...prev, [field]: value }));
     };
 

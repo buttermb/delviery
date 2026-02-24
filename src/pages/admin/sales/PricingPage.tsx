@@ -32,6 +32,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { queryKeys } from '@/lib/queryKeys';
 
 type ColumnDef<T> = {
@@ -90,7 +91,7 @@ export default function PricingPage() {
         if (error) throw error;
 
         // Transform to pricing tiers format
-        return (data || []).map((product: any) => ({
+        return (data || []).map((product) => ({
           id: product.id,
           product_id: product.id,
           min_quantity: 1,
@@ -99,7 +100,7 @@ export default function PricingPage() {
           products: { name: product.name },
         }));
       } catch (error) {
-        if ((error as any)?.code === '42P01') return [];
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         handleError(error, { component: 'PricingPage', toastTitle: 'Failed to load pricing tiers' });
         throw error;
       }
@@ -126,7 +127,7 @@ export default function PricingPage() {
         if (error) throw error;
         return data || [];
       } catch (error) {
-        if ((error as any)?.code === '42P01') return [];
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         handleError(error, { component: 'PricingPage', toastTitle: 'Failed to load products' });
         throw error;
       }
@@ -271,7 +272,7 @@ export default function PricingPage() {
                     <SelectValue placeholder="Select product" />
                   </SelectTrigger>
                   <SelectContent>
-                    {products?.map((product: any) => (
+                    {products?.map((product) => (
                       <SelectItem key={product.id} value={product.id}>
                         {product.name}
                       </SelectItem>

@@ -25,7 +25,7 @@ const GridBackground = () => (
 
 // --- SUB-COMPONENTS ---
 
-function MetricCard({ label, value, trend, color, delay }: any) {
+function MetricCard({ label, value, trend, color, delay }: { label: string; value: string; trend: string; color: string; delay: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -135,11 +135,19 @@ function DashboardOverview() {
   )
 }
 
+interface KanbanCard {
+  id: number;
+  customer: string;
+  items: number;
+  total: string;
+  time: string;
+}
+
 function OrdersView({ isInteractive }: { isInteractive: boolean }) {
   const reduceAnimations = useShouldReduceAnimations();
 
   /* Enhanced Kanban Simulation */
-  const [columns, setColumns] = useState({
+  const [columns, setColumns] = useState<{ new: KanbanCard[]; prep: KanbanCard[]; quality: KanbanCard[]; ready: KanbanCard[] }>({
     new: [
       { id: 4930, customer: "Green Leaf", items: 12, total: "$1.2k", time: "2m" },
       { id: 4931, customer: "High Tide", items: 5, total: "$420", time: "15m" },
@@ -155,7 +163,7 @@ function OrdersView({ isInteractive }: { isInteractive: boolean }) {
     ],
     ready: [
       { id: 4925, customer: "Med Leaf", items: 6, total: "$540", time: "1h" }
-    ] as any[]
+    ]
   });
 
   // Continuous Simulation Loop - DISABLED on mobile for performance
@@ -210,7 +218,7 @@ function OrdersView({ isInteractive }: { isInteractive: boolean }) {
     return () => clearInterval(interval);
   }, [isInteractive, reduceAnimations]);
 
-  const Column = ({ title, cards, color }: any) => (
+  const Column = ({ title, cards, color }: { title: string; cards: KanbanCard[]; color: string }) => (
     <div className="flex-1 flex flex-col min-w-0 bg-slate-50 rounded-xl border border-slate-200 p-3">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
@@ -222,7 +230,7 @@ function OrdersView({ isInteractive }: { isInteractive: boolean }) {
 
       <div className={`space-y-3 flex-1 ${isInteractive ? 'overflow-y-auto pr-1' : 'overflow-hidden'}`}>
         <AnimatePresence>
-          {cards.map((card: any) => (
+          {cards.map((card) => (
             <motion.div
               key={card.id}
               layoutId={`card-${card.id}`}

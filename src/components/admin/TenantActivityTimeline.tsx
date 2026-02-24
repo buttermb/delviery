@@ -29,7 +29,7 @@ interface ActivityEvent {
     type: string;
     description: string;
     created_at: string;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
 }
 
 export function TenantActivityTimeline({ tenantId, limit = 20 }: TenantActivityTimelineProps) {

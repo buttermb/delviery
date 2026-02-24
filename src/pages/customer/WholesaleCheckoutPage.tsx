@@ -78,7 +78,7 @@ export default function WholesaleCheckoutPage() {
   // Load saved mode preference
   useEffect(() => {
     try {
-      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE as any) as CustomerMode | null;
+      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE) as CustomerMode | null;
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
@@ -121,7 +121,14 @@ export default function WholesaleCheckoutPage() {
   });
 
   // Group cart items by seller
-  const itemsBySeller = cartItems.reduce((acc: any, item: any) => {
+  interface SellerGroup {
+    sellerProfileId: string;
+    sellerTenantId: string;
+    sellerName: string;
+    items: typeof cartItems;
+  }
+
+  const itemsBySeller = cartItems.reduce<Record<string, SellerGroup>>((acc, item) => {
     const sellerId = item.marketplace_listings?.marketplace_profiles?.tenant_id;
     if (!sellerId) return acc;
 
@@ -163,8 +170,8 @@ export default function WholesaleCheckoutPage() {
       // Create orders for each seller (one order per seller)
       const orders = [];
 
-      for (const sellerGroup of Object.values(itemsBySeller) as any[]) {
-        const orderItems = sellerGroup.items.map((item: any) => ({
+      for (const sellerGroup of Object.values(itemsBySeller)) {
+        const orderItems = sellerGroup.items.map((item) => ({
           listing_id: item.listing_id,
           product_name: item.marketplace_listings?.product_name || 'Unknown Product',
           product_type: item.marketplace_listings?.product_type || null,
@@ -173,7 +180,7 @@ export default function WholesaleCheckoutPage() {
           total_price: (item.quantity as number) * (item.unit_price as number),
         }));
 
-        const orderSubtotal = orderItems.reduce((sum: number, item: any) => sum + item.total_price, 0);
+        const orderSubtotal = orderItems.reduce((sum: number, item) => sum + item.total_price, 0);
         const _orderFeeCalculation = calculateOrderTotal(orderSubtotal, 0, 0);
 
         // Call edge function to create order
@@ -435,14 +442,14 @@ export default function WholesaleCheckoutPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Items by Seller */}
-                {Object.values(itemsBySeller).map((sellerGroup: any) => (
+                {Object.values(itemsBySeller).map((sellerGroup) => (
                   <div key={sellerGroup.sellerTenantId} className="pb-4 border-b last:border-0">
                     <div className="flex items-center gap-2 mb-2">
                       <Building2 className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm font-medium">{sellerGroup.sellerName}</span>
                     </div>
                     <div className="space-y-1 text-sm">
-                      {sellerGroup.items.map((item: any) => (
+                      {sellerGroup.items.map((item) => (
                         <div key={item.id} className="flex justify-between text-muted-foreground">
                           <span>
                             {item.marketplace_listings?.product_name} × {item.quantity}

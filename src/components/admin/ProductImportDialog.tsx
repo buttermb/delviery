@@ -80,7 +80,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
             // defval: "" ensures missing cells come as empty strings not undefined
-            const jsonData: any[] = utils.sheet_to_json(worksheet, { defval: "" });
+            const jsonData = utils.sheet_to_json<Record<string, unknown>>(worksheet, { defval: "" });
 
             if (jsonData.length === 0) {
                 throw new Error("No records found in file");
@@ -109,7 +109,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
         }
     };
 
-    const parseNumber = (value: any): number => {
+    const parseNumber = (value: unknown): number => {
         if (typeof value === 'number') return value;
         if (!value) return 0;
         let str = String(value).trim();
@@ -127,7 +127,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
         return isNaN(num) ? 0 : num;
     };
 
-    const sanitizeSKU = (value: any): string => {
+    const sanitizeSKU = (value: unknown): string => {
         if (value === null || value === undefined) return '';
 
         // Check for scientific notation in string representation
@@ -159,11 +159,11 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
 
         try {
             // Normalization and Validation
-            const validRecords: any[] = [];
-            const invalidRecords: { row: number, reason: string, data: any }[] = [];
+            const validRecords: Record<string, unknown>[] = [];
+            const invalidRecords: { row: number; reason: string; data: Record<string, unknown> }[] = [];
 
             rawRecords.forEach((record, index) => {
-                const normalized: any = {};
+                const normalized: Record<string, unknown> = {};
 
                 // Map fields using user selection
                 Object.entries(mapping).forEach(([systemKey, fileHeader]) => {
@@ -349,7 +349,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
                             <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
                                 <div className="space-y-2">
                                     <Label>Decimal Separator</Label>
-                                    <Select value={decimalSeparator} onValueChange={(v: any) => setDecimalSeparator(v)}>
+                                    <Select value={decimalSeparator} onValueChange={(v) => setDecimalSeparator(v)}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select separator" />
                                         </SelectTrigger>

@@ -34,7 +34,7 @@ interface ProductSyncStatus {
     sync_status: 'synced' | 'pending' | 'error';
     last_synced_at: string;
     last_attempt_at: string;
-    sync_errors: any;
+    sync_errors: Record<string, unknown> | null;
     listing_id: string;
 }
 

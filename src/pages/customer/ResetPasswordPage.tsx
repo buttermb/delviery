@@ -51,7 +51,9 @@ export default function CustomerResetPasswordPage() {
           .eq('slug', tenantSlug)
           .maybeSingle();
 
-        if (data && !error) {
+        if (error) {
+          logger.error('Failed to fetch tenant', error, { component: 'ResetPasswordPage', tenantSlug });
+        } else if (data) {
           setTenant(data);
         }
         setTenantLoading(false);

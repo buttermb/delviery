@@ -44,7 +44,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface ConvertPreOrderDialogProps {
-    preOrder: any;
+    preOrder: { id: string; client_id: string; pre_order_number: string };
     trigger?: React.ReactNode;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;

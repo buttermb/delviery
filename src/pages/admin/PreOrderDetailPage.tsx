@@ -181,7 +181,7 @@ export default function PreOrderDetailPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {preOrder.line_items.map((item: any, index: number) => (
+                                    {preOrder.line_items.map((item: { description: string; quantity: number; unit_price: number; total: number }, index: number) => (
                                         <TableRow key={index}>
                                             <TableCell className="pl-6 font-medium">
                                                 {item.description}

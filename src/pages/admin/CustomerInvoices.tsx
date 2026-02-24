@@ -105,6 +105,13 @@ export default function CustomerInvoices() {
         .order('created_at', { ascending: false })
         .range(from, to);
 
+      if (error) {
+        logger.warn('customer_invoices direct query failed, trying RPC fallback', {
+          component: 'CustomerInvoices',
+          error,
+        });
+      }
+
       if (!error && data) {
         const newData = data || [];
 
@@ -143,6 +150,12 @@ export default function CustomerInvoices() {
           const { data: rpcData, error: rpcError } = await supabase.rpc('get_tenant_invoices' as 'get_secret', {
             tenant_id: tenant.id,
           } as Record<string, unknown>);
+          if (rpcError) {
+            logger.warn('get_tenant_invoices RPC failed, trying edge function', {
+              component: 'CustomerInvoices',
+              error: rpcError,
+            });
+          }
           if (!rpcError && Array.isArray(rpcData)) {
             // Store all invoices for client-side pagination
             setAllInvoices(rpcData);
@@ -285,6 +298,12 @@ export default function CustomerInvoices() {
         const { data: genNum, error: genErr } = await supabase.rpc('generate_invoice_number' as 'get_secret', {
           tenant_id: tenant.id,
         } as Record<string, unknown>);
+        if (genErr) {
+          logger.warn('generate_invoice_number RPC failed, using timestamp fallback', {
+            component: 'CustomerInvoices',
+            error: genErr,
+          });
+        }
         if (!genErr && typeof genNum === 'string' && genNum.trim()) {
           invoiceNumber = genNum;
         }

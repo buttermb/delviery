@@ -19,7 +19,7 @@ function formatQuantityValue(value: number): string {
   return new Intl.NumberFormat('en-US').format(value);
 }
 
-function formatDateValue(value: any, formatStr: string): string {
+function formatDateValue(value: unknown, formatStr: string): string {
   try {
     const date = value instanceof Date ? value : new Date(value);
     return format(date, formatStr);
@@ -32,7 +32,7 @@ export interface ExportColumn<T> {
   key: keyof T;
   header: string;
   /** Format function for the cell value */
-  format?: (value: any, row: T) => string;
+  format?: (value: unknown, row: T) => string;
   /** Column type for automatic formatting */
   type?: 'string' | 'number' | 'currency' | 'percent' | 'date' | 'datetime' | 'boolean';
 }
@@ -58,7 +58,7 @@ const DEFAULT_OPTIONS: ExportOptions = {
 /**
  * Escape a cell value for CSV
  */
-function escapeCSVCell(value: any): string {
+function escapeCSVCell(value: unknown): string {
   if (value === null || value === undefined) return '';
   const stringValue = String(value);
   const needsQuotes = /[",\n\r]/.test(stringValue);
@@ -72,7 +72,7 @@ function escapeCSVCell(value: any): string {
  * Format a cell value based on type
  */
 function formatCellValue<T>(
-  value: any,
+  value: unknown,
   row: T,
   column: ExportColumn<T>,
   options: ExportOptions
@@ -238,7 +238,7 @@ export const ExportColumnHelpers = {
   custom: <T>(
     key: keyof T,
     header: string,
-    format: (value: any, row: T) => string
+    format: (value: unknown, row: T) => string
   ): ExportColumn<T> => ({
     key,
     header,

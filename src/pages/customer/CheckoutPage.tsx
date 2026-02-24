@@ -28,10 +28,12 @@ import { formatSmartDate } from "@/lib/formatters";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { toast } from "sonner";
 import { SuccessState } from "@/components/shared/SuccessState";
+import type { User } from "@supabase/supabase-js";
 import type { RenderCartItem } from "@/types/cart";
 import type { LucideIcon } from "lucide-react";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
+import { queryKeys } from "@/lib/queryKeys";
 
 type CheckoutStep = "cart" | "delivery" | "payment" | "review";
 
@@ -41,7 +43,7 @@ export default function CheckoutPage() {
   const { tenant } = useCustomerAuth();
   const tenantId = tenant?.id;
   const { guestCart } = useGuestCart();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("delivery");
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
@@ -73,7 +75,7 @@ export default function CheckoutPage() {
 
   // Fetch cart items
   const { data: dbCartItems = [], isLoading: dbLoading } = useQuery({
-    queryKey: ["cart", user?.id, tenantId],
+    queryKey: queryKeys.cart.user(user?.id, tenantId),
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
@@ -88,7 +90,7 @@ export default function CheckoutPage() {
 
   // Fetch product details for guest cart
   const { data: guestProducts = [] } = useQuery({
-    queryKey: ["guest-cart-products", guestCart.map(i => i.product_id).sort().join(",")],
+    queryKey: queryKeys.guestCartProducts.byIds(guestCart.map(i => i.product_id).sort().join(",")),
     queryFn: async () => {
       if (guestCart.length === 0) return [];
       const productIds = guestCart.map(item => item.product_id);
@@ -104,7 +106,7 @@ export default function CheckoutPage() {
 
   // Fetch saved addresses for authenticated users
   const { data: savedAddresses = [] } = useQuery({
-    queryKey: ["customer-addresses", user?.id],
+    queryKey: queryKeys.customerAddresses.byUser(user?.id),
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
@@ -131,7 +133,7 @@ export default function CheckoutPage() {
         acc.push({
           ...item,
           id: `${item.product_id}-${item.selected_weight}`,
-          products: product as any
+          products: product as unknown as RenderCartItem["products"]
         } as RenderCartItem);
       }
       return acc;
@@ -211,7 +213,7 @@ export default function CheckoutPage() {
       // Clear cart
       if (user) {
         await supabase.from("cart_items").delete().eq("user_id", user.id);
-        queryClient.invalidateQueries({ queryKey: ["cart", user.id, tenantId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.cart.user(user.id, tenantId) });
       } else {
         localStorage.removeItem("guest_cart");
       }
@@ -485,7 +487,7 @@ export default function CheckoutPage() {
                                     if (error) throw error;
 
                                     // Refresh addresses
-                                    queryClient.invalidateQueries({ queryKey: ["customer-addresses", user.id] });
+                                    queryClient.invalidateQueries({ queryKey: queryKeys.customerAddresses.byUser(user.id) });
                                   }
 
                                   toast.success("Address Added", {

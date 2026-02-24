@@ -16,8 +16,8 @@ export function UsageLimitGuard({ resource, children }: UsageLimitGuardProps) {
   
   if (!tenant) return <>{children}</>;
 
-  const limits = (tenant as any).limits || {};
-  const usage = (tenant as any).usage || {};
+  const limits = tenant.limits || { customers: 0, menus: 0, products: 0, locations: 0, users: 0 };
+  const usage = tenant.usage || { customers: 0, menus: 0, products: 0, locations: 0, users: 0 };
   
   const limit = limits[resource];
   const current = usage[resource] || 0;

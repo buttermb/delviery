@@ -26,7 +26,7 @@ export default function LocationAnalyticsPage() {
         .eq('tenant_id', tenant?.id)
         .eq('status', 'delivered');
 
-      const locationStats = orders?.reduce((acc: any, order) => {
+      const locationStats = orders?.reduce((acc: Record<string, { name: string; revenue: number; orders: number }>, order) => {
         const borough = order.delivery_borough || 'Unknown';
         if (!acc[borough]) {
           acc[borough] = { name: borough, revenue: 0, orders: 0 };
@@ -189,16 +189,16 @@ export default function LocationAnalyticsPage() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={(entry: any) => `${entry.name}: ${formatCurrency(entry.revenue)}`}
+                      label={(entry: { name: string; revenue: number }) => `${entry.name}: ${formatCurrency(entry.revenue)}`}
                       outerRadius={80}
                       fill="hsl(var(--primary))"
                       dataKey="revenue"
                     >
-                      {locationData.locations.map((entry: any, index: number) => (
+                      {locationData.locations.map((_entry, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: any) => formatCurrency(value)} />
+                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>

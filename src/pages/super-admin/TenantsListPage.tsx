@@ -56,7 +56,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { calculateHealthScore } from '@/lib/tenant';
+import { calculateHealthScore, type Tenant as LibTenant } from '@/lib/tenant';
 import { getStatusColor, getStatusVariant, getPlanVariant, getHealthTextColor } from '@/lib/utils/statusColors';
 import { TenantCard } from '@/components/super-admin/TenantCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -146,7 +146,7 @@ export default function TenantsListPage() {
     if (healthFilter === 'all') return tenants;
 
     return tenants.filter((tenant) => {
-      const health = calculateHealthScore(tenant as any);
+      const health = calculateHealthScore(tenant as unknown as LibTenant);
       const score = health.score;
 
       if (healthFilter === 'healthy') return score >= 80;
@@ -416,7 +416,7 @@ export default function TenantsListPage() {
               </TableHeader>
               <TableBody>
                 {paginatedTenants.map((tenant) => {
-                  const health = calculateHealthScore(tenant as any);
+                  const health = calculateHealthScore(tenant as unknown as LibTenant);
                   const healthScore = health.score;
                   return (
                     <TableRow key={tenant.id} className="group">
@@ -429,7 +429,7 @@ export default function TenantsListPage() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar>
-                            <AvatarImage src={(tenant.white_label as any)?.logo} />
+                            <AvatarImage src={(tenant.white_label as Record<string, unknown> | null)?.logo as string | undefined} />
                             <AvatarFallback>
                               {(tenant.business_name as string)?.charAt(0) || 'T'}
                             </AvatarFallback>

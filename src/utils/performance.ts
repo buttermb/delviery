@@ -59,8 +59,8 @@ export class PerformanceMonitor {
     try {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1] as any;
-        this.metrics.LCP = lastEntry.renderTime || lastEntry.loadTime;
+        const lastEntry = entries[entries.length - 1] as unknown as { renderTime?: number; loadTime?: number };
+        this.metrics.LCP = lastEntry.renderTime || lastEntry.loadTime || 0;
         this.logMetric('LCP', this.metrics.LCP);
       });
       observer.observe({ entryTypes: ['largest-contentful-paint'] });
@@ -74,7 +74,8 @@ export class PerformanceMonitor {
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          this.metrics.FID = (entry as any).processingStart - entry.startTime;
+          const fidEntry = entry as unknown as { processingStart: number; startTime: number };
+          this.metrics.FID = fidEntry.processingStart - fidEntry.startTime;
           this.logMetric('FID', this.metrics.FID);
         }
       });
@@ -90,8 +91,9 @@ export class PerformanceMonitor {
       let clsValue = 0;
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value;
+          const layoutShift = entry as unknown as { hadRecentInput: boolean; value: number };
+          if (!layoutShift.hadRecentInput) {
+            clsValue += layoutShift.value;
             this.metrics.CLS = clsValue;
           }
         }

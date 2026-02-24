@@ -174,7 +174,7 @@ export default function AccountSettings() {
               <h3 className="font-semibold text-lg truncate">{admin?.name || 'User'}</h3>
               <p className="text-sm text-muted-foreground truncate">{admin?.email}</p>
               <Badge variant="secondary" className="mt-2">
-                {(admin as any)?.role || 'Admin'}
+                {admin?.role || 'Admin'}
               </Badge>
             </div>
           </div>

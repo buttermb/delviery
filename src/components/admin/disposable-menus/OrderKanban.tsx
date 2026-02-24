@@ -23,8 +23,19 @@ import { ConvertToInvoiceDialog } from './ConvertToInvoiceDialog';
 import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface MenuOrderItem {
+  id: string;
+  status: string;
+  total_amount: number;
+  contact_phone?: string;
+  created_at: string;
+  items?: Array<{ product_id: string; quantity: number; unit_price: number }>;
+  whitelist?: { customer_name?: string } | null;
+  menu?: { name?: string } | null;
+}
+
 interface OrderKanbanProps {
-  onViewDetails?: (order: any) => void;
+  onViewDetails?: (order: MenuOrderItem) => void;
   onUpdate?: () => void;
 }
 
@@ -60,20 +71,20 @@ const COLUMNS = [
 export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate }: OrderKanbanProps) {
   const queryClient = useQueryClient();
   const { data: orders = [], isLoading, refetch } = useMenuOrders();
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [selectedOrder, setSelectedOrder] = useState<MenuOrderItem | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [convertOrder, setConvertOrder] = useState<any>(null);
+  const [convertOrder, setConvertOrder] = useState<MenuOrderItem | null>(null);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   // Group orders by column
   const ordersByColumn = useMemo(() => {
-    const grouped: Record<string, any[]> = {
+    const grouped: Record<string, MenuOrderItem[]> = {
       pending: [],
       confirmed: [],
       completed: [],
     };
 
-    orders.forEach((order: any) => {
+    orders.forEach((order: MenuOrderItem) => {
       const column = COLUMNS.find(c => c.statuses.includes(order.status));
       if (column) {
         grouped[column.id].push(order);
@@ -92,7 +103,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
     pending: ordersByColumn.pending.length,
     confirmed: ordersByColumn.confirmed.length,
     completed: ordersByColumn.completed.length,
-    revenue: orders.reduce((sum: number, o: any) => sum + Number(o.total_amount || 0), 0),
+    revenue: orders.reduce((sum: number, o: MenuOrderItem) => sum + Number(o.total_amount || 0), 0),
   }), [orders, ordersByColumn]);
 
   // Update order status
@@ -100,7 +111,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
     setUpdatingOrderId(orderId);
     try {
       const updates: Record<string, unknown> = {
-        status: newStatus as any,
+        status: newStatus,
         updated_at: new Date().toISOString()
       };
 
@@ -229,7 +240,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
                   No orders here
                 </div>
               ) : (
-                ordersByColumn[column.id].map((order: any) => (
+                ordersByColumn[column.id].map((order: MenuOrderItem) => (
                   <OrderCard
                     key={order.id}
                     order={order}
@@ -274,7 +285,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
 
 // Individual Order Card Component
 interface OrderCardProps {
-  order: any;
+  order: MenuOrderItem;
   columnId: string;
   isUpdating: boolean;
   onApprove: () => void;

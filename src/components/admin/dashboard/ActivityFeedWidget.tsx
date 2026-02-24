@@ -102,7 +102,7 @@ export function ActivityFeedWidget() {
 
       if (customersError) logger.error('Failed to fetch customers for activity feed', customersError, { component: 'ActivityFeedWidget' });
 
-      customers?.forEach((customer: any) => {
+      customers?.forEach((customer) => {
         allActivities.push({
           id: customer.id,
           type: 'customer',

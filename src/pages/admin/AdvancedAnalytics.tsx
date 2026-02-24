@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { exportAnalyticsToCSV, exportAnalyticsToPDF, formatCurrencyForReport } from '@/lib/utils/analyticsExport';
@@ -29,7 +30,7 @@ export default function AdvancedAnalytics() {
 
       try {
         const { data, error } = await supabase
-          .from('orders' as any)
+          .from('orders')
           .select('*, order_items(*), customers(*)')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
@@ -39,7 +40,7 @@ export default function AdvancedAnalytics() {
         if (error) throw error;
         return data || [];
       } catch (error) {
-        if ((error as any)?.code === '42P01') return [];
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         handleError(error, { component: 'AdvancedAnalytics', toastTitle: 'Failed to load orders' });
         throw error;
       }
@@ -54,7 +55,7 @@ export default function AdvancedAnalytics() {
 
       try {
         const { data, error } = await supabase
-          .from('customers' as any)
+          .from('customers')
           .select('*')
           .eq('tenant_id', tenantId);
 
@@ -62,7 +63,7 @@ export default function AdvancedAnalytics() {
         if (error) throw error;
         return data || [];
       } catch (error) {
-        if ((error as any)?.code === '42P01') return [];
+        if (isPostgrestError(error) && error.code === '42P01') return [];
         handleError(error, { component: 'AdvancedAnalytics', toastTitle: 'Failed to load customers' });
         throw error;
       }
@@ -100,10 +101,11 @@ export default function AdvancedAnalytics() {
     );
   }
 
-  const revenueByMonth = (orders || []).reduce((acc: any, order: any) => {
+  interface MonthlyRevenue { month: string; revenue: number; orders: number }
+  const revenueByMonth = (orders || []).reduce((acc: MonthlyRevenue[], order) => {
     const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    const existing = acc.find((item: any) => item.month === month);
-    const revenue = parseFloat(order.total || 0);
+    const existing = acc.find((item) => item.month === month);
+    const revenue = parseFloat(String(order.total || 0));
     if (existing) {
       existing.revenue += revenue;
       existing.orders += 1;
@@ -111,9 +113,9 @@ export default function AdvancedAnalytics() {
       acc.push({ month, revenue, orders: 1 });
     }
     return acc;
-  }, []).sort((a: any, b: any) => new Date(a.month).getTime() - new Date(b.month).getTime());
+  }, []).sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
 
-  const customerSegments = (customers || []).reduce((acc: any, customer: any) => {
+  const customerSegments = (customers || []).reduce((acc: Record<string, number>, customer) => {
     const segment = customer.customer_type || 'regular';
     acc[segment] = (acc[segment] || 0) + 1;
     return acc;

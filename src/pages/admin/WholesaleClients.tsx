@@ -136,7 +136,7 @@ export default function WholesaleClients() {
 
       // Wholesale clients are NOT encrypted - use plaintext fields directly
       // Map to expected format
-      return (data || []).map((client: any) => ({
+      return (data || []).map((client) => ({
         ...client,
         territory: (client.address || '').split(',')[1]?.trim() || 'Unknown',
         monthly_volume_lbs: client.monthly_volume,
@@ -897,7 +897,15 @@ export default function WholesaleClients() {
                             client_type: 'wholesale',
                             status: 'active'
                           }]);
-                          if (!error) imported++;
+                          if (error) {
+                            logger.warn('Failed to import wholesale client', {
+                              component: 'WholesaleClients',
+                              businessName: String(client.business_name),
+                              error,
+                            });
+                          } else {
+                            imported++;
+                          }
                         }
                       }
 

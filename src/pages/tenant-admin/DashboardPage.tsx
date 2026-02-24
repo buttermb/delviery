@@ -48,6 +48,7 @@ import { QuickStartWizard } from "@/components/onboarding/QuickStartWizard";
 import { toast } from "sonner";
 import { formatSmartDate } from "@/lib/formatters";
 import { handleError } from "@/utils/errorHandling/handlers";
+import { queryKeys } from "@/lib/queryKeys";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -170,7 +171,7 @@ export default function TenantAdminDashboardPage() {
 
   // Fetch today's metrics (MOVED BEFORE EARLY RETURN)
   const { data: todayMetrics } = useQuery({
-    queryKey: ["tenant-dashboard-today", tenantId],
+    queryKey: queryKeys.tenantDashboardExt.today(tenantId),
     queryFn: async () => {
       if (!tenantId) return { sales: 0, orderCount: 0, lowStock: [] };
 
@@ -285,7 +286,7 @@ export default function TenantAdminDashboardPage() {
 
   // Fetch recent activity (MOVED BEFORE EARLY RETURN)
   const { data: recentActivity } = useQuery({
-    queryKey: ["recent-activity", tenantId],
+    queryKey: queryKeys.tenantDashboardExt.recentActivity(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -336,8 +337,12 @@ export default function TenantAdminDashboardPage() {
           .order("accessed_at", { ascending: false })
           .limit(5);
 
+        if (logsError) {
+          logger.warn('Failed to fetch menu access logs', { component: 'DashboardPage', error: logsError });
+        }
+
         if (!logsError && menuLogs) {
-          menuLogs.forEach((log: any) => {
+          menuLogs.forEach((log) => {
             activities.push({
               type: "menu_view",
               message: `Customer viewed menu "${log.disposable_menus?.name || "Unknown"}"`,
@@ -354,8 +359,12 @@ export default function TenantAdminDashboardPage() {
           .order("created_at", { ascending: false })
           .limit(5);
 
+        if (ordersError) {
+          logger.warn('Failed to fetch menu orders', { component: 'DashboardPage', error: ordersError });
+        }
+
         if (!ordersError && orders) {
-          orders.forEach((order: any) => {
+          orders.forEach((order) => {
             activities.push({
               type: "order_placed",
               message: `Order #${order.id.slice(0, 8)} placed - ${formatCurrency(order.total_amount || 0)}`,
@@ -365,7 +374,7 @@ export default function TenantAdminDashboardPage() {
         }
 
         // Get recent menu creations (most recent 5)
-        tenantMenus.slice(0, 5).forEach((menu: any) => {
+        tenantMenus.slice(0, 5).forEach((menu) => {
           activities.push({
             type: "menu_created",
             message: `Menu "${menu.name}" created`,
@@ -389,7 +398,7 @@ export default function TenantAdminDashboardPage() {
 
   // Calculate revenue and commission from actual transaction data (MOVED BEFORE EARLY RETURN)
   useQuery({
-    queryKey: ["revenue-stats", tenantId],
+    queryKey: queryKeys.tenantDashboardExt.revenueStats(tenantId),
     queryFn: async () => {
       if (!tenantId) return { total: 0, commission: 0 };
 
@@ -565,17 +574,17 @@ export default function TenantAdminDashboardPage() {
 
   // Memoize trial calculations
   const trialInfo = useMemo(() => {
-    const trialEndsAt = (tenant as any)?.trial_ends_at;
+    const trialEndsAt = tenant?.trial_ends_at;
     const trialDaysRemaining = trialEndsAt
       ? Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
       : null;
     const trialEndingSoon = trialDaysRemaining !== null && trialDaysRemaining <= 10 && trialDaysRemaining > 0;
 
     return { trialDaysRemaining, trialEndingSoon };
-  }, [(tenant as any)?.trial_ends_at]);
+  }, [tenant?.trial_ends_at]);
 
   // Memoize usage
-  const tenantUsage = useMemo(() => (tenant as any)?.usage || {}, [tenant]);
+  const tenantUsage = useMemo(() => tenant?.usage || { customers: 0, menus: 0, products: 0, locations: 0, users: 0 }, [tenant]);
 
   // Memoize onboarding progress
   const onboardingSteps = useMemo(() => [
@@ -1251,7 +1260,7 @@ export default function TenantAdminDashboardPage() {
           <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
             {recentActivity && recentActivity.length > 0 ? (
               <div className="space-y-2 sm:space-y-3">
-                {recentActivity.map((activity: any, index: number) => (
+                {recentActivity.map((activity, index) => (
                   <div
                     key={index}
                     className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 border border-[hsl(var(--tenant-border))] rounded-lg hover:bg-[hsl(var(--tenant-surface))] transition-colors"

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -73,7 +74,7 @@ const GlobalSearch = () => {
   const { tenant } = useTenantAdminAuth();
 
   const { data: searchResults, isLoading } = useQuery({
-    queryKey: ["global-search", searchTerm, tenant?.id],
+    queryKey: queryKeys.globalSearch.all(searchTerm, tenant?.id),
     queryFn: async () => {
       if (!searchTerm || searchTerm.length < 2 || !tenant) return null;
 

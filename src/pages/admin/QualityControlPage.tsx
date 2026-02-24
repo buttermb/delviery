@@ -43,7 +43,7 @@ interface Batch {
   batch_number: string;
   product_id: string;
   product?: { name: string };
-  test_results?: any;
+  test_results?: Record<string, unknown>;
   lab_name?: string;
   test_date?: string;
   coa_url?: string;
@@ -75,7 +75,7 @@ export default function QualityControlPage() {
 
       try {
         const { data, error } = await supabase
-          .from("inventory_batches" as any)
+          .from("inventory_batches")
           .select(`
             *,
             product:products(name, image_url)
@@ -88,7 +88,7 @@ export default function QualityControlPage() {
           return [];
         }
 
-        return (data || []) as any as Batch[];
+        return (data || []) as unknown as Batch[];
       } catch {
         return [];
       }

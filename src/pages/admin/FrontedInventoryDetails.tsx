@@ -25,16 +25,26 @@ import { formatSmartDate } from "@/lib/formatters";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
 import { handleError } from "@/utils/errorHandling/handlers";
+import type { Database } from "@/integrations/supabase/types";
+
+type FrontedInventoryRow = Database['public']['Tables']['fronted_inventory']['Row'];
+type FrontedScanRow = Database['public']['Tables']['fronted_inventory_scans']['Row'];
+type FrontedPaymentRow = Database['public']['Tables']['fronted_payments']['Row'];
+
+interface FrontedWithRelations extends FrontedInventoryRow {
+  products?: { name: string | null; sku: string | null; barcode: string | null; category: string } | null;
+  inventory_locations?: { location_name: string | null; location_type: string | null; address: string | null } | null;
+}
 
 export default function FrontedInventoryDetails() {
   const { id } = useParams();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const [loading, setLoading] = useState(true);
-  const [front, setFront] = useState<any>(null);
-  const [product, setProduct] = useState<any>(null);
-  const [scans, setScans] = useState<any[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
+  const [front, setFront] = useState<FrontedWithRelations | null>(null);
+  const [product, setProduct] = useState<FrontedWithRelations['products']>(null);
+  const [scans, setScans] = useState<FrontedScanRow[]>([]);
+  const [payments, setPayments] = useState<FrontedPaymentRow[]>([]);
 
   useBreadcrumbLabel(front ? `Fronted #${(front.id as string).slice(0, 8)}` : null);
 

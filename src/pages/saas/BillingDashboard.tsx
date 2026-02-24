@@ -101,7 +101,7 @@ export default function BillingDashboard() {
   }: {
     title: string;
     resource: keyof typeof tenant.limits;
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
   }) => {
     const limitCheck = checkLimit(tenant, resource);
     const percentage = limitCheck.limit === Infinity ? 0 : (limitCheck.current / limitCheck.limit) * 100;

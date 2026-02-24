@@ -54,7 +54,7 @@ export default function RunnersPage() {
 
       // Get active deliveries count for each runner
       const runnersWithDeliveries = await Promise.all(
-        (data || []).map(async (runner: any) => {
+        (data || []).map(async (runner) => {
           const { count } = await supabase
             .from('wholesale_deliveries')
             .select('id', { count: 'exact', head: true })

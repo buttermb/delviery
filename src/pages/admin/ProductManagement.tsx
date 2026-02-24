@@ -1548,7 +1548,7 @@ export default function ProductManagement() {
       {/* Product Label Dialog */}
       {labelProduct && (
         <ProductLabel
-          product={{ ...labelProduct, barcode_image_url: (labelProduct as any).barcode_image_url ?? null }}
+          product={{ ...labelProduct, barcode_image_url: (labelProduct as unknown as Record<string, unknown>).barcode_image_url as string ?? null }}
           open={labelDialogOpen}
           onOpenChange={setLabelDialogOpen}
         />

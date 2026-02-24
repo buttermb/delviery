@@ -196,7 +196,7 @@ export function useVendorCommunications(vendorId: string) {
           .eq('user_id', user.id)
           .eq('tenant_id', tenantId)
           .maybeSingle();
-        createdByName = (profile as any)?.full_name ?? user.email ?? null;
+        createdByName = profile?.full_name ?? user.email ?? null;
       }
 
       const { data, error } = await supabase

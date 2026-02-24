@@ -36,13 +36,13 @@ interface OrderDetails {
   store_name: string;
   store_logo: string | null;
   status: string;
-  items: any[];
+  items: Array<{ name: string; quantity: number; price: number; weight?: string }>;
   subtotal: number;
   delivery_fee: number;
   discount_amount: number;
   total: number;
   customer_name: string | null;
-  delivery_address: any;
+  delivery_address: Record<string, string> | null;
   payment_method: string;
   payment_status: string;
   created_at: string;
@@ -338,7 +338,7 @@ export default function OrderTrackingPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {(order.items || []).map((item: any, index: number) => (
+              {(order.items || []).map((item, index) => (
                 <div key={index} className="flex justify-between text-sm">
                   <div>
                     <p className="font-medium">{item.name}</p>

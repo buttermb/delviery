@@ -20,14 +20,14 @@ function withSuspense<P extends object>(
   );
 }
 
-// Lazy load PDF document components - using 'any' cast for lazy-loaded class components
+// Lazy load PDF document components - cast to proper types after lazy+Suspense wrapping
 export const Document = withSuspense(
   lazy(() =>
     import('@react-pdf/renderer').then((module) => ({
       default: module.Document,
     }))
   )
-) as any;
+) as unknown as ComponentType<ReactPDF.DocumentProps>;
 
 export const Page = withSuspense(
   lazy(() =>
@@ -35,7 +35,7 @@ export const Page = withSuspense(
       default: module.Page,
     }))
   )
-) as any;
+) as unknown as ComponentType<ReactPDF.PageProps>;
 
 export const View = withSuspense(
   lazy(() =>
@@ -43,7 +43,7 @@ export const View = withSuspense(
       default: module.View,
     }))
   )
-) as any;
+) as unknown as ComponentType<ReactPDF.ViewProps>;
 
 export const Text = withSuspense(
   lazy(() =>
@@ -51,7 +51,7 @@ export const Text = withSuspense(
       default: module.Text,
     }))
   )
-) as any;
+) as unknown as ComponentType<ReactPDF.TextProps>;
 
 export const Image = withSuspense(
   lazy(() =>
@@ -59,7 +59,7 @@ export const Image = withSuspense(
       default: module.Image,
     }))
   )
-) as any;
+) as unknown as ComponentType<ReactPDF.ImageProps>;
 
 export const Link = withSuspense(
   lazy(() =>
@@ -67,7 +67,7 @@ export const Link = withSuspense(
       default: module.Link,
     }))
   )
-) as any;
+) as unknown as ComponentType<ReactPDF.LinkProps>;
 
 // Lazy load interactive components
 export const PDFDownloadLink = withSuspense(
@@ -76,7 +76,7 @@ export const PDFDownloadLink = withSuspense(
       default: module.PDFDownloadLink,
     }))
   )
-) as any;
+) as unknown as ComponentType<ReactPDF.PDFDownloadLinkProps>;
 
 export const PDFViewer = withSuspense(
   lazy(() =>
@@ -84,7 +84,7 @@ export const PDFViewer = withSuspense(
       default: module.PDFViewer,
     }))
   )
-) as any;
+) as unknown as ComponentType<ReactPDF.PDFViewerProps>;
 
 export const BlobProvider = withSuspense(
   lazy(() =>
@@ -92,7 +92,7 @@ export const BlobProvider = withSuspense(
       default: module.BlobProvider,
     }))
   )
-) as any;
+) as unknown as ComponentType<ReactPDF.BlobProviderProps>;
 
 // Lazy load style utilities - these don't need Suspense as they're utilities
 export const StyleSheet = {

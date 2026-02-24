@@ -73,7 +73,7 @@ export function logQuery<T>(
     logRLSFailure(`Query failed on ${table}`, {
       ...logData,
       error: error.message,
-      errorCode: (error as any).code
+      errorCode: (error as Record<string, unknown>).code
     });
     return results;
   }

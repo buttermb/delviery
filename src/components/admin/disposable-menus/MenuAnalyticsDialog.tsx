@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -202,7 +202,7 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
             <TabsContent value="charts" className="p-1">
               <AnalyticsCharts
                 accessLogs={accessLogs || []}
-                orders={typedOrders as any}
+                orders={typedOrders as unknown as React.ComponentProps<typeof AnalyticsCharts>['orders']}
                 securityEvents={securityEvents || []}
               />
             </TabsContent>

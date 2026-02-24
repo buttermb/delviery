@@ -8,8 +8,18 @@ import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 export default function RouteOptimization() {
   const { data: deliveries, isLoading } = useWholesaleDeliveries();
 
+  interface RouteGroup {
+    id: string;
+    runnerId: string;
+    name: string;
+    stops: number;
+    distance: number;
+    estimated_time: number;
+    status: string;
+    deliveries: typeof deliveries extends (infer T)[] | undefined ? T[] : unknown[];
+  }
   // Group deliveries by runner to create "routes"
-  const routes = (deliveries || []).reduce((acc: any[], delivery: any) => {
+  const routes = (deliveries || []).reduce((acc: RouteGroup[], delivery) => {
     const runnerId = delivery.runner_id || 'unassigned';
     const existingRoute = acc.find(r => r.runnerId === runnerId);
 
@@ -51,7 +61,7 @@ export default function RouteOptimization() {
 
       {routes && routes.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {routes.map((route: any) => (
+          {routes.map((route) => (
             <Card key={route.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -78,7 +88,7 @@ export default function RouteOptimization() {
                   <div className="pt-2 mt-2 border-t">
                     <p className="text-xs text-muted-foreground mb-2">Deliveries:</p>
                     <div className="space-y-1 max-h-32 overflow-y-auto">
-                      {route.deliveries.map((d: any) => (
+                      {route.deliveries.map((d) => (
                         <div key={d.id} className="text-xs truncate bg-muted/50 p-1 rounded">
                           #{d.order?.order_number || d.id.slice(0, 8)} - {d.status}
                         </div>

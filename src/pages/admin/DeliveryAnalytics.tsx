@@ -19,7 +19,7 @@ export default function DeliveryAnalytics() {
 
       try {
         const { data, error } = await supabase
-          .from('deliveries' as any)
+          .from('deliveries')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
@@ -40,9 +40,10 @@ export default function DeliveryAnalytics() {
     return <EnhancedLoadingState variant="dashboard" message="Loading analytics..." />;
   }
 
-  const deliveryStats = (deliveries || []).reduce((acc: any, delivery: any) => {
+  interface DayStat { date: string; count: number; completed: number }
+  const deliveryStats = (deliveries || []).reduce((acc: DayStat[], delivery) => {
     const date = new Date(delivery.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const existing = acc.find((item: any) => item.date === date);
+    const existing = acc.find((item) => item.date === date);
     if (existing) {
       existing.count += 1;
       if (delivery.status === 'completed') existing.completed += 1;
@@ -54,10 +55,10 @@ export default function DeliveryAnalytics() {
       });
     }
     return acc;
-  }, []).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const totalDeliveries = deliveries?.length || 0;
-  const completedDeliveries = deliveries?.filter((d: any) => d.status === 'completed').length || 0;
+  const completedDeliveries = deliveries?.filter((d) => d.status === 'completed').length || 0;
   const successRate = totalDeliveries > 0 ? (completedDeliveries / totalDeliveries) * 100 : 0;
 
   return (

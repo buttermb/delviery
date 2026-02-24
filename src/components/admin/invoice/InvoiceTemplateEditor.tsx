@@ -78,12 +78,12 @@ export function InvoiceTemplateEditor({ onClose }: InvoiceTemplateEditorProps) {
     }
   };
 
-  const updateTemplateData = (path: string, value: any) => {
+  const updateTemplateData = (path: string, value: unknown) => {
     if (!editData?.template_data) return;
-    
+
     const newData = { ...editData.template_data };
     const keys = path.split(".");
-    let obj: any = newData;
+    let obj: Record<string, unknown> = newData as Record<string, unknown>;
     
     for (let i = 0; i < keys.length - 1; i++) {
       obj = obj[keys[i]];

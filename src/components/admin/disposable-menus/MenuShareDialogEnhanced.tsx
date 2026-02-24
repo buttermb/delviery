@@ -433,7 +433,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Expires:</span>
                   <span className="font-medium">
-                    {formatSmartDate(String(jsonToStringOrNumber(menu.expiration_date as any)))}
+                    {formatSmartDate(String(jsonToStringOrNumber(menu.expiration_date)))}
                   </span>
                 </div>
               )}
@@ -580,8 +580,8 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
                             </div>
                           )}
                         </div>
-                        <Badge variant={jsonToString(entry.status as any) === 'active' ? 'default' : 'secondary'}>
-                          {jsonToString(entry.status as any) || 'active'}
+                        <Badge variant={jsonToString(entry.status) === 'active' ? 'default' : 'secondary'}>
+                          {jsonToString(entry.status) || 'active'}
                         </Badge>
                       </div>
                     ))}

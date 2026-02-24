@@ -233,10 +233,10 @@ export function ProductDetailPage() {
               strain_type: item.strain_type,
               thc_content: item.thc_content,
               cbd_content: item.cbd_content,
-              metrc_retail_id: (item as any).metrc_retail_id ?? null,
-              exclude_from_discounts: (item as any).exclude_from_discounts ?? false,
-              minimum_price: (item as any).minimum_price ?? null,
-              effects: (item as any).effects || [],
+              metrc_retail_id: (item as unknown as Record<string, unknown>).metrc_retail_id as string ?? null,
+              exclude_from_discounts: (item as unknown as Record<string, unknown>).exclude_from_discounts as boolean ?? false,
+              minimum_price: (item as unknown as Record<string, unknown>).minimum_price as number ?? null,
+              effects: ((item as unknown as Record<string, unknown>).effects as string[]) || [],
               slug: item.slug,
             } as ProductDetails & { slug?: string };
           }

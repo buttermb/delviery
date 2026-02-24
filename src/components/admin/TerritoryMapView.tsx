@@ -58,7 +58,7 @@ export function TerritoryMapView() {
     existingMarkers.forEach(marker => marker.remove());
 
     // Add markers for each client with coordinates
-    (clients as any[]).forEach((client) => {
+    (clients as unknown as Record<string, unknown>[]).forEach((client) => {
       const coords = client.coordinates as { lat: number; lng: number } | undefined;
       if (!coords || typeof coords.lat !== 'number' || typeof coords.lng !== 'number') return;
 

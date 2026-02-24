@@ -31,7 +31,7 @@ export default function APIUsagePage() {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const dailyStats = new Map<string, { requests: number; errors: number }>();
 
-    apiLogs.forEach((log: any) => {
+    apiLogs.forEach((log) => {
       const date = new Date(log.timestamp || 0);
       const dayKey = days[date.getDay()];
       const existing = dailyStats.get(dayKey) || { requests: 0, errors: 0 };
@@ -55,7 +55,7 @@ export default function APIUsagePage() {
   const endpointStats = useMemo(() => {
     const endpointMap = new Map<string, { requests: number; totalResponseTime: number; errors: number }>();
 
-    apiLogs.forEach((log: any) => {
+    apiLogs.forEach((log) => {
       const endpoint = log.endpoint || 'unknown';
       const existing = endpointMap.get(endpoint) || { requests: 0, totalResponseTime: 0, errors: 0 };
       
@@ -82,12 +82,12 @@ export default function APIUsagePage() {
   // Calculate overall stats
   const overallStats = useMemo(() => {
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const recentLogs = apiLogs.filter((log: any) => new Date(log.timestamp || 0) >= last24Hours);
-    
+    const recentLogs = apiLogs.filter((log) => new Date(log.timestamp || 0) >= last24Hours);
+
     const totalRequests = recentLogs.length;
-    const totalResponseTime = recentLogs.reduce((sum: number, log: any) => sum + (log.response_time_ms || 0), 0);
+    const totalResponseTime = recentLogs.reduce((sum: number, log) => sum + (log.response_time_ms || 0), 0);
     const avgResponse = totalRequests > 0 ? Math.round(totalResponseTime / totalRequests) : 0;
-    const errors = recentLogs.filter((log: any) => (log.status_code || 200) >= 400).length;
+    const errors = recentLogs.filter((log) => (log.status_code || 200) >= 400).length;
     const errorRate = totalRequests > 0 ? ((errors / totalRequests) * 100).toFixed(2) : '0.00';
 
     return { totalRequests, avgResponse, errors, errorRate };

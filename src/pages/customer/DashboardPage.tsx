@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { queryKeys } from "@/lib/queryKeys";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +38,7 @@ export default function CustomerDashboardPage() {
   // Load saved mode preference
   useEffect(() => {
     try {
-      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE as any) as CustomerMode | null;
+      const savedMode = safeStorage.getItem(STORAGE_KEYS.CUSTOMER_MODE) as CustomerMode | null;
       if (savedMode && (savedMode === 'retail' || savedMode === 'wholesale')) {
         setMode(savedMode);
       }
@@ -48,17 +49,18 @@ export default function CustomerDashboardPage() {
 
   // Fetch recent orders
   const { data: recentOrders } = useQuery({
-    queryKey: ["customer-orders", tenantId, customerId],
-    queryFn: async (): Promise<any[]> => {
+    queryKey: queryKeys.customerDashboardOrders.byTenantCustomer(tenantId, customerId),
+    queryFn: async () => {
       if (!tenantId || !customerId) return [];
 
+      // orders table may not be in generated types — cast table name
       const { data } = await (supabase
-        .from("orders") as any)
+        .from("orders" as "tenants") // cast to satisfy generated types
         .select("id, order_number, total_amount, status, created_at")
         .eq("tenant_id", tenantId)
         .eq("customer_id", customerId)
         .order("created_at", { ascending: false })
-        .limit(5);
+        .limit(5)) as { data: Array<{ id: string; order_number: string | null; total_amount: number; status: string; created_at: string }> | null };
 
       return data || [];
     },
@@ -67,7 +69,7 @@ export default function CustomerDashboardPage() {
 
   // Fetch marketplace profile to check if customer is a business buyer and verified
   const { data: marketplaceProfile } = useQuery({
-    queryKey: ["customer-marketplace-profile", tenantId],
+    queryKey: queryKeys.customerMarketplaceProfileCheck.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 
@@ -353,7 +355,7 @@ export default function CustomerDashboardPage() {
           <CardContent>
             {recentOrders && recentOrders.length > 0 ? (
               <div className="space-y-3">
-                {recentOrders.map((order: any) => (
+                {recentOrders.map((order) => (
                   <div
                     key={order.id}
                     className="flex items-center justify-between p-4 border border-[hsl(var(--customer-border))] rounded-lg hover:bg-[hsl(var(--customer-surface))] hover:shadow-md cursor-pointer transition-colors card-lift"

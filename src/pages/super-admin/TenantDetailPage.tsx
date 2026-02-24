@@ -29,6 +29,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { SupportTicketsTab } from "@/components/super-admin/SupportTicketsTab";
 import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
 import { DetailPageSkeleton } from "@/components/admin/shared/LoadingSkeletons";
+import { queryKeys } from "@/lib/queryKeys";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceLineItem = {
@@ -58,7 +59,7 @@ export default function TenantDetailPage() {
 
   // Fetch tenant details
   const { data: tenant, isLoading } = useQuery({
-    queryKey: ["super-admin-tenant", tenantId],
+    queryKey: queryKeys.superAdminTenantDetail.tenant(tenantId),
     queryFn: async () => {
       if (!tenantId || !isValidUUID) return null;
 
@@ -80,7 +81,7 @@ export default function TenantDetailPage() {
 
   // Fetch subscription plan
   const { data: plan } = useQuery({
-    queryKey: ["subscription-plan", tenant?.subscription_plan],
+    queryKey: queryKeys.superAdminTenantDetail.subscriptionPlan(tenant?.subscription_plan),
     queryFn: async () => {
       if (!tenant?.subscription_plan) return null;
 
@@ -97,7 +98,7 @@ export default function TenantDetailPage() {
 
   // Fetch recent invoices
   const { data: invoices } = useQuery({
-    queryKey: ["tenant-invoices", tenantId],
+    queryKey: queryKeys.superAdminTenantDetail.invoices(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -115,7 +116,7 @@ export default function TenantDetailPage() {
 
   // Fetch tenant users
   const { data: tenantUsers } = useQuery({
-    queryKey: ["tenant-users", tenantId],
+    queryKey: queryKeys.superAdminTenantDetail.users(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -132,7 +133,7 @@ export default function TenantDetailPage() {
 
   // Fetch activity logs for this tenant
   const { data: activityLogs } = useQuery({
-    queryKey: ["tenant-activity-logs", tenantId],
+    queryKey: queryKeys.superAdminTenantDetail.activityLogs(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -174,7 +175,7 @@ export default function TenantDetailPage() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTenantDetail.tenant(tenantId) });
       toast.success(`Tenant ${suspendMutation.variables ? "suspended" : "activated"}`);
     },
     onError: (error: unknown) => {
@@ -205,7 +206,7 @@ export default function TenantDetailPage() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTenantDetail.tenant(tenantId) });
       toast.success('Subscription plan updated successfully');
     },
     onError: (error: unknown) => {
@@ -1001,7 +1002,7 @@ export default function TenantDetailPage() {
 
                         if (!error) {
                           showInfoToast("Credit Applied", `$${credit} credit applied to account`);
-                          queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
+                          queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTenantDetail.tenant(tenantId) });
                         }
                       }
                     }}
@@ -1066,7 +1067,7 @@ export default function TenantDetailPage() {
               <CardContent>
                 {activityLogs && activityLogs.length > 0 ? (
                   <div className="space-y-3">
-                    {activityLogs.map((log: any) => (
+                    {activityLogs.map((log) => (
                       <div key={log.id} className="flex items-start justify-between p-3 border border-white/10 rounded-lg">
                         <div className="space-y-1">
                           <p className="font-medium text-[hsl(var(--super-admin-text))]">
@@ -1130,7 +1131,7 @@ export default function TenantDetailPage() {
                     <div className="flex justify-between mb-2">
                       <span className="text-sm text-[hsl(var(--super-admin-text))]/70">Monthly Orders</span>
                       <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">
-                        {(tenant as any).monthly_orders || 0}
+                        {tenant.monthly_orders || 0}
                       </span>
                     </div>
                   </div>
@@ -1179,8 +1180,8 @@ export default function TenantDetailPage() {
             });
 
             // Invalidate queries to refresh data
-            queryClient.invalidateQueries({ queryKey: ["super-admin-tenant", tenantId] });
-            queryClient.invalidateQueries({ queryKey: ["subscription-plan", tenant.subscription_plan] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTenantDetail.tenant(tenantId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTenantDetail.subscriptionPlan(tenant.subscription_plan) });
 
             toast.success('The subscription has been cancelled successfully. The tenant retains access until the end of the billing period.');
           } catch (error: unknown) {
