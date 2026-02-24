@@ -257,9 +257,7 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
         vendor_contact_id: contact.id,
         action: 'call',
         summary: `Called ${contact.name}`,
-      }).catch(() => {
-        // Silent fail for logging
-      });
+      }).catch((e) => { logger.warn('[VendorContacts] Failed to log interaction', { error: e }); });
     }
   };
 
@@ -270,9 +268,7 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
         vendor_contact_id: contact.id,
         action: 'email',
         summary: `Emailed ${contact.name}`,
-      }).catch(() => {
-        // Silent fail for logging
-      });
+      }).catch((e) => { logger.warn('[VendorContacts] Failed to log interaction', { error: e }); });
     }
   };
 

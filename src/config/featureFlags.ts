@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { logger } from '@/lib/logger';
 import { productionLogger } from '@/utils/productionLogger';
 
 // Helper to coerce env strings like "true" | "1" | true into boolean
@@ -119,7 +120,7 @@ export const FeatureFlagsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       hasLoggedRef.current = true;
       try {
         productionLogger.warning('Auto-Approve mode is ACTIVE', flags as unknown as Record<string, unknown>);
-      } catch {}
+      } catch (e) { logger.warn('[FeatureFlags] Failed to log flag status', { error: e }); }
     }
   }, [flags]);
 

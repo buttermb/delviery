@@ -536,7 +536,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
             // If 403 "No tenant access found", clear stale localStorage data
             if (verifyResponse.status === 403) {
-              const errorData = await verifyResponse.json().catch(() => ({}));
+              const errorData = await verifyResponse.json().catch((e) => { logger.warn('[TenantAdminAuth] Failed to parse verify response', { error: e }); return {}; });
               if (errorData.error === 'No tenant access found') {
                 clearAuthState();
                 setLoading(false);
@@ -853,7 +853,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         }
 
         // Handle specific error cases
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response.json().catch((e) => { logger.warn('[TenantAdminAuth] Failed to parse refresh response', { error: e }); return {}; });
 
         if (response.status === 401) {
           // 401 is expected when using Supabase native auth (vs custom tenant sessions)

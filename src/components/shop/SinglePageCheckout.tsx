@@ -92,7 +92,7 @@ export function SinglePageCheckout() {
         if (saved) {
           setFormData((prev) => ({ ...prev, ...JSON.parse(saved) }));
         }
-      } catch {}
+      } catch (e) { logger.warn('[Checkout] Failed to load saved form data', { error: e }); }
     }
   }, [formStorageKey]);
 
@@ -101,7 +101,7 @@ export function SinglePageCheckout() {
     if (formStorageKey && formData.email) {
       try {
         localStorage.setItem(formStorageKey, JSON.stringify(formData));
-      } catch {}
+      } catch (e) { logger.warn('[Checkout] Failed to save form data', { error: e }); }
     }
   }, [formData, formStorageKey]);
 

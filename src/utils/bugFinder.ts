@@ -116,8 +116,8 @@ class BugFinder {
             errorBody = await clone.text();
             try {
               errorBody = JSON.parse(errorBody);
-            } catch {}
-          } catch {}
+            } catch (e) { logger.warn('[BugFinder] Failed to parse error response body as JSON', { error: e }); }
+          } catch (e) { logger.warn('[BugFinder] Failed to read error response body', { error: e }); }
 
           const severity = response.status >= 500 
             ? 'critical' 
