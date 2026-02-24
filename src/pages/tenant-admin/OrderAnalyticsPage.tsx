@@ -148,7 +148,7 @@ export default function OrderAnalyticsPage() {
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue />
+            <SelectValue placeholder="Select time range" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="24h">Last 24 Hours</SelectItem>

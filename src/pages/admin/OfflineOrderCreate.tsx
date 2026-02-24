@@ -494,7 +494,7 @@ export default function OfflineOrderCreate() {
                     <Label htmlFor="paymentMethod" className="text-xs">Payment Method</Label>
                     <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as 'cash' | 'card' | 'credit')}>
                       <SelectTrigger className="mt-1">
-                        <SelectValue />
+                        <SelectValue placeholder="Select payment method" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="cash">Cash</SelectItem>

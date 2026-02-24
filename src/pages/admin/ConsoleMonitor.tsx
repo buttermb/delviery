@@ -138,7 +138,7 @@ export function ConsoleMonitor() {
             <Select value={filter} onValueChange={setFilter}>
               <SelectTrigger className="w-full sm:w-[150px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue />
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>

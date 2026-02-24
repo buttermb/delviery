@@ -459,7 +459,7 @@ export default function CustomerInvoices() {
                     onValueChange={(value) => setFormData({ ...formData, payment_terms: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select payment terms" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="due_on_receipt">Due on Receipt</SelectItem>

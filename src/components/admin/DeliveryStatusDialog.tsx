@@ -90,7 +90,7 @@ export function DeliveryStatusDialog({
             <Label htmlFor="status">New Status *</Label>
             <Select value={newStatus} onValueChange={(v) => setNewStatus(v as StatusValue)}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
                 {STATUS_OPTIONS.map((status) => (

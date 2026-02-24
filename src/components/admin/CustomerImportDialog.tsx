@@ -360,7 +360,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
                                     <Label>Date Format</Label>
                                     <Select value={dateFormat} onValueChange={(v: any) => setDateFormat(v)}>
                                         <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue placeholder="Select date format" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="MM/DD/YYYY">MM/DD/YYYY (US)</SelectItem>

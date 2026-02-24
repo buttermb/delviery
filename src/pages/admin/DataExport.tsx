@@ -151,7 +151,7 @@ export default function DataExport() {
               <label className="text-sm font-medium">Export Format</label>
               <Select value={format} onValueChange={setFormat}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select format" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="csv">CSV</SelectItem>

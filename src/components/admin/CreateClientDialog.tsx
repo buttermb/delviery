@@ -262,7 +262,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 onValueChange={(value: "sub_dealer" | "small_shop" | "network" | "supplier") => setFormData({ ...formData, client_type: value })}
               >
                 <SelectTrigger id="client_type">
-                  <SelectValue />
+                  <SelectValue placeholder="Select client type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="sub_dealer">Sub-Dealer</SelectItem>
@@ -293,7 +293,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
                 onValueChange={(value) => setFormData({ ...formData, payment_terms: value })}
               >
                 <SelectTrigger id="payment_terms">
-                  <SelectValue />
+                  <SelectValue placeholder="Select payment terms" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="0">Cash (0 days)</SelectItem>
