@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import FileText from "lucide-react/dist/esm/icons/file-text";
 import Lock from "lucide-react/dist/esm/icons/lock";
 import MessageSquare from "lucide-react/dist/esm/icons/message-square";
@@ -118,7 +119,7 @@ export function OrderNotesSection({
         component: 'OrderNotesSection',
         orderId,
       });
-      toast.error(`Failed to save ${noteType} notes`);
+      toast.error(`Failed to save ${noteType} notes`, { description: humanizeError(error) });
     },
   });
 

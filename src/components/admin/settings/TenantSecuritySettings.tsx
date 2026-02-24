@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { Shield, Save, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -84,7 +85,7 @@ export default function TenantSecuritySettings() {
       toast.success('Security settings updated successfully.');
     } catch (err) {
       logger.error('Error saving security settings', err);
-      toast.error('Failed to save security settings.');
+      toast.error('Failed to save security settings.', { description: humanizeError(err) });
     } finally {
       setSaving(false);
     }

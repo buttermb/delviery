@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 
@@ -73,7 +74,7 @@ export function BulkCouponGenerator({ open, onOpenChange }: BulkCouponGeneratorP
     },
     onError: (error: unknown) => {
       logger.error('Failed to generate bulk coupons', error, { component: 'BulkCouponGenerator' });
-      toast.error("Failed to generate coupons");
+      toast.error("Failed to generate coupons", { description: humanizeError(error) });
     },
   });
 

@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { Loader2, Upload, AlertCircle } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import { validateFile, generateSecureStoragePath, FILE_SIZE_LIMITS, formatFileSize } from "@/lib/fileValidation";
@@ -116,7 +117,7 @@ export function DocumentUpload({
     },
     onError: (error: unknown) => {
       logger.error('Failed to upload document', error, { component: 'DocumentUpload' });
-      toast.error("Failed to upload document");
+      toast.error("Failed to upload document", { description: humanizeError(error) });
     },
   });
 

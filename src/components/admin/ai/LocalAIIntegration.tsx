@@ -25,6 +25,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 // Demo Mode: Simulated AI processing
 // In production, integrate with @xenova/transformers, Ollama, or Lovable AI
 async function runLocalAI(prompt: string, model: string): Promise<string> {
@@ -100,7 +101,7 @@ export function LocalAIIntegration() {
       setOutput(result);
       toast.success("Text processed successfully");
     } catch (error: unknown) {
-      toast.error("Processing failed");
+      toast.error("Processing failed", { description: humanizeError(error) });
     } finally {
       setIsProcessing(false);
     }

@@ -32,6 +32,7 @@ import Palette from 'lucide-react/dist/esm/icons/palette';
 import type { LucideIcon } from 'lucide-react';
 
 import { type FeatureToggleKey } from '@/lib/featureFlags';
+import { humanizeError } from '@/lib/humanizeError';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -189,7 +190,7 @@ export function FeatureTogglesPanel() {
       toast.success(`${enabled ? 'Enabled' : 'Disabled'} feature`);
     } catch (err) {
       logger.error('[FeatureTogglesPanel] Toggle failed', err instanceof Error ? err : new Error(String(err)));
-      toast.error('Failed to update feature toggle');
+      toast.error('Failed to update feature toggle', { description: humanizeError(err) });
     } finally {
       setTogglingKey(null);
     }

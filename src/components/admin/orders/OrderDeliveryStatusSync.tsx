@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import Truck from 'lucide-react/dist/esm/icons/truck';
 import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
 import Clock from 'lucide-react/dist/esm/icons/clock';
@@ -295,7 +296,7 @@ export function OrderDeliveryStatusSync({
         component: 'OrderDeliveryStatusSync',
         orderId,
       });
-      toast.error('Failed to update order status');
+      toast.error('Failed to update order status', { description: humanizeError(err) });
     },
   });
 

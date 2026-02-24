@@ -35,6 +35,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useNotificationDispatcher } from '@/hooks/useNotificationDispatcher';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import MessageSquare from 'lucide-react/dist/esm/icons/message-square';
@@ -278,7 +279,7 @@ export function OrderThreadedNotes({
         component: 'OrderThreadedNotes',
         orderId,
       });
-      toast.error('Failed to add note');
+      toast.error('Failed to add note', { description: humanizeError(error) });
     },
   });
 
@@ -311,7 +312,7 @@ export function OrderThreadedNotes({
       logger.error('Failed to pin order note', err, {
         component: 'OrderThreadedNotes',
       });
-      toast.error('Failed to pin note');
+      toast.error('Failed to pin note', { description: humanizeError(err) });
     },
   });
 
@@ -344,7 +345,7 @@ export function OrderThreadedNotes({
       logger.error('Failed to unpin order note', err, {
         component: 'OrderThreadedNotes',
       });
-      toast.error('Failed to unpin note');
+      toast.error('Failed to unpin note', { description: humanizeError(err) });
     },
   });
 

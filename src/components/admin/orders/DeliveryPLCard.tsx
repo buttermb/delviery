@@ -34,6 +34,7 @@ import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import { useDeliveryCostByOrder, useSaveDeliveryCost } from '@/hooks/useDeliveryCosts';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 
 const deliveryCostSchema = z.object({
@@ -113,8 +114,8 @@ export function DeliveryPLCard({
       await saveMutation.mutateAsync(input);
       toast.success("Delivery costs saved");
       setDialogOpen(false);
-    } catch {
-      toast.error("Failed to save delivery costs");
+    } catch (error) {
+      toast.error("Failed to save delivery costs", { description: humanizeError(error) });
     }
   };
 

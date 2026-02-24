@@ -32,6 +32,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Loader2,
   BarChart3,
@@ -165,7 +166,7 @@ export function ReportBuilder({
     },
     onError: (error: unknown) => {
       logger.error('Failed to create report', error, { component: 'ReportBuilder' });
-      toast.error("Failed to create report");
+      toast.error("Failed to create report", { description: humanizeError(error) });
     },
   });
 

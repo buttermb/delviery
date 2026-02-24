@@ -21,6 +21,7 @@ import {
     DialogDescription,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
 import { queryKeys } from '@/lib/queryKeys';
@@ -124,7 +125,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
             resetForm();
         },
         onError: (err) => {
-            toast.error("Error saving banner");
+            toast.error("Error saving banner", { description: humanizeError(err) });
         },
     });
 

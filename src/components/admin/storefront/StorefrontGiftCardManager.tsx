@@ -18,6 +18,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { Plus, Loader2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
@@ -77,7 +78,7 @@ export function StorefrontGiftCardManager({ storeId }: GiftCardManagerProps) {
     },
     onError: (err: Error) => {
       logger.error('Gift card issue failed', { error: err.message });
-      toast.error("Error issuing card");
+      toast.error("Error issuing card", { description: humanizeError(err) });
     },
   });
 

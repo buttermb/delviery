@@ -147,7 +147,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
     },
     onError: (err: Error) => {
       logger.error('Bulk status update failed', { error: err.message });
-      toast.error("Error updating cards");
+      toast.error("Error updating cards", { description: humanizeError(err) });
       setBulkAction(null);
     },
   });

@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { Loader2, RefreshCw } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import type { Database } from "@/integrations/supabase/types";
@@ -115,7 +116,7 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
     },
     onError: (error: unknown) => {
       logger.error('Failed to create coupon', error, { component: 'CouponCreateForm' });
-      toast.error("Failed to create coupon");
+      toast.error("Failed to create coupon", { description: humanizeError(error) });
     },
   });
 
@@ -138,7 +139,7 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
     },
     onError: (error: unknown) => {
       logger.error('Failed to update coupon', error, { component: 'CouponCreateForm' });
-      toast.error("Failed to update coupon");
+      toast.error("Failed to update coupon", { description: humanizeError(error) });
     },
   });
 

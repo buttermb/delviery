@@ -30,6 +30,7 @@ import { useCustomerLookup, CustomerMatch, NewCustomerData } from '@/hooks/useCu
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface CustomerAutoAssociationProps {
   /** Current phone value from the form */
@@ -191,7 +192,7 @@ export function CustomerAutoAssociation({
         customerId: newCustomer.id,
       });
     } catch (error) {
-      toast.error('Failed to create customer');
+      toast.error('Failed to create customer', { description: humanizeError(error) });
       logger.error('Failed to create customer from order',
         error instanceof Error ? error : new Error(String(error)),
         { component: 'CustomerAutoAssociation' }

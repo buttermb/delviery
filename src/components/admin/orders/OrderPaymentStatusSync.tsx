@@ -42,6 +42,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import CreditCard from 'lucide-react/dist/esm/icons/credit-card';
 import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
 import Clock from 'lucide-react/dist/esm/icons/clock';
@@ -293,7 +294,7 @@ export function OrderPaymentStatusSync({
         component: 'OrderPaymentStatusSync',
         orderId,
       });
-      toast.error('Failed to record payment');
+      toast.error('Failed to record payment', { description: humanizeError(error) });
     },
   });
 

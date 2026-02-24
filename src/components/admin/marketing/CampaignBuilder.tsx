@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { Loader2, Mail, MessageSquare } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 
@@ -70,7 +71,7 @@ export function CampaignBuilder({ onClose }: CampaignBuilderProps) {
     },
     onError: (error: unknown) => {
       logger.error('Failed to create campaign', error, { component: 'CampaignBuilder' });
-      toast.error("Failed to create campaign");
+      toast.error("Failed to create campaign", { description: humanizeError(error) });
     },
   });
 

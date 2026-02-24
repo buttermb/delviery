@@ -27,6 +27,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
@@ -213,7 +214,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
       logger.error('Failed to save announcement', err, {
         component: 'AnnouncementBar',
       });
-      toast.error("Error saving announcement");
+      toast.error("Error saving announcement", { description: humanizeError(err) });
     },
   });
 
@@ -240,7 +241,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
       logger.error('Failed to delete announcement', err, {
         component: 'AnnouncementBar',
       });
-      toast.error("Error deleting announcement");
+      toast.error("Error deleting announcement", { description: humanizeError(err) });
     },
   });
 

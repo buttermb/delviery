@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import {
@@ -112,8 +113,8 @@ export function StoreShareDialog({
     try {
       await downloadQRCodePNG(shareUrl, `store-qr-${store.slug}.png`, { size: 512 });
       toast.success("QR Code downloaded!");
-    } catch {
-      toast.error("Download failed");
+    } catch (error) {
+      toast.error("Download failed", { description: humanizeError(error) });
     }
   };
 
@@ -123,8 +124,8 @@ export function StoreShareDialog({
     try {
       await onRegenerateToken();
       toast.success("Previous links will no longer work.");
-    } catch {
-      toast.error("Failed to generate new link");
+    } catch (error) {
+      toast.error("Failed to generate new link", { description: humanizeError(error) });
     } finally {
       setRegenerating(false);
     }
