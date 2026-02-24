@@ -6,7 +6,7 @@ import { useWholesaleOrders, useWholesaleClients, useWholesalePayments } from "@
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { format, isToday, startOfMonth, endOfMonth } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useExpenseSummary } from "@/hooks/useFinancialData";
@@ -32,70 +32,116 @@ export default function FinancialCenterReal() {
   }
 
   const now = new Date();
-  const monthStart = startOfMonth(now);
-  const monthEnd = endOfMonth(now);
 
-  // Today's snapshot
-  const todayOrders = orders.filter(o =>
-    o.created_at && isToday(new Date(o.created_at))
-  );
-  const todayRevenue = todayOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
-  const todayCost = todayOrders.reduce((sum, o) => sum + Number(o.total_amount * 0.65), 0);
-  const todayProfit = todayRevenue - todayCost;
-  const todayMargin = todayRevenue > 0 ? Math.round((todayProfit / todayRevenue) * 100) : 0;
+  const {
+    todayOrders,
+    todayRevenue,
+    todayCost,
+    todayProfit,
+    todayMargin,
+    todayCollections,
+    totalOutstanding,
+    overdueClients,
+    monthRevenue,
+    monthCost,
+    monthGrossProfit,
+    monthMargin,
+    monthDeals,
+    avgDealSize,
+    clientProfits,
+  } = useMemo(() => {
+    const monthStart = startOfMonth(now);
+    const monthEnd = endOfMonth(now);
 
-  // Cash flow
-  const todayCollections = payments
-    .filter(p => p.created_at && isToday(new Date(p.created_at)))
-    .reduce((sum, p) => sum + Number(p.amount), 0);
+    // Today's snapshot
+    const todayOrders = orders.filter(o =>
+      o.created_at && isToday(new Date(o.created_at))
+    );
+    const todayRevenue = todayOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+    const todayCost = todayOrders.reduce((sum, o) => sum + Number(o.total_amount * 0.65), 0);
+    const todayProfit = todayRevenue - todayCost;
+    const todayMargin = todayRevenue > 0 ? Math.round((todayProfit / todayRevenue) * 100) : 0;
 
-  const totalOutstanding = clients.reduce((sum, c) => sum + Number(c.outstanding_balance), 0);
+    // Cash flow
+    const todayCollections = payments
+      .filter(p => p.created_at && isToday(new Date(p.created_at)))
+      .reduce((sum, p) => sum + Number(p.amount), 0);
 
-  // Overdue clients - simplified since we don't have due_date field
-  const overdueClients = clients
-    .filter(c => Number(c.outstanding_balance) > 0)
-    .map(c => ({
-      client: c.business_name,
-      amount: Number(c.outstanding_balance),
-      days: 0 // We don't track this currently
-    }))
-    .sort((a, b) => b.amount - a.amount);
+    const totalOutstanding = clients.reduce((sum, c) => sum + Number(c.outstanding_balance), 0);
 
-  // Monthly performance
-  const monthOrders = orders.filter(o => {
-    if (!o.created_at) return false;
-    const orderDate = new Date(o.created_at);
-    return orderDate >= monthStart && orderDate <= monthEnd;
-  });
+    // Overdue clients - simplified since we don't have due_date field
+    const overdueClients = clients
+      .filter(c => Number(c.outstanding_balance) > 0)
+      .map(c => ({
+        client: c.business_name,
+        amount: Number(c.outstanding_balance),
+        days: 0 // We don't track this currently
+      }))
+      .sort((a, b) => b.amount - a.amount);
 
-  const monthRevenue = monthOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
-  const monthCost = monthOrders.reduce((sum, o) => sum + Number(o.total_amount * 0.65), 0);
-  const monthGrossProfit = monthRevenue - monthCost;
-  const monthMargin = monthRevenue > 0 ? ((monthGrossProfit / monthRevenue) * 100).toFixed(1) : "0";
-  const monthDeals = new Set(monthOrders.map(o => o.client_id)).size;
-  const avgDealSize = monthDeals > 0 ? Math.round(monthRevenue / monthDeals) : 0;
+    // Monthly performance
+    const monthOrders = orders.filter(o => {
+      if (!o.created_at) return false;
+      const orderDate = new Date(o.created_at);
+      return orderDate >= monthStart && orderDate <= monthEnd;
+    });
 
-  // Top clients by profit
-  const clientProfits = clients
-    .map(c => {
-      const clientOrders = monthOrders.filter(o => o.client_id === c.id);
-      const revenue = clientOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
-      const cost = clientOrders.reduce((sum, o) => sum + Number(o.total_amount * 0.65), 0);
-      const profit = revenue - cost;
-      const warning = Number(c.outstanding_balance) > 10000
-        ? `owes $${(Number(c.outstanding_balance) / 1000).toFixed(0)}k`
-        : "";
+    const monthRevenue = monthOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+    const monthCost = monthOrders.reduce((sum, o) => sum + Number(o.total_amount * 0.65), 0);
+    const monthGrossProfit = monthRevenue - monthCost;
+    const monthMargin = monthRevenue > 0 ? ((monthGrossProfit / monthRevenue) * 100).toFixed(1) : "0";
+    const monthDeals = new Set(monthOrders.map(o => o.client_id)).size;
+    const avgDealSize = monthDeals > 0 ? Math.round(monthRevenue / monthDeals) : 0;
 
-      return {
-        name: c.business_name,
-        profit,
-        volume: 0, // We don't track weight currently
-        warning
-      };
-    })
-    .filter(c => c.profit > 0)
-    .sort((a, b) => b.profit - a.profit)
-    .slice(0, 3);
+    // Build order lookup map to avoid O(n*m) nested loop
+    const ordersByClient = new Map<string, typeof monthOrders>();
+    monthOrders.forEach(o => {
+      const existing = ordersByClient.get(o.client_id) || [];
+      existing.push(o);
+      ordersByClient.set(o.client_id, existing);
+    });
+
+    // Top clients by profit — O(n) via lookup map instead of O(n*m)
+    const clientProfits = clients
+      .map(c => {
+        const clientOrders = ordersByClient.get(c.id) || [];
+        const revenue = clientOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+        const cost = clientOrders.reduce((sum, o) => sum + Number(o.total_amount * 0.65), 0);
+        const profit = revenue - cost;
+        const warning = Number(c.outstanding_balance) > 10000
+          ? `owes $${(Number(c.outstanding_balance) / 1000).toFixed(0)}k`
+          : "";
+
+        return {
+          name: c.business_name,
+          profit,
+          volume: 0, // We don't track weight currently
+          warning
+        };
+      })
+      .filter(c => c.profit > 0)
+      .sort((a, b) => b.profit - a.profit)
+      .slice(0, 3);
+
+    return {
+      todayOrders,
+      todayRevenue,
+      todayCost,
+      todayProfit,
+      todayMargin,
+      todayCollections,
+      totalOutstanding,
+      overdueClients,
+      monthRevenue,
+      monthCost,
+      monthGrossProfit,
+      monthMargin,
+      monthDeals,
+      avgDealSize,
+      clientProfits,
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders, clients, payments]);
 
   return (
     <div className="space-y-4 p-4">
