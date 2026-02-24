@@ -9,7 +9,7 @@ import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 export default function AdvancedAnalyticsPage() {
   const { tenant } = useTenantAdminAuth();
 
-  const { data: orders = [], isLoading } = useQuery({
+  const { data: orders = [], isLoading, isError } = useQuery({
     queryKey: ['advanced-analytics-orders', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -52,6 +52,17 @@ export default function AdvancedAnalyticsPage() {
 
   if (isLoading) {
     return <EnhancedLoadingState variant="dashboard" message="Loading..." />;
+  }
+
+  if (isError) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card className="p-8 text-center">
+          <p className="text-destructive font-medium">Failed to load analytics data</p>
+          <p className="text-sm text-muted-foreground mt-1">Please try refreshing the page</p>
+        </Card>
+      </div>
+    );
   }
 
   return (

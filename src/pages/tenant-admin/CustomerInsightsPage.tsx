@@ -28,7 +28,7 @@ export default function CustomerInsightsPage() {
   };
 
   // Fetch all customers for metrics
-  const { data: customers = [], isLoading: customersLoading } = useQuery({
+  const { data: customers = [], isLoading: customersLoading, isError: customersError } = useQuery({
     queryKey: ['customer-insights-customers', tenant?.id, timeRange],
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -44,7 +44,7 @@ export default function CustomerInsightsPage() {
   });
 
   // Fetch orders for frequency analysis
-  const { data: orders = [], isLoading: ordersLoading } = useQuery({
+  const { data: orders = [], isLoading: ordersLoading, isError: ordersError } = useQuery({
     queryKey: ['customer-insights-orders', tenant?.id, timeRange],
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -235,6 +235,17 @@ export default function CustomerInsightsPage() {
 
   if (isLoading) {
     return <EnhancedLoadingState variant="dashboard" message="Loading customer insights..." />;
+  }
+
+  if (customersError || ordersError) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card className="p-8 text-center">
+          <p className="text-destructive font-medium">Failed to load customer insights</p>
+          <p className="text-sm text-muted-foreground mt-1">Please try refreshing the page</p>
+        </Card>
+      </div>
+    );
   }
 
   return (

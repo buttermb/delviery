@@ -100,7 +100,7 @@ export default function BulkOperationsPage() {
   const [operationParams, setOperationParams] = useState<any>({});
 
   // Fetch products
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading, isError } = useQuery({
     queryKey: ['products', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
@@ -192,6 +192,20 @@ export default function BulkOperationsPage() {
           </p>
         </div>
         <EnhancedLoadingState variant="card" message="Loading products..." />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-6 p-6">
+        <div>
+          <h1 className="text-3xl font-bold">Bulk Operations</h1>
+        </div>
+        <Card className="p-8 text-center">
+          <p className="text-destructive font-medium">Failed to load products</p>
+          <p className="text-sm text-muted-foreground mt-1">Please try refreshing the page</p>
+        </Card>
       </div>
     );
   }
