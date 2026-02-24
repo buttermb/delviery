@@ -25,8 +25,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import {
 import { queryKeys } from '@/lib/queryKeys';
+import { formatCurrency } from '@/lib/formatters';
+import {
   getPlatformCreditStats,
   getTenantsWithCredits,
   type TenantCreditInfo,
@@ -53,14 +54,6 @@ export default function CreditsOverviewPage() {
       };
     },
   });
-
-  // Format currency
-  const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(cents / 100);
-  };
 
   // Format large numbers
   const formatNumber = (num: number) => {
@@ -161,7 +154,7 @@ export default function CreditsOverviewPage() {
             ) : (
               <>
                 <div className="text-2xl font-bold">
-                  {formatCurrency(stats?.totalCreditPurchasesRevenue || 0)}
+                  {formatCurrency((stats?.totalCreditPurchasesRevenue || 0) / 100)}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   From credit pack purchases

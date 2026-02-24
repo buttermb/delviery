@@ -28,8 +28,9 @@ import {
 } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
 import { queryKeys } from '@/lib/queryKeys';
+import { formatCurrency } from '@/lib/formatters';
+import {
   getCreditAnalytics,
   getPlatformCreditStats,
   FREE_TIER_MONTHLY_CREDITS,
@@ -69,14 +70,6 @@ export default function CreditAnalyticsPage() {
     queryKey: queryKeys.superAdminTools.creditPlatformStats(),
     queryFn: getPlatformCreditStats,
   });
-
-  // Format currency
-  const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(cents / 100);
-  };
 
   // Calculate totals from analytics
   const totals = useMemo(() => {
@@ -147,7 +140,7 @@ export default function CreditAnalyticsPage() {
               <Skeleton className="h-8 w-24" />
             ) : (
               <>
-                <div className="text-2xl font-bold">{formatCurrency(totals.revenue)}</div>
+                <div className="text-2xl font-bold">{formatCurrency(totals.revenue / 100)}</div>
                 <p className="text-xs text-muted-foreground">
                   From pack purchases
                 </p>

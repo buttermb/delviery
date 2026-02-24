@@ -9,6 +9,7 @@
  */
 
 import { cn } from '@/lib/utils';
+import { formatCompactCurrency } from '@/lib/formatters';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -82,20 +83,13 @@ export function TVMetricsWidget({
         ? Math.abs(((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100).toFixed(0) + '%'
         : undefined;
 
-    const formatCurrency = (amount: number) => {
-        if (amount >= 10000) {
-            return `$${(amount / 1000).toFixed(1)}K`;
-        }
-        return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-    };
-
     return (
         <div className="h-full flex flex-col">
             <h2 className="text-xl font-semibold text-zinc-300 mb-4 px-2">Key Metrics</h2>
             <div className="grid grid-cols-2 gap-4 flex-1">
                 <MetricCard
                     label="Today's Revenue"
-                    value={formatCurrency(todayRevenue)}
+                    value={formatCompactCurrency(todayRevenue)}
                     trend={revenueTrend}
                     trendValue={revenueChange}
                 />
@@ -105,7 +99,7 @@ export function TVMetricsWidget({
                 />
                 <MetricCard
                     label="Avg Order"
-                    value={formatCurrency(avgOrderValue)}
+                    value={formatCompactCurrency(avgOrderValue)}
                 />
                 <MetricCard
                     label="Items Sold"

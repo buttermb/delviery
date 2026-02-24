@@ -79,7 +79,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { formatPhoneNumber } from '@/lib/formatters';
+import { formatCurrency, formatPhoneNumber } from '@/lib/formatters';
 
 import { useOrganizationDetail } from '@/hooks/useOrganizations';
 import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
@@ -144,15 +144,6 @@ export function OrganizationDetail({
   } = useOrganizationDetail({
     organizationId: organization.id,
   });
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  };
 
   const handleAddMember = async () => {
     if (!selectedCustomerId) {

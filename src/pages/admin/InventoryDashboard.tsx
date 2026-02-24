@@ -31,6 +31,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -308,14 +309,6 @@ export default function InventoryDashboard() {
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lowStockProducts(tenantId) }),
     ]);
     setRefreshing(false);
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(value);
   };
 
   if (authLoading) {

@@ -38,7 +38,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import { formatSmartDate } from '@/lib/formatters';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -391,14 +391,6 @@ export default function VendorDashboard() {
       queryClient.invalidateQueries({ queryKey: queryKeys.vendorDashboard.categories(tenantId) }),
     ]);
     setRefreshing(false);
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(value);
   };
 
   const formatDate = (dateString: string) => {

@@ -30,6 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Receipt, Search, Calendar, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 import { formatDistanceToNow } from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -165,15 +166,6 @@ export function CouponRedemptionTable({ className, maxRows }: CouponRedemptionTa
   const paginatedRedemptions = maxRows
     ? filteredRedemptions.slice(0, maxRows)
     : filteredRedemptions.slice(page * displayLimit, (page + 1) * displayLimit);
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  };
 
   const getDiscountDisplay = (type: string | null, value: number | null) => {
     if (!type || value === null) return '-';

@@ -49,8 +49,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
-import {
 import { queryKeys } from '@/lib/queryKeys';
+import { formatCurrency } from '@/lib/formatters';
+import {
   getAllCreditPackages,
   upsertCreditPackage,
   type CreditPackageDB,
@@ -66,14 +67,6 @@ export default function CreditPackagesPage() {
     queryKey: queryKeys.superAdminTools.creditPackages(),
     queryFn: getAllCreditPackages,
   });
-
-  // Format currency
-  const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(cents / 100);
-  };
 
   // Calculate price per credit
   const pricePerCredit = (priceCents: number, credits: number) => {
@@ -122,7 +115,7 @@ export default function CreditPackagesPage() {
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-blue-600">
-            {packages ? formatCurrency(Math.min(...packages.map(p => p.priceCents))) : '$0'}
+            {packages ? formatCurrency(Math.min(...packages.map(p => p.priceCents)) / 100) : '$0'}
           </div>
           <div className="text-sm text-muted-foreground">Lowest Price</div>
         </Card>
@@ -199,7 +192,7 @@ export default function CreditPackagesPage() {
                       {pkg.credits.toLocaleString()}
                     </TableCell>
                     <TableCell className="text-right font-mono font-medium text-green-600">
-                      {formatCurrency(pkg.priceCents)}
+                      {formatCurrency(pkg.priceCents / 100)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-sm text-muted-foreground">
                       ${pricePerCredit(pkg.priceCents, pkg.credits)}
@@ -278,7 +271,7 @@ export default function CreditPackagesPage() {
                   </div>
                   <div className="text-sm text-muted-foreground">credits</div>
                   <div className="text-xl font-semibold mt-2 text-green-600">
-                    {formatCurrency(pkg.priceCents)}
+                    {formatCurrency(pkg.priceCents / 100)}
                   </div>
                   <Button className="w-full mt-4" size="sm">
                     Buy Now

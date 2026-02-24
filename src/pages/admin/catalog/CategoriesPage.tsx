@@ -47,6 +47,7 @@ import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { logger } from '@/lib/logger';
+import { formatCurrency } from '@/lib/formatters';
 
 // Types for category stats
 interface CategoryStats {
@@ -400,15 +401,6 @@ export default function CategoriesPage() {
 
     return { totalProducts, totalStockValue, totalRevenue };
   }, [categoryStats]);
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
 
   const isLoading = categoriesLoading || statsLoading;
 

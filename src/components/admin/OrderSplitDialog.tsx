@@ -39,6 +39,7 @@ import Split from "lucide-react/dist/esm/icons/split";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import { useOrderSplit, type OrderItem, type ShipmentAllocation } from '@/hooks/useOrderSplit';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 interface OrderData {
   id: string;
@@ -253,13 +254,6 @@ export function OrderSplitDialog({
     } catch {
       // Error is handled in the hook
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
   };
 
   return (

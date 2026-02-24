@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tag, Users, DollarSign, TrendingUp, Percent, BarChart3 } from 'lucide-react';
 import { useCouponUsageStats } from '@/hooks/useCouponUsageStats';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 interface StatItemProps {
   label: string;
@@ -73,15 +74,6 @@ export function CouponUsageStats({ className, compact = false }: CouponUsageStat
       </Card>
     );
   }
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
 
   if (compact) {
     return (

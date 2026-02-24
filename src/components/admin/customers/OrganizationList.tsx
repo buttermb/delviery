@@ -54,6 +54,7 @@ import {
 } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 import { useOrganizations } from '@/hooks/useOrganizations';
 import {
@@ -124,15 +125,6 @@ export function OrganizationList({
     } else {
       toast.error('Failed to update status');
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
   };
 
   // Loading state
