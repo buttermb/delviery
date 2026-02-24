@@ -11,7 +11,7 @@
  * - Kanban view option for attention items
  */
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -32,6 +32,7 @@ import { useFeatureTracking } from '@/hooks/useFeatureTracking';
 import { cn } from '@/lib/utils';
 
 import { formatCurrency } from '@/lib/formatters';
+import { generateGreeting } from '@/lib/presets/businessTiers';
 
 import {
   type QuickAction,
@@ -320,28 +321,37 @@ export function HotboxDashboard() {
   const attentionItems = attentionQueue?.items || [];
 
   // Build quick actions from tier preset + personalized suggestions
-  const presetActions: QuickAction[] = preset.quickActions.map(action => ({
-    id: action.id,
-    label: action.label,
-    icon: iconMap[action.icon] || <Package className="h-5 w-5" />,
-    path: action.path,
-    isPersonalized: false,
-  }));
+  const presetActions: QuickAction[] = useMemo(() =>
+    preset.quickActions.map(action => ({
+      id: action.id,
+      label: action.label,
+      icon: iconMap[action.icon] || <Package className="h-5 w-5" />,
+      path: action.path,
+      isPersonalized: false,
+    })),
+    [preset.quickActions]
+  );
 
   // Add personalized actions based on user patterns
-  const personalizedFeatures = getPersonalizedQuickActions();
-  const personalizedActions: QuickAction[] = personalizedFeatures
-    .filter(featureId => !presetActions.some(a => a.id === featureId))
-    .slice(0, 2) // Add up to 2 personalized actions
-    .map(featureId => ({
-      id: featureId,
-      label: featureId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-      icon: <Sparkles className="h-5 w-5 text-yellow-500" />,
-      path: `/admin/${featureId}`,
-      isPersonalized: true,
-    }));
+  const personalizedFeatures = useMemo(() => getPersonalizedQuickActions(), [getPersonalizedQuickActions]);
+  const personalizedActions: QuickAction[] = useMemo(() =>
+    personalizedFeatures
+      .filter(featureId => !presetActions.some(a => a.id === featureId))
+      .slice(0, 2) // Add up to 2 personalized actions
+      .map(featureId => ({
+        id: featureId,
+        label: featureId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        icon: <Sparkles className="h-5 w-5 text-yellow-500" />,
+        path: `/admin/${featureId}`,
+        isPersonalized: true,
+      })),
+    [personalizedFeatures, presetActions]
+  );
 
-  const quickActions = [...presetActions, ...personalizedActions];
+  const quickActions = useMemo(
+    () => [...presetActions, ...personalizedActions],
+    [presetActions, personalizedActions]
+  );
 
   const isLoading = tierLoading || pulseLoading || attentionLoading;
 
