@@ -205,6 +205,7 @@ export default function MarketplaceCartPage() {
                                                     className="h-8 w-8 text-destructive"
                                                     onClick={() => removeItemMutation.mutate(item.id)}
                                                     disabled={removeItemMutation.isPending}
+                                                    aria-label="Remove item"
                                                 >
                                                     {removeItemMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                                                 </Button>

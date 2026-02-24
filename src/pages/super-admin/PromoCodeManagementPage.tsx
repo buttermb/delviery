@@ -227,6 +227,7 @@ export default function PromoCodeManagementPage() {
                           size="icon"
                           className="h-6 w-6"
                           onClick={() => copyCode(code.code)}
+                          aria-label="Copy promo code"
                         >
                           <Copy className="h-3 w-3" />
                         </Button>

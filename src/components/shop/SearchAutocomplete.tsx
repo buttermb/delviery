@@ -185,6 +185,7 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
                 setQuery('');
                 inputRef.current?.focus();
               }}
+              aria-label="Clear search"
             >
               <X className="w-4 h-4" />
             </Button>

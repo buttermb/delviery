@@ -574,6 +574,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
                     size="icon"
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={() => removeImage(index)}
+                    aria-label="Remove image"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -766,6 +767,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
                     variant="ghost"
                     size="icon"
                     onClick={() => removeBulkPricing(index)}
+                    aria-label="Remove pricing tier"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

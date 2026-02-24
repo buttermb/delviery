@@ -57,6 +57,7 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
                     size="icon"
                     className="h-8 w-8"
                     onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                    aria-label="Decrease quantity"
                   >
                     <Minus className="h-3 w-3" />
                   </Button>
@@ -66,6 +67,7 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
                     size="icon"
                     className="h-8 w-8"
                     onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                    aria-label="Increase quantity"
                   >
                     <Plus className="h-3 w-3" />
                   </Button>
@@ -74,6 +76,7 @@ export function CartDrawer({ open, onClose, onCheckout }: CartDrawerProps) {
                     size="icon"
                     className="h-8 w-8 ml-auto text-destructive"
                     onClick={() => removeItem(item.productId)}
+                    aria-label="Remove item"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

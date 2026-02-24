@@ -179,6 +179,7 @@ export function OfflineIndicator({
                           size="icon"
                           className="h-6 w-6"
                           onClick={() => onRetry(item.id)}
+                          aria-label="Retry"
                         >
                           <RefreshCw className="h-3 w-3" />
                         </Button>
@@ -189,6 +190,7 @@ export function OfflineIndicator({
                           size="icon"
                           className="h-6 w-6 text-muted-foreground"
                           onClick={() => onRemove(item.id)}
+                          aria-label="Remove"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>

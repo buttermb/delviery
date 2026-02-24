@@ -536,6 +536,7 @@ export default function StorefrontDashboard() {
             size="icon"
             onClick={() => setSearchParams({ tab: 'settings' })}
             title="Settings"
+            aria-label="Settings"
           >
             <Settings className="w-4 h-4" />
           </Button>

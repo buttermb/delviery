@@ -100,10 +100,11 @@ export const TenantCard = memo(function TenantCard({
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 className="text-[hsl(var(--super-admin-text))]/60 hover:text-[hsl(var(--super-admin-text))] hover:bg-white/10"
+                aria-label="More options"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>

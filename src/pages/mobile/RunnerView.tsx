@@ -613,6 +613,7 @@ export default function RunnerView() {
               size="icon"
               onClick={() => refetch()}
               disabled={!isOnline}
+              aria-label="Refresh"
             >
               <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
             </Button>
@@ -865,6 +866,7 @@ export default function RunnerView() {
                     setProofPhotoPreview(null);
                     setDeliveryNotes('');
                   }}
+                  aria-label="Close"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -888,6 +890,7 @@ export default function RunnerView() {
                       setProofPhoto(null);
                       setProofPhotoPreview(null);
                     }}
+                    aria-label="Remove photo"
                   >
                     <X className="h-4 w-4" />
                   </Button>

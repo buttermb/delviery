@@ -117,6 +117,7 @@ function CustomerProfileCardComponent({
               size="icon"
               asChild
               className="text-[hsl(var(--customer-text-light))] hover:text-[hsl(var(--customer-text))]"
+              aria-label="Settings"
             >
               <Link to={`/${tenant?.slug}/shop/settings`}>
                 <Settings className="h-5 w-5" />

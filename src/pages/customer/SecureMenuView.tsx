@@ -298,6 +298,7 @@ function ProductCard({
             size="icon"
             className="h-8 w-8 shrink-0"
             onClick={onViewDetails}
+            aria-label="View details"
           >
             <Sparkles className="h-4 w-4" />
           </Button>
@@ -697,6 +698,7 @@ const SecureMenuView = () => {
                 size="icon"
                 className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
                 onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
               >
                 <X className="h-4 w-4" />
               </Button>

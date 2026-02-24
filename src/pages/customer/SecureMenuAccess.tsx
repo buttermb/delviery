@@ -426,6 +426,7 @@ function ProductCard({
                 variant="outline"
                 className="h-8 w-8 border-white/20 text-white hover:bg-white/10"
                 onClick={onRemove}
+                aria-label="Decrease quantity"
               >
                 <Minus className="h-3 w-3" />
               </Button>
@@ -434,6 +435,7 @@ function ProductCard({
                 size="icon"
                 className="h-8 w-8 bg-primary hover:bg-primary/90"
                 onClick={handleAdd}
+                aria-label="Increase quantity"
               >
                 <Plus className="h-3 w-3" />
               </Button>

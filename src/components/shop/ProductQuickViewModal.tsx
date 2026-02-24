@@ -127,6 +127,7 @@ export function ProductQuickViewModal({
                         size="icon"
                         className="absolute right-4 top-4"
                         onClick={handleClose}
+                        aria-label="Close"
                     >
                         <X className="w-4 h-4" />
                     </Button>
@@ -203,6 +204,7 @@ export function ProductQuickViewModal({
                                             size="icon"
                                             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                                             disabled={quantity <= 1}
+                                            aria-label="Decrease quantity"
                                         >
                                             <Minus className="w-4 h-4" />
                                         </Button>
@@ -212,6 +214,7 @@ export function ProductQuickViewModal({
                                             size="icon"
                                             onClick={() => setQuantity((q) => Math.min(99, q + 1))}
                                             disabled={quantity >= 99}
+                                            aria-label="Increase quantity"
                                         >
                                             <Plus className="w-4 h-4" />
                                         </Button>

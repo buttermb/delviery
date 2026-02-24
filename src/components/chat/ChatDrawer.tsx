@@ -278,6 +278,7 @@ export function ChatDrawer({
                             disabled={!messageText.trim() || sendMessageMutation.isPending || !activeConversationId}
                             size="icon"
                             className="h-full"
+                            aria-label="Send message"
                         >
                             {sendMessageMutation.isPending ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />

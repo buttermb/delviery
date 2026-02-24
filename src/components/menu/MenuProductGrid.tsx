@@ -93,6 +93,7 @@ export function MenuProductGrid({ products, menuId: _menuId, whitelistEntryId: _
                       size="icon"
                       className="shrink-0"
                       onClick={() => setSelectedProduct(product)}
+                      aria-label="View details"
                     >
                       <Info className="h-4 w-4" />
                     </Button>

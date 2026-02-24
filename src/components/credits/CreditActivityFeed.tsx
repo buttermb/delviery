@@ -318,6 +318,7 @@ export function CreditActivityFeed({
               onClick={() => refetch()}
               disabled={isFetching}
               className="h-9 w-9"
+              aria-label="Refresh"
             >
               <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
             </Button>

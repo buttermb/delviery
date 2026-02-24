@@ -87,6 +87,7 @@ export function StickyAddToCart({
             className="h-8 w-8 rounded-r-none"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             disabled={quantity <= 1 || !product.in_stock}
+            aria-label="Decrease quantity"
           >
             <Minus className="w-3 h-3" />
           </Button>
@@ -97,6 +98,7 @@ export function StickyAddToCart({
             className="h-8 w-8 rounded-l-none"
             onClick={() => setQuantity((q) => Math.min(99, q + 1))}
             disabled={!product.in_stock}
+            aria-label="Increase quantity"
           >
             <Plus className="w-3 h-3" />
           </Button>
@@ -108,6 +110,7 @@ export function StickyAddToCart({
           size="icon"
           className={cn('h-10 w-10', isWishlisted && 'text-red-500 border-red-200')}
           onClick={onToggleWishlist}
+          aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
         >
           <Heart className={cn('w-4 h-4', isWishlisted && 'fill-red-500')} />
         </Button>

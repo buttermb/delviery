@@ -121,6 +121,7 @@ export function ShareButtons({
                     className="h-8 w-8"
                     onClick={handleCopyLink}
                     title="Copy link"
+                    aria-label="Copy link"
                 >
                     {copied ? <Check className="h-4 w-4 text-green-500" /> : <Link2 className="h-4 w-4" />}
                 </Button>

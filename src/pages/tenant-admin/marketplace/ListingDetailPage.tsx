@@ -154,6 +154,7 @@ export default function ListingDetailPage() {
             variant="ghost"
             size="icon"
             onClick={() => navigate(`/${tenant?.slug}/admin/marketplace/listings`)}
+            aria-label="Back to listings"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

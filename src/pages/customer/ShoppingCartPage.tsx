@@ -292,6 +292,7 @@ export default function ShoppingCartPage() {
                               size="icon"
                               onClick={() => handleRemoveItem(item.product_id || item.productId, selectedWeight)}
                               className="text-[hsl(var(--customer-text-light))] hover:text-[hsl(var(--customer-accent))]"
+                              aria-label="Remove item"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

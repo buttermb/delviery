@@ -511,6 +511,7 @@ export default function MessagesPage() {
                       disabled={!replyText.trim() || sendReplyMutation.isPending}
                       size="icon"
                       className="self-end"
+                      aria-label="Send reply"
                     >
                       <Send className="h-4 w-4" />
                     </Button>

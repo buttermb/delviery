@@ -586,6 +586,7 @@ function FileList({ files, onRemove, showPreview = true, compact = false }: File
                   e.stopPropagation();
                   onRemove(uploadedFile.id);
                 }}
+                aria-label="Remove file"
               >
                 <X className="h-4 w-4" />
               </Button>

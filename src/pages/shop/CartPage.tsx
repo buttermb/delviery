@@ -332,6 +332,7 @@ export default function CartPage() {
                             size="icon"
                             className={`h-8 w-8 ${isLuxuryTheme ? buttonOutline : ''}`}
                             onClick={() => handleUpdateQuantity(item.productId, -1, item.variant)}
+                            aria-label="Decrease quantity"
                           >
                             <Minus className="w-4 h-4" />
                           </Button>
@@ -348,6 +349,7 @@ export default function CartPage() {
                             size="icon"
                             className={`h-8 w-8 ${isLuxuryTheme ? buttonOutline : ''}`}
                             onClick={() => handleUpdateQuantity(item.productId, 1, item.variant)}
+                            aria-label="Increase quantity"
                           >
                             <Plus className="w-4 h-4" />
                           </Button>

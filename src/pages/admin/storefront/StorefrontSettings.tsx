@@ -943,6 +943,7 @@ export default function StorefrontSettings() {
                           const zones = (formData.delivery_zones ?? []).filter((_, i) => i !== index);
                           updateField('delivery_zones', zones);
                         }}
+                        aria-label="Remove delivery zone"
                       >
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
@@ -1046,6 +1047,7 @@ export default function StorefrontSettings() {
                             const slots = (formData.time_slots ?? []).filter((_, i) => i !== index);
                             updateField('time_slots', slots);
                           }}
+                          aria-label="Remove time slot"
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>

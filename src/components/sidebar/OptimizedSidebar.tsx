@@ -474,6 +474,7 @@ export function OptimizedSidebar({
                                     size="icon"
                                     className="h-6 w-6"
                                     onClick={() => setSearchQuery('')}
+                                    aria-label="Clear search"
                                 >
                                     <X className="h-4 w-4" />
                                 </Button>

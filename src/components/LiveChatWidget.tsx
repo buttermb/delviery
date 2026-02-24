@@ -235,6 +235,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
             onClose?.();
           }}
           className="hover:bg-primary-foreground/10"
+          aria-label="Close chat"
         >
           <X className="w-5 h-5" />
         </Button>

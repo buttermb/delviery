@@ -586,6 +586,7 @@ export function TopNav({
           size="icon"
           className="md:hidden"
           onClick={() => onCommandPaletteOpen?.()}
+          aria-label="Search"
         >
           <Search className="h-5 w-5" />
         </Button>
@@ -616,6 +617,7 @@ export function TopNav({
           size="icon"
           className="relative"
           onClick={() => onNotificationsOpen?.()}
+          aria-label="Notifications"
         >
           <Bell className="h-5 w-5" />
           {unreadNotifications > 0 && (

@@ -388,6 +388,7 @@ export default function TeamSettings() {
             className="h-11 w-11"
             onClick={() => resendInviteMutation.mutate(member)}
             disabled={resendInviteMutation.isPending}
+            aria-label="Resend invite"
           >
             {resendInviteMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
           </Button>
@@ -397,6 +398,7 @@ export default function TeamSettings() {
             className="h-11 w-11 text-destructive"
             onClick={() => cancelInviteMutation.mutate(member.id)}
             disabled={cancelInviteMutation.isPending}
+            aria-label="Cancel invite"
           >
             {cancelInviteMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
           </Button>

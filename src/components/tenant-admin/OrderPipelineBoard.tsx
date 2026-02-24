@@ -107,6 +107,7 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove, isMu
                                             size="icon"
                                             className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
                                             onClick={(e) => handleCopyId(e, order.id)}
+                                            aria-label="Copy order ID"
                                         >
                                             {copiedId === order.id ? (
                                                 <Check className="h-3 w-3 text-emerald-500" />

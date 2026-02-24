@@ -320,6 +320,7 @@ export default function CustomerMenuViewPage() {
           size="icon"
           onClick={() => navigate(`/${tenant?.slug}/shop/dashboard`)}
           className="absolute top-4 left-4 text-white hover:bg-white/20 rounded-full h-10 w-10 backdrop-blur-sm"
+          aria-label="Back to dashboard"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>

@@ -62,6 +62,7 @@ export function EditableCell({
           size="icon"
           onClick={() => onSave(editValue)}
           className="h-8 w-8 text-emerald-500"
+          aria-label="Save"
         >
           <Check className="h-4 w-4" />
         </Button>
@@ -73,6 +74,7 @@ export function EditableCell({
             onCancel();
           }}
           className="h-8 w-8 text-muted-foreground"
+          aria-label="Cancel"
         >
           <X className="h-4 w-4" />
         </Button>

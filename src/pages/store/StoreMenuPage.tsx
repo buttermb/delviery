@@ -697,6 +697,7 @@ export default function StoreMenuPage() {
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   className="h-9 w-9"
+                  aria-label="Previous page"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
@@ -713,6 +714,7 @@ export default function StoreMenuPage() {
                       size="icon"
                       onClick={() => setCurrentPage(page as number)}
                       className="h-9 w-9"
+                      aria-label={`Page ${page}`}
                       style={
                         currentPage === page
                           ? { backgroundColor: primaryColor }
@@ -730,6 +732,7 @@ export default function StoreMenuPage() {
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   className="h-9 w-9"
+                  aria-label="Next page"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </Button>

@@ -40,6 +40,7 @@ export function LastUpdated({ date, onRefresh, isLoading, className }: LastUpdat
                     className="h-6 w-6"
                     onClick={onRefresh}
                     disabled={isLoading}
+                    aria-label="Refresh"
                 >
                     <RefreshCw className={cn("h-3 w-3", isLoading && "animate-spin")} />
                     <span className="sr-only">Refresh</span>

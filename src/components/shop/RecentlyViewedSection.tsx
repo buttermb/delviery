@@ -130,6 +130,7 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
                         size="icon"
                         onClick={() => scroll('left')}
                         className="h-8 w-8"
+                        aria-label="Previous"
                     >
                         <ChevronLeft className="w-4 h-4" />
                     </Button>
@@ -138,6 +139,7 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
                         size="icon"
                         onClick={() => scroll('right')}
                         className="h-8 w-8"
+                        aria-label="Next"
                     >
                         <ChevronRight className="w-4 h-4" />
                     </Button>

@@ -1449,6 +1449,7 @@ export function CheckoutPage() {
                           size="icon"
                           className="h-6 w-6 text-muted-foreground hover:text-destructive"
                           onClick={() => removeGiftCard(card.code)}
+                          aria-label="Remove gift card"
                         >
                           <ArrowLeft className="w-3 h-3 rotate-45" /> {/* Use X icon if available, iterating quickly */}
                         </Button>

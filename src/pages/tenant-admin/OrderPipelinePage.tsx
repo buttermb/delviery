@@ -20,6 +20,7 @@ export default function OrderPipelinePage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => navigate(`/${tenantSlug}/admin/wholesale-orders`)}
+                        aria-label="Back to wholesale orders"
                     >
                         <ArrowLeft className="h-4 w-4" />
                     </Button>

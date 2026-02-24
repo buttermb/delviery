@@ -459,6 +459,7 @@ function ClientCard({
           size="icon"
           className="h-6 w-6 shrink-0"
           onClick={(e) => onToggleFavorite(e, client.id, client.is_favorite || false)}
+          aria-label={client.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
         >
           <Star
             className={cn(

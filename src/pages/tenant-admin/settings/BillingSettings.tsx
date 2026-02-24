@@ -1024,6 +1024,7 @@ export default function BillingSettings() {
                       size="icon"
                       onClick={() => handleDownloadInvoice(invoice)}
                       disabled={downloadingInvoice === invoice.id}
+                      aria-label="Download invoice"
                     >
                       {downloadingInvoice === invoice.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />

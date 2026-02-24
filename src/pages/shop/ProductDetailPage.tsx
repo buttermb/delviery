@@ -597,6 +597,7 @@ export function ProductDetailPage() {
                     variant="ghost"
                     className="rounded-full bg-black/20 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white"
                     onClick={toggleWishlist}
+                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                   >
                     <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                   </Button>
@@ -604,6 +605,7 @@ export function ProductDetailPage() {
                     size="icon"
                     variant="ghost"
                     className="rounded-full bg-black/20 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white"
+                    aria-label="Share"
                   >
                     <Share2 className="w-5 h-5" />
                   </Button>
@@ -1077,6 +1079,7 @@ export function ProductDetailPage() {
               size="icon"
               className="absolute top-4 right-4 z-50 bg-white/10 hover:bg-white/20 text-white rounded-full"
               onClick={() => setShowZoom(false)}
+              aria-label="Close zoom"
             >
               <X className="w-6 h-6" />
             </Button>

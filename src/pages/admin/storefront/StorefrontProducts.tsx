@@ -549,6 +549,7 @@ export default function StorefrontProducts() {
                             onClick={() => handleMoveUp(product.id, setting?.display_order ?? 999)}
                             disabled={updateOrderMutation.isPending}
                             title="Move up"
+                            aria-label="Move up"
                           >
                             <ArrowUp className="w-3 h-3" />
                           </Button>
@@ -559,6 +560,7 @@ export default function StorefrontProducts() {
                             onClick={() => handleMoveDown(product.id, setting?.display_order ?? 999)}
                             disabled={updateOrderMutation.isPending}
                             title="Move down"
+                            aria-label="Move down"
                           >
                             <ArrowDown className="w-3 h-3" />
                           </Button>

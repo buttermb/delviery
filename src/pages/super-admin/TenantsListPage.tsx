@@ -487,6 +487,7 @@ export default function TenantsListPage() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => navigate(`/super-admin/tenants/${tenant.id}`)}
+                                  aria-label="View details"
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
@@ -501,6 +502,7 @@ export default function TenantsListPage() {
                                   onClick={() => {
                                     window.open(`/${tenant.slug}/admin/dashboard`, '_blank', 'noopener,noreferrer');
                                   }}
+                                  aria-label="Impersonate tenant"
                                 >
                                   <UserCog className="h-4 w-4" />
                                 </Button>
@@ -513,6 +515,7 @@ export default function TenantsListPage() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => navigate(`/super-admin/tenants/${tenant.id}?tab=settings`)}
+                                  aria-label="Tenant settings"
                                 >
                                   <Settings className="h-4 w-4" />
                                 </Button>

@@ -339,6 +339,7 @@ export function SettingsImportDialog({
                   size="icon"
                   onClick={clearFile}
                   disabled={isImporting}
+                  aria-label="Remove file"
                 >
                   <X className="h-4 w-4" />
                 </Button>

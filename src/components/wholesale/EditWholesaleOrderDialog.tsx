@@ -282,6 +282,7 @@ export function EditWholesaleOrderDialog({
                           onClick={() =>
                             handleUpdateItem(item.id, 'quantity_lbs', Math.max(1, item.quantity_lbs - 1))
                           }
+                          aria-label="Decrease quantity"
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
@@ -302,6 +303,7 @@ export function EditWholesaleOrderDialog({
                           onClick={() =>
                             handleUpdateItem(item.id, 'quantity_lbs', item.quantity_lbs + 1)
                           }
+                          aria-label="Increase quantity"
                         >
                           <Plus className="h-3 w-3" />
                         </Button>

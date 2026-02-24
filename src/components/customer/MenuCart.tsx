@@ -106,6 +106,7 @@ export const MenuCart = ({
                       className="h-8 w-8"
                       onClick={() => onUpdateQuantity(item.product_id, item.quantity - 1)}
                       disabled={item.quantity <= item.min_quantity}
+                      aria-label="Decrease quantity"
                     >
                       <Minus className="h-3 w-3" />
                     </Button>
@@ -116,6 +117,7 @@ export const MenuCart = ({
                       className="h-8 w-8"
                       onClick={() => onUpdateQuantity(item.product_id, item.quantity + 1)}
                       disabled={item.quantity >= item.max_quantity}
+                      aria-label="Increase quantity"
                     >
                       <Plus className="h-3 w-3" />
                     </Button>
@@ -127,6 +129,7 @@ export const MenuCart = ({
                     variant="ghost"
                     className="h-8 w-8 text-destructive"
                     onClick={() => onRemoveItem(item.product_id)}
+                    aria-label="Remove item"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

@@ -101,6 +101,7 @@ export function UndoToast({
                         variant="ghost"
                         onClick={onDismiss}
                         className="flex-shrink-0 h-8 w-8 text-zinc-400 hover:text-white hover:bg-white/10"
+                        aria-label="Dismiss"
                     >
                         <X className="h-4 w-4" />
                     </Button>

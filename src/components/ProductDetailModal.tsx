@@ -384,6 +384,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                       setQuantity(Math.max(1, quantity - 1));
                     }}
                     disabled={loading || added}
+                    aria-label="Decrease quantity"
                   >
                     <Minus className="w-4 h-4" />
                   </Button>
@@ -396,6 +397,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                       setQuantity(quantity + 1);
                     }}
                     disabled={loading || added}
+                    aria-label="Increase quantity"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>

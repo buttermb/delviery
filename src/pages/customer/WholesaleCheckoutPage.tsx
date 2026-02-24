@@ -302,6 +302,7 @@ export default function WholesaleCheckoutPage() {
             variant="ghost"
             size="icon"
             onClick={() => navigate(`/${slug}/shop/wholesale/cart`)}
+            aria-label="Back to cart"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

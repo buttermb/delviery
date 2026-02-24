@@ -282,6 +282,7 @@ export function SinglePageCheckout() {
           size="icon"
           className="min-w-[44px] min-h-[44px]"
           onClick={() => navigate(`/shop/${storeSlug}/cart`)}
+          aria-label="Back to cart"
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>

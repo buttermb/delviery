@@ -138,6 +138,7 @@ export function PostDetailPage() {
                     size="icon"
                     onClick={handleDeletePost}
                     disabled={deletePostMutation.isPending}
+                    aria-label="Delete post"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

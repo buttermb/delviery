@@ -160,6 +160,7 @@ export function CartUpsellsSection({
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => scroll('left')}
+                        aria-label="Previous"
                     >
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
@@ -168,6 +169,7 @@ export function CartUpsellsSection({
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => scroll('right')}
+                        aria-label="Next"
                     >
                         <ChevronRight className="h-4 w-4" />
                     </Button>

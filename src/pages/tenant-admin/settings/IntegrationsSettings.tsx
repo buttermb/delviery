@@ -577,6 +577,7 @@ export default function IntegrationsSettings() {
                       className="text-destructive"
                       onClick={() => deleteWebhookMutation.mutate(webhook.id)}
                       disabled={deleteWebhookMutation.isPending}
+                      aria-label="Delete webhook"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

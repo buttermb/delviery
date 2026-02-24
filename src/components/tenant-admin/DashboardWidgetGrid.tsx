@@ -96,6 +96,7 @@ export function DashboardWidgetGrid() {
                                                     className="h-6 w-6"
                                                     disabled={index === 0}
                                                     onClick={() => moveWidget(index, 'up')}
+                                                    aria-label="Move widget up"
                                                 >
                                                     ▲
                                                 </Button>
@@ -105,6 +106,7 @@ export function DashboardWidgetGrid() {
                                                     className="h-6 w-6"
                                                     disabled={index === widgetStates.length - 1}
                                                     onClick={() => moveWidget(index, 'down')}
+                                                    aria-label="Move widget down"
                                                 >
                                                     ▼
                                                 </Button>

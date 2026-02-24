@@ -235,6 +235,7 @@ export default function WholesaleOrderDetailPage() {
             variant="ghost"
             size="icon"
             onClick={() => navigate(`/${slug}/shop/wholesale/orders`)}
+            aria-label="Back to orders"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

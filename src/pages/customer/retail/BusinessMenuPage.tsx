@@ -272,6 +272,7 @@ export default function BusinessMenuPage() {
             variant="ghost"
             size="icon"
             onClick={() => navigate(`/${slug}/shop/retail/businesses`)}
+            aria-label="Back to businesses"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

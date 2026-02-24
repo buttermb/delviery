@@ -364,6 +364,7 @@ export function StorefrontLiveOrders() {
             size="icon"
             onClick={() => setSoundEnabled(!soundEnabled)}
             title={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
+            aria-label={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
           >
             {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
           </Button>

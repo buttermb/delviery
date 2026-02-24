@@ -51,6 +51,7 @@ const StickyAddToCart = ({
               className="h-9 w-9"
               onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
               disabled={quantity <= 1}
+              aria-label="Decrease quantity"
             >
               <Minus className="w-4 h-4" />
             </Button>
@@ -60,6 +61,7 @@ const StickyAddToCart = ({
               size="icon"
               className="h-9 w-9"
               onClick={() => onQuantityChange(quantity + 1)}
+              aria-label="Increase quantity"
             >
               <Plus className="w-4 h-4" />
             </Button>

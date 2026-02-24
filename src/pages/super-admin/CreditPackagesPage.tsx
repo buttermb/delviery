@@ -237,6 +237,7 @@ export default function CreditPackagesPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => openEdit(pkg)}
+                        aria-label="Edit package"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>

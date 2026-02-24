@@ -444,6 +444,7 @@ export function StoreOrdersTab({
                             size="icon"
                             className="h-11 w-11"
                             onClick={() => setSelectedOrder(order)}
+                            aria-label="View order"
                           >
                             <Eye className="w-4 h-4" />
                           </Button>

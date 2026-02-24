@@ -154,6 +154,7 @@ export function EnhancedStickyAddToCart({
             className="h-10 w-10 rounded-l-xl rounded-r-none active:scale-95 transition-transform"
             onClick={() => handleQuantityChange(-1)}
             disabled={quantity <= 1 || isOutOfStock}
+            aria-label="Decrease quantity"
           >
             <Minus className="w-4 h-4" />
           </Button>
@@ -164,6 +165,7 @@ export function EnhancedStickyAddToCart({
             className="h-10 w-10 rounded-r-xl rounded-l-none active:scale-95 transition-transform"
             onClick={() => handleQuantityChange(1)}
             disabled={quantity >= effectiveMax || isOutOfStock}
+            aria-label="Increase quantity"
           >
             <Plus className="w-4 h-4" />
           </Button>
@@ -178,6 +180,7 @@ export function EnhancedStickyAddToCart({
             isWishlisted && 'text-red-500 border-red-200 bg-red-50'
           )}
           onClick={onToggleWishlist}
+          aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
         >
           <Heart className={cn('w-4 h-4', isWishlisted && 'fill-red-500')} />
         </Button>

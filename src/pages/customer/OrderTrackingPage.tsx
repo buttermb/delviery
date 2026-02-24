@@ -252,6 +252,7 @@ export default function OrderTrackingPage() {
             size="icon"
             onClick={() => navigate(`/${tenant?.slug}/shop/orders`)}
             className="hover:bg-gray-100 rounded-full"
+            aria-label="Back to orders"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

@@ -270,6 +270,7 @@ export default function WholesaleCartPage() {
                                 size="icon"
                                 onClick={() => removeItemMutation.mutate(item.id)}
                                 className="text-destructive hover:text-destructive"
+                                aria-label="Remove item"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -284,6 +285,7 @@ export default function WholesaleCartPage() {
                                   className="h-8 w-8"
                                   onClick={() => handleQuantityChange(item.id, quantity, -1)}
                                   disabled={updateQuantityMutation.isPending}
+                                  aria-label="Decrease quantity"
                                 >
                                   <Minus className="h-4 w-4" />
                                 </Button>
@@ -294,6 +296,7 @@ export default function WholesaleCartPage() {
                                   className="h-8 w-8"
                                   onClick={() => handleQuantityChange(item.id, quantity, 1)}
                                   disabled={updateQuantityMutation.isPending || (listing?.quantity_available as number || 0) <= quantity}
+                                  aria-label="Increase quantity"
                                 >
                                   <Plus className="h-4 w-4" />
                                 </Button>

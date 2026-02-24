@@ -352,6 +352,7 @@ const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, React.C
           onClick?.(event);
           toggleSidebar();
         }}
+        aria-label="Toggle sidebar"
         {...props}
       >
         {isMobile ? <Menu /> : <PanelLeft />}

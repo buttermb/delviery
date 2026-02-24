@@ -116,6 +116,7 @@ export function MessagesThread({ clientId }: MessagesThreadProps) {
                         size="icon"
                         className="h-[80px] w-[80px]"
                         disabled={sendMessage.isPending || !messageText.trim()}
+                        aria-label="Send message"
                     >
                         {sendMessage.isPending ? (
                             <Loader2 className="h-6 w-6 animate-spin" />
