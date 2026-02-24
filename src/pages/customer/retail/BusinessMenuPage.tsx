@@ -122,7 +122,7 @@ export default function BusinessMenuPage() {
         throw error;
       }
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!businessId,
   });
@@ -146,7 +146,7 @@ export default function BusinessMenuPage() {
       }
 
       // Get unique categories
-      const uniqueCategories = Array.from(new Set((data || []).map((p) => p.category).filter(Boolean)));
+      const uniqueCategories = Array.from(new Set((data ?? []).map((p) => p.category).filter(Boolean)));
       return uniqueCategories;
     },
     enabled: !!businessId,

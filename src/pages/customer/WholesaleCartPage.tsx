@@ -84,7 +84,7 @@ export default function WholesaleCartPage() {
         throw error;
       }
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!buyerTenantId,
   });

@@ -49,7 +49,7 @@ export function SupplierDetail({ open, onOpenChange, supplier, onEdit }: Supplie
         return [];
       }
 
-      return (data || []) as SupplierTransaction[];
+      return (data ?? []) as SupplierTransaction[];
     },
     enabled: open && !!supplier.id,
   });

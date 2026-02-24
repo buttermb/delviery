@@ -88,7 +88,7 @@ export default function WholesaleMarketplacePage() {
         throw error;
       }
 
-      return data || [];
+      return data ?? [];
     },
   });
 

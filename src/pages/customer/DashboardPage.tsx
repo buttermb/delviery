@@ -62,7 +62,7 @@ export default function CustomerDashboardPage() {
         .order("created_at", { ascending: false })
         .limit(5)) as { data: Array<{ id: string; order_number: string | null; total_amount: number; status: string; created_at: string }> | null };
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId && !!customerId,
   });

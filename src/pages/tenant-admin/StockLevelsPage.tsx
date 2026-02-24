@@ -101,7 +101,7 @@ export default function StockLevelsPage() {
         throw error;
       }
 
-      return (data || []).map((p) => ({
+      return (data ?? []).map((p) => ({
         ...p,
         available_quantity: p.available_quantity ?? 0,
         low_stock_alert: p.low_stock_alert ?? 10,

@@ -398,7 +398,7 @@ export function OrderDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {(order.items || []).map((item: StorefrontOrderItem, index: number) => (
+                {(order.items ?? []).map((item: StorefrontOrderItem, index: number) => (
                   <div key={index} className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
                     <div className="w-14 h-14 rounded-md overflow-hidden bg-muted flex-shrink-0">
                       {item.image_url ? (

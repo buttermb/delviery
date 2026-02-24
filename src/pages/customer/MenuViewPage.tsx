@@ -110,7 +110,7 @@ export default function CustomerMenuViewPage() {
         .eq("menu_id", menuId as string);
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!menuId && !!tenantId,
   });
@@ -126,7 +126,7 @@ export default function CustomerMenuViewPage() {
         .from("cart_items")
         .select("quantity, products(price)")
         .eq("user_id", user.id);
-      return data || [];
+      return data ?? [];
     },
     enabled: !!user?.id
   });
@@ -142,7 +142,7 @@ export default function CustomerMenuViewPage() {
 
   // Extract product IDs for realtime sync
   const productIds = useMemo(() => {
-    return products?.map((item: unknown) => (item as { products?: { id?: string } }).products?.id).filter(Boolean) as string[] || [];
+    return products?.map((item: unknown) => (item as { products?: { id?: string } }).products?.id).filter(Boolean) as string[] ?? [];
   }, [products]);
 
   // Use realtime inventory sync for live stock updates
@@ -188,7 +188,7 @@ export default function CustomerMenuViewPage() {
         stock_status: getProductStatus(product.id),
         min_quantity: 1 // Default
       };
-    }) || [];
+    }) ?? [];
   }, [products, checkProductAvailable, getProductStatus]);
 
   const handleAddToCart = async (productId: string, quantity: number) => {

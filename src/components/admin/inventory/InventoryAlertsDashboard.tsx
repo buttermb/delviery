@@ -90,8 +90,8 @@ export function InventoryAlertsDashboard() {
     );
   }
 
-  const criticalAlerts = alerts?.filter((a) => a.severity === 'critical') || [];
-  const warningAlerts = alerts?.filter((a) => a.severity === 'warning') || [];
+  const criticalAlerts = alerts?.filter((a) => a.severity === 'critical') ?? [];
+  const warningAlerts = alerts?.filter((a) => a.severity === 'warning') ?? [];
 
   return (
     <div className="space-y-4">

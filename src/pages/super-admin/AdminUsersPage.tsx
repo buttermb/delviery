@@ -54,7 +54,7 @@ export default function AdminUsersPage() {
         logger.error('Error fetching admin users', error instanceof Error ? error : new Error(String(error)), { component: 'AdminUsersPage' });
         throw error;
       }
-      return (data || []) as AdminUser[];
+      return (data ?? []) as AdminUser[];
     },
   });
 

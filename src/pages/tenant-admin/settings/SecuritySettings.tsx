@@ -129,7 +129,7 @@ export default function SecuritySettings() {
         return [];
       }
 
-      return (data || []).map(session => {
+      return (data ?? []).map(session => {
         const { device, browser } = parseUserAgent(session.user_agent);
         const isCurrent = session.token_hash === currentToken?.substring(0, 64); // Compare first part of token
         

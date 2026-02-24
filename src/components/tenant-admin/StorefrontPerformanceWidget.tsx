@@ -70,11 +70,11 @@ export function StorefrontPerformanceWidget() {
                 .in('store_id', storeIds)
                 .gte('created_at', weekStart.toISOString());
 
-            const todayRevenue = (todayOrders || []).reduce(
+            const todayRevenue = (todayOrders ?? []).reduce(
                 (sum, o) => sum + (Number(o.total) || 0),
                 0
             );
-            const weekRevenue = (weekOrders || []).reduce(
+            const weekRevenue = (weekOrders ?? []).reduce(
                 (sum, o) => sum + (Number(o.total) || 0),
                 0
             );

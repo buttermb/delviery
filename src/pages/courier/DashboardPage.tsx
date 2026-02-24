@@ -109,7 +109,7 @@ export default function CourierDashboardPage() {
         .limit(10);
 
       if (error) throw error;
-      setAvailableOrders(data || []);
+      setAvailableOrders(data ?? []);
     } catch (error) {
       logger.error('Failed to load orders:', error);
     } finally {

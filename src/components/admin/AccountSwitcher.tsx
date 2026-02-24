@@ -38,7 +38,7 @@ export function AccountSwitcher() {
         .order('company_name');
 
       if (error) throw error;
-      setAccounts(data || []);
+      setAccounts(data ?? []);
     } catch (error) {
       logger.error('Error loading accounts', error as Error, { component: 'AccountSwitcher' });
     }

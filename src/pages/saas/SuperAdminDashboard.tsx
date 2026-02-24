@@ -371,7 +371,7 @@ export default function SuperAdminDashboard() {
 
         <DataTable
           columns={columns}
-          data={filteredTenants || []}
+          data={filteredTenants ?? []}
           loading={isLoading}
           emptyMessage="No tenants found"
         />

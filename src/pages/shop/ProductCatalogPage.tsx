@@ -115,7 +115,7 @@ function transformProduct(rpc: RpcProduct): ProductWithSettings {
     display_price: rpc.sale_price || rpc.price,
     compare_at_price: rpc.sale_price ? rpc.price : null,
     image_url: rpc.image_url,
-    images: rpc.images || [],
+    images: rpc.images ?? [],
     in_stock: rpc.stock_quantity > 0,
     is_featured: rpc.display_order === 0, // First items are featured
     marketplace_category_id: null,
@@ -270,7 +270,7 @@ export function ProductCatalogPage() {
           logger.error('Products fetch failed', error, { storeId: store.id });
           throw error;
         }
-        return (data || []).map((item: unknown) => transformProduct(item as RpcProduct));
+        return (data ?? []).map((item: unknown) => transformProduct(item as RpcProduct));
       } catch (err) {
         logger.error('Error fetching products', err, { storeId: store.id });
         throw err;

@@ -179,7 +179,7 @@ export default function RunnerView() {
       }
 
       // Transform to RunnerDelivery format with route order
-      return (data || []).map((order, index) => ({
+      return (data ?? []).map((order, index) => ({
         id: order.id,
         order_id: order.id,
         order_number: order.order_number || `ORD-${order.id.slice(0, 8)}`,
@@ -189,7 +189,7 @@ export default function RunnerView() {
         delivery_address: order.delivery_address || 'No address provided',
         delivery_lat: order.delivery_lat,
         delivery_lng: order.delivery_lng,
-        items: (order.order_items || []).map((item: Record<string, unknown>) => ({
+        items: (order.order_items ?? []).map((item: Record<string, unknown>) => ({
           id: item.id as string,
           product_name: item.product_name as string || 'Unknown Item',
           quantity: item.quantity as number || 1,

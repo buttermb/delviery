@@ -138,7 +138,7 @@ export default function TenantsListPage() {
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
   });
 

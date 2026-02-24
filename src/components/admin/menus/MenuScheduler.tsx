@@ -163,7 +163,7 @@ const useMenuSchedules = (tenantId?: string) => {
         return [];
       }
 
-      return (data || []).map((schedule: Record<string, unknown>) => ({
+      return (data ?? []).map((schedule: Record<string, unknown>) => ({
         id: schedule.id as string,
         menuId: schedule.menu_id as string,
         menuName: (schedule.disposable_menus as Record<string, unknown> | null)?.name as string || 'Unknown Menu',
@@ -200,7 +200,7 @@ const useMenusWithProducts = (tenantId?: string) => {
 
       // Fetch menu products for each menu
       const results: MenuWithProducts[] = [];
-      for (const menu of menus || []) {
+      for (const menu of menus ?? []) {
         const { data: menuProducts } = await supabase
           .from('menu_products')
           .select('product_id')
@@ -209,7 +209,7 @@ const useMenusWithProducts = (tenantId?: string) => {
         results.push({
           id: menu.id,
           name: menu.name,
-          productIds: (menuProducts || []).map((mp) => mp.product_id as string),
+          productIds: (menuProducts ?? []).map((mp) => mp.product_id as string),
         });
       }
 

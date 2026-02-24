@@ -75,7 +75,7 @@ export default function PublicMarketplacePage() {
         throw error;
       }
 
-      return data || [];
+      return data ?? [];
     },
   });
 

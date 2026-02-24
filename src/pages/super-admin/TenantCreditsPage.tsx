@@ -149,7 +149,7 @@ export default function TenantCreditsPage() {
   // Handle select all
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedTenants(data?.tenants.map(t => t.tenantId) || []);
+      setSelectedTenants(data?.tenants.map(t => t.tenantId) ?? []);
     } else {
       setSelectedTenants([]);
     }

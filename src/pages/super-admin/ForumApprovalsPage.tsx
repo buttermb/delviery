@@ -63,7 +63,7 @@ export default function ForumApprovalsPage() {
       }
 
       logger.debug('Fetched forum approvals', { count: approvalsData?.length || 0, component: 'ForumApprovalsPage' });
-      return (approvalsData || []) as ForumApproval[];
+      return (approvalsData ?? []) as ForumApproval[];
     },
   });
 

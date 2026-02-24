@@ -82,7 +82,7 @@ export default function MarketplaceModerationPage() {
         throw error;
       }
 
-      return data || [];
+      return data ?? [];
     },
   });
 

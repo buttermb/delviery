@@ -338,7 +338,7 @@ export default function OrderTrackingPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {(order.items || []).map((item, index) => (
+              {(order.items ?? []).map((item, index) => (
                 <div key={index} className="flex justify-between text-sm">
                   <div>
                     <p className="font-medium">{item.name}</p>

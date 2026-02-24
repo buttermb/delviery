@@ -299,7 +299,7 @@ export function MenuShare({ menuId: propMenuId, className }: MenuShareProps) {
         throw error;
       }
 
-      return (data || []) as Menu[];
+      return (data ?? []) as Menu[];
     },
     enabled: !!tenantId,
   });
@@ -343,7 +343,7 @@ export function MenuShare({ menuId: propMenuId, className }: MenuShareProps) {
       // Aggregate by channel
       const channelMap: Record<string, { clicks: number; conversions: number }> = {};
 
-      (logs || []).forEach((log) => {
+      (logs ?? []).forEach((log) => {
         const source = (log.utm_source as string) || 'direct';
         if (!channelMap[source]) {
           channelMap[source] = { clicks: 0, conversions: 0 };
@@ -351,7 +351,7 @@ export function MenuShare({ menuId: propMenuId, className }: MenuShareProps) {
         channelMap[source].clicks++;
       });
 
-      (orders || []).forEach((order) => {
+      (orders ?? []).forEach((order) => {
         const source = (order.utm_source as string) || 'direct';
         if (!channelMap[source]) {
           channelMap[source] = { clicks: 0, conversions: 0 };

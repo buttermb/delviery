@@ -226,13 +226,13 @@ export function TenantAdminCommandPalette() {
         ]);
 
         setCustomerResults(
-          (customersRes.data as unknown as CustomerRow[]) || []
+          (customersRes.data as unknown as CustomerRow[]) ?? []
         );
         setOrderResults(
-          (ordersRes.data as unknown as OrderRow[]) || []
+          (ordersRes.data as unknown as OrderRow[]) ?? []
         );
         setProductResults(
-          (productsRes.data as unknown as ProductRow[]) || []
+          (productsRes.data as unknown as ProductRow[]) ?? []
         );
       } catch (error) {
         logger.error('Command palette search failed', error);

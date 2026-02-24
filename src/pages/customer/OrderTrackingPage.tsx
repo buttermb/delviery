@@ -119,7 +119,7 @@ export default function OrderTrackingPage() {
         if (sfError) throw sfError;
         if (sfData) {
           // Parse items from JSONB
-          const rawItems = (sfData.items as unknown as Array<{ product_id?: string; name?: string; quantity: number; price: number }>) || [];
+          const rawItems = (sfData.items as unknown as Array<{ product_id?: string; name?: string; quantity: number; price: number }>) ?? [];
           // Parse delivery address
           let deliveryAddr = '';
           if (typeof sfData.shipping_address === 'string') {

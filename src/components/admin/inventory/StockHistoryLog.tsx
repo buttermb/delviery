@@ -203,7 +203,7 @@ export function StockHistoryLog({
       }
 
       // Client-side search filter (for product name/SKU)
-      let filteredEntries = (entries || []) as StockHistoryEntry[];
+      let filteredEntries = (entries ?? []) as StockHistoryEntry[];
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
         filteredEntries = filteredEntries.filter(entry =>

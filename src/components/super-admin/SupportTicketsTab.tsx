@@ -34,7 +34,7 @@ export function SupportTicketsTab({ tenantId }: SupportTicketsTabProps) {
         logger.error('Failed to fetch support tickets', error, { component: 'SupportTicketsTab', tenantId });
         throw error;
       }
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId,
     refetchInterval: 30000,

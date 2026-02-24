@@ -24,7 +24,7 @@ export default function CourierEarningsPage() {
 
   const { data, isLoading } = useUnifiedEarnings(role, courier?.id, timeframe);
 
-  const earnings = data?.earnings || [];
+  const earnings = data?.earnings ?? [];
   const totals = data?.totals || { commission: 0, tips: 0, bonuses: 0, deliveryFees: 0, total: 0 };
 
   return (

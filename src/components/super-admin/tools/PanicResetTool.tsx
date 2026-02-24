@@ -46,7 +46,7 @@ export function PanicResetTool() {
         .order('business_name');
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
   });
 

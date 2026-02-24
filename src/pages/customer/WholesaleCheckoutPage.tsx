@@ -115,7 +115,7 @@ export default function WholesaleCheckoutPage() {
         throw error;
       }
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!buyerTenantId,
   });

@@ -163,7 +163,7 @@ export default function SuperAdminAutomation() {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      return data || [];
+      return data ?? [];
     },
   });
 

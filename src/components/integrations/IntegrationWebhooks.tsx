@@ -74,7 +74,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as unknown as WebhookConfig[];
+        return (data ?? []) as unknown as WebhookConfig[];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
@@ -94,7 +94,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
           integration_id: integrationId,
           name: webhook.name,
           url: webhook.url,
-          events: webhook.events || [],
+          events: webhook.events ?? [],
           secret: webhook.secret || null,
           status: 'active',
         })
@@ -199,7 +199,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
     setFormData({
       name: webhook.name,
       url: webhook.url,
-      events: webhook.events || [],
+      events: webhook.events ?? [],
       secret: webhook.secret || '',
     });
     setIsDialogOpen(true);

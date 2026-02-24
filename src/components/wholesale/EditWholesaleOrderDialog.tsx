@@ -92,14 +92,14 @@ export function EditWholesaleOrderDialog({
   // Reset form when order changes
   useEffect(() => {
     if (order) {
-      setItems(order.items || []);
+      setItems(order.items ?? []);
       setDeliveryAddress(order.delivery_address || '');
       setDeliveryNotes(order.delivery_notes || '');
       setRunnerId(order.runner_id || '');
       setStatus(order.status);
       setPaymentStatus(order.payment_status);
       initialSnapshotRef.current = JSON.stringify({
-        items: order.items || [],
+        items: order.items ?? [],
         deliveryAddress: order.delivery_address || '',
         deliveryNotes: order.delivery_notes || '',
         runnerId: order.runner_id || '',

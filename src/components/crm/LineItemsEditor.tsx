@@ -94,7 +94,7 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
     const markFieldTouched = useCallback((itemId: string, field: string) => {
         setTouchedFields((prev) => {
             const next = new Map(prev);
-            const fields = new Set(next.get(itemId) || []);
+            const fields = new Set(next.get(itemId) ?? []);
             fields.add(field);
             next.set(itemId, fields);
             return next;
@@ -418,7 +418,7 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
                                                     <ProductSelector
                                                         value={item.item_id}
                                                         onSelect={(productId) => handleUpdateItem(index, "item_id", productId)}
-                                                        products={products || []}
+                                                        products={products ?? []}
                                                         isLoading={isLoading}
                                                         isError={isError}
                                                         onRetry={() => refetch()}

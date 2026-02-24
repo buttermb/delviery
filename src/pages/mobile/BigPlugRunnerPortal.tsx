@@ -56,7 +56,7 @@ export function BigPlugRunnerPortal() {
         .in('status', ['assigned', 'picked_up', 'in_transit'])
         .order('scheduled_pickup_time', { ascending: true });
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!runnerId,
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -77,7 +77,7 @@ export function BigPlugRunnerPortal() {
         .eq('runner_id', runnerId)
         .gte('created_at', today.toISOString());
 
-      const completed = deliveries?.filter(d => d.status === 'delivered' || d.status === 'completed') || [];
+      const completed = deliveries?.filter(d => d.status === 'delivered' || d.status === 'completed') ?? [];
       const delivered = completed.reduce((sum, d) => sum + Number(d.total_value || 0), 0);
       const collected = completed.reduce((sum, d) => sum + Number(d.collection_amount || 0), 0);
 

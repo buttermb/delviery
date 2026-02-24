@@ -103,7 +103,7 @@ export default function SuperAdminSupport() {
       }
 
       // Map database results
-      return (data || []).map((ticket) => ({
+      return (data ?? []).map((ticket) => ({
         id: ticket.id,
         tenant_id: ticket.tenant_id,
         subject: ticket.subject,

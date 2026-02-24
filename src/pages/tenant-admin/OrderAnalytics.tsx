@@ -22,7 +22,7 @@ export default function OrderAnalytics() {
 
       if (error && error.code === '42P01') return [];
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
   });

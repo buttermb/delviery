@@ -59,7 +59,7 @@ export function WebhookLogs({ webhookId, limit = 10, showTitle = true }: Webhook
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as WebhookLog[];
+        return (data ?? []) as WebhookLog[];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;

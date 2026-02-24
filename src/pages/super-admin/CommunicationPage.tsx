@@ -27,7 +27,7 @@ export default function CommunicationPage() {
         .limit(100);
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     refetchInterval: 60000, // Refetch every minute
   });

@@ -37,7 +37,7 @@ export default function CustomerLoginLanding() {
       const { data, error } = await query.limit(20);
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: true,
   });

@@ -151,7 +151,7 @@ export default function IntegrationsSettings() {
         return [];
       }
 
-      return (data || []).map(item => ({
+      return (data ?? []).map(item => ({
         id: item.id,
         url: (item.config as Record<string, unknown>)?.url as string || '',
         events: (item.config as Record<string, unknown>)?.events as string[] || ['order.created'],

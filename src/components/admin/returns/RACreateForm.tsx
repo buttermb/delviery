@@ -87,7 +87,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
           .order("created_at", { ascending: false })
           .limit(100);
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch {
         return [];
       }

@@ -95,7 +95,7 @@ export default function BusinessFinderPage() {
       // This would require checking delivery settings or orders table
       // For now, we'll show all active businesses
 
-      return data || [];
+      return data ?? [];
     },
   });
 

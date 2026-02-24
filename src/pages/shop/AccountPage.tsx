@@ -762,7 +762,7 @@ function WishlistSection({
         .rpc('get_marketplace_products' as 'get_secret', { p_store_id: storeId } as Record<string, unknown>);
 
       if (error) throw error;
-      const productsData = (data as unknown as Array<Record<string, unknown>>) || [];
+      const productsData = (data as unknown as Array<Record<string, unknown>>) ?? [];
       return productsData.filter((p) => wishlistIds.includes(p.product_id as string));
     },
     enabled: wishlistIds.length > 0,
@@ -1094,7 +1094,7 @@ function QuickReorderButton({
       const cart = JSON.parse(localStorage.getItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${storeId}`) || '[]') as Array<Record<string, unknown>>;
 
       // Add order items to cart
-      (order.items || []).forEach((item: OrderItem) => {
+      (order.items ?? []).forEach((item: OrderItem) => {
         const existingIndex = cart.findIndex((c) => c.productId === item.product_id);
 
         if (existingIndex >= 0) {

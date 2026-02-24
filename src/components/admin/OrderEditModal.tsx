@@ -113,7 +113,7 @@ export function OrderEditModal({
   useEffect(() => {
     if (open && order) {
       // Map order items to editable format
-      const editableItems: EditableOrderItem[] = (order.order_items || []).map((item, index) => ({
+      const editableItems: EditableOrderItem[] = (order.order_items ?? []).map((item, index) => ({
         id: item.id || `temp-${index}`,
         product_name: item.product_name || item.products?.name || 'Unknown Product',
         quantity: item.quantity || 0,

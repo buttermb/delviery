@@ -93,7 +93,7 @@ export function InventoryForecastWidget() {
 
             // 3. Calculate daily velocity per product from REAL sales data
             const velocityMap = new Map<string, number>();
-            const salesItems = (salesData || []) as SalesDataItem[];
+            const salesItems = (salesData ?? []) as SalesDataItem[];
 
             salesItems.forEach(item => {
                 const productName = item.product_name?.toLowerCase().trim();

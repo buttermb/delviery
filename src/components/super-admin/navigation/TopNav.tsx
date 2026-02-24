@@ -244,7 +244,7 @@ export function TopNav({
                         t.subscription_plan || '',
                         (t.mrr as number) || 0,
                         t.created_at || '',
-                      ]) || [];
+                      ]) ?? [];
 
                       const csv = [
                         headers.join(','),

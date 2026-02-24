@@ -81,7 +81,7 @@ export function CouponRedemptionTable({ className, maxRows }: CouponRedemptionTa
           throw couponsError;
         }
 
-        const couponList = (coupons || []) as Coupon[];
+        const couponList = (coupons ?? []) as Coupon[];
         const couponIds = couponList.map(c => c.id);
         const couponMap = new Map(couponList.map(c => [c.id, c]));
 
@@ -125,7 +125,7 @@ export function CouponRedemptionTable({ className, maxRows }: CouponRedemptionTa
           throw usageError;
         }
 
-        const usageData = (usage || []) as CouponUsage[];
+        const usageData = (usage ?? []) as CouponUsage[];
 
         // Map usage data to redemption records
         const redemptions: RedemptionRecord[] = usageData.map(u => {
@@ -158,7 +158,7 @@ export function CouponRedemptionTable({ className, maxRows }: CouponRedemptionTa
   const filteredRedemptions = data?.redemptions.filter(r =>
     r.couponCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
     r.orderId?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  ) ?? [];
 
   const displayLimit = maxRows || PAGE_SIZE;
   const totalPages = Math.ceil(filteredRedemptions.length / displayLimit);

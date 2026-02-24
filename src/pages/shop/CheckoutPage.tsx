@@ -298,7 +298,7 @@ export function CheckoutPage() {
     if (subtotal >= (store?.free_delivery_threshold || 100)) return 0;
 
     // Check if zip matches a delivery zone
-    const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) || [];
+    const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) ?? [];
     const matchingZone = deliveryZones.find((zone) => zone.zip_code === formData.zip);
 
     if (matchingZone) {
@@ -359,7 +359,7 @@ export function CheckoutPage() {
           return false;
         }
         // Validate delivery zone if zones are configured
-        const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) || [];
+        const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) ?? [];
         if (deliveryZones.length > 0) {
           const matchingZone = deliveryZones.find((zone) => zone.zip_code === formData.zip);
           if (!matchingZone) {

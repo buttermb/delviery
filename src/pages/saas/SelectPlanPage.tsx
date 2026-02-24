@@ -77,7 +77,7 @@ export default function SelectPlanPage() {
         priceMonthly: config.priceMonthly,
         priceYearly: config.priceYearly,
         description: config.description,
-        features: PLAN_FEATURES_LIST[key] || [],
+        features: PLAN_FEATURES_LIST[key] ?? [],
         popular: key === 'professional',
       }));
 

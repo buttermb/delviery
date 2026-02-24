@@ -45,7 +45,7 @@ export function QuickReceiving() {
 
       if (error) throw error;
       // Map to legacy format for compatibility
-      return (data || []).map(p => ({
+      return (data ?? []).map(p => ({
         id: p.id,
         product_name: p.name,
       }));

@@ -40,7 +40,7 @@ interface OrderHoverCardProps {
 
 export function OrderHoverCard({ order, children }: OrderHoverCardProps) {
   const itemCount = order.items?.length || 0;
-  const itemsPreview = order.items?.slice(0, 3) || [];
+  const itemsPreview = order.items?.slice(0, 3) ?? [];
 
   return (
     <HoverCard openDelay={400}>

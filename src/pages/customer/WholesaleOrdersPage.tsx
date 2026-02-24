@@ -94,7 +94,7 @@ export default function WholesaleOrdersPage() {
         throw error;
       }
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!buyerTenantId,
   });

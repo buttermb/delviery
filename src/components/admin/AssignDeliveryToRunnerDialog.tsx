@@ -54,7 +54,7 @@ export const AssignDeliveryToRunnerDialog = ({
         logger.error('Failed to load pending orders', error, { component: 'AssignDeliveryToRunnerDialog' });
         throw error;
       }
-      return data || [];
+      return data ?? [];
     },
     enabled: open && !!tenant?.id,
   });

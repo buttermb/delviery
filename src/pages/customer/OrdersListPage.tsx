@@ -88,7 +88,7 @@ export default function OrdersListPage() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId && !!customerId,
   });

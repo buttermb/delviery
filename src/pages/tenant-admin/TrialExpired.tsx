@@ -54,7 +54,7 @@ export default function TrialExpiredPage() {
         total_amount: number | null;
       }
 
-      const orders = (ordersQuery.data || []) as OrderWithAmount[];
+      const orders = (ordersQuery.data ?? []) as OrderWithAmount[];
 
       const revenue = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
 

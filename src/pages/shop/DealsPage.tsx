@@ -57,7 +57,7 @@ export default function DealsPage() {
                 return [];
             }
 
-            return (data || []) as unknown as Deal[];
+            return (data ?? []) as unknown as Deal[];
         },
         enabled: !!store?.id,
     });

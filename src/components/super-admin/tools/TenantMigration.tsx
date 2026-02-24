@@ -46,7 +46,7 @@ export function TenantMigration() {
         .order('business_name');
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
   });
 

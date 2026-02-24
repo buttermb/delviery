@@ -183,7 +183,7 @@ export default function ShopLayout() {
       const inlineScript = document.createElement('script');
       inlineScript.id = 'ga4-inline';
       inlineScript.textContent = `
-        window.dataLayer = window.dataLayer || [];
+        window.dataLayer = window.dataLayer ?? [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', '${measurementId}', {

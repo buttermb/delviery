@@ -114,7 +114,7 @@ export function OrderSplitButton({
 
       if (itemsError) throw itemsError;
 
-      setOrderItems(items || []);
+      setOrderItems(items ?? []);
       setIsDialogOpen(true);
     } catch (error) {
       logger.error('Failed to fetch order data for split', error instanceof Error ? error : new Error('Unknown error'), {

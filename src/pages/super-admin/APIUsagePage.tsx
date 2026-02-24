@@ -21,7 +21,7 @@ export default function APIUsagePage() {
         .limit(10000);
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     refetchInterval: 60000, // Refetch every minute
   });

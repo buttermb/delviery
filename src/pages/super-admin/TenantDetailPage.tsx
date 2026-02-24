@@ -110,7 +110,7 @@ export default function TenantDetailPage() {
         .order("issue_date", { ascending: false })
         .limit(10);
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId,
   });
@@ -127,7 +127,7 @@ export default function TenantDetailPage() {
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false });
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId,
   });
@@ -145,7 +145,7 @@ export default function TenantDetailPage() {
         .order("created_at", { ascending: false })
         .limit(50);
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId,
   });

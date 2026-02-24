@@ -107,7 +107,7 @@ export default function MyListingsPage() {
         throw result.error;
       }
 
-      const allListings = (result.data || []) as unknown as MarketplaceListing[];
+      const allListings = (result.data ?? []) as unknown as MarketplaceListing[];
 
       if (statusFilter === 'all' || !statusFilter) {
         return allListings;

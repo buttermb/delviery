@@ -104,7 +104,7 @@ export function SmartNotificationsCenter() {
         const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
         const threshold = item.low_stock_alert ?? DEFAULT_LOW_STOCK_THRESHOLD;
         return currentQty <= threshold;
-      }) || [];
+      }) ?? [];
 
       if (lowStockProducts.length > 0) {
         lowStockProducts.forEach((item) => {

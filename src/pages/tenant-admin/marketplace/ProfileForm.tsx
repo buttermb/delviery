@@ -78,7 +78,7 @@ interface ProfileFormProps {
 export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
   const { tenant } = useTenantAdminAuth();
   const [uploading, setUploading] = useState<string | null>(null);
-  const [selectedShippingStates, setSelectedShippingStates] = useState<string[]>(initialData?.shipping_states || []);
+  const [selectedShippingStates, setSelectedShippingStates] = useState<string[]>(initialData?.shipping_states ?? []);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -89,7 +89,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
       license_type: initialData?.license_type || '',
       license_state: initialData?.license_state || '',
       license_expiry_date: initialData?.license_expiry_date || '',
-      shipping_states: initialData?.shipping_states || [],
+      shipping_states: initialData?.shipping_states ?? [],
       logo_url: initialData?.logo_url || '',
       cover_image_url: initialData?.cover_image_url || '',
       license_document_url: initialData?.license_document_url || '',

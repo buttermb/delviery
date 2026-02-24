@@ -190,7 +190,7 @@ export default function SuperAdminEnhanced() {
 
       // Calculate health scores and filter based on smart filter
       const tenantsWithHealth = await Promise.all(
-        (data || []).map(async (tenant) => {
+        (data ?? []).map(async (tenant) => {
           const { data: fullTenant } = await supabase
             .from('tenants')
             .select('*')
@@ -629,7 +629,7 @@ export default function SuperAdminEnhanced() {
                         checked={tenants?.length > 0 && selectedTenants.length === tenants?.length}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setSelectedTenants(tenants?.map(t => t.id) || []);
+                            setSelectedTenants(tenants?.map(t => t.id) ?? []);
                           } else {
                             setSelectedTenants([]);
                           }
@@ -775,7 +775,7 @@ export default function SuperAdminEnhanced() {
           }}
           onBulkUnsuspend={() => { }}
           onBulkExport={() => {
-            const selectedData = tenants?.filter(t => selectedTenants.includes(t.id)) || [];
+            const selectedData = tenants?.filter(t => selectedTenants.includes(t.id)) ?? [];
             exportTenantsToCSV(selectedData);
             setSelectedTenants([]);
           }}
@@ -1167,7 +1167,7 @@ function ActivityTimeline({ tenantId }: { tenantId: string }) {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      return subscriptionEvents || [];
+      return subscriptionEvents ?? [];
     },
   });
 

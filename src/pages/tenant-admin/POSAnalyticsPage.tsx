@@ -69,7 +69,7 @@ export default function POSAnalyticsPage() {
         if (error) throw error;
         
         // Transform to include payment method from status
-        const results: POSTransaction[] = (data || []).map((order) => ({
+        const results: POSTransaction[] = (data ?? []).map((order) => ({
           id: order.id,
           order_number: order.order_number,
           total_amount: order.total_amount,

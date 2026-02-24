@@ -83,7 +83,7 @@ export default function DriverPortal() {
 
       if (error) throw error;
 
-      setMyFronts(fronts || []);
+      setMyFronts(fronts ?? []);
 
       // Calculate stats
       const totalUnits = fronts?.reduce((sum, f) => sum + f.quantity_fronted, 0) || 0;

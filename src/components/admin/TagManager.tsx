@@ -58,8 +58,8 @@ export function TagManager({ contactId, readOnly = false }: TagManagerProps) {
   const assignTag = useAssignTag();
   const removeTag = useRemoveTag();
 
-  const assignedTagIds = new Set(contactTags?.map((ct) => ct.tag_id) || []);
-  const availableTags = allTags?.filter((tag) => !assignedTagIds.has(tag.id)) || [];
+  const assignedTagIds = new Set(contactTags?.map((ct) => ct.tag_id) ?? []);
+  const availableTags = allTags?.filter((tag) => !assignedTagIds.has(tag.id)) ?? [];
 
   const handleAssignTag = async (tag: TagType) => {
     try {

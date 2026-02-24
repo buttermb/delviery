@@ -156,8 +156,8 @@ export function OrderAssignCourier({
   };
 
   // Separate online and offline couriers
-  const onlineCouriers = couriers?.filter((c) => c.is_online) || [];
-  const offlineCouriers = couriers?.filter((c) => !c.is_online) || [];
+  const onlineCouriers = couriers?.filter((c) => c.is_online) ?? [];
+  const offlineCouriers = couriers?.filter((c) => !c.is_online) ?? [];
   const hasOnlineCouriers = onlineCouriers.length > 0;
 
   return (

@@ -47,7 +47,7 @@ export function LTVCalculator() {
         enterprise: 799,
       };
 
-      const activeTenants = tenants || [];
+      const activeTenants = tenants ?? [];
 
       // Calculate average monthly revenue per tenant (ARPU)
       const totalMRR = activeTenants.reduce(

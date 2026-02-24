@@ -126,7 +126,7 @@ export function LowStockToPODialog({
         throw new Error(error.message);
       }
 
-      return (data || []).map((p) => {
+      return (data ?? []).map((p) => {
         const available = p.available_quantity ?? p.stock_quantity ?? 0;
         const threshold = p.low_stock_alert ?? 10;
 

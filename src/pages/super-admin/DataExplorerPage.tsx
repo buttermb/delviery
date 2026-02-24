@@ -65,7 +65,7 @@ export default function DataExplorerPage() {
             .limit(100);
           
           if (error) throw error;
-          return data || [];
+          return data ?? [];
         }
 
         // Add more table handlers as needed
