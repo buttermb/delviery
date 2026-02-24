@@ -1542,7 +1542,7 @@ function CashRegisterContent() {
               </Button>
             </div>
             <div>
-              <Label>
+              <Label htmlFor="discount-input">
                 {discountType === 'percentage' ? 'Discount Percentage' : 'Discount Amount'}
               </Label>
               <div className="relative mt-1">
@@ -1550,6 +1550,7 @@ function CashRegisterContent() {
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 )}
                 <Input
+                  id="discount-input"
                   type="number"
                   min="0"
                   max={discountType === 'percentage' ? 100 : subtotal}

@@ -980,6 +980,7 @@ const AdminLiveChat = function AdminLiveChat() {
                         }
                       }}
                       placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+                      aria-label="Type a message"
                       className="flex-1 min-h-[44px] max-h-32 resize-none"
                       disabled={isSending || currentSession.mode === 'ai'}
                     />

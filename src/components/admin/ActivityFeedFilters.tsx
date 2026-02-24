@@ -124,6 +124,7 @@ export function ActivityFeedFilters({
           onChange={(e) => onFilterChange({ startDate: e.target.value || undefined })}
           className="w-[140px]"
           placeholder="From"
+          aria-label="Filter from date"
         />
         <Input
           type="date"
@@ -131,6 +132,7 @@ export function ActivityFeedFilters({
           onChange={(e) => onFilterChange({ endDate: e.target.value || undefined })}
           className="w-[140px]"
           placeholder="To"
+          aria-label="Filter to date"
         />
 
         {/* Actions */}
