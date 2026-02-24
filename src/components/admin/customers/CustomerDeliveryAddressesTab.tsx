@@ -54,6 +54,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CustomerDeliveryAddressesTabProps {
   customerId: string;
@@ -188,7 +189,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
 
   // Fetch addresses
   const { data: addresses = [], isLoading, error } = useQuery({
-    queryKey: ['customer-delivery-addresses', customerId, tenant?.id],
+    queryKey: queryKeys.customerDetail.deliveryAddresses(customerId, tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -251,7 +252,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customer-delivery-addresses', customerId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerDetail.deliveryAddresses(customerId) });
       toast.success(editingAddress ? 'Address updated' : 'Address added');
       handleCloseDialog();
     },
@@ -277,7 +278,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customer-delivery-addresses', customerId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerDetail.deliveryAddresses(customerId) });
       toast.success('Address deleted');
       setDeleteDialogOpen(false);
       setDeletingAddressId(null);
@@ -304,7 +305,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customer-delivery-addresses', customerId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerDetail.deliveryAddresses(customerId) });
       toast.success('Primary address updated');
     },
     onError: (error) => {
@@ -454,7 +455,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
           <Button
             variant="outline"
             className="mt-4"
-            onClick={() => queryClient.invalidateQueries({ queryKey: ['customer-delivery-addresses', customerId] })}
+            onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customerDetail.deliveryAddresses(customerId) })}
           >
             Retry
           </Button>

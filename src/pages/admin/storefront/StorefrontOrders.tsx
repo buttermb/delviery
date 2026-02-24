@@ -411,7 +411,7 @@ export default function StorefrontOrders() {
                             }
                           >
                             <SelectTrigger className="w-[140px]">
-                              <SelectValue />
+                              <SelectValue placeholder="Update status" />
                             </SelectTrigger>
                             <SelectContent>
                               {STATUS_OPTIONS.map((status) => (
@@ -462,7 +462,7 @@ export default function StorefrontOrders() {
                     }}
                   >
                     <SelectTrigger className="w-[160px]">
-                      <SelectValue />
+                      <SelectValue placeholder="Update status" />
                     </SelectTrigger>
                     <SelectContent>
                       {STATUS_OPTIONS.map((status) => (

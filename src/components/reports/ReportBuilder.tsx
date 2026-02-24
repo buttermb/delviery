@@ -128,7 +128,7 @@ export function ReportBuilder({ onClose }: { onClose?: () => void }) {
                 setSelectedFields([]);
               }}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select report type" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(REPORT_TYPES).map(([value, label]) => (
@@ -142,7 +142,7 @@ export function ReportBuilder({ onClose }: { onClose?: () => void }) {
               <Label htmlFor="dateRange">Date Range</Label>
               <Select value={dateRange} onValueChange={setDateRange}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select date range" />
                 </SelectTrigger>
                 <SelectContent>
                   {DATE_RANGES.map(range => (
@@ -194,7 +194,7 @@ export function ReportBuilder({ onClose }: { onClose?: () => void }) {
               </Label>
               <Select value={schedule} onValueChange={setSchedule}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select schedule" />
                 </SelectTrigger>
                 <SelectContent>
                   {SCHEDULE_OPTIONS.map(option => (

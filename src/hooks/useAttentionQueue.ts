@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useBusinessTier } from '@/hooks/useBusinessTier';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   AttentionItem,
   AttentionQueue,
@@ -59,7 +60,7 @@ export function useAttentionQueue() {
   const { buildAdminUrl } = useTenantNavigation();
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['attention-queue', tenant?.id],
+    queryKey: queryKeys.attentionQueue.byTenant(tenant?.id),
     queryFn: async (): Promise<AttentionQueue> => {
       if (!tenant?.id) throw new Error('No tenant');
 

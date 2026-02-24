@@ -155,8 +155,8 @@ export function PromotionsBannerSection({ content, styles, storeId }: Promotions
                                 <Link to={currentBanner.button_link}>
                                     <Button
                                         size="lg"
-                                        className="rounded-full px-8"
-                                        style={{ backgroundColor: accent_color, color: '#ffffff' }}
+                                        className="rounded-full px-8 text-white"
+                                        style={{ backgroundColor: accent_color }}
                                     >
                                         {currentBanner.button_text}
                                     </Button>

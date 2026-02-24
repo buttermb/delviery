@@ -177,7 +177,7 @@ export default function SuperAdminAnalytics() {
         <div className="flex gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger className="w-[150px]">
-              <SelectValue />
+              <SelectValue placeholder="Select time range" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="7d">Last 7 Days</SelectItem>

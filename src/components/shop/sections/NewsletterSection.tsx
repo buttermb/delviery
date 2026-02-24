@@ -104,8 +104,8 @@ export function NewsletterSection({ content, styles }: NewsletterSectionProps) {
                             />
                             <Button
                                 type="submit"
-                                className="h-12 px-8 rounded-full font-medium"
-                                style={{ backgroundColor: button_color, color: '#000' }}
+                                className="h-12 px-8 rounded-full font-medium text-black"
+                                style={{ backgroundColor: button_color }}
                             >
                                 <Send className="w-4 h-4 mr-2" />
                                 {button_text}

@@ -100,7 +100,7 @@ export default function CreditAnalyticsPage() {
           <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
             <SelectTrigger className="w-[150px]">
               <Calendar className="h-4 w-4 mr-2" />
-              <SelectValue />
+              <SelectValue placeholder="Select date range" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="7d">Last 7 days</SelectItem>

@@ -198,7 +198,7 @@ export const useBurnMenu = () => {
 
 export const useMenuWhitelist = (menuId: string) => {
   return useQuery({
-    queryKey: ['menu-whitelist', menuId],
+    queryKey: queryKeys.menuWhitelist.byMenu(menuId),
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('menu_access_whitelist')
@@ -240,7 +240,7 @@ export const useManageWhitelist = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['menu-whitelist', variables.menu_id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.menuWhitelist.byMenu(variables.menu_id) });
 
       const messages = {
         add: 'Customer invited successfully',
@@ -260,7 +260,7 @@ export const useManageWhitelist = () => {
 
 export const useMenuOrders = (menuId?: string, tenantId?: string) => {
   return useQuery({
-    queryKey: ['menu-orders', menuId, tenantId],
+    queryKey: queryKeys.menuOrders.byMenu(menuId, tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -305,7 +305,7 @@ export const useUpdateOrderStatus = (tenantId?: string) => {
       return data;
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.menuOrders.all });
       showSuccessToast('Order Updated', `Order marked as ${variables.status}`);
 
       // Cross-panel invalidation - menu order status affects dashboard, orders list
@@ -325,7 +325,7 @@ export const useUpdateOrderStatus = (tenantId?: string) => {
 
 export const useMenuSecurityEvents = (menuId?: string, tenantId?: string) => {
   return useQuery({
-    queryKey: ['menu-security-events', menuId, tenantId],
+    queryKey: queryKeys.menuSecurityEvents.byMenu(menuId, tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -355,7 +355,7 @@ export const useMenuSecurityEvents = (menuId?: string, tenantId?: string) => {
 
 export const useMenuAccessLogs = (menuId: string) => {
   return useQuery({
-    queryKey: ['menu-access-logs', menuId],
+    queryKey: queryKeys.menuAccessLogs.byMenu(menuId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_access_logs')

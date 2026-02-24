@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   startOfDay,
   endOfDay,
@@ -144,7 +145,7 @@ export const useQuickStats = () => {
   const { tenant } = useTenantAdminAuth();
   
   return useQuery({
-    queryKey: ['financial-quick-stats', tenant?.id],
+    queryKey: queryKeys.financialCommandCenter.quickStats(tenant?.id),
     queryFn: async (): Promise<QuickStats> => {
       const today = new Date();
       const startOfToday = startOfDay(today);
@@ -211,7 +212,7 @@ export const useCashFlowPulse = () => {
   const { tenant } = useTenantAdminAuth();
   
   return useQuery({
-    queryKey: ['financial-cash-flow-pulse', tenant?.id],
+    queryKey: queryKeys.financialCommandCenter.cashFlowPulse(tenant?.id),
     queryFn: async (): Promise<CashFlowData> => {
       const today = new Date();
       const startOfToday = startOfDay(today);
@@ -330,7 +331,7 @@ export const useARCommand = () => {
   const { tenant } = useTenantAdminAuth();
   
   return useQuery({
-    queryKey: ['financial-ar-command', tenant?.id],
+    queryKey: queryKeys.financialCommandCenter.arCommand(tenant?.id),
     queryFn: async (): Promise<ARData> => {
       if (!tenant?.id) throw new Error('No tenant');
 
@@ -394,7 +395,7 @@ export const useFrontedInventory = () => {
   const { tenant } = useTenantAdminAuth();
   
   return useQuery({
-    queryKey: ['financial-fronted-inventory', tenant?.id],
+    queryKey: queryKeys.financialCommandCenter.frontedInventory(tenant?.id),
     queryFn: async (): Promise<FrontedData> => {
       const now = new Date();
       
@@ -492,7 +493,7 @@ export const usePerformancePulse = () => {
   const { tenant } = useTenantAdminAuth();
   
   return useQuery({
-    queryKey: ['financial-performance-pulse', tenant?.id],
+    queryKey: queryKeys.financialCommandCenter.performancePulse(tenant?.id),
     queryFn: async (): Promise<PerformanceData> => {
       const now = new Date();
       const thisMonthStart = startOfMonth(now);
@@ -670,7 +671,7 @@ export const useCollectionActions = () => {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['financial-ar-command'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.arCommand(tenant?.id) });
       showSuccessToast('Activity Logged', 'Collection activity recorded');
     },
     onError: (error) => {
@@ -720,7 +721,7 @@ export const useFrontedActions = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['financial-fronted-inventory'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.frontedInventory(tenant?.id) });
       showSuccessToast('Converted', 'Fronted inventory converted to sale');
     }
   });
@@ -737,7 +738,7 @@ export const useFrontedActions = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['financial-fronted-inventory'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.frontedInventory(tenant?.id) });
       showSuccessToast('Recalled', 'Inventory has been recalled');
     }
   });
@@ -754,7 +755,7 @@ export const useFrontedActions = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['financial-fronted-inventory'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.frontedInventory(tenant?.id) });
       showSuccessToast('Extended', 'Due date has been extended');
     }
   });
@@ -806,11 +807,11 @@ export const useOrderStatusSubscription = () => {
             });
 
             // Invalidate all financial command center queries
-            queryClient.invalidateQueries({ queryKey: ['financial-quick-stats'] });
-            queryClient.invalidateQueries({ queryKey: ['financial-cash-flow-pulse'] });
-            queryClient.invalidateQueries({ queryKey: ['financial-performance-pulse'] });
-            queryClient.invalidateQueries({ queryKey: ['revenue-reports'] });
-            queryClient.invalidateQueries({ queryKey: ['revenue-chart'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.quickStats(tenant?.id) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.cashFlowPulse(tenant?.id) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.performancePulse(tenant?.id) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.revenueReports() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.revenueChart() });
           }
         }
       )

@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { Phone, Star, Truck, MapPin, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CourierInfo {
   id: string;
@@ -36,7 +37,7 @@ export function CourierTracking({ orderId }: CourierTrackingProps) {
 
   // Fetch order with courier details
   const { data: orderData, isLoading } = useQuery({
-    queryKey: ['order-courier', orderId, tenant?.id],
+    queryKey: queryKeys.orderCourier.byOrder(orderId, tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return null;
 

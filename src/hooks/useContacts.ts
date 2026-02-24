@@ -5,11 +5,12 @@
  * with real-time subscriptions and optimistic updates.
  */
 
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { toast } from 'sonner';
 import { invalidateOnEvent } from '@/lib/invalidation';
@@ -684,7 +685,7 @@ export function useContactStats(contactType?: ContactType) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ['contacts-stats', tenant?.id, contactType],
+    queryKey: queryKeys.contactsStats.byTenantType(tenant?.id, contactType),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 

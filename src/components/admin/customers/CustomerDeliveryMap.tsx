@@ -33,6 +33,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useLocations } from '@/hooks/useLocations';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { formatSmartDate } from '@/lib/formatters';
 
 interface CustomerDeliveryMapProps {
@@ -141,7 +142,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
 
   // Fetch customer delivery addresses
   const { data: addresses = [], isLoading: addressesLoading } = useQuery({
-    queryKey: ['customer-delivery-addresses', customerId, tenant?.id],
+    queryKey: queryKeys.customerDetail.deliveryAddresses(customerId, tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -167,7 +168,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
 
   // Fetch delivery history for this customer
   const { data: deliveryHistory = [], isLoading: historyLoading } = useQuery({
-    queryKey: ['customer-delivery-history', customerId, tenant?.id],
+    queryKey: queryKeys.customerDetail.deliveryHistory(customerId, tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

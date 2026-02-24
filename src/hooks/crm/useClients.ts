@@ -9,11 +9,8 @@ import { invalidateOnEvent } from '@/lib/invalidation';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
 
-/**
- * Query key factory for CRM clients
- * Uses centralized queryKeys.crm.clients for cross-panel consistency
- */
-export const crmClientKeys = {
+/** Alias for queryKeys.crm.clients for local brevity */
+const crmClientKeys = {
     all: queryKeys.crm.clients.all(),
     lists: () => queryKeys.crm.clients.lists(),
     list: (filters: string) => queryKeys.crm.clients.list(filters),
@@ -395,7 +392,7 @@ export function useSearchClients(searchTerm: string) {
     const accountId = tenant?.id;
 
     return useQuery({
-        queryKey: [...crmClientKeys.lists(), 'search', searchTerm],
+        queryKey: queryKeys.crm.clients.search(searchTerm),
         queryFn: async () => {
             if (!searchTerm || searchTerm.length < 2 || !accountId) {
                 return [];

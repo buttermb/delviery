@@ -19,6 +19,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageBubble, type Message } from './MessageBubble';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { Send, Loader2 } from 'lucide-react';
 
 interface ChatDrawerProps {
@@ -49,7 +50,7 @@ export function ChatDrawer({
 
     // Fetch or create conversation
     const { data: _conversation } = useQuery({
-        queryKey: ['conversation', conversationId, orderId],
+        queryKey: queryKeys.chat.conversations.detail(conversationId, orderId),
         queryFn: async () => {
             if (conversationId) {
                 const { data, error } = await supabase
@@ -112,7 +113,7 @@ export function ChatDrawer({
 
     // Fetch messages
     const { data: messages = [], isLoading } = useQuery({
-        queryKey: ['messages', activeConversationId],
+        queryKey: queryKeys.chat.messages.byConversation(activeConversationId),
         queryFn: async () => {
             if (!activeConversationId) return [];
 
@@ -144,7 +145,7 @@ export function ChatDrawer({
                 },
                 (payload) => {
                     queryClient.setQueryData(
-                        ['messages', activeConversationId],
+                        queryKeys.chat.messages.byConversation(activeConversationId),
                         (old: Message[] = []) => [...old, payload.new as Message]
                     );
 
@@ -203,7 +204,7 @@ export function ChatDrawer({
         },
         onSuccess: () => {
             setMessageText('');
-            queryClient.invalidateQueries({ queryKey: ['messages', activeConversationId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.chat.messages.byConversation(activeConversationId) });
         },
         onError: (error) => {
             logger.error('Failed to send message', error);

@@ -573,7 +573,7 @@ export function ProductQR({
                 onValueChange={(v) => setLinkDestination(v as LinkDestination)}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select destination" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="storefront">

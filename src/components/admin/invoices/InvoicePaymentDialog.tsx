@@ -28,7 +28,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAccountIdSafe } from '@/hooks/crm/useAccountId';
-import { crmInvoiceKeys } from '@/hooks/crm/useInvoices';
+import { queryKeys } from '@/lib/queryKeys';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { formatCurrency } from '@/utils/formatters';
 import { logger } from '@/lib/logger';
@@ -170,7 +170,7 @@ export function InvoicePaymentDialog({
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
       if (accountId) {
         invalidateOnEvent(queryClient, 'INVOICE_PAID', accountId, {
           invoiceId,

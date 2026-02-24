@@ -29,7 +29,7 @@ export function UserProfilePage() {
   });
 
   const { data: posts, isLoading: postsLoading } = useQuery({
-    queryKey: ['forum-posts-by-author', profile?.id],
+    queryKey: queryKeys.forumPostsByAuthor.byAuthor(profile?.id),
     queryFn: async () => {
       if (!profile?.id) return [];
       const allPosts = await forumApi.getPosts({});

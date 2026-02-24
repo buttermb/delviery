@@ -534,7 +534,7 @@ export default function GenerateBarcodes() {
                   <Label>Barcode Type</Label>
                   <Select value={barcodeType} onValueChange={(v) => setBarcodeType(v as BarcodeType)}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select barcode type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="CODE128">CODE128</SelectItem>

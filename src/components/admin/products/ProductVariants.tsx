@@ -720,7 +720,7 @@ export function ProductVariants({
                 disabled={!!editingVariant}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select variant type" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(VARIANT_TYPE_CONFIG).map(([key, config]) => (

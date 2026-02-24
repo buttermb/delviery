@@ -371,15 +371,15 @@ export function DeliveryZoneMapPreview({
             {/* Legend */}
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#10b981' }} />
+                <div className="w-3 h-3 rounded-full bg-emerald-500" />
                 <span>Low fee</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#f59e0b' }} />
+                <div className="w-3 h-3 rounded-full bg-amber-500" />
                 <span>Medium</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#ef4444' }} />
+                <div className="w-3 h-3 rounded-full bg-red-500" />
                 <span>High fee</span>
               </div>
             </div>

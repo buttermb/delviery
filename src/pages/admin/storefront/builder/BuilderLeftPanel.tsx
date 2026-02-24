@@ -198,7 +198,7 @@ export function BuilderLeftPanel({
                                                 : 'Inter, sans-serif'
                                         }}
                                     >
-                                        <SelectValue />
+                                        <SelectValue placeholder="Select font" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Inter">

@@ -63,7 +63,7 @@ export function useLiveOrdersCount({
     isError,
     refetch,
   } = useQuery({
-    queryKey: [...queryKeys.orders.all, 'live-count', tenant?.id],
+    queryKey: queryKeys.orders.live(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return 0;
 
@@ -152,7 +152,7 @@ export function useLiveOrdersCount({
             }
             // Refetch counts on any change
             queryClient.invalidateQueries({
-              queryKey: [...queryKeys.orders.all, 'live-count', tenant.id],
+              queryKey: queryKeys.orders.live(tenant.id),
             });
           }
         )
@@ -183,7 +183,7 @@ export function useLiveOrdersCount({
               triggerPulse();
             }
             queryClient.invalidateQueries({
-              queryKey: [...queryKeys.orders.all, 'live-count', tenant.id],
+              queryKey: queryKeys.orders.live(tenant.id),
             });
           }
         )
@@ -207,7 +207,7 @@ export function useLiveOrdersCount({
               triggerPulse();
             }
             queryClient.invalidateQueries({
-              queryKey: [...queryKeys.orders.all, 'live-count', tenant.id],
+              queryKey: queryKeys.orders.live(tenant.id),
             });
           }
         )

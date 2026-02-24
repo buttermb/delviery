@@ -351,7 +351,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
                                     <Label>Decimal Separator</Label>
                                     <Select value={decimalSeparator} onValueChange={(v: any) => setDecimalSeparator(v)}>
                                         <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue placeholder="Select separator" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value=".">Dot (10.50)</SelectItem>
@@ -363,7 +363,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
                                     <Label>Data Encoding</Label>
                                     <Select value={encoding} onValueChange={setEncoding}>
                                         <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue placeholder="Select encoding" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="UTF-8">UTF-8 (Standard)</SelectItem>

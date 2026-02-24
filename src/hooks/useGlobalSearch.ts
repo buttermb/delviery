@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useDebounce } from '@/hooks/useDebounce';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 
 // Relevance scoring weights
@@ -131,7 +132,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
   }, [enabled, tenant?.id, debouncedQuery, minChars]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['global-search', debouncedQuery, tenant?.id],
+    queryKey: queryKeys.globalSearch.all(debouncedQuery, tenant?.id),
     queryFn: async (): Promise<GlobalSearchResults> => {
       if (!tenant?.id || debouncedQuery.length < minChars) {
         return EMPTY_RESULTS;

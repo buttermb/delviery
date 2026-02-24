@@ -247,7 +247,7 @@ export default function CreateTenantPage() {
                   }
                 >
                   <SelectTrigger id="subscription_plan">
-                    <SelectValue />
+                    <SelectValue placeholder="Select plan" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="starter">Starter - $79/month</SelectItem>

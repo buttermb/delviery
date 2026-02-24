@@ -107,7 +107,7 @@ export function StandardPagination({
               onValueChange={(value) => onPageSizeChange(parseInt(value, 10))}
             >
               <SelectTrigger className="w-[80px]">
-                <SelectValue />
+                <SelectValue placeholder="Per page" />
               </SelectTrigger>
               <SelectContent>
                 {pageSizeOptions.map((size) => (

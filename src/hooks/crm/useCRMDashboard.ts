@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ActivityLogEntry {
     id: string;
@@ -26,7 +27,7 @@ export const useCRMDashboard = () => {
     const accountId = useAccountIdSafe();
 
     return useQuery({
-        queryKey: ["crm-dashboard-metrics"],
+        queryKey: queryKeys.crm.dashboard.metrics(),
         queryFn: async () => {
             if (!accountId) {
                 throw new Error('Account ID is required');

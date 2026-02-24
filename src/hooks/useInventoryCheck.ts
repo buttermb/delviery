@@ -6,6 +6,7 @@
 import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 
 export interface StockStatus {
@@ -126,7 +127,7 @@ export function useInventoryCheck(tenantId?: string) {
 
   // Invalidate stock cache for a product
   const invalidateStock = useCallback((productId: string) => {
-    queryClient.invalidateQueries({ queryKey: ['product-stock', productId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.productStock.byProduct(productId) });
   }, [queryClient]);
 
   return {
@@ -139,7 +140,7 @@ export function useInventoryCheck(tenantId?: string) {
 // Hook for getting real-time stock for a specific product
 export function useProductStock(productId: string | undefined, tenantId?: string) {
   return useQuery({
-    queryKey: ['product-stock', productId, tenantId],
+    queryKey: queryKeys.productStock.byProduct(productId, tenantId),
     queryFn: async () => {
       if (!productId) return null;
 

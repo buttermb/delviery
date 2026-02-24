@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight } from "lucide-react";
 import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ConversionRateChartProps {
     storeId?: string;
@@ -21,7 +22,7 @@ interface FunnelStep {
 
 export function ConversionRateChart({ storeId, className }: ConversionRateChartProps) {
     const { data: funnelData, isLoading, error } = useQuery({
-        queryKey: ['conversion-rate', storeId],
+        queryKey: queryKeys.storefrontAnalytics.conversionRate(storeId),
         queryFn: async (): Promise<{ funnel: FunnelStep[]; overallRate: number }> => {
             if (!storeId) return { funnel: [], overallRate: 0 };
 

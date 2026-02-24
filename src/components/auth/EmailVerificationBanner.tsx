@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function EmailVerificationBanner() {
   const { admin, tenant } = useTenantAdminAuth();
@@ -31,7 +32,7 @@ export function EmailVerificationBanner() {
 
   // Fetch email verification status
   const { data: emailVerified, isLoading } = useQuery({
-    queryKey: ['email-verification-status', admin?.id],
+    queryKey: queryKeys.emailVerification.byAdmin(admin?.id),
     queryFn: async () => {
       if (!admin?.id) return true; // Assume verified if no admin
 

@@ -44,6 +44,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 // ============================================================================
 // Types
@@ -304,7 +305,7 @@ export function CustomerQuickView({
 
   // Fetch preferred address
   const { data: preferredAddress, isLoading: addressLoading } = useQuery({
-    queryKey: ['customer-preferred-address', customer?.id, tenant?.id],
+    queryKey: queryKeys.customerDetail.preferredAddress(customer?.id, tenant?.id),
     queryFn: async () => {
       if (!tenant?.id || !customer?.id) return null;
 

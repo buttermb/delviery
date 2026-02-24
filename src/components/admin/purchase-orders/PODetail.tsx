@@ -150,7 +150,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
                       onValueChange={(value) => onStatusChange(purchaseOrder, value)}
                     >
                       <SelectTrigger className="w-[150px]">
-                        <SelectValue />
+                        <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="draft">Draft</SelectItem>
@@ -358,7 +358,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
                 onValueChange={(value) => onStatusChange(purchaseOrder, value)}
               >
                 <SelectTrigger className="w-[150px] min-h-[44px] touch-manipulation">
-                  <SelectValue />
+                  <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>

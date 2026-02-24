@@ -301,7 +301,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
                 onValueChange={(value) => setFormData({ ...formData, reason: value })}
               >
                 <SelectTrigger className="min-h-[44px] touch-manipulation">
-                  <SelectValue />
+                  <SelectValue placeholder="Select reason" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="defective">Defective Product</SelectItem>
@@ -322,7 +322,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
                 onValueChange={(value) => setFormData({ ...formData, return_method: value })}
               >
                 <SelectTrigger className="min-h-[44px] touch-manipulation">
-                  <SelectValue />
+                  <SelectValue placeholder="Select return method" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pickup">Pickup</SelectItem>

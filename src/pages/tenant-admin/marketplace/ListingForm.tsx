@@ -660,7 +660,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select unit type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -990,7 +990,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select visibility" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>

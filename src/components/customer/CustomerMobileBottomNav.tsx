@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useMobileNavigation } from "@/hooks/useMobileNavigation";
 import { MobileErrorBoundary } from "@/components/mobile/MobileErrorBoundary";
 import { OfflineIndicator } from "@/components/mobile/OfflineIndicator";
+import { queryKeys } from "@/lib/queryKeys";
 
 export function CustomerMobileBottomNav() {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ export function CustomerMobileBottomNav() {
 
   // Fetch cart items for authenticated users
   const { data: cartItems = [] } = useQuery<CartItem[]>({
-    queryKey: ["cart", user?.id, cartUpdateKey],
+    queryKey: queryKeys.customerCart.byUser(user?.id, cartUpdateKey),
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase

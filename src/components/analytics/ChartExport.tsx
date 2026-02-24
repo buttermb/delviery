@@ -76,7 +76,7 @@ export function ChartExport({ data, filename, title }: ChartExportProps) {
   };
 
   const printReport = () => {
-    const printWindow = window.open('', '', 'height=600,width=800');
+    const printWindow = window.open('', '', 'noopener,height=600,width=800');
     if (!printWindow) return;
 
     const headers = Object.keys(data[0] || {});

@@ -13,6 +13,7 @@ import { haptics } from "@/utils/haptics";
 import { logger } from "@/lib/logger";
 import { humanizeError } from "@/lib/humanizeError";
 import { useTenant } from "@/contexts/TenantContext";
+import { queryKeys } from "@/lib/queryKeys";
 import type { AppUser } from "@/types/auth";
 import type { Product } from "@/types/product";
 import type { DbCartItem, GuestCartItemWithProduct, RenderCartItem } from "@/types/cart";
@@ -41,7 +42,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
   }, []);
 
   const { data: dbCartItems = [] } = useQuery<DbCartItem[]>({
-    queryKey: ["cart", user?.id, tenantId],
+    queryKey: queryKeys.cart.user(user?.id, tenantId),
     queryFn: async () => {
       if (!user || !tenantId) return [];
       const { data, error } = await (supabase as any)
@@ -65,7 +66,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
 
   // Fetch product details for guest cart items
   const { data: guestProducts = [] } = useQuery<Product[]>({
-    queryKey: ["guest-cart-products", guestProductIds],
+    queryKey: queryKeys.guestCartProducts.byIds(guestProductIds),
     queryFn: async () => {
       if (guestCart.length === 0) return [];
       const productIds = guestCart.map(item => item.product_id);
@@ -125,7 +126,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
     if (!user) {
       // Guest cart - update localStorage
       updateGuestCartItem(productId, selectedWeight, newQuantity);
-      queryClient.invalidateQueries({ queryKey: ["guest-cart-products"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.guestCartProducts.all });
       return;
     }
 
@@ -137,8 +138,8 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
         .eq("id", itemId);
 
       if (error) throw error;
-      queryClient.invalidateQueries({ queryKey: ["cart", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cart.user(user?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cart.all });
     } catch (error: unknown) {
       toast.error(humanizeError(error, "Failed to update quantity"));
     }
@@ -151,7 +152,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
       // Guest cart - remove from localStorage
       removeFromGuestCart(productId, selectedWeight);
       toast.success("Item removed from cart");
-      queryClient.invalidateQueries({ queryKey: ["guest-cart-products"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.guestCartProducts.all });
       return;
     }
 
@@ -164,8 +165,8 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
 
       if (error) throw error;
       toast.success("Item removed from cart");
-      queryClient.invalidateQueries({ queryKey: ["cart", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cart.user(user?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cart.all });
     } catch (error: unknown) {
       toast.error(humanizeError(error, "Failed to remove item"));
       haptics.error();

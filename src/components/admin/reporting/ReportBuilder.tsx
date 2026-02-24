@@ -337,7 +337,7 @@ export function ReportBuilder({
                       }
                     >
                       <SelectTrigger className="min-h-[44px] touch-manipulation">
-                        <SelectValue />
+                        <SelectValue placeholder="Select format" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="csv">CSV</SelectItem>
@@ -558,7 +558,7 @@ export function ReportBuilder({
                             }
                           >
                             <SelectTrigger className="min-h-[44px] touch-manipulation">
-                              <SelectValue />
+                              <SelectValue placeholder="Select date range" />
                             </SelectTrigger>
                             <SelectContent>
                               {DATE_RANGE_PRESETS.map((preset) => (
@@ -649,7 +649,7 @@ export function ReportBuilder({
                                     }
                                   >
                                     <SelectTrigger className="w-[140px] min-h-[36px]">
-                                      <SelectValue />
+                                      <SelectValue placeholder="Select operator" />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {availableOperators.map((op) => (

@@ -117,7 +117,7 @@ export function useCustomerLookup(options: UseCustomerLookupOptions = {}): UseCu
   }, [enabled, tenant?.id, searchType, debouncedQuery, minChars]);
 
   const { data: matches = [], isLoading, error } = useQuery({
-    queryKey: ['customer-lookup', tenant?.id, searchType, debouncedQuery],
+    queryKey: queryKeys.customerLookup.search(tenant?.id, searchType ?? undefined, debouncedQuery),
     queryFn: async (): Promise<CustomerMatch[]> => {
       if (!tenant?.id || !searchType || debouncedQuery.length < minChars) {
         return [];

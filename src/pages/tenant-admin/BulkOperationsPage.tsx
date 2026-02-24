@@ -251,7 +251,7 @@ export default function BulkOperationsPage() {
                 onValueChange={(value) => setOperationParams({ ...operationParams, priceChangeType: value })}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select change type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="fixed">Fixed Amount</SelectItem>
@@ -294,7 +294,7 @@ export default function BulkOperationsPage() {
                 onValueChange={(value) => setOperationParams({ ...operationParams, tagAction: value })}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select tag action" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="add">Add Tags</SelectItem>
@@ -322,7 +322,7 @@ export default function BulkOperationsPage() {
                 onValueChange={(value) => setOperationParams({ ...operationParams, status: value })}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Active</SelectItem>

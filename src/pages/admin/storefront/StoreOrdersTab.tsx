@@ -452,7 +452,7 @@ export function StoreOrdersTab({
                             }
                           >
                             <SelectTrigger className="w-[130px] h-8">
-                              <SelectValue />
+                              <SelectValue placeholder="Update status" />
                             </SelectTrigger>
                             <SelectContent>
                               {STATUS_OPTIONS.map((status) => (
@@ -503,7 +503,7 @@ export function StoreOrdersTab({
                     }}
                   >
                     <SelectTrigger className="w-[160px]">
-                      <SelectValue />
+                      <SelectValue placeholder="Update status" />
                     </SelectTrigger>
                     <SelectContent>
                       {STATUS_OPTIONS.map((status) => (

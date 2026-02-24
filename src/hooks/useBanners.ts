@@ -5,6 +5,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 
 export interface Banner {
@@ -19,7 +20,7 @@ export interface Banner {
 
 export function useBanners(storeId: string | undefined) {
     return useQuery({
-        queryKey: ['storefront', 'banners', storeId] as const,
+        queryKey: queryKeys.storefront.banners(storeId),
         queryFn: async (): Promise<Banner[]> => {
             if (!storeId) return [];
 

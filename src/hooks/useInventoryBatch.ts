@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { queryKeys } from "@/lib/queryKeys";
 
 export const useInventoryBatch = (productIds: string[]) => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["inventory-batch", tenant?.id, productIds.join(",")],
+    queryKey: queryKeys.inventoryBatch.byProducts(tenant?.id, productIds.join(",")),
     queryFn: async () => {
       if (!productIds.length || !tenant?.id) return {};
 

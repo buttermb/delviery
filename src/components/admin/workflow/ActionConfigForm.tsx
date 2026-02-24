@@ -127,12 +127,12 @@ export function ActionConfigForm({
             </div>
             <div>
               <Label htmlFor="method">HTTP Method</Label>
-              <Select 
+              <Select
                 value={(formData.method as string) || 'POST'}
                 onValueChange={(value) => setFormData({...formData, method: value})}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select method" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="GET">GET</SelectItem>
@@ -185,12 +185,12 @@ export function ActionConfigForm({
           <div className="space-y-4">
             <div>
               <Label htmlFor="operation">Operation <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-              <Select 
+              <Select
                 value={(formData.operation as string) || 'insert'}
                 onValueChange={(value) => setFormData({...formData, operation: value})}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select operation" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="insert">Insert</SelectItem>
@@ -262,12 +262,12 @@ export function ActionConfigForm({
             </div>
             <div>
               <Label htmlFor="selection_method">Selection Method</Label>
-              <Select 
+              <Select
                 value={(formData.selection_method as string) || 'nearest'}
                 onValueChange={(value) => setFormData({...formData, selection_method: value})}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select method" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="nearest">Nearest Courier</SelectItem>
@@ -279,12 +279,12 @@ export function ActionConfigForm({
             </div>
             <div>
               <Label htmlFor="notify">Notify Courier</Label>
-              <Select 
+              <Select
                 value={formData.notify_courier ? 'true' : 'false'}
                 onValueChange={(value) => setFormData({...formData, notify_courier: value === 'true'})}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select option" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="true">Yes</SelectItem>

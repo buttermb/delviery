@@ -14,6 +14,7 @@ import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { queryKeys } from '@/lib/queryKeys';
 import { cn } from '@/lib/utils';
 import { safeStorage } from '@/utils/safeStorage';
 
@@ -30,7 +31,7 @@ export function SuperAdminLayout() {
 
   // Fetch at-risk tenants count
   const { data: atRiskCount = 0 } = useQuery({
-    queryKey: ['super-admin-at-risk-count'],
+    queryKey: queryKeys.superAdminExt.atRiskCount(),
     queryFn: async () => {
       const { data: tenants } = await supabase
         .from('tenants')
@@ -71,7 +72,7 @@ export function SuperAdminLayout() {
 
   // Fetch notifications from audit_logs (urgent actions)
   const { data: notifications = [] } = useQuery({
-    queryKey: ['super-admin-notifications'],
+    queryKey: queryKeys.superAdminExt.notifications(),
     queryFn: async () => {
       const { data: logs, error } = await supabase
         .from('audit_logs')
@@ -125,7 +126,7 @@ export function SuperAdminLayout() {
 
   // Fetch security alerts count from audit logs
   const { data: securityAlerts = 0 } = useQuery({
-    queryKey: ['super-admin-security-alerts'],
+    queryKey: queryKeys.superAdminExt.securityAlerts(),
     queryFn: async () => {
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { count } = await supabase
@@ -141,7 +142,7 @@ export function SuperAdminLayout() {
 
   // Fetch system status from system_metrics
   const { data: systemStatus = 'healthy' } = useQuery({
-    queryKey: ['super-admin-system-status'],
+    queryKey: queryKeys.superAdminExt.systemStatus(),
     queryFn: async () => {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
       const { data: metrics } = await supabase

@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useEffect } from 'react';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ActivityItem {
   id: string;
@@ -25,7 +26,7 @@ export function ActivityFeedWidget() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: activities = [], isLoading, refetch } = useQuery<ActivityItem[]>({
-    queryKey: ['activity-feed', tenant?.id],
+    queryKey: queryKeys.dashboardWidgets.activityFeed(tenant?.id),
     queryFn: async (): Promise<ActivityItem[]> => {
       if (!tenant?.id) return [];
 

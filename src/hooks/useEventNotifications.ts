@@ -8,13 +8,14 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { playNotificationSound } from '@/utils/notificationSound';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { formatCurrency } from '@/lib/formatters';
-import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 export interface EventNotificationOptions {
   enabled?: boolean;
@@ -76,7 +77,7 @@ export function useEventNotifications({
 
   // Fetch user notification preferences
   const { data: preferences } = useQuery<NotificationPreferences | null>({
-    queryKey: ['notification-preferences', admin?.id],
+    queryKey: queryKeys.notificationPreferences.byUser(admin?.id),
     queryFn: async () => {
       if (!admin?.id) return null;
 

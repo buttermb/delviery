@@ -21,6 +21,7 @@ import { ProductLink } from '@/components/admin/cross-links';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CustomerPreferredProductsProps {
   customerId: string;
@@ -73,7 +74,7 @@ export function CustomerPreferredProducts({
     isError,
     error,
   } = useQuery({
-    queryKey: ['customer-preferred-products', customerId, tenantId],
+    queryKey: queryKeys.customerDetail.preferredProducts(customerId, tenantId),
     queryFn: async () => {
       if (!tenantId) {
         throw new Error('Tenant ID is required');

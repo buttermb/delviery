@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { CRMInvoice, LineItem } from "@/types/crm";
+import { queryKeys } from "@/lib/queryKeys";
 
 interface PublicInvoiceResponse {
     id: string;
@@ -32,7 +33,7 @@ interface PublicInvoiceResponse {
 
 export function usePublicInvoice(token: string | undefined) {
     return useQuery({
-        queryKey: ["public-invoice", token],
+        queryKey: queryKeys.crm.invoices.byToken(token || ''),
         queryFn: async () => {
             if (!token) return null;
 

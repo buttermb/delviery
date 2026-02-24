@@ -16,6 +16,7 @@ import {
   TierPreset,
 } from '@/lib/presets/businessTiers';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from 'sonner';
 import { TenantMetrics } from '@/types/hotbox';
 
@@ -44,7 +45,7 @@ export function useBusinessTier() {
 
   // Fetch tenant tier and metrics
   const { data, isLoading, error } = useQuery({
-    queryKey: ['business-tier', tenant?.id],
+    queryKey: queryKeys.businessTier.byTenant(tenant?.id),
     queryFn: async (): Promise<BusinessTierData | null> => {
       if (!tenant?.id) return null;
 
@@ -154,7 +155,7 @@ export function useBusinessTier() {
       return tier;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['business-tier', tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.businessTier.byTenant(tenant?.id) });
       toast.success('Business tier updated successfully');
     },
     onError: (error: unknown) => {
@@ -196,7 +197,7 @@ export function useBusinessTier() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['business-tier', tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.businessTier.byTenant(tenant?.id) });
       toast.success('Business tier recalculated successfully');
     },
     onError: (error: unknown) => {

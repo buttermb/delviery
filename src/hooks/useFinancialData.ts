@@ -204,7 +204,7 @@ export const useCreatePaymentSchedule = () => {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payment-schedules"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.financialData.paymentSchedules() });
       showSuccessToast("Payment Scheduled", "Payment schedule created successfully");
     },
     onError: (error) => {
@@ -238,8 +238,8 @@ export const useCreateCollectionActivity = () => {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["collection-activities"] });
-      queryClient.invalidateQueries({ queryKey: ["credit-out"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collections.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
       showSuccessToast("Activity Logged", "Collection activity recorded successfully");
     },
     onError: (error) => {
@@ -326,7 +326,7 @@ export const useExpenseSummary = () => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ["expense-summary", tenant?.id],
+    queryKey: queryKeys.financialData.expenseSummary(tenant?.id),
     queryFn: async (): Promise<ExpenseSummary> => {
       if (!tenant?.id) throw new Error('No tenant context');
 

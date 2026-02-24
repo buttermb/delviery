@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { FREE_TIER_LIMITS, type BlockedFeature } from '@/lib/credits';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from 'sonner';
 
 // ============================================================================
@@ -77,7 +78,7 @@ export function useFreeTierLimits() {
   // 2. Must still have credits remaining (creditBalance > 0)
   // When credits run out, limits re-apply until they purchase again
   const { data: purchaseAndBalanceData } = useQuery({
-    queryKey: ['purchase-status-and-balance', tenantId],
+    queryKey: queryKeys.freeTier.purchaseStatusAndBalance(tenantId),
     queryFn: async () => {
       if (!tenantId) return { hasPurchased: false, balance: 0 };
 
@@ -125,7 +126,7 @@ export function useFreeTierLimits() {
 
   // Fetch current usage from database
   const { data: usage, isLoading } = useQuery({
-    queryKey: ['free-tier-usage', tenantId],
+    queryKey: queryKeys.freeTier.usage(tenantId),
     queryFn: async () => {
       if (!tenantId || !isFreeTier) return null;
 
@@ -199,7 +200,7 @@ export function useFreeTierLimits() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['free-tier-usage', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.freeTier.usage(tenantId) });
     },
     onError: (error: unknown) => {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

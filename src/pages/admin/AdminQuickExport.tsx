@@ -224,7 +224,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
           <label className="text-sm font-medium">Date Range</label>
           <Select value={dateRange} onValueChange={(v: any) => setDateRange(v)}>
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder="Select date range" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="today">Today</SelectItem>

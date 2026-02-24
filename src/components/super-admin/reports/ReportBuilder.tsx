@@ -172,7 +172,7 @@ export function ReportBuilder() {
               onValueChange={(value: any) => setConfig({ ...config, chartType: value })}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select chart type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="line">Line Chart</SelectItem>
@@ -189,7 +189,7 @@ export function ReportBuilder() {
               onValueChange={(value) => setConfig({ ...config, dateRange: value })}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select date range" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="7d">Last 7 Days</SelectItem>

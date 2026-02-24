@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { type CreditTransaction } from '@/lib/credits';
 
 // ============================================================================
@@ -59,7 +60,7 @@ export function useCreditTransactions(
 
   // Fetch total count for pagination
   const { data: totalCount = 0 } = useQuery({
-    queryKey: ['credit-transactions-count', tenantId, typeFilter, dateFrom?.toISOString(), dateTo?.toISOString()],
+    queryKey: queryKeys.creditTransactionsExt.count(tenantId, typeFilter, dateFrom?.toISOString(), dateTo?.toISOString()),
     queryFn: async () => {
       if (!tenantId) return 0;
 
@@ -108,7 +109,7 @@ export function useCreditTransactions(
     error,
     refetch,
   } = useQuery({
-    queryKey: ['credit-transactions', tenantId, typeFilter, dateFrom?.toISOString(), dateTo?.toISOString(), loadedPages],
+    queryKey: queryKeys.creditTransactionsExt.list(tenantId, typeFilter, dateFrom?.toISOString(), dateTo?.toISOString(), loadedPages),
     queryFn: async () => {
       if (!tenantId) return [];
 

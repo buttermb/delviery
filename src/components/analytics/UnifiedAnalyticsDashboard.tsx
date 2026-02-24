@@ -5,6 +5,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { Loader2, TrendingUp, ShoppingCart, DollarSign, CreditCard } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { format } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface UnifiedAnalyticsProps {
     tenantId: string;
@@ -22,7 +23,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
 export function UnifiedAnalyticsDashboard({ tenantId }: UnifiedAnalyticsProps) {
     const { data: analytics, isLoading } = useQuery({
-        queryKey: ['unified-analytics', tenantId],
+        queryKey: queryKeys.unifiedAnalyticsSimple.byTenant(tenantId),
         queryFn: async () => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);

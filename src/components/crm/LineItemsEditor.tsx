@@ -43,6 +43,7 @@ import { useProducts } from "@/hooks/crm/useProducts";
 import { useRealTimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { useAccountIdSafe } from "@/hooks/crm/useAccountId";
 import { logger } from "@/lib/logger";
+import { queryKeys } from "@/lib/queryKeys";
 
 export interface InventoryValidationResult {
     isValid: boolean;
@@ -126,7 +127,7 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
             });
 
             // Invalidate and refetch products to get updated stock
-            queryClient.invalidateQueries({ queryKey: ['crm-products', accountId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.crm.products.lists() });
             refetch();
         },
     });

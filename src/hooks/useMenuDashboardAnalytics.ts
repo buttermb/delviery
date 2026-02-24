@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { formatCurrency } from '@/lib/formatters';
 
 export interface MenuDashboardAnalytics {
@@ -60,7 +61,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
 
   // Fetch menus for this tenant
   const { data: menus = [], isLoading: menusLoading } = useQuery({
-    queryKey: ['menu-dashboard-analytics-menus', tenantId],
+    queryKey: queryKeys.menuDashboardAnalytics.menus(tenantId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('disposable_menus')
@@ -81,7 +82,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
   const menuIds = useMemo(() => menus.map(m => m.id), [menus]);
 
   const { data: accessLogs = [], isLoading: logsLoading } = useQuery({
-    queryKey: ['menu-dashboard-analytics-logs', tenantId, menuIds],
+    queryKey: queryKeys.menuDashboardAnalytics.logs(tenantId, menuIds),
     queryFn: async () => {
       if (menuIds.length === 0) return [];
 
@@ -104,7 +105,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
 
   // Fetch orders for this tenant's menus
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ['menu-dashboard-analytics-orders', tenantId],
+    queryKey: queryKeys.menuDashboardAnalytics.orders(tenantId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_orders')
@@ -158,9 +159,9 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
   const refresh = useCallback(() => {
     setRealtimeViews(0);
     setRealtimeOrders(0);
-    queryClient.invalidateQueries({ queryKey: ['menu-dashboard-analytics-menus', tenantId] });
-    queryClient.invalidateQueries({ queryKey: ['menu-dashboard-analytics-logs', tenantId] });
-    queryClient.invalidateQueries({ queryKey: ['menu-dashboard-analytics-orders', tenantId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.menuDashboardAnalytics.menus(tenantId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.menuDashboardAnalytics.logs(tenantId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.menuDashboardAnalytics.orders(tenantId) });
   }, [tenantId, queryClient]);
 
   // Compute analytics from the raw data

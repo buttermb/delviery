@@ -586,7 +586,7 @@ export default function ReceivingPage() {
                 onValueChange={(value) => setQcData({ ...qcData, qc_status: value })}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select QC status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="passed">Passed</SelectItem>

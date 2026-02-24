@@ -2,17 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { CRMPreOrder, LineItem, CRMInvoice } from '@/types/crm';
 import { toast } from 'sonner';
-import { crmInvoiceKeys } from './useInvoices';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { humanizeError } from '@/lib/humanizeError';
-
-export const crmPreOrderKeys = {
-    all: ['crm-pre-orders'] as const,
-    lists: () => [...crmPreOrderKeys.all, 'list'] as const,
-    detail: (id: string) => [...crmPreOrderKeys.all, 'detail', id] as const,
-};
+import { queryKeys } from '@/lib/queryKeys';
 
 const normalizePreOrder = (row: any): CRMPreOrder => ({ ...row, line_items: Array.isArray(row.line_items) ? (row.line_items as unknown as LineItem[]) : [] });
 const normalizeInvoice = (row: any): CRMInvoice => ({ ...row, line_items: Array.isArray(row.line_items) ? (row.line_items as unknown as LineItem[]) : [], issue_date: row.invoice_date, tax: row.tax_amount });
@@ -20,7 +14,7 @@ const normalizeInvoice = (row: any): CRMInvoice => ({ ...row, line_items: Array.
 export function usePreOrders() {
     const accountId = useAccountIdSafe();
     return useQuery({
-        queryKey: crmPreOrderKeys.lists(),
+        queryKey: queryKeys.crm.preOrders.lists(),
         queryFn: async () => {
             if (!accountId) return [];
             const { data, error } = await supabase.from('crm_pre_orders').select('*, client:crm_clients(*)').eq('account_id', accountId).order('created_at', { ascending: false }).limit(200);
@@ -34,7 +28,7 @@ export function usePreOrders() {
 export function useClientPreOrders(clientId: string | undefined) {
     const accountId = useAccountIdSafe();
     return useQuery({
-        queryKey: [...crmPreOrderKeys.all, 'client', clientId || ''],
+        queryKey: queryKeys.crm.preOrders.byClient(clientId || ''),
         queryFn: async () => {
             if (!clientId || !accountId) return [];
             const { data, error } = await supabase.from('crm_pre_orders').select('*').eq('client_id', clientId).eq('account_id', accountId).order('created_at', { ascending: false }).limit(200);
@@ -48,7 +42,7 @@ export function useClientPreOrders(clientId: string | undefined) {
 export function usePreOrder(preOrderId: string | undefined) {
     const accountId = useAccountIdSafe();
     return useQuery({
-        queryKey: crmPreOrderKeys.detail(preOrderId || ''),
+        queryKey: queryKeys.crm.preOrders.detail(preOrderId || ''),
         queryFn: async () => {
             if (!preOrderId || !accountId) return null;
             const { data, error } = await supabase.from('crm_pre_orders').select('*, client:crm_clients(*)').eq('id', preOrderId).eq('account_id', accountId).maybeSingle();
@@ -71,19 +65,19 @@ export function useCreatePreOrder() {
             return normalizePreOrder(data);
         },
         onMutate: async () => {
-            await queryClient.cancelQueries({ queryKey: crmPreOrderKeys.lists() });
-            const previousPreOrders = queryClient.getQueryData(crmPreOrderKeys.lists());
+            await queryClient.cancelQueries({ queryKey: queryKeys.crm.preOrders.lists() });
+            const previousPreOrders = queryClient.getQueryData(queryKeys.crm.preOrders.lists());
             return { previousPreOrders };
         },
         onError: (error: unknown, _variables: unknown, context: { previousPreOrders?: unknown } | undefined) => {
             if (context?.previousPreOrders) {
-                queryClient.setQueryData(crmPreOrderKeys.lists(), context.previousPreOrders);
+                queryClient.setQueryData(queryKeys.crm.preOrders.lists(), context.previousPreOrders);
             }
             logger.error('Pre-order creation failed', error, { component: 'useCreatePreOrder' });
             toast.error('Pre-order creation failed', { description: humanizeError(error, 'Failed to create pre-order') });
         },
         onSuccess: () => { toast.success('Pre-order created'); },
-        onSettled: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); },
+        onSettled: () => { queryClient.invalidateQueries({ queryKey: queryKeys.crm.preOrders.all() }); },
     });
 }
 
@@ -98,11 +92,11 @@ export function useCancelPreOrder() {
             return normalizePreOrder(data);
         },
         onMutate: async (preOrderId) => {
-            await queryClient.cancelQueries({ queryKey: crmPreOrderKeys.lists() });
-            const previousPreOrders = queryClient.getQueryData<CRMPreOrder[]>(crmPreOrderKeys.lists());
+            await queryClient.cancelQueries({ queryKey: queryKeys.crm.preOrders.lists() });
+            const previousPreOrders = queryClient.getQueryData<CRMPreOrder[]>(queryKeys.crm.preOrders.lists());
 
             queryClient.setQueryData<CRMPreOrder[]>(
-                crmPreOrderKeys.lists(),
+                queryKeys.crm.preOrders.lists(),
                 (old) => old?.map(po => po.id === preOrderId ? { ...po, status: 'cancelled' } : po)
             );
 
@@ -110,13 +104,13 @@ export function useCancelPreOrder() {
         },
         onError: (error: unknown, _variables: unknown, context: { previousPreOrders?: CRMPreOrder[] } | undefined) => {
             if (context?.previousPreOrders) {
-                queryClient.setQueryData(crmPreOrderKeys.lists(), context.previousPreOrders);
+                queryClient.setQueryData(queryKeys.crm.preOrders.lists(), context.previousPreOrders);
             }
             logger.error('Pre-order cancellation failed', error, { component: 'useCancelPreOrder' });
             toast.error('Pre-order cancellation failed', { description: humanizeError(error, 'Failed to cancel pre-order') });
         },
         onSuccess: () => { toast.success('Pre-order cancelled'); },
-        onSettled: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); },
+        onSettled: () => { queryClient.invalidateQueries({ queryKey: queryKeys.crm.preOrders.all() }); },
     });
 }
 
@@ -139,11 +133,11 @@ export function useConvertPreOrderToInvoice() {
             return { invoice: normalizeInvoice(invoice), preOrder: normalizePreOrder(preOrder) };
         },
         onMutate: async ({ preOrderId }) => {
-            await queryClient.cancelQueries({ queryKey: crmPreOrderKeys.lists() });
-            const previousPreOrders = queryClient.getQueryData<CRMPreOrder[]>(crmPreOrderKeys.lists());
+            await queryClient.cancelQueries({ queryKey: queryKeys.crm.preOrders.lists() });
+            const previousPreOrders = queryClient.getQueryData<CRMPreOrder[]>(queryKeys.crm.preOrders.lists());
 
             queryClient.setQueryData<CRMPreOrder[]>(
-                crmPreOrderKeys.lists(),
+                queryKeys.crm.preOrders.lists(),
                 (old) => old?.map(po => po.id === preOrderId ? { ...po, status: 'converting' as const } : po) as CRMPreOrder[]
             );
 
@@ -151,7 +145,7 @@ export function useConvertPreOrderToInvoice() {
         },
         onError: (error: unknown, _variables: unknown, context: { previousPreOrders?: CRMPreOrder[] } | undefined) => {
             if (context?.previousPreOrders) {
-                queryClient.setQueryData(crmPreOrderKeys.lists(), context.previousPreOrders);
+                queryClient.setQueryData(queryKeys.crm.preOrders.lists(), context.previousPreOrders);
             }
             logger.error('Pre-order conversion failed', error, { component: 'useConvertPreOrderToInvoice' });
             toast.error('Conversion failed', { description: humanizeError(error, 'Failed to convert pre-order') });
@@ -166,6 +160,6 @@ export function useConvertPreOrderToInvoice() {
                 });
             }
         },
-        onSettled: () => { queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all }); queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); },
+        onSettled: () => { queryClient.invalidateQueries({ queryKey: queryKeys.crm.preOrders.all() }); queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() }); },
     });
 }

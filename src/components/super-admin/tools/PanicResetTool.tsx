@@ -152,7 +152,7 @@ export function PanicResetTool() {
           <Label htmlFor="reset-type">Reset Type</Label>
           <Select value={resetType} onValueChange={setResetType}>
             <SelectTrigger id="reset-type">
-              <SelectValue />
+              <SelectValue placeholder="Select reset type" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="orders">Orders Only</SelectItem>

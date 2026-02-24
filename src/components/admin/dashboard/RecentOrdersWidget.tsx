@@ -14,6 +14,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
 import { OrderLink } from '@/components/admin/cross-links';
 import { TruncatedText } from '@/components/shared/TruncatedText';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function RecentOrdersWidget() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export function RecentOrdersWidget() {
   const { account } = useAccount();
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: ['recent-orders-widget', account?.id],
+    queryKey: queryKeys.dashboardWidgets.recentOrders(account?.id),
     queryFn: async () => {
       if (!account?.id) return [];
 

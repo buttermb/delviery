@@ -8,6 +8,7 @@ import { useState } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { formatCurrency } from '@/lib/formatters';
 
 interface AverageOrderValueChartProps {
@@ -24,7 +25,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
     const [timeRange, setTimeRange] = useState<'7' | '30' | '90'>('30');
 
     const { data: aovData, isLoading } = useQuery({
-        queryKey: ['average-order-value', storeId, timeRange],
+        queryKey: queryKeys.storefrontAnalytics.averageOrderValue(storeId, timeRange),
         queryFn: async (): Promise<{ data: AOVDataPoint[]; currentAOV: number; trend: number }> => {
             if (!storeId) return { data: [], currentAOV: 0, trend: 0 };
 

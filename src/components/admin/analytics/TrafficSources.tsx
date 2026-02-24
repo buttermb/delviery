@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface TrafficSourcesProps {
   storeId: string;
@@ -29,7 +30,7 @@ const SOURCE_COLORS: Record<string, string> = {
 
 export function TrafficSources({ storeId, dateRange, className }: TrafficSourcesProps) {
   const { data: sources, isLoading, error } = useQuery({
-    queryKey: ['traffic-sources', storeId, dateRange.from?.toISOString(), dateRange.to?.toISOString()],
+    queryKey: queryKeys.storefrontAnalytics.trafficSources(storeId, dateRange.from?.toISOString(), dateRange.to?.toISOString()),
     queryFn: async (): Promise<SourceData[]> => {
       let query = supabase
         .from('storefront_orders')

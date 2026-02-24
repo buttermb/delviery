@@ -7,6 +7,7 @@ import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { humanizeError } from '@/lib/humanizeError';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Type-safe client wrapper for crm_invoices (not yet in generated types)
 type SupabaseQueryResult<T> = Promise<{ data: T | null; error: { code?: string; message?: string } | null }>;
@@ -34,11 +35,12 @@ interface CrmInvoiceClient {
 
 const crmClient = supabase as unknown as CrmInvoiceClient;
 
+/** @deprecated Use queryKeys.crm.invoices from @/lib/queryKeys instead */
 export const crmInvoiceKeys = {
-    all: ['crm-invoices'] as const,
-    lists: () => [...crmInvoiceKeys.all, 'list'] as const,
-    detail: (id: string) => [...crmInvoiceKeys.all, 'detail', id] as const,
-    byClient: (clientId: string) => [...crmInvoiceKeys.all, 'client', clientId] as const,
+    all: queryKeys.crm.invoices.all(),
+    lists: () => queryKeys.crm.invoices.lists(),
+    detail: (id: string) => queryKeys.crm.invoices.detail(id),
+    byClient: (clientId: string) => queryKeys.crm.invoices.byClient(clientId),
 };
 
 const normalizeInvoice = (row: unknown): CRMInvoice => {
@@ -70,7 +72,7 @@ export function useInvoices() {
     const accountId = useAccountIdSafe();
 
     const useInvoicesQuery = (sort?: InvoiceSortState) => useQuery({
-        queryKey: [...crmInvoiceKeys.lists(), { sort }],
+        queryKey: [...queryKeys.crm.invoices.lists(), { sort }],
         queryFn: async () => {
             if (!accountId) return [];
             const sortCol = sort?.column && INVOICE_SORT_COLUMN_MAP[sort.column]
@@ -91,7 +93,7 @@ export function useInvoices() {
     });
 
     const useInvoiceQuery = (id: string) => useQuery({
-        queryKey: crmInvoiceKeys.detail(id),
+        queryKey: queryKeys.crm.invoices.detail(id),
         queryFn: async () => {
             if (!accountId) return null;
             const { data, error } = await supabase
@@ -118,7 +120,7 @@ export function useInvoices() {
                 return normalizeInvoice(data);
             },
             onSuccess: (data) => {
-                queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+                queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
                 toast.success('Invoice marked as paid');
                 // Cross-panel invalidation - invoice payment affects finance, collections, dashboard
                 if (accountId) {
@@ -140,7 +142,7 @@ export function useInvoices() {
                 const { error } = await supabase.from('crm_invoices').delete().eq('id', invoiceId).eq('account_id', accountId);
                 if (error) throw error;
             },
-            onSuccess: () => { queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all }); toast.success('Invoice deleted'); },
+            onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() }); toast.success('Invoice deleted'); },
             onError: (error: Error) => { logger.error('Failed to delete invoice', { error }); toast.error('Failed to delete invoice'); },
         });
     };
@@ -161,7 +163,7 @@ export function useInvoices() {
                 return normalizeInvoice(data);
             },
             onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+                queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
             },
         });
     };
@@ -182,7 +184,7 @@ export function useInvoices() {
                 return normalizeInvoice(data);
             },
             onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+                queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
             },
         });
     };
@@ -229,7 +231,7 @@ export function useInvoices() {
                 return normalizeInvoice(data);
             },
             onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+                queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
             },
         });
     };
@@ -248,7 +250,7 @@ export function useInvoices() {
 export function useClientInvoices(clientId: string | undefined) {
     const accountId = useAccountIdSafe();
     return useQuery({
-        queryKey: crmInvoiceKeys.byClient(clientId || ''),
+        queryKey: queryKeys.crm.invoices.byClient(clientId || ''),
         queryFn: async () => {
             if (!clientId || !accountId) return [];
             const { data, error } = await crmClient
@@ -278,7 +280,7 @@ export function useCreateInvoice() {
             return normalizeInvoice(data as unknown as Record<string, unknown>);
         },
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
             toast.success('Invoice created');
             // Cross-panel invalidation - invoice creation affects finance, collections, dashboard
             if (accountId) {

@@ -17,6 +17,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 /** ETA information for a single order */
 export interface DeliveryETA {
@@ -70,7 +71,7 @@ export function useDeliveryETA(orderIds: string[]) {
 
   // Fetch active deliveries for these orders
   const { data: deliveries = [], isLoading } = useQuery({
-    queryKey: ['delivery-etas', tenant?.id, orderIds],
+    queryKey: queryKeys.deliveryEtas.byTenantOrders(tenant?.id, orderIds),
     queryFn: async (): Promise<DeliveryRow[]> => {
       if (!tenant?.id || orderIds.length === 0) return [];
 
@@ -99,7 +100,7 @@ export function useDeliveryETA(orderIds: string[]) {
 
   // Fetch historical average delivery time for this tenant
   const { data: avgDeliveryMinutes = DEFAULT_AVG_DELIVERY_MINUTES } = useQuery({
-    queryKey: ['avg-delivery-time', tenant?.id],
+    queryKey: queryKeys.deliveryEtas.avgTime(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return DEFAULT_AVG_DELIVERY_MINUTES;
 
@@ -150,7 +151,7 @@ export function useDeliveryETA(orderIds: string[]) {
   );
 
   const { data: runnerStopCounts = {} } = useQuery({
-    queryKey: ['runner-stop-counts', tenant?.id, runnerIds],
+    queryKey: queryKeys.deliveryEtas.runnerStopCounts(tenant?.id, runnerIds),
     queryFn: async (): Promise<Record<string, number>> => {
       if (!tenant?.id || runnerIds.length === 0) return {};
 
@@ -194,8 +195,8 @@ export function useDeliveryETA(orderIds: string[]) {
           filter: `tenant_id=eq.${tenant.id}`,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['delivery-etas', tenant.id] });
-          queryClient.invalidateQueries({ queryKey: ['runner-stop-counts', tenant.id] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.deliveryEtas.byTenantOrders(tenant.id) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.deliveryEtas.runnerStopCounts(tenant.id) });
         }
       )
       .on(
@@ -208,7 +209,7 @@ export function useDeliveryETA(orderIds: string[]) {
         },
         () => {
           // Runner location updated - refresh ETAs
-          queryClient.invalidateQueries({ queryKey: ['delivery-etas', tenant.id] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.deliveryEtas.byTenantOrders(tenant.id) });
         }
       )
       .subscribe();

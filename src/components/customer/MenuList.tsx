@@ -7,6 +7,7 @@ import { Lock, ArrowRight, Calendar } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useNavigate } from "react-router-dom";
 import { formatSmartDate } from "@/lib/utils/formatDate";
+import { queryKeys } from "@/lib/queryKeys";
 
 interface MenuListProps {
   tenantId?: string;
@@ -21,7 +22,7 @@ export function MenuList({ tenantId: propTenantId, customerId: propCustomerId }:
 
   // Fetch available menus for this customer
   const { data: menus, isLoading } = useQuery({
-    queryKey: ["customer-menus", finalTenantId, finalCustomerId],
+    queryKey: queryKeys.customerMenus.byTenantCustomer(finalTenantId, finalCustomerId),
     queryFn: async () => {
       if (!finalTenantId || !finalCustomerId) return [];
 

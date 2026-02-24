@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAccountIdSafe } from './useAccountId';
+import { queryKeys } from "@/lib/queryKeys";
 
 export interface Product {
     id: string;
@@ -17,7 +18,7 @@ export const useProducts = () => {
     const accountId = useAccountIdSafe();
 
     return useQuery({
-        queryKey: ["crm-products", accountId],
+        queryKey: queryKeys.crm.products.lists(),
         queryFn: async (): Promise<Product[]> => {
             if (!accountId) throw new Error('Account ID required');
 

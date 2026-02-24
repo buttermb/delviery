@@ -250,7 +250,7 @@ function FeaturesEditor({ section, onUpdateContent, onUpdateStyles }: SectionEdi
                                     onValueChange={(v) => updateFeature(index, 'icon', v)}
                                 >
                                     <SelectTrigger className="h-8 text-xs">
-                                        <SelectValue />
+                                        <SelectValue placeholder="Select icon" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="clock">Clock</SelectItem>
@@ -367,7 +367,7 @@ function ProductGridEditor({ section, onUpdateContent, onUpdateStyles }: Section
                                 onValueChange={(v) => onUpdateContent('initial_categories_shown', Number(v))}
                             >
                                 <SelectTrigger className="h-8 text-xs">
-                                    <SelectValue />
+                                    <SelectValue placeholder="Select count" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="1">1</SelectItem>
@@ -968,7 +968,7 @@ function CustomHTMLEditor({ section, onUpdateContent, onUpdateStyles }: SectionE
                                 onValueChange={(v) => onUpdateStyles('padding_y', v)}
                             >
                                 <SelectTrigger className="h-8 text-xs">
-                                    <SelectValue />
+                                    <SelectValue placeholder="Select padding" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="2rem">Small (2rem)</SelectItem>
@@ -985,7 +985,7 @@ function CustomHTMLEditor({ section, onUpdateContent, onUpdateStyles }: SectionE
                                 onValueChange={(v) => onUpdateStyles('max_width', v)}
                             >
                                 <SelectTrigger className="h-8 text-xs">
-                                    <SelectValue />
+                                    <SelectValue placeholder="Select width" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="800px">Narrow (800px)</SelectItem>

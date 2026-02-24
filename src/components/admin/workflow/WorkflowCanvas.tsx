@@ -537,7 +537,7 @@ export function WorkflowCanvas() {
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select trigger type" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="database_event">

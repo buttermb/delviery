@@ -16,6 +16,7 @@ import { formatWeight } from '@/lib/utils/formatWeight';
 import { useNavigate, useParams } from 'react-router-dom';
 import { subDays } from 'date-fns';
 import { ProductLink } from '@/components/admin/cross-links';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface TopProduct {
   product_id: string;
@@ -38,7 +39,7 @@ export function TopProductsWidget() {
   };
 
   const { data: topProducts, isLoading } = useQuery({
-    queryKey: ['top-products', account?.id],
+    queryKey: queryKeys.dashboardWidgets.topProducts(account?.id),
     queryFn: async () => {
       if (!account?.id) return [];
 

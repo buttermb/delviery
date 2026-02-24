@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { LeafletMapWidget } from './LeafletMapWidget';
 
 // Deterministic hash for stable coordinates based on string
@@ -43,7 +44,7 @@ export function LocationMapWidget() {
   }
 
   const { data: locations } = useQuery<LocationData | null>({
-    queryKey: ['location-map', account?.id],
+    queryKey: queryKeys.dashboardWidgets.locationMap(account?.id),
     queryFn: async (): Promise<LocationData | null> => {
       if (!account?.id) return null;
 

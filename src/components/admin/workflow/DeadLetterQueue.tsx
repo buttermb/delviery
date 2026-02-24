@@ -155,7 +155,7 @@ export function DeadLetterQueue() {
             />
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-[180px]" aria-label="Filter by status">
-                <SelectValue />
+                <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>

@@ -13,12 +13,13 @@ import { DASHBOARD_QUERY_CONFIG } from '@/lib/react-query-config';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatPercentage } from '@/lib/utils/formatPercentage';
 import { format, subDays, startOfDay } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function RevenueChartWidget() {
   const { account } = useAccount();
 
   const { data: revenueData, isLoading } = useQuery({
-    queryKey: ['revenue-chart', account?.id],
+    queryKey: queryKeys.dashboardWidgets.revenueChart(account?.id),
     queryFn: async () => {
       if (!account?.id) return null;
 

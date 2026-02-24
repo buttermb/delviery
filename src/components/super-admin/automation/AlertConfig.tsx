@@ -130,7 +130,7 @@ export function AlertConfig() {
                 onValueChange={(value) => setNewAlert({ ...newAlert, metric: value })}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select metric" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="cpu">CPU Usage</SelectItem>
@@ -150,7 +150,7 @@ export function AlertConfig() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select condition" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="above">Above</SelectItem>
@@ -181,7 +181,7 @@ export function AlertConfig() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select channel" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="email">Email</SelectItem>

@@ -359,7 +359,7 @@ export function StockAdjustment({
               onValueChange={(v) => setAdjustmentType(v as AdjustmentType)}
             >
               <SelectTrigger id="adjustment-type">
-                <SelectValue />
+                <SelectValue placeholder="Select adjustment type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="add">

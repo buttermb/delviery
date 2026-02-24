@@ -314,7 +314,7 @@ export default function RecordFrontedReturn() {
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select condition" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="good">Good - Return to Inventory</SelectItem>

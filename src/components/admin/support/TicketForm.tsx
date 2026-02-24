@@ -184,7 +184,7 @@ export function TicketForm({
                 }
               >
                 <SelectTrigger className="min-h-[44px] touch-manipulation">
-                  <SelectValue />
+                  <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="low">Low</SelectItem>
@@ -204,7 +204,7 @@ export function TicketForm({
                 }
               >
                 <SelectTrigger className="min-h-[44px] touch-manipulation">
-                  <SelectValue />
+                  <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="open">Open</SelectItem>

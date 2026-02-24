@@ -432,7 +432,7 @@ export default function SuperAdminDashboardPage() {
                 <CardTitle>Revenue Over Time</CardTitle>
                 <Select value={timeRange} onValueChange={setTimeRange}>
                   <SelectTrigger className="w-32">
-                    <SelectValue />
+                    <SelectValue placeholder="Select range" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="7d">Last 7 Days</SelectItem>

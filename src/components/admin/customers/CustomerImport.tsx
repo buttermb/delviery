@@ -310,7 +310,7 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
 
   // Query existing customers for duplicate detection
   const { data: existingCustomers, isLoading: loadingExisting } = useQuery({
-    queryKey: ['customer-import-duplicates', tenantId, parsedCustomers],
+    queryKey: queryKeys.customerDetail.importDuplicates(tenantId, parsedCustomers),
     queryFn: async () => {
       if (!tenantId || parsedCustomers.length === 0) return [];
 

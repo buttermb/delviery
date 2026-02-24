@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function PendingTransfersWidget() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export function PendingTransfersWidget() {
   };
 
   const { data: transfers, isLoading } = useQuery({
-    queryKey: ['pending-transfers', account?.id],
+    queryKey: queryKeys.dashboardWidgets.pendingTransfers(account?.id),
     queryFn: async () => {
       if (!account?.id) return [];
 

@@ -209,7 +209,7 @@ export function RecallForm({
                 }
               >
                 <SelectTrigger className="min-h-[44px] touch-manipulation">
-                  <SelectValue />
+                  <SelectValue placeholder="Select severity" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="low">Low</SelectItem>
@@ -229,7 +229,7 @@ export function RecallForm({
                 }
               >
                 <SelectTrigger className="min-h-[44px] touch-manipulation">
-                  <SelectValue />
+                  <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>

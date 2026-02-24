@@ -546,7 +546,7 @@ export function StorefrontLiveOrders() {
                         disabled={updateStatusMutation.isPending}
                       >
                         <SelectTrigger className="w-[140px] h-8 text-xs">
-                          <SelectValue />
+                          <SelectValue placeholder="Update status" />
                         </SelectTrigger>
                         <SelectContent>
                           {STATUS_PROGRESSION.map((s) => (

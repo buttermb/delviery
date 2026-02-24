@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import {
@@ -122,8 +123,8 @@ export interface UseCreditSubscriptionReturn {
 // Constants
 // ============================================================================
 
-const SUBSCRIPTION_QUERY_KEY = 'subscriptions';
-const SUBSCRIPTION_PLANS_QUERY_KEY = 'subscription-plans';
+// Using queryKeys.subscriptions.byTenant(tenantId) for subscriptions
+// Using queryKeys.subscriptions.plans() for subscription plans
 
 // Credits included per plan per period (monthly)
 const PLAN_CREDITS_PER_PERIOD: Record<string, number> = {
@@ -219,7 +220,7 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
     isLoading: isLoadingSubscription,
     error: subscriptionError,
   } = useQuery({
-    queryKey: [SUBSCRIPTION_QUERY_KEY, tenantId],
+    queryKey: queryKeys.credits.subscription(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 
@@ -264,7 +265,7 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
     isLoading: isLoadingPlans,
     error: plansError,
   } = useQuery({
-    queryKey: [SUBSCRIPTION_PLANS_QUERY_KEY],
+    queryKey: queryKeys.subscriptions.plans(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('subscription_plans')
@@ -284,7 +285,7 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
 
   // ---- Fetch credit balance for period calculation ----
   const { data: creditData } = useQuery({
-    queryKey: ['credits', tenantId],
+    queryKey: queryKeys.credits.balance(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 
@@ -387,8 +388,8 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
 
   // ---- Invalidate subscription queries ----
   const invalidateSubscriptionQueries = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: [SUBSCRIPTION_QUERY_KEY, tenantId] });
-    queryClient.invalidateQueries({ queryKey: ['credits', tenantId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.credits.subscription(tenantId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.credits.balance(tenantId) });
   }, [queryClient, tenantId]);
 
   // ---- Subscribe Mutation ----

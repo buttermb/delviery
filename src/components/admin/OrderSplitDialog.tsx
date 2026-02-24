@@ -284,7 +284,7 @@ export function OrderSplitDialog({
               onValueChange={(val) => setNumberOfShipments(parseInt(val, 10))}
             >
               <SelectTrigger className="w-24">
-                <SelectValue />
+                <SelectValue placeholder="Select" />
               </SelectTrigger>
               <SelectContent>
                 {[2, 3, 4, 5].map((n) => (

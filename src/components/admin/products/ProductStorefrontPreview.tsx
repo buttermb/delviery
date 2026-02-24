@@ -629,8 +629,7 @@ export function ProductStorefrontPreview({
 
                     {/* Preview Display */}
                     <div
-                      className="rounded-xl p-6"
-                      style={{ backgroundColor: '#0a0a0a' }}
+                      className="rounded-xl p-6 bg-neutral-950"
                     >
                       {previewMode === 'card' ? (
                         <div className="max-w-xs mx-auto">

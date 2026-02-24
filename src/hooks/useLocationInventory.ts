@@ -33,7 +33,7 @@ export function useLocationInventory(locationId?: string) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ['location-inventory', tenant?.id, locationId],
+    queryKey: queryKeys.locationInventory.byLocation(tenant?.id, locationId),
     queryFn: async (): Promise<LocationInventoryItem[]> => {
       if (!tenant?.id || !locationId) return [];
 

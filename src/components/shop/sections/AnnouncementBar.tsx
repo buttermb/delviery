@@ -87,8 +87,8 @@ export function AnnouncementBar({
 
     return (
         <div
-            className="relative py-2 px-4 text-center text-sm font-medium"
-            style={{ backgroundColor: accentColor, color: '#ffffff' }}
+            className="relative py-2 px-4 text-center text-sm font-medium text-white"
+            style={{ backgroundColor: accentColor }}
         >
             <AnimatePresence mode="wait">
                 <motion.div

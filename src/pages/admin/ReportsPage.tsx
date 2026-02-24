@@ -189,7 +189,7 @@ export default function ReportsPage() {
           </div>
           <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)} data-tutorial="date-range">
             <SelectTrigger className="w-full sm:w-[180px] min-h-[44px] touch-manipulation text-sm sm:text-base">
-              <SelectValue />
+              <SelectValue placeholder="Select time range" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="week">Last Week</SelectItem>

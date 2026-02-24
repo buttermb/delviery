@@ -61,7 +61,7 @@ export function SidebarModeSwitcher({
                 <span className="text-sm font-medium">Sidebar:</span>
                 <Select value={mode} onValueChange={(v) => setMode(v as SidebarMode)}>
                     <SelectTrigger className="w-40">
-                        <SelectValue />
+                        <SelectValue placeholder="Select mode" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="classic">

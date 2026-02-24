@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAccount } from '@/contexts/AccountContext';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function InventoryAlertsWidget() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export function InventoryAlertsWidget() {
   };
 
   const { data: alerts, isLoading } = useQuery({
-    queryKey: ['inventory-alerts-widget', account?.id],
+    queryKey: queryKeys.dashboardWidgets.inventoryAlerts(account?.id),
     queryFn: async () => {
       if (!account?.id) return [];
 

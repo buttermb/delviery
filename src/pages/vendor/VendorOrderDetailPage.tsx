@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Truck, Check, X } from "lucide-react";
 import { DetailPageSkeleton } from "@/components/admin/shared/LoadingSkeletons";
 import { useVendorAuth } from '@/contexts/VendorAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from "sonner";
 import { humanizeError } from '@/lib/humanizeError';
 import { Separator } from '@/components/ui/separator';
@@ -35,7 +36,7 @@ export function VendorOrderDetailPage() {
 
     // Fetch Order Details
     const { data: order, isLoading } = useQuery({
-        queryKey: ['vendor-order', orderId],
+        queryKey: queryKeys.vendorOrders.detail(orderId),
         enabled: !!orderId && !!vendor,
         queryFn: async () => {
             // Fetch order with items
@@ -67,8 +68,8 @@ export function VendorOrderDetailPage() {
         },
         onSuccess: (_, newStatus) => {
             toast.success(`Order marked as ${newStatus}`);
-            queryClient.invalidateQueries({ queryKey: ['vendor-order', orderId] });
-            queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.vendorOrders.detail(orderId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.vendorOrders.all });
         },
         onError: (error) => {
             toast.error('Failed to update order status', { description: humanizeError(error) });

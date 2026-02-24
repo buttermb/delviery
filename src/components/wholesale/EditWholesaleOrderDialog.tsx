@@ -30,6 +30,7 @@ import { Loader2, Plus, Minus, Trash2, Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useWholesaleCouriers } from '@/hooks/useWholesaleData';
 import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface OrderItem {
   id: string;
@@ -180,7 +181,7 @@ export function EditWholesaleOrderDialog({
       if (insertError) throw insertError;
 
       // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
 
       toast.success('Order updated successfully');
       onOpenChange(false);
@@ -234,7 +235,7 @@ export function EditWholesaleOrderDialog({
               <Label>Order Status</Label>
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pending">Pending</SelectItem>
@@ -249,7 +250,7 @@ export function EditWholesaleOrderDialog({
               <Label>Payment Status</Label>
               <Select value={paymentStatus} onValueChange={setPaymentStatus}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select payment status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unpaid">Unpaid</SelectItem>

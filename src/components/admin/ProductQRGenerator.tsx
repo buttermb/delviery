@@ -352,7 +352,7 @@ export function ProductQRGenerator({ product, open, onOpenChange }: ProductQRGen
             <Label>QR Code Size</Label>
             <Select value={qrSize} onValueChange={(v) => setQrSize(v as QRSize)}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select QR size" />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(QR_SIZES).map(([key, { label }]) => (

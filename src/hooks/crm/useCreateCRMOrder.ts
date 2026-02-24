@@ -2,12 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { LineItem, CRMPreOrder, CRMInvoice } from '@/types/crm';
 import { toast } from 'sonner';
-import { crmPreOrderKeys } from './usePreOrders';
-import { crmInvoiceKeys } from './useInvoices';
 import { useAccountIdSafe } from './useAccountId';
 import { logger } from '@/lib/logger';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { humanizeError } from '@/lib/humanizeError';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface CreateCRMOrderInput {
     client_id: string;
@@ -111,8 +110,8 @@ export function useCreateCRMOrder() {
         },
         onMutate: async () => {
             // Cancel any outgoing refetches
-            await queryClient.cancelQueries({ queryKey: crmPreOrderKeys.all });
-            await queryClient.cancelQueries({ queryKey: crmInvoiceKeys.all });
+            await queryClient.cancelQueries({ queryKey: queryKeys.crm.preOrders.all() });
+            await queryClient.cancelQueries({ queryKey: queryKeys.crm.invoices.all() });
         },
         onError: (error: unknown) => {
             logger.error('CRM order creation failed', error, { component: 'useCreateCRMOrder' });
@@ -133,8 +132,8 @@ export function useCreateCRMOrder() {
             }
         },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: crmPreOrderKeys.all });
-            queryClient.invalidateQueries({ queryKey: crmInvoiceKeys.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.crm.preOrders.all() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
         },
     });
 }

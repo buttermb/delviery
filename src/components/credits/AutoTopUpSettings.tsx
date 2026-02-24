@@ -213,7 +213,7 @@ export function AutoTopUpSettings({
             </div>
             <Select value={threshold} onValueChange={setThreshold}>
               <SelectTrigger id="threshold">
-                <SelectValue />
+                <SelectValue placeholder="Select threshold" />
               </SelectTrigger>
               <SelectContent>
                 {thresholdOptions.map((opt) => (
@@ -235,7 +235,7 @@ export function AutoTopUpSettings({
             <Label htmlFor="topup-amount">Credits to add</Label>
             <Select value={topUpAmount} onValueChange={setTopUpAmount}>
               <SelectTrigger id="topup-amount">
-                <SelectValue />
+                <SelectValue placeholder="Select amount" />
               </SelectTrigger>
               <SelectContent>
                 {topUpOptions.map((opt) => (
@@ -264,7 +264,7 @@ export function AutoTopUpSettings({
             </div>
             <Select value={maxPerMonth} onValueChange={setMaxPerMonth}>
               <SelectTrigger id="max-per-month">
-                <SelectValue />
+                <SelectValue placeholder="Select limit" />
               </SelectTrigger>
               <SelectContent>
                 {maxOptions.map((opt) => (

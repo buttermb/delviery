@@ -365,7 +365,7 @@ function RecurringOrderSetupComponent({
                 onValueChange={(v) => setValue("frequency", v as RecurringOrderFrequency)}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select frequency" />
                 </SelectTrigger>
                 <SelectContent>
                   {FREQUENCY_OPTIONS.map((opt) => (

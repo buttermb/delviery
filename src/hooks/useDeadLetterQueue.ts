@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface DeadLetterEntry {
   id: string;
@@ -41,7 +42,7 @@ export function useDeadLetterQueue() {
   const queryClient = useQueryClient();
 
   const { data: entries, isLoading } = useQuery<DeadLetterEntry[]>({
-    queryKey: ['dead-letter-queue', tenant?.id],
+    queryKey: queryKeys.deadLetterQueue.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -72,8 +73,8 @@ export function useDeadLetterQueue() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dead-letter-queue'] });
-      queryClient.invalidateQueries({ queryKey: ['workflow-executions'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.deadLetterQueue.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.workflowExecutions.all });
       toast.success('Workflow execution queued for retry');
     },
     onError: (error: unknown) => {
@@ -92,7 +93,7 @@ export function useDeadLetterQueue() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dead-letter-queue'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.deadLetterQueue.all });
       toast.success('Entry marked as resolved');
     },
     onError: (error: unknown) => {
@@ -117,7 +118,7 @@ export function useDeadLetterQueue() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dead-letter-queue'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.deadLetterQueue.all });
       toast.success('Entry ignored');
     },
     onError: (error: unknown) => {
@@ -137,7 +138,7 @@ export function useDeadLetterQueue() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dead-letter-queue'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.deadLetterQueue.all });
       toast.success('Entry deleted');
     },
     onError: (error: unknown) => {

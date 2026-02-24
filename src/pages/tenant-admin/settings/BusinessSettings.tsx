@@ -453,7 +453,7 @@ export default function BusinessSettings() {
               onValueChange={(value) => handleInfoChange('timezone', value)}
             >
               <SelectTrigger className="w-full sm:w-64">
-                <SelectValue />
+                <SelectValue placeholder="Select timezone" />
               </SelectTrigger>
               <SelectContent>
                 {TIMEZONES.map((tz) => (
@@ -621,7 +621,7 @@ export default function BusinessSettings() {
           <div className="mt-6 p-6 rounded-lg border shadow-sm" style={{ background: `linear-gradient(135deg, ${brandColors.primary}20, ${brandColors.accent}20)` }}>
             <p className="text-sm font-medium mb-3">Login Page Preview</p>
             <div className="flex gap-2">
-              <Button size="sm" style={{ backgroundColor: brandColors.primary, color: '#fff' }}>Login Button</Button>
+              <Button size="sm" className="text-white" style={{ backgroundColor: brandColors.primary }}>Login Button</Button>
               <Button size="sm" variant="outline" style={{ borderColor: brandColors.accent, color: brandColors.accent }}>Sign Up</Button>
             </div>
           </div>

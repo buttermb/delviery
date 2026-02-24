@@ -327,7 +327,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
             <label className="text-sm font-medium">Label Size</label>
             <Select value={labelSize} onValueChange={(value) => setLabelSize(value as LabelSize)}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select label size" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="small">Small (2" x 1")</SelectItem>

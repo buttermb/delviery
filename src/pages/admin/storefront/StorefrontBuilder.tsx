@@ -1024,7 +1024,7 @@ export function StorefrontBuilder({
                                             <Label className="text-xs">Font Family</Label>
                                             <Select value={themeConfig.typography?.fontFamily || 'Inter'} onValueChange={(v) => setThemeConfig(prev => ({ ...prev, typography: { ...prev.typography, fontFamily: v } }))}>
                                                 <SelectTrigger className="h-8 text-xs">
-                                                    <SelectValue />
+                                                    <SelectValue placeholder="Select font" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="Inter">Inter</SelectItem>

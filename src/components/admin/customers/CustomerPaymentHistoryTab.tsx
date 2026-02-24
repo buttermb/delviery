@@ -53,6 +53,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CustomerPaymentHistoryTabProps {
@@ -146,7 +147,7 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
     isError: paymentsError,
     error: paymentsErrorObj,
   } = useQuery({
-    queryKey: ['customer-payments', customerId, tenantId],
+    queryKey: queryKeys.customerDetail.payments(customerId, tenantId),
     queryFn: async () => {
       if (!tenantId) {
         throw new Error('Tenant ID is required');
@@ -183,7 +184,7 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
     data: orders,
     isLoading: ordersLoading,
   } = useQuery({
-    queryKey: ['customer-orders-totals', customerId, tenantId],
+    queryKey: queryKeys.customerDetail.ordersTotals(customerId, tenantId),
     queryFn: async () => {
       if (!tenantId) {
         throw new Error('Tenant ID is required');

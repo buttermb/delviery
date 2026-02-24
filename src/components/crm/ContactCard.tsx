@@ -21,6 +21,7 @@ import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { displayName } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ContactCardProps {
   customerId: string;
@@ -53,7 +54,7 @@ export function ContactCard({
 }: ContactCardProps) {
   // Fetch recent activity count
   const { data: activityCount } = useQuery<number>({
-    queryKey: ['customer-activity-count', customerId, tenantId],
+    queryKey: queryKeys.customerComms.activityCount(customerId, tenantId),
     queryFn: async (): Promise<number> => {
       const { count, error } = await supabase
         .from('customer_activities')
@@ -69,7 +70,7 @@ export function ContactCard({
 
   // Fetch order count
   const { data: orderCount } = useQuery({
-    queryKey: ['customer-order-count', customerId],
+    queryKey: queryKeys.customerComms.orderCount(customerId),
     queryFn: async () => {
       const { count, error } = await supabase
         .from('orders')

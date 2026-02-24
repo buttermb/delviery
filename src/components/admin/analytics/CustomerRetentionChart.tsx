@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CustomerRetentionChartProps {
     storeId?: string;
@@ -19,7 +20,7 @@ interface CustomerAnalytics {
 
 export function CustomerRetentionChart({ storeId, className }: CustomerRetentionChartProps) {
     const { data: analytics, isLoading, error } = useQuery({
-        queryKey: ['customer-retention', storeId],
+        queryKey: queryKeys.storefrontAnalytics.customerRetention(storeId),
         queryFn: async (): Promise<CustomerAnalytics | null> => {
             if (!storeId) return null;
 

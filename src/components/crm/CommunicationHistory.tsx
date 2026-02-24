@@ -51,6 +51,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Union type for all communication sources
 interface CommunicationItem {
@@ -105,7 +106,7 @@ export function CommunicationHistory({
 
   // Fetch direct communications
   const { data: directComms, isLoading: directLoading } = useQuery({
-    queryKey: ['customer-direct-comms', customerId, tenantId],
+    queryKey: queryKeys.customerComms.direct(customerId, tenantId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customer_communications')
@@ -139,7 +140,7 @@ export function CommunicationHistory({
 
   // Fetch order-related communications (status updates that were sent to customer)
   const { data: orderComms, isLoading: orderLoading } = useQuery({
-    queryKey: ['customer-order-comms', customerId, tenantId],
+    queryKey: queryKeys.customerComms.orderComms(customerId, tenantId),
     queryFn: async () => {
       // First get customer's orders
       const { data: orders, error: ordersError } = await supabase
@@ -185,7 +186,7 @@ export function CommunicationHistory({
 
   // Fetch recall notifications
   const { data: recallComms, isLoading: recallLoading } = useQuery({
-    queryKey: ['customer-recall-comms', customerId],
+    queryKey: queryKeys.customerComms.recallComms(customerId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('recall_notifications')
@@ -292,7 +293,7 @@ export function CommunicationHistory({
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customer-direct-comms', customerId, tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerComms.direct(customerId, tenantId) });
       toast.success(`${newMessage.type === 'email' ? 'Email' : 'SMS'} has been sent successfully`);
       setSendDialogOpen(false);
       setNewMessage({ type: 'email', subject: '', body: '' });
@@ -427,7 +428,7 @@ export function CommunicationHistory({
               <Label className="text-xs text-muted-foreground">Channel</Label>
               <Select value={channelFilter} onValueChange={(v: ChannelFilter) => setChannelFilter(v)}>
                 <SelectTrigger className="w-[140px]">
-                  <SelectValue />
+                  <SelectValue placeholder="All Channels" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Channels</SelectItem>
@@ -443,7 +444,7 @@ export function CommunicationHistory({
               <Label className="text-xs text-muted-foreground">Date Range</Label>
               <Select value={dateFilter} onValueChange={(v: DateFilter) => setDateFilter(v)}>
                 <SelectTrigger className="w-[140px]">
-                  <SelectValue />
+                  <SelectValue placeholder="All Time" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Time</SelectItem>
@@ -629,7 +630,7 @@ export function CommunicationHistory({
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="email">Email</SelectItem>

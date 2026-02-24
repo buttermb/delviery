@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import { triggerHaptic } from "@/lib/utils/mobile";
+import { queryKeys } from "@/lib/queryKeys";
 
 export function CustomerMobileNav() {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ export function CustomerMobileNav() {
 
   // Fetch cart items for authenticated users
   const { data: cartItems = [] } = useQuery({
-    queryKey: ["cart", user?.id, cartUpdateKey],
+    queryKey: queryKeys.customerCart.byUser(user?.id, cartUpdateKey),
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase

@@ -186,7 +186,7 @@ export function QuickMessageButton({
                 onValueChange={(v) => setChannel(v as 'sms' | 'email')}
               >
                 <SelectTrigger className="h-8">
-                  <SelectValue />
+                  <SelectValue placeholder="Select channel" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="sms">SMS</SelectItem>

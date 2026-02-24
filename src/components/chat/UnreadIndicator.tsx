@@ -5,6 +5,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Badge } from '@/components/ui/badge';
 import { useEffect } from 'react';
 
@@ -16,7 +17,7 @@ interface UnreadIndicatorProps {
 
 export function UnreadIndicator({ userId, tenantId, className }: UnreadIndicatorProps) {
     const { data: unreadCount = 0, refetch } = useQuery({
-        queryKey: ['unread-messages', userId, tenantId],
+        queryKey: queryKeys.chat.unread.count(userId, tenantId),
         queryFn: async () => {
             const { data, error } = await supabase.rpc('get_unread_message_count' as any, {
                 p_user_id: userId,

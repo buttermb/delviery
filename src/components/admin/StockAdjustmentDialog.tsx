@@ -150,7 +150,7 @@ export function StockAdjustmentDialog({
             <Label htmlFor="type">Adjustment Type *</Label>
             <Select value={adjustmentType} onValueChange={(v) => setAdjustmentType(v as "add" | "subtract")}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select adjustment type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="add">Add Stock</SelectItem>

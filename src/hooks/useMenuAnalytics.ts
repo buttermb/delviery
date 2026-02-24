@@ -1,7 +1,8 @@
-import { logger } from '@/lib/logger';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
+import { logger } from '@/lib/logger';
 
 interface MenuAnalytics {
   total_views: number;
@@ -32,7 +33,7 @@ export const useMenuAnalytics = (menuId: string) => {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ['menu-analytics', tenant?.id, menuId],
+    queryKey: queryKeys.menus.analytics(tenant?.id ?? '', menuId),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
@@ -104,7 +105,7 @@ export const useMenuAnalytics = (menuId: string) => {
  */
 export const useProductImageAnalytics = (menuId: string) => {
   return useQuery({
-    queryKey: ['product-image-analytics', menuId],
+    queryKey: queryKeys.productImageAnalytics.byMenu(menuId),
     queryFn: async () => {
       const { data: menuProducts } = await supabase
         .from('disposable_menu_products')

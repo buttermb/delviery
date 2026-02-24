@@ -128,7 +128,7 @@ export function useAnalyticsData(filters: AnalyticsFilters = {}) {
   } = filters;
 
   return useQuery({
-    queryKey: ['analytics', 'unified', tenantId, startDate?.toISOString(), endDate?.toISOString(), orderType],
+    queryKey: queryKeys.unifiedAnalytics.all(tenantId, startDate?.toISOString(), endDate?.toISOString(), orderType),
     queryFn: async (): Promise<UnifiedAnalyticsData> => {
       if (!tenantId) {
         throw new Error('No tenant context');
@@ -701,7 +701,7 @@ export function useInventoryAnalytics() {
   const tenantId = tenant?.id;
 
   return useQuery({
-    queryKey: ['inventory', 'analytics', tenantId],
+    queryKey: queryKeys.inventoryAnalytics.all(tenantId),
     queryFn: async () => {
       if (!tenantId) throw new Error('No tenant context');
       const products = await fetchProductsData(tenantId);
@@ -747,7 +747,7 @@ export function useFinanceAnalytics() {
   const tenantId = tenant?.id;
 
   return useQuery({
-    queryKey: ['finance-analytics', tenantId],
+    queryKey: queryKeys.financeAnalytics.all(tenantId),
     queryFn: async () => {
       if (!tenantId) throw new Error('No tenant context');
 

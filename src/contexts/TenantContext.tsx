@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tenant, TenantUser } from '@/lib/tenant';
 import { getTenantById } from '@/lib/tenant';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface TenantContextType {
   tenant: Tenant | null;
@@ -26,7 +27,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
 
   // Get tenant user from auth session
   const { data: session } = useQuery({
-    queryKey: ['session'],
+    queryKey: queryKeys.session.all,
     queryFn: async () => {
       const { data } = await supabase.auth.getSession();
       return data.session;
@@ -35,7 +36,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
 
   // Get tenant user
   const { data: tenantUser, isLoading: loadingUser } = useQuery<any>({
-    queryKey: ['tenant-user', session?.user?.id],
+    queryKey: queryKeys.tenantUser.byUserId(session?.user?.id),
     queryFn: async () => {
       if (!session?.user?.id) return null;
 
@@ -60,7 +61,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
 
   // Get tenant data
   const { data: tenant, isLoading: loadingTenant, error } = useQuery<any>({
-    queryKey: ['tenant', currentTenantId],
+    queryKey: queryKeys.tenants.detail(currentTenantId || ''),
     queryFn: async () => {
       if (!currentTenantId) return null;
       return await getTenantById(currentTenantId);
@@ -88,7 +89,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
           .update({ last_activity_at: new Date().toISOString() })
           .eq('id', tenant.id)
           .then(() => {
-            queryClient.invalidateQueries({ queryKey: ['tenant', tenant.id] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tenants.detail(tenant.id) });
           })
           .catch((err) => logger.error('Failed to update tenant activity', err));
       }, 60000); // Every minute
@@ -99,8 +100,8 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
 
   const refresh = () => {
     if (currentTenantId) {
-      queryClient.invalidateQueries({ queryKey: ['tenant', currentTenantId] });
-      queryClient.invalidateQueries({ queryKey: ['tenant-user'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenants.detail(currentTenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantUser.all });
     }
   };
 

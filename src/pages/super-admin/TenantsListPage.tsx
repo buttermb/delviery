@@ -331,7 +331,7 @@ export default function TenantsListPage() {
                   <label className="text-sm font-medium mb-2 block">Sort By</label>
                   <Select defaultValue="name">
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="name">Name</SelectItem>

@@ -133,7 +133,7 @@ export function CustomIntegrationForm({
               onValueChange={(value) => setFormData({ ...formData, type: value })}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="webhook">Webhook</SelectItem>
@@ -176,7 +176,7 @@ export function CustomIntegrationForm({
               onValueChange={(value) => setFormData({ ...formData, auth_type: value })}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select auth type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>

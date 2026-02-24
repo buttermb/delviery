@@ -34,6 +34,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
 import { CREDIT_COSTS } from '@/lib/credits';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface CreditOptimizationTipsProps {
   className?: string;
@@ -150,7 +151,7 @@ export function CreditOptimizationTips({
 
   // Fetch usage patterns to personalize tips
   const { data: usageData } = useQuery({
-    queryKey: ['credit-optimization-usage', tenantId],
+    queryKey: queryKeys.creditOptimizationUsage.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 

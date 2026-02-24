@@ -568,7 +568,7 @@ export function DataTable<TData extends Record<string, unknown>>({
                 onValueChange={(value) => handlePageSizeChange(Number(value))}
               >
                 <SelectTrigger className="w-[70px] h-8">
-                  <SelectValue />
+                  <SelectValue placeholder="Rows" />
                 </SelectTrigger>
                 <SelectContent>
                   {pageSizeOptions.map((size) => (

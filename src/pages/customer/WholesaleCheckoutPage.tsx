@@ -397,7 +397,7 @@ export default function WholesaleCheckoutPage() {
               <CardContent>
                 <Select value={paymentTerms} onValueChange={setPaymentTerms}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select payment terms" />
                   </SelectTrigger>
                   <SelectContent>
                     {PAYMENT_TERMS.map((term) => (

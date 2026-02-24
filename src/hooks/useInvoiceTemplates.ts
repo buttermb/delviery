@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
+import { queryKeys } from "@/lib/queryKeys";
 
 export interface InvoiceTemplateData {
   colors: {
@@ -74,7 +75,7 @@ export function useInvoiceTemplates() {
   const queryClient = useQueryClient();
 
   const { data: templates = [], isLoading } = useQuery({
-    queryKey: ["invoice-templates", tenant?.id],
+    queryKey: queryKeys.invoiceTemplates.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -127,7 +128,7 @@ export function useInvoiceTemplates() {
       return { ...data, template_data: data.template_data as unknown as InvoiceTemplateData } as InvoiceTemplate;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["invoice-templates", tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoiceTemplates.byTenant(tenant?.id) });
       toast.success("Template created");
     },
     onError: () => toast.error("Failed to create template")
@@ -154,7 +155,7 @@ export function useInvoiceTemplates() {
       return { ...data, template_data: data.template_data as unknown as InvoiceTemplateData } as InvoiceTemplate;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["invoice-templates", tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoiceTemplates.byTenant(tenant?.id) });
       toast.success("Template updated");
     },
     onError: () => toast.error("Failed to update template")
@@ -180,7 +181,7 @@ export function useInvoiceTemplates() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["invoice-templates", tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoiceTemplates.byTenant(tenant?.id) });
       toast.success("Default template updated");
     },
     onError: () => toast.error("Failed to set default template")
@@ -198,7 +199,7 @@ export function useInvoiceTemplates() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["invoice-templates", tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoiceTemplates.byTenant(tenant?.id) });
       toast.success("Template deleted");
     },
     onError: () => toast.error("Failed to delete template")

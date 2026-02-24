@@ -372,7 +372,7 @@ export default function StorefrontBundles() {
             }
           >
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder="Select discount type" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="percentage">

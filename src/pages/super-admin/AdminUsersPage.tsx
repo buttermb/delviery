@@ -150,7 +150,7 @@ export default function AdminUsersPage() {
                 <Label htmlFor="role">Role</Label>
                 <Select value={newAdminRole} onValueChange={(value: 'super_admin' | 'admin') => setNewAdminRole(value)}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">Admin</SelectItem>

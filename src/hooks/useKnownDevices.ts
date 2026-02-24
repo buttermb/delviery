@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
@@ -39,9 +40,6 @@ export interface SuspiciousLoginAlert {
   created_at: string;
 }
 
-const DEVICES_QUERY_KEY = ['known-devices'] as const;
-const ALERTS_QUERY_KEY = ['suspicious-login-alerts'] as const;
-
 /**
  * Hook for managing user's known devices
  */
@@ -49,7 +47,7 @@ export function useKnownDevices(userId?: string) {
   const queryClient = useQueryClient();
 
   const devicesQuery = useQuery({
-    queryKey: [...DEVICES_QUERY_KEY, userId],
+    queryKey: queryKeys.security.knownDevices(userId),
     queryFn: async () => {
       if (!userId) return [];
       const { data, error } = await (supabase as any)
@@ -65,7 +63,7 @@ export function useKnownDevices(userId?: string) {
   });
 
   const alertsQuery = useQuery({
-    queryKey: [...ALERTS_QUERY_KEY, userId],
+    queryKey: queryKeys.security.suspiciousAlerts(userId),
     queryFn: async () => {
       if (!userId) return [];
       const { data, error } = await (supabase as any)
@@ -91,7 +89,7 @@ export function useKnownDevices(userId?: string) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: DEVICES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: queryKeys.security.knownDevices(userId) });
       toast.success('Device trusted successfully');
     },
     onError: (error: unknown) => {
@@ -111,7 +109,7 @@ export function useKnownDevices(userId?: string) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: DEVICES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: queryKeys.security.knownDevices(userId) });
       toast.success('Device untrusted successfully');
     },
     onError: (error: unknown) => {
@@ -131,7 +129,7 @@ export function useKnownDevices(userId?: string) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: DEVICES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: queryKeys.security.knownDevices(userId) });
       toast.success('Device removed successfully');
     },
     onError: (error: unknown) => {
@@ -152,8 +150,8 @@ export function useKnownDevices(userId?: string) {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ALERTS_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: DEVICES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: queryKeys.security.suspiciousAlerts(userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.security.knownDevices(userId) });
       toast.success('Login confirmed successfully');
     },
     onError: (error: unknown) => {

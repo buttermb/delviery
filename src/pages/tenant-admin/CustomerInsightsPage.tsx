@@ -257,7 +257,7 @@ export default function CustomerInsightsPage() {
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue />
+            <SelectValue placeholder="Select time range" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="7d">Last 7 Days</SelectItem>

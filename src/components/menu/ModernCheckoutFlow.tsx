@@ -1836,8 +1836,8 @@ export function ModernCheckoutFlow({
 
         queryClient.invalidateQueries({ queryKey: queryKeys.orders.live(tenantId) });
         queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats(tenantId) });
-        queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
-        queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.menuOrders.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.badgeCounts.all });
         queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       }
 

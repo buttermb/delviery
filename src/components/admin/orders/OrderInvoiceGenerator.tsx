@@ -543,7 +543,7 @@ export async function printOrderInvoice(props: OrderInvoiceGeneratorProps): Prom
     const doc = await generateOrderInvoicePDF(props);
     const pdfBlob = doc.output('blob');
     const pdfUrl = URL.createObjectURL(pdfBlob);
-    const printWindow = window.open(pdfUrl);
+    const printWindow = window.open(pdfUrl, '_blank', 'noopener,noreferrer');
     if (printWindow) {
       printWindow.onload = () => {
         printWindow.print();

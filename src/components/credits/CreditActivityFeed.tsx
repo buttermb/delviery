@@ -302,7 +302,7 @@ export function CreditActivityFeed({
             <Select value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
               <SelectTrigger className="w-[140px] h-9">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue />
+                <SelectValue placeholder="All Activity" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Activity</SelectItem>

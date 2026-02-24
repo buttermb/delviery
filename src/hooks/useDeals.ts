@@ -1,8 +1,9 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ShopCartItem } from '@/hooks/useShopCart';
-import { useMemo } from 'react';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface Deal {
     id: string;
@@ -29,7 +30,7 @@ export interface AppliedDeal {
 export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[], customerEmail?: string) {
     // Fetch active deals from marketplace_deals table directly
     const { data: deals = [], isLoading } = useQuery({
-        queryKey: ['active-deals', storeId],
+        queryKey: queryKeys.activeDeals.byStore(storeId),
         queryFn: async (): Promise<Deal[]> => {
             if (!storeId) return [];
 
@@ -58,7 +59,7 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
 
     // Fetch customer order count for first-time deals
     const { data: customerData } = useQuery({
-        queryKey: ['customer-order-count', storeId, customerEmail],
+        queryKey: queryKeys.customerOrderCount.byStoreEmail(storeId, customerEmail),
         queryFn: async () => {
             if (!storeId || !customerEmail) return { orderCount: 0, dealUsage: {} };
 

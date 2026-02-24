@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 import { formatCurrency } from '@/lib/formatters';
 
 interface WholesaleClient {
@@ -40,7 +41,7 @@ export function useClientSuggestions() {
 
   // Fetch all clients with their order history summary
   const { data: clientsWithHistory = [], isLoading } = useQuery({
-    queryKey: ['client-suggestions', tenant?.id],
+    queryKey: queryKeys.clientSuggestions.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

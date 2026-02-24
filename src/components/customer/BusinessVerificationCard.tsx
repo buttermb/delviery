@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 const US_STATES = [
   'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
@@ -71,7 +72,7 @@ export function BusinessVerificationCard() {
 
   // Fetch existing marketplace profile (buyer profile)
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['marketplace-profile-buyer', tenantId],
+    queryKey: queryKeys.marketplaceProfile.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 
@@ -184,7 +185,7 @@ export function BusinessVerificationCard() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-profile-buyer', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProfile.byTenant(tenantId) });
       toast.success('Business Profile Submitted — Your business information has been submitted for verification. You will be notified once verified.');
     },
     onError: (error: unknown) => {

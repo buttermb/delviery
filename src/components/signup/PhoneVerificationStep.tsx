@@ -296,7 +296,7 @@ export function PhoneVerificationStep({
                 onValueChange={(value) => setState(s => ({ ...s, countryCode: value }))}
               >
                 <SelectTrigger className="w-[120px]">
-                  <SelectValue />
+                  <SelectValue placeholder="Code" />
                 </SelectTrigger>
                 <SelectContent>
                   {COUNTRY_CODES.map((c) => (

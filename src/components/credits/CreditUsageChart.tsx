@@ -22,6 +22,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { getCategoryDisplayName, type CreditCategory } from '@/lib/credits';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
 
 const CATEGORY_COLORS: Record<string, string> = {
   orders: '#3b82f6',
@@ -48,7 +49,7 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
   const { tenant } = useTenantAdminAuth();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['credit-usage', tenant?.id, days],
+    queryKey: queryKeys.creditUsage.byTenant(tenant?.id, days),
     queryFn: async () => {
       if (!tenant?.id) return null;
 

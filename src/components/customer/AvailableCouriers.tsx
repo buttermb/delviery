@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { Truck, Star, Users } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Courier {
   id: string;
@@ -25,7 +26,7 @@ export function AvailableCouriers() {
 
   // Fetch couriers for this tenant
   const { data: couriers, isLoading } = useQuery({
-    queryKey: ['available-couriers', tenant?.id],
+    queryKey: queryKeys.availableCouriers.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

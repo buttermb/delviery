@@ -30,6 +30,7 @@ import { formatDateForDisplay } from '@/lib/utils/revenue-analysis';
 import { SimpleRevenuePredictor } from '@/lib/ai/simple-revenue-prediction';
 import { groupOrdersByDate } from '@/lib/utils/revenue-analysis';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface PredictionData {
   predictions: Array<{
@@ -50,7 +51,7 @@ export function RevenuePredictionWidget() {
 
   // Fetch predictions from edge function
   const { data: predictionData, isLoading, error } = useQuery<PredictionData>({
-    queryKey: ['revenue-predictions', tenantId],
+    queryKey: queryKeys.dashboardWidgets.revenuePredictions(tenantId),
     queryFn: async () => {
       if (!tenantId) throw new Error('Tenant ID required');
 
@@ -78,7 +79,7 @@ export function RevenuePredictionWidget() {
 
   // Fetch historical data for chart
   const { data: historicalData } = useQuery<Array<{date: string; revenue: number}> | undefined>({
-    queryKey: ['revenue-historical', tenantId],
+    queryKey: queryKeys.dashboardWidgets.revenueHistorical(tenantId),
     queryFn: async (): Promise<Array<{date: string; revenue: number}>> => {
       if (!tenantId) return [];
 

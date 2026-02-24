@@ -336,7 +336,7 @@ export default function StorefrontCoupons() {
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select discount type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="percentage">Percentage (%)</SelectItem>

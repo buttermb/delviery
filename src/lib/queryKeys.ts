@@ -1246,4 +1246,430 @@ export const queryKeys = {
     byTenant: (tenantId?: string | null) =>
       [...queryKeys.featureToggles.all, 'tenant', tenantId] as const,
   },
+
+  // Auth Session
+  session: {
+    all: ['session'] as const,
+  },
+
+  // Tenant User (auth context)
+  tenantUser: {
+    all: ['tenant-user'] as const,
+    byUserId: (userId?: string) =>
+      [...queryKeys.tenantUser.all, userId] as const,
+  },
+
+  // Business Tier
+  businessTier: {
+    all: ['business-tier'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.businessTier.all, tenantId] as const,
+  },
+
+  // Delivery ETAs
+  deliveryEtas: {
+    all: ['delivery-etas'] as const,
+    byTenantOrders: (tenantId?: string, orderIds?: string[]) =>
+      [...queryKeys.deliveryEtas.all, tenantId, orderIds] as const,
+    avgTime: (tenantId?: string) =>
+      ['avg-delivery-time', tenantId] as const,
+    runnerStopCounts: (tenantId?: string, runnerIds?: string[]) =>
+      ['runner-stop-counts', tenantId, runnerIds] as const,
+  },
+
+  // Customer Lookup
+  customerLookup: {
+    all: ['customer-lookup'] as const,
+    search: (tenantId?: string, searchType?: string, query?: string) =>
+      [...queryKeys.customerLookup.all, tenantId, searchType, query] as const,
+  },
+
+  // Active Deals (storefront)
+  activeDeals: {
+    all: ['active-deals'] as const,
+    byStore: (storeId?: string) =>
+      [...queryKeys.activeDeals.all, storeId] as const,
+  },
+
+  // Customer Order Count (storefront)
+  customerOrderCount: {
+    all: ['customer-order-count'] as const,
+    byStoreEmail: (storeId?: string, email?: string) =>
+      [...queryKeys.customerOrderCount.all, storeId, email] as const,
+  },
+
+  // Dead Letter Queue
+  deadLetterQueue: {
+    all: ['dead-letter-queue'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.deadLetterQueue.all, tenantId] as const,
+  },
+
+  // Workflow Executions
+  workflowExecutions: {
+    all: ['workflow-executions'] as const,
+  },
+
+  // Attention Queue
+  attentionQueue: {
+    all: ['attention-queue'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.attentionQueue.all, tenantId] as const,
+  },
+
+  // Contacts Stats
+  contactsStats: {
+    all: ['contacts-stats'] as const,
+    byTenantType: (tenantId?: string, contactType?: string) =>
+      [...queryKeys.contactsStats.all, tenantId, contactType] as const,
+  },
+
+  // Client Suggestions
+  clientSuggestions: {
+    all: ['client-suggestions'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.clientSuggestions.all, tenantId] as const,
+  },
+
+  // Notification Preferences
+  notificationPreferences: {
+    all: ['notification-preferences'] as const,
+    byUser: (userId?: string) =>
+      [...queryKeys.notificationPreferences.all, userId] as const,
+  },
+
+  // Financial Command Center
+  financialCommandCenter: {
+    quickStats: (tenantId?: string) =>
+      ['financial-quick-stats', tenantId] as const,
+    cashFlowPulse: (tenantId?: string) =>
+      ['financial-cash-flow-pulse', tenantId] as const,
+    arCommand: (tenantId?: string) =>
+      ['financial-ar-command', tenantId] as const,
+    frontedInventory: (tenantId?: string) =>
+      ['financial-fronted-inventory', tenantId] as const,
+    performancePulse: (tenantId?: string) =>
+      ['financial-performance-pulse', tenantId] as const,
+    revenueReports: () => ['revenue-reports'] as const,
+    revenueChart: () => ['revenue-chart'] as const,
+  },
+
+  // Financial Data (payment schedules, collection activities, expenses)
+  financialData: {
+    paymentSchedules: () => ['payment-schedules'] as const,
+    expenseSummary: (tenantId?: string) =>
+      ['expense-summary', tenantId] as const,
+  },
+
+  // Credit Transactions (extended)
+  creditTransactionsExt: {
+    count: (tenantId?: string, typeFilter?: string, dateFrom?: string, dateTo?: string) =>
+      ['credit-transactions-count', tenantId, typeFilter, dateFrom, dateTo] as const,
+    list: (tenantId?: string, typeFilter?: string, dateFrom?: string, dateTo?: string, pages?: number) =>
+      ['credit-transactions', tenantId, typeFilter, dateFrom, dateTo, pages] as const,
+  },
+
+  // Menu Dashboard Analytics
+  menuDashboardAnalytics: {
+    menus: (tenantId?: string) =>
+      ['menu-dashboard-analytics-menus', tenantId] as const,
+    logs: (tenantId?: string, menuIds?: string[]) =>
+      ['menu-dashboard-analytics-logs', tenantId, menuIds] as const,
+    orders: (tenantId?: string) =>
+      ['menu-dashboard-analytics-orders', tenantId] as const,
+  },
+
+  // Unified Analytics (cross-domain)
+  unifiedAnalytics: {
+    all: (tenantId?: string, startDate?: string, endDate?: string, orderType?: string) =>
+      ['analytics', 'unified', tenantId, startDate, endDate, orderType] as const,
+  },
+
+  // Inventory Analytics (standalone)
+  inventoryAnalytics: {
+    all: (tenantId?: string) =>
+      ['inventory', 'analytics', tenantId] as const,
+  },
+
+  // Finance Analytics (standalone)
+  financeAnalytics: {
+    all: (tenantId?: string) =>
+      ['finance-analytics', tenantId] as const,
+  },
+
+  // Free Tier Limits
+  freeTier: {
+    purchaseStatusAndBalance: (tenantId?: string) =>
+      ['purchase-status-and-balance', tenantId] as const,
+    usage: (tenantId?: string) =>
+      ['free-tier-usage', tenantId] as const,
+  },
+
+  // Global Search
+  globalSearch: {
+    all: (query?: string, tenantId?: string) =>
+      ['global-search', query, tenantId] as const,
+  },
+
+  // Product Stock (inventory check)
+  productStock: {
+    all: ['product-stock'] as const,
+    byProduct: (productId?: string, tenantId?: string) =>
+      [...queryKeys.productStock.all, productId, tenantId] as const,
+  },
+
+  // Inventory Batch (bulk stock lookup)
+  inventoryBatch: {
+    all: ['inventory-batch'] as const,
+    byProducts: (tenantId?: string, productKey?: string) =>
+      [...queryKeys.inventoryBatch.all, tenantId, productKey] as const,
+  },
+
+  // Location Inventory
+  locationInventory: {
+    all: ['location-inventory'] as const,
+    byLocation: (tenantId?: string, locationId?: string) =>
+      [...queryKeys.locationInventory.all, tenantId, locationId] as const,
+  },
+
+  // Delivery Zones
+  deliveryZones: {
+    all: ['delivery-zones'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.deliveryZones.all, tenantId] as const,
+  },
+
+  // Menu Whitelist
+  menuWhitelist: {
+    all: ['menu-whitelist'] as const,
+    byMenu: (menuId?: string) =>
+      [...queryKeys.menuWhitelist.all, menuId] as const,
+  },
+
+  // Menu Orders
+  menuOrders: {
+    all: ['menu-orders'] as const,
+    byMenu: (menuId?: string, tenantId?: string) =>
+      [...queryKeys.menuOrders.all, menuId, tenantId] as const,
+  },
+
+  // Menu Security Events
+  menuSecurityEvents: {
+    all: ['menu-security-events'] as const,
+    byMenu: (menuId?: string, tenantId?: string) =>
+      [...queryKeys.menuSecurityEvents.all, menuId, tenantId] as const,
+  },
+
+  // Menu Access Logs
+  menuAccessLogs: {
+    all: ['menu-access-logs'] as const,
+    byMenu: (menuId?: string) =>
+      [...queryKeys.menuAccessLogs.all, menuId] as const,
+  },
+
+  // Product Image Analytics
+  productImageAnalytics: {
+    all: ['product-image-analytics'] as const,
+    byMenu: (menuId?: string) =>
+      [...queryKeys.productImageAnalytics.all, menuId] as const,
+  },
+
+  // Invoice Templates
+  invoiceTemplates: {
+    all: ['invoice-templates'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.invoiceTemplates.all, tenantId] as const,
+  },
+
+  // Guest Cart Products (storefront)
+  guestCartProducts: {
+    all: ['guest-cart-products'] as const,
+    byIds: (productIds: string) =>
+      [...queryKeys.guestCartProducts.all, productIds] as const,
+  },
+
+  // Chat / Conversations
+  chat: {
+    all: ['chat'] as const,
+    conversations: {
+      all: () => [...queryKeys.chat.all, 'conversations'] as const,
+      list: (userId: string, userType: string, tenantId?: string) =>
+        [...queryKeys.chat.conversations.all(), userId, userType, tenantId] as const,
+      detail: (conversationId?: string | null, orderId?: string) =>
+        [...queryKeys.chat.conversations.all(), 'detail', conversationId, orderId] as const,
+    },
+    messages: {
+      all: () => [...queryKeys.chat.all, 'messages'] as const,
+      byConversation: (conversationId?: string | null) =>
+        [...queryKeys.chat.messages.all(), conversationId] as const,
+    },
+    unread: {
+      all: () => [...queryKeys.chat.all, 'unread'] as const,
+      count: (userId: string, tenantId?: string) =>
+        [...queryKeys.chat.unread.all(), userId, tenantId] as const,
+    },
+  },
+
+  // Customer Communications (CommunicationHistory, ContactCard)
+  customerComms: {
+    all: ['customer-comms'] as const,
+    direct: (customerId: string, tenantId: string) =>
+      [...queryKeys.customerComms.all, 'direct', customerId, tenantId] as const,
+    orderComms: (customerId: string, tenantId: string) =>
+      [...queryKeys.customerComms.all, 'order', customerId, tenantId] as const,
+    recallComms: (customerId: string) =>
+      [...queryKeys.customerComms.all, 'recall', customerId] as const,
+    activityCount: (customerId: string, tenantId: string) =>
+      [...queryKeys.customerComms.all, 'activity-count', customerId, tenantId] as const,
+    orderCount: (customerId: string) =>
+      [...queryKeys.customerComms.all, 'order-count', customerId] as const,
+  },
+
+  // Customer Cart (storefront, includes updateKey for reactivity)
+  customerCart: {
+    all: ['cart'] as const,
+    byUser: (userId?: string, updateKey?: number) =>
+      [...queryKeys.customerCart.all, userId, updateKey] as const,
+  },
+
+  // Customer Menus (storefront menu access)
+  customerMenus: {
+    all: ['customer-menus'] as const,
+    byTenantCustomer: (tenantId?: string, customerId?: string) =>
+      [...queryKeys.customerMenus.all, tenantId, customerId] as const,
+  },
+
+  // Order Courier (customer-facing courier tracking)
+  orderCourier: {
+    all: ['order-courier'] as const,
+    byOrder: (orderId?: string, tenantId?: string) =>
+      [...queryKeys.orderCourier.all, orderId, tenantId] as const,
+  },
+
+  // Marketplace Profile (buyer verification)
+  marketplaceProfile: {
+    all: ['marketplace-profile-buyer'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.marketplaceProfile.all, tenantId] as const,
+  },
+
+  // Available Couriers (customer-facing)
+  availableCouriers: {
+    all: ['available-couriers'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.availableCouriers.all, tenantId] as const,
+  },
+
+  // Email Verification Status
+  emailVerification: {
+    all: ['email-verification-status'] as const,
+    byAdmin: (adminId?: string) =>
+      [...queryKeys.emailVerification.all, adminId] as const,
+  },
+
+  // Unified Analytics (simple tenant-scoped)
+  unifiedAnalyticsSimple: {
+    all: ['unified-analytics'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.unifiedAnalyticsSimple.all, tenantId] as const,
+  },
+
+  // Credit Usage (chart data)
+  creditUsage: {
+    all: ['credit-usage'] as const,
+    byTenant: (tenantId?: string, days?: number) =>
+      [...queryKeys.creditUsage.all, tenantId, days] as const,
+  },
+
+  // Credit Subscription
+  creditSubscription: {
+    all: ['credit-subscription'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.creditSubscription.all, tenantId] as const,
+  },
+
+  // Credit Optimization Usage
+  creditOptimizationUsage: {
+    all: ['credit-optimization-usage'] as const,
+    byTenant: (tenantId?: string) =>
+      [...queryKeys.creditOptimizationUsage.all, tenantId] as const,
+  },
+
+  // Super Admin (extended keys for layout badges/alerts)
+  superAdminExt: {
+    atRiskCount: () => [...queryKeys.superAdmin.all, 'at-risk-count'] as const,
+    notifications: () => [...queryKeys.superAdmin.all, 'notifications'] as const,
+    securityAlerts: () => [...queryKeys.superAdmin.all, 'security-alerts'] as const,
+    systemStatus: () => [...queryKeys.superAdmin.all, 'system-status'] as const,
+  },
+
+  // Vendor Orders (vendor portal)
+  vendorOrders: {
+    all: ['vendor-orders'] as const,
+    list: (tenantId?: string) =>
+      [...queryKeys.vendorOrders.all, tenantId] as const,
+    detail: (orderId?: string) =>
+      [...queryKeys.vendorOrders.all, 'detail', orderId] as const,
+  },
+
+  // Forum Posts by Author
+  forumPostsByAuthor: {
+    all: ['forum-posts-by-author'] as const,
+    byAuthor: (authorId?: string) =>
+      [...queryKeys.forumPostsByAuthor.all, authorId] as const,
+  },
+
+  // Dashboard Widgets (inline key migrations)
+  dashboardWidgets: {
+    activityFeed: (tenantId?: string) =>
+      ['activity-feed', tenantId] as const,
+    locationMap: (tenantId?: string) =>
+      ['location-map', tenantId] as const,
+    inventoryAlerts: (tenantId?: string) =>
+      ['inventory-alerts-widget', tenantId] as const,
+    pendingTransfers: (tenantId?: string) =>
+      ['pending-transfers', tenantId] as const,
+    revenueChart: (tenantId?: string) =>
+      ['revenue-chart', tenantId] as const,
+    recentOrders: (tenantId?: string) =>
+      ['recent-orders-widget', tenantId] as const,
+    revenuePredictions: (tenantId?: string) =>
+      ['revenue-predictions', tenantId] as const,
+    revenueHistorical: (tenantId?: string) =>
+      ['revenue-historical', tenantId] as const,
+    topProducts: (tenantId?: string) =>
+      ['top-products', tenantId] as const,
+  },
+
+  // Storefront Analytics (inline key migrations)
+  storefrontAnalytics: {
+    conversionRate: (storeId?: string) =>
+      ['conversion-rate', storeId] as const,
+    averageOrderValue: (storeId?: string, timeRange?: string) =>
+      ['average-order-value', storeId, timeRange] as const,
+    customerRetention: (storeId?: string) =>
+      ['customer-retention', storeId] as const,
+    trafficSources: (storeId?: string, from?: string, to?: string) =>
+      ['traffic-sources', storeId, from, to] as const,
+  },
+
+  // Customer Detail Tabs (inline key migrations)
+  customerDetail: {
+    deliveryAddresses: (customerId: string, tenantId?: string) =>
+      ['customer-delivery-addresses', customerId, tenantId] as const,
+    deliveryHistory: (customerId: string, tenantId?: string) =>
+      ['customer-delivery-history', customerId, tenantId] as const,
+    orders: (customerId: string, tenantId?: string) =>
+      ['customer-orders', customerId, tenantId] as const,
+    preferredProducts: (customerId: string, tenantId?: string) =>
+      ['customer-preferred-products', customerId, tenantId] as const,
+    preferredAddress: (customerId?: string, tenantId?: string) =>
+      ['customer-preferred-address', customerId, tenantId] as const,
+    payments: (customerId: string, tenantId?: string) =>
+      ['customer-payments', customerId, tenantId] as const,
+    ordersTotals: (customerId: string, tenantId?: string) =>
+      ['customer-orders-totals', customerId, tenantId] as const,
+    importDuplicates: (tenantId?: string, parsedCustomers?: unknown) =>
+      ['customer-import-duplicates', tenantId, parsedCustomers] as const,
+  },
 } as const;

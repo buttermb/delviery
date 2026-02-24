@@ -139,7 +139,7 @@ export function WorkflowBuilder() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select trigger type" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableTriggers.map((trigger) => (

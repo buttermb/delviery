@@ -14,6 +14,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useVendorAuth } from '@/contexts/VendorAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 import type { Database } from '@/integrations/supabase/types';
 import { formatSmartDate } from '@/lib/formatters';
 
@@ -31,7 +32,7 @@ export default function VendorDashboardPage() {
   const navigate = useNavigate();
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: ['vendor-orders', vendor?.tenant_id],
+    queryKey: queryKeys.vendorOrders.list(vendor?.tenant_id),
     enabled: !!vendor?.tenant_id,
     queryFn: async () => {
       if (!vendor?.tenant_id) return [];

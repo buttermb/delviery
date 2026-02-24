@@ -498,7 +498,7 @@ export default function DispatchInventory() {
               <Label>Deal Type</Label>
               <Select value={dealType} onValueChange={setDealType}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select deal type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="fronted">Fronted (Pay Later)</SelectItem>

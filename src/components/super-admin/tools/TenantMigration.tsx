@@ -121,7 +121,7 @@ export function TenantMigration() {
           <Label>Migration Type</Label>
           <Select value={migrationType} onValueChange={(value: string) => setMigrationType(value as 'copy' | 'move' | 'export' | 'import')}>
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder="Select migration type" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="copy">Copy to Another Tenant</SelectItem>

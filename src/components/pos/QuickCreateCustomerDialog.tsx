@@ -276,7 +276,7 @@ export function QuickCreateCustomerDialog({
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select customer type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
