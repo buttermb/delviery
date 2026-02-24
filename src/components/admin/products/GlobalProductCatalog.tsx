@@ -96,7 +96,7 @@ export function GlobalProductCatalog() {
                 .eq('tenant_id', tenant.id);
 
             if (error) throw error;
-            return (data || []).map((i: any) => i.global_product_id);
+            return (data || []).map((i: Record<string, unknown>) => i.global_product_id);
         },
         enabled: !!tenant?.id,
     });

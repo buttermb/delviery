@@ -34,7 +34,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
     const [step, setStep] = useState<ImportStep>('upload');
     const [file, setFile] = useState<File | null>(null);
     const [fileHeaders, setFileHeaders] = useState<string[]>([]);
-    const [rawRecords, setRawRecords] = useState<any[]>([]);
+    const [rawRecords, setRawRecords] = useState<Record<string, unknown>[]>([]);
     const [mapping, setMapping] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(0);

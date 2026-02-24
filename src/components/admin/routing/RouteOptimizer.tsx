@@ -82,7 +82,7 @@ export function RouteOptimizer() {
   const [optimizedRoute, setOptimizedRoute] = useState<OptimizedRoute | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
-  const [mapRef, _setMapRef] = useState<any>(null);
+  const [mapRef, _setMapRef] = useState<unknown>(null);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
   // Mapbox Token
