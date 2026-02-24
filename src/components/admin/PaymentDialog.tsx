@@ -76,19 +76,23 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
       return;
     }
 
-    await processPayment.mutateAsync({
-      client_id: clientId,
-      amount: numAmount,
-      payment_method: paymentMethod,
-      reference_number: referenceNumber ? sanitizeFormInput(referenceNumber, 100) : null,
-      notes: notes ? sanitizeTextareaInput(notes, 500) : null
-    });
+    try {
+      await processPayment.mutateAsync({
+        client_id: clientId,
+        amount: numAmount,
+        payment_method: paymentMethod,
+        reference_number: referenceNumber ? sanitizeFormInput(referenceNumber, 100) : null,
+        notes: notes ? sanitizeTextareaInput(notes, 500) : null
+      });
 
-    onOpenChange(false);
-    // Reset form
-    setAmount("");
-    setReferenceNumber("");
-    setNotes("");
+      onOpenChange(false);
+      // Reset form
+      setAmount("");
+      setReferenceNumber("");
+      setNotes("");
+    } catch {
+      toast.error('Failed to process payment');
+    }
   };
 
   return (

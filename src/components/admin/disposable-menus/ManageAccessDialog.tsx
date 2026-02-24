@@ -8,7 +8,7 @@ import { useMenuWhitelist, useManageWhitelist } from '@/hooks/useDisposableMenus
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Copy, RefreshCw, Ban, Send, Loader2, Users, Eye } from 'lucide-react';
-import { showSuccessToast } from '@/utils/toastHelpers';
+import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { ImportCustomersDialog } from './ImportCustomersDialog';
 import { CustomerActivityTimeline } from './CustomerActivityTimeline';
 import { SendAccessLinkDialog } from './SendAccessLinkDialog';
@@ -49,37 +49,49 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
   const handleAddCustomer = async () => {
     if (!customerName || !customerPhone) return;
 
-    await manageWhitelist.mutateAsync({
-      menu_id: menu.id,
-      action: 'add',
-      customer_data: {
-        name: customerName,
-        phone: customerPhone,
-        email: customerEmail || null
-      }
-    });
+    try {
+      await manageWhitelist.mutateAsync({
+        menu_id: menu.id,
+        action: 'add',
+        customer_data: {
+          name: customerName,
+          phone: customerPhone,
+          email: customerEmail || null
+        }
+      });
 
-    // Reset form
-    setCustomerName('');
-    setCustomerPhone('');
-    setCustomerEmail('');
+      // Reset form
+      setCustomerName('');
+      setCustomerPhone('');
+      setCustomerEmail('');
+    } catch {
+      showErrorToast('Failed to add customer', 'Please try again');
+    }
   };
 
   const handleRevoke = async (whitelistId: string) => {
-    await manageWhitelist.mutateAsync({
-      menu_id: menu.id,
-      action: 'revoke',
-      whitelist_id: whitelistId,
-      customer_data: { reason: 'Manually revoked' }
-    });
+    try {
+      await manageWhitelist.mutateAsync({
+        menu_id: menu.id,
+        action: 'revoke',
+        whitelist_id: whitelistId,
+        customer_data: { reason: 'Manually revoked' }
+      });
+    } catch {
+      showErrorToast('Failed to revoke access', 'Please try again');
+    }
   };
 
   const handleRegenerateToken = async (whitelistId: string) => {
-    await manageWhitelist.mutateAsync({
-      menu_id: menu.id,
-      action: 'regenerate_token',
-      whitelist_id: whitelistId
-    });
+    try {
+      await manageWhitelist.mutateAsync({
+        menu_id: menu.id,
+        action: 'regenerate_token',
+        whitelist_id: whitelistId
+      });
+    } catch {
+      showErrorToast('Failed to regenerate token', 'Please try again');
+    }
   };
 
   const copyAccessUrl = (token: string) => {

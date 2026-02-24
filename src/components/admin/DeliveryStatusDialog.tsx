@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useUpdateDeliveryStatus } from "@/hooks/useWholesaleData";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 const STATUS_OPTIONS = [
   { value: "assigned", label: "Assigned", variant: "secondary" as const },
@@ -56,14 +57,18 @@ export function DeliveryStatusDialog({
   }, [open, currentStatus]);
 
   const handleSubmit = async () => {
-    await updateStatus.mutateAsync({
-      delivery_id: deliveryId,
-      status: newStatus,
-      notes: notes || undefined
-    });
+    try {
+      await updateStatus.mutateAsync({
+        delivery_id: deliveryId,
+        status: newStatus,
+        notes: notes || undefined
+      });
 
-    onOpenChange(false);
-    setNotes("");
+      onOpenChange(false);
+      setNotes("");
+    } catch {
+      toast.error('Failed to update delivery status');
+    }
   };
 
   return (

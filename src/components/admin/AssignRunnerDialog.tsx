@@ -11,6 +11,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
 import { formatPhoneNumber } from "@/lib/formatters";
+import { toast } from "sonner";
 
 interface AssignRunnerDialogProps {
   orderId: string;
@@ -47,13 +48,17 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
   const handleAssign = async () => {
     if (!selectedRunner) return;
 
-    await assignDelivery.mutateAsync({
-      order_id: orderId,
-      runner_id: selectedRunner
-    });
+    try {
+      await assignDelivery.mutateAsync({
+        order_id: orderId,
+        runner_id: selectedRunner
+      });
 
-    onOpenChange(false);
-    setSelectedRunner("");
+      onOpenChange(false);
+      setSelectedRunner("");
+    } catch {
+      toast.error('Failed to assign runner');
+    }
   };
 
   return (

@@ -832,7 +832,12 @@ function CashRegisterContent() {
         e.preventDefault();
         setPaymentMethod('cash');
         executeCreditAction('pos_process_sale', async () => {
-          await processPayment.mutateAsync();
+          try {
+            await processPayment.mutateAsync();
+          } catch (error: unknown) {
+            // Error already handled by mutation's onError callback
+            logger.error('F8 cash payment failed', error, { component: 'CashRegister' });
+          }
         });
       }
 
@@ -841,7 +846,12 @@ function CashRegisterContent() {
         e.preventDefault();
         setPaymentMethod('credit');
         executeCreditAction('pos_process_sale', async () => {
-          await processPayment.mutateAsync();
+          try {
+            await processPayment.mutateAsync();
+          } catch (error: unknown) {
+            // Error already handled by mutation's onError callback
+            logger.error('F9 card payment failed', error, { component: 'CashRegister' });
+          }
         });
       }
 
@@ -1295,9 +1305,14 @@ function CashRegisterContent() {
                   className="flex-1 min-h-[44px]"
                   variant="default"
                   onClick={async () => {
-                    await executeCreditAction('pos_process_sale', async () => {
-                      await processPayment.mutateAsync();
-                    });
+                    try {
+                      await executeCreditAction('pos_process_sale', async () => {
+                        await processPayment.mutateAsync();
+                      });
+                    } catch (error: unknown) {
+                      // Error already handled by mutation's onError callback
+                      logger.error('Pay button payment failed', error, { component: 'CashRegister' });
+                    }
                   }}
                   disabled={cart.length === 0 || processPayment.isPending}
                 >

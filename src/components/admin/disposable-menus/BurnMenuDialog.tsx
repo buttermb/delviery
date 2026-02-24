@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Flame, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useBurnMenu } from '@/hooks/useDisposableMenus';
 import type { DisposableMenu } from '@/types/admin';
 
@@ -29,20 +30,24 @@ export const BurnMenuDialog = ({ menu, open, onOpenChange }: BurnMenuDialogProps
   const handleBurn = async () => {
     if (confirmText !== 'BURN') return;
 
-    await burnMenu.mutateAsync({
-      menu_id: menu.id,
-      burn_type: burnType,
-      burn_reason: burnReason,
-      auto_regenerate: autoRegenerate,
-      migrate_customers: migrateCustomers
-    });
+    try {
+      await burnMenu.mutateAsync({
+        menu_id: menu.id,
+        burn_type: burnType,
+        burn_reason: burnReason,
+        auto_regenerate: autoRegenerate,
+        migrate_customers: migrateCustomers
+      });
 
-    // Reset and close
-    setBurnReason('');
-    setConfirmText('');
-    setAutoRegenerate(false);
-    setMigrateCustomers(false);
-    onOpenChange(false);
+      // Reset and close
+      setBurnReason('');
+      setConfirmText('');
+      setAutoRegenerate(false);
+      setMigrateCustomers(false);
+      onOpenChange(false);
+    } catch {
+      toast.error('Failed to burn menu');
+    }
   };
 
   return (
