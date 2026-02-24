@@ -312,32 +312,6 @@ export const useWholesaleInventory = (tenantId?: string) => {
 };
 
 /**
- * @deprecated Use useWholesaleCouriers instead - integrates with the main couriers table
- */
-export const useWholesaleRunners = () => {
-  const { tenant } = useTenantAdminAuth();
-
-  return useQuery({
-    queryKey: queryKeys.wholesaleData.runners(tenant?.id),
-    queryFn: async () => {
-      if (!tenant?.id) return [];
-
-      const { data, error } = await supabase
-        .from("wholesale_runners")
-        .select("id, tenant_id, full_name, phone, vehicle_type, is_active, created_at")
-        .eq("tenant_id", tenant.id)
-        .order("full_name");
-
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!tenant?.id,
-    staleTime: 60_000,
-    gcTime: 300_000,
-  });
-};
-
-/**
  * Fetch couriers for wholesale deliveries
  * Uses the main couriers table with tenant isolation
  */

@@ -35,14 +35,6 @@ interface CrmInvoiceClient {
 
 const crmClient = supabase as unknown as CrmInvoiceClient;
 
-/** @deprecated Use queryKeys.crm.invoices from @/lib/queryKeys instead */
-export const crmInvoiceKeys = {
-    all: queryKeys.crm.invoices.all(),
-    lists: () => queryKeys.crm.invoices.lists(),
-    detail: (id: string) => queryKeys.crm.invoices.detail(id),
-    byClient: (clientId: string) => queryKeys.crm.invoices.byClient(clientId),
-};
-
 const normalizeInvoice = (row: unknown): CRMInvoice => {
     const data = row as Record<string, unknown>;
     return {
