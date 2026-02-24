@@ -32,7 +32,7 @@ function validateDeliveryZone(
     zip: string,
     subtotal: number
 ): { valid: boolean; error?: string; fee?: number } {
-    const zones = store.delivery_zones || [];
+    const zones = store.delivery_zones ?? [];
 
     if (zones.length === 0) {
         // No zones configured - allow all zips

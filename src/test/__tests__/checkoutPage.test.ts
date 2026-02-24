@@ -71,7 +71,7 @@ function validateDeliveryStep(
     return { valid: false, error: 'Please fill in your delivery address' };
   }
 
-  const deliveryZones = store.delivery_zones || [];
+  const deliveryZones = store.delivery_zones ?? [];
   if (deliveryZones.length > 0) {
     const matchingZone = deliveryZones.find((zone) => zone.zip_code === formData.zip);
     if (!matchingZone) {
@@ -107,7 +107,7 @@ function getDeliveryFee(
   if (freeShipping) return 0;
   if (subtotal >= store.free_delivery_threshold) return 0;
 
-  const deliveryZones = store.delivery_zones || [];
+  const deliveryZones = store.delivery_zones ?? [];
   const matchingZone = deliveryZones.find((zone) => zone.zip_code === zip);
 
   if (matchingZone) {

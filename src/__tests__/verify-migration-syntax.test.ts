@@ -23,8 +23,8 @@ describe('Migration SQL Syntax Verification', () => {
   });
 
   it('should have balanced parentheses', () => {
-    const openParens = (migrationContent.match(/\(/g) || []).length;
-    const closeParens = (migrationContent.match(/\)/g) || []).length;
+    const openParens = (migrationContent.match(/\(/g) ?? []).length;
+    const closeParens = (migrationContent.match(/\)/g) ?? []).length;
     expect(openParens).toBe(closeParens);
   });
 
@@ -34,7 +34,7 @@ describe('Migration SQL Syntax Verification', () => {
       .replace(/--.*$/gm, '') // Remove comments
       .replace(/\\'/g, ''); // Remove escaped single quotes
 
-    const singleQuotes = (cleaned.match(/'/g) || []).length;
+    const singleQuotes = (cleaned.match(/'/g) ?? []).length;
     expect(singleQuotes % 2).toBe(0);
   });
 
