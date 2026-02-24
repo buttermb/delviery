@@ -644,10 +644,10 @@ export function useOrganizationDetail({
           organization_id: organizationId,
           customer_id: data.customer_id,
           role: data.role,
-          is_primary_contact: data.is_primary_contact || false,
+          is_primary_contact: data.is_primary_contact ?? false,
           can_place_orders: data.can_place_orders ?? true,
           can_view_invoices: data.can_view_invoices ?? true,
-          can_manage_members: data.can_manage_members || false,
+          can_manage_members: data.can_manage_members ?? false,
           joined_at: new Date().toISOString(),
         })
         .select()

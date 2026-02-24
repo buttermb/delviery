@@ -68,8 +68,8 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
 
   // Clamp progress for the visual bar (max 100%), but show real percentage in text
   const progressBarValue = Math.min(data?.progressPercent || 0, 100);
-  const isExceeded = data?.isExceeded || false;
-  const isOnTrack = data?.isOnTrack || false;
+  const isExceeded = data?.isExceeded ?? false;
+  const isOnTrack = data?.isOnTrack ?? false;
 
   return (
     <div className={cn('space-y-4', className)}>

@@ -306,8 +306,8 @@ export function useBusinessTier() {
     metrics: data?.metrics || null,
     nextTier: data?.nextTier || null,
     nextTierRequirements: data?.nextTierRequirements || null,
-    qualifiesForUpgrade: data?.qualifiesForUpgrade || false,
-    tierOverride: data?.tierOverride || false,
+    qualifiesForUpgrade: data?.qualifiesForUpgrade ?? false,
+    tierOverride: data?.tierOverride ?? false,
     score: data?.score ?? 0,
     progress: data?.progress ?? 0,
 

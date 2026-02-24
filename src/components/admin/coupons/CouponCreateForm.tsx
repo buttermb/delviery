@@ -77,13 +77,13 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
         description: coupon.description || "",
         start_date: coupon.start_date ? new Date(coupon.start_date).toISOString().split("T")[0] : "",
         end_date: coupon.end_date ? new Date(coupon.end_date).toISOString().split("T")[0] : "",
-        never_expires: coupon.never_expires || false,
+        never_expires: coupon.never_expires ?? false,
         min_purchase: coupon.min_purchase?.toString() || "",
         max_discount: coupon.max_discount?.toString() || "",
         total_usage_limit: coupon.total_usage_limit?.toString() || "",
         per_user_limit: coupon.per_user_limit?.toString() || "",
         first_time_only: false, // Add this field if needed
-        auto_apply: coupon.auto_apply || false,
+        auto_apply: coupon.auto_apply ?? false,
       });
     } else if (open) {
       setFormData({

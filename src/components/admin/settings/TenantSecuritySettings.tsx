@@ -56,8 +56,8 @@ export default function TenantSecuritySettings() {
       const metadata = (account as unknown as Record<string, unknown>).metadata as Record<string, unknown> | undefined;
       const secSettings = (metadata?.security as Record<string, unknown>) || {};
       form.reset({
-        twoFactorEnabled: (secSettings.twoFactorEnabled as boolean) || false,
-        requirePasswordChange: (secSettings.requirePasswordChange as boolean) || false,
+        twoFactorEnabled: (secSettings.twoFactorEnabled as boolean) ?? false,
+        requirePasswordChange: (secSettings.requirePasswordChange as boolean) ?? false,
         sessionTimeout: (secSettings.sessionTimeout as number) || 30,
         passwordMinLength: (secSettings.passwordMinLength as number) || 8,
       });

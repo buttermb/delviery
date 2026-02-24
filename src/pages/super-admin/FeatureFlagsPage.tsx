@@ -36,13 +36,13 @@ export default function FeatureFlagsPage() {
         const existing = flagMap.get(key) || { 
           id: flag.id, 
           name: key, 
-          enabled: flag.enabled || false, 
-          tenants: 0 
+          enabled: flag.enabled ?? false,
+          tenants: 0
         };
         if (flag.enabled) {
           existing.tenants += 1;
         }
-        existing.enabled = existing.enabled || (flag.enabled || false);
+        existing.enabled = existing.enabled || (flag.enabled ?? false);
         flagMap.set(key, existing);
       });
 

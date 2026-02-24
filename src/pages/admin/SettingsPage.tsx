@@ -130,8 +130,8 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
 
       const secSettings = (metadata?.security as Record<string, unknown>) || {};
       securityForm.reset({
-        twoFactorEnabled: secSettings.twoFactorEnabled || false,
-        requirePasswordChange: secSettings.requirePasswordChange || false,
+        twoFactorEnabled: secSettings.twoFactorEnabled ?? false,
+        requirePasswordChange: secSettings.requirePasswordChange ?? false,
         sessionTimeout: secSettings.sessionTimeout || 30,
         passwordMinLength: secSettings.passwordMinLength || 8,
       });

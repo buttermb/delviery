@@ -304,7 +304,7 @@ export async function getTenantsWithCredits(
       tenantSlug: row.tenant_slug || '',
       balance: row.balance ?? 0,
       tierStatus: row.tier_status || 'free',
-      isFreeTier: row.is_free_tier || false,
+      isFreeTier: row.is_free_tier ?? false,
       creditsUsedToday: row.credits_used_today ?? 0,
       creditsUsedThisWeek: row.credits_used_this_week ?? 0,
       creditsUsedThisMonth: row.credits_used_this_month ?? 0,
@@ -389,7 +389,7 @@ export async function getTenantCreditDetail(
         id: tenant.id,
         name: tenant.business_name || 'Unknown',
         slug: tenant.slug || '',
-        isFreeTier: tenant.is_free_tier || false,
+        isFreeTier: tenant.is_free_tier ?? false,
         createdAt: tenant.created_at,
       },
       credits: {
