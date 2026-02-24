@@ -4,7 +4,7 @@
  * Allows user to reload and activate the new service worker
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

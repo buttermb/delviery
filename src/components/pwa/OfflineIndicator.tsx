@@ -3,7 +3,7 @@
  * Shows network status and sync state to users
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Wifi, WifiOff, Cloud, CloudOff, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

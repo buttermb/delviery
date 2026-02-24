@@ -3,7 +3,7 @@
  * Enables swipe-to-go-back navigation on detail pages
  */
 
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';

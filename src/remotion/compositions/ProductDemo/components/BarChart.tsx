@@ -1,4 +1,3 @@
-import React from 'react';
 import { spring, useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
 import { COLORS, SPRING_PRESETS } from '../../../config';
 

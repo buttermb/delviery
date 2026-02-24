@@ -3,7 +3,7 @@
  * Reduces friction: "Reorder" button pre-fills everything from past order
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Loader2, Check } from 'lucide-react';
 import {

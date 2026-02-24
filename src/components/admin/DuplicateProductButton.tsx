@@ -3,7 +3,7 @@
  * Reduces friction: Creates "Copy of [Product]" with all fields
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Copy, Loader2, Check } from 'lucide-react';
 import {
