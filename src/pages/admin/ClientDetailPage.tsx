@@ -26,8 +26,8 @@ import {
     Users
 } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { formatSmartDate } from '@/lib/formatters';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
@@ -197,7 +197,7 @@ export default function ClientDetailPage() {
                                                             />
                                                         </div>
                                                         <div className="text-sm text-muted-foreground">
-                                                            {format(new Date(invoice.invoice_date), 'MMM d, yyyy')}
+                                                            {formatSmartDate(invoice.invoice_date)}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -247,7 +247,7 @@ export default function ClientDetailPage() {
                                                     <div>
                                                         <div className="font-medium">{po.pre_order_number}</div>
                                                         <div className="text-sm text-muted-foreground">
-                                                            {format(new Date(po.created_at), 'MMM d, yyyy')}
+                                                            {formatSmartDate(po.created_at)}
                                                         </div>
                                                     </div>
                                                 </div>

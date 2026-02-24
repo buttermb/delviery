@@ -14,6 +14,7 @@ import { AdvancedReportsCard } from '@/components/admin/disposable-menus/Advance
 import { SecurityAuditLog } from '@/components/admin/disposable-menus/SecurityAuditLog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, subDays, parseISO } from 'date-fns';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface _AccessLog {
   id: string;
@@ -309,7 +310,7 @@ const DisposableMenuAnalytics = () => {
                   <div>
                     <p className="font-medium">{log.ip_address || 'Anonymous'}</p>
                     <p className="text-sm text-muted-foreground">
-                      {format(parseISO(log.accessed_at), 'MMM dd, yyyy HH:mm')}
+                      {formatSmartDate(log.accessed_at)}
                     </p>
                   </div>
                   <div className="text-right">
@@ -341,7 +342,7 @@ const DisposableMenuAnalytics = () => {
                     <div>
                       <p className="font-medium">Order #{order.id.slice(0, 8)}</p>
                       <p className="text-sm text-muted-foreground">
-                        {format(parseISO(order.created_at), 'MMM dd, yyyy HH:mm')}
+                        {formatSmartDate(order.created_at)}
                       </p>
                     </div>
                     <div className="text-right">

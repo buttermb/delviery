@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
 import { Clock, Edit, Loader2 } from "lucide-react";
+import { formatSmartDate } from "@/lib/formatters";
 
 interface Appointment {
   id: string;
@@ -58,7 +58,7 @@ export function AppointmentList({
               <div className="flex-1">
                 <div className="flex items-center gap-3">
                   <div className="text-sm font-medium">
-                    {format(new Date(apt.scheduled_at), "MMM d, yyyy h:mm a")}
+                    {formatSmartDate(apt.scheduled_at)}
                   </div>
                   <Badge variant={apt.status === "confirmed" ? "default" : "secondary"}>
                     {apt.status}

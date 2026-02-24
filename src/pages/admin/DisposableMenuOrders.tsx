@@ -9,7 +9,6 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { usePagination } from '@/hooks/usePagination';
 import { StandardPagination } from '@/components/shared/StandardPagination';
-import { format } from 'date-fns';
 import {
   ShoppingBag,
   Search,
@@ -33,6 +32,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LastUpdated } from '@/components/shared/LastUpdated';
 import CopyButton from '@/components/CopyButton';
+import { formatSmartDate } from '@/lib/formatters';
 const DisposableMenuOrders = () => {
   const { tenant } = useTenantAdminAuth();
   const { navigateToAdmin } = useTenantNavigation();
@@ -351,7 +351,7 @@ const DisposableMenuOrders = () => {
                             <span>{order.menu?.name || 'Unknown Menu'}</span>
                           </div>
                           <div>
-                            {format(new Date(order.created_at), 'MMM dd, yyyy HH:mm')}
+                            {formatSmartDate(order.created_at)}
                           </div>
                         </div>
                       </div>

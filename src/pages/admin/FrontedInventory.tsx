@@ -13,8 +13,8 @@ import {
   Eye, CreditCard, MessageCircle, Calendar
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { formatSmartDate } from '@/lib/formatters';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { handleError } from '@/utils/errorHandling/handlers';
@@ -255,8 +255,8 @@ export default function FrontedInventory() {
                         </div>
                         <div className="text-sm text-muted-foreground">
                           <Calendar className="inline h-3 w-3 mr-1" />
-                          Dispatched: {format(new Date(item.dispatched_at), 'MMM d, yyyy')} |
-                          Due: {format(new Date(item.payment_due_date), 'MMM d, yyyy')}
+                          Dispatched: {formatSmartDate(item.dispatched_at)} |
+                          Due: {formatSmartDate(item.payment_due_date)}
                         </div>
                       </div>
                       <Button variant="outline" size="sm" onClick={() => navigateToAdmin(`inventory/fronted/${item.id}`)}>

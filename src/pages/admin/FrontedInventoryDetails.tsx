@@ -20,6 +20,7 @@ import {
   FileText,
 } from "lucide-react";
 import { format } from "date-fns";
+import { formatSmartDate } from "@/lib/formatters";
 
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
@@ -351,7 +352,7 @@ export default function FrontedInventoryDetails() {
               <div className="flex-1">
                 <p className="font-medium">{scan.scan_type.toUpperCase()}</p>
                 <p className="text-sm text-muted-foreground">
-                  {scan.quantity} units • {format(new Date(scan.scanned_at), "MMM dd, yyyy HH:mm")}
+                  {scan.quantity} units • {formatSmartDate(scan.scanned_at)}
                 </p>
                 {scan.notes && <p className="text-sm mt-1">{scan.notes}</p>}
               </div>
