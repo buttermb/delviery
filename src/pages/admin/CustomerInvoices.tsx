@@ -66,7 +66,7 @@ export default function CustomerInvoices() {
   const [currentPage, setCurrentPage] = useState(1);
   const [allInvoices, setAllInvoices] = useState<Invoice[]>([]); // Store all invoices when using client-side pagination
   const [lineItems, setLineItems] = useState([
-    { description: '', quantity: 1, rate: 0, amount: 0 }
+    { id: crypto.randomUUID(), description: '', quantity: 1, rate: 0, amount: 0 }
   ]);
   const [formData, setFormData] = useState({
     customer_id: '',
@@ -232,7 +232,7 @@ export default function CustomerInvoices() {
   };
 
   const addLineItem = () => {
-    setLineItems([...lineItems, { description: '', quantity: 1, rate: 0, amount: 0 }]);
+    setLineItems([...lineItems, { id: crypto.randomUUID(), description: '', quantity: 1, rate: 0, amount: 0 }]);
   };
 
   const removeLineItem = (index: number) => {
@@ -484,7 +484,7 @@ export default function CustomerInvoices() {
 
                 <div className="border rounded-lg p-4 space-y-3">
                   {lineItems.map((item, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-2 items-start">
+                    <div key={item.id} className="grid grid-cols-12 gap-2 items-start">
                       <div className="col-span-5">
                         <Input
                           placeholder="Description / Service"

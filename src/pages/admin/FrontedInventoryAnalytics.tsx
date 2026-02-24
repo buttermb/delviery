@@ -1,7 +1,8 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { supabase } from "@/integrations/supabase/client";
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ import { humanizeError } from "@/lib/humanizeError";
 import { formatCurrency } from '@/lib/formatters';
 
 export default function FrontedInventoryAnalytics() {
+  const { tenant } = useTenantAdminAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalFronted: 0,
@@ -45,22 +47,20 @@ export default function FrontedInventoryAnalytics() {
   const [topProducts, setTopProducts] = useState<any[]>([]);
   const [timelineData, setTimelineData] = useState<any[]>([]);
 
-  useEffect(() => {
-    loadAnalytics();
-  }, []);
-
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
+    if (!tenant?.id) return;
     try {
       setLoading(true);
 
-      // Get all fronted inventory
+      // Get all fronted inventory filtered by tenant
       const { data: fronts, error } = await supabase
         .from("fronted_inventory")
         .select(`
           *,
           products (name, category),
           fronted_payments (amount)
-        `);
+        `)
+        .eq("account_id", tenant.id);
 
       if (error) {
         logger.error('Error loading fronted inventory:', error);
@@ -219,7 +219,11 @@ export default function FrontedInventoryAnalytics() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenant?.id]);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [loadAnalytics]);
 
   const exportReport = () => {
     const csv = [
