@@ -303,8 +303,8 @@ export function formatDimensionConstraints(constraints: ImageDimensionConstraint
   const parts: string[] = [];
 
   if (constraints.minWidth || constraints.minHeight) {
-    const minW = constraints.minWidth || 0;
-    const minH = constraints.minHeight || 0;
+    const minW = constraints.minWidth ?? 0;
+    const minH = constraints.minHeight ?? 0;
     parts.push(`Min: ${minW}x${minH}px`);
   }
 

@@ -24,8 +24,8 @@ export async function encryptCustomerData(customer: Partial<DecryptedCustomer>):
     account_id: customer.account_id,
     customer_type: customer.customer_type,
     status: customer.status,
-    total_spent: customer.total_spent || 0,
-    loyalty_points: customer.loyalty_points || 0,
+    total_spent: customer.total_spent ?? 0,
+    loyalty_points: customer.loyalty_points ?? 0,
     loyalty_tier: customer.loyalty_tier || 'bronze',
     
     // Encryption metadata

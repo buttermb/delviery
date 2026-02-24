@@ -240,7 +240,7 @@ export class QueryRegistry {
     const activePromises = Array.from(this.registry.values())
       .filter(m => m.promise && m.promiseUpdatedAt);
     const avgPromiseAge = activePromises.length > 0
-      ? activePromises.reduce((sum, m) => sum + (now - (m.promiseUpdatedAt || 0)), 0) / activePromises.length
+      ? activePromises.reduce((sum, m) => sum + (now - (m.promiseUpdatedAt ?? 0)), 0) / activePromises.length
       : 0;
 
     return {

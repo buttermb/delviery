@@ -270,7 +270,7 @@ export async function getReferralStats(tenantId: string): Promise<ReferralStats>
     }
 
     const totalCreditsEarned = (redemptions ?? []).reduce(
-      (sum, r) => sum + (r.referrer_credits_granted || 0) + 
+      (sum, r) => sum + (r.referrer_credits_granted ?? 0) +
         (r.conversion_bonus_granted ? REFERRAL_REWARDS.paidConversionBonus : 0),
       0
     );

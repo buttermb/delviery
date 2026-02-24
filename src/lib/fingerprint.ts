@@ -377,9 +377,9 @@ export async function generateFingerprint(): Promise<DeviceFingerprint> {
     const pixelRatio = window.devicePixelRatio || 1;
 
     // Collect hardware info
-    const hardwareConcurrency = navigator.hardwareConcurrency || 0;
+    const hardwareConcurrency = navigator.hardwareConcurrency ?? 0;
     const deviceMemory = (navigator as NavigatorWithExtensions).deviceMemory ?? null;
-    const maxTouchPoints = navigator.maxTouchPoints || 0;
+    const maxTouchPoints = navigator.maxTouchPoints ?? 0;
     const touchSupport = 'ontouchstart' in window || maxTouchPoints > 0;
 
     // Check storage capabilities
@@ -511,7 +511,7 @@ export async function getQuickFingerprint(): Promise<string> {
     screen.height,
     screen.colorDepth,
     new Date().getTimezoneOffset(),
-    navigator.hardwareConcurrency || 0,
+    navigator.hardwareConcurrency ?? 0,
   ].join('|');
 
   return sha256(quickString);

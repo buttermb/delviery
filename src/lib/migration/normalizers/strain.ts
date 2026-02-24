@@ -249,7 +249,7 @@ export function getTypicalTerpenes(type: StrainType): string[] {
   
   for (const strain of strains) {
     for (const terpene of strain.terpenes ?? []) {
-      terpeneCount[terpene] = (terpeneCount[terpene] || 0) + 1;
+      terpeneCount[terpene] = (terpeneCount[terpene] ?? 0) + 1;
     }
   }
   

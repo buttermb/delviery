@@ -166,7 +166,7 @@ class BugFinder {
    * Report a Supabase Edge Function error
    */
   reportEdgeFunctionError(functionName: string, error: Error | string, context?: Record<string, unknown>) {
-    const count = this.edgeFunctionErrors.get(functionName) || 0;
+    const count = this.edgeFunctionErrors.get(functionName) ?? 0;
     this.edgeFunctionErrors.set(functionName, count + 1);
 
     this.reportBug({

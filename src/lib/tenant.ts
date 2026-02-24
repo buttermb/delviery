@@ -144,7 +144,7 @@ export function checkLimit(tenant: Tenant, resource: keyof Tenant['limits']): {
   const limits = tenant.limits || {};
   const usage = tenant.usage || {};
 
-  const current = usage[resource] || 0;
+  const current = usage[resource] ?? 0;
   const limit = limits[resource];
 
   // -1 means unlimited
@@ -172,7 +172,7 @@ export function checkLimit(tenant: Tenant, resource: keyof Tenant['limits']): {
   // Handle case where limit is 0 but plan should have unlimited
   // For starter plans with 0 limit, return 0 (not unlimited)
   // For enterprise/professional with 0 limit, already handled above
-  const finalLimit = unlimited ? Infinity : (limit || 0);
+  const finalLimit = unlimited ? Infinity : (limit ?? 0);
 
   return {
     allowed: unlimited || (finalLimit > 0 && current < finalLimit),
@@ -209,7 +209,7 @@ export function getPlanPrice(plan: string): number {
     professional: 299,
     enterprise: 799,
   };
-  return prices[plan] || 0;
+  return prices[plan] ?? 0;
 }
 
 /**

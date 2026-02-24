@@ -10,7 +10,7 @@ export function exportTenantsToCSV(tenants: Array<Record<string, unknown>>) {
     t.owner_email,
     t.subscription_plan,
     t.subscription_status,
-    t.mrr || 0,
+    t.mrr ?? 0,
     t.created_at
   ]);
 

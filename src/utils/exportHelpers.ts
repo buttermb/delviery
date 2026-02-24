@@ -81,7 +81,7 @@ export const exportOrders = (orders: Array<Record<string, unknown> & { whitelist
     order_id: order.id,
     customer_name: order.whitelist?.customer_name || 'N/A',
     customer_phone: order.whitelist?.customer_phone || order.contact_phone || 'N/A',
-    total_amount: parseFloat(String(order.total_amount || 0)).toFixed(2),
+    total_amount: parseFloat(String(order.total_amount ?? 0)).toFixed(2),
     status: order.status || 'pending',
     delivery_method: order.delivery_method || 'N/A',
     special_instructions: order.special_instructions ?? '',
@@ -114,7 +114,7 @@ export const exportMenuAnalytics = (menu: Record<string, unknown>, accessLogs: A
   const totalViews = accessLogs.length;
   const uniqueVisitors = new Set(accessLogs.map(log => log.access_whitelist_id || log.ip_address)).size;
   const totalOrders = orders.length;
-  const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(String(order.total_amount || 0)), 0);
+  const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(String(order.total_amount ?? 0)), 0);
   const conversionRate = totalViews > 0 ? ((totalOrders / totalViews) * 100).toFixed(2) : '0.00';
   const avgOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : '0.00';
 
@@ -206,7 +206,7 @@ export const exportWhitelist = (whitelist: Array<Record<string, unknown>>, menuN
     invited_at: format(new Date(entry.invited_at), 'yyyy-MM-dd HH:mm:ss'),
     first_access_at: entry.first_access_at ? format(new Date(entry.first_access_at), 'yyyy-MM-dd HH:mm:ss') : 'Never',
     last_access_at: entry.last_access_at ? format(new Date(entry.last_access_at), 'yyyy-MM-dd HH:mm:ss') : 'Never',
-    view_count: entry.view_count || 0,
+    view_count: entry.view_count ?? 0,
     unique_access_token: entry.unique_access_token
   }));
 

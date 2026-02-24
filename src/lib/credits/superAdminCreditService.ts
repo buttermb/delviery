@@ -290,7 +290,7 @@ export async function getTenantsWithCredits(
       p_status: filters.status || null,
       p_search: filters.search || null,
       p_limit: filters.limit || 50,
-      p_offset: filters.offset || 0,
+      p_offset: filters.offset ?? 0,
     });
 
     if (error) {
@@ -380,7 +380,7 @@ export async function getTenantCreditDetail(
       .eq('referrer_tenant_id', tenantId);
 
     const totalReferralCredits = (referralCredits ?? []).reduce(
-      (sum, r) => sum + (r.referrer_credits_granted || 0),
+      (sum, r) => sum + (r.referrer_credits_granted ?? 0),
       0
     );
 
@@ -638,8 +638,8 @@ export async function getAllTransactions(options: {
     }
 
     query = query.range(
-      options.offset || 0,
-      (options.offset || 0) + (options.limit || 50) - 1
+      options.offset ?? 0,
+      (options.offset ?? 0) + (options.limit ?? 50) - 1
     );
 
     const { data, count, error } = await query;
@@ -709,7 +709,7 @@ export async function getCreditAnalytics(options: {
     const consumptionByDate = new Map<string, number>();
     (consumptionData ?? []).forEach((tx: Pick<CreditTransactionRow, 'created_at' | 'amount'>) => {
       const date = new Date(tx.created_at).toISOString().split('T')[0];
-      consumptionByDate.set(date, (consumptionByDate.get(date) || 0) + Math.abs(tx.amount));
+      consumptionByDate.set(date, (consumptionByDate.get(date) ?? 0) + Math.abs(tx.amount));
     });
 
     // Get purchase revenue
@@ -723,8 +723,8 @@ export async function getCreditAnalytics(options: {
     const revenueByDate = new Map<string, number>();
     (purchaseData ?? []).forEach((tx: { created_at: string; metadata?: Record<string, unknown> }) => {
       const date = new Date(tx.created_at).toISOString().split('T')[0];
-      const amount = (tx.metadata?.amount_paid as number) || 0;
-      revenueByDate.set(date, (revenueByDate.get(date) || 0) + amount);
+      const amount = (tx.metadata?.amount_paid as number) ?? 0;
+      revenueByDate.set(date, (revenueByDate.get(date) ?? 0) + amount);
     });
 
     // Get category breakdown
@@ -738,7 +738,7 @@ export async function getCreditAnalytics(options: {
     const categoryTotals = new Map<string, number>();
     (categoryData ?? []).forEach((tx: Pick<CreditTransactionRow, 'action_type' | 'amount'>) => {
       const category = getActionCategory(tx.action_type || 'other');
-      categoryTotals.set(category, (categoryTotals.get(category) || 0) + Math.abs(tx.amount));
+      categoryTotals.set(category, (categoryTotals.get(category) ?? 0) + Math.abs(tx.amount));
     });
 
     // Get top actions
@@ -1107,7 +1107,7 @@ export async function getReferralStats(): Promise<ReferralStats> {
       .select('referrer_credits_granted, referee_credits_granted');
 
     const totalCreditsAwarded = (creditsData ?? []).reduce(
-      (sum, r) => sum + (r.referrer_credits_granted || 0) + (r.referee_credits_granted || 0),
+      (sum, r) => sum + (r.referrer_credits_granted ?? 0) + (r.referee_credits_granted ?? 0),
       0
     );
 
@@ -1143,7 +1143,7 @@ export async function getReferralStats(): Promise<ReferralStats> {
           tenantName: r.tenants?.business_name || 'Unknown',
           referrals: r.uses_count ?? 0,
           creditsEarned: (earned ?? []).reduce(
-            (sum, e) => sum + (e.referrer_credits_granted || 0),
+            (sum, e) => sum + (e.referrer_credits_granted ?? 0),
             0
           ),
         };

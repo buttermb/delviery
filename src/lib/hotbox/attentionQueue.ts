@@ -36,10 +36,10 @@ export function calculateAttentionScore(item: AttentionItem): number {
   let score = 0;
 
   // 1. Base Priority
-  score += PRIORITY_SCORES[item.priority] || 0;
+  score += PRIORITY_SCORES[item.priority] ?? 0;
 
   // 2. Category Urgency
-  score += CATEGORY_SCORES[item.category] || 0;
+  score += CATEGORY_SCORES[item.category] ?? 0;
 
   // 3. Age Factor
   const created = new Date(item.timestamp);
@@ -81,7 +81,7 @@ export function sortAttentionQueue(items: AttentionItem[]): AttentionItem[] {
       ...item,
       score: calculateAttentionScore(item)
     }))
-    .sort((a, b) => (b.score || 0) - (a.score || 0));
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
 }
 
 /**
@@ -213,7 +213,7 @@ export async function fetchAttentionItems(
   // Pending menu orders (money waiting!)
   if (pendingMenuOrders.data && pendingMenuOrders.data.length > 0) {
     const totalValue = pendingMenuOrders.data.reduce(
-      (sum, o) => sum + Number(o.total_amount || 0), 0
+      (sum, o) => sum + Number(o.total_amount ?? 0), 0
     );
     const oldestOrder = pendingMenuOrders.data.reduce((oldest, o) => {
       const orderTime = new Date(o.created_at).getTime();
@@ -264,7 +264,7 @@ export async function fetchAttentionItems(
   if (pendingOrders.data && pendingOrders.data.length > 0) {
     const priority = pendingOrders.data.length > 5 ? 'critical' : 'important';
     const totalValue = pendingOrders.data.reduce(
-      (sum, o) => sum + Number(o.total_amount || 0), 0
+      (sum, o) => sum + Number(o.total_amount ?? 0), 0
     );
 
     items.push(createAttentionItem({
@@ -281,7 +281,7 @@ export async function fetchAttentionItems(
   // Wholesale orders pending
   if (wholesalePending.data && wholesalePending.data.length > 0) {
     const totalValue = wholesalePending.data.reduce(
-      (sum, o) => sum + Number(o.total_amount || 0), 0
+      (sum, o) => sum + Number(o.total_amount ?? 0), 0
     );
 
     items.push(createAttentionItem({
@@ -311,7 +311,7 @@ export async function fetchAttentionItems(
   // Customer tabs
   if (customerTabs.data && customerTabs.data.length > 0) {
     const totalOwed = customerTabs.data.reduce(
-      (sum, c) => sum + Number(c.balance || 0), 0
+      (sum, c) => sum + Number(c.balance ?? 0), 0
     );
 
     if (totalOwed > 100) { // Only show if significant amount

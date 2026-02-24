@@ -124,7 +124,7 @@ class ButtonMonitor {
       }
       if (interaction.duration) {
         existing.averageDuration =
-          (existing.averageDuration || 0) * (existing.totalClicks - 1) + interaction.duration;
+          (existing.averageDuration ?? 0) * (existing.totalClicks - 1) + interaction.duration;
         existing.averageDuration /= existing.totalClicks;
       }
       existing.lastClickTime = interaction.timestamp;

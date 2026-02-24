@@ -49,7 +49,7 @@ class TokenRefreshManager {
     }
 
     // Check minimum interval between refreshes
-    const lastRefresh = this.lastRefreshTimes.get(scope) || 0;
+    const lastRefresh = this.lastRefreshTimes.get(scope) ?? 0;
     const timeSinceLastRefresh = Date.now() - lastRefresh;
     if (timeSinceLastRefresh < TokenRefreshManager.MIN_REFRESH_INTERVAL_MS) {
       logger.debug(`[TokenRefreshManager] Too soon since last refresh for "${scope}" (${timeSinceLastRefresh}ms), skipping`);

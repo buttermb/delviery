@@ -71,7 +71,7 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<ForumPost
     }
 
     if (options.limit) {
-      query = query.range(options.offset || 0, (options.offset || 0) + options.limit - 1);
+      query = query.range(options.offset ?? 0, (options.offset ?? 0) + options.limit - 1);
     }
 
     const { data, error } = await query;
@@ -124,7 +124,7 @@ export async function getPostById(postId: string): Promise<ForumPost | null> {
     // Increment view count
     await supabase
       .from('forum_posts')
-      .update({ view_count: (data.view_count || 0) + 1 })
+      .update({ view_count: (data.view_count ?? 0) + 1 })
       .eq('id', postId);
 
     return data as unknown as ForumPost;
@@ -280,7 +280,7 @@ export async function createComment(comment: CreateCommentRequest): Promise<Foru
         .eq('id', comment.parent_comment_id)
         .maybeSingle();
 
-      depth = parent ? (parent.depth || 0) + 1 : 0;
+      depth = parent ? (parent.depth ?? 0) + 1 : 0;
 
       // Limit depth to 3
       if (depth > 3) {

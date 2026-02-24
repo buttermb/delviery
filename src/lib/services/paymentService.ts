@@ -173,7 +173,7 @@ class PaymentService {
       if (fetchError) throw fetchError;
       if (!client) throw new Error('Client not found');
 
-      const currentBalance = Number(client.outstanding_balance || 0);
+      const currentBalance = Number(client.outstanding_balance ?? 0);
       let newBalance: number;
 
       if (operation === 'add') {
@@ -245,7 +245,7 @@ class PaymentService {
       if (clientError) throw clientError;
       if (!client) throw new Error('Client not found');
 
-      const previousBalance = Number(client.outstanding_balance || 0);
+      const previousBalance = Number(client.outstanding_balance ?? 0);
 
       // Create payment record in wholesale_payments
       const { data: payment, error: paymentError } = await supabase
@@ -404,8 +404,8 @@ class PaymentService {
       if (!frontedItem) throw new Error('Fronted inventory record not found');
 
       // Calculate new payment status
-      const newTotalReceived = (frontedItem.payment_received || 0) + amount;
-      const expectedRevenue = frontedItem.expected_revenue || 0;
+      const newTotalReceived = (frontedItem.payment_received ?? 0) + amount;
+      const expectedRevenue = frontedItem.expected_revenue ?? 0;
       const remaining = expectedRevenue - newTotalReceived;
 
       let newStatus = 'pending';
@@ -624,7 +624,7 @@ class PaymentService {
       };
 
       for (const item of frontedItems) {
-        const remaining = (item.expected_revenue || 0) - (item.payment_received || 0);
+        const remaining = (item.expected_revenue ?? 0) - (item.payment_received ?? 0);
         if (remaining <= 0) continue;
 
         const dueDate = item.payment_due_date ? new Date(item.payment_due_date) : new Date(item.created_at);

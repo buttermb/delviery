@@ -230,19 +230,19 @@ export async function fetchTenantMetrics(tenantId: string): Promise<TenantMetric
 
   // Calculate totals
   const ordersRevenue = ordersResult.data?.reduce(
-    (sum, o) => sum + Number(o.total_amount || 0), 0
+    (sum, o) => sum + Number(o.total_amount ?? 0), 0
   ) ?? 0;
 
   const posRevenue = posResult.data?.reduce(
-    (sum, t) => sum + Number(t.total_amount || 0), 0
+    (sum, t) => sum + Number(t.total_amount ?? 0), 0
   ) ?? 0;
 
   const wholesaleRevenue = wholesaleResult.data?.reduce(
-    (sum, o) => sum + Number(o.total_amount || 0), 0
+    (sum, o) => sum + Number(o.total_amount ?? 0), 0
   ) ?? 0;
 
   const inventoryValue = inventoryResult.data?.reduce(
-    (sum, p) => sum + (Number(p.price || 0) * Number(p.stock_quantity || 0)), 0
+    (sum, p) => sum + (Number(p.price ?? 0) * Number(p.stock_quantity ?? 0)), 0
   ) ?? 0;
 
   const monthlyRevenue = ordersRevenue + posRevenue + wholesaleRevenue;

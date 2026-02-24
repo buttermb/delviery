@@ -44,7 +44,7 @@ export const syncQueue = {
                     logger.info(`Synced item: ${item.url}`, null, { component: 'SyncQueue' });
                 } else {
                     // Increment retry count
-                    const newItem = { ...item, retryCount: (item.retryCount || 0) + 1 };
+                    const newItem = { ...item, retryCount: (item.retryCount ?? 0) + 1 };
 
                     if (newItem.retryCount > 5) {
                         logger.error(`Max retries reached for item: ${item.url}`, null, { component: 'SyncQueue' });
@@ -60,7 +60,7 @@ export const syncQueue = {
             } catch (error) {
                 logger.error(`Error syncing item: ${item.url}`, error, { component: 'SyncQueue' });
                 // Increment retry count on network error too
-                const newItem = { ...item, retryCount: (item.retryCount || 0) + 1 };
+                const newItem = { ...item, retryCount: (item.retryCount ?? 0) + 1 };
                 if (newItem.retryCount <= 5) {
                     const dbInstance = await import('./idb').then(m => m.initDB());
                     await dbInstance.put('syncQueue', newItem);
