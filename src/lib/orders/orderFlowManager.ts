@@ -16,7 +16,7 @@ export const orderFlowManager = {
      * Check if a status transition is valid
      */
     canTransition(currentStatus: OrderStatus, newStatus: OrderStatus): boolean {
-        return VALID_TRANSITIONS[currentStatus]?.includes(newStatus) || false;
+        return VALID_TRANSITIONS[currentStatus]?.includes(newStatus) ?? false;
     },
 
     /**

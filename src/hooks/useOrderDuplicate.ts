@@ -110,7 +110,7 @@ export function useOrderDuplicate(options: UseOrderDuplicateOptions = {}) {
           discount_reason: order.discount_reason || null,
           special_instructions: order.special_instructions || null,
           order_type: order.order_type || 'retail',
-          requires_id_check: order.requires_id_check || false,
+          requires_id_check: order.requires_id_check ?? false,
           status: 'pending',
         })
         .select('id, order_number')

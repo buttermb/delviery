@@ -103,7 +103,7 @@ export default function SelectPlanPage() {
         .select('is_free_tier')
         .eq('id', tenant.id)
         .maybeSingle();
-      setIsFreeTier(data?.is_free_tier || false);
+      setIsFreeTier(data?.is_free_tier ?? false);
     };
     checkFreeTier();
   }, [tenant?.id]);

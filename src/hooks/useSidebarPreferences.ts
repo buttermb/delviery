@@ -147,7 +147,7 @@ export function useSidebarPreferences() {
 
       return {
         operationSize: row.operation_size,
-        customLayout: row.custom_layout || false,
+        customLayout: row.custom_layout ?? false,
         favorites: row.favorites ?? [],
         collapsedSections: dbCollapsedSections,
         pinnedItems: row.pinned_items ?? [],

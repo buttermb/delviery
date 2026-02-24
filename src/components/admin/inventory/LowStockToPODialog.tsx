@@ -450,7 +450,7 @@ export function LowStockToPODialog({
   }, [selectedItems, lowStockProducts]);
 
   const hasItemsWithoutVendor = useMemo(() => {
-    return lowStockProducts?.some((p) => !p.vendor_id) || false;
+    return lowStockProducts?.some((p) => !p.vendor_id) ?? false;
   }, [lowStockProducts]);
 
   // ============================================================================

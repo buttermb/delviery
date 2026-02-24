@@ -384,7 +384,7 @@ export function PromotionBuilder({ initialData, onChange, onSave }: PromotionBui
                             </p>
                         </div>
                         <Switch
-                            checked={formData.conditions?.first_time_customers_only || false}
+                            checked={formData.conditions?.first_time_customers_only ?? false}
                             onCheckedChange={(checked) => updateCondition('first_time_customers_only', checked)}
                         />
                     </div>

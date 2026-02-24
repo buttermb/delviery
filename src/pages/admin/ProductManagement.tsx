@@ -107,7 +107,7 @@ const mapProductToForm = (product: Product): ProductFormData => ({
   low_stock_alert: product.low_stock_alert?.toString() || "10",
   metrc_retail_id: product.metrc_retail_id || "",
 
-  exclude_from_discounts: product.exclude_from_discounts || false,
+  exclude_from_discounts: product.exclude_from_discounts ?? false,
   minimum_price: product.minimum_price?.toString() || "",
 });
 

@@ -48,7 +48,7 @@ export function EmailVerificationBanner() {
           return true; // Assume verified on error to avoid blocking user
         }
 
-        return data?.email_verified || false;
+        return data?.email_verified ?? false;
       } catch (error) {
         logger.error('Error checking email verification', error);
         return true; // Assume verified on error

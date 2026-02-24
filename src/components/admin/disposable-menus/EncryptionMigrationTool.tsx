@@ -44,7 +44,7 @@ export const EncryptionMigrationTool = ({ open, onOpenChange, tenantId }: Encryp
       const statuses: MenuStatus[] = (menus ?? []).map(menu => ({
         id: menu.id,
         name: menu.name || 'Untitled Menu',
-        is_encrypted: menu.is_encrypted || false,
+        is_encrypted: menu.is_encrypted ?? false,
         status: 'pending',
       }));
 

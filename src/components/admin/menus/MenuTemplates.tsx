@@ -534,7 +534,7 @@ function TemplateEditor({ template, tenantId: _tenantId, adminId: _adminId, onSa
   const [name, setName] = useState(template?.name ?? '');
   const [description, setDescription] = useState(template?.description ?? '');
   const [category, setCategory] = useState<MenuTemplate['category']>(template?.category || 'custom');
-  const [isShared, setIsShared] = useState(template?.isShared || false);
+  const [isShared, setIsShared] = useState(template?.isShared ?? false);
   const [changelog, setChangelog] = useState('');
   const [config, setConfig] = useState<MenuTemplateConfig>(
     template?.config || {

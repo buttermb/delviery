@@ -30,7 +30,7 @@ export const ViewLimitSettings = ({ settings, onChange }: ViewLimitSettingsProps
           <h3 className="text-lg font-semibold">View Limits</h3>
         </div>
         <Switch
-          checked={settings?.enabled || false}
+          checked={settings?.enabled ?? false}
           onCheckedChange={(checked) => updateSetting('enabled', checked)}
         />
       </div>

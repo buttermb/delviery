@@ -79,7 +79,7 @@ export function FeatureList({ features, readOnly = false, tenantId }: FeatureLis
         </CardHeader>
         <CardContent className="space-y-4">
           {featureDefinitions.map((feature) => {
-            const isEnabled = localFeatures[feature.key] || false;
+            const isEnabled = localFeatures[feature.key] ?? false;
             const isUpdating = updateFeaturesMutation.isPending;
 
             return (

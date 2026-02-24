@@ -252,7 +252,7 @@ export function useSidebarConfig() {
   const finalConfig = useMemo(() => {
     return configWithFavorites.map(section => {
       // Check if section should be collapsed based on preferences
-      const isCollapsed = safePreferences.collapsedSections?.includes(section.section) || false;
+      const isCollapsed = safePreferences.collapsedSections?.includes(section.section) ?? false;
 
       return {
         ...section,

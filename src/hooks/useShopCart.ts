@@ -440,7 +440,7 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
                 discount_type: (result.discount_type === 'fixed' ? 'fixed_amount' : result.discount_type || 'percentage') as AppliedCoupon['discount_type'],
                 discount_value: result.discount_value || result.discount_amount || 0,
                 calculated_discount: result.discount_amount ?? 0,
-                free_shipping: result.free_shipping || false
+                free_shipping: result.free_shipping ?? false
             };
 
             setAppliedCoupon(coupon);

@@ -128,7 +128,7 @@ function transformProduct(rpc: RpcProduct): ProductWithSettings {
     // Inventory data for real-time sync
     stock_quantity: rpc.stock_quantity,
     metrc_retail_id: rpc.metrc_retail_id,
-    exclude_from_discounts: rpc.exclude_from_discounts || false,
+    exclude_from_discounts: rpc.exclude_from_discounts ?? false,
     minimum_price: rpc.minimum_price,
     min_expiry_days: rpc.min_expiry_days,
     unit_type: rpc.unit_type,

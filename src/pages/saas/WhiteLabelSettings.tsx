@@ -27,7 +27,7 @@ export default function WhiteLabelSettings() {
 
   // White label state
   const [whiteLabelEnabled, setWhiteLabelEnabled] = useState(
-    tenant?.white_label?.enabled || false
+    tenant?.white_label?.enabled ?? false
   );
   const [customDomain, setCustomDomain] = useState(tenant?.white_label?.domain ?? '');
   const [logo, setLogo] = useState(tenant?.white_label?.logo ?? '');

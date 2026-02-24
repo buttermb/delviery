@@ -353,7 +353,7 @@ function ScheduleForm({ menuId, schedule, menus, tenantId: _tenantId, onSave, on
   const [selectedMenuId, setSelectedMenuId] = useState(schedule?.menuId ?? menuId ?? '');
   const [startTime, setStartTime] = useState(schedule?.startTime ? formatDateTimeLocal(schedule.startTime) : '');
   const [endTime, setEndTime] = useState(schedule?.endTime ? formatDateTimeLocal(schedule.endTime) : '');
-  const [isRecurring, setIsRecurring] = useState(schedule?.isRecurring || false);
+  const [isRecurring, setIsRecurring] = useState(schedule?.isRecurring ?? false);
   const [selectedDays, setSelectedDays] = useState<string[]>(
     schedule?.recurrenceRule ? parseRecurrenceRule(schedule.recurrenceRule).days : []
   );

@@ -43,7 +43,7 @@ interface ProductPricingSectionProps {
 }
 
 export function ProductPricingSection({ formData, updateFormData }: ProductPricingSectionProps) {
-  const [showBulkPricing, setShowBulkPricing] = useState(formData.bulk_pricing_enabled || false);
+  const [showBulkPricing, setShowBulkPricing] = useState(formData.bulk_pricing_enabled ?? false);
 
   const costPerUnit = parseFloat(formData.cost_per_unit) || 0;
   const retailPrice = parseFloat(formData.retail_price) || 0;

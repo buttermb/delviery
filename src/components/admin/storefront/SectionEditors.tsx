@@ -1026,7 +1026,7 @@ function ResponsiveSettings({ section, onUpdateResponsive }: SectionEditorProps)
                         <div className="flex items-center justify-between">
                             <Label className="text-xs">Hide on {device}</Label>
                             <Switch
-                                checked={settings.hidden || false}
+                                checked={settings.hidden ?? false}
                                 onCheckedChange={(v) => onUpdateResponsive(device, 'hidden', v)}
                             />
                         </div>

@@ -168,7 +168,7 @@ export default function CustomerSignUpPage() {
           phone: formData.phone || null,
           dateOfBirth: formData.dateOfBirth || null,
           tenantSlug,
-          isBusinessBuyer: formData.isBusinessBuyer || false,
+          isBusinessBuyer: formData.isBusinessBuyer ?? false,
           businessName: formData.isBusinessBuyer ? formData.businessName : null,
           businessLicenseNumber: formData.isBusinessBuyer ? formData.businessLicenseNumber : null,
         }),

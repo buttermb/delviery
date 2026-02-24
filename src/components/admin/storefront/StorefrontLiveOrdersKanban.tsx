@@ -139,7 +139,7 @@ function KanbanCard({
     const items = Array.isArray(order.items) ? order.items : [];
     const itemCount = items.length;
     const [isSendingNotification, setIsSendingNotification] = useState(false);
-    const [notificationSent, setNotificationSent] = useState(order.notification_sent || false);
+    const [notificationSent, setNotificationSent] = useState(order.notification_sent ?? false);
 
     // Determine fulfillment type
     const fulfillmentType = (() => {

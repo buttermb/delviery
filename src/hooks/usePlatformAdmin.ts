@@ -15,7 +15,7 @@ export function usePlatformAdmin() {
     });
 
     return {
-        isPlatformAdmin: data?.access || false,
+        isPlatformAdmin: data?.access ?? false,
         role: data?.role,
         isLoading,
         error
