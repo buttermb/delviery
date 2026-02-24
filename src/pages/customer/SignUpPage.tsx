@@ -55,27 +55,27 @@ export default function CustomerSignUpPage() {
       case 'firstName':
         if (!value.trim()) return 'First name is required';
         if (value.trim().length < 2) return 'First name must be at least 2 characters';
-        return undefined;
+        return;
       case 'lastName':
         if (!value.trim()) return 'Last name is required';
         if (value.trim().length < 2) return 'Last name must be at least 2 characters';
-        return undefined;
+        return;
       case 'email':
         if (!value.trim()) return 'Email is required';
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Please enter a valid email address';
-        return undefined;
+        return;
       case 'password':
         if (!value) return 'Password is required';
         if (value.length < 8) return 'Password must be at least 8 characters';
         if (!/[a-zA-Z]/.test(value)) return 'Password must contain at least one letter';
         if (!/\d/.test(value)) return 'Password must contain at least one number';
-        return undefined;
+        return;
       case 'confirmPassword':
         if (!value) return 'Please confirm your password';
         if (value !== formData.password) return 'Passwords do not match';
-        return undefined;
+        return;
       default:
-        return undefined;
+        return;
     }
   };
 

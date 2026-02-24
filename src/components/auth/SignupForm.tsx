@@ -53,7 +53,7 @@ function validateEmail(email: string): string | undefined {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) return 'Please enter a valid email address';
   if (email.length > 255) return 'Email is too long';
-  return undefined;
+  return;
 }
 
 function validatePassword(password: string): string | undefined {
@@ -61,27 +61,27 @@ function validatePassword(password: string): string | undefined {
   if (password.length < 8) return 'Password must be at least 8 characters';
   if (!/[a-zA-Z]/.test(password)) return 'Password must contain at least one letter';
   if (!/\d/.test(password)) return 'Password must contain at least one number';
-  return undefined;
+  return;
 }
 
 function validateConfirmPassword(password: string, confirmPassword: string): string | undefined {
   if (!confirmPassword) return 'Please confirm your password';
   if (password !== confirmPassword) return 'Passwords do not match';
-  return undefined;
+  return;
 }
 
 function validateFullName(name: string): string | undefined {
   if (!name.trim()) return 'Full name is required';
   if (name.trim().length < 2) return 'Name must be at least 2 characters';
   if (name.trim().length > 100) return 'Name is too long';
-  return undefined;
+  return;
 }
 
 function validatePhone(phone: string): string | undefined {
   if (!phone) return 'Phone number is required';
   const digits = phone.replace(/\D/g, '');
   if (digits.length !== 10) return 'Phone number must be 10 digits';
-  return undefined;
+  return;
 }
 
 export function SignupForm({
@@ -135,7 +135,7 @@ export function SignupForm({
       case 'termsAccepted':
         return !termsAccepted ? 'You must accept the terms and conditions' : undefined;
       default:
-        return undefined;
+        return;
     }
   }, [email, password, confirmPassword, fullName, phone, termsAccepted]);
 

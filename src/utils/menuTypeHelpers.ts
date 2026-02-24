@@ -24,7 +24,7 @@ export const safeJsonAccess = (
   obj: Json | undefined | null,
   key: string
 ): Json | undefined => {
-  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return undefined;
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return;
   return (obj as Record<string, Json>)[key];
 };
 
@@ -47,11 +47,11 @@ export const safeNestedAccess = (
   obj: Json | undefined | null,
   path: string[]
 ): Json | undefined => {
-  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return undefined;
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return;
   
   let current: Json | undefined = obj;
   for (const key of path) {
-    if (!current || typeof current !== 'object' || Array.isArray(current)) return undefined;
+    if (!current || typeof current !== 'object' || Array.isArray(current)) return;
     current = (current as Record<string, Json>)[key];
   }
   return current as Json;
@@ -61,6 +61,6 @@ export const extractSecuritySetting = (
   securitySettings: Json | undefined | null,
   key: string
 ): Json | undefined => {
-  if (!securitySettings || typeof securitySettings !== 'object' || Array.isArray(securitySettings)) return undefined;
+  if (!securitySettings || typeof securitySettings !== 'object' || Array.isArray(securitySettings)) return;
   return (securitySettings as Record<string, Json>)[key];
 };

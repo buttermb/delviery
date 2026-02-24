@@ -58,7 +58,7 @@ export function OGImagePreview({
                 {imageUrl ? (
                   <img
                     src={imageUrl}
-                    alt="OG Preview"
+                    alt={`${displayTitle} - Facebook share preview`}
                     className="absolute inset-0 w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -107,7 +107,7 @@ export function OGImagePreview({
                 {imageUrl ? (
                   <img
                     src={imageUrl}
-                    alt="OG Preview"
+                    alt={`${displayTitle} - Twitter share preview`}
                     className="absolute inset-0 w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -155,7 +155,7 @@ export function OGImagePreview({
                 {imageUrl ? (
                   <img
                     src={imageUrl}
-                    alt="OG Preview"
+                    alt={`${displayTitle} - LinkedIn share preview`}
                     className="absolute inset-0 w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;

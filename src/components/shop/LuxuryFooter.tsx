@@ -23,7 +23,7 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
               {store?.logo_url ? (
                 <img
                   src={store.logo_url}
-                  alt={store?.store_name}
+                  alt={store?.store_name || 'Store logo'}
                   className="h-10 object-contain"
                   loading="lazy"
                 />

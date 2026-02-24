@@ -143,7 +143,7 @@ export function ProductQuickViewModal({
                             {product.image_url ? (
                                 <img
                                     src={product.image_url}
-                                    alt={product.product_name}
+                                    alt={product.product_name || 'Product image'}
                                     className="w-full h-full object-cover"
                                     loading="lazy"
                                 />

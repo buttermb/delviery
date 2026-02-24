@@ -106,7 +106,7 @@ function SortableFeaturedProduct({ product, index, onRemove }: SortableFeaturedP
       {product.image_url ? (
         <img
           src={product.image_url}
-          alt={product.name}
+          alt={product.name || 'Product image'}
           className="w-8 h-8 rounded object-cover shrink-0"
           loading="lazy"
         />
@@ -148,7 +148,7 @@ function DragOverlayContent({ product, index }: { product: Product; index: numbe
       {product.image_url ? (
         <img
           src={product.image_url}
-          alt={product.name}
+          alt={product.name || 'Product image'}
           className="w-8 h-8 rounded object-cover shrink-0"
           loading="lazy"
         />
@@ -385,7 +385,7 @@ export function FeaturedProductsManager({
                   {product.image_url ? (
                     <img
                       src={product.image_url}
-                      alt={product.name}
+                      alt={product.name || 'Product image'}
                       className="w-8 h-8 rounded object-cover shrink-0"
                       loading="lazy"
                     />

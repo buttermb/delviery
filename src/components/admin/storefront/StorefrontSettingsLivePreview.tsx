@@ -145,7 +145,7 @@ export function StorefrontSettingsLivePreview({
                   {settings.logo_url ? (
                     <img
                       src={settings.logo_url}
-                      alt="Logo"
+                      alt={settings.store_name ? `${settings.store_name} logo` : 'Store logo'}
                       className="h-6 w-auto object-contain"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';

@@ -174,7 +174,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
                     <>
                       <img
                         src={productImage}
-                        alt={product.name}
+                        alt={product.name || 'Product image'}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         loading="lazy"
                       />
@@ -361,7 +361,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
           {selectedImage && (
             <img
               src={selectedImage}
-              alt="Product zoom"
+              alt="Product image enlarged"
               className="w-full h-auto"
               loading="lazy"
             />
@@ -380,7 +380,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
               {getProductImage(selectedProduct) && (
                 <img
                   src={getProductImage(selectedProduct)!}
-                  alt={selectedProduct.name}
+                  alt={selectedProduct.name || 'Product image'}
                   className="w-full h-64 object-cover rounded-lg"
                   loading="lazy"
                 />

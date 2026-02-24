@@ -242,7 +242,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
             <div className="relative group">
               <img
                 src={mainDisplayUrl}
-                alt="Product"
+                alt="Main product image"
                 className="w-full h-64 object-cover rounded-lg"
                 loading="lazy"
               />

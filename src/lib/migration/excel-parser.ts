@@ -425,7 +425,7 @@ export function rowsToProducts(rows: ParsedRow[]): Partial<ParsedProduct>[] {
  * Parse strain type from various formats
  */
 function parseStrainType(value: unknown): 'indica' | 'sativa' | 'hybrid' | undefined {
-  if (!value) return undefined;
+  if (!value) return;
   
   const str = String(value).toLowerCase().trim();
   
@@ -436,20 +436,20 @@ function parseStrainType(value: unknown): 'indica' | 'sativa' | 'hybrid' | undef
   if (/^s$/i.test(str)) return 'sativa';
   if (/^h$/i.test(str)) return 'hybrid';
   
-  return undefined;
+  return;
 }
 
 /**
  * Parse percentage value
  */
 function parsePercentage(value: unknown): number | undefined {
-  if (!value) return undefined;
+  if (!value) return;
   
   const str = String(value).replace(/[%\s]/g, '');
   const num = parseFloat(str);
   
-  if (isNaN(num)) return undefined;
-  if (num > 100) return undefined; // Invalid percentage
+  if (isNaN(num)) return;
+  if (num > 100) return; // Invalid percentage
   
   return num;
 }
@@ -458,7 +458,7 @@ function parsePercentage(value: unknown): number | undefined {
  * Parse price value
  */
 function parsePrice(value: unknown): number | undefined {
-  if (!value) return undefined;
+  if (!value) return;
   
   let str = String(value).trim();
   
@@ -479,7 +479,7 @@ function parsePrice(value: unknown): number | undefined {
  * Parse quantity value
  */
 function parseQuantity(value: unknown): { lbs?: number; units?: number } | undefined {
-  if (!value) return undefined;
+  if (!value) return;
   
   const str = String(value).toLowerCase().trim();
   
@@ -495,17 +495,17 @@ function parseQuantity(value: unknown): { lbs?: number; units?: number } | undef
     return { units: Math.floor(num) };
   }
   
-  return undefined;
+  return;
 }
 
 /**
  * Parse terpenes list
  */
 function parseTerpenes(value: unknown): string[] | undefined {
-  if (!value) return undefined;
+  if (!value) return;
   
   const str = String(value).trim();
-  if (!str) return undefined;
+  if (!str) return;
   
   // Split by common delimiters
   const terpenes = str

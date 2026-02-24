@@ -311,7 +311,7 @@ export default function ImagesPage() {
                 <div className="aspect-square relative overflow-hidden rounded-t-lg">
                   <img
                     src={image.image_url}
-                    alt={image.name}
+                    alt={image.name || 'Product image'}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -339,7 +339,7 @@ export default function ImagesPage() {
                   <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0">
                     <img
                       src={image.image_url}
-                      alt={image.name}
+                      alt={image.name || 'Product image'}
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
@@ -417,7 +417,7 @@ export default function ImagesPage() {
             <div className="rounded-lg overflow-hidden">
               <img
                 src={selectedImage?.image_url}
-                alt={selectedImage?.name}
+                alt={selectedImage?.name || 'Product image'}
                 className="w-full h-auto"
                 loading="lazy"
               />
