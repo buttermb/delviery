@@ -49,9 +49,7 @@ src/remotion/
 │           ├── TransitionOverlay.tsx # Scene transition wipe
 │           ├── StatCard.tsx          # Animated stat with trend
 │           ├── OrderCard.tsx         # Order card for kanban
-│           ├── BarChart.tsx          # Animated revenue bars
-│           ├── MapBackground.tsx     # Map grid for fleet scene
-│           └── PhoneMockup.tsx       # iPhone frame for menus scene
+│           └── BarChart.tsx          # Animated revenue bars
 └── utils/
     └── animations.ts                 # Shared animation helpers
 ```
