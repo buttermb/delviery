@@ -305,7 +305,7 @@ function CashRegisterContent() {
   const total = taxableAmount + taxAmount;
 
   // Filter products by search and category
-  const filteredProducts = products.filter(p => {
+  const filteredProducts = useMemo(() => products.filter(p => {
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch = searchQuery === '' ||
       p.name.toLowerCase().includes(searchLower) ||
@@ -317,7 +317,7 @@ function CashRegisterContent() {
       (p.category && p.category.toLowerCase() === selectedCategory.toLowerCase());
 
     return matchesSearch && matchesCategory;
-  });
+  }), [products, searchQuery, selectedCategory]);
 
   // Compute top-selling products from recent POS transactions for quick-add grid
   const topProducts = useMemo(() => {
