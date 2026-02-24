@@ -98,10 +98,10 @@ export function ProductTableView({
             className="h-8 w-full"
             autoFocus
           />
-          <Button size="sm" variant="ghost" onClick={() => saveEdit(product.id, field)}>
+          <Button size="sm" variant="ghost" onClick={() => saveEdit(product.id, field)} aria-label="Save">
             <Check className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={cancelEdit}>
+          <Button size="sm" variant="ghost" onClick={cancelEdit} aria-label="Cancel">
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -222,7 +222,7 @@ export function ProductTableView({
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">•••</Button>
+                    <Button variant="ghost" size="sm" aria-label="More actions">•••</Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => onEdit(product.id)}>

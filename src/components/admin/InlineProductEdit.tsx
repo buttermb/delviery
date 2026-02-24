@@ -128,10 +128,10 @@ export function InlineProductEdit({
                     if (e.key === "Escape") setIsEditingPrice(false);
                   }}
                 />
-                <Button size="sm" variant="ghost" onClick={handlePriceSave}>
+                <Button size="sm" variant="ghost" onClick={handlePriceSave} aria-label="Save price">
                   <Check className="h-4 w-4" />
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => setIsEditingPrice(false)}>
+                <Button size="sm" variant="ghost" onClick={() => setIsEditingPrice(false)} aria-label="Cancel editing">
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -164,10 +164,10 @@ export function InlineProductEdit({
                     if (e.key === "Escape") setIsEditingStock(false);
                   }}
                 />
-                <Button size="sm" variant="ghost" onClick={handleStockSave}>
+                <Button size="sm" variant="ghost" onClick={handleStockSave} aria-label="Save stock">
                   <Check className="h-4 w-4" />
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => setIsEditingStock(false)}>
+                <Button size="sm" variant="ghost" onClick={() => setIsEditingStock(false)} aria-label="Cancel editing">
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -196,7 +196,7 @@ export function InlineProductEdit({
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" aria-label="More actions">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

@@ -80,6 +80,7 @@ export function DuplicateProductButton({
       onClick={handleDuplicate}
       disabled={isLoading}
       className={className}
+      {...(!showLabel ? { 'aria-label': 'Duplicate product' } : {})}
     >
       {isLoading ? (
         <Loader2 className="h-4 w-4 animate-spin" />

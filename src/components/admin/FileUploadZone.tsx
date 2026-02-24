@@ -60,6 +60,7 @@ export function FileUploadZone({
                   variant="ghost"
                   size="sm"
                   onClick={() => onRemoveFile(index)}
+                  aria-label="Remove file"
                 >
                   <X className="w-4 h-4" />
                 </Button>

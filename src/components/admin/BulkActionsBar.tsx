@@ -55,6 +55,7 @@ export function BulkActionsBar({
                     size="sm"
                     onClick={onClearSelection}
                     className="h-6 w-6 p-0 hover:bg-background/20 text-background"
+                    aria-label="Clear selection"
                 >
                     <X className="h-4 w-4" />
                 </Button>
