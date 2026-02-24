@@ -130,7 +130,7 @@ export function useDeliveryZones() {
         .eq('id', zoneId)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to update delivery zone', error);

@@ -148,7 +148,7 @@ export function useInvoiceTemplates() {
         .eq("id", id)
         .eq("tenant_id", tenant.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return { ...data, template_data: data.template_data as unknown as InvoiceTemplateData } as InvoiceTemplate;

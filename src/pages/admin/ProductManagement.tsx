@@ -915,7 +915,7 @@ export default function ProductManagement() {
           .eq('id', productId)
           .eq('tenant_id', tenant.id)
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 

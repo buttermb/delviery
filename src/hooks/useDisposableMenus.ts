@@ -299,7 +299,7 @@ export const useUpdateOrderStatus = (tenantId?: string) => {
         .update({ status })
         .eq('id', orderId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

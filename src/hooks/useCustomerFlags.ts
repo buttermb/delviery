@@ -316,7 +316,7 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
         .eq('id', params.flagId)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to resolve customer flag', error, {

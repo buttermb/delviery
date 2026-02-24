@@ -221,7 +221,7 @@ export function RoleManagement() {
         .eq('id', id)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (roleError) {
         if (roleError.code === '23505') {

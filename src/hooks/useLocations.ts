@@ -232,7 +232,7 @@ export const useLocations = (filters?: { status?: string }) => {
         .eq('id', id)
         .eq('tenant_id', tenant.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to update location', { error, id, input });

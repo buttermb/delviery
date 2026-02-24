@@ -152,7 +152,7 @@ export const useUpdateMenuSchedule = () => {
         })
         .eq('id', menuId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw error;
@@ -215,7 +215,7 @@ export const useCancelMenuSchedule = () => {
         })
         .eq('id', menuId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw error;

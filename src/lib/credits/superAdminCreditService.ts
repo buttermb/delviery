@@ -955,7 +955,7 @@ export async function upsertCreditPackage(
         description: pkg.description || null,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error('Failed to upsert credit package', error);
