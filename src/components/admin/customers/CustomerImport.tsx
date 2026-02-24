@@ -519,7 +519,7 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
             }
           } else {
             // No duplicate - insert new customer
-            const { error: insertError } = await supabase.from('customers').insert({
+            const { error: insertError } = await (supabase as any).from('customers').insert({
               tenant_id: tenantId,
               first_name: customer.first_name,
               last_name: customer.last_name,

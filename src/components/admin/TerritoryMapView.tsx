@@ -66,9 +66,9 @@ export function TerritoryMapView() {
 
       // Color code by credit status
       let markerColor = themeColors.success(); // green - good
-      if (client.outstanding_balance > 10000) {
+      if (Number(client.outstanding_balance) > 10000) {
         markerColor = themeColors.destructive(); // red - overdue
-      } else if (client.outstanding_balance > 0) {
+      } else if (Number(client.outstanding_balance) > 0) {
         markerColor = themeColors.warning(); // orange - has balance
       }
 
@@ -93,12 +93,12 @@ export function TerritoryMapView() {
       
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
         <div style="padding: 8px; min-width: 200px;">
-          <h3 style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(client.business_name)}</h3>
-          <p style="font-size: 12px; color: #666; margin-bottom: 8px;">${escapeHtml(client.contact_name)}</p>
+          <h3 style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(String(client.business_name || ''))}</h3>
+          <p style="font-size: 12px; color: #666; margin-bottom: 8px;">${escapeHtml(String(client.contact_name || ''))}</p>
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
             <span style="font-size: 12px; font-weight: 500;">Balance:</span>
             <span style="font-size: 14px; font-weight: 600; color: ${markerColor};">
-              ${formatCurrency(client.outstanding_balance ?? 0)}
+              ${formatCurrency(Number(client.outstanding_balance) || 0)}
             </span>
           </div>
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">

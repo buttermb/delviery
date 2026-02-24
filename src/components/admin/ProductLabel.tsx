@@ -71,7 +71,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
     availableQuantity: product.available_quantity ?? undefined, // NEW
     sku: product.sku ?? '',
     barcodeImageUrl: product.barcode_image_url || undefined,
-    barcodeValue: (product.barcode as string) || product.sku ?? '',
+    barcodeValue: ((product.barcode as string) || product.sku) ?? '',
   } : null, [
     product.sku,
     product.name,
@@ -93,7 +93,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
   useEffect(() => {
     if (open && product.sku) {
       try {
-        const barcodeValue = (product.barcode as string) || product.sku ?? '';
+        const barcodeValue = ((product.barcode as string) || product.sku) ?? '';
 
         logger.info('Generating barcode preview', {
           component: 'ProductLabel',

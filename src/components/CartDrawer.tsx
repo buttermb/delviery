@@ -45,13 +45,13 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
     queryKey: queryKeys.cart.user(user?.id, tenantId),
     queryFn: async () => {
       if (!user || !tenantId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("cart_items")
         .select("*, products(*)")
         .eq("user_id", user.id)
         .eq("tenant_id", tenantId);
       if (error) throw error;
-      return data as DbCartItem[];
+      return (data ?? []) as DbCartItem[];
     },
     enabled: !!user && !!tenantId,
     refetchOnMount: true,

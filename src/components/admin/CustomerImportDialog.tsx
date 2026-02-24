@@ -217,7 +217,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
                 }
 
                 // Email validation
-                if (normalized.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized.email)) {
+                if (normalized.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(normalized.email))) {
                     invalidRecords.push({ row: index + 2, reason: "Invalid email format", data: record });
                     return;
                 }
@@ -237,15 +237,15 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
             for (let i = 0; i < validRecords.length; i += batchSize) {
                 const batch = validRecords.slice(i, i + batchSize);
 
-                const { error } = await supabase.from('customers').insert(
+                const { error } = await (supabase as any).from('customers').insert(
                     batch.map(record => ({
                         account_id: tenant.id,
-                        first_name: record.first_name,
-                        last_name: record.last_name,
-                        email: record.email,
-                        phone: record.phone || null,
-                        date_of_birth: record.date_of_birth || null,
-                        customer_type: record.customer_type?.toLowerCase() || 'retail',
+                        first_name: String(record.first_name || ''),
+                        last_name: String(record.last_name || ''),
+                        email: String(record.email || ''),
+                        phone: record.phone ? String(record.phone) : null,
+                        date_of_birth: record.date_of_birth ? String(record.date_of_birth) : null,
+                        customer_type: String(record.customer_type || 'retail').toLowerCase(),
                         status: 'active',
                         total_spent: 0,
                         loyalty_points: 0,
@@ -358,7 +358,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg mb-4">
                                 <div className="space-y-2">
                                     <Label>Date Format</Label>
-                                    <Select value={dateFormat} onValueChange={(v) => setDateFormat(v)}>
+                                    <Select value={dateFormat} onValueChange={(v) => setDateFormat(v as typeof dateFormat)}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select date format" />
                                         </SelectTrigger>
