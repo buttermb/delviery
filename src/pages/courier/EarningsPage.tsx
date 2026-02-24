@@ -44,7 +44,7 @@ export default function CourierEarningsPage() {
 
       <main className="container px-4 py-6 space-y-6">
         {/* Timeframe Tabs */}
-        <Tabs value={timeframe} onValueChange={(v) => setTimeframe(v as any)}>
+        <Tabs value={timeframe} onValueChange={(v) => setTimeframe(v as 'today' | 'week' | 'month')}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="today">Today</TabsTrigger>
             <TabsTrigger value="week">This Week</TabsTrigger>

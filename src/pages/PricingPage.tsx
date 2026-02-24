@@ -221,7 +221,7 @@ export default function PricingPage() {
         <section className="container mx-auto px-4 py-12">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {plans.map((plan, index) => {
-              const isFree = (plan as any).isFree;
+              const isFree = 'isFree' in plan && (plan as Record<string, unknown>).isFree;
 
               return (
                 <div

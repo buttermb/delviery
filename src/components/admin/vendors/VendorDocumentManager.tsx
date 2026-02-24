@@ -716,7 +716,7 @@ function DocumentCard({ document, onEdit, onDelete }: DocumentCardProps) {
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <a href={document.file_url} download={document.name}>
+              <a href={document.file_url} download={document.name} target="_blank" rel="noopener noreferrer">
                 <Download className="mr-2 h-4 w-4" />
                 Download
               </a>
