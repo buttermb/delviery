@@ -72,7 +72,7 @@ export const EngagementInsights = ({ insights }: EngagementInsightsProps) => {
           <div className="space-y-3">
             {insights.map((insight, index) => (
               <motion.div
-                key={index}
+                key={`${insight.type}-${insight.title}`}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 + index * 0.1 }}

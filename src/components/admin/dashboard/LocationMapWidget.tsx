@@ -151,7 +151,7 @@ export function LocationMapWidget() {
         </h4>
         {locations?.warehouses && locations.warehouses.length > 0 ? (
           locations.warehouses.map((wh, index) => (
-            <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
+            <div key={wh.name} className="flex items-center justify-between p-2 border rounded-lg">
               <div>
                 <div className="font-medium text-sm">{wh.name}</div>
                 <div className="text-xs text-muted-foreground">

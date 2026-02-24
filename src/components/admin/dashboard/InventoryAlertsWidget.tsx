@@ -86,9 +86,9 @@ export function InventoryAlertsWidget() {
             </div>
           ))
         ) : alerts && alerts.length > 0 ? (
-          alerts.map((alert, index: number) => (
+          alerts.map((alert) => (
             <div
-              key={index}
+              key={alert.product_name}
               className="flex items-center justify-between p-2 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
               onClick={() => navigate(getFullPath('/admin/big-plug-inventory'))}
             >

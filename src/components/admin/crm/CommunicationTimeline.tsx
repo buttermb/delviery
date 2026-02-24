@@ -124,7 +124,7 @@ export function CommunicationTimeline({ customers }: CommunicationTimelineProps)
                   const Icon = getEventIcon(event.type);
                   return (
                     <div
-                      key={index}
+                      key={`${event.type}-${event.date}-${index}`}
                       className="flex items-start gap-3 p-3 border rounded-lg"
                     >
                       <Icon className="h-4 w-4 text-muted-foreground mt-1" />
