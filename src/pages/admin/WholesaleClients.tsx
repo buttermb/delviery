@@ -137,7 +137,7 @@ export default function WholesaleClients() {
 
       // Wholesale clients are NOT encrypted - use plaintext fields directly
       // Map to expected format
-      return (data || []).map((client) => ({
+      return (data ?? []).map((client) => ({
         ...client,
         territory: (client.address || '').split(',')[1]?.trim() || 'Unknown',
         monthly_volume_lbs: client.monthly_volume,
@@ -150,7 +150,7 @@ export default function WholesaleClients() {
   const filteredClients = useMemo(() => clients?.filter(client =>
     client.business_name.toLowerCase().includes(sanitizedSearch) ||
     client.contact_name.toLowerCase().includes(sanitizedSearch)
-  ) || [], [clients, sanitizedSearch]);
+  ) ?? [], [clients, sanitizedSearch]);
 
   const handleSort = (field: ClientSortField) => {
     if (sortField === field) {
@@ -274,7 +274,7 @@ export default function WholesaleClients() {
           </div>
           <div className="flex gap-2 flex-wrap w-full sm:w-auto">
             <ExportButton
-              data={filteredClients || []}
+              data={filteredClients ?? []}
               filename="wholesale-clients"
               columns={[
                 { key: "business_name", label: "Business Name" },

@@ -66,7 +66,7 @@ export function StockAlerts() {
         throw error;
       }
 
-      return (data || []) as StockAlert[];
+      return (data ?? []) as StockAlert[];
     },
     enabled: !!tenantId,
   });
@@ -83,7 +83,7 @@ export function StockAlerts() {
       throw prodError;
     }
 
-    return (products || [])
+    return (products ?? [])
       .filter((item) => {
         const quantity = item.available_quantity ?? item.stock_quantity ?? 0;
         const threshold = item.low_stock_alert ?? 10;
@@ -201,7 +201,7 @@ export function StockAlerts() {
     acknowledgeMutation.mutate(alertId);
   };
 
-  const visibleAlerts = alerts || [];
+  const visibleAlerts = alerts ?? [];
   const criticalAlerts = visibleAlerts.filter(a => a.severity === 'critical').length;
   const warningAlerts = visibleAlerts.filter(a => a.severity === 'warning').length;
 

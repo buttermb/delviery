@@ -392,7 +392,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
                 setRefreshToken(session.refresh_token || null);
 
                 // Check for MFA requirement on initialization
-                const factors = session.user?.factors || [];
+                const factors = session.user?.factors ?? [];
                 const hasVerifiedTotp = factors.some((f: { factor_type: string; status: string }) => f.factor_type === 'totp' && f.status === 'verified');
 
                 if (hasVerifiedTotp) {
@@ -1057,7 +1057,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       setTenant(tenantWithDefaults);
 
       // Check for MFA
-      const factors = data.session?.user?.factors || [];
+      const factors = data.session?.user?.factors ?? [];
       const hasVerifiedTotp = factors.some((f: { factor_type: string; status: string }) => f.factor_type === 'totp' && f.status === 'verified');
 
       if (hasVerifiedTotp) {

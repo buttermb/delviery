@@ -96,7 +96,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
         .from('tenants')
         .select('id, business_name, subscription_status')
         .order('business_name');
-      return (data || []) as TenantRow[];
+      return (data ?? []) as TenantRow[];
     },
     enabled: recipients === 'custom',
   });
@@ -111,15 +111,15 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
         const { data: allTenants } = await supabase
           .from('tenants')
           .select('id');
-        targetTenants = (allTenants || []).map((t) => t.id);
+        targetTenants = (allTenants ?? []).map((t) => t.id);
       } else if (data.recipients === 'custom') {
-        targetTenants = data.tenant_ids || [];
+        targetTenants = data.tenant_ids ?? [];
       } else {
         const { data: filteredTenants } = await supabase
           .from('tenants')
           .select('id')
           .eq('subscription_status', data.recipients);
-        targetTenants = (filteredTenants || []).map((t) => t.id);
+        targetTenants = (filteredTenants ?? []).map((t) => t.id);
       }
 
       // In production, send notifications via email/SMS service
@@ -204,7 +204,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
                               type="checkbox"
                               checked={field.value?.includes(tenant.id)}
                               onChange={(e) => {
-                                const current = field.value || [];
+                                const current = field.value ?? [];
                                 if (e.target.checked) {
                                   field.onChange([...current, tenant.id]);
                                 } else {

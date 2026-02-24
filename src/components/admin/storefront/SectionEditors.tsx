@@ -188,7 +188,7 @@ interface FeatureItem {
 function FeaturesEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorProps) {
     const content = section.content as Record<string, unknown>;
     const styles = section.styles as Record<string, unknown>;
-    const features = (content.features as FeatureItem[]) || [];
+    const features = (content.features as FeatureItem[]) ?? [];
 
     const updateFeature = (index: number, key: keyof FeatureItem, value: string) => {
         const updated = [...features];
@@ -418,7 +418,7 @@ interface TestimonialItem {
 function TestimonialsEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorProps) {
     const content = section.content as Record<string, unknown>;
     const styles = section.styles as Record<string, unknown>;
-    const testimonials = (content.testimonials as TestimonialItem[]) || [];
+    const testimonials = (content.testimonials as TestimonialItem[]) ?? [];
 
     const updateTestimonial = (index: number, key: keyof TestimonialItem, value: string | number) => {
         const updated = [...testimonials];
@@ -654,7 +654,7 @@ interface GalleryImage {
 function GalleryEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorProps) {
     const content = section.content as Record<string, unknown>;
     const styles = section.styles as Record<string, unknown>;
-    const images = (content.images as GalleryImage[]) || [];
+    const images = (content.images as GalleryImage[]) ?? [];
 
     const updateImage = (index: number, key: keyof GalleryImage, value: string) => {
         const updated = [...images];
@@ -781,7 +781,7 @@ interface FAQItem {
 function FAQEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorProps) {
     const content = section.content as Record<string, unknown>;
     const styles = section.styles as Record<string, unknown>;
-    const faqs = (content.faqs as FAQItem[]) || [];
+    const faqs = (content.faqs as FAQItem[]) ?? [];
 
     const updateFAQ = (index: number, key: keyof FAQItem, value: string) => {
         const updated = [...faqs];

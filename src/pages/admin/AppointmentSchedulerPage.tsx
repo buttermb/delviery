@@ -53,7 +53,7 @@ export default function AppointmentSchedulerPage() {
           return [];
         }
 
-        return (data || []).map((apt) => ({
+        return (data ?? []).map((apt) => ({
           ...apt,
           type: apt.appointment_type
         })) as Appointment[];
@@ -122,7 +122,7 @@ export default function AppointmentSchedulerPage() {
 
         <TabsContent value="calendar" className="space-y-4">
           <AppointmentCalendar
-            appointments={appointments || []}
+            appointments={appointments ?? []}
             onDateSelect={(date) => {
               setSelectedDate(date);
               setIsFormOpen(true);
@@ -133,7 +133,7 @@ export default function AppointmentSchedulerPage() {
 
         <TabsContent value="list" className="space-y-4">
           <AppointmentList
-            appointments={appointments || []}
+            appointments={appointments ?? []}
             isLoading={isLoading}
             onEdit={(appointment) => {
               setSelectedDate(new Date(appointment.scheduled_at));

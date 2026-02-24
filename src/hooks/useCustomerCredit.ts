@@ -119,7 +119,7 @@ async function fetchCustomerCreditBalance(
     throw error;
   }
 
-  const transactions = (data || []) as CustomerCreditTransaction[];
+  const transactions = (data ?? []) as CustomerCreditTransaction[];
 
   // Calculate balance based on transaction types
   let totalIssued = 0;
@@ -179,7 +179,7 @@ async function fetchCustomerCreditTransactions(
     throw error;
   }
 
-  return (data || []) as CustomerCreditTransaction[];
+  return (data ?? []) as CustomerCreditTransaction[];
 }
 
 // ============================================================================
@@ -355,7 +355,7 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
     // Balance data
     balance: creditData?.balance || 0,
     creditData: creditData || null,
-    transactions: transactions || [],
+    transactions: transactions ?? [],
 
     // Loading/error states
     isLoading,

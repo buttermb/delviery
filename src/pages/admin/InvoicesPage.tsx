@@ -278,7 +278,7 @@ async function generateEnhancedInvoicePDF({ invoice, settings }: GenerateInvoice
     doc.setTextColor(50, 50, 50);
     doc.setFont("helvetica", "normal");
 
-    const lineItems = invoice.line_items || [];
+    const lineItems = invoice.line_items ?? [];
     let rowIndex = 0;
 
     for (const item of lineItems) {
@@ -581,7 +581,7 @@ export function InvoicesPage() {
                 : true;
 
             return matchesSearch && matchesStatus;
-        }) || [];
+        }) ?? [];
 
         // Client-side sort for computed 'balance' column
         if (sort?.column === 'balance') {
@@ -729,7 +729,7 @@ export function InvoicesPage() {
     // Calculate average payment time (days from invoice date to paid date)
     const paidInvoicesWithDates = invoices?.filter(
         (i) => i.status === "paid" && i.paid_at && i.invoice_date
-    ) || [];
+    ) ?? [];
 
     const avgPaymentTime = paidInvoicesWithDates.length > 0
         ? Math.round(

@@ -104,7 +104,7 @@ export default function CustomerCRMPage() {
           return decrypted as unknown as Customer[];
         }
 
-        return (data || []) as Customer[];
+        return (data ?? []) as Customer[];
       } catch {
         return [];
       }
@@ -177,7 +177,7 @@ export default function CustomerCRMPage() {
     const matchesSegment = segmentFilter === "all" || customer.segment === segmentFilter;
 
     return matchesSearch && matchesLifecycle && matchesSegment;
-  }) || [];
+  }) ?? [];
 
   return (
     <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">
@@ -313,7 +313,7 @@ export default function CustomerCRMPage() {
                 <CardDescription>Latest actions across your CRM</CardDescription>
               </CardHeader>
               <CardContent>
-                <ActivityTimeline activities={(dashboardMetrics?.recentActivity || []) as unknown as CRMActivityLog[]} />
+                <ActivityTimeline activities={(dashboardMetrics?.recentActivity ?? []) as unknown as CRMActivityLog[]} />
               </CardContent>
             </Card>
             <Card className="col-span-3">

@@ -153,7 +153,7 @@ export function CreditAnalyticsPage() {
         if (error) throw error;
 
         // Calculate 30-day usage
-        const monthUsage = (transactions || []).reduce(
+        const monthUsage = (transactions ?? []).reduce(
           (sum, t) => sum + Math.abs(t.amount),
           0
         );
@@ -166,7 +166,7 @@ export function CreditAnalyticsPage() {
 
         // Group by category
         const byCategory: Record<string, { total: number; count: number }> = {};
-        (transactions || []).forEach((t) => {
+        (transactions ?? []).forEach((t) => {
           const info = getCreditCostInfo(t.action_type);
           const category = info?.category || 'other';
           if (!byCategory[category]) {
@@ -188,7 +188,7 @@ export function CreditAnalyticsPage() {
 
         // Group by action type (top consumers)
         const byAction: Record<string, { total: number; count: number }> = {};
-        (transactions || []).forEach((t) => {
+        (transactions ?? []).forEach((t) => {
           const action = t.action_type || 'unknown';
           if (!byAction[action]) {
             byAction[action] = { total: 0, count: 0 };
@@ -219,7 +219,7 @@ export function CreditAnalyticsPage() {
           const nextDate = new Date(date);
           nextDate.setDate(nextDate.getDate() + 1);
 
-          const dayTransactions = (transactions || []).filter(
+          const dayTransactions = (transactions ?? []).filter(
             (t) =>
               new Date(t.created_at) >= date && new Date(t.created_at) < nextDate
           );
@@ -268,7 +268,7 @@ export function CreditAnalyticsPage() {
           .limit(20);
 
         if (error) throw error;
-        return (data || []) as PurchaseRecord[];
+        return (data ?? []) as PurchaseRecord[];
       } catch (error) {
         logger.error('Failed to fetch purchase history', { error });
         return [];

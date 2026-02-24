@@ -62,7 +62,7 @@ export default function Automation() {
         if (error && error.code === '42P01') return [];
         if (error) throw error;
         // Cast to unknown first to bypass Supabase type inference issues with new tables
-        return (data as unknown as AutomationRule[]) || [];
+        return (data as unknown as AutomationRule[]) ?? [];
       } catch (error) {
         logger.error('Failed to fetch automation rules', error, { component: 'Automation' });
         if (isPostgrestError(error) && error.code === '42P01') return [];
@@ -202,8 +202,8 @@ export default function Automation() {
     );
   }
 
-  const enabledCount = (rules || []).filter((r) => r.enabled).length;
-  const totalRuns = (rules || []).reduce((sum, r) => sum + (r.last_run_at ? 1 : 0), 0);
+  const enabledCount = (rules ?? []).filter((r) => r.enabled).length;
+  const totalRuns = (rules ?? []).reduce((sum, r) => sum + (r.last_run_at ? 1 : 0), 0);
 
   return (
     <div className="p-4 space-y-4">

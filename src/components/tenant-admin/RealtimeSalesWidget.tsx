@@ -53,7 +53,7 @@ export function RealtimeSalesWidget() {
                 .select('id')
                 .eq('tenant_id', tenantId);
 
-            const storeIds = (stores || []).map(s => s.id);
+            const storeIds = (stores ?? []).map(s => s.id);
 
             let todayStorefrontOrders: { total: number }[] = [];
             let yesterdayStorefrontOrders: { total: number }[] = [];
@@ -64,7 +64,7 @@ export function RealtimeSalesWidget() {
                     .select('total, created_at')
                     .in('store_id', storeIds)
                     .gte('created_at', today.toISOString());
-                todayStorefrontOrders = sfOrders || [];
+                todayStorefrontOrders = sfOrders ?? [];
 
                 const { data: sfYesterday } = await supabase
                     .from('storefront_orders')
@@ -72,7 +72,7 @@ export function RealtimeSalesWidget() {
                     .in('store_id', storeIds)
                     .gte('created_at', yesterday.toISOString())
                     .lt('created_at', today.toISOString());
-                yesterdayStorefrontOrders = sfYesterday || [];
+                yesterdayStorefrontOrders = sfYesterday ?? [];
             }
 
             // Get yesterday's wholesale orders for comparison
@@ -86,13 +86,13 @@ export function RealtimeSalesWidget() {
             if (yesterdayWholesaleError) throw yesterdayWholesaleError;
 
             // Calculate combined metrics
-            const todayWholesaleRevenue = (todayWholesaleOrders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+            const todayWholesaleRevenue = (todayWholesaleOrders ?? []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
             const todayStorefrontRevenue = todayStorefrontOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
             const todayRevenue = todayWholesaleRevenue + todayStorefrontRevenue;
             const todayOrderCount = (todayWholesaleOrders?.length || 0) + todayStorefrontOrders.length;
             const todayAvgOrder = todayOrderCount > 0 ? todayRevenue / todayOrderCount : 0;
 
-            const yesterdayWholesaleRevenue = (yesterdayWholesaleOrders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+            const yesterdayWholesaleRevenue = (yesterdayWholesaleOrders ?? []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
             const yesterdayStorefrontRevenue = yesterdayStorefrontOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
             const yesterdayRevenue = yesterdayWholesaleRevenue + yesterdayStorefrontRevenue;
             const yesterdayOrderCount = (yesterdayWholesaleOrders?.length || 0) + yesterdayStorefrontOrders.length;

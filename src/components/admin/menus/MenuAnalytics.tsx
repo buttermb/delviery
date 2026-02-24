@@ -156,7 +156,7 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
         return [];
       }
 
-      return (data || []) as MenuOption[];
+      return (data ?? []) as MenuOption[];
     },
     enabled: !!tenantId,
     staleTime: 60 * 1000,
@@ -198,8 +198,8 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
       logger.warn('Failed to fetch orders for menu analytics', { error: ordersError.message });
     }
 
-    const logs = (accessLogs || []) as AccessLogRow[];
-    const orderList = (orders || []) as MenuOrderRow[];
+    const logs = (accessLogs ?? []) as AccessLogRow[];
+    const orderList = (orders ?? []) as MenuOrderRow[];
 
     // Calculate metrics
     const viewsCount = logs.length;
@@ -246,7 +246,7 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
     const productMap: Record<string, { id: string; name: string; orders: number; revenue: number }> = {};
     orderList.forEach(order => {
       const orderData = order.order_data as { items?: OrderItem[] } | null;
-      const items = orderData?.items || [];
+      const items = orderData?.items ?? [];
       items.forEach((item: OrderItem) => {
         const key = item.product_id || item.product_name;
         if (!productMap[key]) {

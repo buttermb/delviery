@@ -35,8 +35,8 @@ export const useFinancialSnapshot = () => {
           .lte("created_at", endOfToday.toISOString()),
       ]);
 
-      const orders = ordersResult.data || [];
-      const wholesaleOrders = wholesaleResult.data || [];
+      const orders = ordersResult.data ?? [];
+      const wholesaleOrders = wholesaleResult.data ?? [];
       const allOrders = [...orders, ...wholesaleOrders];
 
       // Calculate revenue from completed/delivered orders (real revenue)
@@ -162,7 +162,7 @@ export const useCreditOut = () => {
         days: c.last_payment_date
           ? Math.floor((now.getTime() - new Date(c.last_payment_date).getTime()) / (1000 * 60 * 60 * 24))
           : 0
-      })) || [];
+      })) ?? [];
 
       return {
         total_outstanding,
@@ -274,8 +274,8 @@ export const useMonthlyPerformance = () => {
           .lte("created_at", monthEnd.toISOString()),
       ]);
 
-      const orders = ordersResult.data || [];
-      const wholesaleOrders = wholesaleResult.data || [];
+      const orders = ordersResult.data ?? [];
+      const wholesaleOrders = wholesaleResult.data ?? [];
       const allOrders = [...orders, ...wholesaleOrders];
 
       // Calculate revenue from completed orders only (real recognized revenue)
@@ -355,7 +355,7 @@ export const useExpenseSummary = () => {
 
       if (error) throw error;
 
-      const expenseList = (expenses || []) as Array<{
+      const expenseList = (expenses ?? []) as Array<{
         id: string;
         description: string;
         amount: number | string;

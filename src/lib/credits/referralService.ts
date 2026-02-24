@@ -269,21 +269,21 @@ export async function getReferralStats(tenantId: string): Promise<ReferralStats>
       };
     }
 
-    const totalCreditsEarned = (redemptions || []).reduce(
+    const totalCreditsEarned = (redemptions ?? []).reduce(
       (sum, r) => sum + (r.referrer_credits_granted || 0) + 
         (r.conversion_bonus_granted ? REFERRAL_REWARDS.paidConversionBonus : 0),
       0
     );
 
-    const converted = (redemptions || []).filter(r => r.conversion_bonus_granted).length;
-    const pending = (redemptions || []).filter(r => !r.conversion_bonus_granted).length;
+    const converted = (redemptions ?? []).filter(r => r.conversion_bonus_granted).length;
+    const pending = (redemptions ?? []).filter(r => !r.conversion_bonus_granted).length;
 
     return {
       totalReferrals: code.usesCount,
       totalCreditsEarned,
       pendingConversions: pending,
       conversionRate: code.usesCount > 0 ? (converted / code.usesCount) * 100 : 0,
-      recentReferrals: (redemptions || []).map(r => ({
+      recentReferrals: (redemptions ?? []).map(r => ({
         id: r.id,
         creditsEarned: r.referrer_credits_granted + 
           (r.conversion_bonus_granted ? REFERRAL_REWARDS.paidConversionBonus : 0),

@@ -112,7 +112,7 @@ export function CreditUsageStats({
         if (error) throw error;
 
         // Calculate today's usage
-        const todayTransactions = (transactions || []).filter(
+        const todayTransactions = (transactions ?? []).filter(
           (t: CreditTransactionRecord) => new Date(t.created_at) >= todayStart
         );
         const todayUsage = todayTransactions.reduce(
@@ -121,7 +121,7 @@ export function CreditUsageStats({
         );
 
         // Calculate this week's usage
-        const weekTransactions = (transactions || []).filter(
+        const weekTransactions = (transactions ?? []).filter(
           (t: CreditTransactionRecord) => new Date(t.created_at) >= weekStart
         );
         const weekUsage = weekTransactions.reduce(
@@ -135,7 +135,7 @@ export function CreditUsageStats({
         const prevWeekEnd = new Date();
         prevWeekEnd.setDate(prevWeekEnd.getDate() - 7);
 
-        const prevWeekTransactions = (transactions || []).filter(
+        const prevWeekTransactions = (transactions ?? []).filter(
           (t: CreditTransactionRecord) => {
             const date = new Date(t.created_at);
             return date >= prevWeekStart && date < prevWeekEnd;
@@ -152,14 +152,14 @@ export function CreditUsageStats({
           : weekUsage > 0 ? 100 : 0;
 
         // Calculate monthly usage
-        const monthUsage = (transactions || []).reduce(
+        const monthUsage = (transactions ?? []).reduce(
           (sum: number, t: CreditTransactionRecord) => sum + Math.abs(t.amount),
           0
         );
 
         // Group by action type
         const byAction: Record<string, { total: number; count: number }> = {};
-        (transactions || []).forEach((t: CreditTransactionRecord) => {
+        (transactions ?? []).forEach((t: CreditTransactionRecord) => {
           const action = t.action_type || 'unknown';
           if (!byAction[action]) {
             byAction[action] = { total: 0, count: 0 };
@@ -184,7 +184,7 @@ export function CreditUsageStats({
 
         // Group by category
         const byCategory: Record<string, { total: number; count: number }> = {};
-        (transactions || []).forEach((t: CreditTransactionRecord) => {
+        (transactions ?? []).forEach((t: CreditTransactionRecord) => {
           const info = getCreditCostInfo(t.action_type);
           const category = info?.category || 'other';
           if (!byCategory[category]) {
@@ -211,7 +211,7 @@ export function CreditUsageStats({
           const nextDate = new Date(date);
           nextDate.setDate(nextDate.getDate() + 1);
 
-          const dayTransactions = (transactions || []).filter(
+          const dayTransactions = (transactions ?? []).filter(
             (t: CreditTransactionRecord) =>
               new Date(t.created_at) >= date && new Date(t.created_at) < nextDate
           );

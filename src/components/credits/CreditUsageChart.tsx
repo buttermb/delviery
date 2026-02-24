@@ -71,7 +71,7 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
       const byCategory: Record<string, number> = {};
       const byDay: Record<string, number> = {};
 
-      for (const tx of transactions || []) {
+      for (const tx of transactions ?? []) {
         // Get category from credit_costs or default
         const metadata = tx.metadata as Record<string, unknown> | null;
         const category = (typeof metadata?.category === 'string' ? metadata.category : 'other');
@@ -100,7 +100,7 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
       }));
 
       // Calculate totals
-      const totalUsed = (transactions || []).reduce(
+      const totalUsed = (transactions ?? []).reduce(
         (sum, tx) => sum + Math.abs(tx.amount),
         0
       );
@@ -117,7 +117,7 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
         .gte('created_at', prevStartDate.toISOString())
         .lt('created_at', startDate.toISOString());
 
-      const prevTotal = (prevTransactions || []).reduce(
+      const prevTotal = (prevTransactions ?? []).reduce(
         (sum, tx) => sum + Math.abs(tx.amount),
         0
       );

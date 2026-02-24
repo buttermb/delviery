@@ -91,7 +91,7 @@ export default function PricingPage() {
         if (error) throw error;
 
         // Transform to pricing tiers format
-        return (data || []).map((product) => ({
+        return (data ?? []).map((product) => ({
           id: product.id,
           product_id: product.id,
           min_quantity: 1,
@@ -125,7 +125,7 @@ export default function PricingPage() {
           return [];
         }
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         handleError(error, { component: 'PricingPage', toastTitle: 'Failed to load products' });
@@ -325,7 +325,7 @@ export default function PricingPage() {
       <Card className="p-6">
         <DataTable
           columns={columns}
-          data={pricingTiers || []}
+          data={pricingTiers ?? []}
           loading={isLoading}
           emptyMessage="No pricing tiers configured. Set pricing for your products!"
         />

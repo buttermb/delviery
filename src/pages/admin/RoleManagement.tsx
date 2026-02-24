@@ -106,7 +106,7 @@ export function RoleManagement() {
 
         // Fetch permissions for each role
         const rolesWithPermissions = await Promise.all(
-          (rolesData || []).map(async (role) => {
+          (rolesData ?? []).map(async (role) => {
             const { data: permData } = await supabase
               .from('tenant_role_permissions')
               .select('permission')
@@ -115,7 +115,7 @@ export function RoleManagement() {
 
             return {
               ...role,
-              permissions: (permData || []).map((p) => p.permission),
+              permissions: (permData ?? []).map((p) => p.permission),
             };
           })
         );
@@ -325,11 +325,11 @@ export function RoleManagement() {
     setFormData({
       name: role.name,
       description: role.description || '',
-      permissions: role.permissions || [],
+      permissions: role.permissions ?? [],
     });
     // Expand categories that have selected permissions
     const categoriesWithSelections = PERMISSION_CATEGORIES.filter((cat) =>
-      cat.permissions.some((p) => (role.permissions || []).includes(p.key))
+      cat.permissions.some((p) => (role.permissions ?? []).includes(p.key))
     ).map((cat) => cat.name);
     setExpandedCategories(categoriesWithSelections);
     setIsDialogOpen(true);

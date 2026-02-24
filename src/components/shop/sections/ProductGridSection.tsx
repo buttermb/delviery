@@ -122,14 +122,14 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
 
                         if (fallbackError) throw fallbackError;
 
-                        return ((fallbackData as unknown[]) || []).map((item: unknown) => {
+                        return ((fallbackData as unknown[]) ?? []).map((item: unknown) => {
                             const row = item as Record<string, unknown>;
                             const products = row.products as Record<string, unknown> | null;
                             return {
                                 id: row.product_id as string,
                                 name: products?.name as string | undefined,
                                 price: (row.custom_price as number) || (products?.price as number) || 0,
-                                images: (products?.images as string[]) || [],
+                                images: (products?.images as string[]) ?? [],
                                 category: products?.category as string | undefined,
                                 description: products?.description as string | undefined,
                                 in_stock: products?.in_stock as boolean | undefined,
@@ -138,14 +138,14 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                     }
 
                     // Normalize RPC data to LocalProduct interface
-                    return ((data as unknown[]) || []).map((item: unknown) => {
+                    return ((data as unknown[]) ?? []).map((item: unknown) => {
                         const p = item as Record<string, unknown>;
                         return {
                             id: (p.product_id || p.id) as string,
                             name: (p.product_name || p.name) as string,
                             price: (p.base_price || p.price || 0) as number,
                             description: p.description as string | undefined,
-                            images: (p.images as string[]) || [],
+                            images: (p.images as string[]) ?? [],
                             category: p.category as string | undefined,
                             in_stock: ((p.quantity_available as number) || 0) > 0,
                             strain_type: (p.strain_type as string) || '',
@@ -164,7 +164,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                     .limit(20);
                 if (error) throw error;
                 // Map generic products to LocalProduct shape
-                return (data || []).map(p => ({
+                return (data ?? []).map(p => ({
                     id: p.id,
                     name: p.name,
                     price: p.price,
@@ -317,7 +317,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                                 price: Number(product.price) || 0,
                                                                 description: product.description || '',
                                                                 image_url: product.images?.[0] || null,
-                                                                images: product.images || [],
+                                                                images: product.images ?? [],
                                                                 thc_content: null,
                                                                 cbd_content: null,
                                                                 is_visible: true,

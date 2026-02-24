@@ -126,10 +126,10 @@ export default function LiveMap() {
         throw allError;
       }
 
-      setAllCouriers(allData || []);
+      setAllCouriers(allData ?? []);
 
       // Filter to online couriers with valid locations
-      const onlineCouriers = (allData || []).filter(c =>
+      const onlineCouriers = (allData ?? []).filter(c =>
         c.is_online && c.current_lat !== null && c.current_lng !== null
       );
 
@@ -171,7 +171,7 @@ export default function LiveMap() {
         return;
       }
 
-      setActiveOrders(ordersData || []);
+      setActiveOrders(ordersData ?? []);
     } catch (err) {
       logger.error('Error loading active orders', err, { component: 'LiveMap' });
     } finally {

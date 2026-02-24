@@ -86,7 +86,7 @@ export function useCustomerInvoices() {
 
         const result = await query.order('created_at', { ascending: false });
         if (result.error) throw result.error;
-        return (result.data || []) as unknown as CustomerInvoice[];
+        return (result.data ?? []) as unknown as CustomerInvoice[];
       },
       enabled: !!tenant?.id,
       staleTime: 30_000,
@@ -118,7 +118,7 @@ export function useCustomerInvoices() {
 
         if (result.error) throw result.error;
 
-        const invoicesList = (result.data || []) as Array<{
+        const invoicesList = (result.data ?? []) as Array<{
           id: string;
           status: string;
           total: number;
@@ -395,7 +395,7 @@ export function useCustomersList() {
         .order('first_name', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
     staleTime: 60_000,

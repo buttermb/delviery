@@ -67,7 +67,7 @@ export default function RunnerLocationTracking() {
         .order('full_name');
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
   });
@@ -92,7 +92,7 @@ export default function RunnerLocationTracking() {
         .limit(20);
 
       if (error) throw error;
-      return (data || []) as unknown as DeliveryWithETA[];
+      return (data ?? []) as unknown as DeliveryWithETA[];
     },
     enabled: !!selectedRunnerId,
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -119,7 +119,7 @@ export default function RunnerLocationTracking() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
     refetchInterval: 15000, // Refresh every 15 seconds for live data

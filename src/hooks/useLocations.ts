@@ -87,7 +87,7 @@ export const useLocations = (filters?: { status?: string }) => {
         logger.error('Failed to fetch locations', { error, tenantId: tenant.id });
         throw error;
       }
-      return (data || []) as Location[];
+      return (data ?? []) as Location[];
     },
     enabled: !!tenant?.id,
   });
@@ -119,7 +119,7 @@ export const useLocations = (filters?: { status?: string }) => {
       }
 
       // Fallback: compute summary manually
-      const locations = locationsQuery.data || [];
+      const locations = locationsQuery.data ?? [];
       if (locations.length === 0) return [];
 
       const summaries: LocationOperationsSummary[] = [];
@@ -159,7 +159,7 @@ export const useLocations = (filters?: { status?: string }) => {
           .select('quantity, reserved_quantity, reorder_point')
           .eq('location_id', location.id);
 
-        const inventory = (inventoryData || []) as Array<{ quantity: number; reserved_quantity: number; reorder_point: number }>;
+        const inventory = (inventoryData ?? []) as Array<{ quantity: number; reserved_quantity: number; reorder_point: number }>;
         const totalProducts = inventory.length;
         const totalQuantity = inventory.reduce((sum, i) => sum + (i.quantity || 0), 0);
         const lowStockProducts = inventory.filter(
@@ -294,8 +294,8 @@ export const useLocations = (filters?: { status?: string }) => {
   };
 
   return {
-    locations: locationsQuery.data || [],
-    operationsSummary: operationsSummaryQuery.data || [],
+    locations: locationsQuery.data ?? [],
+    operationsSummary: operationsSummaryQuery.data ?? [],
     isLoading: locationsQuery.isLoading,
     isSummaryLoading: operationsSummaryQuery.isLoading,
     error: locationsQuery.error,

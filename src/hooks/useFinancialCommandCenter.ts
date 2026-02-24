@@ -284,7 +284,7 @@ export const useCashFlowPulse = () => {
           const dayOrders = weekOrdersResult.data?.filter(o => {
             const orderDate = new Date(o.created_at);
             return format(orderDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd');
-          }) || [];
+          }) ?? [];
           amount = dayOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
         }
         
@@ -348,7 +348,7 @@ export const useARCommand = () => {
       
       // Categorize clients by urgency
       const now = new Date();
-      const categorized = (clients || []).map(c => {
+      const categorized = (clients ?? []).map(c => {
         const amount = Number(c.outstanding_balance || 0);
         const daysSincePayment = c.last_payment_date 
           ? differenceInDays(now, new Date(c.last_payment_date))
@@ -419,7 +419,7 @@ export const useFrontedInventory = () => {
       
       if (error) throw error;
       
-      const frontedItems: FrontedItem[] = (items || []).map(item => {
+      const frontedItems: FrontedItem[] = (items ?? []).map(item => {
         const daysOut = differenceInDays(now, new Date(item.dispatched_at));
         let status: 'healthy' | 'warning' | 'overdue' = 'healthy';
         
@@ -568,7 +568,7 @@ export const usePerformancePulse = () => {
         : 0;
       
       // Top clients calculation
-      const clientMap = new Map(clientsResult.data?.map(c => [c.id, c.business_name]) || []);
+      const clientMap = new Map(clientsResult.data?.map(c => [c.id, c.business_name]) ?? []);
       const clientRevenue: Record<string, number> = {};
       
       thisMonthResult.data?.forEach(order => {
@@ -589,7 +589,7 @@ export const usePerformancePulse = () => {
       
       // Margin trend (weekly for 90 days)
       const marginTrend: { date: string; margin: number }[] = [];
-      const trendOrders = trendResult.data || [];
+      const trendOrders = trendResult.data ?? [];
       
       for (let i = 12; i >= 0; i--) {
         const weekStart = subDays(now, i * 7);

@@ -202,7 +202,7 @@ export default function SuperAdminDashboardPage() {
         .select('*')
         .in('subscription_status', ['trial', 'trialing']);
 
-      return tenants || [];
+      return tenants ?? [];
     },
   });
 
@@ -271,7 +271,7 @@ export default function SuperAdminDashboardPage() {
         .select('id, business_name')
         .in('id', tenantIds);
 
-      const tenantMap = new Map(tenantData?.map((t) => [t.id, t.business_name]) || []);
+      const tenantMap = new Map(tenantData?.map((t) => [t.id, t.business_name]) ?? []);
 
       return logRecords.map((log) => {
         let type: 'tenant_created' | 'tenant_updated' | 'subscription_changed' | 'payment_received' | 'system_event' = 'system_event';
@@ -357,7 +357,7 @@ export default function SuperAdminDashboardPage() {
 
       const recentConverted = convertedTenants?.filter((t) =>
         recentTrials.some((rt) => rt.id === t.id)
-      ) || [];
+      ) ?? [];
 
       return recentTrials.length > 0
         ? Math.round((recentConverted.length / recentTrials.length) * 100)

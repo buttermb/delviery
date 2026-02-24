@@ -121,7 +121,7 @@ export default function CategoriesPage() {
         }
         if (error) throw error;
         setTableMissing(false);
-        return (data || []) as unknown as Category[];
+        return (data ?? []) as unknown as Category[];
       } catch (error) {
         if ((error as { code?: string })?.code === '42P01') {
           setTableMissing(true);
@@ -182,7 +182,7 @@ export default function CategoriesPage() {
         const productCategoryMap = new Map<string, string>();
         const productSalesMap = new Map<string, { name: string; totalSold: number; categoryId: string }>();
 
-        (products || []).forEach(product => {
+        (products ?? []).forEach(product => {
           if (product.category_id) {
             productCategoryMap.set(product.id, product.category_id);
 
@@ -202,7 +202,7 @@ export default function CategoriesPage() {
         });
 
         // Calculate revenue and sales per product
-        (orderItems || []).forEach(item => {
+        (orderItems ?? []).forEach(item => {
           const categoryId = productCategoryMap.get(item.product_id);
           if (categoryId) {
             const stats = statsMap.get(categoryId);
@@ -269,7 +269,7 @@ export default function CategoriesPage() {
       if (category && cat.parent_id && categoryMap.has(cat.parent_id)) {
         const parent = categoryMap.get(cat.parent_id);
         if (parent) {
-          parent.children = parent.children || [];
+          parent.children = parent.children ?? [];
           parent.children.push(category);
         }
       } else if (category) {
@@ -379,7 +379,7 @@ export default function CategoriesPage() {
     return categories?.filter(cat =>
       cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       cat.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    ) || [];
+    ) ?? [];
   }, [categories, searchQuery]);
 
   const categoryTree = useMemo(() => buildCategoryTree(filteredCategories), [buildCategoryTree, filteredCategories]);

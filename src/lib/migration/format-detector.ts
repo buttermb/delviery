@@ -84,10 +84,10 @@ function isCSVContent(content: string): boolean {
   const delimiters = [',', '\t', ';', '|'];
   
   for (const delimiter of delimiters) {
-    const firstLineCount = (lines[0].match(new RegExp(`\\${delimiter}`, 'g')) || []).length;
+    const firstLineCount = (lines[0].match(new RegExp(`\\${delimiter}`, 'g')) ?? []).length;
     if (firstLineCount >= 2) {
       // Check if second line has similar structure
-      const secondLineCount = (lines[1].match(new RegExp(`\\${delimiter}`, 'g')) || []).length;
+      const secondLineCount = (lines[1].match(new RegExp(`\\${delimiter}`, 'g')) ?? []).length;
       if (Math.abs(firstLineCount - secondLineCount) <= 1) {
         return true;
       }
@@ -231,7 +231,7 @@ function detectDelimiter(content: string): ',' | '\t' | ';' | '|' {
   let bestConsistency = 0;
 
   for (const delimiter of delimiters) {
-    const counts = lines.map(line => (line.match(new RegExp(`\\${delimiter}`, 'g')) || []).length);
+    const counts = lines.map(line => (line.match(new RegExp(`\\${delimiter}`, 'g')) ?? []).length);
     const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
     const variance = counts.reduce((sum, count) => sum + Math.pow(count - avg, 2), 0) / counts.length;
     

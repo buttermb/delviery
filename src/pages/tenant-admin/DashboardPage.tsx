@@ -213,11 +213,11 @@ export default function TenantAdminDashboardPage() {
 
         // Safely extract data from settled promises
         const wholesaleOrders = wholesaleResult.status === 'fulfilled' && !wholesaleResult.value.error
-          ? wholesaleResult.value.data || [] : [];
+          ? wholesaleResult.value.data ?? [] : [];
         const menuOrders = menuResult.status === 'fulfilled' && !menuResult.value.error
-          ? menuResult.value.data || [] : [];
+          ? menuResult.value.data ?? [] : [];
         const generalOrders = ordersResult.status === 'fulfilled' && !ordersResult.value.error
-          ? ordersResult.value.data || [] : [];
+          ? ordersResult.value.data ?? [] : [];
 
         // Combine all orders
         const allOrders = [...wholesaleOrders, ...menuOrders, ...generalOrders];
@@ -242,14 +242,14 @@ export default function TenantAdminDashboardPage() {
             .returns<DashboardInventoryRow[]>();
         }
 
-        const inventory = inventoryResult.error ? [] : (inventoryResult.data || []);
+        const inventory = inventoryResult.error ? [] : (inventoryResult.data ?? []);
 
         if (inventoryResult.error && inventory.length === 0) {
           logger.warn("Failed to fetch inventory", inventoryResult.error, { component: 'DashboardPage' });
         }
 
         const DEFAULT_LOW_STOCK_THRESHOLD = 10;
-        const lowStock = (inventory as DashboardInventoryRow[] || []).map((item) => {
+        const lowStock = (inventory as DashboardInventoryRow[] ?? []).map((item) => {
           // Use product's low_stock_alert if set, otherwise use default threshold
           const threshold = item.low_stock_alert ?? DEFAULT_LOW_STOCK_THRESHOLD;
           const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
@@ -446,7 +446,7 @@ export default function TenantAdminDashboardPage() {
           return { total: 0, commission: 0 };
         }
 
-        const total = (orders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+        const total = (orders ?? []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
         const commission = total * 0.03; // 3% commission
 
         return { total, commission };

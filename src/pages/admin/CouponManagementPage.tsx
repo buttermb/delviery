@@ -101,7 +101,7 @@ export default function CouponManagementPage() {
         throw error;
       }
 
-      return (data || []) as Coupon[];
+      return (data ?? []) as Coupon[];
     },
     enabled: !!tenant?.id,
   });
@@ -155,7 +155,7 @@ export default function CouponManagementPage() {
         coupon.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
       return matchesSearch;
-    }) || [];
+    }) ?? [];
   }, [coupons, searchTerm]);
 
   const handleCreate = () => {
@@ -575,7 +575,7 @@ export default function CouponManagementPage() {
         <CouponAnalytics
           open={isAnalyticsOpen}
           onOpenChange={setIsAnalyticsOpen}
-          coupons={coupons || []}
+          coupons={coupons ?? []}
         />
       )}
 

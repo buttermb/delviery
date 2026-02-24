@@ -38,7 +38,7 @@ export default function AdvancedAnalytics() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         handleError(error, { component: 'AdvancedAnalytics', toastTitle: 'Failed to load orders' });
@@ -61,7 +61,7 @@ export default function AdvancedAnalytics() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         handleError(error, { component: 'AdvancedAnalytics', toastTitle: 'Failed to load customers' });
@@ -102,7 +102,7 @@ export default function AdvancedAnalytics() {
   }
 
   interface MonthlyRevenue { month: string; revenue: number; orders: number }
-  const revenueByMonth = (orders || []).reduce((acc: MonthlyRevenue[], order) => {
+  const revenueByMonth = (orders ?? []).reduce((acc: MonthlyRevenue[], order) => {
     const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     const existing = acc.find((item) => item.month === month);
     const revenue = parseFloat(String(order.total || 0));
@@ -115,7 +115,7 @@ export default function AdvancedAnalytics() {
     return acc;
   }, []).sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
 
-  const customerSegments = (customers || []).reduce((acc: Record<string, number>, customer) => {
+  const customerSegments = (customers ?? []).reduce((acc: Record<string, number>, customer) => {
     const segment = customer.customer_type || 'regular';
     acc[segment] = (acc[segment] || 0) + 1;
     return acc;

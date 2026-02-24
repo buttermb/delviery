@@ -120,7 +120,7 @@ export default function ExpenseTracking() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
@@ -197,7 +197,7 @@ export default function ExpenseTracking() {
   };
 
   // Filter expenses
-  const filteredExpenses = (expenses || []).filter((e: Expense) =>
+  const filteredExpenses = (expenses ?? []).filter((e: Expense) =>
     categoryFilter === 'all' || e.category === categoryFilter
   );
 
@@ -209,7 +209,7 @@ export default function ExpenseTracking() {
     .reduce((sum: number, e: Expense) => sum + parseFloat(String(e.amount || 0)), 0);
 
   // Category breakdown for pie chart
-  const categoryBreakdown = (expenses || []).reduce((acc: Record<string, number>, e: Expense) => {
+  const categoryBreakdown = (expenses ?? []).reduce((acc: Record<string, number>, e: Expense) => {
     const category = e.category || 'Uncategorized';
     acc[category] = (acc[category] || 0) + parseFloat(String(e.amount || 0));
     return acc;
@@ -220,7 +220,7 @@ export default function ExpenseTracking() {
     .sort((a, b) => b.value - a.value);
 
   // Get unique categories from data
-  const uniqueCategories = [...new Set((expenses || []).map((e: Expense) => e.category).filter(Boolean))];
+  const uniqueCategories = [...new Set((expenses ?? []).map((e: Expense) => e.category).filter(Boolean))];
 
   if (isLoading) {
     return <EnhancedLoadingState variant="dashboard" message="Loading expenses..." />;

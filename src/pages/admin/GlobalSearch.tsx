@@ -119,10 +119,10 @@ const GlobalSearch = () => {
       const [users, orders, products, addresses] = results;
 
       return {
-        users: (users.data || []) as unknown as UserSearchResult[],
-        orders: (orders.data || []) as unknown as OrderSearchResult[],
-        products: (products.data || []) as unknown as ProductSearchResult[],
-        addresses: (addresses.data || []) as unknown as AddressSearchResult[],
+        users: (users.data ?? []) as unknown as UserSearchResult[],
+        orders: (orders.data ?? []) as unknown as OrderSearchResult[],
+        products: (products.data ?? []) as unknown as ProductSearchResult[],
+        addresses: (addresses.data ?? []) as unknown as AddressSearchResult[],
         totalResults:
           (users.data?.length || 0) +
           (orders.data?.length || 0) +

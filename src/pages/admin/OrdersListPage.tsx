@@ -166,7 +166,7 @@ export function OrdersListPage() {
       }
 
       // Fetch user profiles for orders
-      const ordersList = ordersData || [];
+      const ordersList = ordersData ?? [];
       const userIds = [...new Set(ordersList.map((o) => o.user_id).filter(Boolean))] as string[];
       let profilesMap: Record<string, { full_name: string | null; email: string | null; phone: string | null }> = {};
 
@@ -176,7 +176,7 @@ export function OrdersListPage() {
           .select('user_id, full_name, first_name, last_name, phone')
           .in('user_id', userIds);
 
-        profilesMap = (profilesData || []).reduce((acc, profile) => {
+        profilesMap = (profilesData ?? []).reduce((acc, profile) => {
           const displayName = profile.full_name
             || [profile.first_name, profile.last_name].filter(Boolean).join(' ')
             || null;
@@ -241,7 +241,7 @@ export function OrdersListPage() {
         delivery_status: deliveryStatusMap[order.id] || undefined,
         delivery_method: undefined,
         user: order.user_id ? profilesMap[order.user_id] : undefined,
-        products: orderProductsMap[order.id] || [],
+        products: orderProductsMap[order.id] ?? [],
       })) as Order[];
     },
     enabled: !!tenant?.id,

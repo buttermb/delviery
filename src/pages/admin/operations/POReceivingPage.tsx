@@ -90,7 +90,7 @@ export default function POReceivingPage() {
         return [];
       }
 
-      return (data || []) as PurchaseOrder[];
+      return (data ?? []) as PurchaseOrder[];
     },
     enabled: !!tenant?.id,
   });
@@ -112,7 +112,7 @@ export default function POReceivingPage() {
         return [];
       }
 
-      return (data || []) as PurchaseOrderItem[];
+      return (data ?? []) as PurchaseOrderItem[];
     },
     enabled: !!selectedPO?.id && receiveDialogOpen,
   });
@@ -149,7 +149,7 @@ export default function POReceivingPage() {
       vendorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       po.notes?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
-  }) || [];
+  }) ?? [];
 
   const handleReceive = (po: PurchaseOrder) => {
     setSelectedPO(po);
@@ -392,7 +392,7 @@ export default function POReceivingPage() {
             if (!open) setSelectedPO(null);
           }}
           purchaseOrder={selectedPO}
-          items={selectedPOItems || []}
+          items={selectedPOItems ?? []}
           onSuccess={() => {
             setReceiveDialogOpen(false);
             setSelectedPO(null);

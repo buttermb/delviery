@@ -75,7 +75,7 @@ export default function Webhooks() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
@@ -94,7 +94,7 @@ export default function Webhooks() {
           tenant_id: tenantId,
           name: webhook.name,
           url: webhook.url,
-          events: webhook.events || [],
+          events: webhook.events ?? [],
           secret: webhook.secret || null,
           status: webhook.status || 'active',
         })
@@ -180,7 +180,7 @@ export default function Webhooks() {
     setFormData({
       name: webhook.name,
       url: webhook.url,
-      events: webhook.events || [],
+      events: webhook.events ?? [],
       secret: webhook.secret || '',
       status: webhook.status,
     });
@@ -275,14 +275,14 @@ export default function Webhooks() {
                   <div>
                     <div className="text-sm font-medium mb-1">Events</div>
                     <div className="flex flex-wrap gap-1">
-                      {(webhook.events || []).slice(0, 3).map((event: string, idx: number) => (
+                      {(webhook.events ?? []).slice(0, 3).map((event: string, idx: number) => (
                         <Badge key={idx} variant="outline" className="text-xs">
                           {event}
                         </Badge>
                       ))}
-                      {(webhook.events || []).length > 3 && (
+                      {(webhook.events ?? []).length > 3 && (
                         <Badge variant="outline" className="text-xs">
-                          +{(webhook.events || []).length - 3}
+                          +{(webhook.events ?? []).length - 3}
                         </Badge>
                       )}
                     </div>

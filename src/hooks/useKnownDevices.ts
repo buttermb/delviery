@@ -57,7 +57,7 @@ export function useKnownDevices(userId?: string) {
         .order('last_seen_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as KnownDevice[];
+      return (data ?? []) as KnownDevice[];
     },
     enabled: !!userId,
   });
@@ -74,7 +74,7 @@ export function useKnownDevices(userId?: string) {
         .limit(20);
 
       if (error) throw error;
-      return (data || []) as SuspiciousLoginAlert[];
+      return (data ?? []) as SuspiciousLoginAlert[];
     },
     enabled: !!userId,
   });
@@ -162,11 +162,11 @@ export function useKnownDevices(userId?: string) {
   });
 
   return {
-    devices: devicesQuery.data || [],
+    devices: devicesQuery.data ?? [],
     isLoadingDevices: devicesQuery.isLoading,
-    alerts: alertsQuery.data || [],
+    alerts: alertsQuery.data ?? [],
     isLoadingAlerts: alertsQuery.isLoading,
-    pendingAlerts: (alertsQuery.data || []).filter(a => !a.user_response),
+    pendingAlerts: (alertsQuery.data ?? []).filter(a => !a.user_response),
     trustDevice: trustDeviceMutation.mutate,
     isTrusting: trustDeviceMutation.isPending,
     untrustDevice: untrustDeviceMutation.mutate,

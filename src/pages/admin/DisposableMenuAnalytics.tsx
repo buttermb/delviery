@@ -100,11 +100,11 @@ const DisposableMenuAnalytics = () => {
 
   const currentPeriodLogs = accessLogs?.filter(log => 
     parseISO(log.accessed_at) >= oneWeekAgo
-  ) || [];
+  ) ?? [];
   const previousPeriodLogs = accessLogs?.filter(log => {
     const date = parseISO(log.accessed_at);
     return date >= twoWeeksAgo && date < oneWeekAgo;
-  }) || [];
+  }) ?? [];
 
   const currentViews = currentPeriodLogs.length;
   const previousViews = previousPeriodLogs.length;
@@ -327,7 +327,7 @@ const DisposableMenuAnalytics = () => {
 
         <TabsContent value="security">
           <SecurityEventsTable
-            events={(securityEvents || []) as unknown as React.ComponentProps<typeof SecurityEventsTable>['events']}
+            events={(securityEvents ?? []) as unknown as React.ComponentProps<typeof SecurityEventsTable>['events']}
             onRefresh={refetchEvents}
           />
         </TabsContent>
@@ -374,7 +374,7 @@ const DisposableMenuAnalytics = () => {
 
         <TabsContent value="audit">
           <SecurityAuditLog
-            events={securityEvents || []}
+            events={securityEvents ?? []}
             onRefresh={refetchEvents}
           />
         </TabsContent>

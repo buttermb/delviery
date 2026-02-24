@@ -73,7 +73,7 @@ export function ProductPricingSection({ formData, updateFormData }: ProductPrici
 
   // Bulk pricing handlers
   const addBulkTier = () => {
-    const currentTiers = formData.bulk_price_tiers || [];
+    const currentTiers = formData.bulk_price_tiers ?? [];
     const lastTier = currentTiers[currentTiers.length - 1];
     const newMinQty = lastTier ? (lastTier.maxQuantity || lastTier.minQuantity) + 1 : 10;
 
@@ -90,14 +90,14 @@ export function ProductPricingSection({ formData, updateFormData }: ProductPrici
   };
 
   const updateBulkTier = (tierId: string, updates: Partial<BulkPriceTier>) => {
-    const updatedTiers = (formData.bulk_price_tiers || []).map((tier) =>
+    const updatedTiers = (formData.bulk_price_tiers ?? []).map((tier) =>
       tier.id === tierId ? { ...tier, ...updates } : tier
     );
     updateFormData({ bulk_price_tiers: updatedTiers });
   };
 
   const removeBulkTier = (tierId: string) => {
-    const updatedTiers = (formData.bulk_price_tiers || []).filter((tier) => tier.id !== tierId);
+    const updatedTiers = (formData.bulk_price_tiers ?? []).filter((tier) => tier.id !== tierId);
     updateFormData({ bulk_price_tiers: updatedTiers });
   };
 
@@ -110,7 +110,7 @@ export function ProductPricingSection({ formData, updateFormData }: ProductPrici
     setShowBulkPricing(enabled);
     updateFormData({
       bulk_pricing_enabled: enabled,
-      bulk_price_tiers: enabled ? (formData.bulk_price_tiers || []) : [],
+      bulk_price_tiers: enabled ? (formData.bulk_price_tiers ?? []) : [],
     });
   };
 
@@ -295,7 +295,7 @@ export function ProductPricingSection({ formData, updateFormData }: ProductPrici
         {showBulkPricing && (
           <CardContent className="space-y-4">
             {/* Bulk Tiers */}
-            {(formData.bulk_price_tiers || []).length > 0 && (
+            {(formData.bulk_price_tiers ?? []).length > 0 && (
               <div className="space-y-3">
                 <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground px-2">
                   <div className="col-span-2">Min Qty</div>
@@ -304,7 +304,7 @@ export function ProductPricingSection({ formData, updateFormData }: ProductPrici
                   <div className="col-span-3">Discount</div>
                   <div className="col-span-2"></div>
                 </div>
-                {(formData.bulk_price_tiers || []).map((tier) => {
+                {(formData.bulk_price_tiers ?? []).map((tier) => {
                   const basePrice = wholesalePrice || retailPrice;
                   const discount = calculateTierDiscount(tier.price, basePrice);
 
@@ -386,7 +386,7 @@ export function ProductPricingSection({ formData, updateFormData }: ProductPrici
               Add Price Tier
             </Button>
 
-            {(formData.bulk_price_tiers || []).length === 0 && (
+            {(formData.bulk_price_tiers ?? []).length === 0 && (
               <div className="text-center py-6 text-muted-foreground">
                 <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No bulk pricing tiers configured</p>

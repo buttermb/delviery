@@ -59,7 +59,7 @@ export default function SalesDashboardPage() {
         .gte('created_at', startDate);
       
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
   });
@@ -81,7 +81,7 @@ export default function SalesDashboardPage() {
         .lt('created_at', endDate);
       
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
   });
@@ -95,7 +95,7 @@ export default function SalesDashboardPage() {
     let totalCost = 0;
     let totalItems = 0;
     orders.forEach(order => {
-      (order.order_items || []).forEach((item: OrderLineItem) => {
+      (order.order_items ?? []).forEach((item: OrderLineItem) => {
         totalItems += item.quantity || 0;
         const cost = item.products?.cost || 0;
         totalCost += cost * (item.quantity || 0);
@@ -132,7 +132,7 @@ export default function SalesDashboardPage() {
         const orderDate = new Date(order.created_at);
         if (orderDate >= monthStart && orderDate <= monthEnd) {
           sales += order.total_amount || 0;
-          (order.order_items || []).forEach((item: OrderLineItem) => {
+          (order.order_items ?? []).forEach((item: OrderLineItem) => {
             cost += (item.products?.cost || 0) * (item.quantity || 0);
           });
         }
@@ -156,7 +156,7 @@ export default function SalesDashboardPage() {
     const productMap: Record<string, { name: string; sales: number; revenue: number }> = {};
     
     orders.forEach(order => {
-      (order.order_items || []).forEach((item: OrderLineItem) => {
+      (order.order_items ?? []).forEach((item: OrderLineItem) => {
         const productName = item.products?.name || 'Unknown Product';
         if (!productMap[productName]) {
           productMap[productName] = { name: productName, sales: 0, revenue: 0 };
@@ -177,7 +177,7 @@ export default function SalesDashboardPage() {
     const categoryMap: Record<string, { category: string; amount: number; orders: number }> = {};
     
     orders.forEach(order => {
-      (order.order_items || []).forEach((item: OrderLineItem) => {
+      (order.order_items ?? []).forEach((item: OrderLineItem) => {
         const category = item.products?.category || 'Uncategorized';
         if (!categoryMap[category]) {
           categoryMap[category] = { category, amount: 0, orders: 0 };

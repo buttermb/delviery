@@ -88,8 +88,8 @@ export function StorefrontAnalyticsWidget({ storeId, className }: StorefrontAnal
 
       const totalVisitors = visitorCount || 0;
       // Estimate page views as a multiple of visitors (typical ratio)
-      const totalPageViews = Math.max(totalVisitors * 3, (orders || []).length * 5);
-      const totalOrders = (orders || []).length;
+      const totalPageViews = Math.max(totalVisitors * 3, (orders ?? []).length * 5);
+      const totalOrders = (orders ?? []).length;
       const conversionRate = totalPageViews > 0
         ? Math.round((totalOrders / totalPageViews) * 10000) / 100
         : 0;
@@ -97,7 +97,7 @@ export function StorefrontAnalyticsWidget({ storeId, className }: StorefrontAnal
       // Build daily breakdown
       const dailyData: DailyMetric[] = days.map((day) => {
         const dayStr = day.toISOString().split('T')[0];
-        const dayOrders = (orders || []).filter((o) => {
+        const dayOrders = (orders ?? []).filter((o) => {
           const orderDate = new Date(o.created_at).toISOString().split('T')[0];
           return orderDate === dayStr;
         });
@@ -204,7 +204,7 @@ export function StorefrontAnalyticsWidget({ storeId, className }: StorefrontAnal
         {/* 7-Day Chart */}
         <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={analytics?.dailyData || []}>
+            <AreaChart data={analytics?.dailyData ?? []}>
               <defs>
                 <linearGradient id="pageViewsGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />

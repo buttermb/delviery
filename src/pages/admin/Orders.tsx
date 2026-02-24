@@ -232,7 +232,7 @@ export default function Orders() {
       }
 
       // Transform POS orders to match Order interface
-      const transformedPosOrders: Order[] = (posOrdersData || []).map(posOrder => ({
+      const transformedPosOrders: Order[] = (posOrdersData ?? []).map(posOrder => ({
         id: posOrder.id,
         order_number: posOrder.order_number,
         created_at: posOrder.created_at,
@@ -260,7 +260,7 @@ export default function Orders() {
           .select('user_id, full_name, first_name, last_name, phone')
           .in('user_id', userIds);
 
-        profilesMap = (profilesData || []).reduce((acc, profile: { user_id: string; full_name: string | null; first_name: string | null; last_name: string | null; phone: string | null }) => {
+        profilesMap = (profilesData ?? []).reduce((acc, profile: { user_id: string; full_name: string | null; first_name: string | null; last_name: string | null; phone: string | null }) => {
           // Build display name with fallbacks
           const displayName = profile.full_name
             || [profile.first_name, profile.last_name].filter(Boolean).join(' ')
@@ -276,7 +276,7 @@ export default function Orders() {
       }
 
       // Merge regular orders with user info (including SLA timestamp fields)
-      const regularOrdersWithUsers = (ordersData || []).map(order => ({
+      const regularOrdersWithUsers = (ordersData ?? []).map(order => ({
         ...order,
         delivery_method: (order as unknown as Record<string, unknown>).delivery_method as string || '',
         accepted_at: order.accepted_at || null,
@@ -1506,7 +1506,7 @@ export default function Orders() {
           priority_set_at: null,
           priority_set_by: null,
           priority_auto_set: false,
-          items: (refundOrder.order_items || []).map(item => ({
+          items: (refundOrder.order_items ?? []).map(item => ({
             id: item.id,
             order_id: refundOrder.id,
             product_id: item.product_id,

@@ -48,7 +48,7 @@ const TARGET_FIELDS: { value: TargetField; label: string }[] = [
 
 export function MappingStep({ detectedColumns, onUpdateMappings, onConfirm }: MappingStepProps) {
   const [mappings, setMappings] = useState<ColumnMappingItem[]>(
-    detectedColumns.mappings || []
+    detectedColumns.mappings ?? []
   );
 
   const handleMappingChange = (header: string, targetField: TargetField, confidence: number) => {
@@ -106,8 +106,8 @@ export function MappingStep({ detectedColumns, onUpdateMappings, onConfirm }: Ma
           variant="ghost"
           size="sm"
           onClick={() => {
-            setMappings(detectedColumns.mappings || []);
-            onUpdateMappings(detectedColumns.mappings || []);
+            setMappings(detectedColumns.mappings ?? []);
+            onUpdateMappings(detectedColumns.mappings ?? []);
           }}
           className="gap-2"
         >

@@ -71,7 +71,7 @@ export default function SalesDashboard() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data as OrderRecord[]) || [];
+        return (data as OrderRecord[]) ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         logger.error('Error fetching sales dashboard data', error, { component: 'SalesDashboard' });
@@ -82,7 +82,7 @@ export default function SalesDashboard() {
   });
 
   const { salesData, statusData, totalRevenue, totalOrders, avgOrderValue } = useMemo(() => {
-    const orderList = orders || [];
+    const orderList = orders ?? [];
     const dateMap: Record<string, SalesDataPoint> = {};
     const statusMap: Record<string, number> = {};
     let revenue = 0;
@@ -469,7 +469,7 @@ export default function SalesDashboard() {
         open={drilldown.isOpen}
         onOpenChange={(open) => { if (!open) drilldown.closeDrilldown(); }}
         filter={drilldown.filter}
-        orders={orders || []}
+        orders={orders ?? []}
       />
     </div>
   );

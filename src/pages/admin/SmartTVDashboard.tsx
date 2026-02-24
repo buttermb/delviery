@@ -88,7 +88,7 @@ export default function SmartTVDashboard() {
 
             // Combine and transform orders
             const orders: TVOrder[] = [
-                ...(menuOrders || []).map((o, i) => ({
+                ...(menuOrders ?? []).map((o, i) => ({
                     id: o.id,
                     orderNumber: String(i + 1).padStart(3, '0'),
                     source: o.disposable_menus?.title || 'Menu',
@@ -96,7 +96,7 @@ export default function SmartTVDashboard() {
                     status: mapStatus(o.status),
                     createdAt: new Date(o.created_at),
                 })),
-                ...(appOrders || []).map((o, i) => ({
+                ...(appOrders ?? []).map((o, i) => ({
                     id: o.id,
                     orderNumber: String(menuOrders?.length || 0 + i + 1).padStart(3, '0'),
                     source: 'App',
@@ -147,7 +147,7 @@ export default function SmartTVDashboard() {
 
             // Group by hour
             const hourlyMap = new Map<number, number>();
-            (data || []).forEach(order => {
+            (data ?? []).forEach(order => {
                 const hour = new Date(order.created_at).getHours();
                 hourlyMap.set(hour, (hourlyMap.get(hour) || 0) + (order.total_amount || 0));
             });
@@ -182,7 +182,7 @@ export default function SmartTVDashboard() {
             }
 
             // Transform to alerts
-            const alerts: InventoryAlert[] = (data || [])
+            const alerts: InventoryAlert[] = (data ?? [])
                 .map(p => ({
                     id: p.id,
                     productName: p.name,
@@ -255,7 +255,7 @@ export default function SmartTVDashboard() {
             <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-4 p-4 min-h-0">
                 {/* Top Left - Live Orders */}
                 <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 p-4 overflow-hidden">
-                    <TVLiveOrdersWidget orders={ordersData?.orders || []} />
+                    <TVLiveOrdersWidget orders={ordersData?.orders ?? []} />
                 </div>
 
                 {/* Top Right - Key Metrics */}
@@ -270,12 +270,12 @@ export default function SmartTVDashboard() {
 
                 {/* Bottom Left - Inventory Alerts */}
                 <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 p-4 overflow-hidden">
-                    <TVInventoryWidget alerts={inventoryAlerts || []} />
+                    <TVInventoryWidget alerts={inventoryAlerts ?? []} />
                 </div>
 
                 {/* Bottom Right - Revenue Chart */}
                 <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 p-4">
-                    <TVRevenueChartWidget data={hourlyData || []} />
+                    <TVRevenueChartWidget data={hourlyData ?? []} />
                 </div>
             </div>
 

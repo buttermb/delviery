@@ -39,7 +39,7 @@ export default function CustomerInsightsPage() {
         .eq('tenant_id', tenant.id);
       
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
   });
@@ -59,7 +59,7 @@ export default function CustomerInsightsPage() {
         .gte('created_at', startDate);
       
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
   });
@@ -191,20 +191,20 @@ export default function CustomerInsightsPage() {
       if (error) throw error;
 
       // Get order counts for each customer
-      const customerIds = (data || []).map(c => c.id);
+      const customerIds = (data ?? []).map(c => c.id);
       const { data: orderCounts } = await supabase
         .from('orders')
         .select('customer_id')
         .in('customer_id', customerIds);
 
       const countMap: Record<string, number> = {};
-      (orderCounts || []).forEach(o => {
+      (orderCounts ?? []).forEach(o => {
         if (o.customer_id) {
           countMap[o.customer_id] = (countMap[o.customer_id] || 0) + 1;
         }
       });
 
-      return (data || []).map(c => ({
+      return (data ?? []).map(c => ({
         name: `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Unknown',
         orders: countMap[c.id] || 0,
         spent: c.total_spent || 0,

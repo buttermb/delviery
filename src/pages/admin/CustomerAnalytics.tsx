@@ -41,7 +41,7 @@ export default function CustomerAnalytics() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as unknown as Customer[];
+        return (data ?? []) as unknown as Customer[];
       } catch (error: unknown) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
@@ -63,7 +63,7 @@ export default function CustomerAnalytics() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as unknown as Order[];
+        return (data ?? []) as unknown as Order[];
       } catch (error: unknown) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
@@ -98,7 +98,7 @@ export default function CustomerAnalytics() {
   const totalRevenue = orders?.reduce((sum: number, o: Order) => sum + parseFloat(String(o.total || 0)), 0) || 0;
   const avgCustomerValue = customerCount > 0 ? totalRevenue / customerCount : 0;
 
-  const customerTypes = (customers || []).reduce((acc: Record<string, number>, customer: Customer) => {
+  const customerTypes = (customers ?? []).reduce((acc: Record<string, number>, customer: Customer) => {
     const type = customer.customer_type || 'regular';
     acc[type] = (acc[type] || 0) + 1;
     return acc;

@@ -35,7 +35,7 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
   const totalViews = accessLogs?.length || 0;
   const uniqueVisitors = new Set(accessLogs?.map(log => log.access_whitelist_id || log.ip_address)).size;
   const totalOrders = orders?.length || 0;
-  const typedOrders = (orders || []) as Array<{ id: string; contact_phone?: string | null; created_at: string; total_amount?: number | string | null; status: string }>;
+  const typedOrders = (orders ?? []) as Array<{ id: string; contact_phone?: string | null; created_at: string; total_amount?: number | string | null; status: string }>;
   const totalRevenue = typedOrders.reduce((sum, order) => sum + parseFloat(String(order.total_amount || 0)), 0);
   const conversionRate = totalViews > 0 ? ((totalOrders / totalViews) * 100).toFixed(2) : '0.00';
 
@@ -54,7 +54,7 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
   };
 
   const handleExportAnalytics = () => {
-    exportMenuAnalytics(menu, accessLogs || [], typedOrders);
+    exportMenuAnalytics(menu, accessLogs ?? [], typedOrders);
     showSuccessToast('Export Complete', 'Analytics exported to CSV');
   };
 
@@ -201,9 +201,9 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
             {/* Analytics Charts Tab */}
             <TabsContent value="charts" className="p-1">
               <AnalyticsCharts
-                accessLogs={accessLogs || []}
+                accessLogs={accessLogs ?? []}
                 orders={typedOrders as unknown as React.ComponentProps<typeof AnalyticsCharts>['orders']}
-                securityEvents={securityEvents || []}
+                securityEvents={securityEvents ?? []}
               />
             </TabsContent>
 
@@ -226,8 +226,8 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
                 </Button>
               </div>
               <SecurityHeatmap
-                securityEvents={securityEvents || []}
-                accessLogs={accessLogs || []}
+                securityEvents={securityEvents ?? []}
+                accessLogs={accessLogs ?? []}
               />
             </TabsContent>
 

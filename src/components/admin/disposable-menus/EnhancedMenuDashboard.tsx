@@ -41,10 +41,10 @@ export function EnhancedMenuDashboard() {
   const { data: overviewStats } = useQuery({
     queryKey: queryKeys.menuOverviewStats.all,
     queryFn: async () => {
-      const activeMenus = menus?.filter((m: DisposableMenu) => m.status === 'active') || [];
+      const activeMenus = menus?.filter((m: DisposableMenu) => m.status === 'active') ?? [];
       const burnedMenus = menus?.filter((m: DisposableMenu) => 
         m.status === 'soft_burned' || m.status === 'hard_burned'
-      ) || [];
+      ) ?? [];
 
       // Total views (from access logs)
       let totalViews = 0;
@@ -98,7 +98,7 @@ export function EnhancedMenuDashboard() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      return data || [];
+      return data ?? [];
     },
   });
 
@@ -113,14 +113,14 @@ export function EnhancedMenuDashboard() {
         (m.status === 'soft_burned' || m.status === 'hard_burned') &&
         m.burned_at &&
         new Date(m.burned_at) >= thirtyDaysAgo
-      ) || [];
+      ) ?? [];
 
       return burned.slice(0, 10);
     },
     enabled: !!menus,
   });
 
-  const activeMenus = (menus as DisposableMenu[])?.filter((m: DisposableMenu) => m.status === 'active') || [];
+  const activeMenus = (menus as DisposableMenu[])?.filter((m: DisposableMenu) => m.status === 'active') ?? [];
 
   return (
     <div className="space-y-6">

@@ -32,7 +32,7 @@ export default function AuditLogsPage() {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     refetchInterval: 30000, // Refetch every 30 seconds
   });
@@ -51,7 +51,7 @@ export default function AuditLogsPage() {
         .from('tenants')
         .select('id, business_name')
         .in('id', tenantIds);
-      return data || [];
+      return data ?? [];
     },
     enabled: tenantIds.length > 0,
   });
@@ -75,7 +75,7 @@ export default function AuditLogsPage() {
         .from('super_admins')
         .select('id, email')
         .in('id', actorIds);
-      return (data || []) as { id: string; email: string }[];
+      return (data ?? []) as { id: string; email: string }[];
     },
     enabled: actorIds.length > 0,
   });

@@ -123,7 +123,7 @@ function useCollectionData() {
       });
 
       // Categorize clients
-      const collectionClients: CollectionClient[] = (clients || []).map(c => {
+      const collectionClients: CollectionClient[] = (clients ?? []).map(c => {
         const daysSincePayment = c.last_payment_date
           ? differenceInDays(now, new Date(c.last_payment_date))
           : 999;
@@ -195,7 +195,7 @@ function useClientActivities(clientId: string | null) {
         return [];
       }
 
-      return (data || []).map(a => ({
+      return (data ?? []).map(a => ({
         id: a.id,
         clientId: a.client_id,
         type: a.activity_type as CollectionActivity['type'],
@@ -730,7 +730,7 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
   const [noteDialogClient, setNoteDialogClient] = useState<CollectionClient | null>(null);
 
   // Filter clients based on active tab and search query
-  const filteredClients = (data?.clients || []).filter(client => {
+  const filteredClients = (data?.clients ?? []).filter(client => {
     const matchesTab = activeTab === 'all' || client.status === activeTab;
     const matchesSearch = !searchQuery.trim() ||
       client.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||

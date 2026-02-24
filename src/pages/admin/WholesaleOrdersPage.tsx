@@ -308,7 +308,7 @@ export default function WholesaleOrdersPage() {
           throw ordersError;
         }
 
-        const courierIds = [...new Set((ordersData || []).map(o => o.runner_id).filter(Boolean))];
+        const courierIds = [...new Set((ordersData ?? []).map(o => o.runner_id).filter(Boolean))];
         let couriersMap: Record<string, { id: string; full_name: string; phone: string | null; vehicle_type: string | null }> = {};
 
         if (courierIds.length > 0) {
@@ -322,7 +322,7 @@ export default function WholesaleOrdersPage() {
           }
         }
 
-        return (ordersData || []).map(order => ({
+        return (ordersData ?? []).map(order => ({
           ...order,
           courier: order.runner_id ? couriersMap[order.runner_id] : undefined,
           type: 'selling'
@@ -346,7 +346,7 @@ export default function WholesaleOrdersPage() {
           throw poError;
         }
 
-        return (poData || []).map(po => ({
+        return (poData ?? []).map(po => ({
           ...po,
           type: 'buying'
         })) as unknown as PurchaseOrder[];

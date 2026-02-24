@@ -93,7 +93,7 @@ export function useCashDrawer(shiftId: string | undefined) {
         throw error;
       }
 
-      return (data || []) as CashDrawerEvent[];
+      return (data ?? []) as CashDrawerEvent[];
     },
     enabled: !!shiftId && !!tenantId,
   });
@@ -103,7 +103,7 @@ export function useCashDrawer(shiftId: string | undefined) {
     isOpen: false,
     currentBalance: 0,
     lastEvent: eventsQuery.data?.[0] || null,
-    events: eventsQuery.data || [],
+    events: eventsQuery.data ?? [],
   };
 
   if (eventsQuery.data && eventsQuery.data.length > 0) {
@@ -241,7 +241,7 @@ export function useCashDrawer(shiftId: string | undefined) {
   return {
     // State
     drawerState,
-    events: eventsQuery.data || [],
+    events: eventsQuery.data ?? [],
     isLoading: eventsQuery.isLoading,
     isError: eventsQuery.isError,
     isPending: createEventMutation.isPending,

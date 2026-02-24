@@ -196,7 +196,7 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
         throw fetchError;
       }
 
-      return (orders || []) as unknown as DeliveryOrder[];
+      return (orders ?? []) as unknown as DeliveryOrder[];
     },
     enabled: !!tenantId && !!dateRange?.from && !!dateRange?.to,
     staleTime: 60000,
@@ -271,7 +271,7 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
     const zoneMap = new Map<string | null, DeliveryOrder[]>();
     data.forEach((order) => {
       const zoneId = order.delivery_zone_id;
-      const existing = zoneMap.get(zoneId) || [];
+      const existing = zoneMap.get(zoneId) ?? [];
       zoneMap.set(zoneId, [...existing, order]);
     });
 
@@ -319,7 +319,7 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
     const runnerMap = new Map<string, DeliveryOrder[]>();
     data.filter((o) => o.courier_id).forEach((order) => {
       const runnerId = order.courier_id!;
-      const existing = runnerMap.get(runnerId) || [];
+      const existing = runnerMap.get(runnerId) ?? [];
       runnerMap.set(runnerId, [...existing, order]);
     });
 
@@ -374,7 +374,7 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
 
     data.forEach((order) => {
       const dayIndex = getDay(parseISO(order.created_at));
-      const existing = dayMap.get(dayIndex) || [];
+      const existing = dayMap.get(dayIndex) ?? [];
       dayMap.set(dayIndex, [...existing, order]);
     });
 
@@ -421,7 +421,7 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
 
     data.forEach((order) => {
       const dateKey = format(parseISO(order.created_at), 'yyyy-MM-dd');
-      const existing = dateMap.get(dateKey) || [];
+      const existing = dateMap.get(dateKey) ?? [];
       dateMap.set(dateKey, [...existing, order]);
     });
 

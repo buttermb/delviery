@@ -197,9 +197,9 @@ export function ProductVariants({
   // ============================================================================
 
   const groupedVariants = useMemo(() => ({
-    weight: variants?.filter((v) => v.variant_type === 'weight') || [],
-    size: variants?.filter((v) => v.variant_type === 'size') || [],
-    strain: variants?.filter((v) => v.variant_type === 'strain') || [],
+    weight: variants?.filter((v) => v.variant_type === 'weight') ?? [],
+    size: variants?.filter((v) => v.variant_type === 'size') ?? [],
+    strain: variants?.filter((v) => v.variant_type === 'strain') ?? [],
   }), [variants]);
 
   const totalStock = useMemo(() =>
@@ -207,7 +207,7 @@ export function ProductVariants({
   [variants]);
 
   const lowStockVariants = useMemo(() =>
-    variants?.filter((v) => v.available_quantity <= v.low_stock_alert) || [],
+    variants?.filter((v) => v.available_quantity <= v.low_stock_alert) ?? [],
   [variants]);
 
   // ============================================================================
@@ -301,7 +301,7 @@ export function ProductVariants({
   }, [deleteVariant, deleteVariantMutation, productId]);
 
   const handleAddPresetWeights = useCallback(async () => {
-    const existingNames = new Set(variants?.map((v) => v.name) || []);
+    const existingNames = new Set(variants?.map((v) => v.name) ?? []);
     const newWeights = PRESET_WEIGHTS.filter((w) => !existingNames.has(w.name));
 
     if (newWeights.length === 0) {
@@ -326,7 +326,7 @@ export function ProductVariants({
   }, [variants, productId, bulkCreateVariants]);
 
   const handleAddPresetSizes = useCallback(async () => {
-    const existingNames = new Set(variants?.map((v) => v.name) || []);
+    const existingNames = new Set(variants?.map((v) => v.name) ?? []);
     const newSizes = PRESET_SIZES.filter((s) => !existingNames.has(s.name));
 
     if (newSizes.length === 0) {

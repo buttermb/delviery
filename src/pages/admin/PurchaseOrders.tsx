@@ -121,7 +121,7 @@ export default function PurchaseOrders() {
         throw queryError;
       }
 
-      return (data || []) as PurchaseOrder[];
+      return (data ?? []) as PurchaseOrder[];
     },
     enabled: !!tenant?.id,
   });
@@ -142,12 +142,12 @@ export default function PurchaseOrders() {
         return [];
       }
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
   });
 
-  const vendorMap = new Map(vendors?.map(v => [v.id, v.name]) || []);
+  const vendorMap = new Map(vendors?.map(v => [v.id, v.name]) ?? []);
 
   const deleteMutation = deletePurchaseOrder;
   const updateStatusMutation = updatePurchaseOrderStatus;
@@ -158,7 +158,7 @@ export default function PurchaseOrders() {
       po.notes?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSearch;
-  }) || [], [purchaseOrders, searchTerm]);
+  }) ?? [], [purchaseOrders, searchTerm]);
 
   // Calculate summary stats
   const { totalPOs, draftCount, pendingCount, totalValue } = useMemo(() => ({

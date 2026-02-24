@@ -66,7 +66,7 @@ export default function PosAnalytics() {
         .limit(1000);
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId,
     refetchInterval: 30000, // Backup polling every 30s
@@ -86,7 +86,7 @@ export default function PosAnalytics() {
         .limit(30);
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId,
   });
@@ -96,7 +96,7 @@ export default function PosAnalytics() {
   }
 
   // Process daily sales data
-  const dailySales = (transactions || []).reduce((acc: DailySalesData[], transaction: POSTransaction) => {
+  const dailySales = (transactions ?? []).reduce((acc: DailySalesData[], transaction: POSTransaction) => {
     const date = new Date(transaction.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const existing = acc.find((item) => item.date === date);
     const revenue = parseFloat(String(transaction.total_amount || 0));
@@ -110,7 +110,7 @@ export default function PosAnalytics() {
   }, [] as DailySalesData[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   // Process hourly data
-  const hourlyData = (transactions || []).reduce((acc: HourlyData[], transaction: POSTransaction) => {
+  const hourlyData = (transactions ?? []).reduce((acc: HourlyData[], transaction: POSTransaction) => {
     const hour = new Date(transaction.created_at).getHours();
     const hourLabel = `${hour}:00`;
     const existing = acc.find((item) => item.hour === hourLabel);
@@ -131,7 +131,7 @@ export default function PosAnalytics() {
 
   // Calculate payment method breakdown for pie chart
   const paymentMethodData: PaymentMethodData[] = Object.entries(
-    (transactions || []).reduce((acc: Record<string, number>, t: POSTransaction) => {
+    (transactions ?? []).reduce((acc: Record<string, number>, t: POSTransaction) => {
       const method = (t.payment_method || 'other').charAt(0).toUpperCase() + (t.payment_method || 'other').slice(1);
       acc[method] = (acc[method] || 0) + parseFloat(String(t.total_amount || 0));
       return acc;
@@ -150,7 +150,7 @@ export default function PosAnalytics() {
         </div>
         <div className="flex items-center gap-3">
           <ChartExport
-            data={transactions || []}
+            data={transactions ?? []}
             filename="pos-analytics"
             title="POS Analytics Report"
           />

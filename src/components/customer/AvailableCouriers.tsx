@@ -39,7 +39,7 @@ export function AvailableCouriers() {
         .order('rating', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as Courier[];
+      return (data ?? []) as Courier[];
     },
     enabled: !!tenant?.id,
     refetchInterval: 30000, // Refetch every 30 seconds
@@ -57,8 +57,8 @@ export function AvailableCouriers() {
     );
   }
 
-  const onlineCouriers = couriers?.filter((c) => c.is_online) || [];
-  const offlineCouriers = couriers?.filter((c) => !c.is_online) || [];
+  const onlineCouriers = couriers?.filter((c) => c.is_online) ?? [];
+  const offlineCouriers = couriers?.filter((c) => !c.is_online) ?? [];
 
   return (
     <Card>
