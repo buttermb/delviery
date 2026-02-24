@@ -40,6 +40,7 @@ export default function CheckoutPage() {
   const _location = useLocation();
   const queryClient = useQueryClient();
   const { tenant } = useCustomerAuth();
+  const tenantId = tenant?.id;
   const { guestCart } = useGuestCart();
   const [user, setUser] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("delivery");
@@ -73,7 +74,7 @@ export default function CheckoutPage() {
 
   // Fetch cart items
   const { data: dbCartItems = [], isLoading: dbLoading } = useQuery({
-    queryKey: ["cart", user?.id],
+    queryKey: ["cart", user?.id, tenantId],
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
@@ -211,7 +212,7 @@ export default function CheckoutPage() {
       // Clear cart
       if (user) {
         await supabase.from("cart_items").delete().eq("user_id", user.id);
-        queryClient.invalidateQueries({ queryKey: ["cart", user.id] });
+        queryClient.invalidateQueries({ queryKey: ["cart", user.id, tenantId] });
       } else {
         localStorage.removeItem("guest_cart");
       }

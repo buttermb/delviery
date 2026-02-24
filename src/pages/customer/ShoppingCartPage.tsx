@@ -30,6 +30,7 @@ export default function ShoppingCartPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { tenant } = useCustomerAuth();
+  const tenantId = tenant?.id;
   const { guestCart, updateGuestCartItem, removeFromGuestCart } = useGuestCart();
   const [orderNotes, setOrderNotes] = useState("");
   const [user, setUser] = useState<any>(null);
@@ -43,7 +44,7 @@ export default function ShoppingCartPage() {
 
   // Fetch cart items from database (authenticated users)
   const { data: dbCartItems = [], isLoading: dbLoading } = useQuery({
-    queryKey: ["cart", user?.id],
+    queryKey: ["cart", user?.id, tenantId],
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
@@ -129,7 +130,7 @@ export default function ShoppingCartPage() {
           .update({ quantity })
           .eq("id", itemId)
           .then(() => {
-            queryClient.invalidateQueries({ queryKey: ["cart", user.id] });
+            queryClient.invalidateQueries({ queryKey: ["cart", user.id, tenantId] });
           });
       }
     } else {
@@ -148,7 +149,7 @@ export default function ShoppingCartPage() {
           .delete()
           .eq("id", item.id)
           .then(() => {
-            queryClient.invalidateQueries({ queryKey: ["cart", user.id] });
+            queryClient.invalidateQueries({ queryKey: ["cart", user.id, tenantId] });
             toast.success("Item removed");
           });
       }

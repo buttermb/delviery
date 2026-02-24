@@ -117,7 +117,7 @@ export default function CustomerMenuViewPage() {
   // For simplicity in this refactor, we'll fetch the cart count separately or use the hook
   // But to keep it consistent with previous code, let's just use a simple query for cart items if user is logged in
   const { data: cartItems } = useQuery({
-    queryKey: ["cart", user?.id],
+    queryKey: ["cart", user?.id, tenantId],
     queryFn: async () => {
       if (!user?.id) return [];
       const { data } = await supabase
@@ -221,7 +221,7 @@ export default function CustomerMenuViewPage() {
           });
 
         if (error) throw error;
-        queryClient.invalidateQueries({ queryKey: ["cart", user.id] });
+        queryClient.invalidateQueries({ queryKey: ["cart", user.id, tenantId] });
       } else {
         addToGuestCart(productId, quantity, selectedWeight);
       }

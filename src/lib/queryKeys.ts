@@ -154,7 +154,7 @@ export const queryKeys = {
   // Cart
   cart: {
     all: ['cart'] as const,
-    user: (userId?: string) => [...queryKeys.cart.all, userId] as const,
+    user: (userId?: string, tenantId?: string) => [...queryKeys.cart.all, userId, tenantId] as const,
     guest: () => [...queryKeys.cart.all, 'guest'] as const,
   },
 
