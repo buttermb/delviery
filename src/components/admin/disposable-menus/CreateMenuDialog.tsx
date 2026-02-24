@@ -1453,6 +1453,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                   Header Image URL
                 </Label>
                 <Input
+                  type="url"
                   placeholder="https://example.com/banner.jpg"
                   value={headerImage}
                   onChange={(e) => setHeaderImage(e.target.value)}

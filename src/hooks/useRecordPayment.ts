@@ -104,7 +104,7 @@ export function useRecordPayment(): UseRecordPaymentReturn {
 
     // Collection mode data
     queryClient.invalidateQueries({ queryKey: queryKeys.collections.mode() });
-    queryClient.invalidateQueries({ queryKey: ['collection-activities'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.collections.activities('') });
 
     // Financial data
     queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.quickStats() });

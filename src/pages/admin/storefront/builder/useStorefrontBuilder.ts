@@ -260,7 +260,7 @@ export function useStorefrontBuilder() {
                 description: `Your storefront "${newStore.store_name}" has been created. 500 credits have been deducted.`,
             });
             queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
-            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.shopStore.all });
             setShowCreateDialog(false);
             setNewStoreName('');
             setNewStoreSlug('');
@@ -316,7 +316,7 @@ export function useStorefrontBuilder() {
         onSuccess: () => {
             toast.success('Draft saved', { description: 'Your changes have been saved as a draft.' });
             queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
-            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.shopStore.all });
         },
         onError: (err) => {
             toast.error('Save failed', {
@@ -348,7 +348,7 @@ export function useStorefrontBuilder() {
         onSuccess: () => {
             toast.success('Store published!', { description: 'Your storefront is now live and visible to customers.' });
             queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
-            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.shopStore.all });
         },
         onError: (err) => {
             toast.error('Publish failed', {
@@ -374,7 +374,7 @@ export function useStorefrontBuilder() {
         onSuccess: () => {
             toast.success('Store unpublished', { description: 'Your storefront is now in draft mode.' });
             queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
-            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.shopStore.all });
         },
         onError: (err) => {
             toast.error('Unpublish failed', {

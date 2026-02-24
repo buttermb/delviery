@@ -473,7 +473,7 @@ export function OrganizationForm({
                         Website
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="https://acme.com" {...field} />
+                        <Input type="url" placeholder="https://acme.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

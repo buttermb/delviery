@@ -184,7 +184,7 @@ export default function StorefrontSettings() {
 
   // Fetch featured products for preview
   const { data: featuredProducts } = useQuery({
-    queryKey: ['featured-products-preview', formData.featured_product_ids],
+    queryKey: queryKeys.featuredProductsPreview.byIds(formData.featured_product_ids),
     queryFn: async () => {
       const ids = formData.featured_product_ids || [];
       if (ids.length === 0) return [];
@@ -305,7 +305,7 @@ export default function StorefrontSettings() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceStore.byTenant() });
       setIsDirty(false);
       toast.success("Your store settings have been updated.");
     },
@@ -331,7 +331,7 @@ export default function StorefrontSettings() {
       return newToken;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-store'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceStore.byTenant() });
     },
     onError: (error) => {
       logger.error('Failed to regenerate token', error, { component: 'StorefrontSettings' });

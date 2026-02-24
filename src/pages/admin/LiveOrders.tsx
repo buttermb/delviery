@@ -239,8 +239,8 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
           queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
           queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats(tenant?.id) });
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.badgeCounts.all });
         },
         undo: async () => {
           await updateStatusInDb(orderId, previousStatus, source);
@@ -249,8 +249,8 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
           queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
           queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats(tenant?.id) });
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['admin-badge-counts'] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
+          queryClient.invalidateQueries({ queryKey: queryKeys.badgeCounts.all });
         },
       });
     } catch (error) {

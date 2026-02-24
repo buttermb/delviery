@@ -502,7 +502,7 @@ export default function WholesaleOrdersPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.list(tenant?.id, { viewMode }) });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleInventory.all });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
       handleRefresh();
       setSelectedOrders([]);
     } catch (error) {

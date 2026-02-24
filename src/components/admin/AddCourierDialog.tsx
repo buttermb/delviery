@@ -200,7 +200,7 @@ export const AddCourierDialog = ({
                   <FormItem>
                     <FormLabel required>Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="+1 (555) 123-4567" {...field} />
+                      <Input type="tel" placeholder="+1 (555) 123-4567" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

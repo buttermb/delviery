@@ -26,7 +26,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { calculateHealthScore } from '@/lib/tenant';
+import { calculateHealthScore, type Tenant } from '@/lib/tenant';
 import { MetricCard } from '@/components/super-admin/dashboard/MetricCard';
 import { ActivityFeed } from '@/components/super-admin/dashboard/ActivityFeed';
 import { AtRiskTenantCard } from '@/components/super-admin/dashboard/AtRiskTenantCard';
@@ -145,7 +145,7 @@ export default function SuperAdminDashboardPage() {
         active.length > 0 ? (recentCancelled.length / active.length) * 100 : 0;
 
       // Calculate health score (average of all tenants)
-      const healthScores = tenants.map((t) => calculateHealthScore(t as any).score);
+      const healthScores = tenants.map((t) => calculateHealthScore(t as unknown as Tenant).score);
       const avgHealthScore =
         healthScores.length > 0
           ? healthScores.reduce((sum, score) => sum + score, 0) / healthScores.length
@@ -179,7 +179,7 @@ export default function SuperAdminDashboardPage() {
 
       return tenants
         .map((tenant) => {
-          const health = calculateHealthScore(tenant as any);
+          const health = calculateHealthScore(tenant as unknown as Tenant);
           return {
             ...tenant,
             health_score: health.score,
@@ -255,16 +255,17 @@ export default function SuperAdminDashboardPage() {
   const { data: recentActivity = [] } = useQuery({
     queryKey: queryKeys.superAdminTools.recentActivity(),
     queryFn: async () => {
-      const { data: logs, error } = await (supabase as any)
-        .from('audit_logs')
+      const { data: logs, error } = await supabase
+        .from('audit_logs' as 'tenants')
         .select('id, action, resource_type, resource_id, tenant_id, timestamp, changes')
         .order('timestamp', { ascending: false })
         .limit(20);
 
       if (error || !logs) return [];
 
+      const logRecords = logs as unknown as Array<Record<string, unknown>>;
       // Fetch tenant names for tenant-related actions
-      const tenantIds = [...new Set((logs as any[]).map((log: any) => log.tenant_id).filter(Boolean))];
+      const tenantIds = [...new Set(logRecords.map((log) => log.tenant_id as string).filter(Boolean))];
       const { data: tenantData } = await supabase
         .from('tenants')
         .select('id, business_name')
@@ -272,7 +273,7 @@ export default function SuperAdminDashboardPage() {
 
       const tenantMap = new Map(tenantData?.map((t) => [t.id, t.business_name]) || []);
 
-      return (logs as any[]).map((log: any) => {
+      return logRecords.map((log) => {
         let type: 'tenant_created' | 'tenant_updated' | 'subscription_changed' | 'payment_received' | 'system_event' = 'system_event';
         let message = '';
 

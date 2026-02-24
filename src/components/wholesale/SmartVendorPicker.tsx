@@ -155,11 +155,11 @@ function CreateVendorDialog({ open, onOpenChange, onSuccess }: { open: boolean, 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>Email</Label>
-                            <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
+                            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
                         </div>
                         <div className="space-y-2">
                             <Label>Phone</Label>
-                            <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="Phone" />
+                            <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Phone" />
                         </div>
                     </div>
                 </div>

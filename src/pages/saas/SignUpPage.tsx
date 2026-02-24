@@ -824,6 +824,7 @@ export default function SignUpPage() {
                                 </FormLabel>
                                 <FormControl>
                                   <Input
+                                    type="tel"
                                     placeholder="555-123-4567"
                                     {...field}
                                     className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"

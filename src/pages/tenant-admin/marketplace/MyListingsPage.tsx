@@ -24,7 +24,8 @@ import {
   Pause,
   Play,
   Filter,
-  MoreVertical
+  MoreVertical,
+  Loader2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -402,15 +403,17 @@ export default function MyListingsPage() {
                             {listing.status === 'active' ? (
                               <DropdownMenuItem
                                 onClick={() => toggleStatusMutation.mutate({ listingId: listing.id, newStatus: 'paused' })}
+                                disabled={toggleStatusMutation.isPending || deleteMutation.isPending}
                               >
-                                <Pause className="h-4 w-4 mr-2" />
+                                {toggleStatusMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Pause className="h-4 w-4 mr-2" />}
                                 Pause
                               </DropdownMenuItem>
                             ) : (
                               <DropdownMenuItem
                                 onClick={() => toggleStatusMutation.mutate({ listingId: listing.id, newStatus: 'active' })}
+                                disabled={toggleStatusMutation.isPending || deleteMutation.isPending}
                               >
-                                <Play className="h-4 w-4 mr-2" />
+                                {toggleStatusMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
                                 Activate
                               </DropdownMenuItem>
                             )}
@@ -421,8 +424,9 @@ export default function MyListingsPage() {
                                 }
                               }}
                               className="text-destructive"
+                              disabled={deleteMutation.isPending || toggleStatusMutation.isPending}
                             >
-                              <Trash2 className="h-4 w-4 mr-2" />
+                              {deleteMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
                               Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>

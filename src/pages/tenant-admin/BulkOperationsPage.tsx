@@ -102,7 +102,7 @@ export default function BulkOperationsPage() {
 
   // Fetch products
   const { data: products, isLoading, isError } = useQuery({
-    queryKey: ['products', tenantId],
+    queryKey: queryKeys.products.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

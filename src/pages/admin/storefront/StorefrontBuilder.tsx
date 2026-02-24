@@ -566,7 +566,7 @@ export function StorefrontBuilder({
         onSuccess: () => {
             toast.success('Draft saved', { description: 'Your changes have been saved as a draft.' });
             queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
-            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.shopStore.all });
             easyModeBuilder.markClean();
         },
         onError: (err) => {
@@ -608,7 +608,7 @@ export function StorefrontBuilder({
         onSuccess: () => {
             toast.success('Store published!', { description: 'Your storefront is now live and visible to customers.' });
             queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
-            queryClient.invalidateQueries({ queryKey: ['shop-store'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.shopStore.all });
             easyModeBuilder.markClean();
         },
         onError: (err) => {

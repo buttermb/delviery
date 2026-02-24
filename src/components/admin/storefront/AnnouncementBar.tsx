@@ -542,6 +542,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
               <div className="space-y-2">
                 <Label>Link URL</Label>
                 <Input
+                  type="url"
                   placeholder="https://example.com/deals"
                   value={formData.link_url}
                   onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}

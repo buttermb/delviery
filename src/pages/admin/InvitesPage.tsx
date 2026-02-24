@@ -162,7 +162,7 @@ export default function InvitesPage() {
                                         <FormItem>
                                             <FormLabel required>Email Address</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="client@example.com" {...field} />
+                                                <Input type="email" placeholder="client@example.com" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

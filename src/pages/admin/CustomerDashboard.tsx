@@ -19,7 +19,7 @@ import {
 } from 'recharts';
 import {
   Users, UserPlus, Activity, TrendingUp, TrendingDown,
-  Crown, UserX, Download, Upload, Plus, ArrowRight
+  Crown, UserX, Download, Upload, Plus, ArrowRight, AlertCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format, subDays, parseISO, startOfWeek, isWithinInterval } from 'date-fns';
@@ -294,10 +294,10 @@ export default function CustomerDashboard() {
   const { ltvList, isLoading: ltvLoading, refetch: refetchLTV } = useBulkCustomerLTV({});
 
   // Fetch customer growth data
-  const { data: growthData, isLoading: growthLoading, refetch: refetchGrowth } = useCustomerGrowth(tenantId);
+  const { data: growthData, isLoading: growthLoading, isError: growthError, refetch: refetchGrowth } = useCustomerGrowth(tenantId);
 
   // Fetch recent activity
-  const { data: recentActivity, isLoading: activityLoading, refetch: refetchActivity } = useRecentCustomerActivity(tenantId);
+  const { data: recentActivity, isLoading: activityLoading, isError: activityError, refetch: refetchActivity } = useRecentCustomerActivity(tenantId);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -378,6 +378,7 @@ export default function CustomerDashboard() {
   }, [navigateToAdmin]);
 
   const isLoading = segmentsLoading || ltvLoading || growthLoading || activityLoading;
+  const isError = growthError || activityError;
 
   if (isLoading) {
     return (
@@ -395,6 +396,18 @@ export default function CustomerDashboard() {
           <div className="lg:col-span-2 h-96 bg-muted animate-pulse rounded-xl" />
           <div className="h-96 bg-muted animate-pulse rounded-xl" />
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <AlertCircle className="h-8 w-8 text-destructive mb-2" />
+        <p className="text-sm text-muted-foreground">Failed to load customer dashboard data. Please try again.</p>
+        <Button variant="outline" size="sm" className="mt-2" onClick={() => handleRefresh()}>
+          Retry
+        </Button>
       </div>
     );
   }

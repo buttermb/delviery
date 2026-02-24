@@ -101,7 +101,7 @@ export default function StorefrontCustomers() {
 
   // Fetch customers aggregated from orders
   const { data: customers = [], isLoading } = useQuery({
-    queryKey: ['storefront-customers', store?.id],
+    queryKey: queryKeys.storefrontCustomers.byStore(store?.id),
     queryFn: async () => {
       if (!store?.id) return [];
 

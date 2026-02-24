@@ -23,7 +23,8 @@ import {
     FileText,
     Receipt,
     DollarSign,
-    Users
+    Users,
+    AlertCircle
 } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { toast } from 'sonner';
@@ -35,7 +36,7 @@ import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
 export default function ClientDetailPage() {
     const { clientId } = useParams<{ clientId: string }>();
     const { navigateToAdmin } = useTenantNavigation();
-    const { data: client, isLoading } = useClient(clientId);
+    const { data: client, isLoading, isError, refetch } = useClient(clientId);
     const { data: invoices } = useClientInvoices(clientId);
     const { data: preOrders } = useClientPreOrders(clientId);
 
@@ -47,6 +48,18 @@ export default function ClientDetailPage() {
 
     if (isLoading) {
         return <DetailPageSkeleton />;
+    }
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+                <AlertCircle className="h-8 w-8 text-destructive mb-2" />
+                <p className="text-sm text-muted-foreground">Failed to load client details. Please try again.</p>
+                <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
+                    Retry
+                </Button>
+            </div>
+        );
     }
 
     if (!client) {

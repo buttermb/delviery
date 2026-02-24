@@ -112,7 +112,7 @@ export default function StorefrontOrders() {
 
   // Fetch orders
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: ['marketplace-orders', store?.id, statusFilter],
+    queryKey: queryKeys.marketplaceOrders.byTenant(store?.id, statusFilter),
     queryFn: async () => {
       if (!store?.id) return [];
 

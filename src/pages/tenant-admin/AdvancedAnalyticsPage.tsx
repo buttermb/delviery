@@ -7,6 +7,18 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface AnalyticsOrderItem {
+  product_name?: string;
+  quantity?: number;
+  price?: number;
+}
+
+interface AnalyticsOrder {
+  created_at: string;
+  total_amount?: number;
+  order_items?: AnalyticsOrderItem[];
+}
+
 export default function AdvancedAnalyticsPage() {
   const { tenant } = useTenantAdminAuth();
 
@@ -16,20 +28,20 @@ export default function AdvancedAnalyticsPage() {
       if (!tenant?.id) return [];
       
       const { data, error } = await supabase
-        .from('orders' as any)
+        .from('orders')
         .select('*, order_items(*)')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
 
       if (error && error.code === '42P01') return [];
       if (error) throw error;
-      return data || [];
+      return (data || []) as unknown as AnalyticsOrder[];
     },
     enabled: !!tenant?.id,
   });
 
   // Revenue trends
-  const revenueByMonth = (orders as any[]).reduce((acc: any, order: any) => {
+  const revenueByMonth = orders.reduce((acc: Record<string, { month: string; revenue: number; orders: number }>, order) => {
     const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     if (!acc[month]) acc[month] = { month, revenue: 0, orders: 0 };
     acc[month].revenue += order.total_amount || 0;
@@ -40,12 +52,12 @@ export default function AdvancedAnalyticsPage() {
   const revenueData = Object.values(revenueByMonth).slice(-12);
 
   // Product performance
-  const productPerformance = (orders as any[]).flatMap((order: any) => order.order_items || [])
-    .reduce((acc: any, item: any) => {
+  const productPerformance = orders.flatMap((order) => order.order_items || [])
+    .reduce((acc: Record<string, { name: string; quantity: number; revenue: number }>, item) => {
       const name = item.product_name || 'Unknown';
       if (!acc[name]) acc[name] = { name, quantity: 0, revenue: 0 };
       acc[name].quantity += item.quantity || 0;
-      acc[name].revenue += (item.price * item.quantity) || 0;
+      acc[name].revenue += ((item.price || 0) * (item.quantity || 0)) || 0;
       return acc;
     }, {});
 
@@ -130,13 +142,13 @@ export default function AdvancedAnalyticsPage() {
               <div className="p-4 border rounded-lg">
                 <p className="text-sm text-muted-foreground">Avg Order Value</p>
                 <p className="text-2xl font-bold">
-                  ${orders.length > 0 ? ((orders as any[]).reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0) / orders.length).toFixed(2) : '0.00'}
+                  ${orders.length > 0 ? (orders.reduce((sum: number, o) => sum + (o.total_amount || 0), 0) / orders.length).toFixed(2) : '0.00'}
                 </p>
               </div>
               <div className="p-4 border rounded-lg">
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
                 <p className="text-2xl font-bold">
-                  ${(orders as any[]).reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0).toFixed(2)}
+                  ${orders.reduce((sum: number, o) => sum + (o.total_amount || 0), 0).toFixed(2)}
                 </p>
               </div>
             </div>

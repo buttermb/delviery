@@ -301,7 +301,7 @@ export function OrderPipelineBoard() {
             queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleInventory.all });
-            queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
             toast.success('Order status updated');
         },

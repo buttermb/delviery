@@ -40,7 +40,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -116,7 +115,7 @@ interface TemplateVersion {
 }
 
 // Default templates for common use cases
-const DEFAULT_TEMPLATES: Omit<MenuTemplate, 'id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'createdBy' | 'usageCount'>[] = [
+const _DEFAULT_TEMPLATES: Omit<MenuTemplate, 'id' | 'tenantId' | 'createdAt' | 'updatedAt' | 'createdBy' | 'usageCount'>[] = [
   {
     name: 'Daily Special',
     description: 'Quick menu for daily specials with 24-hour expiration',
@@ -531,7 +530,7 @@ interface TemplateEditorProps {
   isSaving: boolean;
 }
 
-function TemplateEditor({ template, tenantId, adminId, onSave, onCancel, isSaving }: TemplateEditorProps) {
+function TemplateEditor({ template, tenantId: _tenantId, adminId: _adminId, onSave, onCancel, isSaving }: TemplateEditorProps) {
   const [name, setName] = useState(template?.name || '');
   const [description, setDescription] = useState(template?.description || '');
   const [category, setCategory] = useState<MenuTemplate['category']>(template?.category || 'custom');

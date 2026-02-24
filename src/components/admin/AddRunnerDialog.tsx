@@ -156,7 +156,7 @@ export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
                 <FormItem>
                   <FormLabel required>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="555-123-4567" {...field} />
+                    <Input type="tel" placeholder="555-123-4567" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

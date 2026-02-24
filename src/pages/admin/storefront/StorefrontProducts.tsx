@@ -95,7 +95,7 @@ export default function StorefrontProducts() {
 
   // Fetch all products
   const { data: products = [], isLoading: productsLoading } = useQuery({
-    queryKey: ['tenant-products', tenantId],
+    queryKey: queryKeys.tenantProducts.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       const { data, error } = await (supabase as any)
@@ -112,7 +112,7 @@ export default function StorefrontProducts() {
 
   // Fetch product settings
   const { data: productSettings = [], isLoading: settingsLoading } = useQuery({
-    queryKey: ['marketplace-product-settings', store?.id],
+    queryKey: queryKeys.marketplaceProductSettingsByStore.byStore(store?.id),
     queryFn: async () => {
       if (!store?.id) return [];
       const { data, error } = await (supabase as any)

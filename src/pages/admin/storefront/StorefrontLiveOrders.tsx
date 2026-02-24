@@ -157,7 +157,7 @@ export function StorefrontLiveOrders() {
 
   // Fetch live orders
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: ['storefront-live-orders', store?.id, statusFilter],
+    queryKey: queryKeys.storefrontLiveOrders.byStore(store?.id, statusFilter),
     queryFn: async () => {
       if (!store?.id) return [];
 
@@ -271,7 +271,7 @@ export function StorefrontLiveOrders() {
       setUpdatingOrderId(orderId);
     },
     onSuccess: (_, { newStatus }) => {
-      queryClient.invalidateQueries({ queryKey: ['storefront-live-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefrontLiveOrders.all });
       toast.success("Status changed to ${STATUS_LABELS[newStatus] || newStatus}");
     },
     onError: (error) => {

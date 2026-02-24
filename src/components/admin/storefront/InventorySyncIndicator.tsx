@@ -215,9 +215,9 @@ export function InventorySyncIndicator({
       // Invalidate all inventory-related queries
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.products.all }),
-        queryClient.invalidateQueries({ queryKey: ['products', tenantId] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.products.byTenant(tenantId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all }),
-        queryClient.invalidateQueries({ queryKey: ['inventory', tenantId] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.inventory.byTenant(tenantId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.inventorySyncKeys.inventoryBatches() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.shopStoreProducts.all }),
         queryClient.invalidateQueries({ queryKey: queryKeys.inventorySyncKeys.storefrontProducts() }),

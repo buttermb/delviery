@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isWithinInterval, parseISO, isBefore, isAfter, startOfDay, endOfDay } from 'date-fns';
+import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO, isBefore, isAfter, startOfDay, endOfDay } from 'date-fns';
 import Calendar from 'lucide-react/dist/esm/icons/calendar';
 import Clock from 'lucide-react/dist/esm/icons/clock';
 import Repeat from 'lucide-react/dist/esm/icons/repeat';
@@ -12,7 +12,6 @@ import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right';
 import Check from 'lucide-react/dist/esm/icons/check';
 import X from 'lucide-react/dist/esm/icons/x';
 import Edit2 from 'lucide-react/dist/esm/icons/edit-2';
-import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -35,7 +34,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -45,7 +43,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Checkbox } from '@/components/ui/checkbox';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -352,7 +349,7 @@ interface ScheduleFormProps {
   isSaving: boolean;
 }
 
-function ScheduleForm({ menuId, schedule, menus, tenantId, onSave, onCancel, isSaving }: ScheduleFormProps) {
+function ScheduleForm({ menuId, schedule, menus, tenantId: _tenantId, onSave, onCancel, isSaving }: ScheduleFormProps) {
   const [selectedMenuId, setSelectedMenuId] = useState(schedule?.menuId || menuId || '');
   const [startTime, setStartTime] = useState(schedule?.startTime ? formatDateTimeLocal(schedule.startTime) : '');
   const [endTime, setEndTime] = useState(schedule?.endTime ? formatDateTimeLocal(schedule.endTime) : '');

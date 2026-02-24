@@ -23,7 +23,7 @@ export default function BoardReportPage() {
     const { tenant } = useTenantAdminAuth();
 
     // Fetch key metrics for board report
-    const { data: metricsData, isLoading } = useQuery({
+    const { data: metricsData, isLoading, isError, refetch } = useQuery({
         queryKey: queryKeys.boardReport.metrics(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) throw new Error('No tenant');
@@ -138,6 +138,18 @@ export default function BoardReportPage() {
 
     if (isLoading) {
         return <EnhancedLoadingState variant="dashboard" message="Loading report..." />;
+    }
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+                <AlertCircle className="h-8 w-8 text-destructive mb-2" />
+                <p className="text-sm text-muted-foreground">Failed to load board report data. Please try again.</p>
+                <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
+                    Retry
+                </Button>
+            </div>
+        );
     }
 
     return (

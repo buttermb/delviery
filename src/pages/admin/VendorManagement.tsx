@@ -305,6 +305,7 @@ export function VendorManagement() {
                   <Label htmlFor="website">Website</Label>
                   <Input
                     id="website"
+                    type="url"
                     value={formData.website}
                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                     placeholder="https://vendor.com"

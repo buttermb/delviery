@@ -140,7 +140,7 @@ export function StoreOrdersTab({
 
   // Fetch orders for the store
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: ['store-orders', effectiveStoreId, statusFilter],
+    queryKey: queryKeys.storeOrdersTab.byStore(effectiveStoreId, statusFilter),
     queryFn: async () => {
       if (!effectiveStoreId) return [];
 
@@ -197,7 +197,7 @@ export function StoreOrdersTab({
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['store-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storeOrdersTab.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.all });
       toast.success("Order status updated!");
     },

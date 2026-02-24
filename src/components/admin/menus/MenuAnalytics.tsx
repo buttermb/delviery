@@ -7,9 +7,9 @@ import {
   BarChart3, RefreshCw, ArrowUpDown, ArrowDown, ArrowUp
 } from 'lucide-react';
 import {
-  AreaChart, Area, BarChart, Bar, LineChart, Line,
+  AreaChart, Area, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer, Funnel, FunnelChart, LabelList
+  ResponsiveContainer
 } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -293,7 +293,7 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
     staleTime: 30 * 1000,
   });
 
-  const { data: compareAnalytics, isLoading: compareLoading } = useQuery({
+  const { data: compareAnalytics, isLoading: _compareLoading } = useQuery({
     queryKey: queryKeys.menuAnalytics.compare(compareMenuId, dateRange?.from?.toISOString(), dateRange?.to?.toISOString()),
     queryFn: () => fetchMenuAnalytics(compareMenuId!),
     enabled: !!tenantId && !!compareMenuId,

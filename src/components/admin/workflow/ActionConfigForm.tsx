@@ -89,8 +89,9 @@ export function ActionConfigForm({
           <div className="space-y-4">
             <div>
               <Label htmlFor="to">Phone Number <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-              <Input 
+              <Input
                 id="to"
+                type="tel"
                 placeholder="+1234567890 or {{trigger.customer_phone}}"
                 value={(formData.to as string) || ''}
                 onChange={(e) => setFormData({...formData, to: e.target.value})}
@@ -118,8 +119,9 @@ export function ActionConfigForm({
           <div className="space-y-4">
             <div>
               <Label htmlFor="url">Webhook URL <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-              <Input 
+              <Input
                 id="url"
+                type="url"
                 placeholder="https://api.example.com/webhook"
                 value={(formData.url as string) || ''}
                 onChange={(e) => setFormData({...formData, url: e.target.value})}

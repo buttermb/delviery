@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Phone, Mail, DollarSign, Users, Plus } from 'lucide-react';
+import { User, Phone, Mail, DollarSign, Users, Plus, AlertCircle } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
@@ -118,10 +118,22 @@ export default function ClientsPage() {
     const handleSearchChange = useCallback((v: string) => setFilters({ q: v }), [setFilters]);
     const handleStatusFilterChange = useCallback((v: string) => setFilters({ status: v }), [setFilters]);
 
-    const { data: clients, isLoading } = useClients(statusFilter);
+    const { data: clients, isLoading, isError, refetch } = useClients(statusFilter);
 
     if (isLoading && !clients) {
         return <ClientsPageSkeleton />;
+    }
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+                <AlertCircle className="h-8 w-8 text-destructive mb-2" />
+                <p className="text-sm text-muted-foreground">Failed to load clients. Please try again.</p>
+                <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
+                    Retry
+                </Button>
+            </div>
+        );
     }
 
     const filteredClients = clients?.filter(client =>
