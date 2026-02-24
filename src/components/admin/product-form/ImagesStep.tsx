@@ -247,14 +247,14 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
                 loading="lazy"
               />
               {uploading && mainPreview && (
-                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3 rounded-lg">
+                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3 rounded-lg" role="presentation">
                   <Loader2 className="h-8 w-8 text-white animate-spin" />
                   <Progress value={uploadProgress} className="w-48" />
                   <span className="text-sm text-white">Uploading... {uploadProgress}%</span>
                 </div>
               )}
               {(!uploading || !mainPreview) && (
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center" role="presentation">
                   <Button
                     type="button"
                     onClick={removeMainImage}

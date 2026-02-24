@@ -1063,7 +1063,7 @@ function MobileFilterDrawer({
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" role="presentation" onClick={onClose} />
 
       {/* Drawer */}
       <div className="absolute left-0 top-0 bottom-0 w-full max-w-sm bg-white flex flex-col shadow-xl">

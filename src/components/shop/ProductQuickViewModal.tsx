@@ -159,7 +159,7 @@ export function ProductQuickViewModal({
                                 </Badge>
                             )}
                             {!inStock && (
-                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center" role="presentation">
                                     <Badge variant="secondary">Out of Stock</Badge>
                                 </div>
                             )}

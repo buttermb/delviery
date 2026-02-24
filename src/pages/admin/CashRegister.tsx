@@ -1489,7 +1489,7 @@ function CashRegisterContent() {
                           <ShoppingCart className="w-8 h-8 text-muted-foreground" />
                         )}
                         {product.stock_quantity <= 0 && (
-                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center" role="presentation">
                             <Badge variant="destructive">Out of Stock</Badge>
                           </div>
                         )}

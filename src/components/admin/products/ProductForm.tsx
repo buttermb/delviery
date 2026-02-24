@@ -531,12 +531,12 @@ export function ProductForm({
                                         loading="lazy"
                                     />
                                     {imageUploading && (
-                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3">
+                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3" role="presentation">
                                             <Loader2 className="h-8 w-8 text-white animate-spin" />
                                             <Progress value={imageProgress} className="w-48" />
                                         </div>
                                     )}
-                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2" role="presentation">
                                         <label className="cursor-pointer">
                                             <Button type="button" variant="secondary" size="sm" asChild>
                                                 <span>
