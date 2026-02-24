@@ -334,7 +334,7 @@ export const useExpenseSummary = () => {
       const monthEnd = endOfMonth(new Date());
 
       // Fetch all expenses for the tenant (using any to avoid type issues with optional table)
-      const expensesQuery = (supabase as any)
+      const expensesQuery = supabase
         .from("expenses")
         .select("*")
         .eq("tenant_id", tenant.id)

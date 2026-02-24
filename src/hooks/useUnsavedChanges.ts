@@ -1,5 +1,5 @@
-import { useEffect, useCallback } from 'react';
-import { useBlocker } from 'react-router-dom';
+import { useEffect, useCallback, useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 
 interface UseUnsavedChangesOptions {
   /** Whether the form has unsaved changes */
@@ -19,7 +19,7 @@ interface UseUnsavedChangesReturn {
 
 /**
  * Hook to warn users about unsaved changes when navigating away.
- * Uses React Router's useBlocker for in-app navigation
+ * Uses popstate interception for back/forward navigation (BrowserRouter-compatible)
  * and beforeunload for browser close/refresh.
  *
  * @example
@@ -44,8 +44,20 @@ export function useUnsavedChanges({
   isDirty,
   blockBrowserClose = true,
 }: UseUnsavedChangesOptions): UseUnsavedChangesReturn {
-  // Block in-app navigation via React Router
-  const blocker = useBlocker(isDirty);
+  const location = useLocation();
+  const [showBlockerDialog, setShowBlockerDialog] = useState(false);
+  const allowNavigationRef = useRef(false);
+  const currentUrlRef = useRef(
+    window.location.pathname + window.location.search + window.location.hash
+  );
+
+  // Track current URL when not showing dialog
+  useEffect(() => {
+    if (!showBlockerDialog) {
+      currentUrlRef.current =
+        location.pathname + location.search + (location.hash || '');
+    }
+  }, [location, showBlockerDialog]);
 
   // Block browser close/refresh
   useEffect(() => {
@@ -59,20 +71,41 @@ export function useUnsavedChanges({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty, blockBrowserClose]);
 
-  const confirmLeave = useCallback(() => {
-    if (blocker.state === 'blocked') {
-      blocker.proceed();
+  // Block back/forward browser navigation via popstate
+  useEffect(() => {
+    if (!isDirty) {
+      allowNavigationRef.current = false;
+      return;
     }
-  }, [blocker]);
+
+    const handlePopState = () => {
+      if (allowNavigationRef.current) {
+        allowNavigationRef.current = false;
+        return;
+      }
+      // Restore the current page URL in the address bar
+      window.history.pushState(null, document.title, currentUrlRef.current);
+      setShowBlockerDialog(true);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isDirty]);
+
+  const confirmLeave = useCallback(() => {
+    setShowBlockerDialog(false);
+    allowNavigationRef.current = true;
+    window.history.back();
+  }, []);
 
   const cancelLeave = useCallback(() => {
-    if (blocker.state === 'blocked') {
-      blocker.reset();
-    }
-  }, [blocker]);
+    setShowBlockerDialog(false);
+  }, []);
 
   return {
-    showBlockerDialog: blocker.state === 'blocked',
+    showBlockerDialog,
     confirmLeave,
     cancelLeave,
   };

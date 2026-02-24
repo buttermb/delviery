@@ -285,7 +285,7 @@ export function useInventoryForecast({
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
       // Fetch order items for this product from the last 30 days
-      const { data: orderItems, error: orderError } = await (supabase as any)
+      const { data: orderItems, error: orderError } = await supabase
         .from('unified_order_items')
         .select(`
           quantity,
@@ -536,7 +536,7 @@ export function useBulkInventoryForecast({
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
       // Fetch all order items for these products
-      const { data: orderItems, error: orderError } = await (supabase as any)
+      const { data: orderItems, error: orderError } = await supabase
         .from('unified_order_items')
         .select(`
           product_id,

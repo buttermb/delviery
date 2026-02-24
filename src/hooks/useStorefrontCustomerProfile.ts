@@ -149,7 +149,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
       const averageOrderValue = orderCount > 0 ? totalOrderValue / orderCount : 0;
 
       // Get customer preferences (stored in customer_preferences table if exists)
-      const { data: preferencesData } = await (supabase as any)
+      const { data: preferencesData } = await supabase
         .from('customer_preferences')
         .select('*')
         .eq('customer_id', customerData.id)
@@ -216,7 +216,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
     queryFn: async (): Promise<BrowsingHistoryItem[]> => {
       if (!profile?.id || !tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('customer_browsing_history')
         .select(`
           id,
@@ -271,7 +271,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
     queryFn: async (): Promise<WishlistItem[]> => {
       if (!profile?.id || !tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('customer_wishlist')
         .select(`
           id,
@@ -324,7 +324,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         throw new Error('Customer profile not loaded');
       }
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('customer_browsing_history')
         .upsert({
           customer_id: profile.id,
@@ -355,7 +355,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         throw new Error('Customer profile not loaded');
       }
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('customer_wishlist')
         .insert({
           customer_id: profile.id,
@@ -390,7 +390,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         throw new Error('Customer profile not loaded');
       }
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('customer_wishlist')
         .delete()
         .eq('customer_id', profile.id)
@@ -419,7 +419,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         throw new Error('Customer profile not loaded');
       }
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('customer_preferences')
         .upsert({
           customer_id: profile.id,

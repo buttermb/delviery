@@ -62,10 +62,10 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
             setTimeout(() => {
                 onOpenChange(false);
             }, 500);
-        } catch (error: any) {
+        } catch (error: unknown) {
             clearTimeout(timeoutId);
             logger.error("Failed to complete onboarding", error, { component: "OnboardingWizard" });
-            toast.error(error?.message || "Failed to save progress. Please try again.");
+            toast.error(error instanceof Error ? error.message : "Failed to save progress. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -91,9 +91,9 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
             toast.success("You can complete setup anytime from Settings.");
 
             onOpenChange(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error("Failed to skip onboarding", error, { component: "OnboardingWizard" });
-            toast.error(error?.message || "Failed to save. Please try again.");
+            toast.error(error instanceof Error ? error.message : "Failed to save. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -123,7 +123,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
                 navigate(path);
             }, 300);
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error("Failed to save shortcut progress", error, { component: "OnboardingWizard" });
             // Navigate anyway so user isn't stuck
             onOpenChange(false);

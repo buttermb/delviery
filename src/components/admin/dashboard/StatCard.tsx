@@ -2,6 +2,7 @@
  * Stat Card Component - Modern dashboard stat card
  */
 
+import type React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
@@ -70,9 +71,12 @@ export function StatCard({
       className={cn(
         'p-4 sm:p-6 hover:shadow-md transition-all',
         colorClasses[color],
-        isClickable && 'hover:scale-[1.02] cursor-pointer'
+        isClickable && 'hover:scale-[1.02] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
       )}
       onClick={onClick}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={isClickable ? (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } } : undefined}
     >
       <div className="flex items-center justify-between mb-3">
         <div className={cn('p-2 rounded-lg', iconColors[color])}>

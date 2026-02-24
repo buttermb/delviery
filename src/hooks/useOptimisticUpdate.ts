@@ -236,7 +236,7 @@ export function useOptimisticList<T extends { id: string }>(
         toast.success('Added successfully');
         
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Rollback
         setItems(prev => prev.filter(item => item.id !== tempId));
         setOptimisticIds(prev => {
@@ -288,7 +288,7 @@ export function useOptimisticList<T extends { id: string }>(
         toast.success('Updated successfully');
         
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Rollback
         setItems(previousItems);
         setOptimisticIds(prev => {
@@ -328,7 +328,7 @@ export function useOptimisticList<T extends { id: string }>(
         toast.success('Deleted successfully');
         
         return true;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Rollback
         if (deletedItem) {
           setItems(previousItems);

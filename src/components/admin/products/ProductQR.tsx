@@ -135,7 +135,7 @@ export function ProductQR({
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select('id, name, sku, image_url, retail_price, wholesale_price, lab_results_url, category')
         .eq('tenant_id', tenant.id)

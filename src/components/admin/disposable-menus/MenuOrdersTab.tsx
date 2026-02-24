@@ -32,7 +32,7 @@ export const MenuOrdersTab = ({ orders, isLoading, onOrderUpdate }: MenuOrdersTa
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     const updates: Record<string, unknown> = {
-      status: newStatus as any,
+      status: newStatus,
       updated_at: new Date().toISOString()
     };
 
@@ -153,7 +153,7 @@ export const MenuOrdersTab = ({ orders, isLoading, onOrderUpdate }: MenuOrdersTa
               <div className="flex items-center gap-2 text-sm">
                 <Package className="h-4 w-4 text-muted-foreground" />
                 <span>
-                  {order.order_data ? JSON.parse(order.order_data as string).length : 0} items
+                  {(() => { try { return order.order_data ? (JSON.parse(order.order_data as string) as unknown[]).length : 0; } catch { return 0; } })()} items
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm">

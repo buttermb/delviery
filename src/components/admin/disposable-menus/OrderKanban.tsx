@@ -121,7 +121,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
         }
       }
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_orders')
         .update(updates)
         .eq('id', orderId);

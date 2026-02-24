@@ -43,7 +43,7 @@ export function PendingTransfersWidget() {
         } | null;
       }
 
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('wholesale_deliveries')
         .select(`
           id,
@@ -103,8 +103,11 @@ export function PendingTransfersWidget() {
           transfers.map((transfer) => (
             <div
               key={transfer.id}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               onClick={() => navigate(getFullPath(`/admin/inventory/dispatch?transfer=${transfer.id}`))}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(getFullPath(`/admin/inventory/dispatch?transfer=${transfer.id}`)); } }}
             >
               <div className="flex-1">
                 <div className="font-medium">

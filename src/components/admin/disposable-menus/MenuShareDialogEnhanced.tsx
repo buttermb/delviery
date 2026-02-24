@@ -232,9 +232,9 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
         showErrorToast('Some Messages Failed', `Failed to send to ${failCount} customers`);
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Failed to send SMS batch', error);
-      showErrorToast('SMS Failed', error.message || 'Failed to send SMS');
+      showErrorToast('SMS Failed', error instanceof Error ? error.message : 'Failed to send SMS');
     } finally {
       setSendingSms(false);
     }

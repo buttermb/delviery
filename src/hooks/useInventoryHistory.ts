@@ -188,7 +188,7 @@ export function useInventoryHistory(filters: InventoryHistoryFilters = {}) {
     queryFn: async (): Promise<InventoryHistoryEntry[]> => {
       if (!tenant?.id) return [];
 
-      const dbQuery = (supabase as any).from('inventory_history');
+      const dbQuery = supabase.from('inventory_history');
 
       let selectQuery = dbQuery
         .select(`

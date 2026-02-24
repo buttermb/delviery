@@ -71,7 +71,7 @@ export default function POReceivingPage() {
 
       // Break type inference for complex query (same pattern as PurchaseOrdersPage)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const baseQuery: any = (supabase as any)
+      const baseQuery: any = supabase
         .from('purchase_orders')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -127,12 +127,12 @@ export default function POReceivingPage() {
     queryFn: async () => {
       if (!tenant?.id) return {};
 
-      const { data: vendorData } = await (supabase as any)
+      const { data: vendorData } = await supabase
         .from('vendors')
         .select('id, name')
         .eq('tenant_id', tenant.id);
 
-      const { data: supplierData } = await (supabase as any)
+      const { data: supplierData } = await supabase
         .from('wholesale_suppliers')
         .select('id, supplier_name')
         .eq('tenant_id', tenant.id);

@@ -11,9 +11,9 @@ function toBool(v: unknown, fallback = false): boolean {
 }
 
 // Check if we're in development mode - these dangerous flags should NEVER be enabled in production
-const isDevelopment = (import.meta as any).env?.MODE === 'development' ||
-  (import.meta as any).env?.DEV === true ||
-  (import.meta as any).env?.NODE_ENV === 'development';
+const isDevelopment = import.meta.env.MODE === 'development' ||
+  import.meta.env.DEV === true ||
+  import.meta.env.NODE_ENV === 'development';
 
 // Helper that only allows dangerous flag values in development
 function toBoolDevOnly(v: unknown): boolean {
@@ -36,13 +36,13 @@ export type FeatureFlags = {
 // SECURITY: AUTO_APPROVE_* and AUTO_BYPASS_* flags are only allowed in development mode.
 // These flags bypass critical security checks and must never be enabled in production.
 const envDefaults: FeatureFlags = {
-  AUTO_APPROVE_ALL: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_ALL),
-  AUTO_APPROVE_ORDERS: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_ORDERS),
-  AUTO_APPROVE_LISTINGS: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_LISTINGS),
-  AUTO_APPROVE_SIGNUPS: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_SIGNUPS),
-  AUTO_APPROVE_COURIERS: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_COURIERS),
-  AUTO_APPROVE_REVIEWS: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_APPROVE_REVIEWS),
-  AUTO_BYPASS_EMAIL_VERIFICATION: toBoolDevOnly((import.meta as any).env?.VITE_AUTO_BYPASS_EMAIL_VERIFICATION),
+  AUTO_APPROVE_ALL: toBoolDevOnly(import.meta.env.VITE_AUTO_APPROVE_ALL),
+  AUTO_APPROVE_ORDERS: toBoolDevOnly(import.meta.env.VITE_AUTO_APPROVE_ORDERS),
+  AUTO_APPROVE_LISTINGS: toBoolDevOnly(import.meta.env.VITE_AUTO_APPROVE_LISTINGS),
+  AUTO_APPROVE_SIGNUPS: toBoolDevOnly(import.meta.env.VITE_AUTO_APPROVE_SIGNUPS),
+  AUTO_APPROVE_COURIERS: toBoolDevOnly(import.meta.env.VITE_AUTO_APPROVE_COURIERS),
+  AUTO_APPROVE_REVIEWS: toBoolDevOnly(import.meta.env.VITE_AUTO_APPROVE_REVIEWS),
+  AUTO_BYPASS_EMAIL_VERIFICATION: toBoolDevOnly(import.meta.env.VITE_AUTO_BYPASS_EMAIL_VERIFICATION),
 };
 
 type FeatureFlagsContextValue = {
@@ -127,7 +127,7 @@ export const FeatureFlagsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const shouldAutoApprove = useMemo(() => {
     return (entity?: 'ORDERS' | 'LISTINGS' | 'SIGNUPS' | 'COURIERS' | 'REVIEWS') => {
       // Never auto-approve in production environment
-      if ((import.meta as any).env?.MODE === 'production') {
+      if (import.meta.env.MODE === 'production') {
         return false;
       }
       if (flags.AUTO_APPROVE_ALL) return true;
@@ -145,7 +145,7 @@ export const FeatureFlagsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const value = useMemo<FeatureFlagsContextValue>(() => ({ flags, refreshFlags, shouldAutoApprove }), [flags, shouldAutoApprove]);
 
   // Avoid JSX in .ts file to keep compatibility with current tsconfig settings
-  return React.createElement(FeatureFlagsContext.Provider, { value }, children as any);
+  return React.createElement(FeatureFlagsContext.Provider, { value }, children);
 };
 
 export function useFeatureFlags(): FeatureFlagsContextValue {

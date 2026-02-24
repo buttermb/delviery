@@ -62,7 +62,7 @@ export function SmartOnboardingWidget({ productCount, className }: SmartOnboardi
                 description: "You can now see how it looks in your store."
             });
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             logger.error("Failed to add sample product", error);
             toast.error("Failed to add sample product", {
                 description: humanizeError(error)

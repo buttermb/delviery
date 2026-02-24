@@ -21,7 +21,7 @@ export const useProductsForMenu = (tenantId?: string) => {
       }
 
       // Use wholesale_inventory as that's what disposable_menu_products.product_id references
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("wholesale_inventory")
         .select("id, product_name, base_price, description, image_url, category, quantity_units")
         .eq("tenant_id", tenantId)

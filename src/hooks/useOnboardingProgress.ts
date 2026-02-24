@@ -44,7 +44,7 @@ export function useOnboardingProgress(tenantId: string | undefined): UseOnboardi
 
         if (error) throw error;
         return data;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Return safe defaults if query fails
         logger.warn("Error fetching onboarding progress:", error);
         return {

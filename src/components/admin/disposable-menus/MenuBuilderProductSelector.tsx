@@ -408,7 +408,7 @@ export function MenuBuilderProductSelector({
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('wholesale_inventory')
         .select('id, product_name, base_price, sku, description, image_url, category, quantity_units')
         .eq('tenant_id', tenant.id)

@@ -139,7 +139,7 @@ export function useSidebarBadges(): UseSidebarBadgesResult {
           .lt('stock_quantity', 10),
 
         // Unread notifications (lightweight count)
-        (supabase as any)
+        supabase
           .from('notifications')
           .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)

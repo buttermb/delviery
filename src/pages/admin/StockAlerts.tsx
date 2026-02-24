@@ -49,7 +49,7 @@ export function StockAlerts() {
       if (!tenantId) return [];
 
       // Query the stock_alerts table for active alerts
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('stock_alerts')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -72,7 +72,7 @@ export function StockAlerts() {
 
   // Fallback function to calculate alerts from products table
   async function fetchAlertsFromProducts(tid: string): Promise<StockAlert[]> {
-    const { data: products, error: prodError } = await (supabase as any)
+    const { data: products, error: prodError } = await supabase
       .from('products')
       .select('id, name, stock_quantity, available_quantity, low_stock_alert, updated_at, created_at')
       .eq('tenant_id', tid);
@@ -121,7 +121,7 @@ export function StockAlerts() {
       if (error) {
         // Fallback: try direct update if RPC doesn't exist
         if (error.code === '42883') {
-          const { error: updateError } = await (supabase as any)
+          const { error: updateError } = await supabase
             .from('stock_alerts')
             .update({
               status: 'acknowledged',

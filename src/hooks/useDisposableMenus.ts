@@ -10,7 +10,7 @@ export const useDisposableMenus = (tenantId?: string) => {
     queryKey: queryKeys.menus.list(tenantId),
     queryFn: async () => {
       // Optimized query - select specific columns, use count for orders
-      let query = (supabase as any)
+      let query = supabase
         .from('disposable_menus')
         .select(`
           *,
@@ -200,7 +200,7 @@ export const useMenuWhitelist = (menuId: string) => {
   return useQuery({
     queryKey: queryKeys.menuWhitelist.byMenu(menuId),
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_access_whitelist')
         .select('id, menu_id, customer_name, customer_email, customer_phone, unique_access_token, invited_at, last_access_at, view_count, revoked_at, revoked_reason, status')
         .eq('menu_id', menuId)
@@ -294,7 +294,7 @@ export const useUpdateOrderStatus = (tenantId?: string) => {
 
   return useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_orders')
         .update({ status })
         .eq('id', orderId)
@@ -329,7 +329,7 @@ export const useMenuSecurityEvents = (menuId?: string, tenantId?: string) => {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      let query = (supabase as any)
+      let query = supabase
         .from('menu_security_events')
         .select(`
           *,

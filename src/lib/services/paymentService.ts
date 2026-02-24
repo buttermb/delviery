@@ -126,7 +126,7 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      const { data, error } = await (supabase as any).rpc('adjust_client_balance', {
+      const { data, error } = await supabase.rpc('adjust_client_balance', {
         p_client_id: clientId,
         p_amount: amount,
         p_operation: operation
@@ -327,7 +327,7 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('record_fronted_payment_atomic', {
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('record_fronted_payment_atomic', {
         p_fronted_id: frontedId,
         p_payment_amount: amount,
         p_payment_method: paymentMethod,
@@ -467,7 +467,7 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('complete_delivery_with_collection', {
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('complete_delivery_with_collection', {
         p_delivery_id: deliveryId,
         p_amount_collected: amountCollected,
         p_proof_photo_url: proofPhotoUrl || null
@@ -594,7 +594,7 @@ class PaymentService {
   async getClientAgingReport(clientId: string) {
     try {
       // Get all unpaid fronted inventory for the client
-      const { data: frontedItems } = await (supabase as any)
+      const { data: frontedItems } = await supabase
         .from('fronted_inventory')
         .select('id, expected_revenue, payment_received, payment_due_date, created_at')
         .eq('client_id', clientId)

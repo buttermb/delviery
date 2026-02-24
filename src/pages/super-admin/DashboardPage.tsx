@@ -276,14 +276,15 @@ export default function SuperAdminDashboardPage() {
       return logRecords.map((log) => {
         let type: 'tenant_created' | 'tenant_updated' | 'subscription_changed' | 'payment_received' | 'system_event' = 'system_event';
         let message = '';
+        const logTenantId = log.tenant_id as string | null;
 
         if (log.action === 'create' && log.resource_type === 'tenant') {
           type = 'tenant_created';
-          const tenantName = log.tenant_id ? tenantMap.get(log.tenant_id) : 'Unknown';
+          const tenantName = logTenantId ? tenantMap.get(logTenantId) : 'Unknown';
           message = `New tenant "${tenantName || 'Unknown'}" signed up`;
         } else if (log.action === 'update' && log.resource_type === 'tenant') {
           type = 'tenant_updated';
-          const tenantName = log.tenant_id ? tenantMap.get(log.tenant_id) : 'Unknown';
+          const tenantName = logTenantId ? tenantMap.get(logTenantId) : 'Unknown';
           const changes = log.changes as Record<string, unknown> | null;
           if (changes?.subscription_plan) {
             type = 'subscription_changed';
@@ -293,17 +294,17 @@ export default function SuperAdminDashboardPage() {
           }
         } else if (log.action === 'payment' || log.action === 'payment_received') {
           type = 'payment_received';
-          const tenantName = log.tenant_id ? tenantMap.get(log.tenant_id) : 'Unknown';
+          const tenantName = logTenantId ? tenantMap.get(logTenantId) : 'Unknown';
           message = `Payment received from "${tenantName || 'Unknown'}"`;
         } else {
-          message = `${log.action} on ${log.resource_type || 'resource'}`;
+          message = `${log.action} on ${(log.resource_type as string) || 'resource'}`;
         }
 
         return {
-          id: log.id,
+          id: log.id as string,
           type,
           message,
-          timestamp: log.timestamp || log.created_at || new Date().toISOString(),
+          timestamp: (log.timestamp as string) || (log.created_at as string) || new Date().toISOString(),
         };
       });
     },
@@ -354,8 +355,8 @@ export default function SuperAdminDashboardPage() {
         .eq('subscription_status', 'active')
         .gte('created_at', thirtyDaysAgo.toISOString());
 
-      const recentConverted = convertedTenants?.filter((t: any) =>
-        recentTrials.some((rt: any) => rt.id === t.id)
+      const recentConverted = convertedTenants?.filter((t) =>
+        recentTrials.some((rt) => rt.id === t.id)
       ) || [];
 
       return recentTrials.length > 0

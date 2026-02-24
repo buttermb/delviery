@@ -149,7 +149,7 @@ export default function MarketplaceCartPage() {
 
             navigate(`/${tenant?.slug}/admin/marketplace/orders`); // Redirect to My Orders
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             toast.error('Checkout Failed', { description: humanizeError(error) });
         } finally {
             setIsCheckingOut(false);

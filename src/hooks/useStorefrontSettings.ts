@@ -46,7 +46,7 @@ export function useStorefrontSettings() {
       if (!tenant?.id) return null;
 
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('storefront_settings')
           .select('*')
           .eq('tenant_id', tenant.id)

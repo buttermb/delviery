@@ -100,7 +100,7 @@ export function usePriceHistory(productId: string | undefined, timeRange: '30d' 
           break;
       }
 
-      let query = (supabase as any)
+      let query = supabase
         .from('pricing_history')
         .select('*')
         .eq('product_id', productId)
@@ -175,7 +175,7 @@ export function useRecentPriceChange(productId: string | undefined, withinDays: 
         return null;
       }
 
-      const { data, error } = await (supabase as any).rpc('get_recent_price_change', {
+      const { data, error } = await supabase.rpc('get_recent_price_change', {
         p_product_id: productId,
         p_tenant_id: tenant.id,
         p_within_days: withinDays,
@@ -208,7 +208,7 @@ export function useLogPriceChange() {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await (supabase as any).rpc('log_price_change', {
+      const { data, error } = await supabase.rpc('log_price_change', {
         p_product_id: params.productId,
         p_tenant_id: tenant.id,
         p_changed_by: admin?.id ?? null,

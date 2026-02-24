@@ -46,7 +46,7 @@ export function TopProductsWidget() {
       const last30Days = subDays(new Date(), 30);
 
       // Get order items from completed orders
-      const { data: orders, error: ordersError } = await (supabase as any)
+      const { data: orders, error: ordersError } = await supabase
         .from('wholesale_orders')
         .select('id, created_at, status')
         .eq('account_id', account.id)
@@ -171,8 +171,11 @@ export function TopProductsWidget() {
           {topProducts.map((product, index) => (
             <div
               key={product.product_id}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               onClick={() => navigate(getFullPath(`/admin/inventory/products?product=${product.product_id}`))}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(getFullPath(`/admin/inventory/products?product=${product.product_id}`)); } }}
             >
               <div className="flex items-center gap-3 flex-1">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">

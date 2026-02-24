@@ -64,7 +64,7 @@ export function usePendingOrders(tenantId?: string) {
 
     const loadPendingOrders = async () => {
         try {
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('disposable_menu_orders')
                 .select(`
           *,

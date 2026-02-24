@@ -43,7 +43,7 @@ export default function RecordFrontedPayment() {
   const loadFrontedItem = async () => {
     if (!tenant?.id) return;
     try {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('fronted_inventory')
         .select('*, product:products(name), client:wholesale_clients(id, business_name, outstanding_balance)')
         .eq('id', id)

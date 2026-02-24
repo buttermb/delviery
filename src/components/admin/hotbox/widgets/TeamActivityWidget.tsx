@@ -37,7 +37,7 @@ export function TeamActivityWidget() {
             const teamWithActivity = await Promise.all(
                 members.map(async (member) => {
                     // Get deliveries count for this specific courier
-                    const { count: deliveries } = await (supabase as any)
+                    const { count: deliveries } = await supabase
                         .from('deliveries')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', tenant.id)

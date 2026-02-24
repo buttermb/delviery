@@ -37,7 +37,7 @@ export const useMenuProductsForPreview = (menuId: string | undefined, enabled = 
       }
 
       // Fetch menu products with joined product details from wholesale_inventory
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('disposable_menu_products')
         .select(`
           id,

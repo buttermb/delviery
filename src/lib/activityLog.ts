@@ -101,7 +101,7 @@ export async function logActivity(
       return;
     }
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('activity_log')
       .insert({
         tenant_id: tenantId,
@@ -167,7 +167,7 @@ export async function logActivities(
       metadata: entry.metadata || {},
     }));
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('activity_log')
       .insert(records);
 

@@ -45,7 +45,7 @@ export default function MarketplaceCategoryManager() {
         queryKey: queryKeys.marketplaceCategories.byTenant(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('marketplace_categories')
                 .select('*')
                 .eq('tenant_id', tenant.id)

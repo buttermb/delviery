@@ -125,7 +125,7 @@ export function OrdersWidget() {
       if (!tenant?.id) return [];
 
       // Fetch recent orders from the orders table (cast to any to bypass deep type issues)
-      const { data: ordersData, error } = await (supabase as any)
+      const { data: ordersData, error } = await supabase
         .from('orders')
         .select('id, order_number, total_amount, status, created_at, customer_name')
         .eq('tenant_id', tenant.id)
@@ -186,8 +186,11 @@ export function OrdersWidget() {
           orders.map((order) => (
             <div
               key={order.id}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               onClick={() => navigate(`orders?order=${order.id}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`orders?order=${order.id}`); } }}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusDotColor(order.status)}`} />

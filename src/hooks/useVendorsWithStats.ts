@@ -100,7 +100,7 @@ export function useVendorsWithStats() {
 
       // Fetch aggregate ratings for all vendors
       const vendorIds = vendors.map((v) => v.id);
-      const { data: ratings, error: ratingsError } = await (supabase as any)
+      const { data: ratings, error: ratingsError } = await supabase
         .from('vendor_ratings')
         .select('vendor_id, overall_score')
         .eq('tenant_id', tenantId)
@@ -203,7 +203,7 @@ export function useVendorDetails(vendorName: string | null | undefined) {
         .eq('vendor_name', vendorName);
 
       // Fetch ratings
-      const { data: ratings } = await (supabase as any)
+      const { data: ratings } = await supabase
         .from('vendor_ratings')
         .select('overall_score')
         .eq('tenant_id', tenantId)

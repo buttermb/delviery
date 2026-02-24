@@ -45,7 +45,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
     queryKey: queryKeys.cart.user(user?.id, tenantId),
     queryFn: async () => {
       if (!user || !tenantId) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("cart_items")
         .select("*, products(*)")
         .eq("user_id", user.id)

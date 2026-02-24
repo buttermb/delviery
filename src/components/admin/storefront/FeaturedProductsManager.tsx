@@ -192,7 +192,7 @@ export function FeaturedProductsManager({
     queryKey: queryKeys.featuredProducts.list(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select('id, name, price, image_url, category, in_stock')
         .eq('tenant_id', tenant.id)

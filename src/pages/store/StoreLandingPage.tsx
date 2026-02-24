@@ -82,7 +82,7 @@ export default function StoreLandingPage() {
     queryFn: async (): Promise<StoreData | null> => {
       if (!slug) return null;
 
-      const { data, error } = await (supabase as any).rpc(
+      const { data, error } = await supabase.rpc(
         'get_marketplace_store_by_slug',
         { p_slug: slug }
       );
@@ -109,7 +109,7 @@ export default function StoreLandingPage() {
     queryFn: async (): Promise<FeaturedProduct[]> => {
       if (!store?.tenant_id) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select('product_id, product_name, category, strain_type, price, sale_price, image_url, thc_content, cbd_content')
         .eq('tenant_id', store.tenant_id)
@@ -134,7 +134,7 @@ export default function StoreLandingPage() {
     queryFn: async (): Promise<CategoryInfo[]> => {
       if (!store?.tenant_id) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select('category')
         .eq('tenant_id', store.tenant_id)

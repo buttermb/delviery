@@ -172,7 +172,7 @@ export function useProcessRefund() {
         created_at: now,
       };
 
-      const { error: paymentError } = await (supabase as any)
+      const { error: paymentError } = await supabase
         .from('payments')
         .insert(refundRecord as Record<string, unknown>);
 
@@ -208,7 +208,7 @@ export function useProcessRefund() {
 
       // Step 5: Update return authorization status if linked
       if (input.return_authorization_id) {
-        await (supabase as any)
+        await supabase
           .from('returns')
           .update({
             status: 'refunded',

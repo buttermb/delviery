@@ -6,12 +6,13 @@
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart } from 'lucide-react';
+import { BarChart, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatSmartDate } from '@/lib/formatters';
 import { ZReport } from '@/components/pos/ZReport';
 import { EmptyState } from '@/components/admin/shared/EmptyState';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -26,7 +27,7 @@ export default function ZReportPanel() {
     // Enable real-time updates for shifts
     useRealtimeShifts(tenantId);
 
-    const { data: shifts, isLoading } = useQuery({
+    const { data: shifts, isLoading, isError, refetch } = useQuery({
         queryKey: queryKeys.closedShifts.byTenant(tenantId),
         queryFn: async () => {
             if (!tenantId) return [];
@@ -48,6 +49,18 @@ export default function ZReportPanel() {
 
     if (isLoading) {
         return <EnhancedLoadingState variant="table" message="Loading shifts..." />;
+    }
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+                <AlertCircle className="h-8 w-8 text-destructive mb-2" />
+                <p className="text-sm text-muted-foreground">Failed to load shift reports. Please try again.</p>
+                <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
+                    Retry
+                </Button>
+            </div>
+        );
     }
 
     return (

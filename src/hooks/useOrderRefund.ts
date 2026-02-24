@@ -386,7 +386,7 @@ export function useOrderRefund(): UseOrderRefundResult {
       const newPaymentStatus = refundType === 'full' ? 'refunded' : 'partial';
       const newStatus = refundType === 'full' ? 'refunded' : orderData.status;
 
-      const { error: updateError } = await (supabase as any)
+      const { error: updateError } = await supabase
         .from('unified_orders')
         .update({
           status: newStatus,
@@ -439,7 +439,7 @@ export function useOrderRefund(): UseOrderRefundResult {
       );
 
       // Create notification for admin
-      const { error: adminNotifyError } = await (supabase as any)
+      const { error: adminNotifyError } = await supabase
         .from('notifications')
         .insert({
           tenant_id: tenant.id,
@@ -462,7 +462,7 @@ export function useOrderRefund(): UseOrderRefundResult {
 
       // Create notification for customer if they have an ID
       if (orderData.customer_id) {
-        const { error: customerNotifyError } = await (supabase as any)
+        const { error: customerNotifyError } = await supabase
           .from('notifications')
           .insert({
             tenant_id: tenant.id,

@@ -239,7 +239,7 @@ export function OrderPipelineBoard() {
         queryFn: async () => {
             if (!tenantId) return [];
 
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('wholesale_orders')
                 .select(`
                     id, 

@@ -26,7 +26,7 @@ export function useRecallActions() {
       queryClient.invalidateQueries({ queryKey: queryKeys.recall.lists() });
       toast.success(`Recall notifications sent to ${data.customers_notified} customers`);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       logger.error('Failed to send recall notifications', error, { component: 'useRecallActions' });
       toast.error(humanizeError(error, 'Failed to send recall notifications'));
     },

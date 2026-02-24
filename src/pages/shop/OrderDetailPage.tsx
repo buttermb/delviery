@@ -101,7 +101,7 @@ export function OrderDetailPage() {
     queryFn: async (): Promise<StorefrontOrder | null> => {
       if (!store?.id || !orderId || !customerId) return null;
 
-      const { data, error: fetchError } = await (supabase as any)
+      const { data, error: fetchError } = await supabase
         .from('marketplace_orders')
         .select('*')
         .eq('id', orderId)
@@ -161,7 +161,7 @@ export function OrderDetailPage() {
 
     setIsCancelling(true);
     try {
-      const { error: cancelError } = await (supabase as any)
+      const { error: cancelError } = await supabase
         .from('marketplace_orders')
         .update({
           status: 'cancelled',

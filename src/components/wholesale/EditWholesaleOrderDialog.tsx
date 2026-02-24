@@ -167,7 +167,7 @@ export function EditWholesaleOrderDialog({
       if (deleteError) throw deleteError;
 
       // Insert updated items
-      const { error: insertError } = await (supabase as any)
+      const { error: insertError } = await supabase
         .from('wholesale_order_items')
         .insert(
           items.map((item) => ({

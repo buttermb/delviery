@@ -111,7 +111,7 @@ function useCollectionData() {
       if (error) throw error;
 
       // Fetch total payments per client
-      const { data: payments } = await (supabase as any)
+      const { data: payments } = await supabase
         .from('wholesale_payments')
         .select('client_id, amount')
         .eq('tenant_id', tenant?.id);

@@ -66,7 +66,7 @@ export function useTeamActivity(options: UseTeamActivityOptions = {}) {
       try {
         // Query activity logs with team member info
         // First get activity logs
-        let activityQuery = (supabase as any)
+        let activityQuery = supabase
           .from('activity_logs')
           .select('*')
           .eq('tenant_id', tenantId)
@@ -100,7 +100,7 @@ export function useTeamActivity(options: UseTeamActivityOptions = {}) {
         const userIds = [...new Set(activities.map((a: TeamActivityEntry) => a.user_id).filter(Boolean))];
 
         // Fetch team member info for those users
-        const { data: teamMembers } = await (supabase as any)
+        const { data: teamMembers } = await supabase
           .from('tenant_users')
           .select('user_id, full_name, avatar_url, role')
           .eq('tenant_id', tenantId)

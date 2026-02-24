@@ -108,7 +108,7 @@ export default function CouponManagementPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       if (!tenant?.id) throw new Error('No tenant');
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("coupon_codes")
         .delete()
         .eq("id", id)
@@ -129,7 +129,7 @@ export default function CouponManagementPage() {
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("coupon_codes")
         .update({ status, updated_at: new Date().toISOString() })
         .eq("id", id)

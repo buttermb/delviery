@@ -53,7 +53,7 @@ export function CourierStatusWidget() {
 
       try {
         // Fetch all active couriers (cast to any to bypass deep type issues)
-        const { data: couriersData, error: couriersError } = await (supabase as any)
+        const { data: couriersData, error: couriersError } = await supabase
           .from('couriers')
           .select('id, full_name, is_online, is_active, age_verified, current_lat, current_lng')
           .eq('tenant_id', tenant.id)
@@ -64,7 +64,7 @@ export function CourierStatusWidget() {
         const couriers = (couriersData || []) as Courier[];
 
         // Get all couriers with active deliveries (assigned or in_transit)
-        const { data: activeDeliveries, error: deliveriesError } = await (supabase as any)
+        const { data: activeDeliveries, error: deliveriesError } = await supabase
           .from('deliveries')
           .select('courier_id')
           .eq('tenant_id', tenant.id)

@@ -70,7 +70,7 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('disposable_menus')
         .select(`
           id, name, expiration_date, never_expires, tenant_id,
@@ -171,7 +171,7 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
         menuUpdate.expiration_date = null;
       }
 
-      const { error: menuError } = await (supabase as any)
+      const { error: menuError } = await supabase
         .from('disposable_menus')
         .update(menuUpdate)
         .eq('id', menuId)
@@ -180,7 +180,7 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
       if (menuError) throw new Error(menuError.message);
 
       // 2. Sync products — delete existing, insert new set
-      const { error: deleteError } = await (supabase as any)
+      const { error: deleteError } = await supabase
         .from('disposable_menu_products')
         .delete()
         .eq('menu_id', menuId);
@@ -196,7 +196,7 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
           is_encrypted: false,
         }));
 
-        const { error: insertError } = await (supabase as any)
+        const { error: insertError } = await supabase
           .from('disposable_menu_products')
           .insert(productRows);
 

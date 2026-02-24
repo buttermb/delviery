@@ -156,7 +156,7 @@ export default function StorefrontSettings() {
     queryFn: async () => {
       if (!tenantId) return null;
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('marketplace_stores')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -188,7 +188,7 @@ export default function StorefrontSettings() {
     queryFn: async () => {
       const ids = formData.featured_product_ids || [];
       if (ids.length === 0) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select('id, name, price, image_url, category')
         .in('id', ids);
@@ -266,7 +266,7 @@ export default function StorefrontSettings() {
     mutationFn: async () => {
       if (!store?.id) throw new Error('No store');
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('marketplace_stores')
         .update({
           store_name: formData.store_name,

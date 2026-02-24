@@ -56,7 +56,7 @@ export const availabilityService = {
     ): Promise<void> {
         try {
             for (const item of items) {
-                const { error } = await (supabase as any).rpc('decrement_stock', {
+                const { error } = await supabase.rpc('decrement_stock', {
                     p_product_id: item.product_id,
                     p_quantity: item.quantity
                 });
@@ -72,7 +72,7 @@ export const availabilityService = {
                 if (tenantId) {
                     insertData.tenant_id = tenantId;
                 }
-                await (supabase as any).from('inventory_sync_log').insert(insertData);
+                await supabase.from('inventory_sync_log').insert(insertData);
             }
         } catch (error) {
             logger.error('Error reserving inventory', error);
@@ -90,7 +90,7 @@ export const availabilityService = {
     ): Promise<void> {
         try {
             for (const item of items) {
-                const { error } = await (supabase as any).rpc('increment_stock', {
+                const { error } = await supabase.rpc('increment_stock', {
                     p_product_id: item.product_id,
                     p_quantity: item.quantity
                 });
@@ -105,7 +105,7 @@ export const availabilityService = {
                 if (tenantId) {
                     insertData.tenant_id = tenantId;
                 }
-                await (supabase as any).from('inventory_sync_log').insert(insertData);
+                await supabase.from('inventory_sync_log').insert(insertData);
             }
         } catch (error) {
             logger.error('Error releasing inventory', error);

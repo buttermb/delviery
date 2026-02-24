@@ -188,7 +188,7 @@ export default function DeliveryTrackingPage() {
     queryKey: queryKeys.publicDeliveryTracking.byParams(trackingCode, lookupOrderNumber, lookupPhone),
     queryFn: async (): Promise<DeliveryInfo | null> => {
       try {
-        let query = (supabase as any)
+        let query = supabase
           .from('orders')
           .select(`
             id,

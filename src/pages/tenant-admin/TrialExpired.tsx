@@ -43,7 +43,7 @@ export default function TrialExpiredPage() {
       const usage = tenant?.usage || { products: 0, customers: 0, menus: 0, revenue: 0 };
 
       // Get revenue if any
-      const ordersQuery = await (supabase as any)
+      const ordersQuery = await supabase
         .from("menu_orders")
         .select("total_amount")
         .eq("tenant_id", tenant.id)

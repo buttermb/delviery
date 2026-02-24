@@ -41,7 +41,7 @@ const SuperAdminLogin = () => {
         authData.user.user_metadata?.is_super_admin === true;
 
       // Method 2: Check tenant_users for super_admin role (tenant admins can also access platform admin)
-      const { data: tenantUser } = await (supabase as any)
+      const { data: tenantUser } = await supabase
         .from("tenant_users")
         .select("role, tenant_id")
         .eq("email", email)

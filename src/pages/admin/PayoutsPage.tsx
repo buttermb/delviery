@@ -78,7 +78,7 @@ export default function PayoutsPage() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('marketplace_payouts')
           .select('*')
           .eq('seller_tenant_id', tenantId)
@@ -105,7 +105,7 @@ export default function PayoutsPage() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('marketplace_orders')
           .select('id, total_amount, platform_fee, status, created_at, delivered_at, payout_id')
           .eq('seller_tenant_id', tenantId)

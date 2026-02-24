@@ -156,7 +156,7 @@ export function useSessions(): UseSessionsReturn {
 
   const revokeSessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      const { error: revokeError } = await (supabase as any)
+      const { error: revokeError } = await supabase
         .from('customer_sessions')
         .update({ expires_at: new Date().toISOString() })
         .eq('id', sessionId);

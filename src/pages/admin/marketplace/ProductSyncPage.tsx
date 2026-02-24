@@ -120,7 +120,7 @@ export default function ProductSyncPage() {
         mutationFn: async (productId: string) => {
             if (!store?.id) throw new Error("No marketplace store found");
 
-            const { data, error } = await (supabase as any).rpc('sync_product_to_marketplace', {
+            const { data, error } = await supabase.rpc('sync_product_to_marketplace', {
                 p_product_id: productId,
                 p_store_id: store.id
             });

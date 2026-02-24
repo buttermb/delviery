@@ -27,7 +27,7 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
       // Fetch latest metrics for each type
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-      const { data: metrics, error } = await (supabase as any)
+      const { data: metrics, error } = await supabase
         .from('system_metrics')
         .select('metric_type, value, timestamp, metadata')
         .gte('timestamp', oneHourAgo)

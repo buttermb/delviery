@@ -140,7 +140,7 @@ export default function NewPurchaseOrder() {
             // 1. Create Purchase Order
             const poNumber = `PO-${format(new Date(), 'yyMMdd')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
-            const { data: po, error: poError } = await (supabase as any)
+            const { data: po, error: poError } = await supabase
                 .from('purchase_orders')
                 .insert({
                     tenant_id: tenant.id,
@@ -166,7 +166,7 @@ export default function NewPurchaseOrder() {
                 total_cost: item.qty * item.unitCost,
             }));
 
-            const { error: itemsError } = await (supabase as any)
+            const { error: itemsError } = await supabase
                 .from('purchase_order_items')
                 .insert(orderItems);
 
@@ -176,7 +176,7 @@ export default function NewPurchaseOrder() {
             for (const item of poData.items) {
                 if (item.unitCost !== item.originalCost) {
                     // Call the RPC to log vendor price change
-                    await (supabase as any).rpc('log_vendor_price_change', {
+                    await supabase.rpc('log_vendor_price_change', {
                         p_product_id: item.id,
                         p_tenant_id: tenant.id,
                         p_vendor_id: poData.vendor.id,
@@ -200,7 +200,7 @@ export default function NewPurchaseOrder() {
             queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.all });
             navigateToAdmin('wholesale-orders'); // Back to main list
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error('Failed to create PO', error);
             toast.error(humanizeError(error, 'Failed to create purchase order'));
         } finally {

@@ -103,7 +103,7 @@ export function useSetupChecklist() {
           .eq('tenant_id', tenantId),
 
         // 3. Delivery zone set
-        (supabase as any)
+        supabase
           .from('delivery_zones')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId),
@@ -122,14 +122,14 @@ export function useSetupChecklist() {
           .eq('tenant_id', tenantId),
 
         // 6. Storefront customized (has logo or primary color)
-        (supabase as any)
+        supabase
           .from('storefront_settings')
           .select('logo_url, primary_color')
           .eq('tenant_id', tenantId)
           .maybeSingle(),
 
         // 7. Payment configured
-        (supabase as any)
+        supabase
           .from('tenant_payment_settings')
           .select('accept_cash, accept_zelle, accept_cashapp, accept_bitcoin')
           .eq('tenant_id', tenantId)

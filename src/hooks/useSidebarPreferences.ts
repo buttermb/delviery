@@ -96,7 +96,7 @@ export function useSidebarPreferences() {
         };
       }
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('sidebar_preferences')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -210,7 +210,7 @@ export function useSidebarPreferences() {
         ...updates,
       };
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('sidebar_preferences')
         .upsert([{
           tenant_id: tenant.id,

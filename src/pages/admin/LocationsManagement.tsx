@@ -52,7 +52,7 @@ export default function LocationsManagement() {
     if (!tenant) return;
 
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('locations')
         .select('*')
         .eq('tenant_id', tenant.id)

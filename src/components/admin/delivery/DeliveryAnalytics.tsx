@@ -14,7 +14,6 @@ import {
   subDays,
   getDay,
   getHours,
-  isWithinInterval,
 } from 'date-fns';
 import {
   ResponsiveContainer,
@@ -26,7 +25,6 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  Cell,
   Legend,
 } from 'recharts';
 import {
@@ -39,8 +37,6 @@ import {
   TrendingUp,
   TrendingDown,
   Download,
-  Loader2,
-  Calendar,
   MapPin,
 } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';

@@ -27,7 +27,7 @@ export function MenuList({ tenantId: propTenantId, customerId: propCustomerId }:
       if (!finalTenantId || !finalCustomerId) return [];
 
       // Get menus that the customer has access to
-      const result = await (supabase as any)
+      const result = await supabase
         .from("menu_access")
         .select(`
           menu_id,

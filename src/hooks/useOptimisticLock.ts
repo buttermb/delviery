@@ -26,7 +26,7 @@ export const useOptimisticLock = (tableName: TableName, tenantId?: string) => {
     setIsUpdating(true);
     try {
       // Single atomic conditional update - avoids TOCTOU race condition
-      const { data: updated, error } = await (supabase as any)
+      const { data: updated, error } = await supabase
         .from(tableName)
         .update({ ...updates, version: expectedVersion + 1, updated_at: new Date().toISOString() })
         .eq("id", id)
@@ -53,7 +53,7 @@ export const useOptimisticLock = (tableName: TableName, tenantId?: string) => {
 
   const fetchWithVersion = useCallback(async (id: string) => {
     if (!tenantId) return null;
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from(tableName)
       .select("*")
       .eq("id", id)

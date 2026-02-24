@@ -75,7 +75,7 @@ async function fetchActivityLogs(
   tenantId: string,
   filters: ActivityLogFilters
 ): Promise<ActivityLogEntry[]> {
-  let query = (supabase as any)
+  let query = supabase
     .from('activity_log')
     .select('*')
     .eq('tenant_id', tenantId)

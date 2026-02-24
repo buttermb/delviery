@@ -120,7 +120,7 @@ export const useRoutePrefetch = () => {
           void queryClient.prefetchQuery({
             queryKey: queryKeys.vendors.lists(),
             queryFn: async () => {
-              const { data } = await (supabase as any)
+              const { data } = await supabase
                 .from('vendors')
                 .select('id, name, status, created_at')
                 .eq('tenant_id', tenantId)

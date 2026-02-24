@@ -35,15 +35,15 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
   });
 
   // Get tenant user
-  const { data: tenantUser, isLoading: loadingUser } = useQuery<any>({
+  const { data: tenantUser, isLoading: loadingUser } = useQuery<TenantUser | null>({
     queryKey: queryKeys.tenantUser.byUserId(session?.user?.id),
     queryFn: async () => {
       if (!session?.user?.id) return null;
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('tenant_users')
         .select('*')
-        .eq('email', session.user.email)
+        .eq('email', session.user.email ?? '')
         .maybeSingle();
 
       if (error || !data) return null;
@@ -60,7 +60,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
   }, [tenantUser]);
 
   // Get tenant data
-  const { data: tenant, isLoading: loadingTenant, error } = useQuery<any>({
+  const { data: tenant, isLoading: loadingTenant, error } = useQuery<Tenant | null>({
     queryKey: queryKeys.tenants.detail(currentTenantId || ''),
     queryFn: async () => {
       if (!currentTenantId) return null;
@@ -84,14 +84,14 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
   useEffect(() => {
     if (tenant?.id) {
       const interval = setInterval(() => {
-        (supabase as any)
+        supabase
           .from('tenants')
           .update({ last_activity_at: new Date().toISOString() })
           .eq('id', tenant.id)
           .then(() => {
             queryClient.invalidateQueries({ queryKey: queryKeys.tenants.detail(tenant.id) });
           })
-          .catch((err) => logger.error('Failed to update tenant activity', err));
+          .catch((err: unknown) => logger.error('Failed to update tenant activity', err));
       }, 60000); // Every minute
 
       return () => clearInterval(interval);

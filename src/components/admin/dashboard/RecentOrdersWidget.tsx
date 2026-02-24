@@ -43,7 +43,7 @@ export function RecentOrdersWidget() {
         wholesale_clients: { business_name: string } | null;
       }
 
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('wholesale_orders')
         .select(`
           id,
@@ -117,8 +117,11 @@ export function RecentOrdersWidget() {
           orders.map((order) => (
             <div
               key={order.id}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               onClick={() => navigate(getFullPath(`/admin/orders`))}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(getFullPath(`/admin/orders`)); } }}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-2 h-2 rounded-full ${getStatusColor(order.status)}`} />

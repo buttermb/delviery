@@ -39,7 +39,7 @@ export function useOrderRush() {
 
       const now = new Date().toISOString();
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('orders')
         .update(isRush
           ? { is_rush: true, rushed_at: now, rushed_by: admin?.id }
@@ -131,7 +131,7 @@ export function useOrderBulkRush() {
 
       const now = new Date().toISOString();
 
-      const { error, count } = await (supabase as any)
+      const { error, count } = await supabase
         .from('orders')
         .update(isRush
           ? { is_rush: true, rushed_at: now, rushed_by: admin?.id }

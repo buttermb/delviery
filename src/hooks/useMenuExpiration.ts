@@ -47,7 +47,7 @@ export const useExpiringSoonMenus = (tenantId: string | undefined, hoursAhead: n
       const now = new Date();
       const futureTime = new Date(now.getTime() + hoursAhead * 60 * 60 * 1000);
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('disposable_menus')
         .select(`
           id, name, tenant_id, status, scheduled_deactivation_time, is_scheduled,
@@ -82,7 +82,7 @@ export const useArchivedMenus = (tenantId: string | undefined) => {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('disposable_menus')
         .select(`
           id, name, tenant_id, status, scheduled_deactivation_time, is_scheduled,
@@ -120,7 +120,7 @@ export const useArchiveMenu = () => {
       reason?: 'expired' | 'manual' | 'schedule_ended';
     }) => {
       // First, get the menu's current analytics
-      const { data: menu, error: menuError } = await (supabase as any)
+      const { data: menu, error: menuError } = await supabase
         .from('disposable_menus')
         .select(`
           id, name, tenant_id, status, view_count,
@@ -150,7 +150,7 @@ export const useArchiveMenu = () => {
       };
 
       // Update the menu to archived status
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('disposable_menus')
         .update({
           status: 'archived',
@@ -168,7 +168,7 @@ export const useArchiveMenu = () => {
       if (error) throw error;
 
       // Log to menu_schedule_history
-      await (supabase as any)
+      await supabase
         .from('menu_schedule_history')
         .insert({
           menu_id: menuId,
@@ -238,7 +238,7 @@ export const useReactivateMenu = () => {
         updateData.schedule_timezone = newSchedule.timezone || 'UTC';
       }
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('disposable_menus')
         .update(updateData)
         .eq('id', menuId)
@@ -249,7 +249,7 @@ export const useReactivateMenu = () => {
 
       // Log the reactivation
       if (data) {
-        await (supabase as any)
+        await supabase
           .from('menu_schedule_history')
           .insert({
             menu_id: menuId,
@@ -293,7 +293,7 @@ export const useProcessExpiredMenus = (tenantId: string | undefined) => {
     const now = new Date();
 
     // Find menus that have passed their deactivation time
-    const { data: expiredMenus, error } = await (supabase as any)
+    const { data: expiredMenus, error } = await supabase
       .from('disposable_menus')
       .select('id, name, scheduled_deactivation_time')
       .eq('tenant_id', tenantId)

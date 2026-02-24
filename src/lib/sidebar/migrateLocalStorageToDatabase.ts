@@ -101,7 +101,7 @@ export async function migrateLocalStorageToDatabase(
     }
 
     // Migrate to database
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('sidebar_preferences')
       .upsert([{
         tenant_id: tenantId,

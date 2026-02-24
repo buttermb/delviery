@@ -60,7 +60,7 @@ export function useVendorsWithStats() {
 
             // Get purchase order stats per vendor
             const vendorIds = vendors.map(v => v.id);
-            const { data: purchaseOrders, error: poError } = await (supabase as any)
+            const { data: purchaseOrders, error: poError } = await supabase
                 .from('purchase_orders')
                 .select('vendor_id, total, created_at')
                 .eq('tenant_id', tenant.id)
@@ -109,7 +109,7 @@ export function useVendorOrders(vendorId: string | null) {
         queryFn: async () => {
             if (!tenant?.id || !vendorId) return [];
 
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('purchase_orders')
                 .select('id, po_number, status, total, expected_delivery_date, created_at, notes')
                 .eq('tenant_id', tenant.id)

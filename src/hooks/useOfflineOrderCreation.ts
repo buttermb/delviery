@@ -180,7 +180,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
           price: item.unitPrice,
         }));
 
-        const { error: itemsError } = await (supabase as any)
+        const { error: itemsError } = await supabase
           .from('order_items')
           .insert(orderItems);
 

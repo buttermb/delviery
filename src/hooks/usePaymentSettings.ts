@@ -77,7 +77,7 @@ export function useTenantPaymentSettings() {
     queryFn: async () => {
       if (!tenant?.id) return DEFAULT_SETTINGS;
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('tenant_payment_settings')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -106,7 +106,7 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
       if (!menuId) return DEFAULT_SETTINGS;
 
       // First, get the menu to find its tenant_id and any payment_settings override
-      const { data: menu, error: menuError } = await (supabase as any)
+      const { data: menu, error: menuError } = await supabase
         .from('disposable_menus')
         .select('tenant_id, payment_settings')
         .eq('id', menuId)
@@ -118,7 +118,7 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
       }
 
       // Get tenant-level payment settings
-      const { data: tenantSettings, error: settingsError } = await (supabase as any)
+      const { data: tenantSettings, error: settingsError } = await supabase
         .from('tenant_payment_settings')
         .select('*')
         .eq('tenant_id', (menu as any).tenant_id)

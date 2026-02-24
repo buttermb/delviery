@@ -57,7 +57,7 @@ export default function POSAnalyticsPage() {
 
       // Fetch wholesale orders as POS transactions
       try {
-        const query = (supabase as any)
+        const query = supabase
           .from('wholesale_orders')
           .select('id, order_number, total_amount, status, created_at, wholesale_clients(business_name)')
           .eq('tenant_id', tenantId)

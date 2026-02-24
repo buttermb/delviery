@@ -119,7 +119,7 @@ export function useVendorDocuments(vendorId: string) {
         throw new Error('No tenant context');
       }
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('vendor_documents')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -265,7 +265,7 @@ export function useVendorDocuments(vendorId: string) {
       // Get user name for uploaded_by_name
       let uploadedByName: string | null = null;
       if (user?.id) {
-        const { data: profile } = await (supabase as any)
+        const { data: profile } = await supabase
           .from('tenant_users')
           .select('full_name')
           .eq('user_id', user.id)
@@ -274,7 +274,7 @@ export function useVendorDocuments(vendorId: string) {
         uploadedByName = (profile as { full_name: string | null } | null)?.full_name ?? user.email ?? null;
       }
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('vendor_documents')
         .insert({
           tenant_id: tenantId,
@@ -327,7 +327,7 @@ export function useVendorDocuments(vendorId: string) {
       if (input.expiration_date !== undefined) updateData.expiration_date = input.expiration_date;
       if (input.notes !== undefined) updateData.notes = input.notes;
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('vendor_documents')
         .update(updateData)
         .eq('id', input.id)
@@ -365,7 +365,7 @@ export function useVendorDocuments(vendorId: string) {
       }
 
       // First get the document to find the file path
-      const { data: doc, error: fetchError } = await (supabase as any)
+      const { data: doc, error: fetchError } = await supabase
         .from('vendor_documents')
         .select('file_url')
         .eq('id', documentId)
@@ -382,7 +382,7 @@ export function useVendorDocuments(vendorId: string) {
       }
 
       // Delete from database
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('vendor_documents')
         .delete()
         .eq('id', documentId)

@@ -42,7 +42,7 @@ export default function AppointmentSchedulerPage() {
       if (!tenant?.id) return [];
 
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from("appointments")
           .select("*")
           .eq("tenant_id", tenant.id)

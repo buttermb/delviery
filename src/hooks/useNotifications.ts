@@ -95,7 +95,7 @@ export function useNotifications(): UseNotificationsResult {
       try {
         // Build query - fetch notifications for this tenant
         // Either targeted at current user or broadcast (user_id is null)
-        let query = (supabase as any)
+        let query = supabase
           .from('notifications')
           .select('*')
           .eq('tenant_id', tenantId)
@@ -173,7 +173,7 @@ export function useNotifications(): UseNotificationsResult {
     mutationFn: async (notificationId: string) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error: updateError } = await (supabase as any)
+      const { error: updateError } = await supabase
         .from('notifications')
         .update({ read: true })
         .eq('id', notificationId)
@@ -200,7 +200,7 @@ export function useNotifications(): UseNotificationsResult {
       if (!tenantId) throw new Error('No tenant context');
 
       // Build the update query
-      let query = (supabase as any)
+      let query = supabase
         .from('notifications')
         .update({ read: true })
         .eq('tenant_id', tenantId)
@@ -234,7 +234,7 @@ export function useNotifications(): UseNotificationsResult {
     mutationFn: async (notificationId: string) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error: deleteError } = await (supabase as any)
+      const { error: deleteError } = await supabase
         .from('notifications')
         .delete()
         .eq('id', notificationId)

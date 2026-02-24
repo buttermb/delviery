@@ -61,7 +61,10 @@ export function DocumentList({ documents, isLoading, onSelect }: DocumentListPro
             <div
               key={doc.id}
               onClick={() => onSelect(doc)}
-              className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+              className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(doc); } }}
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">

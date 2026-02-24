@@ -253,8 +253,11 @@ export function AlertsWidget() {
           alerts.map((alert) => (
             <div
               key={alert.id}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               onClick={() => navigate(getFullPath('/admin/inventory/alerts'))}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(getFullPath('/admin/inventory/alerts')); } }}
             >
               <div className="flex items-center gap-3">
                 <div

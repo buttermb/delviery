@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, TrendingUp, Users, DollarSign, ArrowLeft } from 'lucide-react';
+import { MapPin, TrendingUp, Users, DollarSign, ArrowLeft, AlertCircle } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
@@ -17,7 +17,7 @@ export default function LocationAnalyticsPage() {
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
 
-  const { data: locationData, isLoading } = useQuery({
+  const { data: locationData, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.locationAnalytics.byTenant(tenant?.id),
     queryFn: async () => {
       const { data: orders } = await supabase
@@ -89,6 +89,18 @@ export default function LocationAnalyticsPage() {
             </Card>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <AlertCircle className="h-8 w-8 text-destructive mb-2" />
+        <p className="text-sm text-muted-foreground">Failed to load location analytics. Please try again.</p>
+        <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
+          Retry
+        </Button>
       </div>
     );
   }

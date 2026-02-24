@@ -158,7 +158,7 @@ export default function CustomerDetails() {
       setPayments(paymentsData || []);
 
       // Load notes (customer_notes not in generated types)
-      const notesResult = await ((supabase as any)
+      const notesResult = await (supabase
         .from('customer_notes')
         .select('id, created_at, note, note_type')
         .eq('customer_id', id as string)

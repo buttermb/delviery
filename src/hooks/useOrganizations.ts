@@ -114,7 +114,7 @@ async function fetchOrganizations(
   tenantId: string,
   filters?: OrganizationFilters
 ): Promise<OrganizationWithStats[]> {
-  let query = (supabase as any)
+  let query = supabase
     .from('customer_organizations')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -149,14 +149,14 @@ async function fetchOrganizations(
 
   for (const org of (data || []) as OrgRow[]) {
     // Get member count
-    const { count: memberCount } = await (supabase as any)
+    const { count: memberCount } = await supabase
       .from('organization_members')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('organization_id', org.id);
 
     // Get orders and LTV data
-    const { data: orderStats } = await (supabase as any)
+    const { data: orderStats } = await supabase
       .from('unified_orders')
       .select('total_amount, created_at')
       .eq('tenant_id', tenantId)
@@ -194,7 +194,7 @@ async function fetchOrganizationDetail(
   tenantId: string,
   orgId: string
 ): Promise<OrganizationWithStats | null> {
-  const { data: org, error } = await (supabase as any)
+  const { data: org, error } = await supabase
     .from('customer_organizations')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -213,14 +213,14 @@ async function fetchOrganizationDetail(
   if (!org) return null;
 
   // Get member count
-  const { count: memberCount } = await (supabase as any)
+  const { count: memberCount } = await supabase
     .from('organization_members')
     .select('*', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
     .eq('organization_id', (org as Record<string, unknown>).id);
 
   // Get orders and LTV data
-  const { data: orderStats } = await (supabase as any)
+  const { data: orderStats } = await supabase
     .from('unified_orders')
     .select('total_amount, created_at')
     .eq('tenant_id', tenantId)
@@ -254,7 +254,7 @@ async function fetchOrganizationMembers(
   tenantId: string,
   orgId: string
 ): Promise<OrganizationMember[]> {
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('organization_members')
     .select(`
       *,
@@ -277,7 +277,7 @@ async function fetchOrganizationMembers(
       component: 'useOrganizations',
     });
 
-    const { data: simpleData, error: simpleError } = await (supabase as any)
+    const { data: simpleData, error: simpleError } = await supabase
       .from('organization_members')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -329,7 +329,7 @@ export function useOrganizations({
     mutationFn: async (data: OrganizationFormValues): Promise<Organization> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data: created, error } = await (supabase as any)
+      const { data: created, error } = await supabase
         .from('customer_organizations')
         .insert({
           tenant_id: tenantId,
@@ -404,7 +404,7 @@ export function useOrganizations({
     }): Promise<Organization> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data: updated, error } = await (supabase as any)
+      const { data: updated, error } = await supabase
         .from('customer_organizations')
         .update({
           ...data,
@@ -450,14 +450,14 @@ export function useOrganizations({
       if (!tenantId) throw new Error('No tenant context');
 
       // First remove all members
-      await (supabase as any)
+      await supabase
         .from('organization_members')
         .delete()
         .eq('organization_id', id)
         .eq('tenant_id', tenantId);
 
       // Then delete organization
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('customer_organizations')
         .delete()
         .eq('id', id)
@@ -498,7 +498,7 @@ export function useOrganizations({
     }): Promise<void> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('customer_organizations')
         .update({ status, updated_at: new Date().toISOString() })
         .eq('id', id)
@@ -637,7 +637,7 @@ export function useOrganizationDetail({
     mutationFn: async (data: AddMemberFormValues): Promise<OrganizationMember> => {
       if (!tenantId || !organizationId) throw new Error('Missing context');
 
-      const { data: member, error } = await (supabase as any)
+      const { data: member, error } = await supabase
         .from('organization_members')
         .insert({
           tenant_id: tenantId,
@@ -691,7 +691,7 @@ export function useOrganizationDetail({
     mutationFn: async (memberId: string): Promise<void> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('organization_members')
         .delete()
         .eq('id', memberId)
@@ -737,7 +737,7 @@ export function useOrganizationDetail({
     }): Promise<OrganizationMember> => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data: updated, error } = await (supabase as any)
+      const { data: updated, error } = await supabase
         .from('organization_members')
         .update({
           ...data,
@@ -841,7 +841,7 @@ export function useOrganizationSearch(searchTerm: string) {
     queryFn: async () => {
       if (!tenantId || !searchTerm || searchTerm.length < 2) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('customer_organizations')
         .select('id, name, legal_name, organization_type, status')
         .eq('tenant_id', tenantId)
@@ -886,7 +886,7 @@ export function useCustomerOrganizations(customerId: string | undefined) {
     queryFn: async () => {
       if (!tenantId || !customerId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('organization_members')
         .select(`
           *,

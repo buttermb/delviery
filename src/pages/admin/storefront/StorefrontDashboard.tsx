@@ -302,12 +302,12 @@ export default function StorefrontDashboard() {
       setShowListView(false);
       toast.success("Your new store has been set up. Configure it to go live.");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       logger.error('Failed to create store', error, { component: 'StorefrontDashboard' });
-      const message = error?.message?.includes('duplicate')
+      const message = error.message?.includes('duplicate')
         ? 'A store with this URL already exists.'
         : 'Failed to create store. Please try again.';
-      toast.error("Error");
+      toast.error(message);
     },
   });
 

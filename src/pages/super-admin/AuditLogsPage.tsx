@@ -19,7 +19,7 @@ export default function AuditLogsPage() {
   const { data: auditLogs = [], isLoading } = useQuery({
     queryKey: queryKeys.superAdminTools.auditLogs(actionFilter),
     queryFn: async () => {
-      let query = (supabase as any)
+      let query = supabase
         .from('audit_logs')
         .select('id, action, resource_type, resource_id, tenant_id, actor_id, actor_type, timestamp, changes')
         .order('timestamp', { ascending: false })
@@ -71,7 +71,7 @@ export default function AuditLogsPage() {
     queryKey: queryKeys.superAdminTools.auditLogsActors(actorIds),
     queryFn: async () => {
       if (actorIds.length === 0) return [];
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('super_admins')
         .select('id, email')
         .in('id', actorIds);

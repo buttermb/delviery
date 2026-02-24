@@ -144,12 +144,15 @@ export function LocalAIIntegration() {
             {models.map((model) => (
               <Card
                 key={model.id}
-                className={`cursor-pointer transition-all ${
+                className={`cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   selectedModel === model.id
                     ? 'ring-2 ring-primary'
                     : 'hover:shadow-md'
                 }`}
                 onClick={() => setSelectedModel(model.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedModel(model.id); } }}
               >
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-2">

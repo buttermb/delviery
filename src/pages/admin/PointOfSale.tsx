@@ -284,7 +284,7 @@ export default function PointOfSale() {
       }));
 
       // Try atomic RPC first
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_pos_transaction_atomic', {
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: transactionItems,
         p_payment_method: paymentMethod,
@@ -391,7 +391,7 @@ export default function PointOfSale() {
 
       // Link pending order
       if (activeOrderId && tenantId) {
-        await (supabase as any)
+        await supabase
           .from('disposable_menu_orders')
           .update({
             status: 'completed',

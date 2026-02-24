@@ -17,7 +17,7 @@ export function LocationOverviewWidget() {
             today.setHours(0, 0, 0, 0);
 
             // Try to fetch locations from locations table
-            const { data: locs } = await (supabase as any)
+            const { data: locs } = await supabase
                 .from('locations')
                 .select('id, name, address')
                 .eq('tenant_id', tenant.id)
@@ -46,7 +46,7 @@ export function LocationOverviewWidget() {
                     const margin = todayRevenue > 0 ? 25 : 0;
 
                     // Check for issues (out of stock products)
-                    const { count: outOfStock } = await (supabase as any)
+                    const { count: outOfStock } = await supabase
                         .from('products')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', tenant.id)
@@ -54,7 +54,7 @@ export function LocationOverviewWidget() {
                         .eq('status', 'active');
 
                     // Check for low stock
-                    const { count: lowStock } = await (supabase as any)
+                    const { count: lowStock } = await supabase
                         .from('products')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', tenant.id)

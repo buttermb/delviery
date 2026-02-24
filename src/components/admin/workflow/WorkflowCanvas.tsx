@@ -382,7 +382,7 @@ export function WorkflowCanvas() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {templates.map((template) => (
-                <Card key={template.id} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleCloneTemplate(template)}>
+                <Card key={template.id} className="cursor-pointer hover:shadow-lg transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" onClick={() => handleCloneTemplate(template)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCloneTemplate(template); } }}>
                   <CardHeader>
                     <CardTitle className="text-base">{template.name}</CardTitle>
                   </CardHeader>

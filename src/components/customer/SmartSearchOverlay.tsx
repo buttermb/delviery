@@ -27,9 +27,13 @@ export function SmartSearchOverlay({ isOpen, onClose, products, onProductSelect 
 
     // Load recent searches from local storage
     useEffect(() => {
-        const saved = localStorage.getItem('recent_searches');
-        if (saved) {
-            setRecentSearches(JSON.parse(saved));
+        try {
+            const saved = localStorage.getItem('recent_searches');
+            if (saved) {
+                setRecentSearches(JSON.parse(saved) as string[]);
+            }
+        } catch {
+            localStorage.removeItem('recent_searches');
         }
     }, []);
 

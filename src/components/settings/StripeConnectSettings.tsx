@@ -33,7 +33,7 @@ export function StripeConnectSettings() {
 
             if (error) throw error;
             setStripeStatus(data);
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error('Failed to check Stripe status', error, { component: 'StripeConnectSettings' });
         } finally {
             setCheckingStatus(false);
@@ -55,7 +55,7 @@ export function StripeConnectSettings() {
             if (data?.url) {
                 window.location.href = data.url;
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error('Failed to start Stripe Connect', error, { component: 'StripeConnectSettings' });
             toast.error("Failed to connect to Stripe. Please try again.");
             setLoading(false);

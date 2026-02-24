@@ -70,7 +70,7 @@ export default function BatchesPage() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('inventory_batches')
           .select(`
             *,

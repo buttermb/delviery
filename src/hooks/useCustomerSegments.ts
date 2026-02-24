@@ -379,7 +379,7 @@ export function useCustomerSegments({
       });
 
       // Fetch all customers
-      const { data: customers, error: customersError } = await (supabase as any)
+      const { data: customers, error: customersError } = await supabase
         .from('contacts')
         .select('id, full_name')
         .eq('tenant_id', tenantId);

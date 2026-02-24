@@ -67,7 +67,7 @@ export default function Webhooks() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from(TABLE_WEBHOOKS)
           .select('*')
           .eq('tenant_id', tenantId)
@@ -88,7 +88,7 @@ export default function Webhooks() {
     mutationFn: async (webhook: Partial<WebhookConfig>) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE_WEBHOOKS)
         .insert({
           tenant_id: tenantId,
@@ -127,7 +127,7 @@ export default function Webhooks() {
     mutationFn: async ({ id, ...webhook }: WebhookConfig) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE_WEBHOOKS)
         .update({
           name: webhook.name,

@@ -13,7 +13,7 @@ export default function APIUsagePage() {
     queryKey: queryKeys.superAdminTools.apiUsageLogs(),
     queryFn: async () => {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('api_logs')
         .select('endpoint, method, status_code, response_time_ms, timestamp')
         .gte('timestamp', sevenDaysAgo)

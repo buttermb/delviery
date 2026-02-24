@@ -66,7 +66,7 @@ async function createBulkStatusNotification(
     ? `${successCount} order${successCount !== 1 ? 's' : ''} updated to "${statusLabel}"`
     : `${successCount} order${successCount !== 1 ? 's' : ''} updated, ${failedCount} failed`;
 
-  const { error } = await (supabase as any).from('notifications').insert({
+  const { error } = await supabase.from('notifications').insert({
     tenant_id: tenantId,
     user_id: null, // Notify all admins
     title,
@@ -235,7 +235,7 @@ async function decrementInventoryForDeliveredOrders(
   for (const orderId of orderIds) {
     try {
       // Check if inventory was already decremented for this order (e.g., at confirmation)
-      const { data: existingHistory } = await (supabase as any)
+      const { data: existingHistory } = await supabase
         .from('inventory_history')
         .select('id')
         .eq('reference_id', orderId)

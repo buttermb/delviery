@@ -109,7 +109,7 @@ export function useEnsureAutoTag() {
       if (!tenant?.id) throw new Error('No tenant');
 
       // Check if tag exists
-      const { data: existingTag, error: findError } = await (supabase as any)
+      const { data: existingTag, error: findError } = await supabase
         .from('tags')
         .select('id, name, color')
         .eq('tenant_id', tenant.id)
@@ -127,7 +127,7 @@ export function useEnsureAutoTag() {
 
       // Create the tag
       const color = AUTO_TAG_COLORS[tagName] || '#6B7280';
-      const { data: newTag, error: createError } = await (supabase as any)
+      const { data: newTag, error: createError } = await supabase
         .from('tags')
         .insert({
           tenant_id: tenant.id,
@@ -260,7 +260,7 @@ export function useCustomersByTags(tagIds: string[]) {
       if (!tenant?.id || tagIds.length === 0) return [];
 
       // Get customer IDs that have all selected tags
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('customer_tags')
         .select('contact_id')
         .eq('tenant_id', tenant.id)
@@ -299,7 +299,7 @@ export function useTagCounts() {
     queryFn: async () => {
       if (!tenant?.id) return {};
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('customer_tags')
         .select('tag_id')
         .eq('tenant_id', tenant.id);

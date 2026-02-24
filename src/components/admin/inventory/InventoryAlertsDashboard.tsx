@@ -31,7 +31,7 @@ export function InventoryAlertsDashboard() {
     queryFn: async () => {
       if (!tenant?.id) return [];
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('inventory_alerts')
         .select('*')
         .eq('tenant_id', tenant.id)

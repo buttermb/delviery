@@ -79,7 +79,7 @@ export function useProductVariants(productId: string | undefined) {
     queryFn: async () => {
       if (!tenant?.id || !productId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('product_variants')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -108,7 +108,7 @@ export function useCreateVariant() {
     mutationFn: async (input: CreateVariantInput) => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('product_variants')
         .insert({
           ...input,
@@ -148,7 +148,7 @@ export function useUpdateVariant() {
 
       const { id, ...updateData } = input;
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('product_variants')
         .update(updateData)
         .eq('id', id)
@@ -186,7 +186,7 @@ export function useDeleteVariant() {
     mutationFn: async ({ id, productId }: { id: string; productId: string }) => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('product_variants')
         .delete()
         .eq('id', id)
@@ -229,7 +229,7 @@ export function useReorderVariants() {
 
       // Update each variant's display_order
       const updates = orderedIds.map((id, index) =>
-        (supabase as any)
+        supabase
           .from('product_variants')
           .update({ display_order: index })
           .eq('id', id)
@@ -280,7 +280,7 @@ export function useBulkCreateVariants() {
         display_order: index,
       }));
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('product_variants')
         .insert(variantsWithTenant)
         .select();

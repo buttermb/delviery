@@ -107,7 +107,7 @@ export function RoleManagement() {
         // Fetch permissions for each role
         const rolesWithPermissions = await Promise.all(
           (rolesData || []).map(async (role) => {
-            const { data: permData } = await (supabase as any)
+            const { data: permData } = await supabase
               .from('tenant_role_permissions')
               .select('permission')
               .eq('role_id', role.id)
@@ -158,7 +158,7 @@ export function RoleManagement() {
 
       // Add permissions
       if (data.permissions.length > 0) {
-        const { error: permError } = await (supabase as any)
+        const { error: permError } = await supabase
           .from('tenant_role_permissions')
           .insert(
             data.permissions.map((perm) => ({
@@ -231,10 +231,10 @@ export function RoleManagement() {
       }
 
       // Delete existing permissions and add new ones
-      await (supabase as any).from('tenant_role_permissions').delete().eq('role_id', id).eq('tenant_id', tenantId);
+      await supabase.from('tenant_role_permissions').delete().eq('role_id', id).eq('tenant_id', tenantId);
 
       if (data.permissions.length > 0) {
-        const { error: permError } = await (supabase as any)
+        const { error: permError } = await supabase
           .from('tenant_role_permissions')
           .insert(
             data.permissions.map((perm) => ({

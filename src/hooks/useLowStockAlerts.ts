@@ -76,7 +76,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       if (!tenant?.id) return [];
 
       // First try to fetch from stock_alerts table
-      const { data: alerts, error: alertError } = await (supabase as any)
+      const { data: alerts, error: alertError } = await supabase
         .from('stock_alerts')
         .select('id, product_id, product_name, current_quantity, threshold, severity')
         .eq('tenant_id', tenant.id)
@@ -108,7 +108,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       }
 
       // Fallback: fetch from products table
-      const { data: products, error: fetchError } = await (supabase as any)
+      const { data: products, error: fetchError } = await supabase
         .from('products')
         .select('id, name, stock_quantity, available_quantity, low_stock_alert, category')
         .eq('tenant_id', tenant.id)

@@ -38,7 +38,7 @@ export function useDashboardActivity() {
       // Run queries in parallel using typed any to avoid deep instantiation
       const [ordersResult, customersResult, menusResult, deliveriesResult] = await Promise.allSettled([
         // Recent orders (last 10)
-        (supabase as any)
+        supabase
           .from('orders')
           .select('id, status, total_amount, created_at, customer_name')
           .eq('tenant_id', tenantId)
@@ -46,7 +46,7 @@ export function useDashboardActivity() {
           .limit(10),
 
         // Recent customers (last 5) - use first_name, last_name instead of name
-        (supabase as any)
+        supabase
           .from('customers')
           .select('id, first_name, last_name, email, created_at')
           .eq('tenant_id', tenantId)
@@ -54,7 +54,7 @@ export function useDashboardActivity() {
           .limit(5),
 
         // Recent menus (last 5)
-        (supabase as any)
+        supabase
           .from('disposable_menus')
           .select('id, name, status, created_at, burned_at')
           .eq('tenant_id', tenantId)
@@ -62,7 +62,7 @@ export function useDashboardActivity() {
           .limit(5),
 
         // Recent deliveries (last 5)
-        (supabase as any)
+        supabase
           .from('wholesale_deliveries')
           .select('id, status, created_at, order_id')
           .eq('tenant_id', tenantId)

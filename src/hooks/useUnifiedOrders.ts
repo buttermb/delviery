@@ -146,7 +146,7 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      let query = (supabase as any)
+      let query = supabase
         .from('unified_orders')
         .select(`
           *,
@@ -332,7 +332,7 @@ export function useCreateUnifiedOrder() {
         p_metadata: JSON.parse(JSON.stringify(input.metadata || {})),
       };
 
-      const { data: orderId, error } = await (supabase as any).rpc('create_unified_order', rpcParams);
+      const { data: orderId, error } = await supabase.rpc('create_unified_order', rpcParams);
 
       if (error) {
         logger.error('Failed to create order', { error });
@@ -512,7 +512,7 @@ export function useUpdateOrderStatus() {
                 .eq('tenant_id', tenant.id);
 
               // Log to inventory_history
-              await (supabase as any)
+              await supabase
                 .from('inventory_history')
                 .insert({
                   tenant_id: tenant.id,
@@ -585,7 +585,7 @@ export function useUpdateOrderStatus() {
                 .eq('tenant_id', tenant.id);
 
               // Log to inventory_history
-              await (supabase as any)
+              await supabase
                 .from('inventory_history')
                 .insert({
                   tenant_id: tenant.id,
@@ -797,7 +797,7 @@ export function useCancelOrder() {
 
       // Reverse balance if requested and is wholesale order
       if (reverseBalance && order.order_type === 'wholesale' && order.wholesale_client_id) {
-        await (supabase as any).rpc('update_contact_balance', {
+        await supabase.rpc('update_contact_balance', {
           p_contact_id: order.wholesale_client_id,
           p_amount: order.total_amount,
           p_operation: 'subtract',
@@ -838,7 +838,7 @@ export function useCancelOrder() {
               .eq('tenant_id', tenant.id);
 
             // Log to inventory_history
-            await (supabase as any)
+            await supabase
               .from('inventory_history')
               .insert({
                 tenant_id: tenant.id,

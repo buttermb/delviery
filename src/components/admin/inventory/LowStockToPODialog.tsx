@@ -109,7 +109,7 @@ export function LowStockToPODialog({
       if (!tenantId) return [];
 
       // Fetch products below low stock threshold with vendor info
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select(
           'id, name, category, available_quantity, stock_quantity, low_stock_alert, vendor_id, vendor_name, cost_per_unit, reorder_quantity'

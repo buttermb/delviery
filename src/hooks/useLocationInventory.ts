@@ -37,7 +37,7 @@ export function useLocationInventory(locationId?: string) {
     queryFn: async (): Promise<LocationInventoryItem[]> => {
       if (!tenant?.id || !locationId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('location_inventory')
         .select(`
           id,

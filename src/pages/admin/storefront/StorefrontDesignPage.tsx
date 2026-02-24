@@ -35,7 +35,7 @@ export function StorefrontDesignPage() {
         queryKey: queryKeys.marketplaceSettings.byTenant(tenant?.id),
         queryFn: async (): Promise<MarketplaceStore | null> => {
             try {
-                const { data, error } = await (supabase as any)
+                const { data, error } = await supabase
                     .from('marketplace_stores')
                     .select('*')
                     .eq('tenant_id', tenant?.id || '')

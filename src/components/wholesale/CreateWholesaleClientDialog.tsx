@@ -101,7 +101,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                 return;
             }
 
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('wholesale_clients')
                 .insert({
                     tenant_id: tenant.id,
@@ -138,7 +138,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                 address: ''
             });
             onClose();
-        } catch (error: any) {
+        } catch (error: unknown) {
             logger.error('Failed to create client:', error);
             toast.error(humanizeError(error, 'Failed to create client'));
         } finally {

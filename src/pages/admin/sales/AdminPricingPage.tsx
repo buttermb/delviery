@@ -37,7 +37,7 @@ export default function AdminPricingPage() {
     queryFn: async () => {
       if (!tenantId) return [];
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select('id, name, price, wholesale_price, cost_per_unit, bulk_discount, category')
         .eq('tenant_id', tenantId)

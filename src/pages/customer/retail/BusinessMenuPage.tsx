@@ -78,7 +78,7 @@ export default function BusinessMenuPage() {
     queryFn: async () => {
       if (!targetBusinessSlug) return null;
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('tenants')
         .select('id, business_name, slug, white_label(*)')
         .eq('slug', targetBusinessSlug)
@@ -102,7 +102,7 @@ export default function BusinessMenuPage() {
     queryFn: async () => {
       if (!businessId) return [];
 
-      let query = (supabase as any)
+      let query = supabase
         .from('products')
         .select('*')
         .eq('tenant_id', businessId)
@@ -132,7 +132,7 @@ export default function BusinessMenuPage() {
     queryFn: async () => {
       if (!businessId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select('category')
         .eq('tenant_id', businessId)

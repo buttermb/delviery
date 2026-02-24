@@ -110,7 +110,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
     if (!tenant?.id) return;
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('delivery_zones')
         .delete()
         .eq('tenant_id', tenant.id)

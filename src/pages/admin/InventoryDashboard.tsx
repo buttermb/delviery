@@ -134,7 +134,7 @@ export default function InventoryDashboard() {
         };
       }
 
-      const { data: products, error } = await (supabase as any)
+      const { data: products, error } = await supabase
         .from('products')
         .select('id, stock_quantity, price, min_stock_level, in_stock')
         .eq('tenant_id', tenantId);
@@ -214,7 +214,7 @@ export default function InventoryDashboard() {
     queryFn: async (): Promise<StockDistribution[]> => {
       if (!tenantId) return [];
 
-      const { data: products, error } = await (supabase as any)
+      const { data: products, error } = await supabase
         .from('products')
         .select('stock_quantity, min_stock_level')
         .eq('tenant_id', tenantId);
@@ -265,7 +265,7 @@ export default function InventoryDashboard() {
     queryFn: async (): Promise<LowStockProduct[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select('id, name, sku, stock_quantity, price, category, min_stock_level')
         .eq('tenant_id', tenantId)

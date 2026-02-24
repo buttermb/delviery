@@ -145,7 +145,11 @@ export async function decryptJSON<T extends object>(
   key: CryptoKey
 ): Promise<T> {
   const decrypted = await decryptData(encryptedData, key);
-  return JSON.parse(decrypted) as T;
+  try {
+    return JSON.parse(decrypted) as T;
+  } catch {
+    throw new Error('Failed to parse decrypted data as JSON');
+  }
 }
 
 /**

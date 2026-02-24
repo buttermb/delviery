@@ -33,6 +33,7 @@ export function LocationMapWidget() {
       count: number;
       lat: number;
       lng: number;
+      isEstimated: boolean;
     }>;
     runners: Array<{
       id: string;
@@ -40,6 +41,7 @@ export function LocationMapWidget() {
       status: string;
       lat: number;
       lng: number;
+      isEstimated: boolean;
     }>;
   }
 
@@ -72,7 +74,7 @@ export function LocationMapWidget() {
       }, {});
 
       // Get active runners with location data
-      const { data: runners, error: runnersError } = await (supabase as any)
+      const { data: runners, error: runnersError } = await supabase
         .from('wholesale_runners')
         .select('id, full_name, status, current_lat, current_lng')
         .eq('account_id', account.id)
@@ -94,7 +96,7 @@ export function LocationMapWidget() {
           lng: BASE_LNG + getDeterministicOffset(name + '_lng'),
           isEstimated: true,
         })),
-        runners: (runners || []).map((runner: any) => ({
+        runners: (runners || []).map((runner: { id: string; full_name: string; status: string; current_lat: number | null; current_lng: number | null }) => ({
           id: runner.id,
           full_name: runner.full_name,
           status: runner.status,
@@ -163,7 +165,7 @@ export function LocationMapWidget() {
                 <Badge variant="outline" className="bg-success/10 text-success">
                   Active
                 </Badge>
-                {(wh as any).isEstimated && (
+                {wh.isEstimated && (
                   <Badge variant="outline" className="bg-warning/10 text-warning text-xs">
                     Estimated Location
                   </Badge>
@@ -190,7 +192,7 @@ export function LocationMapWidget() {
                 <Badge variant="outline" className="bg-info/10 text-info">
                   Active
                 </Badge>
-                {(runner as any).isEstimated && (
+                {runner.isEstimated && (
                   <Badge variant="outline" className="bg-warning/10 text-warning text-xs">
                     Estimated
                   </Badge>

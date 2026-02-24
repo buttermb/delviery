@@ -32,8 +32,11 @@ export function RecentItemsWidget() {
                     {items.map((item) => (
                         <div
                             key={`${item.type}-${item.id}`}
-                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group"
+                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             onClick={() => navigate(item.path)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(item.path); } }}
                         >
                             <div className="p-2 bg-background rounded-md shadow-sm group-hover:shadow transition-shadow">
                                 {getIcon(item.type)}

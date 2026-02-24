@@ -31,7 +31,7 @@ export default function DataExport() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('data_exports')
           .select('*')
           .eq('tenant_id', tenantId)
@@ -71,7 +71,7 @@ export default function DataExport() {
       toast.success("Preparing ${exportType} export...");
 
       // 1. Create Job Record
-      const { data: job, error: dbError } = await (supabase as any)
+      const { data: job, error: dbError } = await supabase
         .from('data_exports')
         .insert({
           tenant_id: tenantId,

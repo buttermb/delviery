@@ -22,7 +22,6 @@ import {
   DragEndEvent,
   DragStartEvent,
   DragOverlay,
-  DragOverEvent,
   UniqueIdentifier,
 } from '@dnd-kit/core';
 import {
@@ -41,7 +40,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';

@@ -148,7 +148,7 @@ export function OrderDeliveryStatusSync({
     queryFn: async (): Promise<DeliveryRecord | null> => {
       if (!tenant?.id || !orderId) return null;
 
-      const { data, error: fetchError } = await (supabase as any)
+      const { data, error: fetchError } = await supabase
         .from('deliveries')
         .select(`
           id,

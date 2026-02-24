@@ -25,7 +25,7 @@ export const orderFlowManager = {
     async transitionOrderStatus(orderId: string, newStatus: OrderStatus, tenantId: string): Promise<void> {
         try {
             // Fetch current status
-            const { data: order, error: fetchError } = await (supabase as any)
+            const { data: order, error: fetchError } = await supabase
                 .from('disposable_menu_orders')
                 .select('status')
                 .eq('id', orderId)
@@ -41,7 +41,7 @@ export const orderFlowManager = {
             }
 
             // Update status
-            const { error: updateError } = await (supabase as any)
+            const { error: updateError } = await supabase
                 .from('disposable_menu_orders')
                 .update({
                     status: newStatus,

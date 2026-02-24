@@ -134,7 +134,7 @@ export function BulkInventoryModal({
           if (updateError) throw updateError;
 
           // Record inventory movement history entry
-           const { error: historyError } = await (supabase as any)
+           const { error: historyError } = await supabase
             .from("wholesale_inventory_movements")
             .insert({
               tenant_id: tenant.id,

@@ -38,7 +38,7 @@ export function useTenantFeatureToggles(): UseTenantFeatureTogglesReturn {
       if (!tenantId) return {};
 
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('tenants')
           .select('feature_toggles')
           .eq('id', tenantId)

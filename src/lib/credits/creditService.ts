@@ -195,7 +195,7 @@ export async function consumeCredits(
     // Get the cost from creditCosts
     const cost = getCreditCost(actionKey);
     
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .rpc('consume_credits', {
         p_tenant_id: tenantId,
         p_amount: cost,
@@ -419,7 +419,7 @@ export async function trackCreditEvent(
   metadata?: Record<string, unknown>
 ): Promise<void> {
   try {
-    await (supabase as any)
+    await supabase
       .from('credit_analytics')
       .insert({
         tenant_id: tenantId,

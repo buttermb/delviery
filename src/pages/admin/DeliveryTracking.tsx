@@ -18,7 +18,7 @@ export default function DeliveryTracking() {
   const { tenant } = useTenantAdminAuth();
 
   // Fetch delivery details
-  const { data: delivery, isLoading } = useQuery({
+  const { data: delivery, isLoading, isError, refetch } = useQuery({
     queryKey: ["delivery", id],
     queryFn: async () => {
       if (!tenant) return null;
@@ -56,6 +56,18 @@ export default function DeliveryTracking() {
 
   if (isLoading) {
     return <EnhancedLoadingState variant="card" message="Loading delivery details..." />;
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <AlertCircle className="h-8 w-8 text-destructive mb-2" />
+        <p className="text-sm text-muted-foreground">Failed to load delivery details. Please try again.</p>
+        <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
+          Retry
+        </Button>
+      </div>
+    );
   }
 
   if (!delivery) {

@@ -29,7 +29,7 @@ export function InventoryMovementLog() {
       if (!tenant?.id) return [];
 
       // Query wholesale_inventory_movements with product info via wholesale_inventory
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("wholesale_inventory_movements")
         .select(`
           id,

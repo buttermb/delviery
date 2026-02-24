@@ -32,7 +32,7 @@ export function StorefrontFunnel({ storeId, primaryColor = '#6366f1' }: Storefro
     queryFn: async (): Promise<FunnelData | null> => {
       try {
         const { data, error } = await supabase
-          .rpc('get_marketplace_funnel' as any, { p_store_id: storeId });
+          .rpc('get_marketplace_funnel', { p_store_id: storeId });
 
         // Function doesn't exist yet - return placeholder data
         if (error) {

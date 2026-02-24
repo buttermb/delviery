@@ -155,7 +155,7 @@ export const useQuickStats = () => {
       // Parallel fetch all stats
       const [paymentsResult, ordersResult, clientsResult, frontedResult] = await Promise.all([
         // Today's payments received
-        (supabase as any)
+        supabase
           .from('wholesale_payments')
           .select('amount')
           .eq('tenant_id', tenant.id)
@@ -230,7 +230,7 @@ export const useCashFlowPulse = () => {
         last30DaysOrdersResult
       ] = await Promise.all([
         // Today's incoming payments
-        (supabase as any)
+        supabase
           .from('wholesale_payments')
           .select('amount, created_at')
           .eq('tenant_id', tenant.id)

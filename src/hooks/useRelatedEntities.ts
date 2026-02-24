@@ -451,7 +451,7 @@ function getOrderQueries(
     {
       queryKey: [...queryKeys.orders.related(tenantId ?? '', orderId ?? ''), 'customer'],
       queryFn: async () => {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('orders')
           .select('customer_id, customer_name')
           .eq('id', orderId!)
@@ -480,7 +480,7 @@ function getOrderQueries(
     {
       queryKey: [...queryKeys.orders.related(tenantId ?? '', orderId ?? ''), 'products'],
       queryFn: async () => {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('order_items')
           .select(`
             id,
@@ -530,7 +530,7 @@ function getOrderQueries(
     {
       queryKey: [...queryKeys.orders.related(tenantId ?? '', orderId ?? ''), 'delivery'],
       queryFn: async () => {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('wholesale_deliveries')
           .select(`
             id,
@@ -581,7 +581,7 @@ function getOrderQueries(
     {
       queryKey: [...queryKeys.orders.related(tenantId ?? '', orderId ?? ''), 'payment'],
       queryFn: async () => {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('payments')
           .select('id, amount, status, payment_method, paid_at, transaction_id')
           .eq('order_id', orderId!)
@@ -693,7 +693,7 @@ function getProductQueries(
       queryKey: [...queryKeys.products.related(tenantId ?? '', productId ?? ''), 'vendor'],
       queryFn: async () => {
         // First get the product's vendor_id
-        const { data: product, error: productError } = await (supabase as any)
+        const { data: product, error: productError } = await supabase
           .from('products')
           .select('vendor_id')
           .eq('id', productId!)
@@ -709,7 +709,7 @@ function getProductQueries(
         if (!productData?.vendor_id) return null;
 
         // Fetch vendor details using suppliers table
-        const { data: vendor, error: vendorError } = await (supabase as any)
+        const { data: vendor, error: vendorError } = await supabase
           .from('suppliers')
           .select('id, company_name, email, phone, contact_name')
           .eq('id', productData.vendor_id)
@@ -804,7 +804,7 @@ function getProductQueries(
     {
       queryKey: [...queryKeys.products.related(tenantId ?? '', productId ?? ''), 'stock'],
       queryFn: async () => {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('inventory')
           .select(`
             id,

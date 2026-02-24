@@ -28,7 +28,7 @@ export default function StockAlertsPage() {
       if (!tenant?.id) return [];
 
       // Query stock_alerts table for active alerts
-      const { data: alertData, error: alertError } = await (supabase as any)
+      const { data: alertData, error: alertError } = await supabase
         .from('stock_alerts')
         .select('id, product_name, current_quantity, threshold, severity, status, created_at')
         .eq('tenant_id', tenant.id)
@@ -49,7 +49,7 @@ export default function StockAlertsPage() {
 
   // Fallback function to calculate alerts from products table
   async function fetchAlertsFromProducts(tenantId: string): Promise<StockAlertRow[]> {
-    const { data: products, error: prodError } = await (supabase as any)
+    const { data: products, error: prodError } = await supabase
       .from('products')
       .select('id, name, available_quantity, stock_quantity, low_stock_alert, updated_at')
       .eq('tenant_id', tenantId);

@@ -60,7 +60,7 @@ export function useVendorPriceHistory(vendorId: string, productId?: string) {
     queryFn: async () => {
       if (!tenant?.id || !vendorId) return [];
 
-      const { data, error } = await (supabase as any).rpc('get_vendor_price_history', {
+      const { data, error } = await supabase.rpc('get_vendor_price_history', {
         p_tenant_id: tenant.id,
         p_vendor_id: vendorId,
         p_product_id: productId || null,
@@ -93,7 +93,7 @@ export function useVendorPriceAlerts(vendorId?: string) {
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      let query = (supabase as any)
+      let query = supabase
         .from('vendor_price_alerts')
         .select(`
           *,
@@ -134,7 +134,7 @@ export function useDismissPriceAlert() {
     mutationFn: async (alertId: string) => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('vendor_price_alerts')
         .update({
           is_dismissed: true,
@@ -175,7 +175,7 @@ export function useVendorPriceAlertSettings(vendorId: string) {
     queryFn: async () => {
       if (!tenant?.id || !vendorId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('vendor_price_alert_settings')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -212,7 +212,7 @@ export function useUpdatePriceAlertSettings() {
     }) => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('vendor_price_alert_settings')
         .upsert(
           {
@@ -269,7 +269,7 @@ export function useLogVendorPriceChange() {
       // Skip if no actual change
       if (params.costOld === params.costNew) return null;
 
-      const { data, error } = await (supabase as any).rpc('log_vendor_price_change', {
+      const { data, error } = await supabase.rpc('log_vendor_price_change', {
         p_product_id: params.productId,
         p_tenant_id: tenant.id,
         p_vendor_id: params.vendorId,
@@ -318,7 +318,7 @@ export function useProductPriceTrend(vendorId: string, productId: string) {
     queryFn: async () => {
       if (!tenant?.id || !vendorId || !productId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('pricing_history')
         .select('id, cost_per_unit_new, created_at')
         .eq('tenant_id', tenant.id)

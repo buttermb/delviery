@@ -40,7 +40,7 @@ export const useMenuSchedule = (menuId?: string) => {
     queryFn: async () => {
       if (!menuId) return null;
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('disposable_menus')
         .select(`
           id,
@@ -87,7 +87,7 @@ export const useMenuScheduleHistory = (menuId?: string) => {
     queryFn: async () => {
       if (!menuId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_schedule_history')
         .select('*')
         .eq('menu_id', menuId)
@@ -140,7 +140,7 @@ export const useUpdateMenuSchedule = () => {
       const { menuId, tenantId, activationTime, deactivationTime, isScheduled, timezone, recurrencePattern, recurrenceConfig } = scheduleData;
 
       // Update menu schedule
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('disposable_menus')
         .update({
           scheduled_activation_time: activationTime,
@@ -159,7 +159,7 @@ export const useUpdateMenuSchedule = () => {
       }
 
       // Log the schedule update
-      await (supabase as any)
+      await supabase
         .from('menu_schedule_history')
         .insert({
           menu_id: menuId,
@@ -204,7 +204,7 @@ export const useCancelMenuSchedule = () => {
 
   return useMutation({
     mutationFn: async ({ menuId, tenantId }: { menuId: string; tenantId: string }) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('disposable_menus')
         .update({
           is_scheduled: false,
@@ -222,7 +222,7 @@ export const useCancelMenuSchedule = () => {
       }
 
       // Log the cancellation
-      await (supabase as any)
+      await supabase
         .from('menu_schedule_history')
         .insert({
           menu_id: menuId,
@@ -255,7 +255,7 @@ export const useScheduledMenus = (tenantId?: string) => {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('disposable_menus')
         .select(`
           id,

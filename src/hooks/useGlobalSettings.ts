@@ -133,7 +133,7 @@ export function useGlobalSettings() {
 
       const currentMetadata = ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>) || {};
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('accounts')
         .update({
           company_name: updates.companyName ?? account.company_name,
@@ -199,7 +199,7 @@ export function useGlobalSettings() {
       const currentNotifSettings = (accountSettings?.notification_settings as Partial<NotificationSettings>) || {};
 
       if (accountSettings) {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('account_settings')
           .update({
             notification_settings: {
@@ -212,7 +212,7 @@ export function useGlobalSettings() {
         if (error) throw error;
       } else {
         // Create new account settings record
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('account_settings')
           .insert([{
             account_id: account.id,

@@ -50,7 +50,7 @@ export function useKnownDevices(userId?: string) {
     queryKey: queryKeys.security.knownDevices(userId),
     queryFn: async () => {
       if (!userId) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('user_known_devices')
         .select('*')
         .eq('user_id', userId)
@@ -66,7 +66,7 @@ export function useKnownDevices(userId?: string) {
     queryKey: queryKeys.security.suspiciousAlerts(userId),
     queryFn: async () => {
       if (!userId) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('suspicious_login_alerts')
         .select('*')
         .eq('user_id', userId)
@@ -81,7 +81,7 @@ export function useKnownDevices(userId?: string) {
 
   const trustDeviceMutation = useMutation({
     mutationFn: async (deviceId: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('user_known_devices')
         .update({ is_trusted: true, trust_confirmed_at: new Date().toISOString() })
         .eq('id', deviceId);
@@ -101,7 +101,7 @@ export function useKnownDevices(userId?: string) {
 
   const untrustDeviceMutation = useMutation({
     mutationFn: async (deviceId: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('user_known_devices')
         .update({ is_trusted: false, trust_confirmed_at: null })
         .eq('id', deviceId);
@@ -121,7 +121,7 @@ export function useKnownDevices(userId?: string) {
 
   const removeDeviceMutation = useMutation({
     mutationFn: async (deviceId: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('user_known_devices')
         .delete()
         .eq('id', deviceId);

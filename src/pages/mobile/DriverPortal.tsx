@@ -106,7 +106,7 @@ export default function DriverPortal() {
         totalOwed,
         nearestDueDate,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(humanizeError(error, "Failed to load data"));
     } finally {
       setLoading(false);

@@ -19,7 +19,7 @@ export function UnreadIndicator({ userId, tenantId, className }: UnreadIndicator
     const { data: unreadCount = 0, refetch } = useQuery({
         queryKey: queryKeys.chat.unread.count(userId, tenantId),
         queryFn: async () => {
-            const { data, error } = await supabase.rpc('get_unread_message_count' as any, {
+            const { data, error } = await supabase.rpc('get_unread_message_count', {
                 p_user_id: userId,
                 p_tenant_id: tenantId || null,
             });

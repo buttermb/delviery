@@ -74,7 +74,7 @@ export function usePurchaseOrders() {
   const updatePurchaseOrderStatus = useMutation({
     mutationFn: async ({ id, status, poNumber }: { id: string; status: string; poNumber?: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('purchase_orders')
         .update({ status, updated_at: new Date().toISOString() })
         .eq('id', id)
@@ -111,11 +111,11 @@ export function usePurchaseOrders() {
     mutationFn: async ({ id, poNumber }: { id: string; poNumber?: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
       // First, delete items scoped to tenant's PO
-      await (supabase as any)
+      await supabase
         .from('purchase_order_items').delete().eq('purchase_order_id', id);
 
       // Then delete the PO
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('purchase_orders').delete().eq('id', id).eq('tenant_id', tenant.id);
       if (error) throw error;
       return { id, poNumber };

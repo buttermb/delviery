@@ -238,7 +238,7 @@ export function useStorefrontBuilder() {
     // Create store mutation
     const createStoreMutation = useMutation({
         mutationFn: async (data: { storeName: string; slug: string }) => {
-            const { data: newStore, error } = await (supabase as any)
+            const { data: newStore, error } = await supabase
                 .from('marketplace_stores')
                 .insert({
                     tenant_id: tenant?.id!,
@@ -299,7 +299,7 @@ export function useStorefrontBuilder() {
     const saveDraftMutation = useMutation({
         mutationFn: async () => {
             const configPayload = JSON.parse(JSON.stringify(layoutConfig));
-            const { error } = await (supabase as any)
+            const { error } = await supabase
                 .from('marketplace_stores')
                 .update({
                     layout_config: configPayload,
@@ -330,7 +330,7 @@ export function useStorefrontBuilder() {
     const publishMutation = useMutation({
         mutationFn: async () => {
             const configPayload = JSON.parse(JSON.stringify(layoutConfig));
-            const { error } = await (supabase as any)
+            const { error } = await supabase
                 .from('marketplace_stores')
                 .update({
                     layout_config: configPayload,

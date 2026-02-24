@@ -77,7 +77,7 @@ export function useStorefrontOrders({
     queryFn: async (): Promise<StorefrontOrder[]> => {
       if (!storeId || !customerId) return [];
 
-      let query = (supabase as any)
+      let query = supabase
         .from('marketplace_orders')
         .select('*')
         .eq('store_id', storeId)
@@ -154,7 +154,7 @@ export function useStorefrontOrders({
         throw new Error('Only pending or confirmed orders can be cancelled');
       }
 
-      const { error: cancelError } = await (supabase as any)
+      const { error: cancelError } = await supabase
         .from('marketplace_orders')
         .update({
           status: 'cancelled',
@@ -225,7 +225,7 @@ export function useStorefrontOrderByToken(trackingToken: string | undefined) {
     queryFn: async (): Promise<StorefrontOrder | null> => {
       if (!trackingToken) return null;
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .rpc('get_marketplace_order_by_token', {
           p_tracking_token: trackingToken,
         });

@@ -124,7 +124,7 @@ export default function StoreProductPage() {
     queryFn: async (): Promise<StoreData | null> => {
       if (!slug) return null;
 
-      const { data, error } = await (supabase as any).rpc(
+      const { data, error } = await supabase.rpc(
         'get_marketplace_store_by_slug',
         { p_slug: slug }
       );
@@ -153,7 +153,7 @@ export default function StoreProductPage() {
     queryFn: async (): Promise<ProductDetail | null> => {
       if (!store?.tenant_id || !id) return null;
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select(
           'product_id, product_name, category, strain_type, price, sale_price, image_url, images, thc_content, cbd_content, thca_percentage, description, effects, terpenes, consumption_methods, medical_benefits, strain_name, strain_lineage, usage_tips, lab_results_url, lab_name, test_date, coa_url, coa_pdf_url, in_stock, display_order'
@@ -181,7 +181,7 @@ export default function StoreProductPage() {
     queryFn: async (): Promise<RelatedProduct[]> => {
       if (!store?.tenant_id || !product?.category) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select(
           'product_id, product_name, category, strain_type, price, sale_price, image_url, thc_content, cbd_content'

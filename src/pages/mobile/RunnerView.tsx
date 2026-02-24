@@ -143,7 +143,7 @@ export default function RunnerView() {
       if (!runnerId) return [];
 
       // Query orders assigned to this runner/courier
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('orders')
         .select(`
           id,

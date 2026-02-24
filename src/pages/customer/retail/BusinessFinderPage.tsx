@@ -64,7 +64,7 @@ export default function BusinessFinderPage() {
   const { data: businesses = [], isLoading } = useQuery({
     queryKey: queryKeys.retailBusinesses.list(stateFilter, deliveryFilter),
     queryFn: async () => {
-      const query = (supabase as any)
+      const query = supabase
         .from('tenants')
         .select(`
           id,

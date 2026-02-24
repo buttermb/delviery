@@ -93,7 +93,7 @@ export function ActivityFeedWidget() {
       });
 
       // Recent customers (simplified - basic fields only)
-      const { data: customers, error: customersError } = await (supabase as any)
+      const { data: customers, error: customersError } = await supabase
         .from('customers')
         .select('id, email, created_at')
         .eq('tenant_id', tenant.id)

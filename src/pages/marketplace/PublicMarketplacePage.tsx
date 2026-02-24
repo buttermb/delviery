@@ -43,7 +43,7 @@ export default function PublicMarketplacePage() {
   const { data: listings = [], isLoading } = useQuery({
     queryKey: queryKeys.marketplaceListings.public(productTypeFilter, strainTypeFilter),
     queryFn: async () => {
-      let query = (supabase as any)
+      let query = supabase
         .from('marketplace_listings')
         .select(`
           *,

@@ -65,7 +65,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('webhooks')
           .select('*')
           .eq('tenant_id', tenantId)

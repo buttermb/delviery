@@ -250,7 +250,7 @@ export function SignupPage() {
 
       // If creating a new tenant
       if (data.tenantMode === 'create' && data.businessName) {
-        const { error: tenantError } = await (supabase as any)
+        const { error: tenantError } = await supabase
           .from('tenants')
           .insert({
             business_name: data.businessName,
@@ -269,7 +269,7 @@ export function SignupPage() {
         }
 
         // Create tenant_users record
-        const { error: tenantUserError } = await (supabase as any)
+        const { error: tenantUserError } = await supabase
           .from('tenant_users')
           .insert({
             email: step1Data.email,

@@ -39,7 +39,7 @@ export async function logAuditEvent(event: AuditLogEvent): Promise<void> {
     // Get IP address from browser
     const ipAddress = await getClientIP();
 
-    const { error } = await (supabase as any).from('audit_logs').insert({
+    const { error } = await supabase.from('audit_logs').insert({
       user_id: user.id,
       actor_type: actorType,
       action: event.action,

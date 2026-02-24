@@ -283,7 +283,7 @@ export function StorefrontBuilder({
         queryKey: queryKeys.marketplaceSettings.byTenant(tenant?.id),
         queryFn: async (): Promise<MarketplaceStore> => {
             try {
-                const { data, error } = await (supabase as any)
+                const { data, error } = await supabase
                     .from('marketplace_stores')
                     .select('*')
                     .eq('tenant_id', tenant?.id || '')
@@ -409,7 +409,7 @@ export function StorefrontBuilder({
 
         setIsValidatingSlug(true);
         try {
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('marketplace_stores')
                 .select('id')
                 .eq('slug', slug)
@@ -446,7 +446,7 @@ export function StorefrontBuilder({
     // Create store mutation (deducts 500 credits)
     const createStoreMutation = useMutation({
         mutationFn: async (data: { storeName: string; slug: string }) => {
-            const { data: newStore, error } = await (supabase as any)
+            const { data: newStore, error } = await supabase
                 .from('marketplace_stores')
                 .insert({
                     tenant_id: tenant?.id,

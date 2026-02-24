@@ -102,7 +102,7 @@ export default function DeliveryDashboard() {
     queryFn: async (): Promise<DeliveryOrder[]> => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('orders')
         .select(`
           id,

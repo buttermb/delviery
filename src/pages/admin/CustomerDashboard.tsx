@@ -198,7 +198,7 @@ function useRecentCustomerActivity(tenantId: string | undefined) {
       const customerIds = Array.from(customerMap.keys());
       if (customerIds.length === 0) return [];
 
-      const { data: customers } = await (supabase as any)
+      const { data: customers } = await supabase
         .from('contacts')
         .select('id, first_name, last_name, name, email')
         .eq('tenant_id', tenantId)

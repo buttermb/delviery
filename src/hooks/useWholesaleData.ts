@@ -47,7 +47,7 @@ export const useWholesaleOrders = () => {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("wholesale_orders")
         .select(`
           id, tenant_id, client_id, runner_id, order_number, status, total_amount, created_at,
@@ -422,7 +422,7 @@ export const useWholesalePayments = () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
       // Use JOIN to fetch client data in a single query (eliminates N+1 pattern)
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("wholesale_payments")
         .select("id, client_id, amount, payment_method, payment_date, reference_number, notes, status, created_at, client:wholesale_clients(business_name)")
         .eq("tenant_id", tenant.id)
@@ -446,7 +446,7 @@ export const useWholesaleDeliveries = () => {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("wholesale_deliveries")
         .select(`
           id, tenant_id, order_id, runner_id, status, current_location, notes, created_at,

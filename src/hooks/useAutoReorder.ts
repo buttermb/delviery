@@ -155,7 +155,7 @@ export function useAutoReorder(): AutoReorderSummary {
       if (!tenantId) return [];
 
       // Fetch products at or below low stock threshold
-      const { data: products, error: productsError } = await (supabase as any)
+      const { data: products, error: productsError } = await supabase
         .from('products')
         .select('id, name, sku, category, available_quantity, stock_quantity, low_stock_alert, vendor_id, vendor_name, cost_per_unit')
         .eq('tenant_id', tenantId)
@@ -177,7 +177,7 @@ export function useAutoReorder(): AutoReorderSummary {
 
       const productIds = products.map((p) => p.id);
 
-      const { data: salesData, error: salesError } = await (supabase as any)
+      const { data: salesData, error: salesError } = await supabase
         .from('order_items')
         .select('product_id, quantity, created_at')
         .in('product_id', productIds)
@@ -306,7 +306,7 @@ export function useProductReorder(productId: string | undefined): ProductReorder
       if (!tenantId || !productId) return null;
 
       // Fetch product
-      const { data: product, error: productError } = await (supabase as any)
+      const { data: product, error: productError } = await supabase
         .from('products')
         .select('id, name, sku, category, available_quantity, stock_quantity, low_stock_alert, vendor_id, vendor_name, cost_per_unit')
         .eq('id', productId)
@@ -332,7 +332,7 @@ export function useProductReorder(productId: string | undefined): ProductReorder
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const { data: salesData } = await (supabase as any)
+      const { data: salesData } = await supabase
         .from('order_items')
         .select('quantity, created_at')
         .eq('product_id', productId)

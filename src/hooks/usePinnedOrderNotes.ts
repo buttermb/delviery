@@ -71,7 +71,7 @@ export function usePinnedOrderNotes() {
       if (!tenantId) return [];
 
       // Query order_notes with is_pinned = true
-      const { data, error: fetchError } = await (supabase as any)
+      const { data, error: fetchError } = await supabase
         .from('order_notes')
         .select(`
           id,
@@ -121,7 +121,7 @@ export function usePinnedOrderNotes() {
         throw new Error('Missing required data');
       }
 
-      const { error: updateError } = await (supabase as any)
+      const { error: updateError } = await supabase
         .from('order_notes')
         .update({
           is_pinned: true,
@@ -153,7 +153,7 @@ export function usePinnedOrderNotes() {
         throw new Error('Missing tenant ID');
       }
 
-      const { error: updateError } = await (supabase as any)
+      const { error: updateError } = await supabase
         .from('order_notes')
         .update({
           is_pinned: false,

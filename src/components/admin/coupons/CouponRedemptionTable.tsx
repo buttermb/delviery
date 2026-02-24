@@ -69,7 +69,7 @@ export function CouponRedemptionTable({ className, maxRows }: CouponRedemptionTa
 
       try {
         // Fetch all coupons for this tenant
-        const couponsResult = await (supabase as any)
+        const couponsResult = await supabase
           .from('coupon_codes')
           .select('*')
           .eq('tenant_id', tenant.id);

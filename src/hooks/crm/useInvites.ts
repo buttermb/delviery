@@ -57,7 +57,7 @@ export function useCreateInvite() {
                 throw new Error('Account ID is required to create an invite');
             }
 
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('crm_invites')
                 .insert({
                     account_id: finalAccountId,

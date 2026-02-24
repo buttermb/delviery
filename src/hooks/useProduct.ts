@@ -63,7 +63,7 @@ export function useProductInventoryHistory(productId: string | undefined) {
                 return [];
             }
 
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('inventory_history')
                 .select('*')
                 .eq('product_id', productId)
@@ -163,7 +163,7 @@ export function useProductInventoryChart(productId: string | undefined, timeRang
             const daysBack = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
             const startDate = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
 
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('inventory_history')
                 .select('id, created_at, quantity_change, movement_type, notes')
                 .eq('product_id', productId)
@@ -180,7 +180,7 @@ export function useProductInventoryChart(productId: string | undefined, timeRang
             const chartData: InventoryChartDataPoint[] = [];
 
             // First, calculate starting quantity by getting all history before start date
-            const { data: priorHistory } = await (supabase as any)
+            const { data: priorHistory } = await supabase
                 .from('inventory_history')
                 .select('quantity_change')
                 .eq('product_id', productId)

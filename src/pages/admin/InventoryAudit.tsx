@@ -124,7 +124,7 @@ export default function InventoryAudit() {
       if (!tenant?.id) return [];
 
       // Query inventory_history for audit entries grouped by date
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('inventory_history')
         .select('id, tenant_id, created_at, performed_by, notes')
         .eq('tenant_id', tenant.id)
@@ -268,7 +268,7 @@ export default function InventoryAudit() {
       }));
 
       // Insert history entries
-      const { error: historyError } = await (supabase as any)
+      const { error: historyError } = await supabase
         .from('inventory_history')
         .insert(historyEntries);
 

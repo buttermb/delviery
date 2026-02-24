@@ -73,7 +73,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
         const profilesMap: Record<string, any> = {};
 
         if (userIds.length > 0) {
-          const { data: profiles } = await (supabase as any)
+          const { data: profiles } = await supabase
             .from('profiles')
             .select('user_id, full_name, email')
             .in('user_id', userIds);
@@ -88,7 +88,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
       }
 
       // Default fallback for other types
-      let baseQuery = (supabase as any)
+      let baseQuery = supabase
         .from(exportType as any)
         .select('*')
         .eq('tenant_id', tenantId)

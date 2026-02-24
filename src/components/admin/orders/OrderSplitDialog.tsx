@@ -218,7 +218,7 @@ export function OrderSplitDialog({
         },
       };
 
-      const { data: newOrder, error: createError } = await (supabase as any)
+      const { data: newOrder, error: createError } = await supabase
         .from('unified_orders')
         .insert(newOrderData)
         .select('id, order_number')

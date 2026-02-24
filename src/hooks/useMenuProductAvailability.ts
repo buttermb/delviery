@@ -110,7 +110,7 @@ export const useMenuProductAvailabilityRules = (menuId?: string, tenantId?: stri
     queryFn: async (): Promise<AvailabilityRule[]> => {
       if (!menuId || !tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_product_availability_rules')
         .select('*')
         .eq('menu_id', menuId)
@@ -142,7 +142,7 @@ export const useProductAvailabilityRules = (
     queryFn: async (): Promise<AvailabilityRule[]> => {
       if (!menuId || !productId || !tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_product_availability_rules')
         .select('*')
         .eq('menu_id', menuId)
@@ -197,7 +197,7 @@ export const useCreateAvailabilityRule = () => {
         insertData.bundle_product_ids = input.bundleProductIds;
       }
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_product_availability_rules')
         .insert(insertData)
         .select()
@@ -239,7 +239,7 @@ export const useUpdateAvailabilityRule = () => {
       if (input.hideWhenUnavailable !== undefined) updateData.hide_when_unavailable = input.hideWhenUnavailable;
       if (input.unavailableMessage !== undefined) updateData.unavailable_message = input.unavailableMessage;
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_product_availability_rules')
         .update(updateData)
         .eq('id', input.id)
@@ -272,7 +272,7 @@ export const useDeleteAvailabilityRule = () => {
 
   return useMutation({
     mutationFn: async ({ id, tenantId }: { id: string; tenantId: string }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_product_availability_rules')
         .delete()
         .eq('id', id)
@@ -312,7 +312,7 @@ export const useIncrementRuleQuantity = () => {
       quantity?: number;
     }) => {
       // First get current quantity
-      const { data: current, error: fetchError } = await (supabase as any)
+      const { data: current, error: fetchError } = await supabase
         .from('menu_product_availability_rules')
         .select('current_quantity_used')
         .eq('id', ruleId)
@@ -324,7 +324,7 @@ export const useIncrementRuleQuantity = () => {
       const currentUsed = (current?.current_quantity_used as number) || 0;
 
       // Update with incremented quantity
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_product_availability_rules')
         .update({ current_quantity_used: currentUsed + quantity })
         .eq('id', ruleId)
@@ -354,7 +354,7 @@ export const useResetRuleQuantities = () => {
 
   return useMutation({
     mutationFn: async ({ menuId, tenantId }: { menuId: string; tenantId: string }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_product_availability_rules')
         .update({ current_quantity_used: 0 })
         .eq('menu_id', menuId)

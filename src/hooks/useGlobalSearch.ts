@@ -158,7 +158,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
             .limit(limitPerCategory),
 
           // Search products
-          (supabase as any)
+          supabase
             .from('products')
             .select('id, name, sku, category, is_active')
             .eq('tenant_id', tenant.id)
@@ -166,7 +166,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
             .limit(limitPerCategory),
 
           // Search customers (profiles)
-          (supabase as any)
+          supabase
             .from('profiles')
             .select('id, user_id, full_name, phone, email')
             .eq('account_id', tenant.id)

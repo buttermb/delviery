@@ -133,7 +133,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
       });
 
       // Fetch overdue invoices (cast to any to bypass type issues)
-      const { data: overdueInvoices } = await (supabase as any)
+      const { data: overdueInvoices } = await supabase
         .from('invoices')
         .select('id, invoice_number, due_date, total, client_id')
         .eq('tenant_id', tenantId)

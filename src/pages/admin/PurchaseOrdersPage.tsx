@@ -84,7 +84,7 @@ export default function PurchaseOrdersPage() {
       if (!tenant?.id) return [];
 
       // Break type inference for complex query
-      const baseQuery: any = (supabase as any)
+      const baseQuery: any = supabase
         .from("purchase_orders")
         .select("*")
         .eq("tenant_id", tenant.id);

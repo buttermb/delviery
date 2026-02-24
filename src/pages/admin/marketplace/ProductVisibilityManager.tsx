@@ -44,7 +44,7 @@ export default function ProductVisibilityManager() {
         queryFn: async () => {
             if (!tenant?.id) return [];
 
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('marketplace_listings')
                 .select('*')
                 .eq('tenant_id', tenant.id)
@@ -61,7 +61,7 @@ export default function ProductVisibilityManager() {
         mutationFn: async ({ id, currentVisibility }: { id: string, currentVisibility: string }) => {
             if (!tenant?.id) throw new Error("No tenant");
             const newVisibility = currentVisibility === 'public' ? 'hidden' : 'public';
-            const { error } = await (supabase as any)
+            const { error } = await supabase
                 .from('marketplace_listings')
                 .update({ visibility: newVisibility })
                 .eq('id', id)
@@ -84,7 +84,7 @@ export default function ProductVisibilityManager() {
         mutationFn: async ({ id, currentStatus }: { id: string, currentStatus: string }) => {
             if (!tenant?.id) throw new Error("No tenant");
             const newStatus = currentStatus === 'active' ? 'draft' : 'active';
-            const { error } = await (supabase as any)
+            const { error } = await supabase
                 .from('marketplace_listings')
                 .update({ status: newStatus })
                 .eq('id', id)

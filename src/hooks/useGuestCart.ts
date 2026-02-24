@@ -1,4 +1,3 @@
-import { logger } from '@/lib/logger';
 import { safeStorage } from '@/utils/safeStorage';
 import { useState, useEffect } from 'react';
 
@@ -11,25 +10,25 @@ export interface GuestCartItem {
 
 const GUEST_CART_KEY = 'guest_cart';
 
+function readCartFromStorage(): GuestCartItem[] {
+  const saved = safeStorage.getItem(GUEST_CART_KEY);
+  if (!saved) return [];
+  try {
+    return JSON.parse(saved) as GuestCartItem[];
+  } catch {
+    safeStorage.removeItem(GUEST_CART_KEY);
+    return [];
+  }
+}
+
 export const useGuestCart = () => {
   const [guestCart, setGuestCart] = useState<GuestCartItem[]>([]);
 
   // Load cart from localStorage
   const loadCart = () => {
-    const savedCart = safeStorage.getItem(GUEST_CART_KEY);
-    if (savedCart) {
-      try {
-        const parsed = JSON.parse(savedCart);
-        setGuestCart(parsed);
-        return parsed;
-      } catch (e) {
-        logger.error('Failed to parse guest cart:', e);
-        safeStorage.removeItem(GUEST_CART_KEY);
-        setGuestCart([]);
-        return [];
-      }
-    }
-    return [];
+    const parsed = readCartFromStorage();
+    setGuestCart(parsed);
+    return parsed;
   };
 
   // Load cart on mount
@@ -55,8 +54,7 @@ export const useGuestCart = () => {
 
   const addToGuestCart = (productId: string, quantity: number, selectedWeight: string) => {
     // Always read fresh data from localStorage
-    const savedCart = safeStorage.getItem(GUEST_CART_KEY);
-    const currentCart = savedCart ? JSON.parse(savedCart) : [];
+    const currentCart = readCartFromStorage();
 
     const existingIndex = currentCart.findIndex(
       (item: GuestCartItem) => item.product_id === productId && item.selected_weight === selectedWeight
@@ -78,8 +76,7 @@ export const useGuestCart = () => {
 
   const updateGuestCartItem = (productId: string, selectedWeight: string, quantity: number) => {
     // Read fresh data from localStorage
-    const savedCart = safeStorage.getItem(GUEST_CART_KEY);
-    const currentCart = savedCart ? JSON.parse(savedCart) : [];
+    const currentCart = readCartFromStorage();
 
     const newCart = currentCart.map((item: GuestCartItem) =>
       item.product_id === productId && item.selected_weight === selectedWeight
@@ -92,8 +89,7 @@ export const useGuestCart = () => {
 
   const removeFromGuestCart = (productId: string, selectedWeight: string) => {
     // Read fresh data from localStorage
-    const savedCart = safeStorage.getItem(GUEST_CART_KEY);
-    const currentCart = savedCart ? JSON.parse(savedCart) : [];
+    const currentCart = readCartFromStorage();
 
     const newCart = currentCart.filter(
       (item: GuestCartItem) => !(item.product_id === productId && item.selected_weight === selectedWeight)
@@ -109,8 +105,7 @@ export const useGuestCart = () => {
 
   const getGuestCartCount = () => {
     // Always read fresh data from localStorage
-    const savedCart = safeStorage.getItem(GUEST_CART_KEY);
-    const currentCart = savedCart ? JSON.parse(savedCart) : [];
+    const currentCart = readCartFromStorage();
     return currentCart.reduce((sum: number, item: GuestCartItem) => sum + item.quantity, 0);
   };
 

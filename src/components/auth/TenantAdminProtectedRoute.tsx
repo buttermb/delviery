@@ -381,9 +381,8 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
   // Check if payment method is required and not added
   // For Clerk users, we need to fetch tenant data from Supabase
-  const tenantData = effectiveTenant as any;
-  const needsPaymentMethod = !tenantData?.payment_method_added &&
-    tenantData?.subscription_status !== 'active';
+  const needsPaymentMethod = !effectiveTenant?.payment_method_added &&
+    effectiveTenant?.subscription_status !== 'active';
   const isOnSelectPlanPage = location.pathname.includes('/select-plan');
   const isOnboardingRoute = location.pathname.includes('/admin/welcome') ||
     location.pathname.includes('/admin/onboarding');

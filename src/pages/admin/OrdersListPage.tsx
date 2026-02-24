@@ -143,7 +143,7 @@ export function OrdersListPage() {
       if (!tenant?.id) return [];
 
       // Fetch orders with extended fields
-      const { data: ordersData, error } = await (supabase as any)
+      const { data: ordersData, error } = await supabase
         .from('orders')
         .select(`
           id,
@@ -212,7 +212,7 @@ export function OrdersListPage() {
       // Fetch delivery statuses for orders
       let deliveryStatusMap: Record<string, string> = {};
       if (orderIds.length > 0) {
-        const { data: deliveriesData } = await (supabase as any)
+        const { data: deliveriesData } = await supabase
           .from('deliveries')
           .select('order_id, status')
           .in('order_id', orderIds);

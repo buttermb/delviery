@@ -85,16 +85,14 @@ export function ChatDrawer({
 
                 if (!order) throw new Error('Order not found');
 
-                const orderData = order as any;
-
                 const { data: newConv, error: createError } = await supabase
                     .from('conversations')
                     .insert({
                         order_id: orderId,
-                        store_id: orderData.store_id || null,
-                        tenant_id: tenantId || orderData.buyer_tenant_id,
-                        customer_id: orderData.buyer_user_id || null,
-                        customer_name: orderData.customer_name || null,
+                        store_id: order.store_id || null,
+                        tenant_id: tenantId || order.buyer_tenant_id,
+                        customer_id: order.buyer_user_id || null,
+                        customer_name: order.customer_name || null,
                         order_number: orderNumber,
                         status: 'active',
                     })
@@ -174,7 +172,7 @@ export function ChatDrawer({
     // Mark messages as read when drawer opens
     useEffect(() => {
         if (activeConversationId && isOpen) {
-            supabase.rpc('mark_messages_read' as any, {
+            supabase.rpc('mark_messages_read', {
                 p_conversation_id: activeConversationId,
                 p_user_id: currentUserId,
             }).then(({ error }: { error: unknown }) => {

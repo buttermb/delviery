@@ -111,8 +111,8 @@ export function EnhancedMenuDashboard() {
 
       const burned = (menus as DisposableMenu[])?.filter((m: DisposableMenu) =>
         (m.status === 'soft_burned' || m.status === 'hard_burned') &&
-        (m as any).burned_at &&
-        new Date((m as any).burned_at) >= thirtyDaysAgo
+        m.burned_at &&
+        new Date(m.burned_at) >= thirtyDaysAgo
       ) || [];
 
       return burned.slice(0, 10);

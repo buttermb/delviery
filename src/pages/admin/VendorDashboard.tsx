@@ -44,7 +44,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-import { queryKeys } from '@/lib/queryKeys';
   Table,
   TableBody,
   TableCell,
@@ -52,6 +51,7 @@ import { queryKeys } from '@/lib/queryKeys';
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { queryKeys } from '@/lib/queryKeys';
 
 // ============================================================================
 // Types

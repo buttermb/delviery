@@ -95,7 +95,7 @@ export function useOrderAuditLog(options: UseOrderAuditLogOptions = {}) {
       if (!tenantId) return [];
 
       try {
-        let query = (supabase as any)
+        let query = supabase
           .from('order_audit_log')
           .select('*')
           .eq('tenant_id', tenantId)
@@ -137,7 +137,7 @@ export function useOrderAuditLog(options: UseOrderAuditLogOptions = {}) {
     mutationFn: async (params: LogOrderAuditParams) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data: result, error: rpcError } = await (supabase as any).rpc(
+      const { data: result, error: rpcError } = await supabase.rpc(
         'log_order_audit',
         {
           p_tenant_id: tenantId,

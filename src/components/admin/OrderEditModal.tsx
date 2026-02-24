@@ -226,7 +226,7 @@ export function OrderEditModal({
         if (deleteError) throw deleteError;
 
         // Insert updated items
-        const { error: insertError } = await (supabase as any)
+        const { error: insertError } = await supabase
           .from('order_items')
           .insert(
             items.map((item) => ({
@@ -289,7 +289,7 @@ export function OrderEditModal({
 
         if (deleteError) throw deleteError;
 
-        const { error: insertError } = await (supabase as any)
+        const { error: insertError } = await supabase
           .from('wholesale_order_items')
           .insert(
             items.map((item) => ({

@@ -83,7 +83,7 @@ export function AssignToFleetDialog({
       if (!tenant?.id) throw new Error('No tenant context');
 
       const table = isWholesale ? 'wholesale_orders' : 'orders';
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from(table)
         .update({
           courier_id: courierId,

@@ -209,7 +209,7 @@ export function useToggleClientFavorite() {
   const toggleFavorite = async (clientId: string, isFavorite: boolean) => {
     if (!tenant?.id) return false;
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('wholesale_clients')
         .update({ is_favorite: isFavorite })
         .eq('id', clientId)

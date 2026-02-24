@@ -332,7 +332,7 @@ export function useBulkCustomerLTV({
       });
 
       // Fetch customers
-      let customersQuery = (supabase as any)
+      let customersQuery = supabase
         .from('contacts')
         .select('id, full_name, created_at')
         .eq('tenant_id', tenantId);

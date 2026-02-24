@@ -30,7 +30,7 @@ export function useExistingRating(trackingToken: string | undefined) {
     queryFn: async (): Promise<DeliveryRating | null> => {
       if (!trackingToken) return null;
 
-      const result = await (supabase as any)
+      const result = await supabase
         .from('delivery_ratings')
         .select('*')
         .eq('tracking_token', trackingToken)
@@ -58,7 +58,7 @@ export function useSubmitDeliveryRating() {
 
   return useMutation({
     mutationFn: async (input: CreateDeliveryRatingInput): Promise<DeliveryRating> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('delivery_ratings')
         .insert(input)
         .select('*')
@@ -102,7 +102,7 @@ export function useRecentDeliveryRatings(
     queryFn: async (): Promise<DeliveryRatingWithRunner[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('delivery_ratings')
         .select('*')
         .eq('tenant_id', tenantId)

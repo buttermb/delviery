@@ -315,7 +315,7 @@ async function fetchOrdersData(
 }
 
 async function fetchProductsData(tenantId: string): Promise<Omit<InventoryAnalytics, 'recentMovements'>> {
-  const { data: products, error } = await (supabase as any)
+  const { data: products, error } = await supabase
     .from('products')
     .select('id, name, sku, stock_quantity, low_stock_alert, price, category, in_stock')
     .eq('tenant_id', tenantId)
@@ -501,7 +501,7 @@ async function fetchPaymentsData(
   weekStart: string
 ): Promise<{ collectionsToday: number; expectedThisWeek: number }> {
   // Today's collections from wholesale_payments
-  const { data: todayPayments, error: paymentsError } = await (supabase as any)
+  const { data: todayPayments, error: paymentsError } = await supabase
     .from('wholesale_payments')
     .select('amount')
     .eq('tenant_id', tenantId)
@@ -582,7 +582,7 @@ async function fetchInventoryHistory(
   startDate: string,
   endDate: string
 ): Promise<Array<{ change_type: string; created_at: string }>> {
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('inventory_history')
     .select('change_type, created_at')
     .eq('tenant_id', tenantId)

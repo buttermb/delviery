@@ -52,7 +52,7 @@ export function useReportDataSources() {
     queryFn: async (): Promise<ReportDataSource[]> => {
       try {
         // Try to fetch from database first
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('report_data_sources')
           .select('*')
           .eq('is_active', true)

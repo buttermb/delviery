@@ -374,7 +374,7 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
   ) => {
     if (!tenantId) return;
     try {
-      await (supabase as any)
+      await supabase
         .from('subscription_events')
         .insert({
           tenant_id: tenantId,
