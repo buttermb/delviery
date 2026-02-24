@@ -44,7 +44,7 @@ export function WebhookLogs({ webhookId, limit = 10, showTitle = true }: Webhook
       if (!tenantId) return [];
 
       try {
-        let query = supabase
+        let query = (supabase as any)
           .from('webhook_logs')
           .select('*')
           .eq('tenant_id', tenantId)

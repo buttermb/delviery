@@ -314,7 +314,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       const errorCategory = (typeof errorRecord?.category === 'string' ? errorRecord.category : ErrorCategory.UNKNOWN) as string;
 
       // Log flow failure
-      authFlowLogger.failFlow(typeof errorRecord?.flowId === 'string' ? errorRecord.flowId : '', errorObj, errorCategory);
+      authFlowLogger.failFlow(typeof errorRecord?.flowId === 'string' ? errorRecord.flowId : '', errorObj, errorCategory as any);
 
       // Enhanced error logging with context
       logger.error("Customer login error", errorObj, {
@@ -326,7 +326,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       // Use getErrorMessage for user-friendly errors
-      const userMessage = getErrorMessage(errorCategory, errorObj);
+      const userMessage = getErrorMessage(errorCategory as any, errorObj);
       throw new Error(userMessage);
     }
   };

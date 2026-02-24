@@ -90,9 +90,9 @@ export function useUpdateCRMSettings() {
                     createPayload.faqs = values.faqs as unknown as Json;
                 }
 
-                const { data: newData, error: createError } = await supabase
+                const { data: newData, error: createError } = await (supabase as any)
                     .from('crm_settings')
-                    .insert(createPayload as typeof values & { account_id: string })
+                    .insert(createPayload)
                     .select()
                     .maybeSingle();
 
@@ -111,9 +111,9 @@ export function useUpdateCRMSettings() {
                 updatePayload.faqs = values.faqs as unknown as Json;
             }
 
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('crm_settings')
-                .update(updatePayload as Partial<CRMSettings>)
+                .update(updatePayload)
                 .eq('id', currentSettings.id)
                 .eq('account_id', accountId)
                 .select()

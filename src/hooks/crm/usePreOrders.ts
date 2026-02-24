@@ -60,7 +60,7 @@ export function useCreatePreOrder() {
         mutationFn: async (values: Record<string, unknown> & { account_id?: string; line_items?: LineItem[] }) => {
             const finalAccountId = values.account_id || accountId;
             if (!finalAccountId) throw new Error('Account ID required');
-            const { data, error } = await supabase.from('crm_pre_orders').insert({ ...values, account_id: finalAccountId, line_items: values.line_items }).select('*, client:crm_clients(*)').maybeSingle();
+            const { data, error } = await (supabase as any).from('crm_pre_orders').insert({ ...values, account_id: finalAccountId, line_items: values.line_items }).select('*, client:crm_clients(*)').maybeSingle();
             if (error) throw error;
             return normalizePreOrder(data);
         },
@@ -126,9 +126,9 @@ export function useConvertPreOrderToInvoice() {
             const tax_rate = invoiceData.tax_rate ?? 0;
             const tax_amount = subtotal * (tax_rate / 100);
             const total = subtotal + tax_amount;
-            const { data: invoice, error: invoiceError } = await supabase.from('crm_invoices').insert({ ...invoiceData, account_id: accountId, client_id: preOrder.client_id, line_items: preOrder.line_items, subtotal, tax_rate, tax_amount, total, status: 'draft', created_from_pre_order_id: preOrderId }).select('*').maybeSingle();
+            const { data: invoice, error: invoiceError } = await (supabase as any).from('crm_invoices').insert({ ...invoiceData, account_id: accountId, client_id: preOrder.client_id, line_items: preOrder.line_items, subtotal, tax_rate, tax_amount, total, status: 'draft', created_from_pre_order_id: preOrderId }).select('*').maybeSingle();
             if (invoiceError) throw invoiceError;
-            const { error: updateError } = await supabase.from('crm_pre_orders').update({ status: 'converted', converted_to_invoice_id: invoice.id, converted_at: new Date().toISOString() }).eq('id', preOrderId).eq('account_id', accountId);
+            const { error: updateError } = await (supabase as any).from('crm_pre_orders').update({ status: 'converted', converted_to_invoice_id: invoice.id, converted_at: new Date().toISOString() }).eq('id', preOrderId).eq('account_id', accountId);
             if (updateError) throw updateError;
             return { invoice: normalizeInvoice(invoice), preOrder: normalizePreOrder(preOrder) };
         },

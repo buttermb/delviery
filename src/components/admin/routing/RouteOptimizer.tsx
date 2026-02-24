@@ -61,7 +61,7 @@ interface OptimizedRoute {
   stops: DeliveryStop[];
   totalDistance: number; // miles
   totalTime: number; // minutes
-  geometry?: Record<string, unknown>; // GeoJSON
+  geometry?: any; // GeoJSON
 }
 
 const INITIAL_VIEW_STATE = {

@@ -141,7 +141,7 @@ const useMenuSchedules = (tenantId?: string) => {
       if (!tenantId) return [];
 
       // Use typed query to fetch from menu_schedules
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await (supabase as any)
         .from('menu_schedules')
         .select(`
           id,
@@ -312,7 +312,7 @@ const useDeleteSchedule = () => {
 
   return useMutation({
     mutationFn: async ({ id, tenantId }: { id: string; tenantId: string }) => {
-      const { error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { error } = await (supabase as any)
         .from('menu_schedules')
         .delete()
         .eq('id', id)

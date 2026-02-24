@@ -58,7 +58,7 @@ export function GiftCardLedger({ storeId, card, onBack }: GiftCardLedgerProps) {
   const { data: ledgerEntries = [], isLoading } = useQuery({
     queryKey: queryKeys.giftCards.ledger(card.id),
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('marketplace_gift_card_ledger')
         .select('*')
         .eq('gift_card_id', card.id)

@@ -94,7 +94,7 @@ export function WorkflowCanvas() {
 
   const loadWorkflows = async () => {
     try {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await (supabase as any)
         .from('workflow_definitions')
         .select('*')
         .eq('tenant_id', tenant?.id)
@@ -185,7 +185,7 @@ export function WorkflowCanvas() {
 
       if (selectedWorkflow.id) {
         // Update existing
-        const { error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        const { error } = await (supabase as any)
           .from('workflow_definitions')
           .update(workflowData)
           .eq('id', selectedWorkflow.id);
@@ -193,7 +193,7 @@ export function WorkflowCanvas() {
         if (error) throw error;
       } else {
         // Create new
-        const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        const { data, error } = await (supabase as any)
           .from('workflow_definitions')
           .insert([workflowData])
           .select()
@@ -489,7 +489,7 @@ export function WorkflowCanvas() {
                   <NodePalette onNodeDragStart={handleNodeDragStart} />
                   <div className="flex-1">
                     <VisualWorkflowEditor
-                      workflow={selectedWorkflow}
+                      workflow={selectedWorkflow as any}
                       onSave={handleVisualWorkflowSave}
                     />
                   </div>

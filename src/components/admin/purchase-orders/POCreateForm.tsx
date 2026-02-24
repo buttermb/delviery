@@ -70,7 +70,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
     queryKey: queryKeys.vendors.byTenant(tenant?.id ?? ''),
     queryFn: async () => {
       if (!tenant?.id) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("vendors")
         .select("id, name, contact_name")
         .eq("tenant_id", tenant.id)

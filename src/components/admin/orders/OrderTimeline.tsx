@@ -273,7 +273,7 @@ async function fetchOrderTimeline(
   tenantId: string,
   orderId: string
 ): Promise<ActivityLogEntry[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('activity_log')
     .select('*')
     .eq('tenant_id', tenantId)

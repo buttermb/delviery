@@ -169,7 +169,7 @@ export function ReportBuilder() {
             <Label>Chart Type</Label>
             <Select
               value={config.chartType}
-              onValueChange={(value) => setConfig({ ...config, chartType: value })}
+              onValueChange={(value) => setConfig({ ...config, chartType: value as ReportConfig['chartType'] })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select chart type" />
