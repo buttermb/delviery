@@ -204,14 +204,14 @@ export function CreditOptimizationTips({
       const { actionCounts } = usageData;
 
       // If sending lots of individual SMS, prioritize bulk SMS tip
-      if ((actionCounts['send_sms']?.count || 0) > 10) {
+      if ((actionCounts['send_sms']?.count ?? 0) > 10) {
         tips = tips.map((t) =>
           t.id === 'bulk-sms' ? { ...t, priority: 0 } : t
         );
       }
 
       // If creating many menus, prioritize menu links tip
-      if ((actionCounts['menu_create']?.count || 0) > 5) {
+      if ((actionCounts['menu_create']?.count ?? 0) > 5) {
         tips = tips.map((t) =>
           t.id === 'menu-links' ? { ...t, priority: 0 } : t
         );
@@ -219,8 +219,8 @@ export function CreditOptimizationTips({
 
       // If exporting frequently, prioritize export timing tip
       if (
-        (actionCounts['export_csv']?.count || 0) +
-        (actionCounts['export_pdf']?.count || 0) >
+        (actionCounts['export_csv']?.count ?? 0) +
+        (actionCounts['export_pdf']?.count ?? 0) >
         3
       ) {
         tips = tips.map((t) =>

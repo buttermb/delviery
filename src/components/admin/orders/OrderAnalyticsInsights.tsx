@@ -152,7 +152,7 @@ export function OrderAnalyticsInsights({
           const productCounts = new Map<string, number>();
           customerProducts.forEach((item) => {
             const name = item.product_name;
-            productCounts.set(name, (productCounts.get(name) || 0) + 1);
+            productCounts.set(name, (productCounts.get(name) ?? 0) + 1);
           });
           // Get top 5 products
           topCustomerProducts = Array.from(productCounts.entries())

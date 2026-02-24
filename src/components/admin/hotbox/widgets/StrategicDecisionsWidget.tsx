@@ -34,7 +34,7 @@ export function StrategicDecisionsWidget() {
 
             const wholesalePipelineValue = wholesalePending?.reduce(
                 (sum, o) => sum + Number(o.total_amount || 0), 0
-            ) || 0;
+            ) ?? 0;
 
             if (wholesalePipelineValue > 10000) {
                 items.push({
@@ -56,7 +56,7 @@ export function StrategicDecisionsWidget() {
 
             const inventoryValue = products?.reduce(
                 (sum, p) => sum + (Number(p.price || 0) * Number(p.stock_quantity || 0)), 0
-            ) || 0;
+            ) ?? 0;
 
             if (inventoryValue > 50000) {
                 items.push({
@@ -78,7 +78,7 @@ export function StrategicDecisionsWidget() {
 
             const arOutstanding = customerTabs?.reduce(
                 (sum, c) => sum + Number(c.balance || 0), 0
-            ) || 0;
+            ) ?? 0;
 
             if (arOutstanding > 5000) {
                 items.push({
@@ -98,7 +98,7 @@ export function StrategicDecisionsWidget() {
                 .eq('tenant_id', tenant.id)
                 .eq('status', 'active');
 
-            if ((teamSize || 0) >= 30) {
+            if ((teamSize ?? 0) >= 30) {
                 items.push({
                     id: 'team-expansion',
                     emoji: '',
@@ -135,7 +135,7 @@ export function StrategicDecisionsWidget() {
 
             const monthlyRevenue = monthlyOrders?.reduce(
                 (sum, o) => sum + Number(o.total_amount || 0), 0
-            ) || 0;
+            ) ?? 0;
 
             if (monthlyRevenue > 200000) {
                 items.push({

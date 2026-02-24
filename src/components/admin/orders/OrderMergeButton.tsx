@@ -106,7 +106,7 @@ export function OrderMergeDialog({
 
   // Calculate merged total
   const mergedTotal = useMemo(() => {
-    return mergeableOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+    return mergeableOrders.reduce((sum, order) => sum + (order.total_amount ?? 0), 0);
   }, [mergeableOrders]);
 
   // Get customer name for display
@@ -171,10 +171,10 @@ export function OrderMergeDialog({
       }
 
       // 3. Calculate new total amount
-      const newTotal = mergeableOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+      const newTotal = mergeableOrders.reduce((sum, order) => sum + (order.total_amount ?? 0), 0);
       const newSubtotal = mergeableOrders.reduce((sum, order) => {
         // Estimate subtotal if not available (total - delivery_fee typically)
-        return sum + (order.total_amount || 0);
+        return sum + (order.total_amount ?? 0);
       }, 0);
 
       // 4. Update target order with new totals

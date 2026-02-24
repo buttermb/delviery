@@ -44,8 +44,8 @@ export function ImportingStep({ progress, isLoading }: ImportingStepProps) {
       <div className="w-full max-w-md space-y-2">
         <Progress value={percentage} className="h-3" />
         <div className="flex justify-between text-sm text-muted-foreground">
-          <span>{progress?.current || 0} imported</span>
-          <span>{progress?.total || 0} total</span>
+          <span>{progress?.current ?? 0} imported</span>
+          <span>{progress?.total ?? 0} total</span>
         </div>
       </div>
 
@@ -62,7 +62,7 @@ export function ImportingStep({ progress, isLoading }: ImportingStepProps) {
               }}
             >
               <Package className="h-4 w-4 text-emerald-500" />
-              <span className="text-sm">Product {(progress?.current || 0) + i + 1}</span>
+              <span className="text-sm">Product {(progress?.current ?? 0) + i + 1}</span>
             </div>
           ))}
         </div>

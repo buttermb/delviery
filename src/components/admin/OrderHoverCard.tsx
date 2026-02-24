@@ -39,7 +39,7 @@ interface OrderHoverCardProps {
 }
 
 export function OrderHoverCard({ order, children }: OrderHoverCardProps) {
-  const itemCount = order.items?.length || 0;
+  const itemCount = order.items?.length ?? 0;
   const itemsPreview = order.items?.slice(0, 3) ?? [];
 
   return (
@@ -136,7 +136,7 @@ export function OrderHoverCard({ order, children }: OrderHoverCardProps) {
               )}
             </div>
             <span className="text-sm font-semibold">
-              {formatCurrency(order.total_amount || 0)}
+              {formatCurrency(order.total_amount ?? 0)}
             </span>
           </div>
 

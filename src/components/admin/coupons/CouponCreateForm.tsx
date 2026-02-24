@@ -73,7 +73,7 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
       setFormData({
         code: coupon.code || "",
         discount_type: (coupon.discount_type as "percentage" | "fixed") || "percentage",
-        discount_value: coupon.discount_value || 0,
+        discount_value: coupon.discount_value ?? 0,
         description: coupon.description || "",
         start_date: coupon.start_date ? new Date(coupon.start_date).toISOString().split("T")[0] : "",
         end_date: coupon.end_date ? new Date(coupon.end_date).toISOString().split("T")[0] : "",

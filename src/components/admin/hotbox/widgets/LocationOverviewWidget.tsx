@@ -39,8 +39,8 @@ export function LocationOverviewWidget() {
                         .gte('created_at', today.toISOString())
                         .not('status', 'in', '("cancelled","rejected","refunded")');
 
-                    const todayRevenue = orders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
-                    const orderCount = orders?.length || 0;
+                    const todayRevenue = orders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) ?? 0;
+                    const orderCount = orders?.length ?? 0;
 
                     // Estimate margin (simplified 25%)
                     const margin = todayRevenue > 0 ? 25 : 0;
@@ -62,7 +62,7 @@ export function LocationOverviewWidget() {
                         .lt('stock_quantity', 10)
                         .eq('status', 'active');
 
-                    const issues = (outOfStock || 0) + Math.floor((lowStock || 0) / 5);
+                    const issues = (outOfStock ?? 0) + Math.floor((lowStock ?? 0) / 5);
 
                     return {
                         id: loc.id,

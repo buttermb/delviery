@@ -86,9 +86,9 @@ export function PricingStep({ formData, updateFormData, showErrors = false }: Pr
     setTouched((prev) => ({ ...prev, [field]: true }));
   }, []);
 
-  const regularPrice = (formData.price as number) || 0;
-  const salePrice = (formData.sale_price as number) || 0;
-  const costPerUnit = (formData.cost_per_unit as number) || 0;
+  const regularPrice = (formData.price as number) ?? 0;
+  const salePrice = (formData.sale_price as number) ?? 0;
+  const costPerUnit = (formData.cost_per_unit as number) ?? 0;
 
   const profit = regularPrice - costPerUnit;
   const profitMargin = regularPrice > 0 ? ((profit / regularPrice) * 100).toFixed(1) : 0;

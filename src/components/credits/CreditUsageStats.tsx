@@ -330,13 +330,13 @@ export function CreditUsageStats({
           <div className="grid grid-cols-3 gap-4 pt-2">
             <div className="text-center">
               <p className="text-xl font-semibold">
-                {usageData?.todayUsage?.toLocaleString() || 0}
+                {usageData?.todayUsage?.toLocaleString() ?? 0}
               </p>
               <p className="text-xs text-muted-foreground">Today</p>
             </div>
             <div className="text-center">
               <p className="text-xl font-semibold">
-                {usageData?.weekUsage?.toLocaleString() || 0}
+                {usageData?.weekUsage?.toLocaleString() ?? 0}
               </p>
               <p className="text-xs text-muted-foreground">This Week</p>
               {usageData?.weekTrend !== undefined && usageData.weekTrend !== 0 && (
@@ -355,7 +355,7 @@ export function CreditUsageStats({
             </div>
             <div className="text-center">
               <p className="text-xl font-semibold">
-                {usageData?.avgDailyUsage?.toLocaleString() || 0}
+                {usageData?.avgDailyUsage?.toLocaleString() ?? 0}
               </p>
               <p className="text-xs text-muted-foreground">Daily Avg</p>
             </div>

@@ -48,7 +48,7 @@ export function BatchCategoryEditor({ open, onOpenChange, products, onApply }: B
   // Group products by current category
   const categoryCounts = products.reduce((acc, product) => {
     const category = product.category || 'uncategorized';
-    acc[category] = (acc[category] || 0) + 1;
+    acc[category] = (acc[category] ?? 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 

@@ -72,7 +72,7 @@ export const PanicModeButton = () => {
         affected_menus: activeMenus?.map(m => ({ id: m.id, name: m.name })),
         reason: reason || 'Emergency panic mode activated',
         actions_taken: {
-          menus_burned: activeMenus?.length || 0,
+          menus_burned: activeMenus?.length ?? 0,
           whitelist_revoked: true,
           timestamp: new Date().toISOString(),
         },
@@ -83,7 +83,7 @@ export const PanicModeButton = () => {
       });
 
       toast.success(
-        `Panic Mode Activated - ${activeMenus?.length || 0} menus burned`,
+        `Panic Mode Activated - ${activeMenus?.length ?? 0} menus burned`,
         {
           description: 'All active menus have been disabled and access revoked.',
           duration: 5000,

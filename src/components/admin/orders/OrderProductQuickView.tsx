@@ -396,10 +396,10 @@ export function OrderProductQuickView({
                         </div>
                         <div className="flex items-center gap-3">
                           <span className="text-muted-foreground line-through">
-                            {formatCurrency(entry.old_price || 0)}
+                            {formatCurrency(entry.old_price ?? 0)}
                           </span>
                           <span className="font-medium">
-                            {formatCurrency(entry.new_price || 0)}
+                            {formatCurrency(entry.new_price ?? 0)}
                           </span>
                         </div>
                         <span className="text-xs text-muted-foreground">

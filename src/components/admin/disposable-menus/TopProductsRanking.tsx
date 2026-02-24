@@ -65,7 +65,7 @@ export const TopProductsRanking = ({
       case 'conversions':
         return `${product.conversion_rate.toFixed(1)}%`;
       case 'revenue':
-        return formatCurrency(product.revenue || 0);
+        return formatCurrency(product.revenue ?? 0);
       default:
         return product.view_count.toLocaleString();
     }

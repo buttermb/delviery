@@ -108,7 +108,7 @@ export function ConversationList({
         );
     });
 
-    const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
+    const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unread_count ?? 0), 0);
 
     if (isLoading) {
         return (
@@ -174,7 +174,7 @@ export function ConversationList({
                                                 <p className="font-medium truncate">
                                                     {conversation.customer_name || 'Customer'}
                                                 </p>
-                                                {(conversation.unread_count || 0) > 0 && (
+                                                {(conversation.unread_count ?? 0) > 0 && (
                                                     <Badge variant="destructive" className="rounded-full px-2 py-0 text-xs">
                                                         {conversation.unread_count}
                                                     </Badge>

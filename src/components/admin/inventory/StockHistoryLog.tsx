@@ -216,7 +216,7 @@ export function StockHistoryLog({
 
       return {
         entries: filteredEntries,
-        totalCount: count || 0
+        totalCount: count ?? 0
       };
     },
     enabled: !!tenant?.id,

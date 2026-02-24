@@ -264,7 +264,7 @@ export function OrderPipelineBoard() {
                 total_amount: Number(order.total_amount),
                 status: order.status,
                 created_at: order.created_at,
-                item_count: order.items?.[0]?.count || 0
+                item_count: order.items?.[0]?.count ?? 0
             })) as PipelineOrder[];
         },
         enabled: !!tenantId,

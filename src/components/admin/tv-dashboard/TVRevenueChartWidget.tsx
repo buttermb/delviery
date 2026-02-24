@@ -31,7 +31,7 @@ export function TVRevenueChartWidget({ data }: TVRevenueChartWidgetProps) {
         for (let h = 6; h <= 23; h++) {
             result.push({
                 hour: h,
-                revenue: hourlyMap.get(h) || 0,
+                revenue: hourlyMap.get(h) ?? 0,
                 label: h === 12 ? '12pm' : h > 12 ? `${h - 12}pm` : `${h}am`,
                 isCurrent: h === currentHour,
             });

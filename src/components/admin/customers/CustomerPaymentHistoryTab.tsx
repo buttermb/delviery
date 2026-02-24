@@ -239,14 +239,14 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
   const stats = useMemo(() => {
     const totalPaid = (payments ?? [])
       .filter((p) => p.payment_status?.toLowerCase() === 'completed' || p.payment_status?.toLowerCase() === 'paid')
-      .reduce((sum, p) => sum + (p.amount || 0), 0);
+      .reduce((sum, p) => sum + (p.amount ?? 0), 0);
 
-    const totalOrdersAmount = (orders ?? []).reduce((sum, o) => sum + (o.total_amount || 0), 0);
+    const totalOrdersAmount = (orders ?? []).reduce((sum, o) => sum + (o.total_amount ?? 0), 0);
     const outstandingBalance = Math.max(0, totalOrdersAmount - totalPaid);
 
     const pendingPayments = (payments ?? [])
       .filter((p) => p.payment_status?.toLowerCase() === 'pending')
-      .reduce((sum, p) => sum + (p.amount || 0), 0);
+      .reduce((sum, p) => sum + (p.amount ?? 0), 0);
 
     // Calculate average payment amount
     const completedPayments = (payments ?? []).filter(
@@ -261,7 +261,7 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
       outstandingBalance,
       pendingPayments,
       avgPaymentAmount,
-      paymentCount: payments?.length || 0,
+      paymentCount: payments?.length ?? 0,
     };
   }, [payments, orders]);
 
@@ -285,7 +285,7 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
         const paymentDate = new Date(payment.created_at);
         const key = format(paymentDate, 'MMM yyyy');
         if (key in monthlyData) {
-          monthlyData[key] += payment.amount || 0;
+          monthlyData[key] += payment.amount ?? 0;
         }
       }
     });
@@ -318,7 +318,7 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
         header: 'Amount',
         cell: ({ original }: { original: Payment }) => (
           <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
-            {formatCurrency(original.amount || 0)}
+            {formatCurrency(original.amount ?? 0)}
           </span>
         ),
       },
@@ -596,7 +596,7 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
 
           {hasActiveFilters && (
             <span className="text-sm text-muted-foreground ml-2">
-              Showing {filteredPayments.length} of {payments?.length || 0} payments
+              Showing {filteredPayments.length} of {payments?.length ?? 0} payments
             </span>
           )}
         </div>

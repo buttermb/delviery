@@ -367,7 +367,7 @@ export function OrderThreadedNotes({
   const handleContentChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const value = e.target.value;
-      const position = e.target.selectionStart || 0;
+      const position = e.target.selectionStart ?? 0;
 
       setNoteContent(value);
       setCursorPosition(position);

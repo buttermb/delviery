@@ -67,7 +67,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
   const getCartQuantity = (productId: string, weight?: string) => {
     return items.find(item =>
       item.productId === productId && item.weight === weight
-    )?.quantity || 0;
+    )?.quantity ?? 0;
   };
 
   const addToCart = (product: Product) => {
@@ -105,7 +105,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
       if (min === max) return formatCurrency(min);
       return `${formatCurrency(min)} - ${formatCurrency(max)}`;
     }
-    return formatCurrency(product.price || 0);
+    return formatCurrency(product.price ?? 0);
   };
 
   const getProductImage = (product: Product) => {

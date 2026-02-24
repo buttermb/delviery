@@ -176,7 +176,7 @@ export const SecurityMonitoringPanel = () => {
               <Shield className="h-8 w-8 text-primary" />
               <div>
                 <div className="text-sm text-muted-foreground">Total Events</div>
-                <div className="text-2xl font-bold">{recentEvents?.length || 0}</div>
+                <div className="text-2xl font-bold">{recentEvents?.length ?? 0}</div>
               </div>
             </div>
 
@@ -201,7 +201,7 @@ export const SecurityMonitoringPanel = () => {
               <div>
                 <div className="text-sm text-muted-foreground">Acknowledged</div>
                 <div className="text-2xl font-bold">
-                  {recentEvents?.filter(e => e.acknowledged).length || 0}
+                  {recentEvents?.filter(e => e.acknowledged).length ?? 0}
                 </div>
               </div>
             </div>

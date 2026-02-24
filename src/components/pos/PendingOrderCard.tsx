@@ -16,7 +16,7 @@ export function PendingOrderCard({ order, onLoad, onCancel }: PendingOrderCardPr
         ? `${order.customer.first_name} ${order.customer.last_name}`
         : 'Guest Customer';
 
-    const itemCount = order.items?.length || 0;
+    const itemCount = order.items?.length ?? 0;
 
     return (
         <Card className="overflow-hidden border-l-4 border-l-primary">

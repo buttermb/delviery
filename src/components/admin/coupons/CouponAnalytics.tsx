@@ -43,7 +43,7 @@ export function CouponAnalytics({ open, onOpenChange, coupons }: CouponAnalytics
 
         const totalRedemptions = usage.length;
         const totalDiscountGiven = usage.reduce(
-          (sum, u) => sum + (u.discount_amount || 0),
+          (sum, u) => sum + (u.discount_amount ?? 0),
           0
         );
 
@@ -54,7 +54,7 @@ export function CouponAnalytics({ open, onOpenChange, coupons }: CouponAnalytics
             code: coupon.code,
             redemptions: couponUsage.length,
             total_discount: couponUsage.reduce(
-              (sum, u) => sum + (u.discount_amount || 0),
+              (sum, u) => sum + (u.discount_amount ?? 0),
               0
             ),
             redemption_rate:

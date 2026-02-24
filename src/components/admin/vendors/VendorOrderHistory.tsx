@@ -144,11 +144,11 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
     purchaseOrders.forEach((po) => {
       // Only count completed orders (received) for spent totals
       if (po.status === 'received' || po.status === 'confirmed') {
-        totalSpentAllTime += po.total || 0;
+        totalSpentAllTime += po.total ?? 0;
 
         const poDate = po.created_at ? new Date(po.created_at) : null;
         if (poDate && poDate >= firstOfMonth) {
-          totalSpentThisMonth += po.total || 0;
+          totalSpentThisMonth += po.total ?? 0;
         }
       }
     });

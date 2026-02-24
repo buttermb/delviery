@@ -33,27 +33,27 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
 
   // Memoize formatted currency values (must be before early return)
   const formattedActualRevenue = useMemo(
-    () => formatCompactCurrency(data?.actualRevenue || 0),
+    () => formatCompactCurrency(data?.actualRevenue ?? 0),
     [data?.actualRevenue]
   );
   const formattedTargetRevenue = useMemo(
-    () => formatCompactCurrency(data?.targetRevenue || 0),
+    () => formatCompactCurrency(data?.targetRevenue ?? 0),
     [data?.targetRevenue]
   );
   const formattedRemainingAmount = useMemo(
-    () => formatCompactCurrency(data?.remainingAmount || 0),
+    () => formatCompactCurrency(data?.remainingAmount ?? 0),
     [data?.remainingAmount]
   );
   const formattedDailyTargetNeeded = useMemo(
-    () => formatCompactCurrency(data?.dailyTargetNeeded || 0),
+    () => formatCompactCurrency(data?.dailyTargetNeeded ?? 0),
     [data?.dailyTargetNeeded]
   );
   const formattedCurrentDailyAverage = useMemo(
-    () => formatCompactCurrency(data?.currentDailyAverage || 0),
+    () => formatCompactCurrency(data?.currentDailyAverage ?? 0),
     [data?.currentDailyAverage]
   );
   const formattedLastMonthRevenue = useMemo(
-    () => formatCompactCurrency(data?.lastMonthRevenue || 0),
+    () => formatCompactCurrency(data?.lastMonthRevenue ?? 0),
     [data?.lastMonthRevenue]
   );
 
@@ -67,7 +67,7 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
   }
 
   // Clamp progress for the visual bar (max 100%), but show real percentage in text
-  const progressBarValue = Math.min(data?.progressPercent || 0, 100);
+  const progressBarValue = Math.min(data?.progressPercent ?? 0, 100);
   const isExceeded = data?.isExceeded ?? false;
   const isOnTrack = data?.isOnTrack ?? false;
 
@@ -104,7 +104,7 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
                 'text-xl font-bold font-mono',
                 isExceeded ? 'text-emerald-400' : isOnTrack ? 'text-blue-400' : 'text-amber-400'
               )}>
-                {data?.progressPercent || 0}%
+                {data?.progressPercent ?? 0}%
               </span>
             </div>
 
@@ -144,7 +144,7 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
               <div className="flex items-center justify-center gap-1">
                 <Calendar className="h-4 w-4 text-zinc-400" />
                 <span className="text-lg font-bold font-mono text-zinc-100">
-                  {data?.daysRemaining || 0}
+                  {data?.daysRemaining ?? 0}
                 </span>
               </div>
               <div className="text-xs text-zinc-500 mt-0.5">Days Left</div>
@@ -164,7 +164,7 @@ export function RevenueGoalProgress({ targetRevenue, className }: RevenueGoalPro
             {/* Orders */}
             <div className="text-center p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
               <div className="text-lg font-bold font-mono text-zinc-100">
-                {data?.orderCount || 0}
+                {data?.orderCount ?? 0}
               </div>
               <div className="text-xs text-zinc-500 mt-0.5">Orders</div>
             </div>

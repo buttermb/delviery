@@ -89,13 +89,13 @@ export function RealtimeSalesWidget() {
             const todayWholesaleRevenue = (todayWholesaleOrders ?? []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
             const todayStorefrontRevenue = todayStorefrontOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
             const todayRevenue = todayWholesaleRevenue + todayStorefrontRevenue;
-            const todayOrderCount = (todayWholesaleOrders?.length || 0) + todayStorefrontOrders.length;
+            const todayOrderCount = (todayWholesaleOrders?.length ?? 0) + todayStorefrontOrders.length;
             const todayAvgOrder = todayOrderCount > 0 ? todayRevenue / todayOrderCount : 0;
 
             const yesterdayWholesaleRevenue = (yesterdayWholesaleOrders ?? []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
             const yesterdayStorefrontRevenue = yesterdayStorefrontOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
             const yesterdayRevenue = yesterdayWholesaleRevenue + yesterdayStorefrontRevenue;
-            const yesterdayOrderCount = (yesterdayWholesaleOrders?.length || 0) + yesterdayStorefrontOrders.length;
+            const yesterdayOrderCount = (yesterdayWholesaleOrders?.length ?? 0) + yesterdayStorefrontOrders.length;
             const yesterdayAvgOrder = yesterdayOrderCount > 0 ? yesterdayRevenue / yesterdayOrderCount : 0;
 
             // Calculate trends

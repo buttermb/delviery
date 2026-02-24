@@ -98,7 +98,7 @@ export function QuickReceiving() {
 
         if (fetchError) throw fetchError;
 
-        const newQuantity = (currentInventory?.stock_quantity || 0) + item.quantity_lbs;
+        const newQuantity = (currentInventory?.stock_quantity ?? 0) + item.quantity_lbs;
 
         const { error: updateError } = await supabase
           .from('products')

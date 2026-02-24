@@ -98,8 +98,8 @@ export function MRRBreakdownChart() {
 
   if (!mrrData || mrrData.length === 0) return null;
 
-  const currentMRR = mrrData[mrrData.length - 1]?.total || 0;
-  const previousMRR = mrrData[mrrData.length - 2]?.total || 0;
+  const currentMRR = mrrData[mrrData.length - 1]?.total ?? 0;
+  const previousMRR = mrrData[mrrData.length - 2]?.total ?? 0;
   const growth = previousMRR > 0 ? ((currentMRR - previousMRR) / previousMRR) * 100 : 0;
 
   return (

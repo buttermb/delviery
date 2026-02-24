@@ -98,7 +98,7 @@ export function TerritoryMapView() {
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
             <span style="font-size: 12px; font-weight: 500;">Balance:</span>
             <span style="font-size: 14px; font-weight: 600; color: ${markerColor};">
-              ${formatCurrency(client.outstanding_balance || 0)}
+              ${formatCurrency(client.outstanding_balance ?? 0)}
             </span>
           </div>
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">

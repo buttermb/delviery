@@ -46,11 +46,11 @@ export function ExecutiveSummaryWidget() {
                     .not('status', 'in', '("cancelled","rejected","refunded")'),
             ]);
 
-            const ordersRevenue = ordersResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
-            const posRevenue = posResult.data?.reduce((sum, t) => sum + Number(t.total_amount || 0), 0) || 0;
+            const ordersRevenue = ordersResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) ?? 0;
+            const posRevenue = posResult.data?.reduce((sum, t) => sum + Number(t.total_amount || 0), 0) ?? 0;
             const mtdRevenue = ordersRevenue + posRevenue;
 
-            const lastMonthRevenue = lastMonthOrders.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+            const lastMonthRevenue = lastMonthOrders.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) ?? 0;
 
             // Calculate change percentage
             const revenueChange = lastMonthRevenue > 0
@@ -85,8 +85,8 @@ export function ExecutiveSummaryWidget() {
                     .gt('balance', 0),
             ]);
 
-            const unpaidInvoices = invoicesResult.data?.reduce((sum, i) => sum + Number(i.total || 0), 0) || 0;
-            const unpaidTabs = tabsResult.data?.reduce((sum, c) => sum + Number(c.balance || 0), 0) || 0;
+            const unpaidInvoices = invoicesResult.data?.reduce((sum, i) => sum + Number(i.total || 0), 0) ?? 0;
+            const unpaidTabs = tabsResult.data?.reduce((sum, c) => sum + Number(c.balance || 0), 0) ?? 0;
             const arOutstanding = unpaidInvoices + unpaidTabs;
 
             return {
@@ -135,7 +135,7 @@ export function ExecutiveSummaryWidget() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="space-y-1">
                         <div className="text-sm text-muted-foreground">MTD Revenue</div>
-                        <div className="text-xl font-bold">${(summary?.mtdRevenue || 0).toLocaleString()}</div>
+                        <div className="text-xl font-bold">${(summary?.mtdRevenue ?? 0).toLocaleString()}</div>
                         {summary?.revenueChange !== undefined && summary.revenueChange !== 0 && (
                             <div className={cn(
                                 'text-xs',
@@ -147,22 +147,22 @@ export function ExecutiveSummaryWidget() {
                     </div>
                     <div className="space-y-1">
                         <div className="text-sm text-muted-foreground">Projected Close</div>
-                        <div className="text-xl font-bold">${(summary?.projectedClose || 0).toLocaleString()}</div>
+                        <div className="text-xl font-bold">${(summary?.projectedClose ?? 0).toLocaleString()}</div>
                         <div className="text-xs text-muted-foreground">at current pace</div>
                     </div>
                     <div className="space-y-1">
                         <div className="text-sm text-muted-foreground">Est. Profit</div>
-                        <div className="text-xl font-bold">${(summary?.netProfit || 0).toLocaleString()}</div>
+                        <div className="text-xl font-bold">${(summary?.netProfit ?? 0).toLocaleString()}</div>
                         <div className="text-xs text-muted-foreground">~{summary?.profitMargin}% margin</div>
                     </div>
                     <div className="space-y-1">
                         <div className="text-sm text-muted-foreground">AR Outstanding</div>
                         <div className={cn(
                             "text-xl font-bold",
-                            (summary?.arOutstanding || 0) > 0 && "text-yellow-600"
-                        )}>${(summary?.arOutstanding || 0).toLocaleString()}</div>
+                            (summary?.arOutstanding ?? 0) > 0 && "text-yellow-600"
+                        )}>${(summary?.arOutstanding ?? 0).toLocaleString()}</div>
                         <div className="text-xs text-muted-foreground">
-                            {(summary?.arOutstanding || 0) > 0 ? 'to collect' : 'all collected'}
+                            {(summary?.arOutstanding ?? 0) > 0 ? 'to collect' : 'all collected'}
                         </div>
                     </div>
                 </div>

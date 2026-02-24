@@ -732,7 +732,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                                   {product.category}
                                 </Badge>
                               )}
-                              {String(product.quantity_lbs || 0)} lbs available
+                              {String(product.quantity_lbs ?? 0)} lbs available
                               {product.base_price
                                 ? ` | $${product.base_price}/lb`
                                 : ''}
@@ -750,7 +750,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                 </div>
                 <div className="text-sm text-muted-foreground">
                   {selectedProducts.length} product(s) selected
-                  {productSearch && ` (showing ${filteredInventory.length} of ${(inventory as InventoryProduct[] | undefined)?.length || 0})`}
+                  {productSearch && ` (showing ${filteredInventory.length} of ${(inventory as InventoryProduct[] | undefined)?.length ?? 0})`}
                 </div>
               </div>
 
@@ -831,7 +831,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                         <div className="flex-1">
                           <div className="font-medium text-sm">{product.product_name}</div>
                           <div className="text-xs text-muted-foreground">
-                            Default: ${product.base_price || 0}/lb
+                            Default: ${product.base_price ?? 0}/lb
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -840,7 +840,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                             type="number"
                             step="0.01"
                             min={0}
-                            placeholder={String(product.base_price || 0)}
+                            placeholder={String(product.base_price ?? 0)}
                             value={hasCustomPrice ? customPrices[productId] : ''}
                             onChange={(e) =>
                               setProductPrice(productId, parseFloat(e.target.value) || 0)

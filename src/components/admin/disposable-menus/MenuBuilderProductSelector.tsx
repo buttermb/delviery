@@ -426,7 +426,7 @@ export function MenuBuilderProductSelector({
       return (data ?? []).map((item) => ({
         id: item.id,
         name: item.product_name,
-        price: item.base_price || 0,
+        price: item.base_price ?? 0,
         sku: item.sku,
         description: item.description,
         image_url: item.image_url,

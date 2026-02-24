@@ -35,7 +35,7 @@ export const SecuritySettingsBadges = ({ settings, compact = false }: SecuritySe
     badges.push({
       icon: Clock,
       label: compact ? 'Time' : 'Time Restricted',
-      tooltip: `${settings.allowed_hours?.start || 0}:00 - ${settings.allowed_hours?.end || 24}:00`
+      tooltip: `${settings.allowed_hours?.start ?? 0}:00 - ${settings.allowed_hours?.end || 24}:00`
     });
   }
 

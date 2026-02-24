@@ -222,7 +222,7 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
     const viewsByDate: Record<string, number> = {};
     logs.forEach(log => {
       const date = format(new Date(log.accessed_at), 'yyyy-MM-dd');
-      viewsByDate[date] = (viewsByDate[date] || 0) + 1;
+      viewsByDate[date] = (viewsByDate[date] ?? 0) + 1;
     });
     const viewsOverTime = Object.entries(viewsByDate)
       .map(([date, views]) => ({ date, views }))
@@ -253,7 +253,7 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
           productMap[key] = { id: key, name: item.product_name, orders: 0, revenue: 0 };
         }
         productMap[key].orders += item.quantity || 1;
-        productMap[key].revenue += (item.price_per_unit || 0) * (item.quantity || 1);
+        productMap[key].revenue += (item.price_per_unit ?? 0) * (item.quantity || 1);
       });
     });
     const popularProducts = Object.values(productMap)

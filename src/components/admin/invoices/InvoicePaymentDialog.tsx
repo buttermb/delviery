@@ -75,7 +75,7 @@ export function InvoicePaymentDialog({
 }: InvoicePaymentDialogProps) {
   const accountId = useAccountIdSafe();
   const queryClient = useQueryClient();
-  const remaining = amountDue - (amountPaid || 0);
+  const remaining = amountDue - (amountPaid ?? 0);
 
   const schema = createPaymentSchema(remaining);
 
@@ -120,7 +120,7 @@ export function InvoicePaymentDialog({
     mutationFn: async (values: PaymentFormValues) => {
       if (!accountId) throw new Error('Account ID required');
 
-      const newAmountPaid = (amountPaid || 0) + values.amount;
+      const newAmountPaid = (amountPaid ?? 0) + values.amount;
       const newStatus = newAmountPaid >= amountDue ? 'paid' : 'partially_paid';
 
       // Build payment record for history
@@ -177,11 +177,11 @@ export function InvoicePaymentDialog({
           customerId: (data as Record<string, unknown>)?.client_id as string,
         });
       }
-      const newPaid = (amountPaid || 0) + (watch('amount') || 0);
+      const newPaid = (amountPaid ?? 0) + (watch('amount') ?? 0);
       const isPaidInFull = newPaid >= amountDue;
       toast.success(
         isPaidInFull ? 'Invoice paid in full' : 'Payment recorded',
-        { description: `${formatCurrency(watch('amount') || 0)} recorded` }
+        { description: `${formatCurrency(watch('amount') ?? 0)} recorded` }
       );
       onOpenChange(false);
       onSuccess?.();
@@ -333,7 +333,7 @@ export function InvoicePaymentDialog({
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 Recording {formatCurrency(watchAmount)} payment.{' '}
-                {(amountPaid || 0) + watchAmount >= amountDue
+                {(amountPaid ?? 0) + watchAmount >= amountDue
                   ? 'This will mark the invoice as paid in full.'
                   : `Remaining after: ${formatCurrency(remaining - watchAmount)}`}
               </AlertDescription>

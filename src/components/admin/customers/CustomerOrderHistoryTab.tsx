@@ -187,7 +187,7 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
       };
     }
 
-    const lifetimeValue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+    const lifetimeValue = orders.reduce((sum, order) => sum + (order.total_amount ?? 0), 0);
     const completedOrders = orders.filter(
       (o) => o.status?.toLowerCase() === 'completed' || o.status?.toLowerCase() === 'delivered'
     ).length;
@@ -228,7 +228,7 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
         header: 'Total',
         cell: ({ original }: { original: Order }) => (
           <span className="font-mono font-semibold">
-            {formatCurrency(original.total_amount || 0)}
+            {formatCurrency(original.total_amount ?? 0)}
           </span>
         ),
       },
@@ -245,7 +245,7 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
         accessorKey: 'order_items',
         header: 'Items',
         cell: ({ original }: { original: Order }) => {
-          const itemCount = original.order_items?.reduce((sum, item) => sum + (item.quantity || 1), 0) || 0;
+          const itemCount = original.order_items?.reduce((sum, item) => sum + (item.quantity ?? 1), 0) ?? 0;
           return (
             <span className="text-sm">
               {itemCount} item{itemCount !== 1 ? 's' : ''}
@@ -440,7 +440,7 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
 
           {hasActiveFilters && (
             <span className="text-sm text-muted-foreground ml-2">
-              Showing {filteredOrders.length} of {orders?.length || 0} orders
+              Showing {filteredOrders.length} of {orders?.length ?? 0} orders
             </span>
           )}
         </div>

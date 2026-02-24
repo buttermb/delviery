@@ -45,7 +45,7 @@ export function ChurnAnalysisWidget() {
         // Count total tenants at start of month
         const totalAtStart = tenants?.filter(
           (t) => new Date(t.created_at) <= monthEnd
-        ).length || 0;
+        ).length ?? 0;
 
         // Count churned in this month
         const churned = tenants?.filter(
@@ -53,7 +53,7 @@ export function ChurnAnalysisWidget() {
             t.cancelled_at &&
             new Date(t.cancelled_at) >= monthStart &&
             new Date(t.cancelled_at) <= monthEnd
-        ).length || 0;
+        ).length ?? 0;
 
         // Calculate revenue lost
         const revenueLost = tenants
@@ -63,7 +63,7 @@ export function ChurnAnalysisWidget() {
               new Date(t.cancelled_at) >= monthStart &&
               new Date(t.cancelled_at) <= monthEnd
           )
-          .reduce((sum, t) => sum + (t.mrr || 0), 0) || 0;
+          .reduce((sum, t) => sum + (t.mrr ?? 0), 0) ?? 0;
 
         const churnRate = totalAtStart > 0 ? (churned / totalAtStart) * 100 : 0;
 
@@ -77,10 +77,10 @@ export function ChurnAnalysisWidget() {
       }
 
       // Calculate overall metrics
-      const totalChurned = tenants?.filter((t) => t.cancelled_at).length || 0;
+      const totalChurned = tenants?.filter((t) => t.cancelled_at).length ?? 0;
       const totalRevenueLost = tenants
         ?.filter((t) => t.cancelled_at)
-        .reduce((sum, t) => sum + (t.mrr || 0), 0) || 0;
+        .reduce((sum, t) => sum + (t.mrr ?? 0), 0) ?? 0;
       
       const avgChurnRate =
         Object.values(monthlyData).reduce((sum, d) => sum + d.churnRate, 0) /

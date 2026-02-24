@@ -61,10 +61,10 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
       const prices = formData.prices as Record<string, unknown>;
       const firstKey = Object.keys(prices)[0];
       if (firstKey) {
-        return prices[firstKey] || 0;
+        return prices[firstKey] ?? 0;
       }
     }
-    return formData.price || 0;
+    return formData.price ?? 0;
   };
 
   return (

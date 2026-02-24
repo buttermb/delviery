@@ -41,7 +41,7 @@ export function MenuProductGrid({ products, menuId: _menuId, whitelistEntryId: _
 
   const getCartQuantity = (productId: string) => {
     const item = items.find(i => i.productId === productId);
-    return item?.quantity || 0;
+    return item?.quantity ?? 0;
   };
 
   if (products.length === 0) {

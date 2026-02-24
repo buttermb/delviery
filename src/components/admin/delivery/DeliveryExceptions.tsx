@@ -454,7 +454,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
 
     const byReason = exceptions.reduce(
       (acc, e) => {
-        acc[e.reason] = (acc[e.reason] || 0) + 1;
+        acc[e.reason] = (acc[e.reason] ?? 0) + 1;
         return acc;
       },
       {} as Record<ExceptionReason, number>
@@ -1017,7 +1017,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
                     ? getReasonLabel(
                         Object.entries(stats.byReason).reduce(
                           (max, [reason, count]) =>
-                            count > (stats.byReason[max as ExceptionReason] || 0)
+                            count > (stats.byReason[max as ExceptionReason] ?? 0)
                               ? (reason as ExceptionReason)
                               : max,
                           'customer_not_home' as ExceptionReason
@@ -1314,7 +1314,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
               <CardContent>
                 <div className="space-y-4">
                   {EXCEPTION_REASONS.map((reason) => {
-                    const count = stats.byReason[reason.value] || 0;
+                    const count = stats.byReason[reason.value] ?? 0;
                     const percentage = stats.total > 0 ? Math.round((count / stats.total) * 100) : 0;
                     const ReasonIcon = reason.icon;
 

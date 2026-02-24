@@ -43,9 +43,9 @@ export function TraceabilityView({
         .select("quantity, orders!inner(order_number, customer_name, status, created_at)")
         .in("product_id", productIds);
 
-      const affectedOrders = orderItems?.length || 0;
+      const affectedOrders = orderItems?.length ?? 0;
       const affectedCustomers = new Set(orderItems?.map((item: { orders?: { customer_name?: string } }) => item.orders?.customer_name).filter(Boolean)).size;
-      const totalUnits = orderItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+      const totalUnits = orderItems?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 
       return {
         batchId,

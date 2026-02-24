@@ -82,7 +82,7 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
         <StatItem
           icon={<Wallet className="h-5 w-5" />}
           label="Cash"
-          value={formatCompactCurrency(stats?.cashPosition || 0)}
+          value={formatCompactCurrency(stats?.cashPosition ?? 0)}
           color="success"
           onClick={() => onStatClick?.('cash')}
         />
@@ -92,11 +92,11 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
         <StatItem
           icon={<TrendingUp className="h-5 w-5" />}
           label="Today P&L"
-          value={(stats?.todayPnL || 0) >= 0 
-            ? `+${formatCompactCurrency(stats?.todayPnL || 0)}` 
-            : formatCompactCurrency(stats?.todayPnL || 0)
+          value={(stats?.todayPnL ?? 0) >= 0
+            ? `+${formatCompactCurrency(stats?.todayPnL ?? 0)}`
+            : formatCompactCurrency(stats?.todayPnL ?? 0)
           }
-          color={(stats?.todayPnL || 0) >= 0 ? 'success' : 'danger'}
+          color={(stats?.todayPnL ?? 0) >= 0 ? 'success' : 'danger'}
           onClick={() => onStatClick?.('pnl')}
         />
         
@@ -105,8 +105,8 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
         <StatItem
           icon={<AlertCircle className="h-5 w-5" />}
           label="Outstanding"
-          value={formatCompactCurrency(stats?.outstandingAR || 0)}
-          color={(stats?.outstandingAR || 0) > 50000 ? 'danger' : 'warning'}
+          value={formatCompactCurrency(stats?.outstandingAR ?? 0)}
+          color={(stats?.outstandingAR ?? 0) > 50000 ? 'danger' : 'warning'}
           onClick={() => onStatClick?.('ar')}
         />
         
@@ -115,7 +115,7 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
         <StatItem
           icon={<Package className="h-5 w-5" />}
           label="Fronted"
-          value={formatCompactCurrency(stats?.frontedValue || 0)}
+          value={formatCompactCurrency(stats?.frontedValue ?? 0)}
           color="default"
           onClick={() => onStatClick?.('fronted')}
         />
@@ -132,7 +132,7 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
           )}
         >
           <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-zinc-400" />
-          {(stats?.alertCount || 0) > 0 && (
+          {(stats?.alertCount ?? 0) > 0 && (
             <Badge 
               variant="destructive" 
               className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] animate-pulse"

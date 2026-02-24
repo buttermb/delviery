@@ -140,7 +140,7 @@ export function OrderSplitDialog({
       let subtotal = 0;
 
       for (const allocation of itemAllocations) {
-        const qty = allocation.allocations[i] || 0;
+        const qty = allocation.allocations[i] ?? 0;
         if (qty > 0) {
           itemCount++;
           totalQuantity += qty;
@@ -236,12 +236,12 @@ export function OrderSplitDialog({
     const allocations: ShipmentAllocation[] = [];
     for (let i = 0; i < numberOfShipments; i++) {
       const items = itemAllocations
-        .filter((alloc) => (alloc.allocations[i] || 0) > 0)
+        .filter((alloc) => (alloc.allocations[i] ?? 0) > 0)
         .map((alloc) => ({
           itemId: alloc.itemId,
           productId: alloc.productId,
           productName: alloc.productName,
-          quantity: alloc.allocations[i] || 0,
+          quantity: alloc.allocations[i] ?? 0,
           price: alloc.price,
         }));
 
@@ -360,7 +360,7 @@ export function OrderSplitDialog({
                               type="number"
                               min={0}
                               max={allocation.totalQuantity}
-                              value={allocation.allocations[i] || 0}
+                              value={allocation.allocations[i] ?? 0}
                               onChange={(e) =>
                                 handleAllocationChange(allocation.itemId, i, e.target.value)
                               }

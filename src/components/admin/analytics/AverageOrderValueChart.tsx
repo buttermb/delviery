@@ -55,7 +55,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
                 });
                 const existing = dailyData.get(date) || { total: 0, count: 0 };
                 dailyData.set(date, {
-                    total: existing.total + (order.total || 0),
+                    total: existing.total + (order.total ?? 0),
                     count: existing.count + 1
                 });
             });

@@ -55,7 +55,7 @@ export function EnhancedMenuDashboard() {
               .from('menu_access_logs')
               .select('*', { count: 'exact', head: true })
               .eq('menu_id', menu.id);
-            totalViews += count || 0;
+            totalViews += count ?? 0;
           }
         }
       }
@@ -73,7 +73,7 @@ export function EnhancedMenuDashboard() {
               .select('*', { count: 'exact', head: true })
               .eq('menu_id', menu.id)
               .gte('created_at', today.toISOString());
-            todayOrders += count || 0;
+            todayOrders += count ?? 0;
           }
         }
       }
@@ -145,7 +145,7 @@ export function EnhancedMenuDashboard() {
             <Shield className="h-5 w-5 text-green-500" />
             <Badge variant="outline">Active</Badge>
           </div>
-          <div className="text-3xl font-bold">{overviewStats?.activeMenus || 0}</div>
+          <div className="text-3xl font-bold">{overviewStats?.activeMenus ?? 0}</div>
           <div className="text-sm text-muted-foreground">Active Menus</div>
         </Card>
 
@@ -154,7 +154,7 @@ export function EnhancedMenuDashboard() {
             <Eye className="h-5 w-5 text-blue-500" />
             <Badge variant="outline">Views</Badge>
           </div>
-          <div className="text-3xl font-bold">{overviewStats?.totalViews.toLocaleString() || 0}</div>
+          <div className="text-3xl font-bold">{overviewStats?.totalViews.toLocaleString() ?? 0}</div>
           <div className="text-sm text-muted-foreground">Total Views</div>
         </Card>
 
@@ -163,7 +163,7 @@ export function EnhancedMenuDashboard() {
             <ShoppingCart className="h-5 w-5 text-purple-500" />
             <Badge variant="outline">Today</Badge>
           </div>
-          <div className="text-3xl font-bold">{overviewStats?.todayOrders || 0}</div>
+          <div className="text-3xl font-bold">{overviewStats?.todayOrders ?? 0}</div>
           <div className="text-sm text-muted-foreground">Orders Today</div>
         </Card>
       </div>

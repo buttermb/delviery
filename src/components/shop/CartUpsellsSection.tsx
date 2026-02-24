@@ -66,7 +66,7 @@ export function CartUpsellsSection({
                 const allProducts = (data as unknown as Record<string, unknown>[]) ?? [];
 
                 return allProducts
-                    .filter((p) => ((p.stock_quantity as number) || 0) > 0 && !excludeProductIds.includes(p.product_id as string))
+                    .filter((p) => ((p.stock_quantity as number) ?? 0) > 0 && !excludeProductIds.includes(p.product_id as string))
                     .map((p) => ({
                         product_id: p.product_id as string,
                         product_name: p.product_name as string,

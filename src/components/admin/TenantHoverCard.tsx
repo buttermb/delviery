@@ -62,7 +62,7 @@ export function TenantHoverCard({ tenant, children }: TenantHoverCardProps) {
                         <div className="grid grid-cols-2 gap-2 pt-2 mt-2 border-t">
                             <div className="flex items-center gap-2">
                                 <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span className="text-xs font-medium">{formatCurrency(tenant.mrr || 0)}/mo</span>
+                                <span className="text-xs font-medium">{formatCurrency(tenant.mrr ?? 0)}/mo</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Activity className="h-3.5 w-3.5 text-muted-foreground" />

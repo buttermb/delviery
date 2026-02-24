@@ -61,8 +61,8 @@ export function TeamActivityWidget() {
                         name: member.name || member.email?.split('@')[0] || 'Team Member',
                         role: member.role === 'owner' ? 'Owner' : member.role === 'admin' ? 'Admin' : 'Member',
                         status: 'active' as const,
-                        deliveries: deliveries || 0,
-                        posTransactions: posTransactions || 0,
+                        deliveries: deliveries ?? 0,
+                        posTransactions: posTransactions ?? 0,
                         activityText: isCourier 
                             ? `${deliveries} deliveries` 
                             : isCashier 

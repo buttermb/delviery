@@ -71,7 +71,7 @@ export function CustomerMobileNav() {
   }
 
   // Calculate cart count (authenticated or guest)
-  const dbCartCount = cartItems.reduce((sum: number, item: CartItem) => sum + (item.quantity || 0), 0);
+  const dbCartCount = cartItems.reduce((sum: number, item: CartItem) => sum + (item.quantity ?? 0), 0);
   const guestCartCount = user ? 0 : getGuestCartCount();
   const cartCount = user ? dbCartCount : guestCartCount;
 

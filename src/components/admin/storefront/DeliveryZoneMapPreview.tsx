@@ -240,7 +240,7 @@ export function DeliveryZoneMapPreview({
 
   // Calculate max fee for color scaling
   const maxFee = useMemo(() => {
-    return Math.max(...zones.map((z) => z.fee || 0), 10);
+    return Math.max(...zones.map((z) => z.fee ?? 0), 10);
   }, [zones]);
 
   // Initialize map

@@ -113,7 +113,7 @@ export function CreditAdjustmentForm({
   };
 
   // Calculate new balance preview
-  const currentBalance = tenantDetail?.credits.balance || 0;
+  const currentBalance = tenantDetail?.credits.balance ?? 0;
   const newBalance = adjustmentType === 'add' 
     ? currentBalance + amount 
     : Math.max(0, currentBalance - amount);

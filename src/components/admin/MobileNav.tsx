@@ -45,8 +45,8 @@ export function MobileNav() {
   logger.debug('MobileNav Render', {
     component: 'MobileNav',
     pathname: location.pathname,
-    sidebarConfigLength: sidebarConfig?.length || 0,
-    hotItemsLength: hotItems?.length || 0,
+    sidebarConfigLength: sidebarConfig?.length ?? 0,
+    hotItemsLength: hotItems?.length ?? 0,
     isSheetOpen: open
   });
 

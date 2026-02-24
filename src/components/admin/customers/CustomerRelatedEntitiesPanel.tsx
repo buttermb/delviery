@@ -143,7 +143,7 @@ function useRelatedOrders(customerId: string | undefined, tenantId: string | und
         subtitle: formatSmartDate(order.created_at),
         status: order.status,
         statusVariant: getOrderStatusVariant(order.status),
-        meta: formatCurrency(order.total_amount || 0),
+        meta: formatCurrency(order.total_amount ?? 0),
       }));
     },
     { tenantId, customerId }
@@ -217,7 +217,7 @@ function useRelatedPayments(customerId: string | undefined, tenantId: string | u
 
       return (data ?? []).map((payment) => ({
         id: payment.id,
-        title: formatCurrency(payment.amount || 0),
+        title: formatCurrency(payment.amount ?? 0),
         subtitle: `${payment.payment_method || 'Unknown'} - ${formatSmartDate(payment.created_at)}`,
         status: payment.payment_status,
         statusVariant: getPaymentStatusVariant(payment.payment_status),

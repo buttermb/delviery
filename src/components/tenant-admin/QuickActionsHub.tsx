@@ -65,7 +65,7 @@ export function QuickActionsHub() {
                 const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
                 const threshold = item.low_stock_alert ?? DEFAULT_LOW_STOCK_THRESHOLD;
                 return currentQty <= threshold;
-            }).length || 0;
+            }).length ?? 0;
 
             // Get today's deliveries count (orders ready for delivery)
             const today = new Date();
@@ -79,9 +79,9 @@ export function QuickActionsHub() {
                 .gte('created_at', today.toISOString());
 
             return {
-                pendingOrders: pendingOrders || 0,
+                pendingOrders: pendingOrders ?? 0,
                 lowStockItems,
-                todayDeliveries: todayDeliveries || 0
+                todayDeliveries: todayDeliveries ?? 0
             };
         },
         enabled: !!tenantId,

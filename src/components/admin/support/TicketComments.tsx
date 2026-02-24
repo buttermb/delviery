@@ -73,7 +73,7 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
     <div className="pt-4 border-t space-y-4">
       <h3 className="text-sm font-medium flex items-center gap-2">
         <MessageSquare className="h-4 w-4" />
-        Comments ({comments?.length || 0})
+        Comments ({comments?.length ?? 0})
       </h3>
 
       {/* Comments List */}

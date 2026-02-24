@@ -71,7 +71,7 @@ export const SecurityHeatmap = ({ securityEvents, accessLogs }: SecurityHeatmapP
   const suspiciousIPs = accessLogs.reduce((acc: Record<string, number>, log: AccessLog) => {
     if (log.violations && Array.isArray(log.violations) && log.violations.length > 0) {
       const ip = log.ip_address || 'Unknown';
-      acc[ip] = (acc[ip] || 0) + 1;
+      acc[ip] = (acc[ip] ?? 0) + 1;
     }
     return acc;
   }, {});

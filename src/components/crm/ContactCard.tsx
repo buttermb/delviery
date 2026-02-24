@@ -63,7 +63,7 @@ export function ContactCard({
         .eq('tenant_id', tenantId);
 
       if (error && error.code !== '42P01') throw error;
-      return count || 0;
+      return count ?? 0;
     },
     enabled: !!customerId && !!tenantId,
   });
@@ -78,7 +78,7 @@ export function ContactCard({
         .eq('customer_id', customerId);
 
       if (error) throw error;
-      return count || 0;
+      return count ?? 0;
     },
     enabled: !!customerId,
   });
@@ -173,7 +173,7 @@ export function ContactCard({
                 <span>Total Spent</span>
               </div>
               <p className="font-semibold">
-                ${(customer.total_spent || 0).toLocaleString()}
+                ${(customer.total_spent ?? 0).toLocaleString()}
               </p>
             </div>
             <div className="space-y-1">
@@ -181,14 +181,14 @@ export function ContactCard({
                 <ShoppingBag className="h-4 w-4" />
                 <span>Orders</span>
               </div>
-              <p className="font-semibold">{orderCount || 0}</p>
+              <p className="font-semibold">{orderCount ?? 0}</p>
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 <span>Activities</span>
               </div>
-              <p className="font-semibold">{activityCount || 0}</p>
+              <p className="font-semibold">{activityCount ?? 0}</p>
             </div>
             {customer.last_purchase_at && (
               <div className="space-y-1">

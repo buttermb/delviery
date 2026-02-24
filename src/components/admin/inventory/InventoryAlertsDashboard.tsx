@@ -118,7 +118,7 @@ export function InventoryAlertsDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total Active</p>
-              <p className="text-3xl font-bold">{alerts?.length || 0}</p>
+              <p className="text-3xl font-bold">{alerts?.length ?? 0}</p>
             </div>
             <CheckCircle2 className="h-10 w-10 opacity-20" />
           </div>

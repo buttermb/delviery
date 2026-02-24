@@ -102,7 +102,7 @@ export function RecallForm({
               recall_reason: data.recall_reason,
               severity: data.severity,
               status: data.status,
-              affected_customers: data.affected_customers || 0,
+              affected_customers: data.affected_customers ?? 0,
               created_by: admin?.id || null,
             },
           ]);

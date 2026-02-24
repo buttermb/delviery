@@ -98,8 +98,8 @@ export function InventoryForecastWidget() {
             salesItems.forEach(item => {
                 const productName = item.product_name?.toLowerCase().trim();
                 if (productName) {
-                    const current = velocityMap.get(productName) || 0;
-                    velocityMap.set(productName, current + (item.quantity || 0));
+                    const current = velocityMap.get(productName) ?? 0;
+                    velocityMap.set(productName, current + (item.quantity ?? 0));
                 }
             });
 
@@ -115,7 +115,7 @@ export function InventoryForecastWidget() {
 
                 // Look up velocity by product name (case-insensitive)
                 const productNameKey = item.name?.toLowerCase().trim() ?? '';
-                const dailyVelocity = velocityMap.get(productNameKey) || 0;
+                const dailyVelocity = velocityMap.get(productNameKey) ?? 0;
                 const hasSalesData = dailyVelocity > 0;
 
                 // Calculate days remaining

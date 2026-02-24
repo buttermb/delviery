@@ -77,11 +77,11 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
       });
 
       // Get latest values
-      const dbConnections = metricsByType.get('database_connections')?.value || 0;
-      const apiLatency = metricsByType.get('api_latency')?.value || 0;
-      const errorRate = metricsByType.get('error_rate')?.value || 0;
-      const activeTenants = metricsByType.get('active_tenants')?.value || 0;
-      const diskUsage = metricsByType.get('disk')?.value || 0;
+      const dbConnections = metricsByType.get('database_connections')?.value ?? 0;
+      const apiLatency = metricsByType.get('api_latency')?.value ?? 0;
+      const errorRate = metricsByType.get('error_rate')?.value ?? 0;
+      const activeTenants = metricsByType.get('active_tenants')?.value ?? 0;
+      const diskUsage = metricsByType.get('disk')?.value ?? 0;
 
       // Determine status based on thresholds
       const getStatus = (value: number, thresholds: { warning: number; critical: number }) => {

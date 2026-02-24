@@ -653,7 +653,7 @@ export function SmartDashboard() {
   const stats = useMemo(() => {
     const activeMenus = menus.filter((m: MenuData) => m.status === 'active');
     const burnedMenus = menus.filter((m: MenuData) => m.status === 'soft_burned' || m.status === 'hard_burned');
-    const totalViews = menus.reduce((sum: number, m: MenuData) => sum + (m.view_count || 0), 0);
+    const totalViews = menus.reduce((sum: number, m: MenuData) => sum + (m.view_count ?? 0), 0);
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce((sum: number, o: OrderData) => sum + Number(o.total_amount || 0), 0);
     const pendingOrders = orders.filter((o: OrderData) => o.status === 'pending').length;
@@ -853,7 +853,7 @@ export function SmartDashboard() {
           {/* Menus Tab */}
           <TabsContent value="menus" className="space-y-6 mt-0">
             {/* Top Performer Card */}
-            {topMenu && (topMenu.total_revenue || 0) > 0 && (
+            {topMenu && (topMenu.total_revenue ?? 0) > 0 && (
               <Card className="p-4 bg-gradient-to-r from-violet-500/10 via-indigo-500/10 to-purple-500/10 border-violet-500/20">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -867,10 +867,10 @@ export function SmartDashboard() {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-emerald-600">
-                      {formatCurrency(topMenu.total_revenue || 0)}
+                      {formatCurrency(topMenu.total_revenue ?? 0)}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {topMenu.order_count || 0} orders • {topMenu.view_count || 0} views
+                      {topMenu.order_count ?? 0} orders • {topMenu.view_count ?? 0} views
                     </div>
                   </div>
                 </div>

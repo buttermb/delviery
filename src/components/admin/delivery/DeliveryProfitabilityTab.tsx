@@ -116,13 +116,13 @@ export function DeliveryProfitabilityTab({ costs, isLoading }: DeliveryProfitabi
           profitMargin: totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100) : 0,
           avgDistanceMiles: costsWithDistance.length > 0
             ? Math.round(
-                (costsWithDistance.reduce((sum, c) => sum + (c.distance_miles || 0), 0) /
+                (costsWithDistance.reduce((sum, c) => sum + (c.distance_miles ?? 0), 0) /
                   costsWithDistance.length) * 10
               ) / 10
             : 0,
           avgDeliveryTimeMinutes: costsWithTime.length > 0
             ? Math.round(
-                costsWithTime.reduce((sum, c) => sum + (c.delivery_time_minutes || 0), 0) /
+                costsWithTime.reduce((sum, c) => sum + (c.delivery_time_minutes ?? 0), 0) /
                   costsWithTime.length
               )
             : 0,

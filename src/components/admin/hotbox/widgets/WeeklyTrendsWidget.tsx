@@ -58,8 +58,8 @@ export function WeeklyTrendsWidget() {
                 .gte('created_at', lastWeekStart.toISOString())
                 .lt('created_at', weekStart.toISOString());
 
-            const thisWeekRevenue = thisWeekOrders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
-            const lastWeekRevenue = lastWeekOrders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+            const thisWeekRevenue = thisWeekOrders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) ?? 0;
+            const lastWeekRevenue = lastWeekOrders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) ?? 0;
 
             // Goals = last week's numbers + 10% growth target
             const revenueGoal = Math.round(lastWeekRevenue * 1.1) || 5000;
@@ -70,9 +70,9 @@ export function WeeklyTrendsWidget() {
                 revenueGoal: Math.max(revenueGoal, 1000), // Minimum goals
                 revenueCurrent: thisWeekRevenue,
                 ordersGoal: Math.max(ordersGoal, 10),
-                ordersCurrent: thisWeekOrders?.length || 0,
+                ordersCurrent: thisWeekOrders?.length ?? 0,
                 customersGoal: Math.max(customersGoal, 5),
-                customersCurrent: newCustomers || 0,
+                customersCurrent: newCustomers ?? 0,
             };
         },
         enabled: !!tenant?.id,

@@ -87,11 +87,11 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const [paymentSettingsOpen, setPaymentSettingsOpen] = useState(false);
   const [productOrderingOpen, setProductOrderingOpen] = useState(false);
 
-  const viewCount = menu.view_count || 0;
-  const customerCount = menu.customer_count || 0;
-  const orderCount = menu.order_count || 0;
-  const totalRevenue = menu.total_revenue || 0;
-  const productCount = menu.disposable_menu_products?.length || 0;
+  const viewCount = menu.view_count ?? 0;
+  const customerCount = menu.customer_count ?? 0;
+  const orderCount = menu.order_count ?? 0;
+  const totalRevenue = menu.total_revenue ?? 0;
+  const productCount = menu.disposable_menu_products?.length ?? 0;
 
   const isBurned = menu.status === 'soft_burned' || menu.status === 'hard_burned';
   const isExpired = !isBurned && !menu.never_expires && menu.expiration_date

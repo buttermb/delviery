@@ -52,13 +52,13 @@ export function OnboardingTracker({ tenant }: OnboardingTrackerProps) {
         {
             id: 'product',
             label: 'First Product',
-            completed: (tenant.usage?.products || 0) > 0,
+            completed: (tenant.usage?.products ?? 0) > 0,
             required: true
         },
         {
             id: 'customer',
             label: 'First Customer',
-            completed: (tenant.usage?.customers || 0) > 0,
+            completed: (tenant.usage?.customers ?? 0) > 0,
             required: false
         },
         {

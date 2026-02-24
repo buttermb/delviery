@@ -59,7 +59,7 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
   });
 
   const calculateNewPrice = (oldPrice: number | null): number => {
-    if (!oldPrice || !adjustmentValue) return oldPrice || 0;
+    if (!oldPrice || !adjustmentValue) return oldPrice ?? 0;
     
     const value = parseFloat(adjustmentValue);
     if (isNaN(value)) return oldPrice;
@@ -83,8 +83,8 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
       const update: PriceUpdate = {
         id: product.id,
         name: product.name || 'Unnamed Product',
-        oldWholesale: product.wholesale_price || 0,
-        newWholesale: product.wholesale_price || 0,
+        oldWholesale: product.wholesale_price ?? 0,
+        newWholesale: product.wholesale_price ?? 0,
       };
 
       if (priceField === 'wholesale' || priceField === 'both') {
@@ -92,7 +92,7 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
       }
 
       if (priceField === 'retail' || priceField === 'both') {
-        update.oldRetail = product.retail_price || 0;
+        update.oldRetail = product.retail_price ?? 0;
         update.newRetail = calculateNewPrice(product.retail_price);
       }
 
@@ -244,7 +244,7 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
                               ${update.oldRetail.toFixed(2)}
                             </p>
                             <p className="font-medium text-primary">
-                              ${(update.newRetail || 0).toFixed(2)}
+                              ${(update.newRetail ?? 0).toFixed(2)}
                             </p>
                           </div>
                         </td>

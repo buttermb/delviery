@@ -208,7 +208,7 @@ export function AlertsWidget() {
       .join(' ');
   };
 
-  const unreadCount = alerts?.length || 0;
+  const unreadCount = alerts?.length ?? 0;
 
   return (
     <Card className="p-4 sm:p-6">

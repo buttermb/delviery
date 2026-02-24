@@ -349,7 +349,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
               <div><strong>Product:</strong> {product.name}</div>
               <div><strong>SKU:</strong> {product.sku}</div>
               <div><strong>Barcode Value:</strong> {labelData?.barcodeValue || 'N/A'}</div>
-              <div><strong>Barcode Length:</strong> {labelData?.barcodeValue?.length || 0}</div>
+              <div><strong>Barcode Length:</strong> {labelData?.barcodeValue?.length ?? 0}</div>
               <div><strong>Has Barcode URL:</strong> {barcodeDataUrl ? `Yes (${barcodeDataUrl.length} chars)` : 'No'}</div>
               <div><strong>Label Size:</strong> {labelSize}</div>
               <div><strong>Category:</strong> {product.category || 'N/A'}</div>

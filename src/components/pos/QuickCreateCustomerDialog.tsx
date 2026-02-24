@@ -173,7 +173,7 @@ export function QuickCreateCustomerDialog({
         first_name: data.first_name ?? '',
         last_name: data.last_name ?? '',
         customer_type: data.customer_type ?? 'recreational',
-        loyalty_points: data.loyalty_points || 0,
+        loyalty_points: data.loyalty_points ?? 0,
         email: data.email,
         phone: data.phone,
       });

@@ -147,11 +147,11 @@ export const CustomerActivityTimeline = ({
   };
 
   // Calculate stats
-  const totalViews = accessLogs?.length || 0;
-  const successfulAccess = accessLogs?.filter(log => log.access_code_correct).length || 0;
-  const totalOrders = orders?.length || 0;
-  const totalSpent = orders?.reduce((sum, o) => sum + parseFloat(String(o.total_amount || 0)), 0) || 0;
-  const securityIssues = securityEvents?.length || 0;
+  const totalViews = accessLogs?.length ?? 0;
+  const successfulAccess = accessLogs?.filter(log => log.access_code_correct).length ?? 0;
+  const totalOrders = orders?.length ?? 0;
+  const totalSpent = orders?.reduce((sum, o) => sum + parseFloat(String(o.total_amount || 0)), 0) ?? 0;
+  const securityIssues = securityEvents?.length ?? 0;
 
   return (
     <div className="space-y-6">

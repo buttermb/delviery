@@ -32,9 +32,9 @@ export const MenuAnalyticsDialog = ({ menu, open, onOpenChange }: MenuAnalyticsD
   const { data: orders } = useMenuOrders(menu.id);
   const { data: securityEvents } = useMenuSecurityEvents(menu.id);
 
-  const totalViews = accessLogs?.length || 0;
+  const totalViews = accessLogs?.length ?? 0;
   const uniqueVisitors = new Set(accessLogs?.map(log => log.access_whitelist_id || log.ip_address)).size;
-  const totalOrders = orders?.length || 0;
+  const totalOrders = orders?.length ?? 0;
   const typedOrders = (orders ?? []) as Array<{ id: string; contact_phone?: string | null; created_at: string; total_amount?: number | string | null; status: string }>;
   const totalRevenue = typedOrders.reduce((sum, order) => sum + parseFloat(String(order.total_amount || 0)), 0);
   const conversionRate = totalViews > 0 ? ((totalOrders / totalViews) * 100).toFixed(2) : '0.00';

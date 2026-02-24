@@ -20,14 +20,14 @@ export function UsageLimitGuard({ resource, children }: UsageLimitGuardProps) {
   const usage = tenant.usage || { customers: 0, menus: 0, products: 0, locations: 0, users: 0 };
   
   const limit = limits[resource];
-  const current = usage[resource] || 0;
+  const current = usage[resource] ?? 0;
   
   // -1 means unlimited
   if (limit === -1) {
     return <>{children}</>;
   }
   
-  const actualLimit = limit || 0;
+  const actualLimit = limit ?? 0;
   const percentage = actualLimit > 0 ? Math.round((current / actualLimit) * 100) : 0;
   
   // At 100% - Block with upgrade prompt

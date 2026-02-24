@@ -115,7 +115,7 @@ export function ProductQuickViewModal({
 
     const displayPrice = product?.sale_price || product?.price || 0;
     const hasDiscount = product?.sale_price && product.sale_price < product.price;
-    const inStock = (product?.stock_quantity || 0) > 0;
+    const inStock = (product?.stock_quantity ?? 0) > 0;
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>

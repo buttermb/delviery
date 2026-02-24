@@ -261,8 +261,8 @@ export function HotboxDashboard() {
       if (orderItems && orderItems.length > 0) {
         // Calculate actual profit from product costs
         const totalCost = orderItems.reduce((sum, item) => {
-          const productCost = (item.product as { cost?: number } | null)?.cost || 0;
-          return sum + (productCost * (item.quantity || 0));
+          const productCost = (item.product as { cost?: number } | null)?.cost ?? 0;
+          return sum + (productCost * (item.quantity ?? 0));
         }, 0);
         
         if (totalCost > 0 && todayRevenue > 0) {

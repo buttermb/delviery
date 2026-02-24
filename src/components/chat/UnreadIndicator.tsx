@@ -25,7 +25,7 @@ export function UnreadIndicator({ userId, tenantId, className }: UnreadIndicator
             });
 
             if (error) throw error;
-            return (data as number) || 0;
+            return (data as number) ?? 0;
         },
         refetchInterval: 10000, // Refetch every 10 seconds
     });

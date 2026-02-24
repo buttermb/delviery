@@ -25,7 +25,7 @@ export function RevenueForecastChart() {
 
       // Calculate daily revenue from active tenants
       const mockData = [];
-      const totalMRR = (tenants ?? []).reduce((sum, t) => sum + (t.mrr as number || 0), 0);
+      const totalMRR = (tenants ?? []).reduce((sum, t) => sum + (t.mrr as number ?? 0), 0);
       const avgDailyRevenue = totalMRR / 30; // Approximate daily from monthly
       
       // Last 14 days of historical data (using MRR as baseline)

@@ -82,9 +82,9 @@ export function StorefrontPerformanceWidget() {
             return {
                 totalStores: stores.length,
                 activeStores,
-                todayOrders: todayOrders?.length || 0,
+                todayOrders: todayOrders?.length ?? 0,
                 todayRevenue,
-                weekOrders: weekOrders?.length || 0,
+                weekOrders: weekOrders?.length ?? 0,
                 weekRevenue,
             };
         },

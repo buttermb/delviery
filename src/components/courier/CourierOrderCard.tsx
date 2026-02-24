@@ -40,10 +40,10 @@ export const CourierOrderCard = memo(({
   showEarnings = true,
   commissionRate = 30
 }: CourierOrderCardProps) => {
-  const baseCommission = (order.total_amount || 0) * (commissionRate / 100);
-  const tipAmount = order.tip_amount || 0;
+  const baseCommission = (order.total_amount ?? 0) * (commissionRate / 100);
+  const tipAmount = order.tip_amount ?? 0;
   const totalEarnings = baseCommission + tipAmount;
-  const itemCount = order.order_items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+  const itemCount = order.order_items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 
   return (
     <Card className={`p-4 space-y-3 transition-all ${isActive ? 'border-primary border-2' : ''}`}>

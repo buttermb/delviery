@@ -242,7 +242,7 @@ export function TopNav({
                         t.business_name ?? '',
                         t.subscription_status ?? '',
                         t.subscription_plan ?? '',
-                        (t.mrr as number) || 0,
+                        (t.mrr as number) ?? 0,
                         t.created_at ?? '',
                       ]) ?? [];
 

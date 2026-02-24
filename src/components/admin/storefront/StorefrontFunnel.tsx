@@ -73,31 +73,31 @@ export function StorefrontFunnel({ storeId, primaryColor = '#6366f1' }: Storefro
   const stages = [
     {
       name: 'Page Views',
-      value: funnel?.page_views || 0,
+      value: funnel?.page_views ?? 0,
       icon: Eye,
       description: 'Total store visits',
     },
     {
       name: 'Product Views',
-      value: funnel?.product_views || 0,
+      value: funnel?.product_views ?? 0,
       icon: Package,
       description: 'Products viewed',
     },
     {
       name: 'Add to Cart',
-      value: funnel?.add_to_cart || 0,
+      value: funnel?.add_to_cart ?? 0,
       icon: ShoppingCart,
       description: 'Items added to cart',
     },
     {
       name: 'Checkout Started',
-      value: funnel?.checkout_starts || 0,
+      value: funnel?.checkout_starts ?? 0,
       icon: CreditCard,
       description: 'Began checkout',
     },
     {
       name: 'Purchases',
-      value: funnel?.purchases || 0,
+      value: funnel?.purchases ?? 0,
       icon: CheckCircle,
       description: 'Completed orders',
     },
@@ -129,7 +129,7 @@ export function StorefrontFunnel({ storeId, primaryColor = '#6366f1' }: Storefro
       <CardHeader>
         <CardTitle>Sales Funnel</CardTitle>
         <CardDescription>
-          Last 30 days • {funnel?.conversion_rate || 0}% overall conversion rate
+          Last 30 days • {funnel?.conversion_rate ?? 0}% overall conversion rate
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -212,7 +212,7 @@ export function StorefrontFunnel({ storeId, primaryColor = '#6366f1' }: Storefro
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t">
           <div className="text-center">
             <p className="text-2xl font-bold" style={{ color: primaryColor }}>
-              {funnel?.conversion_rate || 0}%
+              {funnel?.conversion_rate ?? 0}%
             </p>
             <p className="text-xs text-muted-foreground">Overall Conversion</p>
           </div>

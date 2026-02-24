@@ -86,7 +86,7 @@ export function StorefrontAnalyticsWidget({ storeId, className }: StorefrontAnal
         }
       }
 
-      const totalVisitors = visitorCount || 0;
+      const totalVisitors = visitorCount ?? 0;
       // Estimate page views as a multiple of visitors (typical ratio)
       const totalPageViews = Math.max(totalVisitors * 3, (orders ?? []).length * 5);
       const totalOrders = (orders ?? []).length;
@@ -148,28 +148,28 @@ export function StorefrontAnalyticsWidget({ storeId, className }: StorefrontAnal
   const stats = [
     {
       label: 'Page Views',
-      value: analytics?.totalPageViews || 0,
+      value: analytics?.totalPageViews ?? 0,
       icon: Eye,
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10',
     },
     {
       label: 'Visitors',
-      value: analytics?.totalVisitors || 0,
+      value: analytics?.totalVisitors ?? 0,
       icon: Users,
       color: 'text-purple-500',
       bgColor: 'bg-purple-500/10',
     },
     {
       label: 'Orders',
-      value: analytics?.totalOrders || 0,
+      value: analytics?.totalOrders ?? 0,
       icon: ShoppingCart,
       color: 'text-green-500',
       bgColor: 'bg-green-500/10',
     },
     {
       label: 'Conversion',
-      value: `${analytics?.conversionRate || 0}%`,
+      value: `${analytics?.conversionRate ?? 0}%`,
       icon: TrendingUp,
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10',

@@ -203,7 +203,7 @@ export const TenantCard = memo(function TenantCard({
           <div className="flex items-center justify-between">
             <span className="text-sm text-[hsl(var(--super-admin-text))]/60">💰 MRR</span>
             <span className="text-sm font-semibold text-[hsl(var(--super-admin-text))]">
-              {formatCurrency((tenant.mrr as number) || 0)}
+              {formatCurrency((tenant.mrr as number) ?? 0)}
             </span>
           </div>
           <div className="flex items-center justify-between">

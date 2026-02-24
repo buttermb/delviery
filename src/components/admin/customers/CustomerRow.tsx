@@ -113,7 +113,7 @@ function CustomerRow({
       <td className="px-4 py-2.5 text-sm">
         <span className="flex items-center gap-1">
           <Award className="w-4 h-4 text-yellow-600" />
-          {customer.loyalty_points || 0}
+          {customer.loyalty_points ?? 0}
         </span>
       </td>
       <td className="px-4 py-2.5 text-sm text-muted-foreground">

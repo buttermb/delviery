@@ -233,7 +233,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
                         {formatCurrency(item.total_cost)}
                       </div>
                       <div className="text-right">
-                        {item.received_quantity || 0} / {item.quantity}
+                        {item.received_quantity ?? 0} / {item.quantity}
                       </div>
                     </div>
                   ))}

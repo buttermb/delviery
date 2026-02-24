@@ -202,7 +202,7 @@ export function OrganizationForm({
         license_type: organization.license_type ?? '',
         license_expiration: organization.license_expiration ?? '',
         pricing_tier_id: organization.pricing_tier_id ?? '',
-        discount_percentage: organization.discount_percentage || 0,
+        discount_percentage: organization.discount_percentage ?? 0,
         notes: organization.notes ?? '',
       });
     } else {

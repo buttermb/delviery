@@ -76,7 +76,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
   // Process access logs by date
   const viewsByDate = accessLogs.reduce((acc: DateViews, log) => {
     const date = new Date(log.accessed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    acc[date] = (acc[date] || 0) + 1;
+    acc[date] = (acc[date] ?? 0) + 1;
     return acc;
   }, {});
 
@@ -92,7 +92,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
       acc[date] = { date, orders: 0, revenue: 0 };
     }
     acc[date].orders += 1;
-    acc[date].revenue += order.total_amount || 0;
+    acc[date].revenue += order.total_amount ?? 0;
     return acc;
   }, {});
 
@@ -101,13 +101,13 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
   // Peak hours analysis
   const hourlyViews = accessLogs.reduce((acc: HourlyViews, log) => {
     const hour = new Date(log.accessed_at).getHours();
-    acc[hour] = (acc[hour] || 0) + 1;
+    acc[hour] = (acc[hour] ?? 0) + 1;
     return acc;
   }, {});
 
   const peakHoursData = Array.from({ length: 24 }, (_, i) => ({
     hour: `${i}:00`,
-    views: hourlyViews[i] || 0
+    views: hourlyViews[i] ?? 0
   }));
 
   // Product performance
@@ -116,8 +116,8 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
       if (!acc[item.product_name]) {
         acc[item.product_name] = { name: item.product_name, quantity: 0, revenue: 0 };
       }
-      acc[item.product_name].quantity += item.quantity || 0;
-      acc[item.product_name].revenue += (item.price_per_unit || 0) * (item.quantity || 0);
+      acc[item.product_name].quantity += item.quantity ?? 0;
+      acc[item.product_name].revenue += (item.price_per_unit ?? 0) * (item.quantity ?? 0);
     });
     return acc;
   }, {});
@@ -150,7 +150,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
   // Security events by type
   const eventsByType = securityEvents.reduce((acc: EventsByType, event) => {
     const type = event.event_type.replace(/_/g, ' ');
-    acc[type] = (acc[type] || 0) + 1;
+    acc[type] = (acc[type] ?? 0) + 1;
     return acc;
   }, {});
 
@@ -162,7 +162,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
   // Calculate key metrics
   const totalViews = accessLogs.length;
   const totalOrders = orders.length;
-  const totalRevenue = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0);
   const conversionRate = totalViews > 0 ? (totalOrders / totalViews) * 100 : 0;
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];

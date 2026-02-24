@@ -48,7 +48,7 @@ export function RevenueChartWidget() {
         if (order.status === 'completed' || order.status === 'delivered') {
           const date = format(startOfDay(new Date(order.created_at)), 'yyyy-MM-dd');
           const amount = Number(order.total_amount || 0);
-          dailyRevenue.set(date, (dailyRevenue.get(date) || 0) + amount);
+          dailyRevenue.set(date, (dailyRevenue.get(date) ?? 0) + amount);
         }
       });
 

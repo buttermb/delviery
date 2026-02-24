@@ -24,8 +24,8 @@ export function QuickStats() {
       ]);
 
       return {
-        totalOrders: ordersResult.count || 0,
-        totalReviews: reviewsResult.count || 0,
+        totalOrders: ordersResult.count ?? 0,
+        totalReviews: reviewsResult.count ?? 0,
         avgRating: 4.8, // Could calculate from reviews
         totalCustomers: 1250 // Could calculate from users
       };

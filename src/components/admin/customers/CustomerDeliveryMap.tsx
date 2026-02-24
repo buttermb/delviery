@@ -211,8 +211,8 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
             status: order.status,
             delivery_address: order.delivery_address ?? '',
             hub_name: order.locations?.name || 'Unknown Hub',
-            hub_lat: coords?.lat || 0,
-            hub_lng: coords?.lng || 0,
+            hub_lat: coords?.lat ?? 0,
+            hub_lng: coords?.lng ?? 0,
             dest_lat: 0, // Would need geocoding
             dest_lng: 0,
           };

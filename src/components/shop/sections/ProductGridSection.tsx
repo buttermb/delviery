@@ -85,7 +85,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         addItem({
             productId: product.id,
             name: product.name ?? '',
-            price: product.price || 0,
+            price: product.price ?? 0,
             quantity: 1,
             imageUrl: product.images?.[0],
         });
@@ -147,7 +147,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                             description: p.description as string | undefined,
                             images: (p.images as string[]) ?? [],
                             category: p.category as string | undefined,
-                            in_stock: ((p.quantity_available as number) || 0) > 0,
+                            in_stock: ((p.quantity_available as number) ?? 0) > 0,
                             strain_type: (p.strain_type as string) ?? '',
                         };
                     }) as LocalProduct[];

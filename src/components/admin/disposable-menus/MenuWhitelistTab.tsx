@@ -236,7 +236,7 @@ export const MenuWhitelistTab = ({
 
                 <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mb-3">
                   <div>
-                    <span className="font-medium">Views:</span> {String(entry.view_count || 0)}
+                    <span className="font-medium">Views:</span> {String(entry.view_count ?? 0)}
                   </div>
                   <div>
                     <span className="font-medium">Invited:</span> {format(new Date(String(jsonToStringOrNumber(entry.invited_at as Json))), 'MMM dd')}

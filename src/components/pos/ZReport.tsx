@@ -127,10 +127,10 @@ Net Sales: ${formatCurrency(netSales)}` : ''}
 
 Opening Cash: ${formatCurrency(shift.opening_cash)}
 + Cash Sales: ${formatCurrency(shift.cash_sales)}
-${cashRefunds > 0 ? `- Cash Refunds: -${formatCurrency(cashRefunds)}\n` : ''}Expected Cash: ${formatCurrency(shift.expected_cash || 0)}
+${cashRefunds > 0 ? `- Cash Refunds: -${formatCurrency(cashRefunds)}\n` : ''}Expected Cash: ${formatCurrency(shift.expected_cash ?? 0)}
 
-Closing Cash: ${formatCurrency(shift.closing_cash || 0)}
-Difference: ${formatCurrency(shift.cash_difference || 0)}
+Closing Cash: ${formatCurrency(shift.closing_cash ?? 0)}
+Difference: ${formatCurrency(shift.cash_difference ?? 0)}
 
 ========================================
          TRANSACTION DETAILS
@@ -158,14 +158,14 @@ ${i + 1}. ${t.transaction_number}
     return <div className="text-center py-8">Shift not found</div>;
   }
 
-  const netSales = shift.total_sales - (shift.refunds_amount || 0);
+  const netSales = shift.total_sales - (shift.refunds_amount ?? 0);
 
   // Compute refund stats from transactions
   const refundTransactions = transactions?.filter(
     (t) => t.payment_status === 'refunded' || t.total_amount < 0
   ) ?? [];
   const refundCount = refundTransactions.length;
-  const totalRefunds = shift.refunds_amount || 0;
+  const totalRefunds = shift.refunds_amount ?? 0;
   const cashRefunds = refundTransactions
     .filter((t) => t.payment_method === 'cash')
     .reduce((sum, t) => sum + Math.abs(t.total_amount), 0);
@@ -340,20 +340,20 @@ ${i + 1}. ${t.transaction_number}
               )}
               <div className="flex justify-between text-muted-foreground">
                 <span>Expected Cash</span>
-                <span className="font-semibold">{formatCurrency(shift.expected_cash || 0)}</span>
+                <span className="font-semibold">{formatCurrency(shift.expected_cash ?? 0)}</span>
               </div>
               <Separator />
               <div className="flex justify-between">
                 <span>Closing Cash (Counted)</span>
-                <span className="font-semibold">{formatCurrency(shift.closing_cash || 0)}</span>
+                <span className="font-semibold">{formatCurrency(shift.closing_cash ?? 0)}</span>
               </div>
               <div
                 className={`flex justify-between font-bold ${
-                  (shift.cash_difference || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                  (shift.cash_difference ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}
               >
                 <span>Difference</span>
-                <span>{formatCurrency(shift.cash_difference || 0)}</span>
+                <span>{formatCurrency(shift.cash_difference ?? 0)}</span>
               </div>
             </div>
           </div>

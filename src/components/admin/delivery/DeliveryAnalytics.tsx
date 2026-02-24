@@ -246,7 +246,7 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
 
     // Calculate delivery fees
     const totalDeliveryFees = completedOrders.reduce(
-      (sum, o) => sum + (o.delivery_fee || 0),
+      (sum, o) => sum + (o.delivery_fee ?? 0),
       0
     );
     const avgDeliveryFee = completedOrders.length > 0
@@ -516,7 +516,7 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
         }
       }
 
-      reasonMap.set(reason, (reasonMap.get(reason) || 0) + 1);
+      reasonMap.set(reason, (reasonMap.get(reason) ?? 0) + 1);
     });
 
     return Array.from(reasonMap.entries())
@@ -972,9 +972,9 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
                                 key={hour}
                                 className={cn(
                                   'flex-1 h-6 rounded-sm transition-colors',
-                                  getHeatmapColor(cell?.count || 0)
+                                  getHeatmapColor(cell?.count ?? 0)
                                 )}
-                                title={`${day} ${HOUR_LABELS[hour]}: ${cell?.count || 0} deliveries`}
+                                title={`${day} ${HOUR_LABELS[hour]}: ${cell?.count ?? 0} deliveries`}
                                 style={{ minWidth: '14px' }}
                               />
                             );

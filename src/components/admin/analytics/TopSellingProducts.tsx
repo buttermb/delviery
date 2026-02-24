@@ -53,7 +53,7 @@ export function TopSellingProducts({ storeId, dateRange, className }: TopSelling
           const existing = productMap.get(name) || { quantity: 0, revenue: 0 };
           productMap.set(name, {
             quantity: existing.quantity + (item.quantity || 1),
-            revenue: existing.revenue + ((item.quantity || 1) * (item.price || 0)),
+            revenue: existing.revenue + ((item.quantity ?? 1) * (item.price ?? 0)),
           });
         });
       });

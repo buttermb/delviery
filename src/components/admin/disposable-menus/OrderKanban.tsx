@@ -308,7 +308,7 @@ function OrderCard({
   const customerName = order.whitelist?.customer_name || order.contact_phone || 'Unknown Customer';
   const menuName = order.menu?.name || 'Menu';
   const total = Number(order.total_amount || 0);
-  const itemCount = order.items?.length || 0;
+  const itemCount = order.items?.length ?? 0;
   const createdAt = order.created_at ? format(new Date(order.created_at), 'MMM d, h:mm a') : '';
 
   return (

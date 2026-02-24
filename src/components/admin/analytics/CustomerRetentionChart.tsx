@@ -40,7 +40,7 @@ export function CustomerRetentionChart({ storeId, className }: CustomerRetention
             orders.forEach(order => {
                 const email = order.customer_email;
                 if (email) {
-                    customerOrderCounts.set(email, (customerOrderCounts.get(email) || 0) + 1);
+                    customerOrderCounts.set(email, (customerOrderCounts.get(email) ?? 0) + 1);
                 }
             });
 

@@ -82,14 +82,14 @@ export function UnifiedAnalyticsDashboard({ tenantId }: UnifiedAnalyticsProps) {
 
             // Calculate Source Breakdown
             const bySource = transactions.reduce((acc, t) => {
-                acc[t.source] = (acc[t.source] || 0) + t.amount;
+                acc[t.source] = (acc[t.source] ?? 0) + t.amount;
                 return acc;
             }, {} as Record<string, number>);
 
             const sourceData = [
-                { name: 'Wholesale', value: bySource.wholesale || 0 },
-                { name: 'POS', value: bySource.pos || 0 },
-                { name: 'Disposable Menus', value: bySource.menu || 0 },
+                { name: 'Wholesale', value: bySource.wholesale ?? 0 },
+                { name: 'POS', value: bySource.pos ?? 0 },
+                { name: 'Disposable Menus', value: bySource.menu ?? 0 },
             ].filter(d => d.value > 0);
 
             return {

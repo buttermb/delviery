@@ -345,7 +345,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
               </div>
             </div>
           ))}
-          {(formData.images?.length || 0) + additionalPreviews.length < 5 && (
+          {(formData.images?.length ?? 0) + additionalPreviews.length < 5 && (
             <label htmlFor="additional-images">
               <Card className="aspect-square flex items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors border-2 border-dashed">
                 <div className="text-center">

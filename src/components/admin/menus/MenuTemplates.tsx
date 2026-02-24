@@ -286,7 +286,7 @@ const useMenuTemplates = (tenantId?: string) => {
         isDefault: template.is_default,
         isShared: template.is_shared,
         version: template.version || 1,
-        usageCount: template.usage_count || 0,
+        usageCount: template.usage_count ?? 0,
         createdAt: template.created_at,
         updatedAt: template.updated_at,
         createdBy: template.created_by,
@@ -397,7 +397,7 @@ const useUpdateTemplate = () => {
         .eq('tenant_id', templateData.tenantId)
         .maybeSingle();
 
-      const newVersion = ((currentTemplate as Record<string, unknown> | null)?.version as number || 0) + 1;
+      const newVersion = ((currentTemplate as Record<string, unknown> | null)?.version as number ?? 0) + 1;
 
       // Update the template
       const updateData: Record<string, unknown> = {
@@ -502,7 +502,7 @@ const useIncrementUsage = () => {
 
         await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
           .from('menu_templates')
-          .update({ usage_count: ((current as Record<string, unknown> | null)?.usage_count as number || 0) + 1 })
+          .update({ usage_count: ((current as Record<string, unknown> | null)?.usage_count as number ?? 0) + 1 })
           .eq('id', id)
           .eq('tenant_id', tenantId);
       }

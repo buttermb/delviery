@@ -390,7 +390,7 @@ export function MenuProductOrdering({
         id: mp.id,
         productId: mp.product_id,
         name: mp.product?.name || 'Unknown Product',
-        price: mp.product?.price || 0,
+        price: mp.product?.price ?? 0,
         customPrice: mp.custom_price,
         imageUrl: mp.product?.image_url,
         category: mp.product?.category || 'Uncategorized',

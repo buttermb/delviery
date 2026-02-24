@@ -54,8 +54,8 @@ export function SupplierDetail({ open, onOpenChange, supplier, onEdit }: Supplie
     enabled: open && !!supplier.id,
   });
 
-  const totalTransactions = transactions?.length || 0;
-  const totalAmount = transactions?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
+  const totalTransactions = transactions?.length ?? 0;
+  const totalAmount = transactions?.reduce((sum, t) => sum + Number(t.amount || 0), 0) ?? 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -285,7 +285,7 @@ function ProductRuleCard({
                               'h-full rounded-full transition-all',
                               remaining === 0
                                 ? 'bg-red-500'
-                                : remaining <= (rule.maxQuantity || 0) * 0.2
+                                : remaining <= (rule.maxQuantity ?? 0) * 0.2
                                   ? 'bg-amber-500'
                                   : 'bg-green-500'
                             )}

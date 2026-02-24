@@ -106,7 +106,7 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
         categoryFilter === 'all' || product.category === categoryFilter;
 
       // Stock status filter
-      const stockQuantity = product.stock_quantity || 0;
+      const stockQuantity = product.stock_quantity ?? 0;
       const lowStockThreshold = product.low_stock_alert || 10;
       let matchesStock = true;
 
@@ -144,8 +144,8 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
     let outOfStockCount = 0;
 
     products.forEach((product) => {
-      const quantity = product.stock_quantity || 0;
-      const price = product.price || 0;
+      const quantity = product.stock_quantity ?? 0;
+      const price = product.price ?? 0;
       const lowThreshold = product.low_stock_alert || 10;
 
       totalStockValue += quantity * price;
@@ -166,7 +166,7 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
   }, [products]);
 
   const getStockStatusBadge = (product: Product) => {
-    const quantity = product.stock_quantity || 0;
+    const quantity = product.stock_quantity ?? 0;
     const lowThreshold = product.low_stock_alert || 10;
 
     if (quantity === 0) {

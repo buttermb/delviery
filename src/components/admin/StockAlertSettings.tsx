@@ -266,7 +266,7 @@ export function StockAlertSettings() {
             <div className="flex items-end">
               <Button onClick={handleBulkApply} disabled={isSaving} className="w-full sm:w-auto">
                 {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                Apply to {filteredProducts?.length || 0} Products
+                Apply to {filteredProducts?.length ?? 0} Products
               </Button>
             </div>
           </div>
@@ -300,7 +300,7 @@ export function StockAlertSettings() {
       {/* Products List */}
       <Card>
         <CardHeader>
-          <CardTitle>Product Thresholds ({filteredProducts?.length || 0})</CardTitle>
+          <CardTitle>Product Thresholds ({filteredProducts?.length ?? 0})</CardTitle>
           <CardDescription>
             Set individual thresholds for each product. Alert levels are calculated based on
             current stock vs threshold.

@@ -75,14 +75,14 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
         // Get category from credit_costs or default
         const metadata = tx.metadata as Record<string, unknown> | null;
         const category = (typeof metadata?.category === 'string' ? metadata.category : 'other');
-        byCategory[category] = (byCategory[category] || 0) + Math.abs(tx.amount);
+        byCategory[category] = (byCategory[category] ?? 0) + Math.abs(tx.amount);
 
         // Aggregate by day
         const day = new Date(tx.created_at).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric'
         });
-        byDay[day] = (byDay[day] || 0) + Math.abs(tx.amount);
+        byDay[day] = (byDay[day] ?? 0) + Math.abs(tx.amount);
       }
 
       // Convert to chart data

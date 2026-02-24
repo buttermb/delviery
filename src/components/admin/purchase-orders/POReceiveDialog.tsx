@@ -37,7 +37,7 @@ export function POReceiveDialog({
       // Initialize quantities with ordered amounts
       const initialQuantities: Record<string, number> = {};
       items.forEach(item => {
-        initialQuantities[item.id] = item.quantity || 0;
+        initialQuantities[item.id] = item.quantity ?? 0;
       });
       setQuantities(initialQuantities);
       setReceivedDate(new Date().toISOString().split('T')[0]);
@@ -49,7 +49,7 @@ export function POReceiveDialog({
 
     const receiveItems = items.map(item => ({
       item_id: item.id,
-      quantity_received: quantities[item.id] || 0,
+      quantity_received: quantities[item.id] ?? 0,
     }));
 
     try {
@@ -117,7 +117,7 @@ export function POReceiveDialog({
                       type="number"
                       min="0"
                       step="0.1"
-                      value={quantities[item.id] || 0}
+                      value={quantities[item.id] ?? 0}
                       onChange={(e) =>
                         setQuantities({
                           ...quantities,

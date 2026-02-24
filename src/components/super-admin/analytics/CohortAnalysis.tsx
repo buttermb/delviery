@@ -61,7 +61,7 @@ export function CohortAnalysis() {
             (t) => t.subscription_status === 'active'
           ).length;
           const churned = cohortTenants.filter((t) => t.cancelled_at).length;
-          const revenue = cohortTenants.reduce((sum, t) => sum + (t.mrr || 0), 0);
+          const revenue = cohortTenants.reduce((sum, t) => sum + (t.mrr ?? 0), 0);
 
           // Calculate retention rates for each month
           const retentionRates: Record<string, number> = {};
@@ -95,7 +95,7 @@ export function CohortAnalysis() {
 
       // Calculate average retention
       const avgRetention = cohorts.reduce((sum, c) => {
-        const month1Retention = c.retentionRates['Month 1'] || 0;
+        const month1Retention = c.retentionRates['Month 1'] ?? 0;
         return sum + month1Retention;
       }, 0) / cohorts.length;
 

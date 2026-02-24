@@ -39,10 +39,10 @@ export function ConversionRateChart({ storeId, className }: ConversionRateChartP
 
             // Count by status
             const statusCounts = {
-                total: orders?.length || 0,
-                completed: orders?.filter(o => o.status === 'completed' || o.status === 'delivered').length || 0,
-                pending: orders?.filter(o => o.status === 'pending' || o.status === 'processing').length || 0,
-                cancelled: orders?.filter(o => o.status === 'cancelled').length || 0,
+                total: orders?.length ?? 0,
+                completed: orders?.filter(o => o.status === 'completed' || o.status === 'delivered').length ?? 0,
+                pending: orders?.filter(o => o.status === 'pending' || o.status === 'processing').length ?? 0,
+                cancelled: orders?.filter(o => o.status === 'cancelled').length ?? 0,
             };
 
             // Build funnel (approximation based on available data)

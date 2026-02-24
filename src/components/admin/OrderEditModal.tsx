@@ -116,8 +116,8 @@ export function OrderEditModal({
       const editableItems: EditableOrderItem[] = (order.order_items ?? []).map((item, index) => ({
         id: item.id || `temp-${index}`,
         product_name: item.product_name || item.products?.name || 'Unknown Product',
-        quantity: item.quantity || 0,
-        price: item.price || 0,
+        quantity: item.quantity ?? 0,
+        price: item.price ?? 0,
       }));
       setItems(editableItems);
       setDeliveryAddress(order.delivery_address ?? '');

@@ -97,11 +97,11 @@ const ExpiringMenuCard = ({ menu, onArchive, isArchiving }: ExpiringMenuCardProp
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Eye className="h-3.5 w-3.5" />
-                {menu.view_count || 0} views
+                {menu.view_count ?? 0} views
               </span>
               <span className="flex items-center gap-1">
                 <ShoppingBag className="h-3.5 w-3.5" />
-                {menu.order_count || 0} orders
+                {menu.order_count ?? 0} orders
               </span>
             </div>
 
@@ -323,11 +323,11 @@ export const MenuExpirationManager = ({
           tenantId,
           reason: 'manual',
           analyticsSnapshot: {
-            totalViews: menu.view_count || 0,
-            totalOrders: menu.order_count || 0,
-            totalRevenue: menu.total_revenue || 0,
-            conversionRate: (menu.view_count || 0) > 0
-              ? ((menu.order_count || 0) / (menu.view_count || 1)) * 100
+            totalViews: menu.view_count ?? 0,
+            totalOrders: menu.order_count ?? 0,
+            totalRevenue: menu.total_revenue ?? 0,
+            conversionRate: (menu.view_count ?? 0) > 0
+              ? ((menu.order_count ?? 0) / (menu.view_count || 1)) * 100
               : 0,
           },
           archivedAt: new Date().toISOString(),

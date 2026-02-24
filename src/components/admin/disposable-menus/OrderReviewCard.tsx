@@ -61,7 +61,7 @@ export const OrderReviewCard = ({ order, onReview }: OrderReviewCardProps) => {
 
   const orderItems = Array.isArray(order.order_items) ? order.order_items : [];
   const totalQuantity = orderItems.reduce((sum: number, item: OrderItem) => 
-    sum + (item.quantity || 0), 0
+    sum + (item.quantity ?? 0), 0
   );
 
   return (
@@ -135,7 +135,7 @@ export const OrderReviewCard = ({ order, onReview }: OrderReviewCardProps) => {
                 <span>
                   {cleanProductName(item.product_name || 'Product')} × {item.quantity} lbs
                 </span>
-                <span>${((item.price_per_unit || 0) * (item.quantity || 0)).toLocaleString()}</span>
+                <span>${((item.price_per_unit ?? 0) * (item.quantity ?? 0)).toLocaleString()}</span>
               </div>
             ))}
             {orderItems.length > 3 && (

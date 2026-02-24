@@ -164,7 +164,7 @@ export function CustomerPreferredProducts({
       if (product.category) {
         categoryCount.set(
           product.category,
-          (categoryCount.get(product.category) || 0) + product.timesOrdered
+          (categoryCount.get(product.category) ?? 0) + product.timesOrdered
         );
       }
     }

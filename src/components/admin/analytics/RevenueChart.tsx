@@ -52,7 +52,7 @@ function groupByGranularity(
 
     const existing = grouped.get(key) || { revenue: 0, orders: 0 };
     grouped.set(key, {
-      revenue: existing.revenue + (order.total || 0),
+      revenue: existing.revenue + (order.total ?? 0),
       orders: existing.orders + 1,
     });
   });
@@ -93,7 +93,7 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
       }
 
       const grouped = groupByGranularity(orders, granularity);
-      const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+      const totalRevenue = orders.reduce((sum, o) => sum + (o.total ?? 0), 0);
 
       return { data: grouped, totalRevenue: Math.round(totalRevenue * 100) / 100 };
     },

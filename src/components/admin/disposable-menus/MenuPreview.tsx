@@ -110,7 +110,7 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
       strain_type: productData.strain_type,
       thc_content: productData.thc_content,
       cbd_content: productData.cbd_content,
-      display_order: mp.display_order || 0,
+      display_order: mp.display_order ?? 0,
       display_availability: mp.display_availability ?? true,
       // Compliance fields
       lab_name: productData.lab_name,

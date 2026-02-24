@@ -185,7 +185,7 @@ export function LowStockToPODialog({
 
       // Calculate estimated cost for this item
       const suggestedQty = calculateSuggestedQuantity(product);
-      const cost = suggestedQty * (product.cost_per_unit || 0);
+      const cost = suggestedQty * (product.cost_per_unit ?? 0);
       group.totalEstimatedCost += cost;
     });
 
@@ -211,7 +211,7 @@ export function LowStockToPODialog({
           newSelection.set(productId, {
             productId,
             quantity: calculateSuggestedQuantity(product),
-            unitCost: product.cost_per_unit || 0,
+            unitCost: product.cost_per_unit ?? 0,
           });
         }
       });
@@ -235,7 +235,7 @@ export function LowStockToPODialog({
           newMap.set(product.id, {
             productId: product.id,
             quantity: calculateSuggestedQuantity(product),
-            unitCost: product.cost_per_unit || 0,
+            unitCost: product.cost_per_unit ?? 0,
           });
         } else {
           newMap.delete(product.id);
@@ -260,7 +260,7 @@ export function LowStockToPODialog({
             newMap.set(product.id, {
               productId: product.id,
               quantity: calculateSuggestedQuantity(product),
-              unitCost: product.cost_per_unit || 0,
+              unitCost: product.cost_per_unit ?? 0,
             });
           } else {
             newMap.delete(product.id);
@@ -296,7 +296,7 @@ export function LowStockToPODialog({
         newSelection.set(product.id, {
           productId: product.id,
           quantity: calculateSuggestedQuantity(product),
-          unitCost: product.cost_per_unit || 0,
+          unitCost: product.cost_per_unit ?? 0,
         });
       }
     });
@@ -632,7 +632,7 @@ export function LowStockToPODialog({
                                       className="w-20 h-8 text-sm"
                                     />
                                     <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                      @ ${(product.cost_per_unit || 0).toFixed(2)}
+                                      @ ${(product.cost_per_unit ?? 0).toFixed(2)}
                                     </span>
                                   </div>
                                 )}

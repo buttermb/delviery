@@ -101,9 +101,9 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
 
         trends.push({
           date: format(date, 'MMM dd'),
-          views: views || 0,
-          zooms: zooms || 0,
-          conversions: conversions || 0,
+          views: views ?? 0,
+          zooms: zooms ?? 0,
+          conversions: conversions ?? 0,
         });
       }
       

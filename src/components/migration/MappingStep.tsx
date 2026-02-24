@@ -120,7 +120,7 @@ export function MappingStep({ detectedColumns, onUpdateMappings, onConfirm }: Ma
       <div className="space-y-3">
         {detectedColumns.headers.map((header) => {
           const mapping = getMappingForHeader(header);
-          const confidence = mapping?.confidence || 0;
+          const confidence = mapping?.confidence ?? 0;
           const targetField = mapping?.targetField || 'ignore';
           
           return (
