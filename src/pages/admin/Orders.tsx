@@ -59,6 +59,7 @@ import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-pre
 import { format, isWithinInterval, startOfDay, endOfDay, parseISO } from "date-fns";
 import type { OrderWithSLATimestamps } from "@/types/sla";
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface OrderItem {
   id: string;
@@ -340,7 +341,7 @@ export default function Orders() {
         queryClient.setQueryData(queryKeys.orders.byTenant(tenant?.id!), context.previousOrders);
       }
       logger.error('Error updating status:', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
-      toast.error("Failed to update status");
+      toast.error("Failed to update status", { description: humanizeError(error) });
     },
     onSettled: () => {
       // Always refetch to ensure server consistency
@@ -363,7 +364,7 @@ export default function Orders() {
     },
     onError: (error) => {
       logger.error('Error deleting order(s)', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
-      toast.error("Failed to delete order(s)");
+      toast.error("Failed to delete order(s)", { description: humanizeError(error) });
     }
   });
 
@@ -446,7 +447,7 @@ export default function Orders() {
     const previousOrders = orders;
 
     // Optimistically update the UI
-    queryClient.setQueryData(['orders', tenant.id], (old: Order[] = []) =>
+    queryClient.setQueryData(queryKeys.orders.byTenant(tenant.id), (old: Order[] = []) =>
       old.map(o => selectedOrders.includes(o.id) ? { ...o, status } : o)
     );
 
@@ -476,7 +477,7 @@ export default function Orders() {
       setSelectedOrders([]);
     } catch (error) {
       // Rollback on error
-      queryClient.setQueryData(['orders', tenant.id], previousOrders);
+      queryClient.setQueryData(queryKeys.orders.byTenant(tenant.id), previousOrders);
       logger.error('Error updating orders in bulk', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error("Failed to update orders");
     }
