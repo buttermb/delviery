@@ -177,6 +177,8 @@ export function QuickReceiving() {
           <Label>Quantity (lbs)</Label>
           <Input
             type="number"
+            min="0.01"
+            step="0.01"
             placeholder="0"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}

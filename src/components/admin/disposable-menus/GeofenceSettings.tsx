@@ -111,6 +111,8 @@ export const GeofenceSettings = ({ rules, onChange }: GeofenceSettingsProps) => 
                       <Label className="text-xs">Latitude</Label>
                       <Input
                         type="number"
+                        min={-90}
+                        max={90}
                         step="0.0001"
                         value={rule.center.latitude}
                         onChange={(e) => updateRule(index, {
@@ -122,6 +124,8 @@ export const GeofenceSettings = ({ rules, onChange }: GeofenceSettingsProps) => 
                       <Label className="text-xs">Longitude</Label>
                       <Input
                         type="number"
+                        min={-180}
+                        max={180}
                         step="0.0001"
                         value={rule.center.longitude}
                         onChange={(e) => updateRule(index, {
@@ -135,6 +139,7 @@ export const GeofenceSettings = ({ rules, onChange }: GeofenceSettingsProps) => 
                     <Label className="text-xs">Radius (km)</Label>
                     <Input
                       type="number"
+                      min={0}
                       step="0.1"
                       value={rule.radius_km}
                       onChange={(e) => updateRule(index, { radius_km: parseFloat(e.target.value) })}

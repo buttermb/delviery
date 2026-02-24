@@ -283,6 +283,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               <Input
                 id="credit_limit"
                 type="number"
+                min="0"
                 step="1000"
                 value={formData.credit_limit}
                 onChange={(e) => setFormData({ ...formData, credit_limit: e.target.value })}
