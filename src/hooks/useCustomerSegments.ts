@@ -242,7 +242,7 @@ export function useCustomerSegment({
       });
 
       // Fetch customer info
-      const { data: customer, error: customerError } = await supabase
+      const { data: customer, error: customerError } = await (supabase as any)
         .from('contacts')
         .select('id, full_name')
         .eq('id', customerId)
@@ -379,7 +379,7 @@ export function useCustomerSegments({
       });
 
       // Fetch all customers
-      const { data: customers, error: customersError } = await supabase
+      const { data: customers, error: customersError } = await (supabase as any)
         .from('contacts')
         .select('id, full_name')
         .eq('tenant_id', tenantId);

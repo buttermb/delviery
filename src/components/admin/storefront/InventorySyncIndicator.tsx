@@ -311,7 +311,7 @@ export function InventorySyncIndicator({
           size="sm"
           className={cn(
             'gap-1.5 h-8 px-2',
-            connectionStatus === 'error' && 'text-red-500',
+            (connectionStatus as string) === 'error' && 'text-red-500',
             syncStatus === 'lagging' && 'text-amber-500',
             className
           )}

@@ -239,7 +239,7 @@ export const TIER_DISPLAY_INFO: Record<LoyaltyTier, { label: string; color: stri
 // ============================================================================
 
 async function fetchLoyaltyConfig(tenantId: string): Promise<LoyaltyConfig | null> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('loyalty_config')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -262,7 +262,7 @@ async function fetchCustomerLoyaltyStatus(
   config: LoyaltyConfig | null
 ): Promise<CustomerLoyaltyStatus> {
   // Get current points balance
-  const { data: pointsData, error: pointsError } = await supabase
+  const { data: pointsData, error: pointsError } = await (supabase as any)
     .from('loyalty_points')
     .select('points, type, created_at')
     .eq('tenant_id', tenantId)
@@ -349,7 +349,7 @@ async function fetchPointsHistory(
   customerId: string,
   limit = 50
 ): Promise<LoyaltyPointTransaction[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('loyalty_points')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -366,7 +366,7 @@ async function fetchPointsHistory(
     throw error;
   }
 
-  return (data ?? []) as LoyaltyPointTransaction[];
+  return (data ?? []) as unknown as LoyaltyPointTransaction[];
 }
 
 // ============================================================================
@@ -424,7 +424,7 @@ export function useLoyaltyConfig(): UseLoyaltyConfigReturn {
 
       if (existing) {
         // Update existing
-        const { data: updated, error } = await supabase
+        const { data: updated, error } = await (supabase as any)
           .from('loyalty_config')
           .update({
             ...data,
@@ -452,7 +452,7 @@ export function useLoyaltyConfig(): UseLoyaltyConfigReturn {
         return updated as LoyaltyConfig;
       } else {
         // Create new
-        const { data: created, error } = await supabase
+        const { data: created, error } = await (supabase as any)
           .from('loyalty_config')
           .insert({
             tenant_id: tenantId,
@@ -623,7 +623,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
       const currentBalance = loyaltyStatus?.current_points ?? 0;
       const newBalance = currentBalance + params.points;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('loyalty_points')
         .insert({
           tenant_id: tenantId,
@@ -657,7 +657,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
         component: 'usePointsMutations',
       });
 
-      return data as LoyaltyPointTransaction;
+      return data as unknown as LoyaltyPointTransaction;
     },
     onSuccess: (_data, variables) => {
       toast.success('Points awarded successfully');
@@ -688,7 +688,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
 
       const newBalance = currentBalance - params.points;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('loyalty_points')
         .insert({
           tenant_id: tenantId,
@@ -748,7 +748,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
       const currentBalance = loyaltyStatus?.current_points ?? 0;
       const newBalance = Math.max(0, currentBalance + params.points);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('loyalty_points')
         .insert({
           tenant_id: tenantId,
