@@ -209,12 +209,11 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
   return (
     <Card 
       className={cn(
-        "fixed shadow-2xl flex flex-col",
+        "fixed shadow-2xl flex flex-col z-modal",
         isMobile 
           ? "bottom-0 left-0 right-0 top-auto h-[calc(100vh-4rem)] max-h-[600px] rounded-t-2xl rounded-b-none safe-area-bottom"
           : "bottom-6 right-6 w-96 h-[600px] rounded-lg"
       )}
-      style={{ zIndex: 200 }}
       data-chat-widget="main"
     >
       {/* Header */}
@@ -280,12 +279,11 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
       </ScrollArea>
 
       {/* Input - Mobile optimized with proper z-index */}
-      <div 
+      <div
         className={cn(
-          "border-t space-y-2 bg-background chat-input-container",
+          "border-t space-y-2 bg-background chat-input-container z-[1]",
           isMobile ? "p-3 pb-safe sticky bottom-0" : "p-4"
         )}
-        style={{ zIndex: 1 }}
         data-chat-widget="input-container"
       >
         {mode === 'ai' && (
@@ -319,12 +317,9 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
             disabled={loading}
             className={cn(
               "min-h-[44px] text-base flex-1 mobile-input-container",
-              isMobile && "text-base"
+              isMobile && "text-base",
+              isMobile && isInputFocused && "relative z-[1]"
             )}
-            style={isMobile && isInputFocused ? {
-              position: 'relative',
-              zIndex: 1
-            } : undefined}
           />
           <Button 
             onClick={handleSend} 

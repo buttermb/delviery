@@ -81,7 +81,7 @@ export function PurchaseSuccessPage() {
   useEffect(() => {
     const duration = 3000;
     const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 }; // matches --z-max token
 
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 

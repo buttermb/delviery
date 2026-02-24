@@ -58,7 +58,7 @@ const joyrideStyles: Partial<Styles> = {
     backgroundColor: 'hsl(var(--background))',
     primaryColor: 'hsl(var(--primary))',
     textColor: 'hsl(var(--foreground))',
-    zIndex: 9999,
+    zIndex: 9999, // matches --z-max token
   },
   tooltip: {
     borderRadius: '0.75rem',

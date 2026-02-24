@@ -540,6 +540,16 @@ body.keyboard-open [data-radix-dialog-content] {
     /* #111827 - Gray 900 */
     --customer-text-light: 215 20% 65%;
     /* #6b7280 - Gray 500 */
+
+    /* Z-Index Scale */
+    --z-base: 0;
+    --z-dropdown: 50;
+    --z-sticky: 100;
+    --z-overlay: 150;
+    --z-modal: 200;
+    --z-toast: 300;
+    --z-tooltip: 400;
+    --z-max: 9999;
   }
 
   .dark {
@@ -716,6 +726,16 @@ body.keyboard-open [data-radix-dialog-content] {
     /* White */
     --customer-text-light: 215 20% 75%;
     /* Light gray */
+
+    /* Z-Index Scale */
+    --z-base: 0;
+    --z-dropdown: 50;
+    --z-sticky: 100;
+    --z-overlay: 150;
+    --z-modal: 200;
+    --z-toast: 300;
+    --z-tooltip: 400;
+    --z-max: 9999;
   }
 }
 
@@ -1233,14 +1253,14 @@ body.keyboard-open [data-radix-dialog-content] {
       transform: none !important;
     }
 
-    /* Fix chat widget z-index — modal level (200) */
+    /* Fix chat widget z-index — modal level */
     [data-chat-widget] {
-      z-index: 200 !important;
+      z-index: var(--z-modal) !important;
     }
 
-    /* Bottom navigation — sticky level (100) */
+    /* Bottom navigation — sticky level */
     nav[class*="fixed"][class*="bottom"]:not([style*="z-index"]) {
-      z-index: 100 !important;
+      z-index: var(--z-sticky) !important;
     }
 
     /* Input containers in modals/sheets — relative positioning only */
@@ -1775,7 +1795,7 @@ body.keyboard-open [data-radix-dialog-content] {
 #nprogress .bar {
   background: hsl(var(--primary));
   position: fixed;
-  z-index: 9999;
+  z-index: var(--z-max);
   top: 0;
   left: 0;
   width: 100%;

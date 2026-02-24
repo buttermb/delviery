@@ -30,11 +30,10 @@ const StickyAddToCart = ({
 
   return (
     <div className={cn(
-      "fixed bottom-16 left-0 right-0 bg-background border-t border-border shadow-2xl",
+      "fixed bottom-16 left-0 right-0 bg-background border-t border-border shadow-2xl z-sticky",
       "safe-area-bottom",
       className
     )}
-    style={{ zIndex: 100 }}
     >
       <div className="container px-4 py-3">
         <div className="flex items-center justify-between gap-3">

@@ -161,7 +161,7 @@ export const addWatermark = (text: string, opacity: number = 0.15) => {
   watermark.style.color = 'rgba(0, 0, 0, ' + opacity + ')';
   watermark.style.pointerEvents = 'none';
   watermark.style.userSelect = 'none';
-  watermark.style.zIndex = '9999';
+  watermark.style.zIndex = 'var(--z-max)';
   watermark.style.whiteSpace = 'nowrap';
   watermark.textContent = text;
 
