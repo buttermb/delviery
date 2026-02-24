@@ -356,7 +356,7 @@ export default function ReturnsManagementPage() {
                             : "-"}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-2" role="presentation" onClick={(e) => e.stopPropagation()}>
                             <Button
                               variant="ghost"
                               size="sm"

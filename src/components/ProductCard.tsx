@@ -214,7 +214,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
           </div>
         )}
 
-        <div className="relative h-72 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="relative h-72 overflow-hidden" role="presentation" onClick={(e) => e.stopPropagation()}>
           <Carousel className="w-full h-full">
             <CarouselContent>
               {productImages.map((image, index) => (

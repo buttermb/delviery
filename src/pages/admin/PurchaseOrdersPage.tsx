@@ -292,7 +292,7 @@ export default function PurchaseOrdersPage() {
                         </span>
                         <span>{po.created_at ? formatSmartDate(po.created_at) : '-'}</span>
                       </div>
-                      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1" role="presentation" onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="sm" onClick={() => handleView(po)} className="h-9 w-9 p-0">
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -374,7 +374,7 @@ export default function PurchaseOrdersPage() {
                               : "-"}
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-end gap-2" role="presentation" onClick={(e) => e.stopPropagation()}>
                               <Button
                                 variant="ghost"
                                 size="sm"

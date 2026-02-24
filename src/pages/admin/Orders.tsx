@@ -817,7 +817,7 @@ export default function Orders() {
       ) as unknown as string, // Cast to string to satisfy older interfaces if strict type checking fails intermittently, though we updated it.
       className: "w-[50px]",
       cell: (order) => (
-        <div onClick={(e) => e.stopPropagation()}>
+        <div role="presentation" onClick={(e) => e.stopPropagation()}>
           <Checkbox
             checked={selectedOrders.includes(order.id)}
             onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
@@ -905,7 +905,7 @@ export default function Orders() {
         };
 
         return (
-          <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
+          <div role="presentation" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
             {canEdit('orders') ? (
               <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value)}>
                 <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus-visible:ring-0 p-0">
@@ -960,7 +960,7 @@ export default function Orders() {
     {
       header: "Actions",
       cell: (order) => (
-        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1" role="presentation" onClick={(e) => e.stopPropagation()}>
           <Button
             size="sm"
             variant="ghost"

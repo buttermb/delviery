@@ -558,7 +558,7 @@ export default function WholesaleOrdersPage() {
             />
           ),
           cell: (item) => (
-            <div onClick={(e) => e.stopPropagation()}>
+            <div role="presentation" onClick={(e) => e.stopPropagation()}>
               <Checkbox
                 checked={selectedOrders.includes(item.id)}
                 onCheckedChange={(checked) => handleSelectOrder(item.id, checked as boolean)}
@@ -614,7 +614,7 @@ export default function WholesaleOrdersPage() {
             );
             
             return (
-              <div onClick={(e) => e.stopPropagation()}>
+              <div role="presentation" onClick={(e) => e.stopPropagation()}>
                 <Select
                   value={item.status}
                   onValueChange={(value) => handleStatusUpdate(item.id, value)}
@@ -672,7 +672,7 @@ export default function WholesaleOrdersPage() {
             />
           ),
           cell: (item) => (
-            <div onClick={(e) => e.stopPropagation()}>
+            <div role="presentation" onClick={(e) => e.stopPropagation()}>
               <Checkbox
                 checked={selectedOrders.includes(item.id)}
                 onCheckedChange={(checked) => handleSelectOrder(item.id, checked as boolean)}
@@ -715,7 +715,7 @@ export default function WholesaleOrdersPage() {
             // Only allow specific statuses for POs
             const allowedStatuses = ['draft', 'ordered', 'received', 'cancelled'];
             return (
-              <div onClick={(e) => e.stopPropagation()}>
+              <div role="presentation" onClick={(e) => e.stopPropagation()}>
                 <Select
                   value={item.status}
                   onValueChange={(value) => handleStatusUpdate(item.id, value)}
