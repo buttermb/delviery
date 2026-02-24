@@ -9,7 +9,7 @@ import { logger } from '@/lib/logger';
 /**
  * Unregister all service workers
  */
-export async function unregisterServiceWorkers(): Promise<void> {
+async function unregisterServiceWorkers(): Promise<void> {
   if (!('serviceWorker' in navigator)) {
     logger.debug('Service workers not supported', { component: 'serviceWorkerCache' });
     return;
@@ -70,7 +70,7 @@ export async function clearAllCaches(): Promise<void> {
 /**
  * Clear localStorage cache-related items
  */
-export function clearLocalStorageCache(): void {
+function clearLocalStorageCache(): void {
   try {
     const keysToRemove = [
       'js-cache-count',
@@ -95,7 +95,7 @@ export function clearLocalStorageCache(): void {
 /**
  * Clear sessionStorage cache-related items
  */
-export function clearSessionStorageCache(): void {
+function clearSessionStorageCache(): void {
   try {
     const keysToRemove = [
       'js-cache-count',

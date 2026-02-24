@@ -62,26 +62,3 @@ export const playSuccessSound = (vibrate = true) => {
   }
 };
 
-// Play urgent alert sound using HTML5 audio (doesn't trigger microphone icon on iOS)
-export const playUrgentSound = (vibrate = true) => {
-  try {
-    // Play first urgent beep
-    const audio1 = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGmi78N+oVRQLUKbh8LJeHAU7k9bxy3crc');
-    audio1.volume = 0.4;
-    audio1.play().catch(e => logger.debug('Audio play failed:', e));
-    
-    // Play second urgent beep after short pause
-    setTimeout(() => {
-      const audio2 = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGmi78N+oVRQLUKbh8LJeHAU7k9bxy3crc');
-      audio2.volume = 0.4;
-      audio2.play().catch(e => logger.debug('Audio play failed:', e));
-    }, 300);
-    
-    // Vibrate with urgent pattern
-    playWithVibration('urgent', vibrate);
-    
-    logger.debug('🚨 Urgent sound played');
-  } catch (error) {
-    logger.error('Error playing urgent sound:', error);
-  }
-};
