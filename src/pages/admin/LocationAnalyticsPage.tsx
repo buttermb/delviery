@@ -56,7 +56,40 @@ export default function LocationAnalyticsPage() {
   });
 
   if (isLoading) {
-    return <Skeleton className="h-[600px]" />;
+    return (
+      <div className="container mx-auto p-4 space-y-4">
+        <div>
+          <Skeleton className="h-8 w-20 mb-2" />
+          <Skeleton className="h-7 w-56 mb-2" />
+          <Skeleton className="h-4 w-80" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-4 w-28" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-36 mb-2" />
+                <Skeleton className="h-4 w-24" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-5 w-40" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-[300px]" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
