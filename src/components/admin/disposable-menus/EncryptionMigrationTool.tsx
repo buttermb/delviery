@@ -110,7 +110,7 @@ export const EncryptionMigrationTool = ({ open, onOpenChange, tenantId }: Encryp
 
       try {
         // Call the encryption function
-        const { data, error } = await supabase.rpc('encrypt_disposable_menu', {
+        const { data, error } = await (supabase as any).rpc('encrypt_disposable_menu', {
           menu_id: menu.id
         });
 

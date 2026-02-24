@@ -1252,13 +1252,13 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         const tId = signupResult.tenant.id;
         const uId = signupResult.user.id;
         // Mark tenant as approved/active if a status field exists
-        await supabase.from('tenants').update({ status: 'approved', onboarded: true }).eq('id', tId);
+        await (supabase as any).from('tenants').update({ status: 'approved', onboarded: true }).eq('id', tId);
         // Mark tenant user record as approved
         const updateUser: Record<string, unknown> = { status: 'approved' };
         if (flags.AUTO_BYPASS_EMAIL_VERIFICATION) {
           updateUser.email_verified = true;
         }
-        await supabase.from('tenant_users').update(updateUser).eq('tenant_id', tId).eq('user_id', uId);
+        await (supabase as any).from('tenant_users').update(updateUser).eq('tenant_id', tId).eq('user_id', uId);
         logger.info('[AUTH] Auto-approve applied to signup records');
       }
     } catch (e) {

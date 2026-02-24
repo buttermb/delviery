@@ -62,7 +62,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
         setSessionId(data.id);
         
         // Send welcome message
-        await supabase.from('chat_messages').insert({
+        await (supabase as any).from('chat_messages').insert({
           session_id: data.id,
           sender_type: 'ai',
           message: "👋 Hi! I'm your support assistant. How can I help you today?"
@@ -165,7 +165,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
 
     setMode('human');
     
-    await supabase.from('chat_messages').insert({
+    await (supabase as any).from('chat_messages').insert({
       session_id: sessionId,
       sender_type: 'ai',
       message: "I'm connecting you with a support team member. They'll be with you shortly! 👨‍💼"

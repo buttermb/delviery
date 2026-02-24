@@ -43,7 +43,7 @@ export default function SuperAdminAnalytics() {
   const { data: analytics } = useQuery({
     queryKey: queryKeys.superAdminTools.platformAnalytics(timeRange),
     queryFn: async () => {
-      const { data: tenants } = await supabase.from('tenants').select('*');
+      const { data: tenants } = await (supabase as any).from('tenants').select('*');
 
       if (!tenants) return defaultAnalytics();
 

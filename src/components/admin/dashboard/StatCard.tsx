@@ -82,7 +82,7 @@ export function StatCard({
         <div className={cn('p-2 rounded-lg', iconColors[color])}>
           {icon}
         </div>
-        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+        <h3 className="text-sm font-medium text-muted-foreground truncate ml-2 text-right">{title}</h3>
       </div>
 
       <div className="text-2xl font-bold mb-1">{value}</div>

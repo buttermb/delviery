@@ -146,7 +146,7 @@ export default function CourierLoginPage() {
       if (!user) throw new Error('No authenticated user');
 
       // Verify PIN using the database function
-      const { data, error } = await supabase.rpc('verify_admin_pin', {
+      const { data, error } = await (supabase as any).rpc('verify_admin_pin', {
         courier_user_id: user.id,
         pin: pin
       });
@@ -158,7 +158,7 @@ export default function CourierLoginPage() {
       }
 
       // Create session token
-      const { data: sessionData, error: sessionError } = await supabase.rpc(
+      const { data: sessionData, error: sessionError } = await (supabase as any).rpc(
         'create_courier_pin_session',
         { p_courier_id: courierId }
       );

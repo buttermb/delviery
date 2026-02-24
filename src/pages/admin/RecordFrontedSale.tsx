@@ -98,7 +98,7 @@ export default function RecordFrontedSale() {
         quantity: item.quantity
       }));
 
-      await supabase.from('fronted_inventory_scans').insert(scanRecords);
+      await (supabase as any).from('fronted_inventory_scans').insert(scanRecords);
 
       toast.success("${totalSold} units recorded as sold");
       if (tenant?.slug) {

@@ -1048,7 +1048,7 @@ export async function awardPointsForOrder(
     const newBalance = status.current_points + points;
 
     // Insert points transaction
-    const { error } = await supabase.from('loyalty_points').insert({
+    const { error } = await (supabase as any).from('loyalty_points').insert({
       tenant_id: tenantId,
       customer_id: customerId,
       points,

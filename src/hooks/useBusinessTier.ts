@@ -174,7 +174,7 @@ export function useBusinessTier() {
 
       try {
         // Try RPC first
-        const { error } = await supabase.rpc('update_tenant_tier', {
+        const { error } = await (supabase as any).rpc('update_tenant_tier', {
           p_tenant_id: tenant.id,
           p_tier: detectedTier,
         });

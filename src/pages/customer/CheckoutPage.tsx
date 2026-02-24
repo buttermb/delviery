@@ -212,7 +212,7 @@ export default function CheckoutPage() {
 
       // Clear cart
       if (user) {
-        await supabase.from("cart_items").delete().eq("user_id", user.id);
+        await (supabase as any).from("cart_items").delete().eq("user_id", user.id);
         queryClient.invalidateQueries({ queryKey: queryKeys.cart.user(user.id, tenantId) });
       } else {
         localStorage.removeItem(STORAGE_KEYS.GUEST_CART);

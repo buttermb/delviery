@@ -55,7 +55,7 @@ export default function SuperAdminDashboard() {
     queryKey: queryKeys.superAdminTools.platformStatsSimple(),
     queryFn: async () => {
       // Get all tenants (super admin bypasses RLS)
-      const { data: tenants } = await supabase.from('tenants').select('*');
+      const { data: tenants } = await (supabase as any).from('tenants').select('*');
 
       const totalTenants = tenants?.length ?? 0;
       const activeTrials = tenants?.filter((t) => isTrial(t.subscription_status)).length ?? 0;
@@ -123,7 +123,7 @@ export default function SuperAdminDashboard() {
   const { data: featureFlags } = useQuery({
     queryKey: queryKeys.saasAdmin.featureFlags(),
     queryFn: async () => {
-      const { data, error } = await supabase.from('feature_flags').select('*');
+      const { data, error } = await (supabase as any).from('feature_flags').select('*');
       if (error) throw error;
       return data;
     },

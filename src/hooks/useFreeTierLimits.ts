@@ -192,7 +192,7 @@ export function useFreeTierLimits() {
     mutationFn: async ({ actionType }: { actionType: string }) => {
       if (!tenantId) throw new Error('No tenant ID');
 
-      const { error } = await supabase.rpc('increment_free_tier_usage', {
+      const { error } = await (supabase as any).rpc('increment_free_tier_usage', {
         p_tenant_id: tenantId,
         p_action_type: actionType,
       });

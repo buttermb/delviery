@@ -164,7 +164,7 @@ export function useOrderSplit({ tenantId, onSuccess }: UseOrderSplitOptions) {
 
         if (itemsError) {
           // Cleanup: delete the created order
-          await supabase.from('orders').delete().eq('id', newOrder.id);
+          await (supabase as any).from('orders').delete().eq('id', newOrder.id);
           throw new Error(`Failed to create items for shipment ${i + 1}: ${itemsError.message}`);
         }
       }

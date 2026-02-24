@@ -210,7 +210,7 @@ export function SinglePageCheckout() {
       const sanitizedState = sanitizeFormInput(formData.state, 50);
       const sanitizedZip = sanitizeFormInput(formData.zip, 20);
 
-      const { data: orderId, error } = await supabase.rpc('create_marketplace_order', {
+      const { data: orderId, error } = await (supabase as any).rpc('create_marketplace_order', {
         p_store_id: store.id,
         p_items: orderItems,
         p_customer_name: `${sanitizedFirstName} ${sanitizedLastName}`,

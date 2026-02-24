@@ -191,7 +191,7 @@ export default function CustomerDetails() {
     if (!newNote.trim()) return;
 
     try {
-      const { error } = await supabase.from('customer_notes').insert({
+      const { error } = await (supabase as any).from('customer_notes').insert({
         account_id: customer?.account_id ?? '',
         customer_id: id ?? '',
         note: newNote,

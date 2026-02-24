@@ -75,7 +75,7 @@ export function useWorkflowVersions(workflowId: string | null) {
       versionNumber: number;
     }) => {
       if (!tenant?.id) throw new Error('No tenant');
-      const { data, error } = await supabase.rpc('restore_workflow_version', {
+      const { data, error } = await (supabase as any).rpc('restore_workflow_version', {
         p_workflow_id: workflowId,
         p_version_number: versionNumber,
         p_tenant_id: tenant.id,
@@ -115,7 +115,7 @@ export function useWorkflowVersions(workflowId: string | null) {
       versionB: number;
     }) => {
       if (!tenant?.id) throw new Error('No tenant');
-      const { data, error } = await supabase.rpc('compare_workflow_versions', {
+      const { data, error } = await (supabase as any).rpc('compare_workflow_versions', {
         p_workflow_id: workflowId,
         p_version_a: versionA,
         p_version_b: versionB,

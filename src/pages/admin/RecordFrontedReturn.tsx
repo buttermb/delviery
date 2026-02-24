@@ -125,7 +125,7 @@ export default function RecordFrontedReturn() {
         const damagedReturns = scannedReturns.filter((r) => r.condition === "damaged").length;
 
         // Try atomic RPC first (handles inventory, balance update, and movement logging)
-        const { error: rpcError } = await supabase.rpc('process_fronted_return_atomic', {
+        const { error: rpcError } = await (supabase as any).rpc('process_fronted_return_atomic', {
           p_fronted_id: id,
           p_good_returns: goodReturns,
           p_damaged_returns: damagedReturns,
@@ -170,7 +170,7 @@ export default function RecordFrontedReturn() {
               // Update client balance (return value reduces debt)
               if (front.client_id && front.price_per_unit) {
                 const returnValue = goodReturns * front.price_per_unit;
-                const { error: balanceError } = await supabase.rpc('adjust_client_balance', {
+                const { error: balanceError } = await (supabase as any).rpc('adjust_client_balance', {
                   p_client_id: front.client_id,
                   p_amount: returnValue,
                   p_operation: 'subtract'
@@ -203,7 +203,7 @@ export default function RecordFrontedReturn() {
 
         // Create scan records (after either method)
         for (const returnItem of scannedReturns) {
-          await supabase.from("fronted_inventory_scans").insert({
+          await (supabase as any).from("fronted_inventory_scans").insert({
             account_id: tenant.id,
             fronted_inventory_id: id,
             product_id: front.product_id,

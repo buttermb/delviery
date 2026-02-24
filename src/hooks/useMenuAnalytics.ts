@@ -187,7 +187,7 @@ export const trackImageView = async (
   _accessToken?: string
 ) => {
   try {
-    await supabase.from('menu_access_logs').insert({
+    await (supabase as any).from('menu_access_logs').insert({
       menu_id: menuId,
       actions_taken: { action: 'image_viewed', product_id: productId },
       accessed_at: new Date().toISOString()
@@ -206,7 +206,7 @@ export const trackImageZoom = async (
   _accessToken?: string
 ) => {
   try {
-    await supabase.from('menu_access_logs').insert({
+    await (supabase as any).from('menu_access_logs').insert({
       menu_id: menuId,
       actions_taken: { action: 'image_zoomed', product_id: productId },
       accessed_at: new Date().toISOString()

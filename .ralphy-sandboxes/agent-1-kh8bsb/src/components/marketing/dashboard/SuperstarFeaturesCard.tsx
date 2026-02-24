@@ -55,7 +55,7 @@ export function SuperstarFeaturesCard({ onViewChange }: SuperstarFeaturesCardPro
               <div className="font-bold text-emerald-600">12 Active</div>
               <div className="text-muted-foreground">Deliveries</div>
             </div>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1">
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 bg-[hsl(var(--marketing-primary))/0.05] hover:bg-[hsl(var(--marketing-primary))/0.1] text-[hsl(var(--marketing-primary))] font-semibold rounded transition-colors">
               View Live
               <ArrowRight className="h-3 w-3" />
             </Button>
@@ -94,7 +94,7 @@ export function SuperstarFeaturesCard({ onViewChange }: SuperstarFeaturesCardPro
               <div className="font-bold text-primary">479 Views</div>
               <div className="text-muted-foreground">Today</div>
             </div>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1">
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 bg-[hsl(var(--marketing-primary))/0.05] hover:bg-[hsl(var(--marketing-primary))/0.1] text-[hsl(var(--marketing-primary))] font-semibold rounded transition-colors">
               Analytics
               <ArrowRight className="h-3 w-3" />
             </Button>

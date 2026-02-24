@@ -114,7 +114,7 @@ export function useConfirmOrderInventory() {
             if (!tenant?.id) throw new Error('No tenant context');
 
             for (const item of items) {
-                const { error } = await supabase.rpc('decrement_stock', {
+                const { error } = await (supabase as any).rpc('decrement_stock', {
                     p_product_id: item.product_id,
                     p_quantity: item.quantity,
                 });
@@ -213,7 +213,7 @@ export function useCancelOrderInventory() {
             if (!tenant?.id) throw new Error('No tenant context');
 
             for (const item of items) {
-                const { error } = await supabase.rpc('increment_stock', {
+                const { error } = await (supabase as any).rpc('increment_stock', {
                     p_product_id: item.product_id,
                     p_quantity: item.quantity,
                 });

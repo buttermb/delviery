@@ -192,7 +192,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
           ? Math.max(...announcements.map(a => a.display_order))
           : -1;
 
-        const { error: insertError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        const { error: insertError } = await (supabase as any)
           .from('storefront_announcements')
           .insert({
             ...payload,
@@ -250,7 +250,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
     mutationFn: async ({ id, newOrder }: { id: string; newOrder: number }) => {
       if (!tenantId) throw new Error('No tenant ID');
 
-      const { error: updateError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { error: updateError } = await (supabase as any)
         .from('storefront_announcements')
         .update({ display_order: newOrder })
         .eq('id', id)

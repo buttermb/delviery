@@ -581,7 +581,7 @@ export default function ProductManagement() {
           category: productData.category || undefined,
         });
       } else {
-        const { data: newProduct, error } = await supabase.from('products').insert(productData).select().maybeSingle();
+        const { data: newProduct, error } = await (supabase as any).from('products').insert(productData).select().maybeSingle();
         if (error) throw error;
         toast.success("Product created");
         // Manually update state
@@ -761,7 +761,7 @@ export default function ProductManagement() {
             return;
           }
 
-          const { error } = await supabase.from('products').delete().in('id', deletableIds).eq('tenant_id', tenant.id);
+          const { error } = await (supabase as any).from('products').delete().in('id', deletableIds).eq('tenant_id', tenant.id);
           if (error) throw error;
 
           if (skippedCount > 0) {

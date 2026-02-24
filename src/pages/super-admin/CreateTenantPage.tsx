@@ -46,7 +46,7 @@ export default function CreateTenantPage() {
         .replace(/^-|-$/g, '');
 
       // Call the atomic tenant creation function
-      const { data: result, error } = await supabase.rpc('create_tenant_atomic', {
+      const { data: result, error } = await (supabase as any).rpc('create_tenant_atomic', {
         p_auth_user_id: crypto.randomUUID(), // Temporary - will be replaced when owner signs up
         p_email: data.owner_email,
         p_business_name: data.business_name,

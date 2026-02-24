@@ -17,7 +17,7 @@ export function usePreOrders() {
         queryKey: queryKeys.crm.preOrders.lists(),
         queryFn: async () => {
             if (!accountId) return [];
-            const { data, error } = await supabase.from('crm_pre_orders').select('*, client:crm_clients(*)').eq('account_id', accountId).order('created_at', { ascending: false }).limit(200);
+            const { data, error } = await (supabase as any).from('crm_pre_orders').select('*, client:crm_clients(*)').eq('account_id', accountId).order('created_at', { ascending: false }).limit(200);
             if (error) throw error;
             return (data ?? []).map(normalizePreOrder);
         },
@@ -31,7 +31,7 @@ export function useClientPreOrders(clientId: string | undefined) {
         queryKey: queryKeys.crm.preOrders.byClient(clientId ?? ''),
         queryFn: async () => {
             if (!clientId || !accountId) return [];
-            const { data, error } = await supabase.from('crm_pre_orders').select('*').eq('client_id', clientId).eq('account_id', accountId).order('created_at', { ascending: false }).limit(200);
+            const { data, error } = await (supabase as any).from('crm_pre_orders').select('*').eq('client_id', clientId).eq('account_id', accountId).order('created_at', { ascending: false }).limit(200);
             if (error) throw error;
             return (data ?? []).map(normalizePreOrder);
         },
@@ -45,7 +45,7 @@ export function usePreOrder(preOrderId: string | undefined) {
         queryKey: queryKeys.crm.preOrders.detail(preOrderId ?? ''),
         queryFn: async () => {
             if (!preOrderId || !accountId) return null;
-            const { data, error } = await supabase.from('crm_pre_orders').select('*, client:crm_clients(*)').eq('id', preOrderId).eq('account_id', accountId).maybeSingle();
+            const { data, error } = await (supabase as any).from('crm_pre_orders').select('*, client:crm_clients(*)').eq('id', preOrderId).eq('account_id', accountId).maybeSingle();
             if (error) throw error;
             return normalizePreOrder(data);
         },
@@ -87,7 +87,7 @@ export function useCancelPreOrder() {
     return useMutation({
         mutationFn: async (preOrderId: string) => {
             if (!accountId) throw new Error('Account ID required');
-            const { data, error } = await supabase.from('crm_pre_orders').update({ status: 'cancelled' }).eq('id', preOrderId).eq('account_id', accountId).select('*').maybeSingle();
+            const { data, error } = await (supabase as any).from('crm_pre_orders').update({ status: 'cancelled' }).eq('id', preOrderId).eq('account_id', accountId).select('*').maybeSingle();
             if (error) throw error;
             return normalizePreOrder(data);
         },
@@ -120,7 +120,7 @@ export function useConvertPreOrderToInvoice() {
     return useMutation({
         mutationFn: async ({ preOrderId, invoiceData }: { preOrderId: string; invoiceData: Record<string, unknown> & { tax_rate?: number } }) => {
             if (!accountId) throw new Error('Account ID required');
-            const { data: preOrder, error: fetchError } = await supabase.from('crm_pre_orders').select('*').eq('id', preOrderId).eq('account_id', accountId).maybeSingle();
+            const { data: preOrder, error: fetchError } = await (supabase as any).from('crm_pre_orders').select('*').eq('id', preOrderId).eq('account_id', accountId).maybeSingle();
             if (fetchError) throw fetchError;
             const subtotal = preOrder.subtotal;
             const tax_rate = invoiceData.tax_rate ?? 0;

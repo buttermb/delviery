@@ -137,7 +137,7 @@ export function useOrderAuditLog(options: UseOrderAuditLogOptions = {}) {
     mutationFn: async (params: LogOrderAuditParams) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data: result, error: rpcError } = await supabase.rpc(
+      const { data: result, error: rpcError } = await (supabase as any).rpc(
         'log_order_audit',
         {
           p_tenant_id: tenantId,

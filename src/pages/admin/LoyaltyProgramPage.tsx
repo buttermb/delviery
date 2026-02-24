@@ -173,7 +173,7 @@ export default function LoyaltyProgramPage() {
 
   const deleteTierMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("loyalty_tiers").delete().eq("id", id).eq("tenant_id", tenant?.id);
+      const { error } = await (supabase as any).from("loyalty_tiers").delete().eq("id", id).eq("tenant_id", tenant?.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -191,7 +191,7 @@ export default function LoyaltyProgramPage() {
 
   const deleteRewardMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("loyalty_rewards").delete().eq("id", id).eq("tenant_id", tenant?.id);
+      const { error } = await (supabase as any).from("loyalty_rewards").delete().eq("id", id).eq("tenant_id", tenant?.id);
       if (error) throw error;
     },
     onSuccess: () => {

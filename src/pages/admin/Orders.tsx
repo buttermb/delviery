@@ -310,7 +310,7 @@ export default function Orders() {
   // Mutations
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string, status: string }) => {
-      const { error } = await supabase.from('orders').update({ status }).eq('id', id).eq('tenant_id', tenant?.id);
+      const { error } = await (supabase as any).from('orders').update({ status }).eq('id', id).eq('tenant_id', tenant?.id);
       if (error) throw error;
       return { id, status };
     },
@@ -351,7 +351,7 @@ export default function Orders() {
 
   const deleteMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      const { error } = await supabase.from('orders').delete().in('id', ids).eq('tenant_id', tenant?.id);
+      const { error } = await (supabase as any).from('orders').delete().in('id', ids).eq('tenant_id', tenant?.id);
       if (error) throw error;
       return ids;
     },

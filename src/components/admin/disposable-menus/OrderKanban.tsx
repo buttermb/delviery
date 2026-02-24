@@ -122,7 +122,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
         updates.cancelled_at = new Date().toISOString();
         // Release inventory for cancelled/rejected menu orders
         try {
-          await supabase.rpc('release_order_inventory', {
+          await (supabase as any).rpc('release_order_inventory', {
             p_order_id: orderId,
             p_order_type: 'menu'
           });

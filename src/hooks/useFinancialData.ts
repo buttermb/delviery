@@ -90,13 +90,13 @@ export const useCashFlow = () => {
       const weekEnd = endOfWeek(today);
 
       // Today's collections - filtered by tenant_id
-      const { data: todayPayments } = await supabase.from("wholesale_payments").select("amount")
+      const { data: todayPayments } = await (supabase as any).from("wholesale_payments").select("amount")
         .eq("tenant_id", tenant.id).gte("created_at", startOfToday.toISOString());
 
       const collections_today = todayPayments?.reduce((sum: number, p) => sum + Number(p.amount), 0) ?? 0;
 
       // Expected this week - filtered by tenant_id
-      const { data: weekOrders } = await supabase.from("wholesale_orders").select("total_amount")
+      const { data: weekOrders } = await (supabase as any).from("wholesale_orders").select("total_amount")
         .eq("tenant_id", tenant.id)
         .gte("created_at", weekStart.toISOString())
         .lte("created_at", weekEnd.toISOString())
@@ -105,7 +105,7 @@ export const useCashFlow = () => {
       const expected_this_week = weekOrders?.reduce((sum: number, o) => sum + Number(o.total_amount), 0) ?? 0;
 
       // Outstanding balance - filtered by tenant_id
-      const { data: clients } = await supabase.from("wholesale_clients").select("outstanding_balance")
+      const { data: clients } = await (supabase as any).from("wholesale_clients").select("outstanding_balance")
         .eq("tenant_id", tenant.id);
 
       const outstanding = clients?.reduce((sum: number, c) => sum + Number(c.outstanding_balance), 0) ?? 0;

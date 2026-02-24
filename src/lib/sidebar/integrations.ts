@@ -119,7 +119,7 @@ export async function checkIntegrationConnection(integrationId: string): Promise
       // Custom integrations are checked via database
       try {
         const { supabase } = await import('@/integrations/supabase/client');
-        const { data, error } = await supabase.from('custom_integrations').select('id').limit(1).maybeSingle();
+        const { data, error } = await (supabase as any).from('custom_integrations').select('id').limit(1).maybeSingle();
         if (error) {
           logger.debug('Custom integrations table check failed', { error, component: 'integrations' });
         }

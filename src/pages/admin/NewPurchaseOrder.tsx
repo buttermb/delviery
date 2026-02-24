@@ -176,7 +176,7 @@ export default function NewPurchaseOrder() {
             for (const item of poData.items) {
                 if (item.unitCost !== item.originalCost) {
                     // Call the RPC to log vendor price change
-                    await supabase.rpc('log_vendor_price_change', {
+                    await (supabase as any).rpc('log_vendor_price_change', {
                         p_product_id: item.id,
                         p_tenant_id: tenant.id,
                         p_vendor_id: poData.vendor.id,

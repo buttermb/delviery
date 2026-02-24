@@ -537,7 +537,7 @@ export function useUpdateContactBalance() {
     }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data: newBalance, error } = await supabase.rpc('update_contact_balance', {
+      const { data: newBalance, error } = await (supabase as any).rpc('update_contact_balance', {
         p_contact_id: contactId,
         p_amount: amount,
         p_operation: operation,
@@ -617,7 +617,7 @@ export function useAddContactType() {
     mutationFn: async ({ contactId, contactType }: { contactId: string; contactType: ContactType }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { error } = await supabase.rpc('add_contact_type', {
+      const { error } = await (supabase as any).rpc('add_contact_type', {
         p_contact_id: contactId,
         p_contact_type: contactType,
       });

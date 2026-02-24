@@ -100,7 +100,7 @@ export const useLocations = (filters?: { status?: string }) => {
 
       // Try to use the RPC function if available, otherwise compute manually
       try {
-        const { data, error } = await supabase.rpc('get_location_operations_summary', {
+        const { data, error } = await (supabase as any).rpc('get_location_operations_summary', {
           p_tenant_id: tenant.id,
         });
 

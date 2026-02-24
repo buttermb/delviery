@@ -75,7 +75,7 @@ export function DetailedFeatureSection() {
                     >
                         {/* Text Content */}
                         <div className="flex-1 space-y-8">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-medium border border-emerald-100">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[hsl(var(--marketing-primary)/0.1)] text-[hsl(var(--marketing-primary))] text-sm font-medium border border-[hsl(var(--marketing-primary)/0.2)]">
                                 <feature.icon className="w-4 h-4" />
                                 {feature.title}
                             </div>
@@ -91,8 +91,8 @@ export function DetailedFeatureSection() {
                             <ul className="space-y-4">
                                 {feature.bullets.map((bullet, i) => (
                                     <li key={i} className="flex items-center gap-3">
-                                        <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                        <div className="w-6 h-6 rounded-full bg-[hsl(var(--marketing-primary)/0.1)] flex items-center justify-center flex-shrink-0">
+                                            <CheckCircle2 className="w-4 h-4 text-[hsl(var(--marketing-primary))]" />
                                         </div>
                                         <span className="text-lg text-slate-800 font-medium">{bullet}</span>
                                     </li>
@@ -101,7 +101,7 @@ export function DetailedFeatureSection() {
 
                             <div className="pt-4">
                                 <Link to={feature.link}>
-                                    <Button variant="link" className="p-0 h-auto text-emerald-600 hover:text-emerald-700 font-semibold text-lg group">
+                                    <Button variant="link" className="p-0 h-auto text-[hsl(var(--marketing-primary))] hover:opacity-80 font-semibold text-lg group uppercase tracking-wide">
                                         {feature.linkText}
                                         <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                                     </Button>

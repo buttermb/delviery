@@ -6,7 +6,7 @@ export function usePlatformAdmin() {
     const { data, isLoading, error } = useQuery({
         queryKey: queryKeys.platformAdmin.check(),
         queryFn: async () => {
-            const { data, error } = await supabase.rpc('check_platform_admin_access');
+            const { data, error } = await (supabase as any).rpc('check_platform_admin_access');
             if (error) throw error;
             return data as { access: boolean; role?: string };
         },

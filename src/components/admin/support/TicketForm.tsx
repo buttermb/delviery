@@ -90,7 +90,7 @@ export function TicketForm({
 
           if (error && error.code !== "42P01") throw error;
         } else {
-          const { error } = await supabase.from("support_tickets").insert([
+          const { error } = await (supabase as any).from("support_tickets").insert([
             {
               tenant_id: tenant.id,
               account_id: tenant.id,

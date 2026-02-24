@@ -94,7 +94,7 @@ export function RecallForm({
 
           if (error && error.code !== "42P01") throw error;
         } else {
-          const { error } = await supabase.from("batch_recalls").insert([
+          const { error } = await (supabase as any).from("batch_recalls").insert([
             {
               tenant_id: tenant.id,
               batch_number: data.batch_number,

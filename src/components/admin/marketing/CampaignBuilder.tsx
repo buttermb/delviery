@@ -42,7 +42,7 @@ export function CampaignBuilder({ onClose }: CampaignBuilderProps) {
 
       // Store campaign (would need marketing_campaigns table)
       try {
-        const { error } = await supabase.from("marketing_campaigns").insert([
+        const { error } = await (supabase as any).from("marketing_campaigns").insert([
           {
             tenant_id: tenant.id,
             ...data,

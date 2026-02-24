@@ -404,7 +404,7 @@ export default function SignUpPage() {
         }
 
         // Grant initial credits via RPC
-        const { error: creditError } = await supabase.rpc('grant_free_credits' as never, {
+        const { error: creditError } = await (supabase as any).rpc('grant_free_credits' as never, {
           p_tenant_id: tenant.id
         } as never);
 

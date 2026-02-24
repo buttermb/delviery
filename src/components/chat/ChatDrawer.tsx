@@ -173,7 +173,7 @@ export function ChatDrawer({
     // Mark messages as read when drawer opens
     useEffect(() => {
         if (activeConversationId && isOpen) {
-            supabase.rpc('mark_messages_read', {
+            (supabase as any).rpc('mark_messages_read', {
                 p_conversation_id: activeConversationId,
                 p_user_id: currentUserId,
             }).then(({ error }: { error: unknown }) => {
@@ -190,7 +190,7 @@ export function ChatDrawer({
             const { data: user } = await supabase.auth.getUser();
             if (!user.user) throw new Error('Not authenticated');
 
-            const { error } = await supabase.from('messages').insert({
+            const { error } = await (supabase as any).from('messages').insert({
                 conversation_id: activeConversationId,
                 sender_id: currentUserId,
                 sender_type: currentUserType,

@@ -107,7 +107,7 @@ export function useInvoices() {
         return useMutation({
             mutationFn: async (invoiceId: string) => {
                 if (!accountId) throw new Error('Account ID required');
-                const { data, error } = await supabase.from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).eq('account_id', accountId).select('*, client:crm_clients(*)').maybeSingle();
+                const { data, error } = await (supabase as any).from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).eq('account_id', accountId).select('*, client:crm_clients(*)').maybeSingle();
                 if (error) throw error;
                 return normalizeInvoice(data);
             },
@@ -131,7 +131,7 @@ export function useInvoices() {
         return useMutation({
             mutationFn: async (invoiceId: string) => {
                 if (!accountId) throw new Error('Account ID required');
-                const { error } = await supabase.from('crm_invoices').delete().eq('id', invoiceId).eq('account_id', accountId);
+                const { error } = await (supabase as any).from('crm_invoices').delete().eq('id', invoiceId).eq('account_id', accountId);
                 if (error) throw error;
             },
             onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() }); toast.success('Invoice deleted'); },

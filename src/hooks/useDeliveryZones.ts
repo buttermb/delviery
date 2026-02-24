@@ -242,7 +242,7 @@ export function useZoneValidation() {
   }> => {
     if (!tenantId) return { inZone: false, zone: null };
 
-     const { data, error } = await supabase.rpc('point_in_delivery_zone', {
+     const { data, error } = await (supabase as any).rpc('point_in_delivery_zone', {
       p_tenant_id: tenantId,
       p_lat: lat,
       p_lng: lng,
@@ -272,7 +272,7 @@ export function useZoneValidation() {
   }> => {
     if (!tenantId) return { inZone: false, zone: null };
 
-    const { data, error } = await supabase.rpc('zip_in_delivery_zone', {
+    const { data, error } = await (supabase as any).rpc('zip_in_delivery_zone', {
       p_tenant_id: tenantId,
       p_zip_code: zipCode,
     });

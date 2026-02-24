@@ -554,7 +554,7 @@ function OrderConfirmation({
         notes,
       };
 
-      const { error } = await supabase.from('menu_orders').insert({
+      const { error } = await (supabase as any).from('menu_orders').insert({
         menu_id: menuData.menu_id,
         tenant_id: menuData.tenant_id,
         access_whitelist_id: menuData.whitelist_id || null,

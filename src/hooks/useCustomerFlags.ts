@@ -414,7 +414,7 @@ export async function isCustomerBlocked(
   customerId: string
 ): Promise<boolean> {
   try {
-    const { data, error } = await supabase.rpc('is_customer_blocked', {
+    const { data, error } = await (supabase as any).rpc('is_customer_blocked', {
       p_customer_id: customerId,
       p_tenant_id: tenantId,
     });

@@ -121,7 +121,7 @@ export async function logPHIAccess(
   purpose?: string
 ): Promise<void> {
   try {
-    const { error } = await supabase.rpc('log_phi_access', {
+    const { error } = await (supabase as any).rpc('log_phi_access', {
       p_customer_id: customerId,
       p_action: action,
       p_fields_accessed: fieldsAccessed,

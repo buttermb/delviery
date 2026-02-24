@@ -62,7 +62,7 @@ export function BulkCouponGenerator({ open, onOpenChange }: BulkCouponGeneratorP
         });
       }
 
-      const { error } = await supabase.from("coupon_codes").insert(coupons);
+      const { error } = await (supabase as any).from("coupon_codes").insert(coupons);
       if (error) throw error;
 
       return coupons.length;

@@ -40,17 +40,17 @@ export function InventoryAlertsPreview() {
       <div className="space-y-1.5">
         {mockDashboardData.inventoryAlerts.slice(0, 2).map((alert, index) => {
           const urgencyConfig = getUrgencyConfig(alert.urgency);
-          
+
           return (
             <motion.div
               key={alert.name}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ 
+              transition={{
                 delay: index * 0.1,
                 duration: 0.4
               }}
-              whileHover={{ 
+              whileHover={{
                 scale: 1.01,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}
@@ -81,7 +81,7 @@ export function InventoryAlertsPreview() {
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${(alert.current / alert.threshold) * 100}%` }}
-                    transition={{ 
+                    transition={{
                       delay: index * 0.1 + 0.2,
                       duration: 0.6,
                       ease: [0.21, 0.47, 0.32, 0.98]
@@ -95,9 +95,9 @@ export function InventoryAlertsPreview() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: index * 0.1 + 0.5 }}
-                    className="w-full mt-1 px-2 py-0.5 bg-destructive text-destructive-foreground text-[10px] font-medium rounded hover:bg-destructive/90 transition-colors"
+                    className="w-full mt-2 px-2 py-1 bg-destructive/10 text-destructive border border-destructive/20 text-[9px] font-bold rounded-sm hover:bg-destructive hover:text-white transition-colors"
                   >
-                    Restock Now
+                    RESTOCK NOW
                   </motion.button>
                 )}
               </div>
