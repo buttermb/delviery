@@ -81,7 +81,7 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<ForumPost
       throw error;
     }
 
-    return (data || []) as unknown as ForumPost[];
+    return (data ?? []) as unknown as ForumPost[];
   } catch (error) {
     logger.error('Error in getPosts', error, { component: 'forumApi' });
     throw error;
@@ -246,7 +246,7 @@ export async function getComments(postId: string): Promise<ForumComment[]> {
       throw error;
     }
 
-    return (data || []) as unknown as ForumComment[];
+    return (data ?? []) as unknown as ForumComment[];
   } catch (error) {
     logger.error('Error in getComments', error, { component: 'forumApi', postId });
     throw error;
@@ -477,7 +477,7 @@ export async function getCategories(): Promise<ForumCategory[]> {
       throw error;
     }
 
-    return (data || []) as ForumCategory[];
+    return (data ?? []) as ForumCategory[];
   } catch (error) {
     logger.error('Error in getCategories', error, { component: 'forumApi' });
     throw error;
@@ -509,7 +509,7 @@ export async function searchPosts(query: string): Promise<ForumPost[]> {
       throw error;
     }
 
-    return (data || []) as unknown as ForumPost[];
+    return (data ?? []) as unknown as ForumPost[];
   } catch (error) {
     logger.error('Error in searchPosts', error, { component: 'forumApi', query });
     throw error;
@@ -760,7 +760,7 @@ export async function getNotifications(limit = 20): Promise<ForumNotification[]>
       throw error;
     }
 
-    return (data || []) as ForumNotification[];
+    return (data ?? []) as ForumNotification[];
   } catch (error) {
     logger.error('Error in getNotifications', error, { component: 'forumApi' });
     throw error;

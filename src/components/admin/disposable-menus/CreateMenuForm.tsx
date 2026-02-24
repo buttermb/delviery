@@ -61,7 +61,7 @@ export function CreateMenuForm({
   const [name, setName] = useState(initialData?.name || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [selectedProducts, setSelectedProducts] = useState<string[]>(
-    initialData?.selectedProducts || []
+    initialData?.selectedProducts ?? []
   );
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -75,7 +75,7 @@ export function CreateMenuForm({
       product.product_name?.toLowerCase().includes(query) ||
       product.category?.toLowerCase().includes(query)
     );
-  }) || [];
+  }) ?? [];
 
   const toggleProduct = (productId: string) => {
     setSelectedProducts((prev) =>
@@ -190,7 +190,7 @@ export function CreateMenuForm({
 
   const selectedProductsData = (inventory as InventoryProduct[] | undefined)?.filter((p) =>
     selectedProducts.includes(p.id)
-  ) || [];
+  ) ?? [];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

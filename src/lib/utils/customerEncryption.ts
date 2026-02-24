@@ -155,7 +155,7 @@ export async function searchCustomerByEmail(email: string, tenantId: string): Pr
 
   // Decrypt results
   const decrypted = await Promise.all(
-    (data || []).map(c => decryptCustomerData(c))
+    (data ?? []).map(c => decryptCustomerData(c))
   );
 
   // Log search
@@ -182,7 +182,7 @@ export async function searchCustomerByPhone(phone: string, tenantId: string): Pr
 
   // Decrypt results
   const decrypted = await Promise.all(
-    (data || []).map(c => decryptCustomerData(c))
+    (data ?? []).map(c => decryptCustomerData(c))
   );
 
   // Log search
@@ -209,7 +209,7 @@ export async function searchCustomerByMedicalCard(cardNumber: string, tenantId: 
 
   // Decrypt results
   const decrypted = await Promise.all(
-    (data || []).map(c => decryptCustomerData(c))
+    (data ?? []).map(c => decryptCustomerData(c))
   );
 
   // Log search

@@ -177,7 +177,7 @@ export default function StorefrontSettings() {
     if (store) {
       setFormData({
         ...store,
-        featured_product_ids: store.featured_product_ids || [],
+        featured_product_ids: store.featured_product_ids ?? [],
       });
     }
   }, [store]);
@@ -186,7 +186,7 @@ export default function StorefrontSettings() {
   const { data: featuredProducts } = useQuery({
     queryKey: queryKeys.featuredProductsPreview.byIds(formData.featured_product_ids),
     queryFn: async () => {
-      const ids = formData.featured_product_ids || [];
+      const ids = formData.featured_product_ids ?? [];
       if (ids.length === 0) return [];
       const { data, error } = await supabase
         .from('products')
@@ -198,9 +198,9 @@ export default function StorefrontSettings() {
         return [];
       }
       // Sort by the order in featured_product_ids
-      return (data || []).sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+      return (data ?? []).sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
     },
-    enabled: (formData.featured_product_ids || []).length > 0,
+    enabled: (formData.featured_product_ids ?? []).length > 0,
   });
 
   // Memoize preview settings to avoid unnecessary re-renders
@@ -214,7 +214,7 @@ export default function StorefrontSettings() {
     accent_color: formData.accent_color || '#34d399',
     font_family: formData.font_family || 'Inter',
     theme_config: formData.theme_config || null,
-    featured_product_ids: formData.featured_product_ids || [],
+    featured_product_ids: formData.featured_product_ids ?? [],
   }), [
     formData.store_name,
     formData.tagline,
@@ -298,7 +298,7 @@ export default function StorefrontSettings() {
           checkout_settings: formData.checkout_settings,
           operating_hours: formData.operating_hours,
           purchase_limits: formData.purchase_limits,
-          featured_product_ids: formData.featured_product_ids || [],
+          featured_product_ids: formData.featured_product_ids ?? [],
         })
         .eq('id', store.id);
 
@@ -842,7 +842,7 @@ export default function StorefrontSettings() {
               </CardHeader>
               <CardContent>
                 <FeaturedProductsManager
-                  selectedIds={formData.featured_product_ids || []}
+                  selectedIds={formData.featured_product_ids ?? []}
                   onSelectionChange={(ids) => updateField('featured_product_ids', ids)}
                   maxFeatured={8}
                 />
@@ -899,14 +899,14 @@ export default function StorefrontSettings() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  {(formData.delivery_zones || []).map((zone, index) => (
+                  {(formData.delivery_zones ?? []).map((zone, index) => (
                     <div key={index} className="flex flex-col sm:flex-row gap-4">
                       <Input
                         placeholder="Zip code"
                         aria-label="Delivery zone zip code"
                         value={zone.zip_code || ''}
                         onChange={(e) => {
-                          const zones = [...(formData.delivery_zones || [])];
+                          const zones = [...(formData.delivery_zones ?? [])];
                           zones[index] = { ...zones[index], zip_code: e.target.value };
                           updateField('delivery_zones', zones);
                         }}
@@ -917,7 +917,7 @@ export default function StorefrontSettings() {
                         <CurrencyInput
                           value={zone.fee || 0}
                           onChange={(e) => {
-                            const zones = [...(formData.delivery_zones || [])];
+                            const zones = [...(formData.delivery_zones ?? [])];
                             zones[index] = { ...zones[index], fee: parseFloat(e.target.value) };
                             updateField('delivery_zones', zones);
                           }}
@@ -929,7 +929,7 @@ export default function StorefrontSettings() {
                         <CurrencyInput
                           value={zone.min_order || 0}
                           onChange={(e) => {
-                            const zones = [...(formData.delivery_zones || [])];
+                            const zones = [...(formData.delivery_zones ?? [])];
                             zones[index] = { ...zones[index], min_order: parseFloat(e.target.value) };
                             updateField('delivery_zones', zones);
                           }}
@@ -940,7 +940,7 @@ export default function StorefrontSettings() {
                         variant="ghost"
                         size="icon"
                         onClick={() => {
-                          const zones = (formData.delivery_zones || []).filter((_, i) => i !== index);
+                          const zones = (formData.delivery_zones ?? []).filter((_, i) => i !== index);
                           updateField('delivery_zones', zones);
                         }}
                       >
@@ -951,7 +951,7 @@ export default function StorefrontSettings() {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      const zones = [...(formData.delivery_zones || []), { zip_code: '', fee: 5, min_order: 0 }];
+                      const zones = [...(formData.delivery_zones ?? []), { zip_code: '', fee: 5, min_order: 0 }];
                       updateField('delivery_zones', zones);
                     }}
                   >
@@ -985,23 +985,23 @@ export default function StorefrontSettings() {
                     </p>
                   </div>
                   <Switch
-                    checked={(formData.time_slots || []).length > 0}
+                    checked={(formData.time_slots ?? []).length > 0}
                     onCheckedChange={(checked) => {
                       updateField('time_slots', checked ? DEFAULT_TIME_SLOTS : []);
                     }}
                   />
                 </div>
 
-                {(formData.time_slots || []).length > 0 && (
+                {(formData.time_slots ?? []).length > 0 && (
                   <div className="space-y-4">
                     <Separator />
                     <h4 className="font-medium">Available Time Slots</h4>
-                    {(formData.time_slots || []).map((slot, index) => (
+                    {(formData.time_slots ?? []).map((slot, index) => (
                       <div key={index} className="flex items-center gap-4">
                         <Switch
                           checked={slot.enabled}
                           onCheckedChange={(checked) => {
-                            const slots = [...(formData.time_slots || [])];
+                            const slots = [...(formData.time_slots ?? [])];
                             slots[index] = { ...slots[index], enabled: checked };
                             updateField('time_slots', slots);
                           }}
@@ -1010,7 +1010,7 @@ export default function StorefrontSettings() {
                           value={slot.label}
                           aria-label="Time slot label"
                           onChange={(e) => {
-                            const slots = [...(formData.time_slots || [])];
+                            const slots = [...(formData.time_slots ?? [])];
                             slots[index] = { ...slots[index], label: e.target.value };
                             updateField('time_slots', slots);
                           }}
@@ -1021,7 +1021,7 @@ export default function StorefrontSettings() {
                           value={slot.start}
                           aria-label="Time slot start"
                           onChange={(e) => {
-                            const slots = [...(formData.time_slots || [])];
+                            const slots = [...(formData.time_slots ?? [])];
                             slots[index] = { ...slots[index], start: e.target.value };
                             updateField('time_slots', slots);
                           }}
@@ -1033,7 +1033,7 @@ export default function StorefrontSettings() {
                           value={slot.end}
                           aria-label="Time slot end"
                           onChange={(e) => {
-                            const slots = [...(formData.time_slots || [])];
+                            const slots = [...(formData.time_slots ?? [])];
                             slots[index] = { ...slots[index], end: e.target.value };
                             updateField('time_slots', slots);
                           }}
@@ -1043,7 +1043,7 @@ export default function StorefrontSettings() {
                           variant="ghost"
                           size="icon"
                           onClick={() => {
-                            const slots = (formData.time_slots || []).filter((_, i) => i !== index);
+                            const slots = (formData.time_slots ?? []).filter((_, i) => i !== index);
                             updateField('time_slots', slots);
                           }}
                         >
@@ -1054,7 +1054,7 @@ export default function StorefrontSettings() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        const slots = [...(formData.time_slots || []), { label: 'New Slot', start: '09:00', end: '12:00', enabled: true }];
+                        const slots = [...(formData.time_slots ?? []), { label: 'New Slot', start: '09:00', end: '12:00', enabled: true }];
                         updateField('time_slots', slots);
                       }}
                     >
@@ -1423,7 +1423,7 @@ export default function StorefrontSettings() {
           <div className="hidden lg:block sticky top-6 self-start">
             <StorefrontSettingsLivePreview
               settings={previewSettings}
-              featuredProducts={featuredProducts || []}
+              featuredProducts={featuredProducts ?? []}
             />
           </div>
         )}

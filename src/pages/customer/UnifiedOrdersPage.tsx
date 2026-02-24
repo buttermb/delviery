@@ -101,7 +101,7 @@ export default function UnifiedOrdersPage() {
         throw error;
       }
 
-      return (data || []).map((order): UnifiedOrder => ({
+      return (data ?? []).map((order): UnifiedOrder => ({
         id: order.id,
         created_at: order.created_at,
         order_type: 'retail' as const,
@@ -143,7 +143,7 @@ export default function UnifiedOrdersPage() {
         throw error;
       }
 
-      return (data || []).map((order): UnifiedOrder => ({
+      return (data ?? []).map((order): UnifiedOrder => ({
         id: order.id,
         created_at: order.created_at,
         order_type: 'wholesale' as const,
@@ -181,7 +181,7 @@ export default function UnifiedOrdersPage() {
         throw error;
       }
 
-      return (data || []).map((order): UnifiedOrder => ({
+      return (data ?? []).map((order): UnifiedOrder => ({
         id: order.id,
         created_at: order.created_at,
         order_type: 'retail' as const,

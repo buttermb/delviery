@@ -126,7 +126,7 @@ function transformProduct(rpc: RpcProduct): ProductDetails {
     display_price: rpc.sale_price || rpc.price,
     compare_at_price: rpc.sale_price ? rpc.price : null,
     image_url: rpc.image_url,
-    images: rpc.images || [],
+    images: rpc.images ?? [],
     in_stock: rpc.stock_quantity > 0,
     stock_quantity: rpc.stock_quantity,
     is_featured: rpc.is_featured,
@@ -141,7 +141,7 @@ function transformProduct(rpc: RpcProduct): ProductDetails {
     metrc_retail_id: rpc.metrc_retail_id,
     exclude_from_discounts: rpc.exclude_from_discounts,
     minimum_price: rpc.minimum_price,
-    effects: rpc.effects || [],
+    effects: rpc.effects ?? [],
     min_expiry_days: rpc.min_expiry_days,
   };
 }
@@ -222,7 +222,7 @@ export function ProductDetailPage() {
               display_price: item.sale_price || item.price,
               compare_at_price: item.sale_price ? item.price : null,
               image_url: item.image_url,
-              images: item.images || [],
+              images: item.images ?? [],
               in_stock: item.stock_quantity > 0,
               stock_quantity: item.stock_quantity,
               is_featured: item.is_featured,
@@ -237,7 +237,7 @@ export function ProductDetailPage() {
               metrc_retail_id: (item as unknown as Record<string, unknown>).metrc_retail_id as string ?? null,
               exclude_from_discounts: (item as unknown as Record<string, unknown>).exclude_from_discounts as boolean ?? false,
               minimum_price: (item as unknown as Record<string, unknown>).minimum_price as number ?? null,
-              effects: ((item as unknown as Record<string, unknown>).effects as string[]) || [],
+              effects: ((item as unknown as Record<string, unknown>).effects as string[]) ?? [],
               slug: item.slug,
             } as ProductDetails & { slug?: string };
           }
@@ -252,7 +252,7 @@ export function ProductDetailPage() {
             return null;
           }
 
-          const products = (data || []).map((item: RpcProduct) => transformProduct(item));
+          const products = (data ?? []).map((item: RpcProduct) => transformProduct(item));
           return products.find((p: ProductDetails) => p.product_id === identifier) || null;
         }
       } catch (err) {
@@ -294,7 +294,7 @@ export function ProductDetailPage() {
         .rpc('get_marketplace_products', { p_store_id: store.id });
 
       if (error) throw error;
-      return (data || [])
+      return (data ?? [])
         .map((item: RpcProduct) => transformProduct(item))
         .filter((p: ProductDetails) => p.product_id !== product?.product_id && p.category === product.category)
         .slice(0, 4);

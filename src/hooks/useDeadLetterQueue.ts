@@ -56,7 +56,7 @@ export function useDeadLetterQueue() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as DeadLetterEntry[];
+      return (data ?? []) as DeadLetterEntry[];
     },
     enabled: !!tenant?.id,
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -155,7 +155,7 @@ export function useDeadLetterQueue() {
   };
 
   return {
-    entries: entries || [],
+    entries: entries ?? [],
     isLoading,
     stats,
     retryExecution,

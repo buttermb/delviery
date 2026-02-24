@@ -298,7 +298,7 @@ export async function getTenantsWithCredits(
       return { tenants: [], total: 0 };
     }
 
-    const tenants: TenantCreditInfo[] = (data || []).map((row: TenantCreditRow) => ({
+    const tenants: TenantCreditInfo[] = (data ?? []).map((row: TenantCreditRow) => ({
       tenantId: row.tenant_id,
       tenantName: row.tenant_name || 'Unknown',
       tenantSlug: row.tenant_slug || '',
@@ -379,7 +379,7 @@ export async function getTenantCreditDetail(
       .select('referrer_credits_granted')
       .eq('referrer_tenant_id', tenantId);
 
-    const totalReferralCredits = (referralCredits || []).reduce(
+    const totalReferralCredits = (referralCredits ?? []).reduce(
       (sum, r) => sum + (r.referrer_credits_granted || 0),
       0
     );
@@ -403,7 +403,7 @@ export async function getTenantCreditDetail(
         lastFreeGrantAt: credits?.last_free_grant_at,
         nextFreeGrantAt: credits?.next_free_grant_at,
       },
-      recentTransactions: (transactions || []).map((tx: CreditTransactionRow) => ({
+      recentTransactions: (transactions ?? []).map((tx: CreditTransactionRow) => ({
         id: tx.id,
         tenantId: tx.tenant_id,
         amount: tx.amount,
@@ -416,7 +416,7 @@ export async function getTenantCreditDetail(
         metadata: tx.metadata,
         createdAt: tx.created_at,
       })),
-      grants: (grants || []).map((g: CreditGrantRow) => ({
+      grants: (grants ?? []).map((g: CreditGrantRow) => ({
         id: g.id,
         tenantId: g.tenant_id,
         amount: g.amount,
@@ -650,7 +650,7 @@ export async function getAllTransactions(options: {
     }
 
     return {
-      transactions: (data || []).map((tx: CreditTransactionRow) => ({
+      transactions: (data ?? []).map((tx: CreditTransactionRow) => ({
         id: tx.id,
         tenantId: tx.tenant_id,
         amount: tx.amount,
@@ -707,7 +707,7 @@ export async function getCreditAnalytics(options: {
 
     // Group by date
     const consumptionByDate = new Map<string, number>();
-    (consumptionData || []).forEach((tx: Pick<CreditTransactionRow, 'created_at' | 'amount'>) => {
+    (consumptionData ?? []).forEach((tx: Pick<CreditTransactionRow, 'created_at' | 'amount'>) => {
       const date = new Date(tx.created_at).toISOString().split('T')[0];
       consumptionByDate.set(date, (consumptionByDate.get(date) || 0) + Math.abs(tx.amount));
     });
@@ -721,7 +721,7 @@ export async function getCreditAnalytics(options: {
       .lte('created_at', endDate);
 
     const revenueByDate = new Map<string, number>();
-    (purchaseData || []).forEach((tx: { created_at: string; metadata?: Record<string, unknown> }) => {
+    (purchaseData ?? []).forEach((tx: { created_at: string; metadata?: Record<string, unknown> }) => {
       const date = new Date(tx.created_at).toISOString().split('T')[0];
       const amount = (tx.metadata?.amount_paid as number) || 0;
       revenueByDate.set(date, (revenueByDate.get(date) || 0) + amount);
@@ -736,14 +736,14 @@ export async function getCreditAnalytics(options: {
       .lte('created_at', endDate);
 
     const categoryTotals = new Map<string, number>();
-    (categoryData || []).forEach((tx: Pick<CreditTransactionRow, 'action_type' | 'amount'>) => {
+    (categoryData ?? []).forEach((tx: Pick<CreditTransactionRow, 'action_type' | 'amount'>) => {
       const category = getActionCategory(tx.action_type || 'other');
       categoryTotals.set(category, (categoryTotals.get(category) || 0) + Math.abs(tx.amount));
     });
 
     // Get top actions
     const actionCounts = new Map<string, { count: number; credits: number }>();
-    (categoryData || []).forEach((tx: Pick<CreditTransactionRow, 'action_type' | 'amount'>) => {
+    (categoryData ?? []).forEach((tx: Pick<CreditTransactionRow, 'action_type' | 'amount'>) => {
       const action = tx.action_type || 'unknown';
       const current = actionCounts.get(action) || { count: 0, credits: 0 };
       actionCounts.set(action, {
@@ -832,7 +832,7 @@ export async function getAllPromoCodes(): Promise<PromoCodeAdmin[]> {
       return [];
     }
 
-    return (data || []).map((code: PromoCodeRow) => ({
+    return (data ?? []).map((code: PromoCodeRow) => ({
       id: code.id,
       code: code.code,
       creditsAmount: code.credits_amount,
@@ -956,7 +956,7 @@ export async function getPromoCodeRedemptions(codeId: string): Promise<Array<{
       return [];
     }
 
-    return (data || []).map((r: PromoRedemptionRow) => ({
+    return (data ?? []).map((r: PromoRedemptionRow) => ({
       tenantId: r.tenant_id,
       tenantName: r.tenants?.business_name || 'Unknown',
       creditsGranted: r.credits_granted,
@@ -1001,7 +1001,7 @@ export async function getAllCreditPackages(): Promise<CreditPackageDB[]> {
       return [];
     }
 
-    return (data || []).map((pkg: CreditPackageRow) => ({
+    return (data ?? []).map((pkg: CreditPackageRow) => ({
       id: pkg.id,
       name: pkg.name,
       slug: pkg.slug,
@@ -1106,7 +1106,7 @@ export async function getReferralStats(): Promise<ReferralStats> {
       .from('referral_redemptions')
       .select('referrer_credits_granted, referee_credits_granted');
 
-    const totalCreditsAwarded = (creditsData || []).reduce(
+    const totalCreditsAwarded = (creditsData ?? []).reduce(
       (sum, r) => sum + (r.referrer_credits_granted || 0) + (r.referee_credits_granted || 0),
       0
     );
@@ -1132,7 +1132,7 @@ export async function getReferralStats(): Promise<ReferralStats> {
 
     // Get credits earned per referrer
     const topReferrers = await Promise.all(
-      (topReferrersData || []).map(async (r: ReferralCodeRow) => {
+      (topReferrersData ?? []).map(async (r: ReferralCodeRow) => {
         const { data: earned } = await sb
           .from('referral_redemptions')
           .select('referrer_credits_granted')
@@ -1142,7 +1142,7 @@ export async function getReferralStats(): Promise<ReferralStats> {
           tenantId: r.tenant_id,
           tenantName: r.tenants?.business_name || 'Unknown',
           referrals: r.uses_count ?? 0,
-          creditsEarned: (earned || []).reduce(
+          creditsEarned: (earned ?? []).reduce(
             (sum, e) => sum + (e.referrer_credits_granted || 0),
             0
           ),

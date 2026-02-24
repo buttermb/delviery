@@ -99,7 +99,7 @@ export const useMenuScheduleHistory = (menuId?: string) => {
         return [];
       }
 
-      return (data || []).map((entry) => ({
+      return (data ?? []).map((entry) => ({
         id: entry.id as string,
         menuId: entry.menu_id as string,
         tenantId: entry.tenant_id as string,
@@ -276,7 +276,7 @@ export const useScheduledMenus = (tenantId?: string) => {
         return [];
       }
 
-      return (data || []).map((menu) => ({
+      return (data ?? []).map((menu) => ({
         id: menu.id as string,
         name: menu.name as string,
         status: menu.status as string,

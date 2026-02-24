@@ -76,7 +76,7 @@ export function useVendorPriceHistory(vendorId: string, productId?: string) {
         throw error;
       }
 
-      return (data || []) as unknown as VendorPriceHistoryEntry[];
+      return (data ?? []) as unknown as VendorPriceHistoryEntry[];
     },
     enabled: !!tenant?.id && !!vendorId,
   });
@@ -117,7 +117,7 @@ export function useVendorPriceAlerts(vendorId?: string) {
         throw error;
       }
 
-      return (data || []) as VendorPriceAlert[];
+      return (data ?? []) as VendorPriceAlert[];
     },
     enabled: !!tenant?.id,
   });
@@ -190,7 +190,7 @@ export function useVendorPriceAlertSettings(vendorId: string) {
         throw error;
       }
 
-      return (data || []) as VendorPriceAlertSettings[];
+      return (data ?? []) as VendorPriceAlertSettings[];
     },
     enabled: !!tenant?.id && !!vendorId,
   });
@@ -337,7 +337,7 @@ export function useProductPriceTrend(vendorId: string, productId: string) {
         throw error;
       }
 
-      return (data || []).map((item: { created_at: string; cost_per_unit_new: number }) => ({
+      return (data ?? []).map((item: { created_at: string; cost_per_unit_new: number }) => ({
         date: item.created_at,
         cost: item.cost_per_unit_new,
       }));

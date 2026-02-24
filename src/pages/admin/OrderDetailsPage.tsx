@@ -298,7 +298,7 @@ export function OrderDetailsPage() {
           metadata: (unifiedOrder as Record<string, unknown>).metadata as OrderDetails['metadata'] ?? null,
           customer: unifiedOrder.customer,
           courier: unifiedOrder.courier,
-          order_items: (unifiedOrder.items || []).map((item: Record<string, unknown>) => ({
+          order_items: (unifiedOrder.items ?? []).map((item: Record<string, unknown>) => ({
             id: item.id as string,
             product_id: item.product_id as string,
             product_name: item.product_name as string,
@@ -340,7 +340,7 @@ export function OrderDetailsPage() {
         tax_amount: (data as Record<string, unknown>).tax_amount as number ?? 0,
         updated_at: (data as Record<string, unknown>).updated_at as string ?? data.created_at,
         metadata: (data as Record<string, unknown>).metadata as OrderDetails['metadata'] ?? null,
-        order_items: data.order_items || [],
+        order_items: data.order_items ?? [],
       } as unknown as OrderDetails;
     },
     enabled: !!tenant?.id && !!orderId,
@@ -593,7 +593,7 @@ export function OrderDetailsPage() {
           total_amount: order.total_amount,
           status: order.status,
           delivery_address: order.delivery_address || '',
-          order_items: (order.order_items || []).map(item => ({
+          order_items: (order.order_items ?? []).map(item => ({
             quantity: item.quantity,
             price: item.unit_price,
             product_name: item.product_name,
@@ -846,7 +846,7 @@ export function OrderDetailsPage() {
                 customer_name: customerName,
                 customer_email: customerEmail || undefined,
                 customer_phone: customerPhone || undefined,
-                order_items: (order.order_items || []).map(item => ({
+                order_items: (order.order_items ?? []).map(item => ({
                   id: item.id,
                   product_id: item.product_id,
                   product_name: item.product_name,
@@ -939,7 +939,7 @@ export function OrderDetailsPage() {
               deliveryAddress={order.delivery_address}
               deliveryNotes={order.delivery_notes}
               disabled={updateStatusMutation.isPending}
-              orderItems={(order.order_items || []).map(item => ({
+              orderItems={(order.order_items ?? []).map(item => ({
                 id: item.id,
                 product_id: item.product_id,
                 product_name: item.product_name,
@@ -1177,14 +1177,14 @@ export function OrderDetailsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(order.order_items || []).length === 0 ? (
+                    {(order.order_items ?? []).length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                           No items found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      (order.order_items || []).map((item) => (
+                      (order.order_items ?? []).map((item) => (
                         <TableRow
                           key={item.id}
                           className={item.product_id ? 'cursor-pointer hover:bg-muted/50 transition-colors' : ''}
@@ -1753,7 +1753,7 @@ export function OrderDetailsPage() {
             delivery_notes: order.delivery_notes || undefined,
             customer_notes: order.notes || undefined,
             created_at: order.created_at,
-            order_items: (order.order_items || []).map(item => ({
+            order_items: (order.order_items ?? []).map(item => ({
               id: item.id,
               product_name: item.product_name,
               quantity: item.quantity,
@@ -1806,7 +1806,7 @@ export function OrderDetailsPage() {
             priority_set_at: null,
             priority_set_by: null,
             priority_auto_set: false,
-            items: (order.order_items || []).map(item => ({
+            items: (order.order_items ?? []).map(item => ({
               id: item.id,
               order_id: order.id,
               product_id: item.product_id,
@@ -1898,7 +1898,7 @@ export function OrderDetailsPage() {
             delivery_address: order.delivery_address
               ? { street: order.delivery_address }
               : undefined,
-            items: (order.order_items || []).map(item => ({
+            items: (order.order_items ?? []).map(item => ({
               product_name: item.product_name,
               quantity: item.quantity,
               price: item.unit_price,

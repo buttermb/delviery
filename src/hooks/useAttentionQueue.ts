@@ -81,7 +81,7 @@ export function useAttentionQueue() {
             .eq('tenant_id', tenant.id)
             .eq('status', 'pending')
             .limit(100);
-          return (data as unknown as OrderRow[]) || [];
+          return (data as unknown as OrderRow[]) ?? [];
         } catch { return []; }
       };
 
@@ -93,7 +93,7 @@ export function useAttentionQueue() {
             .eq('tenant_id', tenant.id)
             .eq('status', 'pending')
             .limit(100);
-          return (data as unknown as OrderRow[]) || [];
+          return (data as unknown as OrderRow[]) ?? [];
         } catch { return []; }
       };
 
@@ -105,7 +105,7 @@ export function useAttentionQueue() {
             .eq('tenant_id', tenant.id)
             .eq('status', 'in_transit')
             .limit(100);
-          return (data as unknown as DeliveryRow[]) || [];
+          return (data as unknown as DeliveryRow[]) ?? [];
         } catch { return []; }
       };
 
@@ -117,7 +117,7 @@ export function useAttentionQueue() {
             .eq('tenant_id', tenant.id)
             .eq('status', 'in_transit')
             .limit(100);
-          return (data as unknown as DeliveryRow[]) || [];
+          return (data as unknown as DeliveryRow[]) ?? [];
         } catch { return []; }
       };
 
@@ -129,7 +129,7 @@ export function useAttentionQueue() {
             .eq('tenant_id', tenant.id)
             .lte('stock_quantity', 0)
             .limit(100);
-          return (data as unknown as ProductRow[]) || [];
+          return (data as unknown as ProductRow[]) ?? [];
         } catch { return []; }
       };
 
@@ -142,7 +142,7 @@ export function useAttentionQueue() {
             .gt('stock_quantity', 0)
             .lt('stock_quantity', 10)
             .limit(100);
-          return (data as unknown as ProductRow[]) || [];
+          return (data as unknown as ProductRow[]) ?? [];
         } catch { return []; }
       };
 
@@ -154,7 +154,7 @@ export function useAttentionQueue() {
             .eq('tenant_id', tenant.id)
             .gt('balance', 0)
             .limit(100);
-          return (data as unknown as CustomerRow[]) || [];
+          return (data as unknown as CustomerRow[]) ?? [];
         } catch { return []; }
       };
 
@@ -165,7 +165,7 @@ export function useAttentionQueue() {
             .select('id, total_amount, created_at')
             .eq('tenant_id', tenant.id)
             .eq('status', 'pending');
-          return (data as unknown as OrderRow[]) || [];
+          return (data as unknown as OrderRow[]) ?? [];
         } catch { return []; }
       };
 
@@ -366,7 +366,7 @@ export function useAttentionQueue() {
 
   // Get top N items
   const getTopItems = (n: number = 5) => {
-    return data?.items?.slice(0, n) || [];
+    return data?.items?.slice(0, n) ?? [];
   };
 
   // Check if there are urgent items

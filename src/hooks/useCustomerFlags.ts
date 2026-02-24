@@ -173,10 +173,10 @@ async function fetchActiveFlags(
       throw simpleError;
     }
 
-    return (simpleData || []) as CustomerFlagWithCreator[];
+    return (simpleData ?? []) as CustomerFlagWithCreator[];
   }
 
-  return (data || []) as CustomerFlagWithCreator[];
+  return (data ?? []) as CustomerFlagWithCreator[];
 }
 
 async function fetchFlagHistory(
@@ -201,7 +201,7 @@ async function fetchFlagHistory(
     throw error;
   }
 
-  return (data || []) as CustomerFlagWithCreator[];
+  return (data ?? []) as CustomerFlagWithCreator[];
 }
 
 // ============================================================================
@@ -239,11 +239,11 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
 
   // Calculate status from flags
   const status: CustomerFlagStatus = {
-    isFlagged: (flags || []).some(f => f.flag_type === 'flagged' && f.is_active),
-    isBlocked: (flags || []).some(f => f.flag_type === 'blocked' && f.is_active),
-    activeFlags: (flags || []).filter(f => f.is_active),
-    flagCount: (flags || []).filter(f => f.flag_type === 'flagged' && f.is_active).length,
-    blockCount: (flags || []).filter(f => f.flag_type === 'blocked' && f.is_active).length,
+    isFlagged: (flags ?? []).some(f => f.flag_type === 'flagged' && f.is_active),
+    isBlocked: (flags ?? []).some(f => f.flag_type === 'blocked' && f.is_active),
+    activeFlags: (flags ?? []).filter(f => f.is_active),
+    flagCount: (flags ?? []).filter(f => f.flag_type === 'flagged' && f.is_active).length,
+    blockCount: (flags ?? []).filter(f => f.flag_type === 'blocked' && f.is_active).length,
   };
 
   // Add flag mutation
@@ -378,8 +378,8 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
   return {
     // Flag status
     status,
-    flags: flags || [],
-    flagHistory: flagHistory || [],
+    flags: flags ?? [],
+    flagHistory: flagHistory ?? [],
 
     // Loading/error states
     isLoading,
@@ -463,7 +463,7 @@ export async function getActiveCustomerFlags(
       return [];
     }
 
-    return (data || []) as CustomerFlag[];
+    return (data ?? []) as CustomerFlag[];
   } catch (error) {
     logger.error('Error getting customer flags', error instanceof Error ? error : new Error(String(error)), {
       tenantId,

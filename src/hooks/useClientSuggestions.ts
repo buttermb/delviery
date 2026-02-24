@@ -59,7 +59,7 @@ export function useClientSuggestions() {
 
       // Fetch order history for each client
       const clientsWithOrders = await Promise.all(
-        (clients || []).map(async (client) => {
+        (clients ?? []).map(async (client) => {
           const { data: orders } = await supabase
             .from('wholesale_orders')
             .select('created_at, total_amount')

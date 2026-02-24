@@ -189,12 +189,12 @@ export default function VendorDashboard() {
       }
 
       // Calculate outstanding payables (approved POs not yet received)
-      const outstandingPayables = (allPOs || [])
+      const outstandingPayables = (allPOs ?? [])
         .filter((po) => po.status === 'approved' || po.status === 'submitted')
         .reduce((sum: number, po: PurchaseOrderRow) => sum + (po.total || 0), 0);
 
       // Calculate on-time delivery rate
-      const receivedPOs = (allPOs || []).filter((po) => po.status === 'received');
+      const receivedPOs = (allPOs ?? []).filter((po) => po.status === 'received');
       let onTimeCount = 0;
       receivedPOs.forEach((po) => {
         if (po.expected_delivery_date && po.received_at) {
@@ -263,7 +263,7 @@ export default function VendorDashboard() {
 
       // Aggregate data per vendor
       const vendorSpendMap = new Map<string, { totalSpend: number; poCount: number }>();
-      (purchaseOrders || []).forEach((po: PurchaseOrderRow) => {
+      (purchaseOrders ?? []).forEach((po: PurchaseOrderRow) => {
         if (po.vendor_id) {
           const existing = vendorSpendMap.get(po.vendor_id) || { totalSpend: 0, poCount: 0 };
           existing.totalSpend += po.total || 0;
@@ -274,9 +274,9 @@ export default function VendorDashboard() {
 
       // Calculate average rating per vendor
       const vendorRatingsMap = new Map<string, number[]>();
-      (ratings || []).forEach((r: VendorRatingRow) => {
+      (ratings ?? []).forEach((r: VendorRatingRow) => {
         if (r.vendor_id && r.overall_score !== null) {
-          const scores = vendorRatingsMap.get(r.vendor_id) || [];
+          const scores = vendorRatingsMap.get(r.vendor_id) ?? [];
           scores.push(r.overall_score);
           vendorRatingsMap.set(r.vendor_id, scores);
         }
@@ -334,7 +334,7 @@ export default function VendorDashboard() {
         throw error;
       }
 
-      return (data || []).map((po: PurchaseOrderRow) => ({
+      return (data ?? []).map((po: PurchaseOrderRow) => ({
         id: po.id,
         poNumber: po.po_number || `PO-${po.id.slice(0, 8)}`,
         vendorName: po.vendors?.name || 'Unknown Vendor',
@@ -364,7 +364,7 @@ export default function VendorDashboard() {
 
       // Count vendors by category
       const categoryMap = new Map<string, number>();
-      (vendors || []).forEach((v: VendorRow) => {
+      (vendors ?? []).forEach((v: VendorRow) => {
         const category = v.category || 'Uncategorized';
         categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
       });

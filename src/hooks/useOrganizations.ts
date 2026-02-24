@@ -147,7 +147,7 @@ async function fetchOrganizations(
 
   interface OrgRow { id: string; [key: string]: unknown }
 
-  for (const org of (data || []) as OrgRow[]) {
+  for (const org of (data ?? []) as OrgRow[]) {
     // Get member count
     const { count: memberCount } = await supabase
       .from('organization_members')
@@ -163,7 +163,7 @@ async function fetchOrganizations(
       .eq('organization_id', org.id)
       .in('status', ['completed', 'delivered', 'paid']);
 
-    const validOrders = orderStats || [];
+    const validOrders = orderStats ?? [];
     const totalLtv = validOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
     const totalOrders = validOrders.length;
     const avgOrderValue = totalOrders > 0 ? totalLtv / totalOrders : 0;
@@ -227,7 +227,7 @@ async function fetchOrganizationDetail(
     .eq('organization_id', (org as Record<string, unknown>).id)
     .in('status', ['completed', 'delivered', 'paid']);
 
-  const validOrders = orderStats || [];
+  const validOrders = orderStats ?? [];
   const totalLtv = validOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
   const totalOrders = validOrders.length;
   const avgOrderValue = totalOrders > 0 ? totalLtv / totalOrders : 0;
@@ -293,10 +293,10 @@ async function fetchOrganizationMembers(
       throw simpleError;
     }
 
-    return (simpleData || []) as OrganizationMember[];
+    return (simpleData ?? []) as OrganizationMember[];
   }
 
-  return (data || []) as OrganizationMember[];
+  return (data ?? []) as OrganizationMember[];
 }
 
 // ============================================================================
@@ -581,7 +581,7 @@ export function useOrganizations({
   );
 
   return {
-    organizations: organizations || [],
+    organizations: organizations ?? [],
     isLoading,
     error: error as Error | null,
     refetch,
@@ -813,7 +813,7 @@ export function useOrganizationDetail({
 
   return {
     organization: organization ?? null,
-    members: members || [],
+    members: members ?? [],
     isLoading,
     isLoadingMembers,
     error: error as Error | null,
@@ -858,14 +858,14 @@ export function useOrganizationSearch(searchTerm: string) {
         return [];
       }
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId && !!searchTerm && searchTerm.length >= 2,
     staleTime: 30000,
   });
 
   return {
-    results: data || [],
+    results: data ?? [],
     isSearching: isLoading,
   };
 }
@@ -909,7 +909,7 @@ export function useCustomerOrganizations(customerId: string | undefined) {
         return [];
       }
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId && !!customerId,
   });
@@ -920,7 +920,7 @@ export function useCustomerOrganizations(customerId: string | undefined) {
   }
 
   const organizations = useMemo(() => {
-    return (data || [])
+    return (data ?? [])
       .filter((m: MemberWithOrg) => m.organization)
       .map((m: MemberWithOrg) => ({
         membership: m,

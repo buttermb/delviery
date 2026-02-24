@@ -137,7 +137,7 @@ function useRelatedOrders(customerId: string | undefined, tenantId: string | und
         throw error;
       }
 
-      return (data || []).map((order) => ({
+      return (data ?? []).map((order) => ({
         id: order.id,
         title: order.order_number ? `Order #${order.order_number}` : `Order #${order.id.slice(0, 8)}`,
         subtitle: formatSmartDate(order.created_at),
@@ -184,7 +184,7 @@ function useRelatedDeliveries(customerId: string | undefined, tenantId: string |
         throw error;
       }
 
-      return (data || []).map((delivery) => ({
+      return (data ?? []).map((delivery) => ({
         id: delivery.id,
         title: `Delivery for Order #${delivery.order_id.slice(0, 8)}`,
         subtitle: delivery.scheduled_at
@@ -215,7 +215,7 @@ function useRelatedPayments(customerId: string | undefined, tenantId: string | u
         throw error;
       }
 
-      return (data || []).map((payment) => ({
+      return (data ?? []).map((payment) => ({
         id: payment.id,
         title: formatCurrency(payment.amount || 0),
         subtitle: `${payment.payment_method || 'Unknown'} - ${formatSmartDate(payment.created_at)}`,
@@ -253,7 +253,7 @@ function useRelatedSpecialPricing(customerId: string | undefined, tenantId: stri
       }
 
       const now = new Date();
-      return (data || [])
+      return (data ?? [])
         .filter((rule) => {
           // Filter by date range if set
           if (rule.start_date && new Date(rule.start_date) > now) return false;
@@ -485,7 +485,7 @@ function useRelatedMenus(customerId: string | undefined, tenantId: string | unde
       // Deduplicate by menu_id and filter to active menus
       const uniqueMenus = new Map<string, { id: string; name: string }>();
 
-      for (const order of orders || []) {
+      for (const order of orders ?? []) {
         const menu = order.disposable_menus as { id: string; name: string; is_active: boolean } | null;
         if (menu && menu.is_active && !uniqueMenus.has(menu.id)) {
           uniqueMenus.set(menu.id, { id: menu.id, name: menu.name });

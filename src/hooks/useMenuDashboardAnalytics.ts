@@ -72,7 +72,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
         logger.warn('Failed to fetch menus for dashboard analytics', { error: error.message });
         return [];
       }
-      return (data || []) as DisposableMenuRow[];
+      return (data ?? []) as DisposableMenuRow[];
     },
     enabled: !!tenantId,
     staleTime: 60 * 1000,
@@ -97,7 +97,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
         logger.warn('Failed to fetch access logs for dashboard analytics', { error: error.message });
         return [];
       }
-      return (data || []) as AccessLogRow[];
+      return (data ?? []) as AccessLogRow[];
     },
     enabled: !!tenantId && menuIds.length > 0,
     staleTime: 60 * 1000,
@@ -117,7 +117,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
         logger.warn('Failed to fetch orders for dashboard analytics', { error: error.message });
         return [];
       }
-      return (data || []) as MenuOrderRow[];
+      return (data ?? []) as MenuOrderRow[];
     },
     enabled: !!tenantId,
     staleTime: 30 * 1000,
@@ -219,7 +219,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
     const productMap: Record<string, { id: string; name: string; orders: number; revenue: number }> = {};
     orders.forEach(order => {
       const orderData = order.order_data as { items?: OrderItem[] } | null;
-      const items = orderData?.items || [];
+      const items = orderData?.items ?? [];
       items.forEach((item: OrderItem) => {
         const key = item.product_name;
         if (!productMap[key]) {

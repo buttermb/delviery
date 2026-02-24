@@ -195,14 +195,14 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
         strain_type: existingListing.strain_type || '',
         description: existingListing.description || '',
         base_price: Number(existingListing.base_price) || 0,
-        bulk_pricing: (existingListing.bulk_pricing as Array<{ quantity: number; price: number }>) || [],
+        bulk_pricing: (existingListing.bulk_pricing as Array<{ quantity: number; price: number }>) ?? [],
         min_order_quantity: existingListing.min_order_quantity || 1,
         max_order_quantity: existingListing.max_order_quantity || undefined,
         quantity_available: Number(existingListing.quantity_available) || 0,
         unit_type: existingListing.unit_type || 'lb',
-        images: existingListing.images || [],
+        images: existingListing.images ?? [],
         visibility: existingListing.visibility || 'public',
-        tags: existingListing.tags || [],
+        tags: existingListing.tags ?? [],
         lab_results: undefined, // Will be decrypted if needed
         has_lab_results: !!listing.lab_results,
       });
@@ -346,14 +346,14 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
         strain_type: data.strain_type || null,
         description: data.description,
         base_price: data.base_price,
-        bulk_pricing: data.bulk_pricing || [],
+        bulk_pricing: data.bulk_pricing ?? [],
         min_order_quantity: data.min_order_quantity,
         max_order_quantity: data.max_order_quantity || null,
         quantity_available: data.quantity_available,
         unit_type: data.unit_type,
         images: data.images,
         visibility: data.visibility,
-        tags: data.tags || [],
+        tags: data.tags ?? [],
         lab_results: encryptedLabResults ? { encrypted: encryptedLabResults } : null,
         lab_results_encrypted: encryptedLabResults ? 'true' : 'false',
         // Auto-approve new listings when feature flag is active; preserve existing status on edits
@@ -418,10 +418,10 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
 
-    const currentImages = form.getValues('images') || [];
+    const currentImages = form.getValues('images') ?? [];
     if (currentImages.length + files.length > 6) {
       toast.error('Too Many Images', {
         description: 'Maximum 6 images allowed',
@@ -439,7 +439,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
 
       try {
         const url = await uploadImage(file);
-        const current = form.getValues('images') || [];
+        const current = form.getValues('images') ?? [];
         form.setValue('images', [...current, url]);
       } catch (error) {
         toast.error('Upload Failed', {
@@ -450,7 +450,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
   };
 
   const removeImage = (index: number) => {
-    const current = form.getValues('images') || [];
+    const current = form.getValues('images') ?? [];
     form.setValue('images', current.filter((_, i) => i !== index));
   };
 

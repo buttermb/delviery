@@ -124,7 +124,7 @@ export function CommunicationHistory({
         throw error;
       }
 
-      return (data || []).map((item): CommunicationItem => ({
+      return (data ?? []).map((item): CommunicationItem => ({
         id: item.id,
         source: 'direct',
         channel: item.communication_type as 'email' | 'sms',
@@ -203,7 +203,7 @@ export function CommunicationHistory({
         throw error;
       }
 
-      return (data || []).map((item): CommunicationItem => {
+      return (data ?? []).map((item): CommunicationItem => {
         const recall = item.batch_recalls as { recall_reason: string | null; product_name: string | null } | null;
         return {
           id: item.id,
@@ -224,9 +224,9 @@ export function CommunicationHistory({
   // Combine and sort all communications
   const allCommunications = useMemo(() => {
     const combined: CommunicationItem[] = [
-      ...(directComms || []),
-      ...(orderComms || []),
-      ...(recallComms || []),
+      ...(directComms ?? []),
+      ...(orderComms ?? []),
+      ...(recallComms ?? []),
     ];
 
     // Apply channel filter

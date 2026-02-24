@@ -99,7 +99,7 @@ export function useProductTags() {
         throw error;
       }
 
-      return (data || []) as ProductTag[];
+      return (data ?? []) as ProductTag[];
     },
     enabled: !!tenant?.id,
     staleTime: 30000,
@@ -147,7 +147,7 @@ export function usePopularProductTags(limit = 10) {
 
       // Count assignments per tag
       const countMap = new Map<string, number>();
-      (assignments || []).forEach((a) => {
+      (assignments ?? []).forEach((a) => {
         countMap.set(a.tag_id, (countMap.get(a.tag_id) || 0) + 1);
       });
 
@@ -208,7 +208,7 @@ export function useProductTagAssignments(productId: string | undefined) {
       }
 
       // Combine assignments with their tags
-      const tagMap = new Map((tags || []).map(t => [t.id, t]));
+      const tagMap = new Map((tags ?? []).map(t => [t.id, t]));
       return assignments.map(a => ({
         ...a,
         tag: tagMap.get(a.tag_id),
@@ -470,7 +470,7 @@ export function useSearchProductTags(searchTerm: string) {
         throw error;
       }
 
-      return (data || []) as ProductTag[];
+      return (data ?? []) as ProductTag[];
     },
     enabled: !!tenant?.id && searchTerm.length > 0,
     staleTime: 10000,
@@ -503,7 +503,7 @@ export function useProductTagsByIds(tagIds: string[]) {
         throw error;
       }
 
-      return (data || []) as ProductTag[];
+      return (data ?? []) as ProductTag[];
     },
     enabled: !!tenant?.id && tagIds.length > 0,
     staleTime: 30000,

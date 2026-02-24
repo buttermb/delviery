@@ -101,7 +101,7 @@ export function WorkflowCanvas() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setWorkflows((data as unknown as Workflow[]) || []);
+      setWorkflows((data as unknown as Workflow[]) ?? []);
     } catch (error: unknown) {
       toast.error("Error loading workflows", { description: humanizeError(error) });
     } finally {
@@ -124,7 +124,7 @@ export function WorkflowCanvas() {
 
       if (error) throw error;
       // Parse Json fields to WorkflowAction[]
-      const parsedTemplates = (data || []).map((w: { actions: unknown; trigger_config: unknown }) => ({
+      const parsedTemplates = (data ?? []).map((w: { actions: unknown; trigger_config: unknown }) => ({
         ...w,
         actions: Array.isArray(w.actions) ? w.actions : (typeof w.actions === 'object' && w.actions !== null ? Object.values(w.actions) : []) as WorkflowAction[],
         trigger_config: typeof w.trigger_config === 'object' && w.trigger_config !== null ? w.trigger_config : {} as Record<string, unknown>,
@@ -143,7 +143,7 @@ export function WorkflowCanvas() {
         .order('category', { ascending: true });
 
       if (error) throw error;
-      setActionTemplates(data || []);
+      setActionTemplates(data ?? []);
     } catch (error: unknown) {
       logger.error('Error loading action templates', error, { component: 'WorkflowCanvas' });
     }

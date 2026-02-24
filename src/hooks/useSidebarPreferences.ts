@@ -140,7 +140,7 @@ export function useSidebarPreferences() {
       }
 
       const row = data as SidebarPreferencesRow;
-      const dbCollapsedSections = row.collapsed_sections || [];
+      const dbCollapsedSections = row.collapsed_sections ?? [];
 
       // Sync database collapsed sections to localStorage for future fast loads
       saveCollapsedSectionsToStorage(dbCollapsedSections);
@@ -148,18 +148,18 @@ export function useSidebarPreferences() {
       return {
         operationSize: row.operation_size,
         customLayout: row.custom_layout || false,
-        favorites: row.favorites || [],
+        favorites: row.favorites ?? [],
         collapsedSections: dbCollapsedSections,
-        pinnedItems: row.pinned_items || [],
-        lastAccessedFeatures: row.last_accessed_features || [],
-        hiddenFeatures: row.hidden_features || [],
-        sectionOrder: row.section_order || [],
-        customSections: row.custom_sections || [],
-        enabledIntegrations: row.enabled_integrations || ['mapbox', 'stripe'],
-        customMenuItems: row.custom_menu_items || [],
+        pinnedItems: row.pinned_items ?? [],
+        lastAccessedFeatures: row.last_accessed_features ?? [],
+        hiddenFeatures: row.hidden_features ?? [],
+        sectionOrder: row.section_order ?? [],
+        customSections: row.custom_sections ?? [],
+        enabledIntegrations: row.enabled_integrations ?? ['mapbox', 'stripe'],
+        customMenuItems: row.custom_menu_items ?? [],
         layoutPreset: row.layout_preset || 'default',
         sidebarBehavior: row.sidebar_behavior || DEFAULT_PREFERENCES.sidebarBehavior,
-        customPresets: row.custom_presets || [],
+        customPresets: row.custom_presets ?? [],
       };
     },
     enabled: !!tenant?.id,
@@ -176,7 +176,7 @@ export function useSidebarPreferences() {
   const hasPatchedRef = useRef(false);
   useEffect(() => {
     if (preferences && !isLoading && tenant?.id && admin?.userId && !hasPatchedRef.current) {
-      const currentIntegrations = preferences.enabledIntegrations || [];
+      const currentIntegrations = preferences.enabledIntegrations ?? [];
       const missingDefaults = ['stripe', 'mapbox'].filter(id => !currentIntegrations.includes(id));
 
       if (missingDefaults.length > 0) {

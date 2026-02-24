@@ -118,7 +118,7 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
     if (menuData && open) {
       const currentProductIds = menuData.disposable_menu_products?.map(
         (p: { product_id: string }) => p.product_id
-      ) || [];
+      ) ?? [];
 
       form.reset({
         name: menuData.name || '',

@@ -278,7 +278,7 @@ async function fetchCustomerLoyaltyStatus(
     throw pointsError;
   }
 
-  const transactions = pointsData || [];
+  const transactions = pointsData ?? [];
 
   // Calculate current balance and lifetime earned
   let currentPoints = 0;
@@ -366,7 +366,7 @@ async function fetchPointsHistory(
     throw error;
   }
 
-  return (data || []) as LoyaltyPointTransaction[];
+  return (data ?? []) as LoyaltyPointTransaction[];
 }
 
 // ============================================================================
@@ -588,7 +588,7 @@ export function usePointsHistory({
   });
 
   return {
-    history: history || [],
+    history: history ?? [],
     isLoading,
     error: error as Error | null,
     refetch,

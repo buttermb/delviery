@@ -31,7 +31,7 @@ export const useWholesaleClients = (options?: { includeArchived?: boolean }) => 
       const { data, error } = await query.order('business_name');
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
     staleTime: 30_000,
@@ -59,7 +59,7 @@ export const useWholesaleOrders = () => {
         .limit(100);
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
     staleTime: 15_000,
@@ -293,7 +293,7 @@ export const useWholesaleInventory = (tenantId?: string) => {
       if (error) throw error;
       
       // Map to legacy format for compatibility
-      return (data || []).map(item => ({
+      return (data ?? []).map(item => ({
         id: item.id,
         product_name: item.name,
         category: item.category,
@@ -330,7 +330,7 @@ export const useWholesaleCouriers = () => {
         .order("full_name");
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id
   });
@@ -358,7 +358,7 @@ export const useProductsForWholesale = () => {
 
       // Map to consistent format for wholesale orders
       // Include all products so out-of-stock items are shown as disabled
-      return (data || []).map(product => ({
+      return (data ?? []).map(product => ({
         id: product.id,
         product_name: product.name,
         base_price: product.wholesale_price || product.price || 0,
@@ -404,7 +404,7 @@ export const useWholesalePayments = () => {
         .limit(100);
 
       if (error) throw error;
-      return (data || []) as WholesalePaymentWithClient[];
+      return (data ?? []) as WholesalePaymentWithClient[];
     },
     enabled: !!tenant?.id,
     staleTime: 30_000,
@@ -432,7 +432,7 @@ export const useWholesaleDeliveries = () => {
         .limit(100);
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
     staleTime: 15_000,
@@ -481,7 +481,7 @@ export const useClientOrders = (clientId: string) => {
         .limit(20);
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!clientId && !!tenant?.id,
     staleTime: 15_000,
@@ -507,7 +507,7 @@ export const useClientPayments = (clientId: string) => {
         .limit(20);
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!clientId && !!tenant?.id,
     staleTime: 30_000,
