@@ -131,18 +131,4 @@ export interface StockAlert {
   tenant_id: string;
 }
 
-// Helper type for Supabase query responses
-export type SupabaseResponse<T> = {
-  data: T | null;
-  error: Error | null;
-};
-
-// Helper type for paginated responses
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-}
 

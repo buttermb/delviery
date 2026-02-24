@@ -355,15 +355,6 @@ export interface InviteFormValues {
     phone?: string;
 }
 
-/**
- * Client portal authentication
- */
-export interface ClientPortalAuth {
-    client_id: string;
-    client_name: string;
-    account_id: string;
-}
-
 // ============================================================================
 // CRM-Customer Sync Types
 // ============================================================================

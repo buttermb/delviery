@@ -75,24 +75,4 @@ export interface OrderItem {
   } | null;
 }
 
-/**
- * Type guard for Order validation
- */
-export function isOrder(value: unknown): value is Order {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-  
-  const o = value as Record<string, unknown>;
-  
-  return (
-    typeof o.id === 'string' &&
-    typeof o.status === 'string' &&
-    typeof o.tracking_code === 'string' &&
-    typeof o.total_amount === 'number' &&
-    typeof o.created_at === 'string' &&
-    typeof o.delivery_address === 'string' &&
-    typeof o.delivery_borough === 'string'
-  );
-}
 
