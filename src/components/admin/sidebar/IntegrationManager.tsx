@@ -204,6 +204,7 @@ export function IntegrationManager() {
               disabled={refreshingId === integration.id}
               className="h-11 w-11"
               title="Check connection status"
+              aria-label="Refresh"
             >
               <RefreshCw 
                 className={`h-4 w-4 ${refreshingId === integration.id ? 'animate-spin' : ''}`} 

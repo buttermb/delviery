@@ -537,6 +537,7 @@ function RecurringOrderSetupComponent({
                         size="icon"
                         onClick={() => removeOrderItem(index)}
                         disabled={orderItems.length === 1}
+                        aria-label="Remove item"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

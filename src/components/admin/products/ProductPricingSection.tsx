@@ -381,6 +381,7 @@ export function ProductPricingSection({
                               size="icon"
                               className="h-11 w-11"
                               onClick={() => handleRemoveBulkTier(index)}
+                              aria-label="Remove tier"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

@@ -96,6 +96,7 @@ export function InlineEditableCell({
                     className="h-6 w-6"
                     onClick={handleSave}
                     disabled={isSaving}
+                    aria-label="Save"
                 >
                     <Check className="h-3 w-3 text-green-600" />
                 </Button>
@@ -105,6 +106,7 @@ export function InlineEditableCell({
                     className="h-6 w-6"
                     onClick={handleCancel}
                     disabled={isSaving}
+                    aria-label="Cancel"
                 >
                     <X className="h-3 w-3 text-red-600" />
                 </Button>

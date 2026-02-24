@@ -980,6 +980,7 @@ export function SmartDashboard() {
         onClick={() => setWizardOpen(true)}
         className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-xl sm:hidden bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
         size="icon"
+        aria-label="Add"
       >
         <Plus className="h-6 w-6" />
       </Button>

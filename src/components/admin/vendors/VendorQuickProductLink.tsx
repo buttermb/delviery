@@ -146,6 +146,7 @@ export function VendorQuickProductIcon({
             size="icon"
             onClick={handleClick}
             className={className}
+            aria-label="Add"
           >
             <Plus className="h-4 w-4" />
           </Button>

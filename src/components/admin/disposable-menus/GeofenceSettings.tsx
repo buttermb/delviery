@@ -102,6 +102,7 @@ export const GeofenceSettings = ({ rules, onChange }: GeofenceSettingsProps) => 
                       variant="ghost"
                       size="icon"
                       onClick={() => removeRule(index)}
+                      aria-label="Delete"
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>

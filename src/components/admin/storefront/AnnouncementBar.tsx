@@ -391,6 +391,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
                         className="h-6 w-6"
                         disabled={index === 0}
                         onClick={() => moveAnnouncement(index, 'up')}
+                        aria-label="Move up"
                       >
                         <MoveUp className="h-4 w-4" />
                       </Button>
@@ -400,6 +401,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
                         className="h-6 w-6"
                         disabled={index === announcements.length - 1}
                         onClick={() => moveAnnouncement(index, 'down')}
+                        aria-label="Move down"
                       >
                         <MoveDown className="h-4 w-4" />
                       </Button>

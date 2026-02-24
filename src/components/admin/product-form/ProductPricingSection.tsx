@@ -365,6 +365,7 @@ export function ProductPricingSection({ formData, updateFormData }: ProductPrici
                           size="icon"
                           onClick={() => removeBulkTier(tier.id)}
                           className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          aria-label="Remove tier"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

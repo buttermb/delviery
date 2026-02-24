@@ -420,6 +420,7 @@ export function OrganizationDetail({
                                 size="icon"
                                 className="h-8 w-8"
                                 disabled={isUpdatingMember}
+                                aria-label="More options"
                               >
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>

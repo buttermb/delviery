@@ -390,6 +390,7 @@ function MenuAppearanceItem({
           size="icon"
           className="h-11 w-11"
           onClick={() => navigateToAdmin(`menus/${menu.id}`)}
+          aria-label="View menu"
         >
           <ExternalLink className="h-4 w-4" />
         </Button>
@@ -399,6 +400,7 @@ function MenuAppearanceItem({
           className="h-8 w-8 text-destructive hover:text-destructive"
           onClick={onRemove}
           disabled={isRemoving}
+          aria-label="Remove from menu"
         >
           {isRemoving ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -494,6 +496,7 @@ function StoreAppearanceItem({
           size="icon"
           className="h-11 w-11"
           onClick={() => navigateToAdmin(`storefront/${store.id}`)}
+          aria-label="View storefront"
         >
           <ExternalLink className="h-4 w-4" />
         </Button>

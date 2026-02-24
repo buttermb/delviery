@@ -286,6 +286,7 @@ export function ProductQRGenerator({
                 size="icon"
                 onClick={copyLink}
                 title="Copy link"
+                aria-label="Copy link"
               >
                 {copied ? (
                   <CheckCircle2 className="h-4 w-4 text-primary" />

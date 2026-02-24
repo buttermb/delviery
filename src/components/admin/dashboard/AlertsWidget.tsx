@@ -298,6 +298,7 @@ export function AlertsWidget() {
                 onClick={(e) => handleDismiss(e, alert.id)}
                 disabled={dismissMutation.isPending}
                 title="Dismiss alert"
+                aria-label="Dismiss alert"
               >
                 <X className="h-4 w-4" />
               </Button>

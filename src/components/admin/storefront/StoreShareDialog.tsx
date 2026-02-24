@@ -230,6 +230,7 @@ export function StoreShareDialog({
                   variant={copied ? 'default' : 'outline'}
                   size="icon"
                   onClick={() => handleCopy(shareUrl)}
+                  aria-label="Copy"
                 >
                   {copied ? (
                     <CheckCircle2 className="w-4 h-4" />
@@ -241,6 +242,7 @@ export function StoreShareDialog({
                   variant="outline"
                   size="icon"
                   onClick={() => window.open(shareUrl, '_blank', 'noopener,noreferrer')}
+                  aria-label="Open in new window"
                 >
                   <ExternalLink className="w-4 h-4" />
                 </Button>

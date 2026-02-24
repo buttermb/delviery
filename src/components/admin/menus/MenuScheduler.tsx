@@ -924,6 +924,7 @@ export function MenuScheduler({ menuId, className }: MenuSchedulerProps) {
                             size="icon"
                             onClick={() => handleToggleActive(schedule)}
                             disabled={updateSchedule.isPending}
+                            aria-label={schedule.isActive ? 'Deactivate' : 'Activate'}
                           >
                             {updateSchedule.isPending ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -947,6 +948,7 @@ export function MenuScheduler({ menuId, className }: MenuSchedulerProps) {
                             variant="ghost"
                             size="icon"
                             onClick={() => setEditingSchedule(schedule)}
+                            aria-label="Edit"
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -963,6 +965,7 @@ export function MenuScheduler({ menuId, className }: MenuSchedulerProps) {
                             size="icon"
                             className="text-destructive hover:text-destructive"
                             onClick={() => { setScheduleToDelete(schedule); setDeleteDialogOpen(true); }}
+                            aria-label="Delete"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

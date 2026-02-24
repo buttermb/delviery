@@ -545,6 +545,7 @@ export function POReceiving({
                                   className="h-8 w-8"
                                   onClick={() => decrementQuantity(item.id)}
                                   disabled={received <= 0}
+                                  aria-label="Decrease quantity"
                                 >
                                   <Minus className="h-3 w-3" />
                                 </Button>
@@ -565,6 +566,7 @@ export function POReceiving({
                                   size="icon"
                                   className="h-8 w-8"
                                   onClick={() => incrementQuantity(item.id)}
+                                  aria-label="Increase quantity"
                                 >
                                   <Plus className="h-3 w-3" />
                                 </Button>

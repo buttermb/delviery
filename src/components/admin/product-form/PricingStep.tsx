@@ -296,6 +296,7 @@ export function PricingStep({ formData, updateFormData, showErrors = false }: Pr
                   size="icon"
                   onClick={() => removePriceVariation(weight)}
                   className="h-10 w-10"
+                  aria-label="Remove"
                 >
                   <X className="h-4 w-4" />
                 </Button>

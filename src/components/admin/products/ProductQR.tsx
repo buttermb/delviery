@@ -860,6 +860,7 @@ export function ProductQR({
                         size="icon"
                         onClick={() => handleCopyUrl(qr)}
                         className="shrink-0"
+                        aria-label="Copy"
                       >
                         {copiedId === qr.id ? (
                           <Check className="h-4 w-4 text-green-600" />

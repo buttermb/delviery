@@ -586,6 +586,7 @@ export function OrderThreadedNotes({
                         variant="ghost"
                         size="icon"
                         className="h-11 w-11 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                        aria-label="More options"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
@@ -701,6 +702,7 @@ export function OrderThreadedNotes({
               variant="ghost"
               size="icon"
               className="absolute right-2 top-2 h-6 w-6"
+              aria-label="Mention"
               onClick={() => {
                 if (textareaRef.current) {
                   const position = textareaRef.current.selectionStart || noteContent.length;

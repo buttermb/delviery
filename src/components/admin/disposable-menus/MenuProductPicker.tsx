@@ -132,6 +132,7 @@ function SortableProduct({ product, index, onRemove }: SortableProductProps) {
         size="icon"
         className="h-11 w-11 shrink-0"
         onClick={() => onRemove(product.id)}
+        aria-label="Remove"
       >
         <X className="w-4 h-4" />
       </Button>

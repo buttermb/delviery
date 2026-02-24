@@ -370,6 +370,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
                             size="icon"
                             className="h-6 w-6"
                             onClick={() => copyCode(card.code)}
+                            aria-label="Copy"
                           >
                             <Copy className="h-3 w-3" />
                           </Button>

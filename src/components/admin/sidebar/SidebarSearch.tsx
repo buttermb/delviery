@@ -84,6 +84,7 @@ export function SidebarSearch({
           className="absolute right-0.5 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
           onClick={handleClear}
           tabIndex={-1}
+          aria-label="Clear search"
         >
           <X className="h-3.5 w-3.5" />
           <span className="sr-only">Clear search</span>

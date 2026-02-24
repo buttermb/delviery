@@ -322,6 +322,7 @@ export function CustomPresetBuilder() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleOpenBuilder(preset)}
+                        aria-label="Edit"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -329,6 +330,7 @@ export function CustomPresetBuilder() {
                         variant="ghost"
                         size="icon"
                         onClick={() => setDeletePresetId(preset.id)}
+                        aria-label="Delete"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

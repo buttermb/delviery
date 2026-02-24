@@ -124,6 +124,7 @@ export function SendAccessLinkDialog({
                 variant="outline"
                 size="icon"
                 onClick={handleCopyLink}
+                aria-label="Copy"
               >
                 {copied ? (
                   <CheckCircle2 className="h-4 w-4 text-primary" />

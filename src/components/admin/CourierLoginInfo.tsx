@@ -36,6 +36,7 @@ export function CourierLoginInfo() {
             variant="outline"
             size="icon"
             onClick={() => copyToClipboard(courierLoginUrl)}
+            aria-label="Copy"
           >
             <Copy className="h-4 w-4" />
           </Button>
@@ -43,6 +44,7 @@ export function CourierLoginInfo() {
             variant="outline"
             size="icon"
             onClick={() => window.open(courierLoginUrl, '_blank', 'noopener,noreferrer')}
+            aria-label="Open in new window"
           >
             <ExternalLink className="h-4 w-4" />
           </Button>

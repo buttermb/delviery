@@ -191,6 +191,7 @@ export function VariantsStep({ formData, updateFormData }: VariantsStepProps) {
                       size="icon"
                       onClick={() => removeVariant(key)}
                       className="text-destructive hover:text-destructive"
+                      aria-label="Remove variant"
                     >
                       <X className="h-4 w-4" />
                     </Button>

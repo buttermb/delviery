@@ -130,6 +130,7 @@ export function BarcodeScanner({ open, onOpenChange, onScanSuccess, batchMode = 
               size="icon"
               onClick={handleClose}
               className="h-11 w-11"
+              aria-label="Close"
             >
               <X className="h-4 w-4" />
             </Button>

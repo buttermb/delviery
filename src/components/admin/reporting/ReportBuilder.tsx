@@ -679,6 +679,7 @@ export function ReportBuilder({
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => removeFilter(index)}
+                                    aria-label="Remove filter"
                                   >
                                     <X className="h-4 w-4" />
                                   </Button>

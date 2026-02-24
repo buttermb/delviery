@@ -310,6 +310,7 @@ function ProductRuleCard({
                             size="icon"
                             className="h-11 w-11"
                             onClick={() => onToggleRule(rule)}
+                            aria-label={rule.isActive ? 'Disable rule' : 'Enable rule'}
                           >
                             {rule.isActive ? (
                               <X className="w-3.5 h-3.5" />
@@ -332,6 +333,7 @@ function ProductRuleCard({
                             size="icon"
                             className="h-11 w-11"
                             onClick={() => onEditRule(rule)}
+                            aria-label="Edit"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </Button>
@@ -348,6 +350,7 @@ function ProductRuleCard({
                             size="icon"
                             className="h-11 w-11 text-destructive hover:text-destructive"
                             onClick={() => onDeleteRule(rule.id)}
+                            aria-label="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>

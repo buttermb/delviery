@@ -390,6 +390,7 @@ export function OrderEditModal({
                               Math.max(1, item.quantity - 1)
                             )
                           }
+                          aria-label="Decrease quantity"
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
@@ -417,6 +418,7 @@ export function OrderEditModal({
                           onClick={() =>
                             handleUpdateItem(item.id, 'quantity', item.quantity + 1)
                           }
+                          aria-label="Increase quantity"
                         >
                           <Plus className="h-3 w-3" />
                         </Button>

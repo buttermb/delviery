@@ -262,6 +262,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
                                             className="h-6 w-6"
                                             disabled={index === 0}
                                             onClick={() => moveBanner(index, 'up')}
+                                            aria-label="Move up"
                                         >
                                             <MoveUp className="h-4 w-4" />
                                         </Button>
@@ -271,6 +272,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
                                             className="h-6 w-6"
                                             disabled={index === banners.length - 1}
                                             onClick={() => moveBanner(index, 'down')}
+                                            aria-label="Move down"
                                         >
                                             <MoveDown className="h-4 w-4" />
                                         </Button>

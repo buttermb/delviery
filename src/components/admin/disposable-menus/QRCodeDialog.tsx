@@ -192,6 +192,7 @@ export function QRCodeDialog({ open, onClose, menuTitle, accessUrl, menuId }: QR
                 variant="outline"
                 size="icon"
                 onClick={copyLink}
+                aria-label="Copy"
               >
                 {copied ? (
                   <CheckCircle2 className="h-4 w-4 text-primary" />

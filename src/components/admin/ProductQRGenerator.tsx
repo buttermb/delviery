@@ -399,6 +399,7 @@ export function ProductQRGenerator({ product, open, onOpenChange }: ProductQRGen
                   size="icon"
                   onClick={copyLink}
                   title="Copy link"
+                  aria-label="Copy link"
                 >
                   {copied ? (
                     <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -411,6 +412,7 @@ export function ProductQRGenerator({ product, open, onOpenChange }: ProductQRGen
                   size="icon"
                   onClick={openProductPage}
                   title="Open product page"
+                  aria-label="Open in new window"
                 >
                   <ExternalLink className="h-4 w-4" />
                 </Button>

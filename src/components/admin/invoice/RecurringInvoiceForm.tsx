@@ -247,6 +247,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
                         size="icon"
                         onClick={() => removeLineItem(index)}
                         disabled={lineItems.length === 1}
+                        aria-label="Remove line item"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
