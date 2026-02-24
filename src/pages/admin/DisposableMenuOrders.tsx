@@ -87,14 +87,14 @@ const DisposableMenuOrders = () => {
 
   // Calculate stats - Fixed: processing should use 'processing', completed should use 'completed'/'delivered'
   const stats = {
-    total: orders?.length || 0,
-    pending: orders?.filter(o => o.status === 'pending').length || 0,
-    processing: orders?.filter(o => o.status === 'processing' || o.status === 'preparing').length || 0,
-    completed: orders?.filter(o => o.status === 'completed' || o.status === 'delivered').length || 0,
-    cancelled: orders?.filter(o => o.status === 'cancelled' || o.status === 'rejected').length || 0,
-    totalRevenue: orders?.reduce((sum, o) => sum + parseFloat(String(o.total_amount || 0)), 0) || 0,
+    total: orders?.length ?? 0,
+    pending: orders?.filter(o => o.status === 'pending').length ?? 0,
+    processing: orders?.filter(o => o.status === 'processing' || o.status === 'preparing').length ?? 0,
+    completed: orders?.filter(o => o.status === 'completed' || o.status === 'delivered').length ?? 0,
+    cancelled: orders?.filter(o => o.status === 'cancelled' || o.status === 'rejected').length ?? 0,
+    totalRevenue: orders?.reduce((sum, o) => sum + parseFloat(String(o.total_amount ?? 0)), 0) ?? 0,
     avgOrderValue: orders && orders.length > 0
-      ? orders.reduce((sum, o) => sum + parseFloat(String(o.total_amount || 0)), 0) / orders.length
+      ? orders.reduce((sum, o) => sum + parseFloat(String(o.total_amount ?? 0)), 0) / orders.length
       : 0
   };
 
@@ -364,7 +364,7 @@ const DisposableMenuOrders = () => {
                       </div>
                       <div className="text-right">
                         <div className="text-xl font-bold mb-1">
-                          ${parseFloat(String(order.total_amount || 0)).toFixed(2)}
+                          ${parseFloat(String(order.total_amount ?? 0)).toFixed(2)}
                         </div>
                         <div className="flex gap-2 justify-end">
                           {!order.converted_to_invoice_id && (

@@ -202,16 +202,16 @@ export default function ExpenseTracking() {
   );
 
   // Calculate metrics
-  const totalExpenses = filteredExpenses.reduce((sum: number, e: Expense) => sum + parseFloat(String(e.amount || 0)), 0);
+  const totalExpenses = filteredExpenses.reduce((sum: number, e: Expense) => sum + parseFloat(String(e.amount ?? 0)), 0);
   const currentMonth = new Date().toLocaleDateString('en-US', { month: 'short' });
   const thisMonthExpenses = filteredExpenses
     .filter((e: Expense) => new Date(e.created_at).toLocaleDateString('en-US', { month: 'short' }) === currentMonth)
-    .reduce((sum: number, e: Expense) => sum + parseFloat(String(e.amount || 0)), 0);
+    .reduce((sum: number, e: Expense) => sum + parseFloat(String(e.amount ?? 0)), 0);
 
   // Category breakdown for pie chart
   const categoryBreakdown = (expenses ?? []).reduce((acc: Record<string, number>, e: Expense) => {
     const category = e.category || 'Uncategorized';
-    acc[category] = (acc[category] || 0) + parseFloat(String(e.amount || 0));
+    acc[category] = (acc[category] ?? 0) + parseFloat(String(e.amount ?? 0));
     return acc;
   }, {});
 
@@ -366,7 +366,7 @@ export default function ExpenseTracking() {
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       <div className="text-lg font-bold text-red-600">
-                        -{formatCurrency(parseFloat(expense.amount || 0))}
+                        -{formatCurrency(parseFloat(expense.amount ?? 0))}
                       </div>
                       <Button
                         variant="ghost"

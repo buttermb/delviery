@@ -61,8 +61,8 @@ export default function NewPurchaseOrder() {
             return data.map(p => ({
                 id: p.id,
                 name: p.name,
-                cost_per_unit: p.cost_per_unit || 0,
-                stock: p.stock_quantity || 0,
+                cost_per_unit: p.cost_per_unit ?? 0,
+                stock: p.stock_quantity ?? 0,
                 image_url: p.image_url
             }));
         },
@@ -285,7 +285,7 @@ export default function NewPurchaseOrder() {
                                                     onClick={() => handleAddItem(p)}
                                                 >
                                                     <span>{p.name}</span>
-                                                    <span className="text-muted-foreground text-sm">{formatCurrency(p.cost_per_unit || 0)}</span>
+                                                    <span className="text-muted-foreground text-sm">{formatCurrency(p.cost_per_unit ?? 0)}</span>
                                                 </div>
                                             ))}
                                         </div>

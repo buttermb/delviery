@@ -34,9 +34,9 @@ export default function TenantAdminWelcomePage() {
 
   // Use tenant usage data for setup status
   const setupStatus = {
-    hasProducts: (tenant?.usage?.products || 0) > 0,
-    hasCustomers: (tenant?.usage?.customers || 0) > 0,
-    hasMenus: (tenant?.usage?.menus || 0) > 0,
+    hasProducts: (tenant?.usage?.products ?? 0) > 0,
+    hasCustomers: (tenant?.usage?.customers ?? 0) > 0,
+    hasMenus: (tenant?.usage?.menus ?? 0) > 0,
     hasOrders: false, // Will be checked via orders existence
   };
 

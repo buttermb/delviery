@@ -237,7 +237,7 @@ export default function Orders() {
         order_number: posOrder.order_number,
         created_at: posOrder.created_at,
         status: posOrder.status,
-        total_amount: posOrder.total_amount || 0,
+        total_amount: posOrder.total_amount ?? 0,
         delivery_method: 'pickup', // POS orders are typically pickup/in-store
         user_id: posOrder.customer_id ?? '',
         courier_id: undefined,
@@ -556,7 +556,7 @@ export default function Orders() {
           cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
           break;
         case 'total_amount':
-          cmp = (a.total_amount || 0) - (b.total_amount || 0);
+          cmp = (a.total_amount ?? 0) - (b.total_amount ?? 0);
           break;
         case 'status':
           cmp = (a.status ?? '').localeCompare(b.status ?? '');

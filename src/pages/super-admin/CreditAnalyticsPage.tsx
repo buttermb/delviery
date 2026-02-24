@@ -457,7 +457,7 @@ export default function CreditAnalyticsPage() {
                   {analytics.topActions[0]?.action || 'N/A'}
                 </p>
                 <p className="text-sm text-purple-700 dark:text-purple-300 mt-1">
-                  {analytics.topActions[0]?.credits.toLocaleString() || 0} credits total
+                  {analytics.topActions[0]?.credits.toLocaleString() ?? 0} credits total
                 </p>
               </div>
             </div>

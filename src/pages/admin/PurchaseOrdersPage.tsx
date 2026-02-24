@@ -281,7 +281,7 @@ export default function PurchaseOrdersPage() {
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground truncate">Vendor: {po.vendor_id.substring(0, 8)}...</span>
                         <span className="font-bold">
-                          ${Number(po.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ${Number(po.total ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
@@ -352,7 +352,7 @@ export default function PurchaseOrdersPage() {
                           <TableCell>
                             <div className="flex items-center gap-1">
                               <DollarSign className="h-3 w-3 text-muted-foreground" />
-                              {Number(po.total || 0).toLocaleString('en-US', {
+                              {Number(po.total ?? 0).toLocaleString('en-US', {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
                               })}

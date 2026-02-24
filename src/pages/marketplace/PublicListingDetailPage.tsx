@@ -239,7 +239,7 @@ export default function PublicListingDetailPage() {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Base Price</p>
                   <p className="text-3xl font-bold">
-                    {formatCurrency(listing.base_price as number || 0)}
+                    {formatCurrency(listing.base_price as number ?? 0)}
                   </p>
                   {listing.unit_of_measure && (
                     <p className="text-sm text-muted-foreground">

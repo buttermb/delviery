@@ -29,7 +29,7 @@ export default function OrderAnalytics() {
 
   // Calculate metrics
   const totalOrders = orders.length;
-  const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+  const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount ?? 0), 0);
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   // Group by day for chart
@@ -37,7 +37,7 @@ export default function OrderAnalytics() {
     const date = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     if (!acc[date]) acc[date] = { date, count: 0, revenue: 0 };
     acc[date].count++;
-    acc[date].revenue += order.total_amount || 0;
+    acc[date].revenue += order.total_amount ?? 0;
     return acc;
   }, {});
 

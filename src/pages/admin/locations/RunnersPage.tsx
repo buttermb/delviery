@@ -63,7 +63,7 @@ export default function RunnersPage() {
 
           return {
             ...runner,
-            active_deliveries: count || 0,
+            active_deliveries: count ?? 0,
           };
         })
       );
@@ -114,7 +114,7 @@ export default function RunnersPage() {
       header: 'Active Deliveries',
       cell: ({ original }) => (
         <Badge variant={original.active_deliveries ? 'default' : 'secondary'}>
-          {original.active_deliveries || 0}
+          {original.active_deliveries ?? 0}
         </Badge>
       ),
     },
@@ -168,24 +168,24 @@ export default function RunnersPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <div className="text-sm text-muted-foreground mb-1">Total Runners</div>
-          <div className="text-2xl font-bold">{runners?.length || 0}</div>
+          <div className="text-2xl font-bold">{runners?.length ?? 0}</div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-muted-foreground mb-1">Active Runners</div>
           <div className="text-2xl font-bold">
-            {runners?.filter((r) => r.status === 'active').length || 0}
+            {runners?.filter((r) => r.status === 'active').length ?? 0}
           </div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-muted-foreground mb-1">On Delivery</div>
           <div className="text-2xl font-bold">
-            {runners?.filter((r) => (r.active_deliveries || 0) > 0).length || 0}
+            {runners?.filter((r) => (r.active_deliveries ?? 0) > 0).length ?? 0}
           </div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-muted-foreground mb-1">Total Active Deliveries</div>
           <div className="text-2xl font-bold">
-            {runners?.reduce((sum, r) => sum + (r.active_deliveries || 0), 0) || 0}
+            {runners?.reduce((sum, r) => sum + (r.active_deliveries ?? 0), 0) ?? 0}
           </div>
         </Card>
       </div>

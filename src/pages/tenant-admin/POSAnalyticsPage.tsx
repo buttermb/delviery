@@ -105,7 +105,7 @@ export default function POSAnalyticsPage() {
     return {
       hour: `${hour}:00`,
       transactions: hourTransactions.length,
-      revenue: hourTransactions.reduce((sum, t) => sum + Number(t.total_amount || 0), 0)
+      revenue: hourTransactions.reduce((sum, t) => sum + Number(t.total_amount ?? 0), 0)
     };
   }).filter(h => h.transactions > 0);
 
@@ -113,7 +113,7 @@ export default function POSAnalyticsPage() {
   const dailySales = transactions.reduce<Array<{ date: string; revenue: number; count: number }>>((acc, t) => {
     const date = new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const existing = acc.find(item => item.date === date);
-    const revenue = Number(t.total_amount || 0);
+    const revenue = Number(t.total_amount ?? 0);
     
     if (existing) {
       existing.revenue += revenue;
@@ -131,12 +131,12 @@ export default function POSAnalyticsPage() {
     
     if (existing) {
       existing.value += 1;
-      existing.amount += Number(t.total_amount || 0);
+      existing.amount += Number(t.total_amount ?? 0);
     } else {
       acc.push({ 
         name: method, 
         value: 1,
-        amount: Number(t.total_amount || 0)
+        amount: Number(t.total_amount ?? 0)
       });
     }
     return acc;
@@ -146,7 +146,7 @@ export default function POSAnalyticsPage() {
   const cashierPerformance = transactions.reduce<Array<{ name: string; transactions: number; revenue: number; avgTransaction: number }>>((acc, t) => {
     const cashier = t.wholesale_clients?.business_name || 'Unknown';
     const existing = acc.find(item => item.name === cashier);
-    const revenue = Number(t.total_amount || 0);
+    const revenue = Number(t.total_amount ?? 0);
     
     if (existing) {
       existing.transactions += 1;

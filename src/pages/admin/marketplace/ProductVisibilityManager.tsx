@@ -189,7 +189,7 @@ export default function ProductVisibilityManager() {
                                         <TableCell>${listing.base_price?.toFixed(2)} / {listing.unit_type}</TableCell>
                                         <TableCell>
                                             <Badge variant={listing.quantity_available && listing.quantity_available > 0 ? "outline" : "destructive"}>
-                                                {listing.quantity_available || 0}
+                                                {listing.quantity_available ?? 0}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>

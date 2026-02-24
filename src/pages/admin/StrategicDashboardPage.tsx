@@ -44,8 +44,8 @@ export default function StrategicDashboardPage() {
                 .lt('created_at', endOfLastMonth.toISOString())
                 .not('status', 'in', '("cancelled","rejected","refunded")');
 
-            const currentRevenue = currentMonthOrders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
-            const lastRevenue = lastMonthOrders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+            const currentRevenue = currentMonthOrders?.reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0) ?? 0;
+            const lastRevenue = lastMonthOrders?.reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0) ?? 0;
             const revenueGrowth = lastRevenue > 0 ? ((currentRevenue - lastRevenue) / lastRevenue) * 100 : 0;
 
             // Customer metrics
@@ -77,10 +77,10 @@ export default function StrategicDashboardPage() {
                 currentRevenue,
                 lastRevenue,
                 revenueGrowth,
-                totalCustomers: totalCustomers || 0,
-                newCustomersThisMonth: newCustomersThisMonth || 0,
-                totalOrders: totalOrders || 0,
-                totalProducts: totalProducts || 0,
+                totalCustomers: totalCustomers ?? 0,
+                newCustomersThisMonth: newCustomersThisMonth ?? 0,
+                totalOrders: totalOrders ?? 0,
+                totalProducts: totalProducts ?? 0,
                 avgOrderValue: totalOrders ? currentRevenue / totalOrders : 0,
             };
         },
@@ -104,7 +104,7 @@ export default function StrategicDashboardPage() {
         visible: { opacity: 1, y: 0 }
     };
 
-    const growthIsPositive = (strategicData?.revenueGrowth || 0) >= 0;
+    const growthIsPositive = (strategicData?.revenueGrowth ?? 0) >= 0;
 
     return (
         <motion.div
@@ -157,7 +157,7 @@ export default function StrategicDashboardPage() {
                                     <ArrowDownRight className="h-3 w-3 text-red-600" />
                                 )}
                                 <span className={growthIsPositive ? 'text-emerald-600 font-medium' : 'text-red-600 font-medium'}>
-                                    {Math.abs(strategicData?.revenueGrowth || 0).toFixed(1)}%
+                                    {Math.abs(strategicData?.revenueGrowth ?? 0).toFixed(1)}%
                                 </span>
                                 <span className="text-muted-foreground">vs last month</span>
                             </div>
@@ -204,7 +204,7 @@ export default function StrategicDashboardPage() {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">${(strategicData?.avgOrderValue || 0).toFixed(2)}</div>
+                            <div className="text-2xl font-bold">${(strategicData?.avgOrderValue ?? 0).toFixed(2)}</div>
                             <p className="text-xs text-muted-foreground mt-1">Per order</p>
                         </CardContent>
                     </Card>
@@ -223,7 +223,7 @@ export default function StrategicDashboardPage() {
                     <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                         <div>
                             <p className="text-sm font-medium">Revenue Growth</p>
-                            <p className="text-2xl font-bold text-green-600">+{Math.abs(strategicData?.revenueGrowth || 0).toFixed(1)}%</p>
+                            <p className="text-2xl font-bold text-green-600">+{Math.abs(strategicData?.revenueGrowth ?? 0).toFixed(1)}%</p>
                         </div>
                         <Badge variant="secondary">Month over Month</Badge>
                     </div>
@@ -277,7 +277,7 @@ export default function StrategicDashboardPage() {
                         <DollarSign className="h-5 w-5 text-primary mt-0.5" />
                         <div className="flex-1">
                             <h4 className="font-medium">Revenue Optimization</h4>
-                            <p className="text-sm text-muted-foreground">Avg order value: ${(strategicData?.avgOrderValue || 0).toFixed(2)}</p>
+                            <p className="text-sm text-muted-foreground">Avg order value: ${(strategicData?.avgOrderValue ?? 0).toFixed(2)}</p>
                         </div>
                         <Badge variant="secondary">Monitoring</Badge>
                     </div>

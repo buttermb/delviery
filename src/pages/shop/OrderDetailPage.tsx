@@ -393,7 +393,7 @@ export function OrderDetailPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5" />
-                Items ({order.items?.length || 0})
+                Items ({order.items?.length ?? 0})
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -449,18 +449,18 @@ export function OrderDetailPage() {
               <div className="mt-6 pt-4 border-t space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatCurrency(order.subtotal || 0)}</span>
+                  <span>{formatCurrency(order.subtotal ?? 0)}</span>
                 </div>
-                {(order.delivery_fee || 0) > 0 && (
+                {(order.delivery_fee ?? 0) > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Delivery Fee</span>
-                    <span>{formatCurrency(order.delivery_fee || 0)}</span>
+                    <span>{formatCurrency(order.delivery_fee ?? 0)}</span>
                   </div>
                 )}
-                {(order.tax_amount || 0) > 0 && (
+                {(order.tax_amount ?? 0) > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Tax</span>
-                    <span>{formatCurrency(order.tax_amount || 0)}</span>
+                    <span>{formatCurrency(order.tax_amount ?? 0)}</span>
                   </div>
                 )}
                 <Separator />

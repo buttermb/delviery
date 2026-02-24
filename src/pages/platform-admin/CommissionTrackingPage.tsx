@@ -39,28 +39,28 @@ export default function CommissionTrackingPage() {
                 <Card>
                     <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Gross Merchandise Value</CardTitle></CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(metrics?.total_gmv || 0)}</div>
+                        <div className="text-2xl font-bold">{formatCurrency(metrics?.total_gmv ?? 0)}</div>
                         <p className="text-xs text-muted-foreground">Lifetime volume</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="pb-2 flex flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Platform Revenue</CardTitle><DollarSign className="h-4 w-4 text-green-600" /></CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-green-600">{formatCurrency(metrics?.total_commission || 0)}</div>
+                        <div className="text-2xl font-bold text-green-600">{formatCurrency(metrics?.total_commission ?? 0)}</div>
                         <p className="text-xs text-muted-foreground">Total commissions</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="pb-2 flex flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Active Vendors</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{metrics?.active_vendors || 0}</div>
+                        <div className="text-2xl font-bold">{metrics?.active_vendors ?? 0}</div>
                         <p className="text-xs text-muted-foreground">Generating sales</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="pb-2 flex flex-row items-center justify-between"><CardTitle className="text-sm font-medium">Live Orders</CardTitle><Activity className="h-4 w-4 text-muted-foreground" /></CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{metrics?.active_orders || 0}</div>
+                        <div className="text-2xl font-bold">{metrics?.active_orders ?? 0}</div>
                         <p className="text-xs text-muted-foreground">In progress</p>
                     </CardContent>
                 </Card>

@@ -61,7 +61,7 @@ export default function LocationInventoryPage() {
       const existing = map.get(pid);
       if (existing) {
         existing.location_count += 1;
-        existing.total_quantity += item.quantity || 0;
+        existing.total_quantity += item.quantity ?? 0;
         existing.total_reserved += (typeof itemRecord.reserved_quantity === 'number' ? itemRecord.reserved_quantity : 0);
       } else {
         map.set(pid, {
@@ -69,7 +69,7 @@ export default function LocationInventoryPage() {
           product_name: item.product?.name || 'Unknown',
           sku: item.product?.sku || '',
           location_count: 1,
-          total_quantity: item.quantity || 0,
+          total_quantity: item.quantity ?? 0,
           total_reserved: (typeof itemRecord.reserved_quantity === 'number' ? itemRecord.reserved_quantity : 0),
         });
       }
@@ -87,7 +87,7 @@ export default function LocationInventoryPage() {
         item.product?.sku?.toLowerCase().includes(searchQuery.toLowerCase());
 
       if (showLowStockOnly) {
-        return matchesSearch && item.quantity <= (item.reserved_quantity || 0);
+        return matchesSearch && item.quantity <= (item.reserved_quantity ?? 0);
       }
 
       return matchesSearch;
@@ -102,8 +102,8 @@ export default function LocationInventoryPage() {
           comparison = a.quantity - b.quantity;
           break;
         case 'available': {
-          const availA = a.quantity - (a.reserved_quantity || 0);
-          const availB = b.quantity - (b.reserved_quantity || 0);
+          const availA = a.quantity - (a.reserved_quantity ?? 0);
+          const availB = b.quantity - (b.reserved_quantity ?? 0);
           comparison = availA - availB;
           break;
         }
@@ -113,10 +113,10 @@ export default function LocationInventoryPage() {
 
   // Calculate totals
   const totalQuantity = inventory.reduce((sum, item) => sum + item.quantity, 0);
-  const totalReserved = inventory.reduce((sum, item) => sum + (item.reserved_quantity || 0), 0);
+  const totalReserved = inventory.reduce((sum, item) => sum + (item.reserved_quantity ?? 0), 0);
   const totalAvailable = totalQuantity - totalReserved;
   const lowStockCount = inventory.filter(
-    (item) => item.quantity <= (item.reserved_quantity || 0)
+    (item) => item.quantity <= (item.reserved_quantity ?? 0)
   ).length;
 
   const handleSort = (field: SortField) => {
@@ -325,7 +325,7 @@ export default function LocationInventoryPage() {
               </TableHeader>
               <TableBody>
                 {filteredInventory.map((item) => {
-                  const available = item.quantity - (item.reserved_quantity || 0);
+                  const available = item.quantity - (item.reserved_quantity ?? 0);
                   const isLowStock = available <= 0;
 
                   return (
@@ -348,7 +348,7 @@ export default function LocationInventoryPage() {
                         {item.quantity.toLocaleString()}
                       </TableCell>
                       <TableCell className="text-right font-mono text-muted-foreground">
-                        {(item.reserved_quantity || 0).toLocaleString()}
+                        {(item.reserved_quantity ?? 0).toLocaleString()}
                       </TableCell>
                       <TableCell
                         className={`text-right font-mono ${

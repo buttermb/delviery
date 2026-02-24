@@ -307,7 +307,7 @@ export default function StorefrontBundles() {
   const calculateBundlePrice = () => {
     const regularPrice = formData.products.reduce((sum, bp) => {
       const product = products.find((p) => p.id === bp.product_id);
-      return sum + (product?.price || 0) * bp.quantity;
+      return sum + (product?.price ?? 0) * bp.quantity;
     }, 0);
 
     if (formData.discount_type === 'percentage') {
@@ -318,7 +318,7 @@ export default function StorefrontBundles() {
 
   const regularPrice = formData.products.reduce((sum, bp) => {
     const product = products.find((p) => p.id === bp.product_id);
-    return sum + (product?.price || 0) * bp.quantity;
+    return sum + (product?.price ?? 0) * bp.quantity;
   }, 0);
 
   const bundlePrice = calculateBundlePrice();

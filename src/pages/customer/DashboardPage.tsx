@@ -368,7 +368,7 @@ export default function CustomerDashboardPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-[hsl(var(--customer-text))]">{formatCurrency(order.total_amount || 0)}</p>
+                      <p className="font-medium text-[hsl(var(--customer-text))]">{formatCurrency(order.total_amount ?? 0)}</p>
                       {getStatusBadge(order.status)}
                     </div>
                   </div>

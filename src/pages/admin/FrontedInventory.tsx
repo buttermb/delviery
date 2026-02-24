@@ -128,9 +128,9 @@ export default function FrontedInventory() {
     const active = frontedItems.filter(i => i.status === 'active');
     return {
       totalOut: active.reduce((sum, i) => sum + i.quantity_fronted, 0),
-      expectedRevenue: active.reduce((sum, i) => sum + (i.expected_revenue || 0), 0),
-      expectedProfit: active.reduce((sum, i) => sum + (i.expected_profit || 0), 0),
-      totalOwed: active.reduce((sum, i) => sum + ((i.expected_revenue || 0) - i.payment_received), 0),
+      expectedRevenue: active.reduce((sum, i) => sum + (i.expected_revenue ?? 0), 0),
+      expectedProfit: active.reduce((sum, i) => sum + (i.expected_profit ?? 0), 0),
+      totalOwed: active.reduce((sum, i) => sum + ((i.expected_revenue ?? 0) - i.payment_received), 0),
       overdueCount: active.filter(i => new Date(i.payment_due_date) < new Date() && i.payment_status !== 'paid').length
     };
   };
@@ -239,7 +239,7 @@ export default function FrontedInventory() {
             </Card>
           ) : (
             frontedItems.map((item) => {
-              const amountOwed = (item.expected_revenue || 0) - item.payment_received;
+              const amountOwed = (item.expected_revenue ?? 0) - item.payment_received;
               const percentSold = (item.quantity_sold / item.quantity_fronted) * 100;
 
               return (

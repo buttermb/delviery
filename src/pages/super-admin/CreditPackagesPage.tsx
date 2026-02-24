@@ -104,12 +104,12 @@ export default function CreditPackagesPage() {
       {/* Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
-          <div className="text-2xl font-bold">{packages?.length || 0}</div>
+          <div className="text-2xl font-bold">{packages?.length ?? 0}</div>
           <div className="text-sm text-muted-foreground">Total Packages</div>
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-green-600">
-            {packages?.filter(p => p.isActive).length || 0}
+            {packages?.filter(p => p.isActive).length ?? 0}
           </div>
           <div className="text-sm text-muted-foreground">Active</div>
         </Card>
@@ -316,7 +316,7 @@ function EditPackageDialog({
   const [description, setDescription] = useState(pkg?.description ?? '');
   const [badge, setBadge] = useState(pkg?.badge ?? '');
   const [isActive, setIsActive] = useState(pkg?.isActive ?? true);
-  const [sortOrder, setSortOrder] = useState(pkg?.sortOrder || 0);
+  const [sortOrder, setSortOrder] = useState(pkg?.sortOrder ?? 0);
 
   // Reset form when package changes
   useState(() => {
@@ -366,7 +366,7 @@ function EditPackageDialog({
 
   // Format price for display
   const formatPrice = (cents: number) => (cents / 100).toFixed(2);
-  const parsePrice = (str: string) => Math.round(parseFloat(str) * 100) || 0;
+  const parsePrice = (str: string) => Math.round(parseFloat(str) * 100) ?? 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

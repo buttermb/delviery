@@ -119,7 +119,7 @@ function useCollectionData() {
 
       const paymentsByClient: Record<string, number> = {};
       payments?.forEach((p) => {
-        paymentsByClient[p.client_id] = (paymentsByClient[p.client_id] || 0) + Number(p.amount || 0);
+        paymentsByClient[p.client_id] = (paymentsByClient[p.client_id] ?? 0) + Number(p.amount ?? 0);
       });
 
       // Categorize clients
@@ -139,7 +139,7 @@ function useCollectionData() {
           id: c.id,
           name: c.contact_name || 'Unknown',
           businessName: c.business_name || 'Unknown Business',
-          amount: Number(c.outstanding_balance || 0),
+          amount: Number(c.outstanding_balance ?? 0),
           daysOverdue: isOverdue ? daysSincePayment - paymentTerms : 0,
           lastContact: undefined,
           lastPaymentDate: c.last_payment_date ? new Date(c.last_payment_date) : undefined,
@@ -147,7 +147,7 @@ function useCollectionData() {
           email: c.email,
           status,
           paymentTerms,
-          totalPaid: paymentsByClient[c.id] || 0,
+          totalPaid: paymentsByClient[c.id] ?? 0,
           notes: c.notes
         };
       });
@@ -609,7 +609,7 @@ function RecordPaymentDialog({ open, onOpenChange, client, onSubmit, isLoading }
           <div className="p-3 rounded-lg bg-muted/50">
             <div className="text-sm text-muted-foreground">Outstanding Balance</div>
             <div className="text-2xl font-bold text-red-400 font-mono">
-              {formatCurrency(client?.amount || 0)}
+              {formatCurrency(client?.amount ?? 0)}
             </div>
           </div>
 
@@ -907,31 +907,31 @@ export default function CollectionMode({ embedded = false }: CollectionModeProps
             <CardContent className="p-3">
               <div className="text-xs text-muted-foreground mb-1">Total Outstanding</div>
               <div className="text-lg font-bold font-mono text-foreground">
-                {formatCompactCurrency(data?.totalOutstanding || 0)}
+                {formatCompactCurrency(data?.totalOutstanding ?? 0)}
               </div>
             </CardContent>
           </Card>
             <Card className="bg-red-500/10 border-red-500/20">
               <CardContent className="p-3">
-                <div className="text-xs text-red-400/80 mb-1">Overdue ({data?.overdueCount || 0})</div>
+                <div className="text-xs text-red-400/80 mb-1">Overdue ({data?.overdueCount ?? 0})</div>
                 <div className="text-lg font-bold font-mono text-red-500">
-                  {formatCompactCurrency(data?.overdueAmount || 0)}
+                  {formatCompactCurrency(data?.overdueAmount ?? 0)}
                 </div>
               </CardContent>
             </Card>
             <Card className="bg-amber-500/10 border-amber-500/20">
               <CardContent className="p-3">
-                <div className="text-xs text-amber-400/80 mb-1">Due Week ({data?.dueThisWeekCount || 0})</div>
+                <div className="text-xs text-amber-400/80 mb-1">Due Week ({data?.dueThisWeekCount ?? 0})</div>
                 <div className="text-lg font-bold font-mono text-amber-500">
-                  {formatCompactCurrency(data?.dueThisWeekAmount || 0)}
+                  {formatCompactCurrency(data?.dueThisWeekAmount ?? 0)}
                 </div>
               </CardContent>
             </Card>
             <Card className="bg-emerald-500/10 border-emerald-500/20">
               <CardContent className="p-3">
-                <div className="text-xs text-emerald-400/80 mb-1">Upcoming ({data?.upcomingCount || 0})</div>
+                <div className="text-xs text-emerald-400/80 mb-1">Upcoming ({data?.upcomingCount ?? 0})</div>
                 <div className="text-lg font-bold font-mono text-emerald-500">
-                  {formatCompactCurrency(data?.upcomingAmount || 0)}
+                  {formatCompactCurrency(data?.upcomingAmount ?? 0)}
                 </div>
               </CardContent>
             </Card>

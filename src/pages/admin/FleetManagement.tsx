@@ -183,7 +183,7 @@ export default function FleetManagement() {
             id: d.id,
             clientName: d.orders?.delivery_address?.split(',')[0] || `Stop ${i + 1}`,
             address: d.delivery_address || 'Address pending',
-            orderValue: Number(d.orders?.total_amount || 0),
+            orderValue: Number(d.orders?.total_amount ?? 0),
             estimatedTime: `${(i + 1) * 15} mins`
           }))}
           totalDistance="24.5 mi"
@@ -196,7 +196,7 @@ export default function FleetManagement() {
       {/* Active Deliveries */}
       <div>
         <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-destructive" /> ACTIVE DELIVERIES ({activeDeliveries?.length || 0})
+          <AlertCircle className="h-5 w-5 text-destructive" /> ACTIVE DELIVERIES ({activeDeliveries?.length ?? 0})
         </h2>
 
         <div className="space-y-3">

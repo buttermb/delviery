@@ -55,17 +55,17 @@ export default function CustomerReports() {
       const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
       // Calculate stats
-      const totalCustomers = customers?.length || 0;
+      const totalCustomers = customers?.length ?? 0;
       const newThisMonth = customers?.filter(c =>
         new Date(c.created_at) >= thirtyDaysAgo
-      ).length || 0;
-      const activeCustomers = customers?.filter(c => c.status === 'active').length || 0;
+      ).length ?? 0;
+      const activeCustomers = customers?.filter(c => c.status === 'active').length ?? 0;
       const atRiskCustomers = customers?.filter(c => {
         if (!c.last_purchase_at) return false;
         return new Date(c.last_purchase_at) < sixtyDaysAgo;
-      }).length || 0;
-      const medicalPatients = customers?.filter(c => c.customer_type === 'medical').length || 0;
-      const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0;
+      }).length ?? 0;
+      const medicalPatients = customers?.filter(c => c.customer_type === 'medical').length ?? 0;
+      const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent ?? 0), 0) ?? 0;
       const avgLifetimeValue = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
 
       // Load orders to calculate avg order value
@@ -75,12 +75,12 @@ export default function CustomerReports() {
         .eq('tenant_id', tenant.id);
 
       const avgOrderValue = orders && orders.length > 0
-        ? orders.reduce((sum, o) => sum + (o.total_amount || 0), 0) / orders.length
+        ? orders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0) / orders.length
         : 0;
 
       // Get top customers
       const topCustomers = customers
-        ?.sort((a, b) => (b.total_spent || 0) - (a.total_spent || 0))
+        ?.sort((a, b) => (b.total_spent ?? 0) - (a.total_spent ?? 0))
         .slice(0, 10) ?? [];
 
       setStats({

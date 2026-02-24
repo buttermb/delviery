@@ -129,8 +129,8 @@ export default function CourierDashboardPage() {
 
         if (error) throw error;
 
-        const todayEarnings = earnings?.reduce((sum, e) => sum + parseFloat(e.total_earned.toString()), 0) || 0;
-        const todayDeliveries = earnings?.length || 0;
+        const todayEarnings = earnings?.reduce((sum, e) => sum + parseFloat(e.total_earned.toString()), 0) ?? 0;
+        const todayDeliveries = earnings?.length ?? 0;
 
         setCourierStats({
           todayDeliveries,

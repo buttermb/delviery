@@ -241,7 +241,7 @@ export function CreditAnalyticsPage() {
           categoryUsage,
           topActions,
           dailyUsage,
-          transactionCount: transactions?.length || 0,
+          transactionCount: transactions?.length ?? 0,
         };
       } catch (error) {
         logger.error('Failed to fetch credit analytics', { error });
@@ -372,10 +372,10 @@ export function CreditAnalyticsPage() {
               ) : (
                 <>
                   <div className="text-2xl font-bold">
-                    {usageData?.monthUsage?.toLocaleString() || 0}
+                    {usageData?.monthUsage?.toLocaleString() ?? 0}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {usageData?.transactionCount || 0} actions performed
+                    {usageData?.transactionCount ?? 0} actions performed
                   </p>
                 </>
               )}
@@ -394,7 +394,7 @@ export function CreditAnalyticsPage() {
               ) : (
                 <>
                   <div className="text-2xl font-bold">
-                    {usageData?.avgDailyUsage?.toLocaleString() || 0}
+                    {usageData?.avgDailyUsage?.toLocaleString() ?? 0}
                   </div>
                   <p className="text-xs text-muted-foreground">credits per day</p>
                 </>

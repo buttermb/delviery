@@ -915,7 +915,7 @@ export default function StorefrontSettings() {
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">Fee:</span>
                         <CurrencyInput
-                          value={zone.fee || 0}
+                          value={zone.fee ?? 0}
                           onChange={(e) => {
                             const zones = [...(formData.delivery_zones ?? [])];
                             zones[index] = { ...zones[index], fee: parseFloat(e.target.value) };
@@ -927,7 +927,7 @@ export default function StorefrontSettings() {
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">Min:</span>
                         <CurrencyInput
-                          value={zone.min_order || 0}
+                          value={zone.min_order ?? 0}
                           onChange={(e) => {
                             const zones = [...(formData.delivery_zones ?? [])];
                             zones[index] = { ...zones[index], min_order: parseFloat(e.target.value) };

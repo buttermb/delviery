@@ -57,9 +57,9 @@ export default function SuperAdminDashboard() {
       // Get all tenants (super admin bypasses RLS)
       const { data: tenants } = await supabase.from('tenants').select('*');
 
-      const totalTenants = tenants?.length || 0;
-      const activeTrials = tenants?.filter((t) => isTrial(t.subscription_status)).length || 0;
-      const activeSubscriptions = tenants?.filter((t) => t.subscription_status === SUBSCRIPTION_STATUS.ACTIVE).length || 0;
+      const totalTenants = tenants?.length ?? 0;
+      const activeTrials = tenants?.filter((t) => isTrial(t.subscription_status)).length ?? 0;
+      const activeSubscriptions = tenants?.filter((t) => t.subscription_status === SUBSCRIPTION_STATUS.ACTIVE).length ?? 0;
 
       // Calculate MRR
       const mrr = tenants?.reduce((sum, tenant) => {
@@ -69,24 +69,24 @@ export default function SuperAdminDashboard() {
           [SUBSCRIPTION_PLANS.ENTERPRISE]: 799,
         };
         if (tenant.subscription_status === SUBSCRIPTION_STATUS.ACTIVE) {
-          return sum + (prices[tenant.subscription_plan as string] || 0);
+          return sum + (prices[tenant.subscription_plan as string] ?? 0);
         }
         return sum;
-      }, 0) || 0;
+      }, 0) ?? 0;
 
       // Calculate growth (new tenants this month)
       const thisMonth = new Date();
       thisMonth.setDate(1);
       const newThisMonth = tenants?.filter(
         (t) => new Date(t.created_at) >= thisMonth
-      ).length || 0;
+      ).length ?? 0;
 
       // Calculate churn (cancelled this month)
       const churnedThisMonth = tenants?.filter(
         (t) => isCancelled(t.subscription_status) &&
           t.cancelled_at &&
           new Date(t.cancelled_at) >= thisMonth
-      ).length || 0;
+      ).length ?? 0;
 
       const churnRate = totalTenants > 0 ? (churnedThisMonth / totalTenants) * 100 : 0;
 
@@ -219,7 +219,7 @@ export default function SuperAdminDashboard() {
           [SUBSCRIPTION_PLANS.PROFESSIONAL]: 299,
           [SUBSCRIPTION_PLANS.ENTERPRISE]: 799,
         };
-        const mrr = prices[row.original.subscription_plan] || 0;
+        const mrr = prices[row.original.subscription_plan] ?? 0;
         return formatCurrency(mrr);
       },
     },
@@ -477,26 +477,26 @@ export default function SuperAdminDashboard() {
                   <div className="flex justify-between text-sm">
                     <span>Customers:</span>
                     <span>
-                      {selectedTenant.usage?.customers || 0} /{' '}
+                      {selectedTenant.usage?.customers ?? 0} /{' '}
                       {selectedTenant.limits?.customers === -1
                         ? '∞'
-                        : selectedTenant.limits?.customers || 0}
+                        : selectedTenant.limits?.customers ?? 0}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Menus:</span>
                     <span>
-                      {selectedTenant.usage?.menus || 0} /{' '}
-                      {selectedTenant.limits?.menus === -1 ? '∞' : selectedTenant.limits?.menus || 0}
+                      {selectedTenant.usage?.menus ?? 0} /{' '}
+                      {selectedTenant.limits?.menus === -1 ? '∞' : selectedTenant.limits?.menus ?? 0}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Products:</span>
                     <span>
-                      {selectedTenant.usage?.products || 0} /{' '}
+                      {selectedTenant.usage?.products ?? 0} /{' '}
                       {selectedTenant.limits?.products === -1
                         ? '∞'
-                        : selectedTenant.limits?.products || 0}
+                        : selectedTenant.limits?.products ?? 0}
                     </span>
                   </div>
                 </div>

@@ -92,7 +92,7 @@ export default function AuditLogsPage() {
     
     const totalLogs = auditLogs.length;
     const todayLogs = auditLogs.filter(log => 
-      new Date(log.timestamp || 0) >= today
+      new Date(log.timestamp ?? 0) >= today
     ).length;
     const failedLogs = auditLogs.filter(log => 
       log.action?.includes('error') || log.action?.includes('failed')

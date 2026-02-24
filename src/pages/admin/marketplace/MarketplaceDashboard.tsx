@@ -139,7 +139,7 @@ export default function MarketplaceDashboard() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {analytics ? formatCurrency(analytics.total_revenue || 0) : '$0.00'}
+                            {analytics ? formatCurrency(analytics.total_revenue ?? 0) : '$0.00'}
                         </div>
                         <p className="text-xs text-muted-foreground">Lifetime revenue</p>
                     </CardContent>
@@ -150,7 +150,7 @@ export default function MarketplaceDashboard() {
                         <ShoppingBag className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{analytics?.total_orders || 0}</div>
+                        <div className="text-2xl font-bold">{analytics?.total_orders ?? 0}</div>
                         <p className="text-xs text-muted-foreground">Total orders received</p>
                     </CardContent>
                 </Card>
@@ -179,7 +179,7 @@ export default function MarketplaceDashboard() {
                         <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{analytics?.active_customers || 0}</div>
+                        <div className="text-2xl font-bold">{analytics?.active_customers ?? 0}</div>
                         <p className="text-xs text-muted-foreground">Unique customers</p>
                     </CardContent>
                 </Card>

@@ -978,8 +978,8 @@ function OrderCard({
             <div className="min-w-0">
               <p className="font-medium">#{order.order_number}</p>
               <p className="text-sm text-muted-foreground">
-                {formatSmartDate(order.created_at)} • {order.items?.length || 0} item
-                {(order.items?.length || 0) !== 1 ? 's' : ''}
+                {formatSmartDate(order.created_at)} • {order.items?.length ?? 0} item
+                {(order.items?.length ?? 0) !== 1 ? 's' : ''}
               </p>
             </div>
           </div>
@@ -1115,7 +1115,7 @@ function QuickReorderButton({
       setCartItemCount(cart.reduce((sum: number, c) => sum + (c.quantity as number), 0));
 
       toast.success('Items added to cart', {
-        description: `${(order.items?.length || 0) === 1 ? '1 item' : `${order.items?.length || 0} items`} from order ${order.order_number}`,
+        description: `${(order.items?.length ?? 0) === 1 ? '1 item' : `${order.items?.length ?? 0} items`} from order ${order.order_number}`,
       });
 
       // Navigate to cart

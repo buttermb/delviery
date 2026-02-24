@@ -369,7 +369,7 @@ export default function CouponManagementPage() {
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium">{getDiscountDisplay(coupon)}</span>
                         <span className="text-muted-foreground">
-                          {coupon.used_count || 0}{coupon.total_usage_limit ? ` / ${coupon.total_usage_limit} used` : ' used'}
+                          {coupon.used_count ?? 0}{coupon.total_usage_limit ? ` / ${coupon.total_usage_limit} used` : ' used'}
                         </span>
                       </div>
                       <div className="text-xs text-muted-foreground">
@@ -474,7 +474,7 @@ export default function CouponManagementPage() {
                           <TableCell>
                             <div className="flex items-center gap-1">
                               <Users className="h-3 w-3 text-muted-foreground" />
-                              {coupon.used_count || 0}
+                              {coupon.used_count ?? 0}
                               {coupon.total_usage_limit && ` / ${coupon.total_usage_limit}`}
                             </div>
                           </TableCell>

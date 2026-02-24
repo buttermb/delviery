@@ -181,7 +181,7 @@ export default function MarketplaceCategoryManager() {
                                 <Input
                                     id="order"
                                     type="number"
-                                    value={formData.display_order || 0}
+                                    value={formData.display_order ?? 0}
                                     onChange={e => setFormData({ ...formData, display_order: parseInt(e.target.value) })}
                                 />
                             </div>

@@ -296,7 +296,7 @@ export default function SuperAdminAutomation() {
               {recentEvents?.filter(
                 (e) =>
                   new Date(e.created_at).toDateString() === new Date().toDateString()
-              ).length || 0}
+              ).length ?? 0}
             </div>
           </CardContent>
         </Card>
@@ -307,8 +307,7 @@ export default function SuperAdminAutomation() {
           <CardContent>
             <div className="text-2xl font-bold">
               {
-                recentEvents?.filter((e) => e.event_type === 'usage_warning').length ||
-                0
+                recentEvents?.filter((e) => e.event_type === 'usage_warning').length ?? 0
               }
             </div>
           </CardContent>
@@ -324,7 +323,7 @@ export default function SuperAdminAutomation() {
                   (e) =>
                     e.event_type.includes('suspended') ||
                     e.event_type.includes('disabled')
-                ).length || 0
+                ).length ?? 0
               }
             </div>
           </CardContent>

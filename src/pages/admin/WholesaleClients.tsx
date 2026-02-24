@@ -141,7 +141,7 @@ export default function WholesaleClients() {
         ...client,
         territory: (client.address ?? '').split(',')[1]?.trim() || 'Unknown',
         monthly_volume_lbs: client.monthly_volume,
-        total_spent: client.wholesale_payments?.reduce((sum: number, p: { amount: number | null }) => sum + (Number(p.amount) || 0), 0) || 0
+        total_spent: client.wholesale_payments?.reduce((sum: number, p: { amount: number | null }) => sum + (Number(p.amount) || 0), 0) ?? 0
       })) as WholesaleClient[];
     }
   });
@@ -464,11 +464,11 @@ export default function WholesaleClients() {
                                   status=""
                                   type="credit"
                                   balance={Number(client.outstanding_balance)}
-                                  creditLimit={Number(client.credit_limit || 0)}
+                                  creditLimit={Number(client.credit_limit ?? 0)}
                                   className="mb-1"
                                 />
                                 <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                  ${Number(client.outstanding_balance).toLocaleString()} / ${Number(client.credit_limit || 0).toLocaleString()}
+                                  ${Number(client.outstanding_balance).toLocaleString()} / ${Number(client.credit_limit ?? 0).toLocaleString()}
                                   <Edit2 className="h-3 w-3 opacity-0 group-hover/credit:opacity-100 transition-opacity" />
                                 </div>
                               </div>
@@ -480,7 +480,7 @@ export default function WholesaleClients() {
                                 <div className="flex gap-2">
                                   <Input
                                     type="number"
-                                    defaultValue={client.credit_limit || 0}
+                                    defaultValue={client.credit_limit ?? 0}
                                     aria-label="Credit limit"
                                     className="h-8"
                                     disabled={updateClientMutation.isPending}
@@ -702,10 +702,10 @@ export default function WholesaleClients() {
                           status=""
                           type="credit"
                           balance={Number(client.outstanding_balance)}
-                          creditLimit={Number(client.credit_limit || 0)}
+                          creditLimit={Number(client.credit_limit ?? 0)}
                         />
                         <div className="text-xs text-muted-foreground mt-1 font-mono">
-                          ${Number(client.outstanding_balance).toLocaleString()} / ${Number(client.credit_limit || 0).toLocaleString()} limit
+                          ${Number(client.outstanding_balance).toLocaleString()} / ${Number(client.credit_limit ?? 0).toLocaleString()} limit
                         </div>
                       </div>
 

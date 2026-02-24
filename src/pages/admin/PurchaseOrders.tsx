@@ -162,10 +162,10 @@ export default function PurchaseOrders() {
 
   // Calculate summary stats
   const { totalPOs, draftCount, pendingCount, totalValue } = useMemo(() => ({
-    totalPOs: purchaseOrders?.length || 0,
-    draftCount: purchaseOrders?.filter(po => po.status === 'draft').length || 0,
-    pendingCount: purchaseOrders?.filter(po => ['sent', 'submitted', 'confirmed', 'approved'].includes(po.status ?? '')).length || 0,
-    totalValue: purchaseOrders?.reduce((sum, po) => sum + Number(po.total || 0), 0) || 0,
+    totalPOs: purchaseOrders?.length ?? 0,
+    draftCount: purchaseOrders?.filter(po => po.status === 'draft').length ?? 0,
+    pendingCount: purchaseOrders?.filter(po => ['sent', 'submitted', 'confirmed', 'approved'].includes(po.status ?? '')).length ?? 0,
+    totalValue: purchaseOrders?.reduce((sum, po) => sum + Number(po.total ?? 0), 0) ?? 0,
   }), [purchaseOrders]);
 
   const handleCreate = () => {
@@ -462,7 +462,7 @@ export default function PurchaseOrders() {
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <DollarSign className="h-3 w-3 text-muted-foreground" />
-                            {Number(po.total || 0).toLocaleString('en-US', {
+                            {Number(po.total ?? 0).toLocaleString('en-US', {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}

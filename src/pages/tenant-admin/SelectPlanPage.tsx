@@ -153,8 +153,8 @@ export default function SelectPlanPage() {
   // Check if plan is an upgrade
   const isUpgrade = (plan: Plan): boolean => {
     const tierOrder: Record<string, number> = { starter: 1, professional: 2, enterprise: 3 };
-    const currentOrder = tierOrder[currentTier] || 0;
-    const planOrder = tierOrder[plan.name.toLowerCase()] || 0;
+    const currentOrder = tierOrder[currentTier] ?? 0;
+    const planOrder = tierOrder[plan.name.toLowerCase()] ?? 0;
     return planOrder > currentOrder;
   };
 
@@ -174,8 +174,8 @@ export default function SelectPlanPage() {
 
     if (isActive) {
       const tierOrder: Record<string, number> = { starter: 1, professional: 2, enterprise: 3 };
-      const currentOrder = tierOrder[currentTier] || 0;
-      const planOrder = tierOrder[planTier] || 0;
+      const currentOrder = tierOrder[currentTier] ?? 0;
+      const planOrder = tierOrder[planTier] ?? 0;
 
       if (planOrder > currentOrder) {
         return `Upgrade to $${price}${period}`;

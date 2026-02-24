@@ -143,7 +143,7 @@ export default function PayoutsPage() {
       const nextPayoutDate = addDays(weekEnd, 1); // Monday after week ends
 
       const totalAmount = deliveredOrders.reduce((sum, o) => {
-        return sum + ((o.total_amount || 0) - (o.platform_fee || 0));
+        return sum + ((o.total_amount ?? 0) - (o.platform_fee ?? 0));
       }, 0);
 
       schedules.push({
@@ -165,7 +165,7 @@ export default function PayoutsPage() {
       const estimatedPayoutDate = addDays(nextWeekEnd, 1);
 
       const totalAmount = pendingDeliveryOrders.reduce((sum, o) => {
-        return sum + ((o.total_amount || 0) - (o.platform_fee || 0));
+        return sum + ((o.total_amount ?? 0) - (o.platform_fee ?? 0));
       }, 0);
 
       schedules.push({
@@ -186,19 +186,19 @@ export default function PayoutsPage() {
   // Calculate summary stats
   const availableForPayout = pendingOrders
     .filter(o => o.status === 'delivered')
-    .reduce((sum, o) => sum + ((o.total_amount || 0) - (o.platform_fee || 0)), 0);
+    .reduce((sum, o) => sum + ((o.total_amount ?? 0) - (o.platform_fee ?? 0)), 0);
 
   const pendingClearance = pendingOrders
     .filter(o => o.status !== 'delivered')
-    .reduce((sum, o) => sum + ((o.total_amount || 0) - (o.platform_fee || 0)), 0);
+    .reduce((sum, o) => sum + ((o.total_amount ?? 0) - (o.platform_fee ?? 0)), 0);
 
   const totalWithdrawn = payoutHistory
     .filter((p: PayoutHistoryItem) => p.status === 'completed')
-    .reduce((sum: number, p: PayoutHistoryItem) => sum + (p.amount || 0), 0);
+    .reduce((sum: number, p: PayoutHistoryItem) => sum + (p.amount ?? 0), 0);
 
   const pendingPayouts = payoutHistory
     .filter((p: PayoutHistoryItem) => p.status === 'pending' || p.status === 'processing')
-    .reduce((sum: number, p: PayoutHistoryItem) => sum + (p.amount || 0), 0);
+    .reduce((sum: number, p: PayoutHistoryItem) => sum + (p.amount ?? 0), 0);
 
   // Export functionality
   const handleExportCSV = async () => {

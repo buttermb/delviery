@@ -92,12 +92,12 @@ export default function PreOrdersPage() {
     };
 
     // Calculate stats
-    const pendingCount = preOrders?.filter((o) => o.status === "pending").length || 0;
+    const pendingCount = preOrders?.filter((o) => o.status === "pending").length ?? 0;
     const pendingValue = preOrders
         ?.filter((o) => o.status === "pending")
-        .reduce((sum, o) => sum + o.total, 0) || 0;
+        .reduce((sum, o) => sum + o.total, 0) ?? 0;
 
-    const convertedCount = preOrders?.filter((o) => o.status === "converted").length || 0;
+    const convertedCount = preOrders?.filter((o) => o.status === "converted").length ?? 0;
 
     return (
         <div className="space-y-4 p-4 pb-16">

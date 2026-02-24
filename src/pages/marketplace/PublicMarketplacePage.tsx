@@ -256,7 +256,7 @@ export default function PublicMarketplacePage() {
                   {/* Pricing */}
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold">
-                      {formatCurrency(listing.base_price as number || 0)}
+                      {formatCurrency(listing.base_price as number ?? 0)}
                     </span>
                     {listing.unit_type && (
                       <span className="text-sm text-muted-foreground">

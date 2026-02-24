@@ -125,7 +125,7 @@ export default function CustomReportsPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <FileText className="h-4 w-4" />
-                    <span>{report.selected_fields?.length || 0} fields</span>
+                    <span>{report.selected_fields?.length ?? 0} fields</span>
                   </div>
                   
                   {report.schedule && report.schedule !== 'none' && (

@@ -92,15 +92,15 @@ export default function SmartTVDashboard() {
                     id: o.id,
                     orderNumber: String(i + 1).padStart(3, '0'),
                     source: o.disposable_menus?.title || 'Menu',
-                    total: o.total_amount || 0,
+                    total: o.total_amount ?? 0,
                     status: mapStatus(o.status),
                     createdAt: new Date(o.created_at),
                 })),
                 ...(appOrders ?? []).map((o, i) => ({
                     id: o.id,
-                    orderNumber: String(menuOrders?.length || 0 + i + 1).padStart(3, '0'),
+                    orderNumber: String(menuOrders?.length ?? 0 + i + 1).padStart(3, '0'),
                     source: 'App',
-                    total: o.total_amount || 0,
+                    total: o.total_amount ?? 0,
                     status: mapStatus(o.status),
                     createdAt: new Date(o.created_at),
                 })),
@@ -149,7 +149,7 @@ export default function SmartTVDashboard() {
             const hourlyMap = new Map<number, number>();
             (data ?? []).forEach(order => {
                 const hour = new Date(order.created_at).getHours();
-                hourlyMap.set(hour, (hourlyMap.get(hour) || 0) + (order.total_amount || 0));
+                hourlyMap.set(hour, (hourlyMap.get(hour) ?? 0) + (order.total_amount ?? 0));
             });
 
             const result: HourlyRevenue[] = [];
@@ -239,12 +239,12 @@ export default function SmartTVDashboard() {
     }, [tenant?.id, queryClient]);
 
     // Calculate derived values
-    const openOrders = ordersData?.orders?.length || 0;
-    const todayRevenue = ordersData?.metrics?.revenue || 0;
+    const openOrders = ordersData?.orders?.length ?? 0;
+    const todayRevenue = ordersData?.metrics?.revenue ?? 0;
     const avgOrderValue = ordersData?.metrics?.completed
         ? todayRevenue / ordersData.metrics.completed
         : 0;
-    const itemsSold = ordersData?.metrics?.itemsSold || 0;
+    const itemsSold = ordersData?.metrics?.itemsSold ?? 0;
 
     return (
         <div className="fixed inset-0 bg-zinc-950 text-white flex flex-col overflow-hidden" data-dark-panel>

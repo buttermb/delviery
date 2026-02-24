@@ -442,7 +442,7 @@ export default function GenerateBarcodes() {
                       {batches?.map(batch => {
                         const batchNumber = String(batch.batch_number || '');
                         const productName = (batch.products as { name?: string })?.name || 'Unknown';
-                        const remainingQty = String(batch.remaining_quantity_lbs || 0);
+                        const remainingQty = String(batch.remaining_quantity_lbs ?? 0);
                         return (
                           <SelectItem key={batch.id} value={batch.id}>
                             {batchNumber} - {productName} ({remainingQty} lbs remaining)

@@ -236,7 +236,7 @@ export function StoreOrdersTab({
   const orderCounts = useMemo(() => {
     return orders.reduce(
       (acc, order) => {
-        acc[order.status] = (acc[order.status] || 0) + 1;
+        acc[order.status] = (acc[order.status] ?? 0) + 1;
         return acc;
       },
       {} as Record<string, number>
@@ -250,7 +250,7 @@ export function StoreOrdersTab({
     const completed = orders.filter(o => o.status === 'delivered').length;
     const totalRevenue = orders
       .filter(o => !['cancelled', 'refunded'].includes(o.status))
-      .reduce((sum, o) => sum + (o.total || 0), 0);
+      .reduce((sum, o) => sum + (o.total ?? 0), 0);
 
     return { pending, inProgress, completed, totalRevenue, total: orders.length };
   }, [orders]);
@@ -354,7 +354,7 @@ export function StoreOrdersTab({
             onClick={() => setStatusFilter(status.value)}
           >
             <div className={`w-2 h-2 rounded-full ${status.color} mr-2`} />
-            {status.label} ({orderCounts[status.value] || 0})
+            {status.label} ({orderCounts[status.value] ?? 0})
           </Button>
         ))}
       </div>
@@ -423,7 +423,7 @@ export function StoreOrdersTab({
                         </div>
                       </TableCell>
                       <TableCell onClick={() => setSelectedOrder(order)}>
-                        {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
+                        {order.items?.length ?? 0} item{(order.items?.length ?? 0) !== 1 ? 's' : ''}
                       </TableCell>
                       <TableCell onClick={() => setSelectedOrder(order)}>
                         {formatCurrency(order.total)}

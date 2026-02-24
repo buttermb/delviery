@@ -180,7 +180,7 @@ export default function AdminUsersPage() {
         <CardHeader>
           <CardTitle>Admin Users</CardTitle>
           <CardDescription>
-            {adminUsers?.length || 0} admin user{adminUsers?.length !== 1 ? 's' : ''}
+            {adminUsers?.length ?? 0} admin user{adminUsers?.length !== 1 ? 's' : ''}
           </CardDescription>
         </CardHeader>
         <CardContent>

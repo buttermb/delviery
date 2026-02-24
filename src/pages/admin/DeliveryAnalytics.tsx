@@ -57,8 +57,8 @@ export default function DeliveryAnalytics() {
     return acc;
   }, []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const totalDeliveries = deliveries?.length || 0;
-  const completedDeliveries = deliveries?.filter((d) => d.status === 'completed').length || 0;
+  const totalDeliveries = deliveries?.length ?? 0;
+  const completedDeliveries = deliveries?.filter((d) => d.status === 'completed').length ?? 0;
   const successRate = totalDeliveries > 0 ? (completedDeliveries / totalDeliveries) * 100 : 0;
 
   return (

@@ -68,7 +68,7 @@ export default function CRMSettingsPage() {
             form.reset({
                 invoice_prefix: settings.invoice_prefix || "INV-",
                 default_payment_terms: settings.default_payment_terms || 7,
-                default_tax_rate: settings.default_tax_rate || 0,
+                default_tax_rate: settings.default_tax_rate ?? 0,
                 company_name: settings.company_name || "",
                 company_address: settings.company_address || "",
                 company_email: settings.company_email || "",

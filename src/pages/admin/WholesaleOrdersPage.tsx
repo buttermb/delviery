@@ -828,8 +828,8 @@ export default function WholesaleOrdersPage() {
     inTransit: orders.filter((o) => o.status === 'in_transit').length,
     delivered: orders.filter((o) => o.status === 'delivered').length,
     totalRevenue: viewMode === 'selling'
-      ? orders.reduce((sum, o) => sum + Number((o as WholesaleOrder).total_amount || 0), 0)
-      : orders.reduce((sum, o) => sum + Number((o as PurchaseOrder).total || 0), 0),
+      ? orders.reduce((sum, o) => sum + Number((o as WholesaleOrder).total_amount ?? 0), 0)
+      : orders.reduce((sum, o) => sum + Number((o as PurchaseOrder).total ?? 0), 0),
   };
 
   const quickFilters = [

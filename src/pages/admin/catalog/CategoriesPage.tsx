@@ -190,7 +190,7 @@ export default function CategoriesPage() {
             const stats = statsMap.get(product.category_id);
             if (stats) {
               stats.productCount += 1;
-              const stockValue = (product.available_quantity || 0) * (product.cost_per_unit || product.retail_price || 0);
+              const stockValue = (product.available_quantity ?? 0) * (product.cost_per_unit || product.retail_price || 0);
               stats.totalStockValue += stockValue;
             }
 
@@ -586,7 +586,7 @@ export default function CategoriesPage() {
                 <Tag className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{categories?.length || 0}</div>
+                <div className="text-2xl font-bold">{categories?.length ?? 0}</div>
                 <p className="text-xs text-muted-foreground">Total Categories</p>
               </div>
             </div>

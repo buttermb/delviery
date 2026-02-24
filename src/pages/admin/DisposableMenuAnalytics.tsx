@@ -81,7 +81,7 @@ const DisposableMenuAnalytics = () => {
   const menu = menus?.find(m => m.id === menuId);
 
   // Calculate analytics
-  const totalViews = accessLogs?.length || 0;
+  const totalViews = accessLogs?.length ?? 0;
   const uniqueVisitors = new Set(accessLogs?.map(log => log.access_whitelist_id || log.ip_address)).size;
 
   // Calculate average session duration from access logs
@@ -131,7 +131,7 @@ const DisposableMenuAnalytics = () => {
     else if (hour >= 19 && hour < 22) bucket = '7pm - 10pm';
     else bucket = 'Other';
     
-    hourBuckets[bucket] = (hourBuckets[bucket] || 0) + 1;
+    hourBuckets[bucket] = (hourBuckets[bucket] ?? 0) + 1;
   });
 
   const peakTimesSorted = Object.entries(hourBuckets)
@@ -365,7 +365,7 @@ const DisposableMenuAnalytics = () => {
               totalViews,
               uniqueVisitors,
               conversionRate,
-              securityIncidents: securityEvents?.filter(e => e.severity === 'high' || e.severity === 'critical').length || 0,
+              securityIncidents: securityEvents?.filter(e => e.severity === 'high' || e.severity === 'critical').length ?? 0,
               avgSessionDuration: avgViewDuration,
               peakAccessTime: peakTimesSorted[0]?.time || 'N/A'
             }}

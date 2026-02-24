@@ -151,9 +151,9 @@ export default function ClientDetail() {
   // Calculate metrics from real data
   const orderData = orders as ClientOrder[];
   const paidOrders = orderData.filter(o => o.status === "delivered");
-  const totalSpent = paidOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  const totalSpent = paidOrders.reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0);
   const avgOrderSize = orderData.length > 0
-    ? orderData.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) / orderData.length
+    ? orderData.reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0) / orderData.length
     : 0;
 
   // Extended client shape — includes fields not in the narrow select
@@ -169,8 +169,8 @@ export default function ClientDetail() {
     contact_name: clientData.contact_name,
     phone: clientData.phone,
     client_type: clientData.client_type || 'regular',
-    outstanding_balance: Number(clientData.outstanding_balance || 0),
-    credit_limit: Number(clientData.credit_limit || 0),
+    outstanding_balance: Number(clientData.outstanding_balance ?? 0),
+    credit_limit: Number(clientData.credit_limit ?? 0),
     reliability_score: Number(clientData.reliability_score || 100),
     payment_terms: `net_${clientData.payment_terms || 7}`,
     total_spent: totalSpent,
@@ -178,7 +178,7 @@ export default function ClientDetail() {
     status: clientData.status,
     since: clientData.created_at ? format(new Date(clientData.created_at), "MMM yyyy") : "",
     address: clientData.address || "",
-    monthly_volume: Number(clientData.monthly_volume || 0)
+    monthly_volume: Number(clientData.monthly_volume ?? 0)
   };
 
   const getStatusColor = (balance: number) => {

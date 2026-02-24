@@ -257,7 +257,7 @@ export default function DeliveryTrackingPage() {
           customer_name: data.customer_name,
           customer_phone: data.customer_phone,
           delivery_address: data.delivery_address,
-          total_amount: data.total_amount || 0,
+          total_amount: data.total_amount ?? 0,
           created_at: data.created_at,
           updated_at: data.created_at,
           estimated_delivery_at: null,

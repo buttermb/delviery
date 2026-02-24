@@ -44,7 +44,7 @@ export default function AdvancedAnalyticsPage() {
   const revenueByMonth = orders.reduce((acc: Record<string, { month: string; revenue: number; orders: number }>, order) => {
     const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     if (!acc[month]) acc[month] = { month, revenue: 0, orders: 0 };
-    acc[month].revenue += order.total_amount || 0;
+    acc[month].revenue += order.total_amount ?? 0;
     acc[month].orders += 1;
     return acc;
   }, {});
@@ -56,8 +56,8 @@ export default function AdvancedAnalyticsPage() {
     .reduce((acc: Record<string, { name: string; quantity: number; revenue: number }>, item) => {
       const name = item.product_name || 'Unknown';
       if (!acc[name]) acc[name] = { name, quantity: 0, revenue: 0 };
-      acc[name].quantity += item.quantity || 0;
-      acc[name].revenue += ((item.price || 0) * (item.quantity || 0)) || 0;
+      acc[name].quantity += item.quantity ?? 0;
+      acc[name].revenue += ((item.price ?? 0) * (item.quantity ?? 0)) ?? 0;
       return acc;
     }, {});
 
@@ -142,13 +142,13 @@ export default function AdvancedAnalyticsPage() {
               <div className="p-4 border rounded-lg">
                 <p className="text-sm text-muted-foreground">Avg Order Value</p>
                 <p className="text-2xl font-bold">
-                  ${orders.length > 0 ? (orders.reduce((sum: number, o) => sum + (o.total_amount || 0), 0) / orders.length).toFixed(2) : '0.00'}
+                  ${orders.length > 0 ? (orders.reduce((sum: number, o) => sum + (o.total_amount ?? 0), 0) / orders.length).toFixed(2) : '0.00'}
                 </p>
               </div>
               <div className="p-4 border rounded-lg">
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
                 <p className="text-2xl font-bold">
-                  ${orders.reduce((sum: number, o) => sum + (o.total_amount || 0), 0).toFixed(2)}
+                  ${orders.reduce((sum: number, o) => sum + (o.total_amount ?? 0), 0).toFixed(2)}
                 </p>
               </div>
             </div>

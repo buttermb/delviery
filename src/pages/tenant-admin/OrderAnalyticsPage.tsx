@@ -42,7 +42,7 @@ export default function OrderAnalyticsPage() {
   // Calculate metrics from real data
   const metrics = useMemo(() => {
     const totalOrders = filteredOrders.length;
-    const totalRevenue = filteredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+    const totalRevenue = filteredOrders.reduce((sum, order) => sum + (order.total_amount ?? 0), 0);
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
     // Calculate previous period for comparison
@@ -52,7 +52,7 @@ export default function OrderAnalyticsPage() {
       return orderDate >= previousStart && orderDate < dateRange;
     });
 
-    const previousRevenue = previousPeriodOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+    const previousRevenue = previousPeriodOrders.reduce((sum, order) => sum + (order.total_amount ?? 0), 0);
     const previousOrderCount = previousPeriodOrders.length;
     const previousAvg = previousOrderCount > 0 ? previousRevenue / previousOrderCount : 0;
 
@@ -79,15 +79,15 @@ export default function OrderAnalyticsPage() {
       const existing = dayMap.get(day) || { orders: 0, revenue: 0 };
       dayMap.set(day, {
         orders: existing.orders + 1,
-        revenue: existing.revenue + (order.total_amount || 0),
+        revenue: existing.revenue + (order.total_amount ?? 0),
       });
     });
 
     const daysOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return daysOrder.map(day => ({
       day,
-      orders: dayMap.get(day)?.orders || 0,
-      revenue: Math.round(dayMap.get(day)?.revenue || 0),
+      orders: dayMap.get(day)?.orders ?? 0,
+      revenue: Math.round(dayMap.get(day)?.revenue ?? 0),
     }));
   }, [filteredOrders]);
 
@@ -97,7 +97,7 @@ export default function OrderAnalyticsPage() {
     
     filteredOrders.forEach(order => {
       const status = order.status || 'unknown';
-      statusCounts.set(status, (statusCounts.get(status) || 0) + 1);
+      statusCounts.set(status, (statusCounts.get(status) ?? 0) + 1);
     });
 
     const statusLabels: Record<string, string> = {
@@ -123,14 +123,14 @@ export default function OrderAnalyticsPage() {
     
     filteredOrders.forEach(order => {
       const hour = getHours(parseISO(order.created_at));
-      hourCounts.set(hour, (hourCounts.get(hour) || 0) + 1);
+      hourCounts.set(hour, (hourCounts.get(hour) ?? 0) + 1);
     });
 
     return Array.from({ length: 12 }, (_, i) => {
       const hour = i + 9; // 9AM to 8PM
       return {
         hour: `${hour > 12 ? hour - 12 : hour}${hour >= 12 ? 'PM' : 'AM'}`,
-        orders: hourCounts.get(hour) || 0,
+        orders: hourCounts.get(hour) ?? 0,
       };
     });
   }, [filteredOrders]);

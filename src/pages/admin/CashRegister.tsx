@@ -259,7 +259,7 @@ function CashRegisterContent() {
           email: c.email,
           phone: c.phone,
           customer_type: c.customer_type || 'recreational',
-          loyalty_points: c.loyalty_points || 0,
+          loyalty_points: c.loyalty_points ?? 0,
         })) as POSCustomer[];
       } catch (error: unknown) {
         if (error instanceof Error && 'code' in error && (error as { code: string }).code === '42P01') return [];
@@ -655,7 +655,7 @@ function CashRegisterContent() {
             </tr>`
           ).join('');
         } else {
-          itemCount = lastTransaction?.items_count || 0;
+          itemCount = lastTransaction?.items_count ?? 0;
           itemRows = `<tr><td colspan="3">${itemCount} item(s)</td></tr>`;
         }
 
@@ -691,7 +691,7 @@ function CashRegisterContent() {
           : '';
 
         const receiptLabel = isRefund ? '*** REFUND ***' : 'RECEIPT';
-        const totalAmount = isRefund ? lastRefundData.refundAmount : (lastTransaction?.total || 0);
+        const totalAmount = isRefund ? lastRefundData.refundAmount : (lastTransaction?.total ?? 0);
         const totalLabel = isRefund ? 'REFUND TOTAL' : 'TOTAL';
         const totalFormatted = isRefund ? `-${formatCurrency(totalAmount)}` : formatCurrency(totalAmount);
         const footerText = isRefund ? 'Refund processed.' : 'Thank you for your purchase!';
@@ -1035,7 +1035,7 @@ function CashRegisterContent() {
           {activeShift && (
             <Badge variant="secondary" className="flex items-center gap-1.5 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              Shift: {formatCurrency((activeShift.opening_cash || 0) + (activeShift.cash_sales || 0))}
+              Shift: {formatCurrency((activeShift.opening_cash ?? 0) + (activeShift.cash_sales ?? 0))}
             </Badge>
           )}
           <Button
@@ -1400,8 +1400,8 @@ function CashRegisterContent() {
         <div className="mt-4">
           <CashDrawerPanel
             shiftId={activeShift.id}
-            openingCash={activeShift.opening_cash || 0}
-            expectedCash={(activeShift.opening_cash || 0) + (activeShift.cash_sales || 0)}
+            openingCash={activeShift.opening_cash ?? 0}
+            expectedCash={(activeShift.opening_cash ?? 0) + (activeShift.cash_sales ?? 0)}
           />
         </div>
       )}
@@ -1642,7 +1642,7 @@ function CashRegisterContent() {
             <div className="space-y-4">
               <div className="text-center py-4 border-b">
                 <div className="text-2xl font-bold text-green-600">
-                  {formatCurrency(lastTransaction.total || 0)}
+                  {formatCurrency(lastTransaction.total ?? 0)}
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
                   {lastTransaction.transaction_number}

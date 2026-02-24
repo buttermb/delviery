@@ -325,7 +325,7 @@ export default function WholesaleMarketplacePage() {
                     <div className="space-y-2">
                       <div className="flex items-baseline gap-2">
                         <span className="text-2xl font-bold">
-                          {formatCurrency(listing.base_price as number || 0)}
+                          {formatCurrency(listing.base_price as number ?? 0)}
                         </span>
                         <span className="text-sm text-muted-foreground">
                           / {listing.unit_type || 'lb'}

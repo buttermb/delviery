@@ -111,7 +111,7 @@ export default function Couriers() {
 
   const { avgRating, availableForAssignment } = useMemo(() => {
     const avg = couriers.length > 0
-      ? (couriers.reduce((acc, c) => acc + (c.rating || 0), 0) / couriers.length).toFixed(1)
+      ? (couriers.reduce((acc, c) => acc + (c.rating ?? 0), 0) / couriers.length).toFixed(1)
       : '0.0';
     const available = couriers.filter(c =>
       c.is_online && c.is_active && c.age_verified
@@ -387,7 +387,7 @@ export default function Couriers() {
                       </div>
                       <div className="flex flex-col gap-1">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Deliveries</div>
-                        <div className="text-sm">{courier.total_deliveries || 0}</div>
+                        <div className="text-sm">{courier.total_deliveries ?? 0}</div>
                       </div>
                       <div className="flex flex-col gap-1">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Commission</div>

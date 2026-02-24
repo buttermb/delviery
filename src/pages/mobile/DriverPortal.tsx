@@ -86,12 +86,12 @@ export default function DriverPortal() {
       setMyFronts(fronts ?? []);
 
       // Calculate stats
-      const totalUnits = fronts?.reduce((sum, f) => sum + f.quantity_fronted, 0) || 0;
-      const unitsSold = fronts?.reduce((sum, f) => sum + f.quantity_sold, 0) || 0;
+      const totalUnits = fronts?.reduce((sum, f) => sum + f.quantity_fronted, 0) ?? 0;
+      const unitsSold = fronts?.reduce((sum, f) => sum + f.quantity_sold, 0) ?? 0;
       const totalOwed = fronts?.reduce(
-        (sum, f) => sum + (parseFloat(String(f.expected_revenue || 0)) - parseFloat(String(f.payment_received || 0))),
+        (sum, f) => sum + (parseFloat(String(f.expected_revenue ?? 0)) - parseFloat(String(f.payment_received ?? 0))),
         0
-      ) || 0;
+      ) ?? 0;
 
       const dueDates = fronts
         ?.filter((f) => f.payment_due_date)
@@ -258,7 +258,7 @@ export default function DriverPortal() {
             myFronts.map((front) => {
               const remaining = front.quantity_fronted - front.quantity_sold - front.quantity_returned;
               const progress = (front.quantity_sold / front.quantity_fronted) * 100;
-              const amountOwed = parseFloat(front.expected_revenue || 0) - parseFloat(front.payment_received || 0);
+              const amountOwed = parseFloat(front.expected_revenue ?? 0) - parseFloat(front.payment_received ?? 0);
 
               return (
                 <Card

@@ -139,7 +139,7 @@ export default function SuperAdminDashboardPage() {
       const recentCancelled = tenants.filter(
         (t) =>
           isCancelled(t.subscription_status) &&
-          new Date(t.created_at || 0) > thirtyDaysAgo
+          new Date(t.created_at ?? 0) > thirtyDaysAgo
       );
       const churnRate =
         active.length > 0 ? (recentCancelled.length / active.length) * 100 : 0;
@@ -232,7 +232,7 @@ export default function SuperAdminDashboardPage() {
         monthlyRevenue[monthKey] = 0;
 
         tenants.forEach((tenant) => {
-          const tenantCreated = new Date(tenant.created_at || 0);
+          const tenantCreated = new Date(tenant.created_at ?? 0);
           const tenantMonth = new Date(tenantCreated.getFullYear(), tenantCreated.getMonth(), 1);
 
           // Only count if tenant existed in this month and was active
@@ -345,7 +345,7 @@ export default function SuperAdminDashboardPage() {
 
       const recentTrials = allTenants.filter(
         (t) => (t.subscription_status === 'trial' || t.subscription_status === 'trialing') &&
-          new Date(t.created_at || 0) > thirtyDaysAgo
+          new Date(t.created_at ?? 0) > thirtyDaysAgo
       );
 
       // Get all tenants that were trials and are now active

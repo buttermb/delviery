@@ -99,7 +99,7 @@ export default function PosAnalytics() {
   const dailySales = (transactions ?? []).reduce((acc: DailySalesData[], transaction: POSTransaction) => {
     const date = new Date(transaction.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const existing = acc.find((item) => item.date === date);
-    const revenue = parseFloat(String(transaction.total_amount || 0));
+    const revenue = parseFloat(String(transaction.total_amount ?? 0));
     if (existing) {
       existing.revenue += revenue;
       existing.count += 1;
@@ -114,7 +114,7 @@ export default function PosAnalytics() {
     const hour = new Date(transaction.created_at).getHours();
     const hourLabel = `${hour}:00`;
     const existing = acc.find((item) => item.hour === hourLabel);
-    const revenue = parseFloat(String(transaction.total_amount || 0));
+    const revenue = parseFloat(String(transaction.total_amount ?? 0));
 
     if (existing) {
       existing.transactions += 1;
@@ -125,21 +125,21 @@ export default function PosAnalytics() {
     return acc;
   }, [] as HourlyData[]).sort((a, b) => parseInt(a.hour) - parseInt(b.hour));
 
-  const totalRevenue = transactions?.reduce((sum: number, t: POSTransaction) => sum + parseFloat(String(t.total_amount || 0)), 0) || 0;
-  const totalTransactions = transactions?.length || 0;
+  const totalRevenue = transactions?.reduce((sum: number, t: POSTransaction) => sum + parseFloat(String(t.total_amount ?? 0)), 0) ?? 0;
+  const totalTransactions = transactions?.length ?? 0;
   const avgTransactionValue = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
 
   // Calculate payment method breakdown for pie chart
   const paymentMethodData: PaymentMethodData[] = Object.entries(
     (transactions ?? []).reduce((acc: Record<string, number>, t: POSTransaction) => {
       const method = (t.payment_method || 'other').charAt(0).toUpperCase() + (t.payment_method || 'other').slice(1);
-      acc[method] = (acc[method] || 0) + parseFloat(String(t.total_amount || 0));
+      acc[method] = (acc[method] ?? 0) + parseFloat(String(t.total_amount ?? 0));
       return acc;
     }, {} as Record<string, number>)
   ).map(([name, value]) => ({ name, value: value as number }));
 
-  const totalShifts = shifts?.length || 0;
-  const openShifts = shifts?.filter((s) => s.status === 'open').length || 0;
+  const totalShifts = shifts?.length ?? 0;
+  const openShifts = shifts?.filter((s) => s.status === 'open').length ?? 0;
 
   return (
     <div className="p-4 space-y-4">

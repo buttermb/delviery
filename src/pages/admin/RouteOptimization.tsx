@@ -79,11 +79,11 @@ export default function RouteOptimization() {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Route className="h-4 w-4 text-muted-foreground" />
-                    <span>{route.distance || 0} miles</span>
+                    <span>{route.distance ?? 0} miles</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>{route.estimated_time || 0} min</span>
+                    <span>{route.estimated_time ?? 0} min</span>
                   </div>
                   <div className="pt-2 mt-2 border-t">
                     <p className="text-xs text-muted-foreground mb-2">Deliveries:</p>

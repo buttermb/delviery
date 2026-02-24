@@ -98,7 +98,7 @@ function exportToCSV(orders: UnifiedOrder[], filename: string = 'orders-export')
         delivery_address: order.delivery_address ?? '',
         delivery_notes: order.delivery_notes ?? '',
         courier_name: order.courier?.full_name ?? '',
-        items_count: order.items?.length || 0,
+        items_count: order.items?.length ?? 0,
         created_at: order.created_at,
         updated_at: order.updated_at,
         cancelled_at: order.cancelled_at ?? '',

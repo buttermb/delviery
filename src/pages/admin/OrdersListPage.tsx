@@ -232,7 +232,7 @@ export function OrdersListPage() {
         order_number: order.order_number ?? '',
         created_at: order.created_at ?? '',
         status: order.status ?? 'pending',
-        total_amount: order.total_amount || 0,
+        total_amount: order.total_amount ?? 0,
         user_id: order.user_id ?? '',
         courier_id: order.courier_id || undefined,
         tenant_id: order.tenant_id ?? '',

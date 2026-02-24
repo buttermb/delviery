@@ -119,7 +119,7 @@ export default function FinancialCenter() {
             </div>
             {(todaySnapshot as { pendingRevenue?: number }).pendingRevenue !== undefined && (todaySnapshot as { pendingRevenue?: number }).pendingRevenue! > 0 && (
               <div className="text-xs text-amber-500 mt-1">
-                +${((todaySnapshot as { pendingRevenue?: number }).pendingRevenue || 0).toLocaleString()} pending
+                +${((todaySnapshot as { pendingRevenue?: number }).pendingRevenue ?? 0).toLocaleString()} pending
               </div>
             )}
           </Card>

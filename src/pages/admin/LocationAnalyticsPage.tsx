@@ -154,7 +154,7 @@ export default function LocationAnalyticsPage() {
             <CardContent>
               <p className="text-2xl font-bold">{formatCurrency(locationData?.totalRevenue)}</p>
               <p className="text-sm text-muted-foreground mt-2">
-                Across {locationData?.locations.length || 0} locations
+                Across {locationData?.locations.length ?? 0} locations
               </p>
             </CardContent>
           </Card>
@@ -167,7 +167,7 @@ export default function LocationAnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{locationData?.totalOrders || 0}</p>
+              <p className="text-2xl font-bold">{locationData?.totalOrders ?? 0}</p>
               <p className="text-sm text-muted-foreground mt-2">
                 Delivered orders
               </p>

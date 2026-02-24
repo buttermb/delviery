@@ -58,7 +58,7 @@ export default function ReferralManagementPage() {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className="text-2xl font-bold">{stats?.totalReferrals || 0}</div>
+                <div className="text-2xl font-bold">{stats?.totalReferrals ?? 0}</div>
                 <p className="text-xs text-muted-foreground">
                   Successful signups
                 </p>
@@ -78,7 +78,7 @@ export default function ReferralManagementPage() {
             ) : (
               <>
                 <div className="text-2xl font-bold">
-                  {(stats?.totalCreditsAwarded || 0).toLocaleString()}
+                  {(stats?.totalCreditsAwarded ?? 0).toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Total credits distributed
@@ -98,7 +98,7 @@ export default function ReferralManagementPage() {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className="text-2xl font-bold">{stats?.totalConversions || 0}</div>
+                <div className="text-2xl font-bold">{stats?.totalConversions ?? 0}</div>
                 <p className="text-xs text-muted-foreground">
                   Referees upgraded to paid
                 </p>
@@ -248,7 +248,7 @@ export default function ReferralManagementPage() {
           <CardContent>
             <div className="text-center py-8">
               <div className="text-4xl font-bold text-orange-600 mb-2">
-                {stats?.pendingConversions || 0}
+                {stats?.pendingConversions ?? 0}
               </div>
               <p className="text-muted-foreground">
                 referees on free tier
@@ -295,22 +295,22 @@ export default function ReferralManagementPage() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 rounded-lg bg-muted/50 text-center">
-              <div className="text-2xl font-bold">{stats?.totalReferrals || 0}</div>
+              <div className="text-2xl font-bold">{stats?.totalReferrals ?? 0}</div>
               <div className="text-sm text-muted-foreground">Total Signups</div>
             </div>
             <div className="p-4 rounded-lg bg-muted/50 text-center">
-              <div className="text-2xl font-bold">{stats?.totalConversions || 0}</div>
+              <div className="text-2xl font-bold">{stats?.totalConversions ?? 0}</div>
               <div className="text-sm text-muted-foreground">Paid Conversions</div>
             </div>
             <div className="p-4 rounded-lg bg-muted/50 text-center">
               <div className="text-2xl font-bold text-green-600">
-                {(stats?.totalCreditsAwarded || 0).toLocaleString()}
+                {(stats?.totalCreditsAwarded ?? 0).toLocaleString()}
               </div>
               <div className="text-sm text-muted-foreground">Credits Distributed</div>
             </div>
             <div className="p-4 rounded-lg bg-muted/50 text-center">
               <div className="text-2xl font-bold text-blue-600">
-                {stats?.topReferrers.length || 0}
+                {stats?.topReferrers.length ?? 0}
               </div>
               <div className="text-sm text-muted-foreground">Active Referrers</div>
             </div>

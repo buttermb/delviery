@@ -339,7 +339,7 @@ export default function PointOfSale() {
             const pointsEarned = Math.floor(total);
             await supabase
               .from('customers')
-              .update({ loyalty_points: (selectedCustomer.loyalty_points || 0) + pointsEarned })
+              .update({ loyalty_points: (selectedCustomer.loyalty_points ?? 0) + pointsEarned })
               .eq('id', selectedCustomer.id)
               .eq('tenant_id', tenantId);
           }

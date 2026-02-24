@@ -277,7 +277,7 @@ export default function StorefrontCoupons() {
   }
 
   const activeCoupons = coupons.filter((c) => c.is_active);
-  const totalUses = coupons.reduce((sum, c) => sum + (c.uses_count || 0), 0);
+  const totalUses = coupons.reduce((sum, c) => sum + (c.uses_count ?? 0), 0);
 
   return (
     <div className="container mx-auto p-4 space-y-4">

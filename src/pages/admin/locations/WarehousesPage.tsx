@@ -94,8 +94,8 @@ export default function WarehousesPage() {
           }
           const wh = warehouseMap.get(loc);
           if (!wh) return;
-          wh.total_quantity += Number(item.stock_quantity || 0);
-          wh.total_value += Number(item.stock_quantity || 0) * Number(item.cost_per_unit || 0);
+          wh.total_quantity += Number(item.stock_quantity ?? 0);
+          wh.total_value += Number(item.stock_quantity ?? 0) * Number(item.cost_per_unit ?? 0);
           wh.product_count += 1;
         });
 
@@ -291,12 +291,12 @@ export default function WarehousesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <div className="text-sm text-muted-foreground mb-1">Total Warehouses</div>
-          <div className="text-2xl font-bold">{warehouses?.length || 0}</div>
+          <div className="text-2xl font-bold">{warehouses?.length ?? 0}</div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-muted-foreground mb-1">Total Inventory</div>
           <div className="text-2xl font-bold">
-            {warehouses?.reduce((sum, w) => sum + Number(w.total_quantity || 0), 0).toFixed(1) || 0}{' '}
+            {warehouses?.reduce((sum, w) => sum + Number(w.total_quantity ?? 0), 0).toFixed(1) ?? 0}{' '}
             lbs
           </div>
         </Card>
@@ -305,14 +305,14 @@ export default function WarehousesPage() {
           <div className="text-2xl font-bold">
             $
             {warehouses
-              ?.reduce((sum, w) => sum + Number(w.total_value || 0), 0)
+              ?.reduce((sum, w) => sum + Number(w.total_value ?? 0), 0)
               .toFixed(2) || '0.00'}
           </div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-muted-foreground mb-1">Total Products</div>
           <div className="text-2xl font-bold">
-            {warehouses?.reduce((sum, w) => sum + Number(w.product_count || 0), 0) || 0}
+            {warehouses?.reduce((sum, w) => sum + Number(w.product_count ?? 0), 0) ?? 0}
           </div>
         </Card>
       </div>

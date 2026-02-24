@@ -115,7 +115,7 @@ export default function RevenueReports() {
       const status = order.status || 'unknown';
 
       // Status counts include all orders
-      statusCounts[status] = (statusCounts[status] || 0) + 1;
+      statusCounts[status] = (statusCounts[status] ?? 0) + 1;
 
       // Revenue and chart data only count completed/delivered orders
       const isCompleted = status === 'completed' || status === 'delivered';
@@ -137,7 +137,7 @@ export default function RevenueReports() {
       if (order.order_items && Array.isArray(order.order_items)) {
         order.order_items.forEach((item) => {
           const name = item.product_name || 'Unknown Product';
-          productSales[name] = (productSales[name] || 0) + (item.quantity || 0);
+          productSales[name] = (productSales[name] ?? 0) + (item.quantity ?? 0);
         });
       }
     });

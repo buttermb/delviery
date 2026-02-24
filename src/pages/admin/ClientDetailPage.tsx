@@ -152,7 +152,7 @@ export default function ClientDetailPage() {
                             <Receipt className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{invoices?.length || 0}</div>
+                            <div className="text-2xl font-bold">{invoices?.length ?? 0}</div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -162,7 +162,7 @@ export default function ClientDetailPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {preOrders?.filter(p => p.status === 'pending').length || 0}
+                                {preOrders?.filter(p => p.status === 'pending').length ?? 0}
                             </div>
                         </CardContent>
                     </Card>

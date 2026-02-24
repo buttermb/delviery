@@ -175,7 +175,7 @@ export default function StoreMenuPage() {
     const counts: Record<string, number> = {};
     for (const p of allProducts) {
       if (p.category) {
-        counts[p.category] = (counts[p.category] || 0) + 1;
+        counts[p.category] = (counts[p.category] ?? 0) + 1;
       }
     }
     return Object.entries(counts)

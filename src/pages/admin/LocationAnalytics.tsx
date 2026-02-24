@@ -40,11 +40,11 @@ export default function LocationAnalytics() {
 
   const locationStats = (locations ?? []).map((location) => ({
     name: location.name || location.location_name || 'Unknown',
-    orders: (location.orders as unknown as { total: string | number }[] | null)?.length || 0,
-    revenue: (location.orders as unknown as { total: string | number }[] | null)?.reduce((sum: number, o) => sum + parseFloat(String(o.total || 0)), 0) || 0,
+    orders: (location.orders as unknown as { total: string | number }[] | null)?.length ?? 0,
+    revenue: (location.orders as unknown as { total: string | number }[] | null)?.reduce((sum: number, o) => sum + parseFloat(String(o.total ?? 0)), 0) ?? 0,
   }));
 
-  const totalLocations = locations?.length || 0;
+  const totalLocations = locations?.length ?? 0;
   const totalRevenue = locationStats.reduce((sum, loc) => sum + loc.revenue, 0);
 
   return (

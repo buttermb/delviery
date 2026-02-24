@@ -180,7 +180,7 @@ export function InventoryManagement() {
     let value = 0;
     let costItemCount = 0;
     for (const item of products) {
-      const qty = Number(item.available_quantity || 0);
+      const qty = Number(item.available_quantity ?? 0);
       const cost = item.cost_per_unit ?? item.wholesale_price ?? item.price_per_lb ?? 0;
       stock += qty;
       value += qty * cost;
@@ -215,7 +215,7 @@ export function InventoryManagement() {
   // Calculate total value for a single product
   const getProductTotalValue = (item: Product): number => {
     const cost = getProductCost(item);
-    const quantity = Number(item.available_quantity || 0);
+    const quantity = Number(item.available_quantity ?? 0);
     return quantity * cost;
   };
 
@@ -229,7 +229,7 @@ export function InventoryManagement() {
       header: 'Weight',
       accessorKey: 'available_quantity',
       className: 'text-right',
-      cell: (item) => <div className="font-mono">{formatQuantity(Number(item.available_quantity || 0), 'lbs', { showZero: true })}</div>
+      cell: (item) => <div className="font-mono">{formatQuantity(Number(item.available_quantity ?? 0), 'lbs', { showZero: true })}</div>
     },
     {
       header: 'Cost/lb',
@@ -251,7 +251,7 @@ export function InventoryManagement() {
       header: 'Status',
       className: 'text-center',
       cell: (item) => {
-        const status = getStockStatus(Number(item.available_quantity || 0), item.low_stock_alert);
+        const status = getStockStatus(Number(item.available_quantity ?? 0), item.low_stock_alert);
         const badgeVariant = status.color === 'warning' ? 'secondary' : (status.color as "destructive" | "default");
         return (
           <Badge variant={badgeVariant} className="inline-flex items-center">
@@ -281,7 +281,7 @@ export function InventoryManagement() {
   ];
 
   const renderMobileCard = (item: Product) => {
-    const status = getStockStatus(Number(item.available_quantity || 0), item.low_stock_alert);
+    const status = getStockStatus(Number(item.available_quantity ?? 0), item.low_stock_alert);
     const productValue = getProductTotalValue(item);
 
     return (
@@ -297,7 +297,7 @@ export function InventoryManagement() {
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
             <span className="text-muted-foreground block text-xs">Weight</span>
-            <span className="font-mono font-medium">{formatQuantity(Number(item.available_quantity || 0), 'lbs')}</span>
+            <span className="font-mono font-medium">{formatQuantity(Number(item.available_quantity ?? 0), 'lbs')}</span>
           </div>
           <div>
             <span className="text-muted-foreground block text-xs">Total Value</span>
@@ -409,7 +409,7 @@ export function InventoryManagement() {
       ) : (
         Object.entries(groupedInventory).map(([warehouseName, warehouseProducts]) => {
           // Calculate warehouse totals using actual product costs
-          const warehouseTotal = warehouseProducts.reduce((sum, p) => sum + Number(p.available_quantity || 0), 0);
+          const warehouseTotal = warehouseProducts.reduce((sum, p) => sum + Number(p.available_quantity ?? 0), 0);
           const warehouseValue = warehouseProducts.reduce((sum, p) => sum + getProductTotalValue(p), 0);
           const capacity = 500; // Default capacity
 
@@ -448,7 +448,7 @@ export function InventoryManagement() {
         <StockAdjustmentDialog
           productId={selectedProduct.id}
           productName={selectedProduct.name}
-          currentQuantity={Number(selectedProduct.available_quantity || 0)}
+          currentQuantity={Number(selectedProduct.available_quantity ?? 0)}
           warehouse={selectedProduct.warehouse_location || "Warehouse A"}
           open={adjustmentDialogOpen}
           onOpenChange={setAdjustmentDialogOpen}

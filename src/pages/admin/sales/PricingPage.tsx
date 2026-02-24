@@ -95,8 +95,8 @@ export default function PricingPage() {
           id: product.id,
           product_id: product.id,
           min_quantity: 1,
-          price_per_lb: product.wholesale_price || 0,
-          bulk_discount_percent: product.bulk_discount || 0,
+          price_per_lb: product.wholesale_price ?? 0,
+          bulk_discount_percent: product.bulk_discount ?? 0,
           products: { name: product.name },
         }));
       } catch (error) {
@@ -159,7 +159,7 @@ export default function PricingPage() {
       accessorKey: 'bulk_discount_percent',
       header: 'Discount',
       cell: ({ original }) => {
-        const discount = original.bulk_discount_percent || 0;
+        const discount = original.bulk_discount_percent ?? 0;
         return discount > 0 ? (
           <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
             <TrendingDown className="h-3 w-3 mr-1" />
@@ -184,7 +184,7 @@ export default function PricingPage() {
                 product_id: original.product_id,
                 min_quantity: String(original.min_quantity),
                 price_per_lb: String(original.price_per_lb),
-                bulk_discount_percent: String(original.bulk_discount_percent || 0),
+                bulk_discount_percent: String(original.bulk_discount_percent ?? 0),
               });
               setIsDialogOpen(true);
             }}
@@ -335,12 +335,12 @@ export default function PricingPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-4">
           <div className="text-sm text-muted-foreground mb-1">Products with Pricing</div>
-          <div className="text-2xl font-bold">{pricingTiers?.length || 0}</div>
+          <div className="text-2xl font-bold">{pricingTiers?.length ?? 0}</div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-muted-foreground mb-1">Products with Discounts</div>
           <div className="text-2xl font-bold">
-            {pricingTiers?.filter((t) => (t.bulk_discount_percent || 0) > 0).length || 0}
+            {pricingTiers?.filter((t) => (t.bulk_discount_percent ?? 0) > 0).length ?? 0}
           </div>
         </Card>
         <Card className="p-4">
@@ -349,7 +349,7 @@ export default function PricingPage() {
             $
             {pricingTiers && pricingTiers.length > 0
               ? (
-                pricingTiers.reduce((sum, t) => sum + Number(t.price_per_lb || 0), 0) /
+                pricingTiers.reduce((sum, t) => sum + Number(t.price_per_lb ?? 0), 0) /
                 pricingTiers.length
               ).toFixed(2)
               : '0.00'}

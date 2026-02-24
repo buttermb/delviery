@@ -97,7 +97,7 @@ vi.mock('@/hooks/useTenantLimits', () => ({
     }),
     getCurrent: vi.fn((resource: string) => {
       const current: Record<string, number> = { products: 15, customers: 42, menus: 8 };
-      return current[resource] || 0;
+      return current[resource] ?? 0;
     }),
     isLoading: false,
   }),
@@ -322,7 +322,7 @@ const defaultTenantLimits = {
   },
   getCurrent: (resource: string) => {
     const current: Record<string, number> = { products: 15, customers: 42, menus: 8 };
-    return current[resource] || 0;
+    return current[resource] ?? 0;
   },
   isLoading: false,
 };
@@ -397,7 +397,7 @@ describe('Dashboard Hub Integration - 5 Stat Cards', () => {
         getLimit: () => Infinity,
         getCurrent: (resource: string) => {
           const current: Record<string, number> = { products: 15, customers: 42, menus: 8 };
-          return current[resource] || 0;
+          return current[resource] ?? 0;
         },
         isLoading: false,
       });
@@ -639,7 +639,7 @@ describe('Dashboard Hub Integration - 5 Stat Cards', () => {
         },
         getCurrent: (resource: string) => {
           const current: Record<string, number> = { products: 18, customers: 42, menus: 8 };
-          return current[resource] || 0;
+          return current[resource] ?? 0;
         },
         isLoading: false,
       });

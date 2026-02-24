@@ -56,12 +56,12 @@ export default function TrialExpiredPage() {
 
       const orders = (ordersQuery.data ?? []) as OrderWithAmount[];
 
-      const revenue = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) || 0;
+      const revenue = orders?.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0) ?? 0;
 
       return {
-        products: Number(usage.products || 0),
-        customers: Number(usage.customers || 0),
-        menus: Number(usage.menus || 0),
+        products: Number(usage.products ?? 0),
+        customers: Number(usage.customers ?? 0),
+        menus: Number(usage.menus ?? 0),
         revenue,
       };
     },
@@ -124,7 +124,7 @@ export default function TrialExpiredPage() {
                 <Package className="h-6 w-6 text-[hsl(var(--tenant-primary))]" />
                 <div>
                   <div className="text-2xl font-bold text-[hsl(var(--tenant-text))]">
-                    {tenantStats?.products || 0}
+                    {tenantStats?.products ?? 0}
                   </div>
                   <div className="text-sm text-[hsl(var(--tenant-text-light))]">
                     Products
@@ -135,7 +135,7 @@ export default function TrialExpiredPage() {
                 <Users className="h-6 w-6 text-purple-500" />
                 <div>
                   <div className="text-2xl font-bold text-[hsl(var(--tenant-text))]">
-                    {tenantStats?.customers || 0}
+                    {tenantStats?.customers ?? 0}
                   </div>
                   <div className="text-sm text-[hsl(var(--tenant-text-light))]">
                     Customers
@@ -146,7 +146,7 @@ export default function TrialExpiredPage() {
                 <Smartphone className="h-6 w-6 text-[hsl(var(--tenant-secondary))]" />
                 <div>
                   <div className="text-2xl font-bold text-[hsl(var(--tenant-text))]">
-                    {tenantStats?.menus || 0}
+                    {tenantStats?.menus ?? 0}
                   </div>
                   <div className="text-sm text-[hsl(var(--tenant-text-light))]">
                     Menus

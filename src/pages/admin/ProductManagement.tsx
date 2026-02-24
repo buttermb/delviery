@@ -342,7 +342,7 @@ export default function ProductManagement() {
         // Stock Status filter
         let matchesStock = true;
         if (applyStockFilter) {
-          const qty = p.available_quantity || 0;
+          const qty = p.available_quantity ?? 0;
           const lowStockLimit = p.low_stock_alert || 10;
           if (stockStatusFilter === "in_stock") matchesStock = qty > 0;
           else if (stockStatusFilter === "out_of_stock") matchesStock = qty <= 0;
@@ -362,12 +362,12 @@ export default function ProductManagement() {
           case "name":
             return (a.name || "").localeCompare(b.name || "");
           case "price":
-            return (b.wholesale_price || 0) - (a.wholesale_price || 0);
+            return (b.wholesale_price ?? 0) - (a.wholesale_price ?? 0);
           case "stock":
-            return (b.available_quantity || 0) - (a.available_quantity || 0);
+            return (b.available_quantity ?? 0) - (a.available_quantity ?? 0);
           case "margin":
-            const marginA = profitMargin(a.cost_per_unit || 0, a.wholesale_price || 0);
-            const marginB = profitMargin(b.cost_per_unit || 0, b.wholesale_price || 0);
+            const marginA = profitMargin(a.cost_per_unit ?? 0, a.wholesale_price ?? 0);
+            const marginB = profitMargin(b.cost_per_unit ?? 0, b.wholesale_price ?? 0);
             return Number(marginB) - Number(marginA);
           default:
             return 0;
@@ -644,7 +644,7 @@ export default function ProductManagement() {
         .select('*', { count: 'exact', head: true })
         .eq('product_name', productToDelete.name);
 
-      const totalUsage = (orderItemCount || 0) + (wholesaleCount || 0);
+      const totalUsage = (orderItemCount ?? 0) + (wholesaleCount ?? 0);
 
       if (totalUsage > 0) {
         toast.error("Cannot delete product", {
@@ -1052,7 +1052,7 @@ export default function ProductManagement() {
             className="w-12"
           />
           <InventoryStatusBadge
-            quantity={product.available_quantity || 0}
+            quantity={product.available_quantity ?? 0}
             lowStockThreshold={product.low_stock_alert || 10}
           />
         </div>
@@ -1281,7 +1281,7 @@ export default function ProductManagement() {
               <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-lg sm:text-2xl font-bold truncate">
-                  {products.reduce((sum, p) => sum + (p.available_quantity || 0), 0)}
+                  {products.reduce((sum, p) => sum + (p.available_quantity ?? 0), 0)}
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">Available Units</p>
               </div>
@@ -1294,7 +1294,7 @@ export default function ProductManagement() {
               <Package className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-lg sm:text-2xl font-bold truncate">
-                  {products.reduce((sum, p) => sum + (p.fronted_quantity || 0), 0)}
+                  {products.reduce((sum, p) => sum + (p.fronted_quantity ?? 0), 0)}
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground truncate">Fronted Units</p>
               </div>
@@ -1312,7 +1312,7 @@ export default function ProductManagement() {
                     .reduce(
                       (sum, p) =>
                         sum +
-                        (p.available_quantity || 0) * (p.wholesale_price || 0),
+                        (p.available_quantity ?? 0) * (p.wholesale_price ?? 0),
                       0
                     )
                     .toFixed(0)}

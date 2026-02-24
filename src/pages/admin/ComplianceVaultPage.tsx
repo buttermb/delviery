@@ -93,7 +93,7 @@ export default function ComplianceVaultPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{documents?.length || 0}</div>
+            <div className="text-2xl font-bold">{documents?.length ?? 0}</div>
           </CardContent>
         </Card>
         <Card>
@@ -103,7 +103,7 @@ export default function ComplianceVaultPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              {documents?.filter((d) => d.status === "expiring_soon").length || 0}
+              {documents?.filter((d) => d.status === "expiring_soon").length ?? 0}
             </div>
           </CardContent>
         </Card>
@@ -114,7 +114,7 @@ export default function ComplianceVaultPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {documents?.filter((d) => d.status === "expired").length || 0}
+              {documents?.filter((d) => d.status === "expired").length ?? 0}
             </div>
           </CardContent>
         </Card>
@@ -125,7 +125,7 @@ export default function ComplianceVaultPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {documents?.filter((d) => d.status === "active").length || 0}
+              {documents?.filter((d) => d.status === "active").length ?? 0}
             </div>
           </CardContent>
         </Card>

@@ -243,11 +243,11 @@ export default function PurchaseOrderDetailPage() {
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span>Tax</span>
-                                    <span>{formatCurrency(order.tax || 0)}</span>
+                                    <span>{formatCurrency(order.tax ?? 0)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span>Shipping</span>
-                                    <span>{formatCurrency(order.shipping_cost || 0)}</span>
+                                    <span>{formatCurrency(order.shipping_cost ?? 0)}</span>
                                 </div>
                                 <div className="flex justify-between font-bold text-lg pt-2">
                                     <span>Total</span>

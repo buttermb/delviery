@@ -241,7 +241,7 @@ export function CheckoutPage() {
     const result = await applyCoupon(couponCode.trim(), subtotal);
 
     if (result.success) {
-      toast.success('Coupon applied!', { description: `Saved ${formatCurrency(result.coupon?.calculated_discount || 0)}` });
+      toast.success('Coupon applied!', { description: `Saved ${formatCurrency(result.coupon?.calculated_discount ?? 0)}` });
       setCouponCode('');
     } else {
       setCouponError(result.error || 'Invalid coupon');
@@ -483,10 +483,10 @@ export function CheckoutPage() {
             // Calculate daily spending
             const dailyTotal = orders
               .filter(o => o.created_at?.startsWith(today))
-              .reduce((sum, o) => sum + (o.total || 0), 0);
+              .reduce((sum, o) => sum + (o.total ?? 0), 0);
 
             // Calculate weekly spending
-            const weeklyTotal = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+            const weeklyTotal = orders.reduce((sum, o) => sum + (o.total ?? 0), 0);
 
             // Check daily limit
             if (purchaseLimits.max_daily && (dailyTotal + total) > purchaseLimits.max_daily) {

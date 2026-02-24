@@ -79,7 +79,7 @@ export default function StorefrontAnalytics() {
       }
 
       const totalOrders = orders.length;
-      const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+      const totalRevenue = orders.reduce((sum, o) => sum + (o.total ?? 0), 0);
       const completedOrders = orders.filter((o) => o.status === 'completed' || o.status === 'delivered').length;
       // Conversion rate: completed orders vs estimated visitors (5x order count)
       const estimatedVisitors = totalOrders * 5;
@@ -148,7 +148,7 @@ export default function StorefrontAnalytics() {
             {metricsLoading ? (
               <Skeleton className="h-8 w-24" />
             ) : (
-              <div className="text-2xl font-bold">${(metrics?.totalRevenue || 0).toLocaleString()}</div>
+              <div className="text-2xl font-bold">${(metrics?.totalRevenue ?? 0).toLocaleString()}</div>
             )}
           </CardContent>
         </Card>
@@ -162,7 +162,7 @@ export default function StorefrontAnalytics() {
             {metricsLoading ? (
               <Skeleton className="h-8 w-24" />
             ) : (
-              <div className="text-2xl font-bold">{metrics?.totalOrders || 0}</div>
+              <div className="text-2xl font-bold">{metrics?.totalOrders ?? 0}</div>
             )}
           </CardContent>
         </Card>
@@ -176,7 +176,7 @@ export default function StorefrontAnalytics() {
             {metricsLoading ? (
               <Skeleton className="h-8 w-24" />
             ) : (
-              <div className="text-2xl font-bold">{metrics?.conversionRate || 0}%</div>
+              <div className="text-2xl font-bold">{metrics?.conversionRate ?? 0}%</div>
             )}
           </CardContent>
         </Card>
@@ -190,7 +190,7 @@ export default function StorefrontAnalytics() {
             {metricsLoading ? (
               <Skeleton className="h-8 w-24" />
             ) : (
-              <div className="text-2xl font-bold">${(metrics?.averageOrderValue || 0).toLocaleString()}</div>
+              <div className="text-2xl font-bold">${(metrics?.averageOrderValue ?? 0).toLocaleString()}</div>
             )}
           </CardContent>
         </Card>

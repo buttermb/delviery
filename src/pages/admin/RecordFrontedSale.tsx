@@ -83,7 +83,7 @@ export default function RecordFrontedSale() {
         await supabase
           .from('fronted_inventory')
           .update({
-            quantity_sold: (currentFront.quantity_sold || 0) + totalSold
+            quantity_sold: (currentFront.quantity_sold ?? 0) + totalSold
           })
           .eq('id', id)
           .eq('account_id', tenant.id);

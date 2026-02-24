@@ -195,8 +195,8 @@ function ProductCard({
   const hasPrices = product.prices && typeof product.prices === 'object';
   const weights = hasPrices ? sortProductWeights(Object.keys(product.prices!)) : [];
   const currentPrice = hasPrices 
-    ? (product.prices![selectedWeight] || 0)
-    : (product.price || 0);
+    ? (product.prices![selectedWeight] ?? 0)
+    : (product.price ?? 0);
 
   const handleAddToCart = () => {
     onAddToCart();
@@ -499,9 +499,9 @@ const SecureMenuView = () => {
   const getProductPrice = useCallback((product: Product, weight?: string) => {
     if (product.prices && typeof product.prices === 'object') {
       const selectedWeight = weight || selectedWeights[product.id] || getDefaultWeight(product.prices);
-      return product.prices[selectedWeight] || 0;
+      return product.prices[selectedWeight] ?? 0;
     }
-    return product.price || 0;
+    return product.price ?? 0;
   }, [selectedWeights]);
 
   // Filtered and sorted products
@@ -533,11 +533,11 @@ const SecureMenuView = () => {
         case 'name':
           return a.name.localeCompare(b.name);
         case 'price-low':
-          return (getProductPrice(a) || 0) - (getProductPrice(b) || 0);
+          return (getProductPrice(a) ?? 0) - (getProductPrice(b) ?? 0);
         case 'price-high':
-          return (getProductPrice(b) || 0) - (getProductPrice(a) || 0);
+          return (getProductPrice(b) ?? 0) - (getProductPrice(a) ?? 0);
         case 'thc':
-          return (b.thc_percentage || 0) - (a.thc_percentage || 0);
+          return (b.thc_percentage ?? 0) - (a.thc_percentage ?? 0);
         default:
           return 0;
       }
@@ -786,7 +786,7 @@ const SecureMenuView = () => {
                   menuData={menuData}
                   selectedWeight={selectedWeight}
                   onWeightChange={(weight) => setSelectedWeights(prev => ({ ...prev, [product.id]: weight }))}
-                  cartQuantity={cartItem?.quantity || 0}
+                  cartQuantity={cartItem?.quantity ?? 0}
                   onAddToCart={() => handleAddToCart(product)}
                   onUpdateQuantity={(delta) => handleUpdateQuantity(product.id, delta)}
                   onViewDetails={() => setSelectedProduct(product)}

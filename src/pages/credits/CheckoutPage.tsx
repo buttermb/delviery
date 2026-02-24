@@ -509,7 +509,7 @@ export function CheckoutPage() {
                 <p className="text-xs text-muted-foreground">
                   You will receive{' '}
                   <span className="font-medium">
-                    {(selectedPackage.credits + (appliedPromo?.creditsAmount || 0)).toLocaleString()}
+                    {(selectedPackage.credits + (appliedPromo?.creditsAmount ?? 0)).toLocaleString()}
                   </span>{' '}
                   credits
                 </p>

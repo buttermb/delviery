@@ -138,7 +138,7 @@ export default function WholesaleInventory() {
       const productMap = new Map<string, { quantity: number; revenue: number }>();
       items.forEach(item => {
         const existing = productMap.get(item.product_name) || { quantity: 0, revenue: 0 };
-        existing.quantity += item.quantity || 0;
+        existing.quantity += item.quantity ?? 0;
         existing.revenue += Number(item.subtotal) || 0;
         productMap.set(item.product_name, existing);
       });

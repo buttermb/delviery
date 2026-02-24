@@ -161,24 +161,24 @@ export default function PromoCodeManagementPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
-          <div className="text-2xl font-bold">{promoCodes?.length || 0}</div>
+          <div className="text-2xl font-bold">{promoCodes?.length ?? 0}</div>
           <div className="text-sm text-muted-foreground">Total Codes</div>
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-green-600">
-            {promoCodes?.filter(c => c.isActive).length || 0}
+            {promoCodes?.filter(c => c.isActive).length ?? 0}
           </div>
           <div className="text-sm text-muted-foreground">Active</div>
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-purple-600">
-            {promoCodes?.reduce((sum, c) => sum + c.usesCount, 0) || 0}
+            {promoCodes?.reduce((sum, c) => sum + c.usesCount, 0) ?? 0}
           </div>
           <div className="text-sm text-muted-foreground">Total Redemptions</div>
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-blue-600">
-            {(promoCodes?.reduce((sum, c) => sum + (c.creditsAmount * c.usesCount), 0) || 0).toLocaleString()}
+            {(promoCodes?.reduce((sum, c) => sum + (c.creditsAmount * c.usesCount), 0) ?? 0).toLocaleString()}
           </div>
           <div className="text-sm text-muted-foreground">Credits Distributed</div>
         </Card>

@@ -169,7 +169,7 @@ export default function StorefrontDashboard() {
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenantId);
 
-      return { total: total || 0, visible: visible || 0 };
+      return { total: total ?? 0, visible: visible ?? 0 };
     },
     enabled: !!activeStoreId && !!tenantId,
   });
@@ -202,8 +202,8 @@ export default function StorefrontDashboard() {
         .lt('created_at', startOfToday.toISOString())
         .not('status', 'eq', 'cancelled');
 
-      const todayRevenue = (todayOrders ?? []).reduce((sum, o) => sum + (o.total || 0), 0);
-      const yesterdayRevenue = (yesterdayOrders ?? []).reduce((sum, o) => sum + (o.total || 0), 0);
+      const todayRevenue = (todayOrders ?? []).reduce((sum, o) => sum + (o.total ?? 0), 0);
+      const yesterdayRevenue = (yesterdayOrders ?? []).reduce((sum, o) => sum + (o.total ?? 0), 0);
 
       let percentChange = 0;
       if (yesterdayRevenue > 0) {
@@ -554,7 +554,7 @@ export default function StorefrontDashboard() {
                 <div>
                   <p className="text-sm text-muted-foreground">Total Revenue</p>
                   <div className="flex items-center gap-2">
-                    <p className="text-2xl font-bold">{formatCurrency(activeStore?.total_revenue || 0)}</p>
+                    <p className="text-2xl font-bold">{formatCurrency(activeStore?.total_revenue ?? 0)}</p>
                     {revenueTrend && revenueTrend.percentChange !== 0 && (
                       <span className={`flex items-center text-xs font-medium ${revenueTrend.percentChange > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {revenueTrend.percentChange > 0 ? (
@@ -584,7 +584,7 @@ export default function StorefrontDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Orders</p>
-                  <p className="text-2xl font-bold">{activeStore?.total_orders || 0}</p>
+                  <p className="text-2xl font-bold">{activeStore?.total_orders ?? 0}</p>
                 </div>
                 <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
                   <ShoppingCart className="w-6 h-6 text-blue-500" />
@@ -598,7 +598,7 @@ export default function StorefrontDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Customers</p>
-                  <p className="text-2xl font-bold">{activeStore?.total_customers || 0}</p>
+                  <p className="text-2xl font-bold">{activeStore?.total_customers ?? 0}</p>
                 </div>
                 <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
                   <Users className="w-6 h-6 text-purple-500" />
@@ -613,9 +613,9 @@ export default function StorefrontDashboard() {
                 <div>
                   <p className="text-sm text-muted-foreground">Products Listed</p>
                   <p className="text-2xl font-bold">
-                    {productStats?.visible || 0}
+                    {productStats?.visible ?? 0}
                     <span className="text-sm text-muted-foreground font-normal">
-                      /{productStats?.total || 0}
+                      /{productStats?.total ?? 0}
                     </span>
                   </p>
                 </div>
@@ -630,7 +630,7 @@ export default function StorefrontDashboard() {
 
       {/* Onboarding Progress Checklist */}
       <OnboardingProgressChecklist
-        productCount={productStats?.total || 0}
+        productCount={productStats?.total ?? 0}
         storeIsActive={activeStore?.is_active || false}
         storeHasCustomization={!!(activeStore?.logo_url || activeStore?.banner_url)}
       />

@@ -375,12 +375,12 @@ export default function MyListingsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="capitalize">{listing.product_type || '—'}</TableCell>
-                      <TableCell>{formatCurrency(listing.base_price as number || 0)}</TableCell>
+                      <TableCell>{formatCurrency(listing.base_price as number ?? 0)}</TableCell>
                       <TableCell>
                         {listing.quantity_available} {listing.unit_type || 'lb'}
                       </TableCell>
                       <TableCell>{getStatusBadge(listing.status || 'draft')}</TableCell>
-                      <TableCell>{listing.views || 0}</TableCell>
+                      <TableCell>{listing.views ?? 0}</TableCell>
                       <TableCell>{formatSmartDate(listing.created_at as string)}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>

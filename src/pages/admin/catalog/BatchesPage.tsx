@@ -210,10 +210,10 @@ export default function BatchesPage() {
   );
 
   // Calculate stats
-  const totalBatches = batches?.length || 0;
-  const expiringBatches = batches?.filter(b => isExpiringSoon(b.expiration_date) && !isExpired(b.expiration_date)).length || 0;
-  const expiredBatches = batches?.filter(b => isExpired(b.expiration_date)).length || 0;
-  const totalQuantity = batches?.reduce((sum, b) => sum + (b.quantity_lbs || 0), 0) || 0;
+  const totalBatches = batches?.length ?? 0;
+  const expiringBatches = batches?.filter(b => isExpiringSoon(b.expiration_date) && !isExpired(b.expiration_date)).length ?? 0;
+  const expiredBatches = batches?.filter(b => isExpired(b.expiration_date)).length ?? 0;
+  const totalQuantity = batches?.reduce((sum, b) => sum + (b.quantity_lbs ?? 0), 0) ?? 0;
 
   return (
     <div className="space-y-4 p-4">
@@ -351,7 +351,7 @@ export default function BatchesPage() {
                           <Package className="h-4 w-4 text-muted-foreground" />
                           <div>
                             <p className="text-muted-foreground">Quantity</p>
-                            <p className="font-medium">{batch.quantity_lbs || 0} lbs</p>
+                            <p className="font-medium">{batch.quantity_lbs ?? 0} lbs</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">

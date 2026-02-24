@@ -260,7 +260,7 @@ export default function NewWholesaleOrder() {
           ),
         };
       }
-      const basePrice = product.base_price || 0;
+      const basePrice = product.base_price ?? 0;
       return {
         ...prev,
         products: [
@@ -892,7 +892,7 @@ export default function NewWholesaleOrder() {
                       <div className="mt-2 space-y-1 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Current Balance:</span>
-                          <span className="font-mono">{formatCurrency(orderData.client?.outstanding_balance || 0)}</span>
+                          <span className="font-mono">{formatCurrency(orderData.client?.outstanding_balance ?? 0)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Order Total:</span>
@@ -907,7 +907,7 @@ export default function NewWholesaleOrder() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Credit Limit:</span>
-                          <span className="font-mono">{formatCurrency(orderData.client?.credit_limit || 0)}</span>
+                          <span className="font-mono">{formatCurrency(orderData.client?.credit_limit ?? 0)}</span>
                         </div>
                         {creditImpact.overLimit && (
                           <div className="flex justify-between text-red-500">
@@ -1111,7 +1111,7 @@ export default function NewWholesaleOrder() {
                     )}
                     {orderData.collectOutstanding && (
                       <Badge variant="outline" className="mt-1 text-yellow-600 border-yellow-500/30">
-                        Collect {formatCurrency(orderData.client?.outstanding_balance || 0)} outstanding
+                        Collect {formatCurrency(orderData.client?.outstanding_balance ?? 0)} outstanding
                       </Badge>
                     )}
                   </div>

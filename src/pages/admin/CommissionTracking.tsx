@@ -67,7 +67,7 @@ export default function CommissionTracking() {
           // Calculate commissions from orders (2% default)
           return (orders ?? []).map((order: OrderRecord) => ({
             id: order.id,
-            amount: parseFloat(String(order.total || 0)) * 0.02,
+            amount: parseFloat(String(order.total ?? 0)) * 0.02,
             order_id: order.id,
             created_at: order.created_at,
             status: 'pending'
@@ -123,7 +123,7 @@ export default function CommissionTracking() {
         ['Order ID', 'Amount', 'Status', 'Date'].join(','),
         ...commissions.map((c: CommissionRecord) => [
           c.order_id || 'N/A',
-          formatCurrency(c.amount || 0),
+          formatCurrency(c.amount ?? 0),
           c.status || 'pending',
           formatSmartDate(c.created_at)
         ].join(','))
@@ -153,10 +153,10 @@ export default function CommissionTracking() {
     );
   }
 
-  const totalCommissions = commissions?.reduce((sum: number, c: CommissionRecord) => sum + (c.amount || 0), 0) || 0;
-  const pendingCommissions = commissions?.filter((c: CommissionRecord) => c.status !== 'paid').reduce((sum: number, c: CommissionRecord) => sum + (c.amount || 0), 0) || 0;
-  const paidCommissions = commissions?.filter((c: CommissionRecord) => c.status === 'paid').reduce((sum: number, c: CommissionRecord) => sum + (c.amount || 0), 0) || 0;
-  const commissionCount = commissions?.length || 0;
+  const totalCommissions = commissions?.reduce((sum: number, c: CommissionRecord) => sum + (c.amount ?? 0), 0) ?? 0;
+  const pendingCommissions = commissions?.filter((c: CommissionRecord) => c.status !== 'paid').reduce((sum: number, c: CommissionRecord) => sum + (c.amount ?? 0), 0) ?? 0;
+  const paidCommissions = commissions?.filter((c: CommissionRecord) => c.status === 'paid').reduce((sum: number, c: CommissionRecord) => sum + (c.amount ?? 0), 0) ?? 0;
+  const commissionCount = commissions?.length ?? 0;
 
   return (
     <div className="p-4 space-y-4">
@@ -254,7 +254,7 @@ export default function CommissionTracking() {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-lg font-bold text-emerald-600">
-                      {formatCurrency(commission.amount || 0)}
+                      {formatCurrency(commission.amount ?? 0)}
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">

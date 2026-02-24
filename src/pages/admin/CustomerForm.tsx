@@ -182,8 +182,8 @@ export default function CustomerForm() {
         await logPHIAccess(id, 'update', getPHIFields(), 'Customer update');
         toast.success('Customer updated successfully');
       } else {
-        const currentCustomers = tenant.usage?.customers || 0;
-        const customerLimit = tenant.limits?.customers || 0;
+        const currentCustomers = tenant.usage?.customers ?? 0;
+        const customerLimit = tenant.limits?.customers ?? 0;
 
         if (customerLimit > 0 && currentCustomers >= customerLimit) {
           toast.error('Customer limit reached', {
@@ -210,7 +210,7 @@ export default function CustomerForm() {
           .update({
             usage: {
               ...currentUsage,
-              customers: (currentUsage.customers || 0) + 1,
+              customers: (currentUsage.customers ?? 0) + 1,
             },
             updated_at: new Date().toISOString(),
           })

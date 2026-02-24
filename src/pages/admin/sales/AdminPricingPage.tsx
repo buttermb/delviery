@@ -232,7 +232,7 @@ export default function AdminPricingPage() {
                           type="number"
                           min="0"
                           max="100"
-                          value={editData.bulk_discount || 0}
+                          value={editData.bulk_discount ?? 0}
                           onChange={(e) => setEditData({ ...editData, bulk_discount: parseInt(e.target.value) })}
                           aria-label={`Bulk discount for ${product.name}`}
                           className="w-20 text-right"

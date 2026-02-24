@@ -176,8 +176,8 @@ export default function CustomerDetails() {
       })));
 
       // Calculate outstanding balance (total orders - total payments)
-      const ordersTotal = (ordersData ?? []).reduce((sum, order) => sum + (order.total_amount || 0), 0);
-      const paymentsTotal = (paymentsData ?? []).reduce((sum, payment) => sum + (payment.amount || 0), 0);
+      const ordersTotal = (ordersData ?? []).reduce((sum, order) => sum + (order.total_amount ?? 0), 0);
+      const paymentsTotal = (paymentsData ?? []).reduce((sum, payment) => sum + (payment.amount ?? 0), 0);
       setOutstandingBalance(Math.max(0, ordersTotal - paymentsTotal));
     } catch (error) {
       logger.error('Error loading customer data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });
@@ -296,12 +296,12 @@ export default function CustomerDetails() {
     );
   }
 
-  const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const totalPayments = payments.reduce((sum, p) => sum + (p.amount ?? 0), 0);
 
   // Customer Lifetime Value: compute from orders for accuracy
   const totalOrdersCount = orders.length;
-  const totalSpentFromOrders: number = orders.reduce<number>((sum, o) => sum + (Number((o as Record<string, unknown>).total_amount) || 0), 0);
-  const computedTotalSpent: number = totalSpentFromOrders > 0 ? totalSpentFromOrders : Number(customer?.total_spent || 0);
+  const totalSpentFromOrders: number = orders.reduce<number>((sum, o) => sum + (Number((o as Record<string, unknown>).total_amount) ?? 0), 0);
+  const computedTotalSpent: number = totalSpentFromOrders > 0 ? totalSpentFromOrders : Number(customer?.total_spent ?? 0);
   const averageOrderValue: number = totalOrdersCount > 0 ? computedTotalSpent / totalOrdersCount : 0;
 
   return (
@@ -557,14 +557,14 @@ export default function CustomerDetails() {
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Loyalty Status</label>
                       <Badge className={
-                        (customer.loyalty_points || 0) >= 1000 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' :
-                          (customer.loyalty_points || 0) >= 500 ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
-                            (customer.loyalty_points || 0) >= 100 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                        (customer.loyalty_points ?? 0) >= 1000 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' :
+                          (customer.loyalty_points ?? 0) >= 500 ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                            (customer.loyalty_points ?? 0) >= 100 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
                               'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
                       }>
-                        {(customer.loyalty_points || 0) >= 1000 ? 'VIP' :
-                          (customer.loyalty_points || 0) >= 500 ? 'Gold' :
-                            (customer.loyalty_points || 0) >= 100 ? 'Silver' :
+                        {(customer.loyalty_points ?? 0) >= 1000 ? 'VIP' :
+                          (customer.loyalty_points ?? 0) >= 500 ? 'Gold' :
+                            (customer.loyalty_points ?? 0) >= 100 ? 'Silver' :
                               'Bronze'}
                       </Badge>
                     </div>

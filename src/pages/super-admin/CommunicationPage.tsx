@@ -38,12 +38,12 @@ export default function CommunicationPage() {
     thisMonth.setDate(1);
     
     const thisMonthCampaigns = campaigns.filter(c => 
-      new Date(c.created_at || 0) >= thisMonth
+      new Date(c.created_at ?? 0) >= thisMonth
     );
 
-    const totalSent = campaigns.reduce((sum, c) => sum + (c.sent_count || 0), 0);
-    const totalOpened = campaigns.reduce((sum, c) => sum + (c.opened_count || 0), 0);
-    const totalClicked = campaigns.reduce((sum, c) => sum + (c.clicked_count || 0), 0);
+    const totalSent = campaigns.reduce((sum, c) => sum + (c.sent_count ?? 0), 0);
+    const totalOpened = campaigns.reduce((sum, c) => sum + (c.opened_count ?? 0), 0);
+    const totalClicked = campaigns.reduce((sum, c) => sum + (c.clicked_count ?? 0), 0);
     
     const openRate = totalSent > 0 ? ((totalOpened / totalSent) * 100).toFixed(1) : '0.0';
     const clickRate = totalSent > 0 ? ((totalClicked / totalSent) * 100).toFixed(1) : '0.0';
@@ -191,9 +191,9 @@ export default function CommunicationPage() {
                     </TableRow>
                   ) : (
                     campaigns.map((campaign) => {
-                      const sent = campaign.sent_count || 0;
-                      const opened = campaign.opened_count || 0;
-                      const clicked = campaign.clicked_count || 0;
+                      const sent = campaign.sent_count ?? 0;
+                      const opened = campaign.opened_count ?? 0;
+                      const clicked = campaign.clicked_count ?? 0;
                       const openRate = sent > 0 ? ((opened / sent) * 100).toFixed(1) : '0.0';
                       const clickRate = sent > 0 ? ((clicked / sent) * 100).toFixed(1) : '0.0';
 

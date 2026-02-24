@@ -108,7 +108,7 @@ export default function OfflineOrderCreate() {
         const products: ProductForOrder[] = (data ?? []).map((p) => ({
           id: p.id,
           name: p.name,
-          price: p.price || 0,
+          price: p.price ?? 0,
           sku: p.sku ?? '',
         }));
 

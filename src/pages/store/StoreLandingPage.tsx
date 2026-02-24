@@ -150,7 +150,7 @@ export default function StoreLandingPage() {
       for (const row of data ?? []) {
         const cat = (row as { category: string }).category;
         if (cat) {
-          counts[cat] = (counts[cat] || 0) + 1;
+          counts[cat] = (counts[cat] ?? 0) + 1;
         }
       }
 

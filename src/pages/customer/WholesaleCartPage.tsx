@@ -146,8 +146,8 @@ export default function WholesaleCartPage() {
 
   // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => {
-    const price = item.unit_price as number || 0;
-    const qty = item.quantity as number || 0;
+    const price = item.unit_price as number ?? 0;
+    const qty = item.quantity as number ?? 0;
     return sum + (price * qty);
   }, 0);
 
@@ -295,7 +295,7 @@ export default function WholesaleCartPage() {
                                   size="icon"
                                   className="h-8 w-8"
                                   onClick={() => handleQuantityChange(item.id, quantity, 1)}
-                                  disabled={updateQuantityMutation.isPending || (listing?.quantity_available as number || 0) <= quantity}
+                                  disabled={updateQuantityMutation.isPending || (listing?.quantity_available as number ?? 0) <= quantity}
                                   aria-label="Increase quantity"
                                 >
                                   <Plus className="h-4 w-4" />

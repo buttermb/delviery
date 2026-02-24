@@ -710,21 +710,21 @@ export function InvoicesPage() {
     // Calculate stats
     const totalRevenue = invoices
         ?.filter((i) => i.status === "paid")
-        .reduce((sum, i) => sum + i.total, 0) || 0;
+        .reduce((sum, i) => sum + i.total, 0) ?? 0;
 
     const outstandingAmount = invoices
         ?.filter((i) => i.status === "sent" || i.status === "overdue")
-        .reduce((sum, i) => sum + i.total, 0) || 0;
+        .reduce((sum, i) => sum + i.total, 0) ?? 0;
 
     // Calculate paid this month
     const monthStart = startOfMonth(new Date());
     const paidThisMonth = invoices
         ?.filter((i) => i.status === "paid" && i.paid_at && isAfter(new Date(i.paid_at), monthStart))
-        .reduce((sum, i) => sum + i.total, 0) || 0;
+        .reduce((sum, i) => sum + i.total, 0) ?? 0;
 
     const paidThisMonthCount = invoices
         ?.filter((i) => i.status === "paid" && i.paid_at && isAfter(new Date(i.paid_at), monthStart))
-        .length || 0;
+        .length ?? 0;
 
     // Calculate average payment time (days from invoice date to paid date)
     const paidInvoicesWithDates = invoices?.filter(
@@ -767,7 +767,7 @@ export function InvoicesPage() {
                     <CardContent>
                         <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
                         <p className="text-xs text-muted-foreground">
-                            From {invoices?.filter(i => i.status === 'paid').length || 0} paid invoices
+                            From {invoices?.filter(i => i.status === 'paid').length ?? 0} paid invoices
                         </p>
                     </CardContent>
                 </Card>
@@ -791,7 +791,7 @@ export function InvoicesPage() {
                     <CardContent>
                         <div className="text-2xl font-bold">{formatCurrency(outstandingAmount)}</div>
                         <p className="text-xs text-muted-foreground">
-                            {invoices?.filter(i => i.status === 'sent').length || 0} sent, {invoices?.filter(i => i.status === 'overdue').length || 0} overdue
+                            {invoices?.filter(i => i.status === 'sent').length ?? 0} sent, {invoices?.filter(i => i.status === 'overdue').length ?? 0} overdue
                         </p>
                     </CardContent>
                 </Card>

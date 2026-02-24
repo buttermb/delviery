@@ -140,7 +140,7 @@ export default function CustomerCRMPage() {
     // Frequency would need order count - simplified for now
     const frequency = 1; // Placeholder
 
-    const monetary = customer.total_spent || 0;
+    const monetary = customer.total_spent ?? 0;
 
     // Score from 1-5 (5 is best)
     const rScore = recency <= 30 ? 5 : recency <= 60 ? 4 : recency <= 90 ? 3 : recency <= 180 ? 2 : 1;
@@ -266,7 +266,7 @@ export default function CustomerCRMPage() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dashboardMetrics?.totalClients || 0}</div>
+                <div className="text-2xl font-bold">{dashboardMetrics?.totalClients ?? 0}</div>
                 <p className="text-xs text-muted-foreground">Active CRM clients</p>
               </CardContent>
             </Card>
@@ -276,9 +276,9 @@ export default function CustomerCRMPage() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(dashboardMetrics?.activeInvoicesValue || 0)}</div>
+                <div className="text-2xl font-bold">{formatCurrency(dashboardMetrics?.activeInvoicesValue ?? 0)}</div>
                 <p className="text-xs text-muted-foreground">
-                  {dashboardMetrics?.activeInvoicesCount || 0} outstanding invoices
+                  {dashboardMetrics?.activeInvoicesCount ?? 0} outstanding invoices
                 </p>
               </CardContent>
             </Card>
@@ -288,9 +288,9 @@ export default function CustomerCRMPage() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(dashboardMetrics?.pendingPreOrdersValue || 0)}</div>
+                <div className="text-2xl font-bold">{formatCurrency(dashboardMetrics?.pendingPreOrdersValue ?? 0)}</div>
                 <p className="text-xs text-muted-foreground">
-                  {dashboardMetrics?.pendingPreOrdersCount || 0} orders pending
+                  {dashboardMetrics?.pendingPreOrdersCount ?? 0} orders pending
                 </p>
               </CardContent>
             </Card>

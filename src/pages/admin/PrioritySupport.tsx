@@ -153,8 +153,8 @@ export default function PrioritySupport() {
     return <EnhancedLoadingState variant="table" message="Loading support tickets..." />;
   }
 
-  const openTickets = tickets?.filter((t: SupportTicket) => t.status === 'open').length || 0;
-  const resolvedTickets = tickets?.filter((t: SupportTicket) => t.status === 'resolved').length || 0;
+  const openTickets = tickets?.filter((t: SupportTicket) => t.status === 'open').length ?? 0;
+  const resolvedTickets = tickets?.filter((t: SupportTicket) => t.status === 'resolved').length ?? 0;
 
   return (
     <div className="p-4 space-y-4">
@@ -196,7 +196,7 @@ export default function PrioritySupport() {
             <Headphones className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{tickets?.length || 0}</div>
+            <div className="text-2xl font-bold">{tickets?.length ?? 0}</div>
           </CardContent>
         </Card>
       </div>

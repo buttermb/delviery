@@ -148,14 +148,14 @@ export default function InventoryDashboard() {
 
       const productsList = products ?? [];
       const totalProducts = productsList.length;
-      const totalQuantity = productsList.reduce((sum, p) => sum + (p.stock_quantity || 0), 0);
+      const totalQuantity = productsList.reduce((sum, p) => sum + (p.stock_quantity ?? 0), 0);
       const totalStockValue = productsList.reduce(
-        (sum, p) => sum + (p.stock_quantity || 0) * (p.price || 0),
+        (sum, p) => sum + (p.stock_quantity ?? 0) * (p.price ?? 0),
         0
       );
-      const outOfStockCount = productsList.filter((p) => (p.stock_quantity || 0) === 0).length;
+      const outOfStockCount = productsList.filter((p) => (p.stock_quantity ?? 0) === 0).length;
       const lowStockCount = productsList.filter((p) => {
-        const qty = p.stock_quantity || 0;
+        const qty = p.stock_quantity ?? 0;
         const minLevel = p.min_stock_level || 10;
         return qty > 0 && qty <= minLevel;
       }).length;
@@ -198,8 +198,8 @@ export default function InventoryDashboard() {
           productCount: 0,
         };
 
-        existing.quantity += p.stock_quantity || 0;
-        existing.value += (p.stock_quantity || 0) * (p.price || 0);
+        existing.quantity += p.stock_quantity ?? 0;
+        existing.value += (p.stock_quantity ?? 0) * (p.price ?? 0);
         existing.productCount += 1;
 
         categoryMap.set(category, existing);
@@ -233,7 +233,7 @@ export default function InventoryDashboard() {
       let overstocked = 0;
 
       products?.forEach((p) => {
-        const qty = p.stock_quantity || 0;
+        const qty = p.stock_quantity ?? 0;
         const minLevel = p.min_stock_level || 10;
         const maxLevel = minLevel * 5;
 
@@ -340,28 +340,28 @@ export default function InventoryDashboard() {
   const statCards = [
     {
       title: 'Total Products',
-      value: stats?.totalProducts || 0,
+      value: stats?.totalProducts ?? 0,
       icon: Package,
       color: 'text-blue-500',
       bg: 'bg-blue-500/10',
     },
     {
       title: 'Total Stock Value',
-      value: formatCurrency(stats?.totalStockValue || 0),
+      value: formatCurrency(stats?.totalStockValue ?? 0),
       icon: DollarSign,
       color: 'text-green-500',
       bg: 'bg-green-500/10',
     },
     {
       title: 'Low Stock',
-      value: stats?.lowStockCount || 0,
+      value: stats?.lowStockCount ?? 0,
       icon: AlertTriangle,
       color: 'text-yellow-500',
       bg: 'bg-yellow-500/10',
     },
     {
       title: 'Out of Stock',
-      value: stats?.outOfStockCount || 0,
+      value: stats?.outOfStockCount ?? 0,
       icon: PackageX,
       color: 'text-red-500',
       bg: 'bg-red-500/10',
@@ -438,9 +438,9 @@ export default function InventoryDashboard() {
           <TabsTrigger value="alerts" className="flex-1 sm:flex-none">
             <AlertTriangle className="h-4 w-4 mr-2" />
             Low Stock Alerts
-            {(stats?.lowStockCount || 0) + (stats?.outOfStockCount || 0) > 0 && (
+            {(stats?.lowStockCount ?? 0) + (stats?.outOfStockCount ?? 0) > 0 && (
               <Badge variant="destructive" className="ml-2">
-                {(stats?.lowStockCount || 0) + (stats?.outOfStockCount || 0)}
+                {(stats?.lowStockCount ?? 0) + (stats?.outOfStockCount ?? 0)}
               </Badge>
             )}
           </TabsTrigger>

@@ -88,17 +88,17 @@ export default function SalesDashboardPage() {
 
   // Calculate metrics
   const metrics = useMemo(() => {
-    const totalSales = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-    const prevTotalSales = prevOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+    const totalSales = orders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0);
+    const prevTotalSales = prevOrders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0);
     
     // Calculate profit (revenue - cost)
     let totalCost = 0;
     let totalItems = 0;
     orders.forEach(order => {
       (order.order_items ?? []).forEach((item: OrderLineItem) => {
-        totalItems += item.quantity || 0;
-        const cost = item.products?.cost || 0;
-        totalCost += cost * (item.quantity || 0);
+        totalItems += item.quantity ?? 0;
+        const cost = item.products?.cost ?? 0;
+        totalCost += cost * (item.quantity ?? 0);
       });
     });
     
@@ -131,9 +131,9 @@ export default function SalesDashboardPage() {
       orders.forEach(order => {
         const orderDate = new Date(order.created_at);
         if (orderDate >= monthStart && orderDate <= monthEnd) {
-          sales += order.total_amount || 0;
+          sales += order.total_amount ?? 0;
           (order.order_items ?? []).forEach((item: OrderLineItem) => {
-            cost += (item.products?.cost || 0) * (item.quantity || 0);
+            cost += (item.products?.cost ?? 0) * (item.quantity ?? 0);
           });
         }
       });
@@ -161,8 +161,8 @@ export default function SalesDashboardPage() {
         if (!productMap[productName]) {
           productMap[productName] = { name: productName, sales: 0, revenue: 0 };
         }
-        productMap[productName].sales += item.quantity || 0;
-        productMap[productName].revenue += item.subtotal || 0;
+        productMap[productName].sales += item.quantity ?? 0;
+        productMap[productName].revenue += item.subtotal ?? 0;
       });
     });
     
@@ -182,7 +182,7 @@ export default function SalesDashboardPage() {
         if (!categoryMap[category]) {
           categoryMap[category] = { category, amount: 0, orders: 0 };
         }
-        categoryMap[category].amount += item.subtotal || 0;
+        categoryMap[category].amount += item.subtotal ?? 0;
         categoryMap[category].orders += 1;
       });
     });
@@ -196,7 +196,7 @@ export default function SalesDashboardPage() {
     
     orders.forEach(order => {
       const method = order.payment_method || 'Unknown';
-      methodMap[method] = (methodMap[method] || 0) + (order.total_amount || 0);
+      methodMap[method] = (methodMap[method] ?? 0) + (order.total_amount ?? 0);
     });
     
     const total = Object.values(methodMap).reduce((sum, val) => sum + val, 0);

@@ -262,10 +262,10 @@ export default function CreditAuditLogPage() {
       {/* Results Summary */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>
-          Showing {filteredTransactions.length} of {data?.total || 0} transactions
+          Showing {filteredTransactions.length} of {data?.total ?? 0} transactions
         </span>
         <span>
-          Page {page + 1} of {Math.ceil((data?.total || 0) / pageSize)}
+          Page {page + 1} of {Math.ceil((data?.total ?? 0) / pageSize)}
         </span>
       </div>
 

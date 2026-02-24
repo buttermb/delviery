@@ -110,7 +110,7 @@ export default function DeliveryManagement() {
         signature_url: null,
         orders: {
           id: d.id,
-          total_amount: d.total_amount || 0,
+          total_amount: d.total_amount ?? 0,
           user_id: d.user_id
         },
         couriers: d.couriers

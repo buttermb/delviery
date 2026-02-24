@@ -133,11 +133,11 @@ export default function CustomerMenuViewPage() {
 
   // Calculate totals
   const totalItems = user
-    ? cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0
+    ? cartItems?.reduce((sum, item) => sum + item.quantity, 0) ?? 0
     : 0; // Guest cart logic would go here if we fully integrated useGuestCart for totals
 
   const cartTotal = user
-    ? cartItems?.reduce((sum, item) => sum + (item.quantity * (item.products?.price || 0)), 0) || 0
+    ? cartItems?.reduce((sum, item) => sum + (item.quantity * (item.products?.price ?? 0)), 0) ?? 0
     : 0;
 
   // Extract product IDs for realtime sync

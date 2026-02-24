@@ -157,14 +157,14 @@ export default function POReceivingPage() {
   };
 
   // Calculate stats
-  const approvedCount = purchaseOrders?.filter(po => po.status === 'approved').length || 0;
-  const submittedCount = purchaseOrders?.filter(po => po.status === 'submitted').length || 0;
-  const totalValue = purchaseOrders?.reduce((sum, po) => sum + Number(po.total || 0), 0) || 0;
+  const approvedCount = purchaseOrders?.filter(po => po.status === 'approved').length ?? 0;
+  const submittedCount = purchaseOrders?.filter(po => po.status === 'submitted').length ?? 0;
+  const totalValue = purchaseOrders?.reduce((sum, po) => sum + Number(po.total ?? 0), 0) ?? 0;
   const dueTodayCount = purchaseOrders?.filter(po => {
     if (!po.expected_delivery_date) return false;
     const today = new Date().toISOString().split('T')[0];
     return po.expected_delivery_date === today;
-  }).length || 0;
+  }).length ?? 0;
 
   return (
     <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">
@@ -342,7 +342,7 @@ export default function POReceivingPage() {
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <DollarSign className="h-3 w-3 text-muted-foreground" />
-                            {Number(po.total || 0).toLocaleString('en-US', {
+                            {Number(po.total ?? 0).toLocaleString('en-US', {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}

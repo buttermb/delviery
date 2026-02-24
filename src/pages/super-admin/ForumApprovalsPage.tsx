@@ -62,7 +62,7 @@ export default function ForumApprovalsPage() {
         throw error;
       }
 
-      logger.debug('Fetched forum approvals', { count: approvalsData?.length || 0, component: 'ForumApprovalsPage' });
+      logger.debug('Fetched forum approvals', { count: approvalsData?.length ?? 0, component: 'ForumApprovalsPage' });
       return (approvalsData ?? []) as ForumApproval[];
     },
   });
@@ -146,10 +146,10 @@ export default function ForumApprovalsPage() {
 
   // Calculate stats
   const stats = {
-    total: approvals?.length || 0,
-    pending: approvals?.filter((a) => a.status === 'pending').length || 0,
-    approved: approvals?.filter((a) => a.status === 'approved').length || 0,
-    rejected: approvals?.filter((a) => a.status === 'rejected').length || 0,
+    total: approvals?.length ?? 0,
+    pending: approvals?.filter((a) => a.status === 'pending').length ?? 0,
+    approved: approvals?.filter((a) => a.status === 'approved').length ?? 0,
+    rejected: approvals?.filter((a) => a.status === 'rejected').length ?? 0,
   };
 
   return (

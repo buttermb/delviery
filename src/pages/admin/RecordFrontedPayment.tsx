@@ -58,7 +58,7 @@ export default function RecordFrontedPayment() {
         .maybeSingle();
 
       setFrontedItem(data);
-      const amountOwed = (data?.expected_revenue || 0) - (data?.payment_received || 0);
+      const amountOwed = (data?.expected_revenue ?? 0) - (data?.payment_received ?? 0);
       setAmount(amountOwed.toFixed(2));
     } catch (error) {
       logger.error('Error loading fronted item:', error);
@@ -104,7 +104,7 @@ export default function RecordFrontedPayment() {
     );
   }
 
-  const amountOwed = (frontedItem.expected_revenue || 0) - (frontedItem.payment_received || 0);
+  const amountOwed = (frontedItem.expected_revenue ?? 0) - (frontedItem.payment_received ?? 0);
 
   return (
     <div className="min-h-dvh bg-background">

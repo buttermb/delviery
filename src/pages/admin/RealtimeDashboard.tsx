@@ -49,7 +49,7 @@ export default function RealtimeDashboard() {
         const orders = ordersResult.error && ordersResult.error.code === '42P01' ? [] : ordersResult.data ?? [];
         const customers = customersResult.error && customersResult.error.code === '42P01' ? [] : customersResult.data ?? [];
 
-        const totalRevenue = orders.reduce((sum: number, o) => sum + parseFloat(String(o.total || 0)), 0);
+        const totalRevenue = orders.reduce((sum: number, o) => sum + parseFloat(String(o.total ?? 0)), 0);
 
         return {
           activeOrders: orders.length,
@@ -114,7 +114,7 @@ export default function RealtimeDashboard() {
   const statItems = [
     {
       title: "Active Orders",
-      value: stats?.activeOrders || 0,
+      value: stats?.activeOrders ?? 0,
       sub: "Real-time count",
       icon: ShoppingCart,
       color: "text-blue-500",
@@ -122,7 +122,7 @@ export default function RealtimeDashboard() {
     },
     {
       title: "Total Revenue",
-      value: formatCurrency(stats?.totalRevenue || 0),
+      value: formatCurrency(stats?.totalRevenue ?? 0),
       sub: "Today",
       icon: DollarSign,
       color: "text-green-500",
@@ -130,7 +130,7 @@ export default function RealtimeDashboard() {
     },
     {
       title: "Customers",
-      value: stats?.totalCustomers || 0,
+      value: stats?.totalCustomers ?? 0,
       sub: "Total",
       icon: Users,
       color: "text-purple-500",
@@ -138,7 +138,7 @@ export default function RealtimeDashboard() {
     },
     {
       title: "Avg Order",
-      value: formatCurrency(stats?.avgOrderValue || 0),
+      value: formatCurrency(stats?.avgOrderValue ?? 0),
       sub: "Average value",
       icon: TrendingUp,
       color: "text-amber-500",
@@ -227,7 +227,7 @@ export default function RealtimeDashboard() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <div className="text-base font-bold">{formatCurrency(order.total || 0)}</div>
+                        <div className="text-base font-bold">{formatCurrency(order.total ?? 0)}</div>
                         <Badge
                           variant={order.status === 'completed' ? 'default' : 'secondary'}
                           className="text-[10px] px-1.5 h-5"

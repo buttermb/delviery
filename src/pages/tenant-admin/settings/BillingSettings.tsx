@@ -109,13 +109,13 @@ function mapInvoiceToPdfData(invoice: ExtendedInvoice, tenant: ExtendedTenant | 
       : [{
         description: 'Monthly Subscription',
         quantity: 1,
-        unitPrice: invoice.total || 0,
-        total: invoice.total || 0,
+        unitPrice: invoice.total ?? 0,
+        total: invoice.total ?? 0,
       }],
     subtotal: invoice.subtotal || invoice.total || 0,
-    tax: invoice.tax || 0,
-    taxRate: invoice.tax_rate || 0,
-    total: invoice.total || 0,
+    tax: invoice.tax ?? 0,
+    taxRate: invoice.tax_rate ?? 0,
+    total: invoice.total ?? 0,
     notes: invoice.notes ?? '',
   };
 }
@@ -238,8 +238,8 @@ export default function BillingSettings() {
   const usage = (tenant?.usage as Record<string, number>) || {};
 
   const getUsagePercentage = (resource: string) => {
-    const limit = limits[resource] === -1 ? Infinity : (limits[resource] || 0);
-    const current = usage[resource] || 0;
+    const limit = limits[resource] === -1 ? Infinity : (limits[resource] ?? 0);
+    const current = usage[resource] ?? 0;
     if (limit === Infinity) return 0;
     return Math.min((current / limit) * 100, 100);
   };
@@ -754,7 +754,7 @@ export default function BillingSettings() {
               <div className="space-y-4">
                 {Object.keys(limits).map((resource) => {
                   const limit = limits[resource];
-                  const current = usage[resource] || 0;
+                  const current = usage[resource] ?? 0;
                   const isUnlimited = limit === -1;
                   const percentage = getUsagePercentage(resource);
                   const isOverLimit = !isUnlimited && current > limit;
@@ -1007,7 +1007,7 @@ export default function BillingSettings() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="font-medium">{formatCurrency(invoice.total || 0)}</span>
+                    <span className="font-medium">{formatCurrency(invoice.total ?? 0)}</span>
                     <Badge
                       variant={
                         invoice.status === 'paid'

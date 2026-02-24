@@ -79,7 +79,7 @@ export default function TaxManagementPage() {
         .maybeSingle();
 
       const taxRate = settings?.tax_rate || 8.875;
-      const totalSales = (orders ?? []).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+      const totalSales = (orders ?? []).reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0);
       // Calculate tax based on rate since tax_amount column may not exist
       const taxCollected = totalSales * (taxRate / 100);
 
@@ -152,7 +152,7 @@ export default function TaxManagementPage() {
               <span className="text-sm text-muted-foreground">Total Sales</span>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </div>
-            <div className="text-2xl font-bold">{formatCurrency(taxData?.totalSales || 0)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(taxData?.totalSales ?? 0)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {selectedPeriod === 'month' ? 'This month' : selectedPeriod === 'quarter' ? 'This quarter' : 'Year to date'}
             </p>
@@ -165,7 +165,7 @@ export default function TaxManagementPage() {
               <span className="text-sm text-muted-foreground">Tax Collected</span>
               <Percent className="h-4 w-4 text-muted-foreground" />
             </div>
-            <div className="text-2xl font-bold text-green-600">{formatCurrency(taxData?.taxCollected || 0)}</div>
+            <div className="text-2xl font-bold text-green-600">{formatCurrency(taxData?.taxCollected ?? 0)}</div>
             <p className="text-xs text-muted-foreground mt-1">
               At {taxData?.taxRate}% rate
             </p>
@@ -179,8 +179,8 @@ export default function TaxManagementPage() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="text-2xl font-bold flex items-center gap-2">
-              {taxData?.pendingFilings || 0}
-              {(taxData?.pendingFilings || 0) > 0 && (
+              {taxData?.pendingFilings ?? 0}
+              {(taxData?.pendingFilings ?? 0) > 0 && (
                 <Badge variant="destructive" className="text-xs">Action Required</Badge>
               )}
             </div>
@@ -224,21 +224,21 @@ export default function TaxManagementPage() {
                 <p className="font-medium">State Tax</p>
                 <p className="text-sm text-muted-foreground">4.0%</p>
               </div>
-              <span className="font-bold">${((taxData?.taxCollected || 0) * 0.45).toFixed(2)}</span>
+              <span className="font-bold">${((taxData?.taxCollected ?? 0) * 0.45).toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
               <div>
                 <p className="font-medium">City Tax</p>
                 <p className="text-sm text-muted-foreground">4.5%</p>
               </div>
-              <span className="font-bold">${((taxData?.taxCollected || 0) * 0.51).toFixed(2)}</span>
+              <span className="font-bold">${((taxData?.taxCollected ?? 0) * 0.51).toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
               <div>
                 <p className="font-medium">Special District</p>
                 <p className="text-sm text-muted-foreground">0.375%</p>
               </div>
-              <span className="font-bold">${((taxData?.taxCollected || 0) * 0.04).toFixed(2)}</span>
+              <span className="font-bold">${((taxData?.taxCollected ?? 0) * 0.04).toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>

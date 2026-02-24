@@ -273,7 +273,7 @@ export default function FinancialCenterReal() {
           <div className="bg-purple-500/10 rounded-lg p-3">
             <div className="text-sm text-muted-foreground mb-1">Categories</div>
             <div className="text-2xl font-bold text-purple-600">
-              {expenseSummary?.categoryBreakdown.length || 0}
+              {expenseSummary?.categoryBreakdown.length ?? 0}
             </div>
           </div>
         </div>
@@ -491,7 +491,7 @@ export default function FinancialCenterReal() {
         <PaymentDialog
           clientId={selectedClient.id}
           clientName={selectedClient.business_name}
-          outstandingBalance={Number(selectedClient.outstanding_balance || 0)}
+          outstandingBalance={Number(selectedClient.outstanding_balance ?? 0)}
           open={paymentDialogOpen}
           onOpenChange={setPaymentDialogOpen}
         />

@@ -26,7 +26,7 @@ export default function ExecutiveDashboardPage() {
       if (error) throw error;
 
       const active = tenants?.filter((t) => t.subscription_status === 'active') ?? [];
-      const mrr = active.reduce((sum, t) => sum + (t.mrr || 0), 0);
+      const mrr = active.reduce((sum, t) => sum + (t.mrr ?? 0), 0);
       const arr = mrr * 12;
 
       // Calculate LTV (simplified)

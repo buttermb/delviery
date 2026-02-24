@@ -234,7 +234,7 @@ export default function InventoryAudit() {
     const totalDiscrepancy = counted.reduce((sum, e) => sum + e.discrepancy, 0);
 
     return {
-      totalProducts: products?.length || 0,
+      totalProducts: products?.length ?? 0,
       counted: counted.length,
       withDiscrepancy: withDiscrepancy.length,
       totalDiscrepancy,

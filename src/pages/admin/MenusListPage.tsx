@@ -72,10 +72,10 @@ export function MenusListPage() {
     });
 
     // Calculate stats
-    const activeMenus = menus?.filter(m => m.status === 'active').length || 0;
-    const totalViews = menus?.reduce((sum, m) => sum + (m.view_count || 0), 0) || 0;
-    const totalOrders = menus?.reduce((sum, m) => sum + (m.order_count || 0), 0) || 0;
-    const totalRevenue = menus?.reduce((sum, m) => sum + (m.total_revenue || 0), 0) || 0;
+    const activeMenus = menus?.filter(m => m.status === 'active').length ?? 0;
+    const totalViews = menus?.reduce((sum, m) => sum + (m.view_count ?? 0), 0) ?? 0;
+    const totalOrders = menus?.reduce((sum, m) => sum + (m.order_count ?? 0), 0) ?? 0;
+    const totalRevenue = menus?.reduce((sum, m) => sum + (m.total_revenue ?? 0), 0) ?? 0;
 
 
     return (
@@ -104,7 +104,7 @@ export function MenusListPage() {
                     <CardContent>
                         <div className="text-2xl font-bold">{activeMenus}</div>
                         <p className="text-xs text-muted-foreground">
-                            {menus?.length || 0} total menus
+                            {menus?.length ?? 0} total menus
                         </p>
                     </CardContent>
                 </Card>

@@ -68,7 +68,7 @@ export default function VendorPayoutsPage() {
             let available = 0;
 
             (orders as MarketplaceOrder[] | null)?.forEach((order: MarketplaceOrder) => {
-                const netAmount = (order.total_amount || 0) - (order.platform_fee || 0);
+                const netAmount = (order.total_amount ?? 0) - (order.platform_fee ?? 0);
                 if (order.status === 'delivered') {
                     available += netAmount;
                 } else {
@@ -113,7 +113,7 @@ export default function VendorPayoutsPage() {
                         <Wallet className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(balanceData?.available || 0)}</div>
+                        <div className="text-2xl font-bold">{formatCurrency(balanceData?.available ?? 0)}</div>
                         <p className="text-xs text-muted-foreground mt-1">
                             Funds from delivered orders
                         </p>
@@ -126,7 +126,7 @@ export default function VendorPayoutsPage() {
                         <History className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(balanceData?.pending || 0)}</div>
+                        <div className="text-2xl font-bold">{formatCurrency(balanceData?.pending ?? 0)}</div>
                         <p className="text-xs text-muted-foreground mt-1">
                             Orders in progress
                         </p>

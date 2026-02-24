@@ -218,7 +218,7 @@ export default function StorefrontOrders() {
   // Order counts by status
   const orderCounts = orders.reduce(
     (acc, order) => {
-      acc[order.status] = (acc[order.status] || 0) + 1;
+      acc[order.status] = (acc[order.status] ?? 0) + 1;
       return acc;
     },
     {} as Record<string, number>
@@ -281,7 +281,7 @@ export default function StorefrontOrders() {
             onClick={() => setStatusFilter(status.value)}
           >
             <div className={`w-2 h-2 rounded-full ${status.color} mr-2`} />
-            {status.label} ({orderCounts[status.value] || 0})
+            {status.label} ({orderCounts[status.value] ?? 0})
           </Button>
         ))}
       </div>

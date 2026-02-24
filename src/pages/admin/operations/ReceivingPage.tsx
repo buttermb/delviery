@@ -210,9 +210,9 @@ export default function ReceivingPage() {
   );
 
   // Calculate stats
-  const totalReceipts = receipts?.length || 0;
-  const pendingReceipts = receipts?.filter(r => r.status === 'pending').length || 0;
-  const qcPassedReceipts = receipts?.filter(r => r.status === 'qc_passed').length || 0;
+  const totalReceipts = receipts?.length ?? 0;
+  const pendingReceipts = receipts?.filter(r => r.status === 'pending').length ?? 0;
+  const qcPassedReceipts = receipts?.filter(r => r.status === 'qc_passed').length ?? 0;
 
   return (
     <div className="space-y-4 p-4">
@@ -253,7 +253,7 @@ export default function ReceivingPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">
-              {receipts?.filter(r => r.status === 'received').length || 0}
+              {receipts?.filter(r => r.status === 'received').length ?? 0}
             </div>
             <p className="text-xs text-muted-foreground">Received Today</p>
           </CardContent>
@@ -404,11 +404,11 @@ export default function ReceivingPage() {
                           <>
                             <div>
                               <p className="text-muted-foreground">Damaged Items</p>
-                              <p className="font-medium text-red-500">{receipt.damaged_items || 0}</p>
+                              <p className="font-medium text-red-500">{receipt.damaged_items ?? 0}</p>
                             </div>
                             <div>
                               <p className="text-muted-foreground">Missing Items</p>
-                              <p className="font-medium text-orange-500">{receipt.missing_items || 0}</p>
+                              <p className="font-medium text-orange-500">{receipt.missing_items ?? 0}</p>
                             </div>
                           </>
                         )}

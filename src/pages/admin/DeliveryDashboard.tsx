@@ -144,7 +144,7 @@ export default function DeliveryDashboard() {
     const courierLoadMap = new Map<string, number>();
     orders.forEach((order) => {
       if (order.courier_id && order.status === 'out_for_delivery') {
-        courierLoadMap.set(order.courier_id, (courierLoadMap.get(order.courier_id) || 0) + 1);
+        courierLoadMap.set(order.courier_id, (courierLoadMap.get(order.courier_id) ?? 0) + 1);
       }
     });
 
@@ -156,7 +156,7 @@ export default function DeliveryDashboard() {
       status: runner.status,
       current_lat: runner.current_lat,
       current_lng: runner.current_lng,
-      activeDeliveries: courierLoadMap.get(runner.id) || 0,
+      activeDeliveries: courierLoadMap.get(runner.id) ?? 0,
     }));
   }, [runnersRaw, orders]);
 

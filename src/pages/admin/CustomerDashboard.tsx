@@ -188,7 +188,7 @@ function useRecentCustomerActivity(tenantId: string | undefined) {
           customerMap.set(order.customer_id, {
             customerId: order.customer_id,
             lastActivity: order.created_at,
-            lastOrderAmount: order.total_amount || 0,
+            lastOrderAmount: order.total_amount ?? 0,
             status: order.status || 'pending',
           });
         }

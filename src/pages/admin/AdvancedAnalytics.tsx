@@ -105,7 +105,7 @@ export default function AdvancedAnalytics() {
   const revenueByMonth = (orders ?? []).reduce((acc: MonthlyRevenue[], order) => {
     const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     const existing = acc.find((item) => item.month === month);
-    const revenue = parseFloat(String(order.total || 0));
+    const revenue = parseFloat(String(order.total ?? 0));
     if (existing) {
       existing.revenue += revenue;
       existing.orders += 1;
@@ -117,7 +117,7 @@ export default function AdvancedAnalytics() {
 
   const customerSegments = (customers ?? []).reduce((acc: Record<string, number>, customer) => {
     const segment = customer.customer_type || 'regular';
-    acc[segment] = (acc[segment] || 0) + 1;
+    acc[segment] = (acc[segment] ?? 0) + 1;
     return acc;
   }, {});
 
@@ -128,8 +128,8 @@ export default function AdvancedAnalytics() {
 
   // Calculate metrics for export
   const totalRevenue = revenueByMonth.reduce((sum: number, item: { revenue: number }) => sum + item.revenue, 0);
-  const totalOrders = orders?.length || 0;
-  const totalCustomers = customers?.length || 0;
+  const totalOrders = orders?.length ?? 0;
+  const totalCustomers = customers?.length ?? 0;
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   // Export handler

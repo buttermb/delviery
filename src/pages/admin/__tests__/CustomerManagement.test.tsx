@@ -162,12 +162,12 @@ describe('Stats Calculations', () => {
   });
 
   it('should calculate total revenue correctly', () => {
-    const totalRevenue = mockCustomers.reduce((sum, c) => sum + (c.total_spent || 0), 0);
+    const totalRevenue = mockCustomers.reduce((sum, c) => sum + (c.total_spent ?? 0), 0);
     expect(totalRevenue).toBe(2000);
   });
 
   it('should calculate average lifetime value correctly', () => {
-    const totalRevenue = mockCustomers.reduce((sum, c) => sum + (c.total_spent || 0), 0);
+    const totalRevenue = mockCustomers.reduce((sum, c) => sum + (c.total_spent ?? 0), 0);
     const totalCustomers = mockCustomers.length;
     const avgLTV = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
     expect(avgLTV).toBeCloseTo(666.67, 1);

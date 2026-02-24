@@ -209,7 +209,7 @@ function VendorDetailDialog({ open, onOpenChange, vendor }: VendorDetailDialogPr
                                                         <TableCell>
                                                             <div className="flex items-center gap-1">
                                                                 <DollarSign className="h-3 w-3 text-muted-foreground" />
-                                                                {Number(order.total || 0).toLocaleString('en-US', {
+                                                                {Number(order.total ?? 0).toLocaleString('en-US', {
                                                                     minimumFractionDigits: 2,
                                                                     maximumFractionDigits: 2,
                                                                 })}
@@ -298,9 +298,9 @@ export default function VendorOperationsPage() {
     }
 
     // Calculate summary stats
-    const totalVendors = vendors?.length || 0;
-    const totalOrders = vendors?.reduce((sum, v) => sum + v.total_orders, 0) || 0;
-    const totalSpent = vendors?.reduce((sum, v) => sum + v.total_spent, 0) || 0;
+    const totalVendors = vendors?.length ?? 0;
+    const totalOrders = vendors?.reduce((sum, v) => sum + v.total_orders, 0) ?? 0;
+    const totalSpent = vendors?.reduce((sum, v) => sum + v.total_spent, 0) ?? 0;
 
     return (
         <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">

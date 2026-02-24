@@ -101,7 +101,7 @@ export default function SalesDashboard() {
       dateMap[isoDate].orders += 1;
 
       const status = order.status || 'unknown';
-      statusMap[status] = (statusMap[status] || 0) + 1;
+      statusMap[status] = (statusMap[status] ?? 0) + 1;
     });
 
     const sortedSalesData = Object.values(dateMap).sort((a, b) => a.isoDate.localeCompare(b.isoDate));

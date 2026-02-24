@@ -54,7 +54,7 @@ export default function SuperAdminAnalytics() {
           [SUBSCRIPTION_PLANS.PROFESSIONAL]: 299,
           [SUBSCRIPTION_PLANS.ENTERPRISE]: 799,
         };
-        return sum + (prices[t.subscription_plan as string] || 0);
+        return sum + (prices[t.subscription_plan as string] ?? 0);
       }, 0);
 
       const arr = mrr * 12;
@@ -72,7 +72,7 @@ export default function SuperAdminAnalytics() {
           [SUBSCRIPTION_PLANS.ENTERPRISE]: 799,
         };
         if (t.subscription_status === SUBSCRIPTION_STATUS.ACTIVE) {
-          return sum + (prices[t.subscription_plan as string] || 0);
+          return sum + (prices[t.subscription_plan as string] ?? 0);
         }
         return sum;
       }, 0);
@@ -93,7 +93,7 @@ export default function SuperAdminAnalytics() {
           [SUBSCRIPTION_PLANS.PROFESSIONAL]: 299,
           [SUBSCRIPTION_PLANS.ENTERPRISE]: 799,
         };
-        return sum + (prices[t.subscription_plan as string] || 0);
+        return sum + (prices[t.subscription_plan as string] ?? 0);
       }, 0);
 
       // Conversions

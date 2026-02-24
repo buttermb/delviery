@@ -144,7 +144,7 @@ export default function OrdersListPage() {
           </Button>
           <h1 className="text-2xl font-bold text-[hsl(var(--customer-text))]">🛒 My Orders</h1>
           <p className="text-sm text-[hsl(var(--customer-text-light))] mt-1">
-            {orders?.length || 0} order{orders?.length !== 1 ? "s" : ""} total
+            {orders?.length ?? 0} order{orders?.length !== 1 ? "s" : ""} total
           </p>
         </div>
 

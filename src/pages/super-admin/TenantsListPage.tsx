@@ -231,7 +231,7 @@ export default function TenantsListPage() {
                   t.owner_email,
                   t.subscription_plan,
                   t.subscription_status,
-                  t.mrr || 0,
+                  t.mrr ?? 0,
                   t.created_at
                 ].join(','))
               ].join('\n');
@@ -459,7 +459,7 @@ export default function TenantsListPage() {
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">
-                          {formatCurrency((tenant.mrr as number) || 0)}
+                          {formatCurrency((tenant.mrr as number) ?? 0)}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -598,7 +598,7 @@ export default function TenantsListPage() {
                 const csv = [
                   ['ID', 'Business Name', 'Email', 'Plan', 'Status', 'MRR'].join(','),
                   ...tenants.filter(t => selectedTenants.includes(t.id)).map(t => [
-                    t.id, t.business_name, t.owner_email, t.subscription_plan, t.subscription_status, t.mrr || 0
+                    t.id, t.business_name, t.owner_email, t.subscription_plan, t.subscription_status, t.mrr ?? 0
                   ].join(','))
                 ].join('\n');
                 const blob = new Blob([csv], { type: 'text/csv' });

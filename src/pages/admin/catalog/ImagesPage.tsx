@@ -222,14 +222,14 @@ export default function ImagesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{images?.length || 0}</div>
+            <div className="text-2xl font-bold">{images?.length ?? 0}</div>
             <p className="text-xs text-muted-foreground">Total Images</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">
-              {Math.round((images?.length || 0) * 2.3)}MB
+              {Math.round((images?.length ?? 0) * 2.3)}MB
             </div>
             <p className="text-xs text-muted-foreground">Storage Used</p>
           </CardContent>
@@ -237,7 +237,7 @@ export default function ImagesPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">
-              {images?.filter(i => i.created_at > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()).length || 0}
+              {images?.filter(i => i.created_at > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()).length ?? 0}
             </div>
             <p className="text-xs text-muted-foreground">Added This Week</p>
           </CardContent>

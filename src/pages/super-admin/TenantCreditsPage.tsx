@@ -248,30 +248,30 @@ export default function TenantCreditsPage() {
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="p-4">
-          <div className="text-2xl font-bold">{data?.total || 0}</div>
+          <div className="text-2xl font-bold">{data?.total ?? 0}</div>
           <div className="text-sm text-muted-foreground">Total Tenants</div>
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-green-600">
-            {data?.tenants.filter(t => t.creditStatus === 'healthy').length || 0}
+            {data?.tenants.filter(t => t.creditStatus === 'healthy').length ?? 0}
           </div>
           <div className="text-sm text-muted-foreground">Healthy</div>
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-yellow-600">
-            {data?.tenants.filter(t => t.creditStatus === 'warning').length || 0}
+            {data?.tenants.filter(t => t.creditStatus === 'warning').length ?? 0}
           </div>
           <div className="text-sm text-muted-foreground">Warning</div>
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-orange-600">
-            {data?.tenants.filter(t => t.creditStatus === 'critical').length || 0}
+            {data?.tenants.filter(t => t.creditStatus === 'critical').length ?? 0}
           </div>
           <div className="text-sm text-muted-foreground">Critical</div>
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-red-600">
-            {data?.tenants.filter(t => t.creditStatus === 'depleted').length || 0}
+            {data?.tenants.filter(t => t.creditStatus === 'depleted').length ?? 0}
           </div>
           <div className="text-sm text-muted-foreground">Depleted</div>
         </Card>

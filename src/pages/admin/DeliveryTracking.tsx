@@ -172,7 +172,7 @@ export default function DeliveryTracking() {
               <div>
                 <p className="text-sm text-muted-foreground">Order Value</p>
                 <p className="font-semibold text-lg">
-                  ${Number(delivery.orders?.total_amount || 0).toLocaleString()}
+                  ${Number(delivery.orders?.total_amount ?? 0).toLocaleString()}
                 </p>
               </div>
               {delivery.orders?.delivery_notes && (

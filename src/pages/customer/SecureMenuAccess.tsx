@@ -769,7 +769,7 @@ function MenuBrowseView({
   const clearCart = () => setCart([]);
 
   const getCartQuantity = (productId: string): number => {
-    return cart.find((item) => item.product.id === productId)?.quantity || 0;
+    return cart.find((item) => item.product.id === productId)?.quantity ?? 0;
   };
 
   if (checkoutMode) {

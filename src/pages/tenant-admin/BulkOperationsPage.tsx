@@ -442,8 +442,8 @@ export default function BulkOperationsPage() {
                   <div className="flex-1">
                     <p className="font-medium">{product.name}</p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>Price: ${product.price || 0}</span>
-                      <span>Stock: {product.stock_quantity || 0}</span>
+                      <span>Price: ${product.price ?? 0}</span>
+                      <span>Stock: {product.stock_quantity ?? 0}</span>
                     </div>
                   </div>
                 </div>

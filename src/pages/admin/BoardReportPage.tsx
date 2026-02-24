@@ -43,7 +43,7 @@ export default function BoardReportPage() {
                 .gte('created_at', new Date(today.getFullYear(), today.getMonth(), 1).toISOString())
                 .not('status', 'in', '("cancelled","rejected","refunded")');
 
-            const mtdRevenue = mtdOrders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+            const mtdRevenue = mtdOrders?.reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0) ?? 0;
 
             // Get last 30 days vs previous 30 days
             const { data: last30Days } = await supabase
@@ -61,8 +61,8 @@ export default function BoardReportPage() {
                 .lt('created_at', thirtyDaysAgo.toISOString())
                 .not('status', 'in', '("cancelled","rejected","refunded")');
 
-            const revenue30Days = last30Days?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
-            const revenuePrevious30 = previous30Days?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+            const revenue30Days = last30Days?.reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0) ?? 0;
+            const revenuePrevious30 = previous30Days?.reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0) ?? 0;
             const revenueGrowth = revenuePrevious30 > 0
                 ? ((revenue30Days - revenuePrevious30) / revenuePrevious30) * 100
                 : 0;
@@ -83,8 +83,8 @@ export default function BoardReportPage() {
                 mtdRevenue,
                 revenue30Days,
                 revenueGrowth,
-                customerCount: customerCount || 0,
-                productCount: productCount || 0,
+                customerCount: customerCount ?? 0,
+                productCount: productCount ?? 0,
             };
         },
         enabled: !!tenant?.id,
@@ -187,15 +187,15 @@ export default function BoardReportPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">30-Day Growth</CardTitle>
-                        {(metricsData?.revenueGrowth || 0) >= 0 ? (
+                        {(metricsData?.revenueGrowth ?? 0) >= 0 ? (
                             <TrendingUp className="h-4 w-4 text-green-600" />
                         ) : (
                             <TrendingDown className="h-4 w-4 text-red-600" />
                         )}
                     </CardHeader>
                     <CardContent>
-                        <div className={`text-2xl font-bold ${(metricsData?.revenueGrowth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {(metricsData?.revenueGrowth || 0).toFixed(1)}%
+                        <div className={`text-2xl font-bold ${(metricsData?.revenueGrowth ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {(metricsData?.revenueGrowth ?? 0).toFixed(1)}%
                         </div>
                         <p className="text-xs text-muted-foreground">vs. previous 30 days</p>
                     </CardContent>
@@ -235,9 +235,9 @@ export default function BoardReportPage() {
                         <div>
                             <h4 className="font-medium text-green-900 dark:text-green-100">Revenue Growth</h4>
                             <p className="text-sm text-green-800 dark:text-green-200">
-                                {(metricsData?.revenueGrowth || 0) >= 0
-                                    ? `Revenue increased by ${(metricsData?.revenueGrowth || 0).toFixed(1)}% over the past 30 days.`
-                                    : `Revenue declined by ${Math.abs(metricsData?.revenueGrowth || 0).toFixed(1)}% over the past 30 days.`
+                                {(metricsData?.revenueGrowth ?? 0) >= 0
+                                    ? `Revenue increased by ${(metricsData?.revenueGrowth ?? 0).toFixed(1)}% over the past 30 days.`
+                                    : `Revenue declined by ${Math.abs(metricsData?.revenueGrowth ?? 0).toFixed(1)}% over the past 30 days.`
                                 }
                             </p>
                         </div>

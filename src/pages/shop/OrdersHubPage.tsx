@@ -428,8 +428,8 @@ function OrderCard({
             <div className="min-w-0">
               <p className="font-bold text-neutral-900">{`#${order.order_number}`}</p>
               <p className="text-sm text-neutral-500">
-                {formatSmartDate(order.created_at)} &bull; {order.items?.length || 0} item
-                {(order.items?.length || 0) !== 1 ? 's' : ''}
+                {formatSmartDate(order.created_at)} &bull; {order.items?.length ?? 0} item
+                {(order.items?.length ?? 0) !== 1 ? 's' : ''}
               </p>
             </div>
           </div>

@@ -78,8 +78,8 @@ export function BigPlugRunnerPortal() {
         .gte('created_at', today.toISOString());
 
       const completed = deliveries?.filter(d => d.status === 'delivered' || d.status === 'completed') ?? [];
-      const delivered = completed.reduce((sum, d) => sum + Number(d.total_value || 0), 0);
-      const collected = completed.reduce((sum, d) => sum + Number(d.collection_amount || 0), 0);
+      const delivered = completed.reduce((sum, d) => sum + Number(d.total_value ?? 0), 0);
+      const collected = completed.reduce((sum, d) => sum + Number(d.collection_amount ?? 0), 0);
 
       return {
         completed: completed.length,
@@ -197,18 +197,18 @@ export function BigPlugRunnerPortal() {
               <div>
                 <div className="text-sm text-muted-foreground">Load</div>
                 <div className="font-semibold">
-                  {Number(activeDelivery.total_weight || 0).toFixed(1)} lbs
+                  {Number(activeDelivery.total_weight ?? 0).toFixed(1)} lbs
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  ${Number(activeDelivery.total_value || 0).toLocaleString()} value
+                  ${Number(activeDelivery.total_value ?? 0).toLocaleString()} value
                 </div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Collect</div>
                 <div className="font-semibold text-green-600">
-                  ${Number(activeDelivery.collection_amount || 0).toLocaleString()}
+                  ${Number(activeDelivery.collection_amount ?? 0).toLocaleString()}
                 </div>
-                {Number(activeDelivery.collection_amount || 0) > 0 && (
+                {Number(activeDelivery.collection_amount ?? 0) > 0 && (
                   <div className="text-xs text-orange-600">⚠️ Must collect before delivery</div>
                 )}
               </div>
@@ -278,7 +278,7 @@ export function BigPlugRunnerPortal() {
                 {delivery.orders?.wholesale_clients?.business_name || 'Unknown'}
               </div>
               <div className="text-sm">
-                {Number(delivery.total_weight || 0).toFixed(1)} lbs • ${Number(delivery.total_value || 0).toLocaleString()}
+                {Number(delivery.total_weight ?? 0).toFixed(1)} lbs • ${Number(delivery.total_value ?? 0).toLocaleString()}
               </div>
             </div>
           ))}
@@ -299,7 +299,7 @@ function DeliveryCompleteDialog({
 }) {
   const [showDialog, setShowDialog] = useState(false);
   const [collectedAmount, setCollectedAmount] = useState('');
-  const [needsCollection] = useState(Number(delivery.collection_amount || 0) > 0);
+  const [needsCollection] = useState(Number(delivery.collection_amount ?? 0) > 0);
 
   const handleComplete = () => {
     if (needsCollection && !collectedAmount) {
@@ -330,7 +330,7 @@ function DeliveryCompleteDialog({
               <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg border border-yellow-200">
                 <div className="font-semibold mb-2">💰 Collection Required</div>
                 <div className="text-sm">
-                  Must collect: ${Number(delivery.collection_amount || 0).toLocaleString()}
+                  Must collect: ${Number(delivery.collection_amount ?? 0).toLocaleString()}
                 </div>
                 <input
                   type="number"

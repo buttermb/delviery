@@ -133,7 +133,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           created_at: o.created_at,
           user_id: o.user_id,
           source: 'app',
-          total_amount: Number(o.total_amount || 0)
+          total_amount: Number(o.total_amount ?? 0)
         }));
 
         // Transform Menu Orders
@@ -145,7 +145,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           user_id: 'guest',
           source: 'menu',
           menu_title: mo.disposable_menus?.name || mo.disposable_menus?.title || undefined,
-          total_amount: Number(mo.total_amount || 0)
+          total_amount: Number(mo.total_amount ?? 0)
         }));
 
         // Combine

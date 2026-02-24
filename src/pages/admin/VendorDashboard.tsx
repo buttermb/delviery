@@ -191,7 +191,7 @@ export default function VendorDashboard() {
       // Calculate outstanding payables (approved POs not yet received)
       const outstandingPayables = (allPOs ?? [])
         .filter((po) => po.status === 'approved' || po.status === 'submitted')
-        .reduce((sum: number, po: PurchaseOrderRow) => sum + (po.total || 0), 0);
+        .reduce((sum: number, po: PurchaseOrderRow) => sum + (po.total ?? 0), 0);
 
       // Calculate on-time delivery rate
       const receivedPOs = (allPOs ?? []).filter((po) => po.status === 'received');
@@ -210,8 +210,8 @@ export default function VendorDashboard() {
         : 100;
 
       return {
-        totalVendors: vendors?.length || 0,
-        activePoCount: activePOs?.length || 0,
+        totalVendors: vendors?.length ?? 0,
+        activePoCount: activePOs?.length ?? 0,
         outstandingPayables,
         onTimeDeliveryRate,
       };
@@ -266,7 +266,7 @@ export default function VendorDashboard() {
       (purchaseOrders ?? []).forEach((po: PurchaseOrderRow) => {
         if (po.vendor_id) {
           const existing = vendorSpendMap.get(po.vendor_id) || { totalSpend: 0, poCount: 0 };
-          existing.totalSpend += po.total || 0;
+          existing.totalSpend += po.total ?? 0;
           existing.poCount += 1;
           vendorSpendMap.set(po.vendor_id, existing);
         }
@@ -339,7 +339,7 @@ export default function VendorDashboard() {
         poNumber: po.po_number || `PO-${po.id.slice(0, 8)}`,
         vendorName: po.vendors?.name || 'Unknown Vendor',
         status: po.status || 'draft',
-        totalAmount: po.total || 0,
+        totalAmount: po.total ?? 0,
         createdAt: po.created_at || new Date().toISOString(),
       }));
     },
@@ -366,7 +366,7 @@ export default function VendorDashboard() {
       const categoryMap = new Map<string, number>();
       (vendors ?? []).forEach((v: VendorRow) => {
         const category = v.category || 'Uncategorized';
-        categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
+        categoryMap.set(category, (categoryMap.get(category) ?? 0) + 1);
       });
 
       // Convert to array with colors
@@ -426,28 +426,28 @@ export default function VendorDashboard() {
   const statCards = [
     {
       title: 'Total Vendors',
-      value: stats?.totalVendors || 0,
+      value: stats?.totalVendors ?? 0,
       icon: Users,
       color: 'text-blue-500',
       bg: 'bg-blue-500/10',
     },
     {
       title: 'Active POs',
-      value: stats?.activePoCount || 0,
+      value: stats?.activePoCount ?? 0,
       icon: FileText,
       color: 'text-purple-500',
       bg: 'bg-purple-500/10',
     },
     {
       title: 'Outstanding Payables',
-      value: formatCurrency(stats?.outstandingPayables || 0),
+      value: formatCurrency(stats?.outstandingPayables ?? 0),
       icon: DollarSign,
       color: 'text-yellow-500',
       bg: 'bg-yellow-500/10',
     },
     {
       title: 'On-Time Delivery',
-      value: `${stats?.onTimeDeliveryRate || 0}%`,
+      value: `${stats?.onTimeDeliveryRate ?? 0}%`,
       icon: CheckCircle2,
       color: 'text-green-500',
       bg: 'bg-green-500/10',

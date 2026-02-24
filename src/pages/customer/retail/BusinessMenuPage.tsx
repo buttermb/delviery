@@ -377,7 +377,7 @@ export default function BusinessMenuPage() {
                   {/* Pricing */}
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold">
-                      {formatCurrency(product.price as number || 0)}
+                      {formatCurrency(product.price as number ?? 0)}
                     </span>
                     {product.unit && (
                       <span className="text-sm text-muted-foreground">

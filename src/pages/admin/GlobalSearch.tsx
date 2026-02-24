@@ -124,10 +124,10 @@ const GlobalSearch = () => {
         products: (products.data ?? []) as unknown as ProductSearchResult[],
         addresses: (addresses.data ?? []) as unknown as AddressSearchResult[],
         totalResults:
-          (users.data?.length || 0) +
-          (orders.data?.length || 0) +
-          (products.data?.length || 0) +
-          (addresses.data?.length || 0),
+          (users.data?.length ?? 0) +
+          (orders.data?.length ?? 0) +
+          (products.data?.length ?? 0) +
+          (addresses.data?.length ?? 0),
       };
     },
     enabled: searchTerm.length >= 2 && !!tenant,
@@ -217,7 +217,7 @@ const GlobalSearch = () => {
                             )}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            Orders: {user.total_orders || 0} • Risk: {user.risk_score || "N/A"}
+                            Orders: {user.total_orders ?? 0} • Risk: {user.risk_score || "N/A"}
                           </div>
                         </div>
                         <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/${tenant?.slug}/admin/users/${user.user_id}`); }}>View Profile</Button>
@@ -273,7 +273,7 @@ const GlobalSearch = () => {
                           </p>
                           <div className="flex gap-4 text-xs text-muted-foreground">
                             <span>${product.price}</span>
-                            <span>Stock: {product.stock_quantity || 0}</span>
+                            <span>Stock: {product.stock_quantity ?? 0}</span>
                             {product.average_rating && <span>⭐ {product.average_rating.toFixed(1)}</span>}
                           </div>
                         </div>

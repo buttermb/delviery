@@ -66,7 +66,7 @@ export function PurchaseSuccessPage() {
 
   const creditsAddedNum = creditsAdded ? parseInt(creditsAdded, 10) : null;
   const bonusCreditsNum = bonusCredits ? parseInt(bonusCredits, 10) : null;
-  const totalAdded = (creditsAddedNum || 0) + (bonusCreditsNum || 0);
+  const totalAdded = (creditsAddedNum ?? 0) + (bonusCreditsNum ?? 0);
 
   // Refresh credits balance on mount
   useEffect(() => {

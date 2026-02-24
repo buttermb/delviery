@@ -295,7 +295,7 @@ export default function ListingDetailPage() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">Base Price</span>
                   <span className="text-2xl font-bold">
-                    {formatCurrency(listing.base_price as number || 0)}
+                    {formatCurrency(listing.base_price as number ?? 0)}
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -377,21 +377,21 @@ export default function ListingDetailPage() {
                   <Eye className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Views</span>
                 </div>
-                <span className="text-sm font-medium">{listing.views || 0}</span>
+                <span className="text-sm font-medium">{listing.views ?? 0}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Package2 className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Orders</span>
                 </div>
-                <span className="text-sm font-medium">{listing.orders_count || 0}</span>
+                <span className="text-sm font-medium">{listing.orders_count ?? 0}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Favorites</span>
                 </div>
-                <span className="text-sm font-medium">{listing.favorites_count || 0}</span>
+                <span className="text-sm font-medium">{listing.favorites_count ?? 0}</span>
               </div>
             </CardContent>
           </Card>

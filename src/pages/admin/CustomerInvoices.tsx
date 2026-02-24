@@ -124,14 +124,14 @@ export default function CustomerInvoices() {
           setInvoices(prev => {
             const updated = [...prev, ...newData];
             // Check if there are more invoices to load
-            const totalCount = count || 0;
+            const totalCount = count ?? 0;
             setHasMore(updated.length < totalCount);
             return updated;
           });
         } else {
           setInvoices(newData);
           // Check if there are more invoices to load
-          const totalCount = count || 0;
+          const totalCount = count ?? 0;
           setHasMore(newData.length < totalCount);
         }
 

@@ -142,8 +142,8 @@ export default function DispatchInventory() {
             product_id: product.id,
             product_name: product.name,
             quantity: 1,
-            cost_per_unit: product.cost_per_unit || 0,
-            price_per_unit: product.wholesale_price || 0
+            cost_per_unit: product.cost_per_unit ?? 0,
+            price_per_unit: product.wholesale_price ?? 0
           }
         ]);
       }
@@ -342,8 +342,8 @@ export default function DispatchInventory() {
         await supabase
           .from('products')
           .update({
-            fronted_quantity: (currentProduct.fronted_quantity || 0) + product.quantity,
-            available_quantity: Math.max(0, (currentProduct.available_quantity || 0) - product.quantity)
+            fronted_quantity: (currentProduct.fronted_quantity ?? 0) + product.quantity,
+            available_quantity: Math.max(0, (currentProduct.available_quantity ?? 0) - product.quantity)
           })
           .eq('id', product.product_id)
           .eq('tenant_id', tenant.id);
@@ -361,7 +361,7 @@ export default function DispatchInventory() {
 
     if (balanceError) {
       // Fallback to direct update
-      const newOutstandingBalance = (selectedClient.outstanding_balance || 0) + totalExpectedRevenue;
+      const newOutstandingBalance = (selectedClient.outstanding_balance ?? 0) + totalExpectedRevenue;
       await supabase
         .from('wholesale_clients')
         .update({ outstanding_balance: newOutstandingBalance })
@@ -463,14 +463,14 @@ export default function DispatchInventory() {
                   </div>
                   <div>
                     <span className="text-muted-foreground">Credit Limit:</span>
-                    <span className="ml-2">{formatCurrency(selectedClient.credit_limit || 0)}</span>
+                    <span className="ml-2">{formatCurrency(selectedClient.credit_limit ?? 0)}</span>
                   </div>
                   <div className="col-span-2">
                     <span className="text-muted-foreground">Current Balance:</span>
-                    <span className={`ml-2 font-medium ${(selectedClient.outstanding_balance || 0) > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                      {formatCurrency(selectedClient.outstanding_balance || 0)}
+                    <span className={`ml-2 font-medium ${(selectedClient.outstanding_balance ?? 0) > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                      {formatCurrency(selectedClient.outstanding_balance ?? 0)}
                     </span>
-                    {(selectedClient.outstanding_balance || 0) > (selectedClient.credit_limit || 0) && (
+                    {(selectedClient.outstanding_balance ?? 0) > (selectedClient.credit_limit ?? 0) && (
                       <Badge variant="destructive" className="ml-2">
                         <AlertTriangle className="h-3 w-3 mr-1" />
                         Over Limit

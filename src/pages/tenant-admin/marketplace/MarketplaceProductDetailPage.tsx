@@ -288,7 +288,7 @@ export default function MarketplaceProductDetailPage() {
                             <Button
                                 className="w-full size-lg text-lg"
                                 onClick={() => addToCartMutation.mutate()}
-                                disabled={addToCartMutation.isPending || (product.quantity_available || 0) < 1}
+                                disabled={addToCartMutation.isPending || (product.quantity_available ?? 0) < 1}
                             >
                                 {addToCartMutation.isPending ? (
                                     <Loader2 className="h-5 w-5 animate-spin mr-2" />
@@ -310,13 +310,13 @@ export default function MarketplaceProductDetailPage() {
                                     <div className="font-medium">{product.strain_name}</div>
                                 </div>
                             )}
-                            {(product.thc_content || 0) > 0 && (
+                            {(product.thc_content ?? 0) > 0 && (
                                 <div>
                                     <span className="text-muted-foreground block mb-1">THC</span>
                                     <div className="font-medium">{product.thc_content}%</div>
                                 </div>
                             )}
-                            {(product.cbd_content || 0) > 0 && (
+                            {(product.cbd_content ?? 0) > 0 && (
                                 <div>
                                     <span className="text-muted-foreground block mb-1">CBD</span>
                                     <div className="font-medium">{product.cbd_content}%</div>

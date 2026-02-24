@@ -138,7 +138,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
             order.id,
             order.order_number || (order.id as string).slice(0, 8),
             order.status,
-            order.total_amount || 0,
+            order.total_amount ?? 0,
             `"${customerName}"`,
             `"${customerEmail}"`,
             `"${itemsSummary.replace(/"/g, '""')}"`, // Escape quotes in items
@@ -155,8 +155,8 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
             user.full_name || 'N/A',
             user.phone || 'N/A',
             user.age_verified ? 'Yes' : 'No',
-            user.order_count || 0,
-            user.total_spent || 0
+            user.order_count ?? 0,
+            user.total_spent ?? 0
           ].join(','))
         ].join('\n');
       } else {
@@ -166,7 +166,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
           ...data.map((product: Record<string, unknown>) => [
             product.name || 'N/A',
             product.category || 'N/A',
-            product.price || 0,
+            product.price ?? 0,
             product.in_stock ? 'Yes' : 'No',
             product.created_at
           ].join(','))

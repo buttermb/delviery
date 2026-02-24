@@ -92,7 +92,7 @@ export default function CustomerInsightsPage() {
 
     // Average lifetime value
     const avgLTV = totalCustomers > 0
-      ? customers.reduce((sum, c) => sum + (c.total_spent || 0), 0) / totalCustomers
+      ? customers.reduce((sum, c) => sum + (c.total_spent ?? 0), 0) / totalCustomers
       : 0;
 
     // Calculate growth percentages
@@ -139,10 +139,10 @@ export default function CustomerInsightsPage() {
 
   // Customer segments by spending
   const customerSegments = useMemo(() => {
-    const vip = customers.filter(c => (c.total_spent || 0) > 500).length;
-    const regular = customers.filter(c => (c.total_spent || 0) >= 100 && (c.total_spent || 0) <= 500).length;
-    const occasional = customers.filter(c => (c.total_spent || 0) >= 50 && (c.total_spent || 0) < 100).length;
-    const newCust = customers.filter(c => (c.total_spent || 0) < 50).length;
+    const vip = customers.filter(c => (c.total_spent ?? 0) > 500).length;
+    const regular = customers.filter(c => (c.total_spent ?? 0) >= 100 && (c.total_spent ?? 0) <= 500).length;
+    const occasional = customers.filter(c => (c.total_spent ?? 0) >= 50 && (c.total_spent ?? 0) < 100).length;
+    const newCust = customers.filter(c => (c.total_spent ?? 0) < 50).length;
 
     return [
       { name: 'VIP (>$500)', value: vip, color: COLORS[0] },
@@ -157,7 +157,7 @@ export default function CustomerInsightsPage() {
     const customerOrders: Record<string, number> = {};
     orders.forEach(o => {
       if (o.customer_id) {
-        customerOrders[o.customer_id] = (customerOrders[o.customer_id] || 0) + 1;
+        customerOrders[o.customer_id] = (customerOrders[o.customer_id] ?? 0) + 1;
       }
     });
 
@@ -200,18 +200,18 @@ export default function CustomerInsightsPage() {
       const countMap: Record<string, number> = {};
       (orderCounts ?? []).forEach(o => {
         if (o.customer_id) {
-          countMap[o.customer_id] = (countMap[o.customer_id] || 0) + 1;
+          countMap[o.customer_id] = (countMap[o.customer_id] ?? 0) + 1;
         }
       });
 
       return (data ?? []).map(c => ({
         name: `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() || 'Unknown',
-        orders: countMap[c.id] || 0,
-        spent: c.total_spent || 0,
+        orders: countMap[c.id] ?? 0,
+        spent: c.total_spent ?? 0,
         lastOrder: c.last_purchase_at 
           ? format(new Date(c.last_purchase_at), 'MMM d, yyyy')
           : 'Never',
-        status: (c.total_spent || 0) > 500 ? 'VIP' : 'Regular',
+        status: (c.total_spent ?? 0) > 500 ? 'VIP' : 'Regular',
       }));
     },
     enabled: !!tenant?.id,
@@ -222,13 +222,13 @@ export default function CustomerInsightsPage() {
     const hourCounts: Record<number, number> = {};
     orders.forEach(o => {
       const hour = new Date(o.created_at).getHours();
-      hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+      hourCounts[hour] = (hourCounts[hour] ?? 0) + 1;
     });
 
     const hours = [6, 9, 12, 15, 18, 21];
     return hours.map(h => ({
       hour: `${h}:00`,
-      orders: hourCounts[h] || 0,
+      orders: hourCounts[h] ?? 0,
     }));
   }, [orders]);
 

@@ -121,8 +121,8 @@ export default function ReportsPage() {
       exportCSV(
         inventoryRecord.map(i => ({
           product: (i.product_name as string) ?? '',
-          quantity_lbs: Number(i.quantity_lbs || 0),
-          quantity_units: (i.quantity_units as number) || 0,
+          quantity_lbs: Number(i.quantity_lbs ?? 0),
+          quantity_units: (i.quantity_units as number) ?? 0,
           category: (i.category as string) || 'N/A',
           warehouse: (i.warehouse_location as string) || 'N/A',
           updated: i.updated_at ? format(new Date(i.updated_at as string), 'yyyy-MM-dd') : 'N/A'

@@ -147,8 +147,8 @@ export default function WholesaleCheckoutPage() {
 
   // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => {
-    const price = item.unit_price as number || 0;
-    const qty = item.quantity as number || 0;
+    const price = item.unit_price as number ?? 0;
+    const qty = item.quantity as number ?? 0;
     return sum + (price * qty);
   }, 0);
 

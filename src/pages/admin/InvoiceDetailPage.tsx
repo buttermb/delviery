@@ -260,7 +260,7 @@ export default function InvoiceDetailPage() {
                                     >
                                         <DollarSign className="mr-2 h-4 w-4" />
                                         Record Payment
-                                        {invoice.amount_paid ? ` (${formatCurrency(invoice.total - (invoice.amount_paid || 0))} remaining)` : ''}
+                                        {invoice.amount_paid ? ` (${formatCurrency(invoice.total - (invoice.amount_paid ?? 0))} remaining)` : ''}
                                     </Button>
                                 )}
 
@@ -404,12 +404,12 @@ export default function InvoiceDetailPage() {
                                             <Separator className="my-2 w-48" />
                                             <div className="flex justify-between w-48 text-green-600">
                                                 <span>Paid:</span>
-                                                <span>{formatCurrency(invoice.amount_paid || 0)}</span>
+                                                <span>{formatCurrency(invoice.amount_paid ?? 0)}</span>
                                             </div>
                                             <div className="flex justify-between w-48 font-bold">
                                                 <span>Balance:</span>
-                                                <span className={invoice.total - (invoice.amount_paid || 0) > 0 ? 'text-red-600' : 'text-green-600'}>
-                                                    {formatCurrency(Math.max(0, invoice.total - (invoice.amount_paid || 0)))}
+                                                <span className={invoice.total - (invoice.amount_paid ?? 0) > 0 ? 'text-red-600' : 'text-green-600'}>
+                                                    {formatCurrency(Math.max(0, invoice.total - (invoice.amount_paid ?? 0)))}
                                                 </span>
                                             </div>
                                         </>
@@ -570,7 +570,7 @@ export default function InvoiceDetailPage() {
             <InvoicePaymentDialog
                 invoiceId={invoice.id}
                 amountDue={invoice.total}
-                amountPaid={invoice.amount_paid || 0}
+                amountPaid={invoice.amount_paid ?? 0}
                 open={showPaymentDialog}
                 onOpenChange={setShowPaymentDialog}
             />

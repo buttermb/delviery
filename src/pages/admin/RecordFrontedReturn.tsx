@@ -139,8 +139,8 @@ export default function RecordFrontedReturn() {
             const { error: updateError } = await supabase
               .from("fronted_inventory")
               .update({
-                quantity_returned: (front.quantity_returned || 0) + goodReturns,
-                quantity_damaged: (front.quantity_damaged || 0) + damagedReturns,
+                quantity_returned: (front.quantity_returned ?? 0) + goodReturns,
+                quantity_damaged: (front.quantity_damaged ?? 0) + damagedReturns,
               })
               .eq("id", id)
               .eq("account_id", tenant.id);
@@ -160,8 +160,8 @@ export default function RecordFrontedReturn() {
                 await supabase
                   .from("products")
                   .update({
-                    available_quantity: (product.available_quantity || 0) + goodReturns,
-                    fronted_quantity: Math.max(0, (product.fronted_quantity || 0) - goodReturns)
+                    available_quantity: (product.available_quantity ?? 0) + goodReturns,
+                    fronted_quantity: Math.max(0, (product.fronted_quantity ?? 0) - goodReturns)
                   })
                   .eq("id", front.product_id)
                   .eq("tenant_id", tenant.id);
@@ -186,7 +186,7 @@ export default function RecordFrontedReturn() {
                     .maybeSingle();
 
                   if (client) {
-                    const newBalance = Math.max(0, (client.outstanding_balance || 0) - returnValue);
+                    const newBalance = Math.max(0, (client.outstanding_balance ?? 0) - returnValue);
                     await supabase
                       .from('wholesale_clients')
                       .update({ outstanding_balance: newBalance })

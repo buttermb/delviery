@@ -65,7 +65,7 @@ export default function PerformanceMonitor() {
             <CardDescription>Time until first content renders</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${getScoreColor(metrics.FCP || 0, { good: 1800, fair: 3000 })}`}>
+            <div className={`text-3xl font-bold ${getScoreColor(metrics.FCP ?? 0, { good: 1800, fair: 3000 })}`}>
               {metrics.FCP ? formatDuration(metrics.FCP) : 'N/A'}
             </div>
             <div className="text-xs text-muted-foreground mt-2">
@@ -80,7 +80,7 @@ export default function PerformanceMonitor() {
             <CardDescription>Largest element render time</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${getScoreColor(metrics.LCP || 0, { good: 2500, fair: 4000 })}`}>
+            <div className={`text-3xl font-bold ${getScoreColor(metrics.LCP ?? 0, { good: 2500, fair: 4000 })}`}>
               {metrics.LCP ? formatDuration(metrics.LCP) : 'N/A'}
             </div>
             <div className="text-xs text-muted-foreground mt-2">
@@ -95,7 +95,7 @@ export default function PerformanceMonitor() {
             <CardDescription>Time to first interaction</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${getScoreColor(metrics.FID || 0, { good: 100, fair: 300 })}`}>
+            <div className={`text-3xl font-bold ${getScoreColor(metrics.FID ?? 0, { good: 100, fair: 300 })}`}>
               {metrics.FID ? formatDuration(metrics.FID) : 'N/A'}
             </div>
             <div className="text-xs text-muted-foreground mt-2">
@@ -110,7 +110,7 @@ export default function PerformanceMonitor() {
             <CardDescription>Visual stability score</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${getScoreColor(metrics.CLS || 0, { good: 0.1, fair: 0.25 })}`}>
+            <div className={`text-3xl font-bold ${getScoreColor(metrics.CLS ?? 0, { good: 0.1, fair: 0.25 })}`}>
               {metrics.CLS !== undefined ? metrics.CLS.toFixed(3) : 'N/A'}
             </div>
             <div className="text-xs text-muted-foreground mt-2">
@@ -125,7 +125,7 @@ export default function PerformanceMonitor() {
             <CardDescription>Server response time</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold ${getScoreColor(metrics.TTFB || 0, { good: 800, fair: 1800 })}`}>
+            <div className={`text-3xl font-bold ${getScoreColor(metrics.TTFB ?? 0, { good: 800, fair: 1800 })}`}>
               {metrics.TTFB ? formatDuration(metrics.TTFB) : 'N/A'}
             </div>
             <div className="text-xs text-muted-foreground mt-2">
@@ -201,7 +201,7 @@ export default function PerformanceMonitor() {
                     {formatDuration(resource.duration)}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {formatBytes(resource.transferSize || 0)}
+                    {formatBytes(resource.transferSize ?? 0)}
                   </div>
                 </div>
               </div>

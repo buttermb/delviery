@@ -131,7 +131,7 @@ export default function StorefrontCustomers() {
         const existing = customerMap.get(email);
         if (existing) {
           existing.total_orders += 1;
-          existing.total_spent += order.total_amount || 0;
+          existing.total_spent += order.total_amount ?? 0;
           if (new Date(order.created_at) > new Date(existing.last_order)) {
             existing.last_order = order.created_at;
             existing.customer_name = order.customer_name ?? existing.customer_name;
@@ -146,7 +146,7 @@ export default function StorefrontCustomers() {
             customer_name: order.customer_name,
             customer_phone: order.customer_phone,
             total_orders: 1,
-            total_spent: order.total_amount || 0,
+            total_spent: order.total_amount ?? 0,
             first_order: order.created_at,
             last_order: order.created_at,
           });

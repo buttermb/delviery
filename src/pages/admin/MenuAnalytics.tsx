@@ -18,10 +18,10 @@ const MenuAnalytics = () => {
   const { data: securityEvents, isLoading: eventsLoading } = useMenuSecurityEvents(menuId);
 
   // Calculate metrics
-  const totalViews = accessLogs?.length || 0;
+  const totalViews = accessLogs?.length ?? 0;
   const uniqueVisitors = new Set(accessLogs?.map(log => log.access_whitelist_id)).size;
-  const totalOrders = orders?.length || 0;
-  const totalRevenue = orders?.reduce((sum, order) => sum + parseFloat(order.total_amount.toString()), 0) || 0;
+  const totalOrders = orders?.length ?? 0;
+  const totalRevenue = orders?.reduce((sum, order) => sum + parseFloat(order.total_amount.toString()), 0) ?? 0;
   const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
   const conversionRate = totalViews > 0 ? (totalOrders / totalViews) * 100 : 0;
 

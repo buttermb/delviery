@@ -153,7 +153,7 @@ export default function TenantAdminBillingPage() {
         throw error;
       }
 
-      logger.info('[BillingPage] Subscription plans loaded:', { count: data?.length || 0, component: 'BillingPage' });
+      logger.info('[BillingPage] Subscription plans loaded:', { count: data?.length ?? 0, component: 'BillingPage' });
       logger.debug('[BillingPage] Plans:', { plans: data?.map(p => ({ id: p.id, name: p.name, price: p.price_monthly })), component: 'BillingPage' });
 
       return data ?? [];
@@ -194,8 +194,8 @@ export default function TenantAdminBillingPage() {
   } = useCredits();
 
   const getUsagePercentage = (resource: string) => {
-    const limit = limits[resource] === -1 ? Infinity : (limits[resource] || 0);
-    const current = usage[resource] || 0;
+    const limit = limits[resource] === -1 ? Infinity : (limits[resource] ?? 0);
+    const current = usage[resource] ?? 0;
     if (limit === Infinity) return 0;
     return Math.min((current / limit) * 100, 100);
   };
@@ -274,7 +274,7 @@ export default function TenantAdminBillingPage() {
 
       for (const [resource, limit] of Object.entries(limits)) {
         if (limit === -1) continue; // Unlimited
-        const current = currentUsage[resource] || 0;
+        const current = currentUsage[resource] ?? 0;
         if (current > limit) {
           violations.push(`${resource}: ${current} (Limit: ${limit})`);
         }
@@ -622,7 +622,7 @@ export default function TenantAdminBillingPage() {
                       {plan?.display_name || (tenant?.subscription_plan as string)?.toUpperCase() || "No Plan"}
                     </span>
                     <Badge variant="outline">
-                      {formatCurrency((tenant?.mrr as number) || 0)}/month
+                      {formatCurrency((tenant?.mrr as number) ?? 0)}/month
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
@@ -636,7 +636,7 @@ export default function TenantAdminBillingPage() {
                   {/* Platform Fee Notice */}
                   <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 mb-4">
                     <p className="text-sm text-purple-900 dark:text-purple-100">
-                      💎 <strong>Platform Fee:</strong> {formatCurrency(((tenant?.mrr as number) || 0) * 0.02)}/month (2% of subscription)
+                      💎 <strong>Platform Fee:</strong> {formatCurrency(((tenant?.mrr as number) ?? 0) * 0.02)}/month (2% of subscription)
                     </p>
                     <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
                       This fee covers platform hosting, maintenance, and support
@@ -684,7 +684,7 @@ export default function TenantAdminBillingPage() {
                 {Object.keys(limits).length > 0 ? (
                   Object.keys(limits).map((resource) => {
                     const limit = limits[resource];
-                    const current = usage[resource] || 0;
+                    const current = usage[resource] ?? 0;
                     const isUnlimited = limit === -1;
                     const percentage = getUsagePercentage(resource);
                     const isOverLimit = !isUnlimited && current > limit;
@@ -1006,7 +1006,7 @@ export default function TenantAdminBillingPage() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">{formatCurrency(invoice.total || 0)}</p>
+                          <p className="font-medium">{formatCurrency(invoice.total ?? 0)}</p>
                           <Badge
                             variant={invoice.status === "paid" ? "default" : "outline"}
                           >

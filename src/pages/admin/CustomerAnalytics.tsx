@@ -94,13 +94,13 @@ export default function CustomerAnalytics() {
     );
   }
 
-  const customerCount = customers?.length || 0;
-  const totalRevenue = orders?.reduce((sum: number, o: Order) => sum + parseFloat(String(o.total || 0)), 0) || 0;
+  const customerCount = customers?.length ?? 0;
+  const totalRevenue = orders?.reduce((sum: number, o: Order) => sum + parseFloat(String(o.total ?? 0)), 0) ?? 0;
   const avgCustomerValue = customerCount > 0 ? totalRevenue / customerCount : 0;
 
   const customerTypes = (customers ?? []).reduce((acc: Record<string, number>, customer: Customer) => {
     const type = customer.customer_type || 'regular';
-    acc[type] = (acc[type] || 0) + 1;
+    acc[type] = (acc[type] ?? 0) + 1;
     return acc;
   }, {});
 

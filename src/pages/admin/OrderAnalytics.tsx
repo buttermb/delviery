@@ -50,15 +50,15 @@ export default function OrderAnalytics() {
     const existing = acc.find(item => item.day === day);
     if (existing) {
       existing.orders += 1;
-      existing.revenue += parseFloat(String(order.total || 0));
+      existing.revenue += parseFloat(String(order.total ?? 0));
     } else {
-      acc.push({ day, orders: 1, revenue: parseFloat(String(order.total || 0)) });
+      acc.push({ day, orders: 1, revenue: parseFloat(String(order.total ?? 0)) });
     }
     return acc;
   }, []);
 
-  const totalOrders = orders?.length || 0;
-  const totalRevenue = (orders ?? []).reduce((sum: number, o) => sum + parseFloat(String(o.total || 0)), 0);
+  const totalOrders = orders?.length ?? 0;
+  const totalRevenue = (orders ?? []).reduce((sum: number, o) => sum + parseFloat(String(o.total ?? 0)), 0);
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   return (
