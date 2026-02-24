@@ -175,9 +175,12 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
   return (
     <>
       <Card
-        onMouseEnter={handleMouseEnter} 
+        onMouseEnter={handleMouseEnter}
         className="group overflow-hidden backdrop-blur-2xl transition-all duration-500 cursor-pointer relative bg-card/50 border border-border/50 hover:border-border hover:-translate-y-3 hover:scale-[1.02]"
         onClick={handleCardClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(); } }}
       >
         {/* Out of Stock Overlay */}
         {!product.in_stock && (

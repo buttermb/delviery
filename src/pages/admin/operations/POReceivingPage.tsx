@@ -300,6 +300,9 @@ export default function POReceivingPage() {
                         key={po.id}
                         className={`cursor-pointer hover:bg-accent ${isOverdue ? 'bg-red-500/5' : isDueToday ? 'bg-orange-500/5' : ''}`}
                         onClick={() => handleReceive(po)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleReceive(po); } }}
                       >
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">

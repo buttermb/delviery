@@ -51,11 +51,14 @@ export function StoreCard({
   onDelete,
 }: StoreCardProps) {
   return (
-    <Card 
+    <Card
       className={`cursor-pointer transition-all hover:shadow-md ${
         isSelected ? 'ring-2 ring-primary border-primary' : ''
       }`}
       onClick={() => onSelect(store.id)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(store.id); } }}
     >
       <CardContent className="p-5">
         {/* Header */}

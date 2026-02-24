@@ -401,6 +401,9 @@ export default function WholesaleClients() {
                         key={client.id}
                         className="cursor-pointer hover:bg-muted/50 touch-manipulation"
                         onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`); } }}
                       >
                         <TableCell className="text-xs sm:text-sm max-w-[200px]">
                           <div className="max-w-[200px] min-w-0">
@@ -667,6 +670,9 @@ export default function WholesaleClients() {
                   key={client.id}
                   className="overflow-hidden cursor-pointer hover:bg-muted/50 transition-colors active:scale-[0.98]"
                   onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`); } }}
                 >
                   <div className="p-4 space-y-3">
                     <div className="flex items-start justify-between">

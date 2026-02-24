@@ -286,7 +286,13 @@ export function LoginPage() {
 
           {/* Header */}
           <div className="p-6 md:p-8 flex items-center justify-between">
-            <div className="cursor-pointer" onClick={() => navigate('/')}>
+            <div
+              className="cursor-pointer"
+              onClick={() => navigate('/')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/'); } }}
+            >
               <FloraIQLogo size="md" />
             </div>
             <ThemeToggle className="hover:bg-saas-primary/10 text-saas-primary" />

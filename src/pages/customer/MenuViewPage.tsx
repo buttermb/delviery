@@ -329,7 +329,13 @@ export default function CustomerMenuViewPage() {
         <div className="container mx-auto px-4 py-3">
           <div className="flex flex-col md:flex-row gap-4 items-center">
             {/* Search Trigger */}
-            <div className="relative w-full md:w-64" onClick={() => setIsSearchOpen(true)}>
+            <div
+              className="relative w-full md:w-64"
+              onClick={() => setIsSearchOpen(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsSearchOpen(true); } }}
+            >
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 readOnly
