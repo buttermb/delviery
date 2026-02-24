@@ -16,13 +16,12 @@ import {
   User, Package
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { format } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { CourierAvailabilityPanel } from '@/components/admin/fulfillment/CourierAvailabilityPanel';
 import { AssignToFleetDialog } from '@/components/admin/fulfillment/AssignToFleetDialog';
-import { formatCurrency, formatPhoneNumber } from '@/lib/formatters';
+import { formatCurrency, formatPhoneNumber, formatSmartDate } from '@/lib/formatters';
 
 interface DeliveryRow {
   id: string;
@@ -239,7 +238,7 @@ export default function DeliveryManagement() {
     ...commonColumns,
     {
       header: 'Scheduled',
-      cell: (d) => format(new Date(d.scheduled_at), 'MMM d, h:mm a')
+      cell: (d) => formatSmartDate(d.scheduled_at, { includeTime: true })
     },
     {
       header: 'Status',
@@ -370,7 +369,7 @@ export default function DeliveryManagement() {
     ...commonColumns,
     {
       header: 'Delivered At',
-      cell: (d) => d.delivered_at ? format(new Date(d.delivered_at), 'MMM d, h:mm a') : '-'
+      cell: (d) => d.delivered_at ? formatSmartDate(d.delivered_at, { includeTime: true }) : '-'
     },
     {
       header: 'Courier',

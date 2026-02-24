@@ -15,7 +15,7 @@ import {
   Navigation,
   Clock,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface Order {
   id: string;
@@ -260,7 +260,7 @@ export default function CourierActiveOrderPage() {
                 <div className="flex-1">
                   <p className="font-medium">Order Created</p>
                   <p className="text-sm text-muted-foreground">
-                    {format(new Date(order.created_at), 'MMM dd, yyyy h:mm a')}
+                    {formatSmartDate(order.created_at, { includeTime: true })}
                   </p>
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function CourierActiveOrderPage() {
                   <div className="flex-1">
                     <p className="font-medium">Accepted</p>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(order.accepted_at), 'MMM dd, yyyy h:mm a')}
+                      {formatSmartDate(order.accepted_at, { includeTime: true })}
                     </p>
                   </div>
                 </div>
@@ -287,7 +287,7 @@ export default function CourierActiveOrderPage() {
                   <div className="flex-1">
                     <p className="font-medium">Picked Up</p>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(order.courier_picked_up_at), 'MMM dd, yyyy h:mm a')}
+                      {formatSmartDate(order.courier_picked_up_at, { includeTime: true })}
                     </p>
                   </div>
                 </div>
@@ -301,7 +301,7 @@ export default function CourierActiveOrderPage() {
                   <div className="flex-1">
                     <p className="font-medium">Delivered</p>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(order.delivered_at), 'MMM dd, yyyy h:mm a')}
+                      {formatSmartDate(order.delivered_at, { includeTime: true })}
                     </p>
                   </div>
                 </div>

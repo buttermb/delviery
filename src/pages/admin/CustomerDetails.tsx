@@ -20,7 +20,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SEOHead } from '@/components/SEOHead';
-import { format } from 'date-fns';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { ActivityTimeline } from '@/components/crm/ActivityTimeline';
@@ -39,7 +38,7 @@ import { CustomerComplianceVerification } from '@/components/admin/customers/Cus
 import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { useCustomerCredit } from '@/hooks/useCustomerCredit';
 import { isValidUUID } from '@/lib/utils/uuidValidation';
-import { displayName, displayValue } from '@/lib/formatters';
+import { displayName, displayValue, formatSmartDate } from '@/lib/formatters';
 
 interface Customer {
   id: string;
@@ -348,7 +347,7 @@ export default function CustomerDetails() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 shrink-0" />
-                      Member since {format(new Date(customer.created_at), 'MMM d, yyyy')}
+                      Member since {formatSmartDate(customer.created_at)}
                     </div>
                   </div>
                 </div>
@@ -401,7 +400,7 @@ export default function CustomerDetails() {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs sm:text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">First Order</p>
                     <p className="text-base sm:text-xl md:text-2xl font-bold font-mono text-[hsl(var(--tenant-text))] truncate">
-                      {firstOrderDate ? format(new Date(firstOrderDate), 'MMM d, yyyy') : 'No orders'}
+                      {firstOrderDate ? formatSmartDate(firstOrderDate) : 'No orders'}
                     </p>
                   </div>
                   <div className="p-2 sm:p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg shrink-0">
@@ -524,7 +523,7 @@ export default function CustomerDetails() {
                   <CardContent className="space-y-3">
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Date of Birth</label>
-                      <p>{customer.date_of_birth ? format(new Date(customer.date_of_birth), 'MMM d, yyyy') : 'N/A'}</p>
+                      <p>{customer.date_of_birth ? formatSmartDate(customer.date_of_birth) : 'N/A'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Address</label>
@@ -544,7 +543,7 @@ export default function CustomerDetails() {
                   <CardContent className="space-y-3">
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Last Purchase</label>
-                      <p>{customer.last_purchase_at ? format(new Date(customer.last_purchase_at), 'MMM d, yyyy') : 'Never'}</p>
+                      <p>{customer.last_purchase_at ? formatSmartDate(customer.last_purchase_at) : 'Never'}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Total Orders</label>
@@ -681,7 +680,7 @@ export default function CustomerDetails() {
                               <div>
                                 <p className="font-medium">${payment.amount?.toFixed(2)}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  {format(new Date(payment.created_at), 'MMM d, yyyy')} · {payment.payment_method}
+                                  {formatSmartDate(payment.created_at)} · {payment.payment_method}
                                 </p>
                               </div>
                             </div>
@@ -739,7 +738,7 @@ export default function CustomerDetails() {
                         <label className="text-sm font-medium text-muted-foreground">Card Expiration</label>
                         <p className="text-lg">
                           {customer.medical_card_expiration
-                            ? format(new Date(customer.medical_card_expiration), 'MMM d, yyyy')
+                            ? formatSmartDate(customer.medical_card_expiration)
                             : 'N/A'
                           }
                         </p>
@@ -806,7 +805,7 @@ export default function CustomerDetails() {
                               {note.profiles?.full_name || 'Staff Member'}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {format(new Date(note.created_at), 'MMM d, yyyy h:mm a')}
+                              {formatSmartDate(note.created_at, { includeTime: true })}
                             </p>
                           </div>
                           <p className="text-sm">{note.note}</p>
