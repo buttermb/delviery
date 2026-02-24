@@ -34,6 +34,7 @@ import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import ExternalLink from "lucide-react/dist/esm/icons/external-link";
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -153,7 +154,7 @@ export function ProductQRGenerator({ product, open, onOpenChange }: ProductQRGen
       logger.error('Failed to download QR code', error, {
         component: 'ProductQRGenerator',
       });
-      toast.error('Failed to download QR code');
+      toast.error('Failed to download QR code', { description: humanizeError(error) });
     } finally {
       setDownloading(false);
     }

@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface Product {
   id: string;
@@ -66,8 +67,8 @@ export function DuplicateProductButton({
       });
       
       setTimeout(() => setIsSuccess(false), 2000);
-    } catch {
-      toast.error('Failed to duplicate product. Please try again.');
+    } catch (error) {
+      toast.error('Failed to duplicate product. Please try again.', { description: humanizeError(error) });
     } finally {
       setIsLoading(false);
     }

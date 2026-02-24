@@ -24,6 +24,7 @@ import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 import { useStockAlertSettings } from '@/hooks/useStockAlertSettings';
 import { SearchInput } from '@/components/shared/SearchInput';
@@ -101,7 +102,7 @@ export function StockAlertSettings() {
     },
     onError: (error: Error) => {
       logger.error('Failed to remove stock alert threshold', { error: error.message });
-      toast.error('Failed to remove stock alert threshold');
+      toast.error('Failed to remove stock alert threshold', { description: humanizeError(error) });
     },
   });
 

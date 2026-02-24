@@ -39,6 +39,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
@@ -118,7 +119,7 @@ export function AutoTopUpSettings({
     },
     onError: (error) => {
       logger.error('Failed to save auto top-up settings', { error });
-      toast.error('Failed to save settings');
+      toast.error('Failed to save settings', { description: humanizeError(error) });
     },
   });
 

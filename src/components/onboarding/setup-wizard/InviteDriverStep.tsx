@@ -30,6 +30,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 const driverSchema = z.object({
   full_name: z.string().min(2, 'Name is required'),
@@ -81,7 +82,7 @@ export function InviteDriverStep({ onComplete }: InviteDriverStepProps) {
       toast.success(`Driver "${data.full_name}" added!`);
     } catch (error) {
       logger.error('Failed to invite driver', error instanceof Error ? error : new Error(String(error)), { component: 'InviteDriverStep' });
-      toast.error('Failed to add driver. Please try again.');
+      toast.error('Failed to add driver. Please try again.', { description: humanizeError(error) });
     } finally {
       setIsSubmitting(false);
     }

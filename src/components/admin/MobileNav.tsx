@@ -18,6 +18,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { Badge } from '@/components/ui/badge';
 
 interface NavItem {
@@ -72,8 +73,8 @@ export function MobileNav() {
       setTimeout(() => {
         window.location.reload();
       }, 500);
-    } catch {
-      toast.error('Failed to refresh');
+    } catch (error) {
+      toast.error('Failed to refresh', { description: humanizeError(error) });
       setIsRefreshing(false);
     }
   };

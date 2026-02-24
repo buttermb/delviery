@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { Loader2 } from "lucide-react";
 
 interface FeatureListProps {
@@ -41,7 +42,7 @@ export function FeatureList({ features, readOnly = false, tenantId }: FeatureLis
       toast.success('Tenant features have been updated successfully');
     },
     onError: (error: unknown) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update features');
+      toast.error('Failed to update features', { description: humanizeError(error) });
     },
   });
 

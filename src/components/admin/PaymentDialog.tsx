@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useProcessPayment } from "@/hooks/useWholesaleData";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
 import { INVOICE_PAYMENT_METHODS } from "@/lib/constants/paymentMethods";
 import { formatCurrency } from '@/lib/formatters';
@@ -90,8 +91,8 @@ export function PaymentDialog({ clientId, clientName, outstandingBalance, open, 
       setAmount("");
       setReferenceNumber("");
       setNotes("");
-    } catch {
-      toast.error('Failed to process payment');
+    } catch (error) {
+      toast.error('Failed to process payment', { description: humanizeError(error) });
     }
   };
 

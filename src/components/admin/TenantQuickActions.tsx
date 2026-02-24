@@ -27,6 +27,7 @@ import {
     TrendingUp,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { supabase } from '@/integrations/supabase/client';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -62,7 +63,7 @@ export function TenantQuickActions({ tenant, onViewDetails, onRefresh }: TenantQ
             // Navigate to tenant's admin dashboard
             navigate(`/${tenant.slug}/admin/dashboard`);
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Failed to login');
+            toast.error('Failed to login', { description: humanizeError(error) });
         } finally {
             setIsLoading(false);
         }
@@ -112,7 +113,7 @@ export function TenantQuickActions({ tenant, onViewDetails, onRefresh }: TenantQ
                     closeDialog();
                     onRefresh?.();
                 } catch (error) {
-                    toast.error(error instanceof Error ? error.message : `Failed to ${action}`);
+                    toast.error(`Failed to ${action}`, { description: humanizeError(error) });
                 } finally {
                     setLoading(false);
                     setIsLoading(false);

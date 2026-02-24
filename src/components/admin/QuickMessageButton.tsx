@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // Pre-defined message templates with variable placeholders
 const MESSAGE_TEMPLATES = [
@@ -123,7 +124,7 @@ export function QuickMessageButton({
       setSelectedTemplate('');
     } catch (error) {
       logger.error('Failed to send message', error);
-      toast.error('Failed to send message');
+      toast.error('Failed to send message', { description: humanizeError(error) });
     } finally {
       setIsSending(false);
     }

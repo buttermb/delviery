@@ -25,6 +25,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 type ProductInsert = Database['public']['Tables']['products']['Insert'];
 
@@ -102,7 +103,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
       toast.success(`"${data.name}" added!`);
     } catch (error) {
       logger.error('Failed to add product', error instanceof Error ? error : new Error(String(error)), { component: 'AddProductsStep' });
-      toast.error('Failed to add product. Please try again.');
+      toast.error('Failed to add product. Please try again.', { description: humanizeError(error) });
     } finally {
       setIsSubmitting(false);
     }
@@ -199,7 +200,7 @@ export function AddProductsStep({ onComplete }: AddProductsStepProps) {
       }
     } catch (error) {
       logger.error('CSV import failed', error instanceof Error ? error : new Error(String(error)), { component: 'AddProductsStep' });
-      toast.error('Import failed. Check your CSV format.');
+      toast.error('Import failed. Check your CSV format.', { description: humanizeError(error) });
     } finally {
       setIsImporting(false);
     }

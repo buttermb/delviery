@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface OrderItem {
   product_id: string;
@@ -58,8 +59,8 @@ export function QuickReorderButton({
       
       // Reset success state after animation
       setTimeout(() => setIsSuccess(false), 2000);
-    } catch {
-      toast.error('Failed to create reorder. Please try again.');
+    } catch (error) {
+      toast.error('Failed to create reorder. Please try again.', { description: humanizeError(error) });
     } finally {
       setIsLoading(false);
     }

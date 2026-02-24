@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { getStatusColor, getStatusVariant } from '@/lib/utils/statusColors';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 export type StatusOption = {
   value: string;
@@ -96,7 +97,7 @@ export function StatusDropdown({
       setOpen(false);
     } catch (error) {
       logger.error('Failed to update status', error);
-      toast.error('Failed to update status');
+      toast.error('Failed to update status', { description: humanizeError(error) });
     } finally {
       setIsUpdating(false);
     }

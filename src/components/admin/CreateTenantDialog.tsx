@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Loader2 } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
@@ -241,7 +242,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
       setOpen(false);
       form.reset();
     } catch (error: unknown) {
-      toast.error("Failed to create tenant");
+      toast.error("Failed to create tenant", { description: humanizeError(error) });
     } finally {
       setIsSaving(false);
     }

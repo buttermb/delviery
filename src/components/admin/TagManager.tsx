@@ -11,6 +11,7 @@
 import { useState } from 'react';
 import { X, Plus, Tag, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,8 +65,8 @@ export function TagManager({ contactId, readOnly = false }: TagManagerProps) {
     try {
       await assignTag.mutateAsync({ contactId, tagId: tag.id });
       toast.success(`Tag "${tag.name}" added`);
-    } catch {
-      toast.error('Failed to add tag');
+    } catch (error) {
+      toast.error('Failed to add tag', { description: humanizeError(error) });
     }
   };
 
@@ -73,8 +74,8 @@ export function TagManager({ contactId, readOnly = false }: TagManagerProps) {
     try {
       await removeTag.mutateAsync({ contactId, tagId });
       toast.success(`Tag "${tagName}" removed`);
-    } catch {
-      toast.error('Failed to remove tag');
+    } catch (error) {
+      toast.error('Failed to remove tag', { description: humanizeError(error) });
     }
   };
 
@@ -93,8 +94,8 @@ export function TagManager({ contactId, readOnly = false }: TagManagerProps) {
       }
       setNewTagName('');
       setSelectedColor(TAG_COLORS[8]);
-    } catch {
-      toast.error('Failed to create tag');
+    } catch (error) {
+      toast.error('Failed to create tag', { description: humanizeError(error) });
     }
   };
 

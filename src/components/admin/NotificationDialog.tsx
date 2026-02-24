@@ -39,6 +39,7 @@ import { Badge } from '@/components/ui/badge';
 import { Bell, Mail, MessageSquare, Globe, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -135,7 +136,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
       form.reset();
     } catch (error: unknown) {
       logger.error('Failed to send notifications', error instanceof Error ? error : new Error(String(error)), { component: 'NotificationDialog' });
-      toast.error("Failed to send notifications");
+      toast.error("Failed to send notifications", { description: humanizeError(error) });
     } finally {
       setIsSending(false);
     }

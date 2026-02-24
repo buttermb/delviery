@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import QRCode from "qrcode";
 import { Loader2, ShieldCheck, AlertTriangle, Download, Copy } from "lucide-react";
 import { handleError } from '@/utils/errorHandling/handlers';
@@ -186,7 +187,7 @@ export function TwoFactorSetup() {
             return true;
         } catch (error) {
             logger.error("Failed to save backup codes", error);
-            toast.error("Failed to save backup codes. Please try regenerating them later.");
+            toast.error("Failed to save backup codes. Please try regenerating them later.", { description: humanizeError(error) });
             return false;
         }
     };
@@ -278,8 +279,8 @@ export function TwoFactorSetup() {
         try {
             await navigator.clipboard.writeText(backupCodes.join('\n'));
             toast.success("Backup codes copied to clipboard.");
-        } catch {
-            toast.error("Could not copy to clipboard.");
+        } catch (error) {
+            toast.error("Could not copy to clipboard.", { description: humanizeError(error) });
         }
     };
 

@@ -9,6 +9,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CheckCircle2, ArrowRight, Store, Truck, Users, Coins } from "lucide-react";
 import { logger } from "@/lib/logger";
@@ -65,7 +66,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
         } catch (error: unknown) {
             clearTimeout(timeoutId);
             logger.error("Failed to complete onboarding", error, { component: "OnboardingWizard" });
-            toast.error(error instanceof Error ? error.message : "Failed to save progress. Please try again.");
+            toast.error("Failed to save progress. Please try again.", { description: humanizeError(error) });
         } finally {
             setLoading(false);
         }
@@ -93,7 +94,7 @@ export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) 
             onOpenChange(false);
         } catch (error: unknown) {
             logger.error("Failed to skip onboarding", error, { component: "OnboardingWizard" });
-            toast.error(error instanceof Error ? error.message : "Failed to save. Please try again.");
+            toast.error("Failed to save. Please try again.", { description: humanizeError(error) });
         } finally {
             setLoading(false);
         }

@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { OrderSplitDialog } from './OrderSplitDialog';
 import type { OrderItem } from '@/hooks/useOrderSplit';
 
@@ -120,7 +121,7 @@ export function OrderSplitButton({
         component: 'OrderSplitButton',
         orderId: targetOrderId,
       });
-      toast.error('Failed to load order data');
+      toast.error('Failed to load order data', { description: humanizeError(error) });
     } finally {
       setIsLoading(false);
     }

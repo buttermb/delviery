@@ -24,6 +24,7 @@ import {
 import { Download, Printer, Loader2, Barcode as BarcodeIcon } from 'lucide-react';
 import { generateProductLabelPDF, type ProductLabelData, type LabelSize } from '@/lib/utils/labelGenerator';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import type { Database } from '@/integrations/supabase/types';
 import { generateBarcodeSVG } from '@/utils/barcodeService';
 import { formatSmartDate } from '@/lib/formatters';
@@ -147,7 +148,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
           logger.error('Failed to generate PDF preview', error, {
             component: 'ProductLabel',
           });
-          toast.error('Failed to generate PDF preview');
+          toast.error('Failed to generate PDF preview', { description: humanizeError(error) });
         } finally {
           setGeneratingPdf(false);
         }

@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { queryKeys } from "@/lib/queryKeys";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 interface BulkActionsProps {
@@ -37,7 +38,7 @@ export function BulkActions({
     },
     onError: (error: unknown) => {
       logger.error('Bulk update failed', error, { component: 'BulkActions' });
-      toast.error(error instanceof Error ? error.message : 'Bulk update failed');
+      toast.error('Bulk update failed', { description: humanizeError(error) });
     }
   });
 
@@ -57,7 +58,7 @@ export function BulkActions({
     },
     onError: (error: unknown) => {
       logger.error('Bulk delete failed', error, { component: 'BulkActions' });
-      toast.error(error instanceof Error ? error.message : 'Bulk delete failed');
+      toast.error('Bulk delete failed', { description: humanizeError(error) });
     }
   });
 

@@ -13,6 +13,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { logger } from "@/lib/logger";
 import { queryKeys } from "@/lib/queryKeys";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { Loader2, AlertTriangle, ArrowUp, ArrowDown, Replace, Package } from "lucide-react";
 
 type AdjustmentType = "add" | "subtract" | "set";
@@ -198,7 +199,7 @@ export function BulkInventoryModal({
       logger.error("Bulk inventory adjustment failed", error, {
         component: "BulkInventoryModal",
       });
-      toast.error(message);
+      toast.error(message, { description: humanizeError(error) });
     },
   });
 

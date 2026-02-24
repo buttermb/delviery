@@ -24,6 +24,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 const businessProfileSchema = z.object({
   business_name: z.string().min(2, 'Business name must be at least 2 characters'),
@@ -156,7 +157,7 @@ export function BusinessProfileStep({ onComplete }: BusinessProfileStepProps) {
       onComplete();
     } catch (error) {
       logger.error('Failed to save business profile', error instanceof Error ? error : new Error(String(error)), { component: 'BusinessProfileStep' });
-      toast.error('Failed to save. Please try again.');
+      toast.error('Failed to save. Please try again.', { description: humanizeError(error) });
     } finally {
       setIsSubmitting(false);
     }

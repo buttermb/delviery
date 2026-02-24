@@ -95,7 +95,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
             setStep('map');
         } catch (error) {
             logger.error("Error parsing file", error);
-            toast.error("Failed to parse file. Please check format.");
+            toast.error("Failed to parse file. Please check format.", { description: humanizeError(error) });
             setFile(null);
         } finally {
             setLoading(false);

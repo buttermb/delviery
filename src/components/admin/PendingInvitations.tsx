@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Clock, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { showCopyToast, showErrorToast } from '@/utils/toastHelpers';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
@@ -50,7 +51,7 @@ export function PendingInvitations({ invitations, tenantId, onInvitationsChange 
 
       onInvitationsChange();
     } catch (error: unknown) {
-      toast.error("Error");
+      toast.error("Failed to cancel invitation", { description: humanizeError(error) });
     } finally {
       setCancelingId(null);
     }

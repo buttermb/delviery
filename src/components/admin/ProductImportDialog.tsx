@@ -103,7 +103,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
             setStep('map');
         } catch (error) {
             logger.error("Error parsing file", error);
-            toast.error("Failed to parse file. Please check format.");
+            toast.error("Failed to parse file. Please check format.", { description: humanizeError(error) });
         } finally {
             setLoading(false);
         }

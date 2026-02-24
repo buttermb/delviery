@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface GoogleSignInButtonProps {
   redirectTo?: string;
@@ -43,7 +44,7 @@ export function GoogleSignInButton({
       // The user will be redirected to Google for authentication
     } catch (error) {
       logger.error("Google sign-in error", error, { component: "GoogleSignInButton" });
-      toast.error(error instanceof Error ? error.message : "Failed to sign in with Google");
+      toast.error("Failed to sign in with Google", { description: humanizeError(error) });
       setLoading(false);
     }
   };

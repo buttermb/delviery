@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Camera, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface BarcodeScannerProps {
   open: boolean;
@@ -62,7 +63,7 @@ export function BarcodeScanner({ open, onOpenChange, onScanSuccess, batchMode = 
       logger.error('Failed to start scanning', error, {
         component: 'BarcodeScanner',
       });
-      toast.error('Failed to start camera');
+      toast.error('Failed to start camera', { description: humanizeError(error) });
       isScanningRef.current = false;
     }
   }, [onScanSuccess, batchMode, onOpenChange]);
@@ -94,7 +95,7 @@ export function BarcodeScanner({ open, onOpenChange, onScanSuccess, batchMode = 
       logger.error('Failed to initialize barcode scanner', error, {
         component: 'BarcodeScanner',
       });
-      toast.error('Failed to access camera. Please grant camera permissions.');
+      toast.error('Failed to access camera. Please grant camera permissions.', { description: humanizeError(error) });
     } finally {
       setIsInitializing(false);
     }

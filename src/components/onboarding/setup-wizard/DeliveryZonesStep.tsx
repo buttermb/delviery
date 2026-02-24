@@ -25,6 +25,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 const deliveryZoneSchema = z.object({
   name: z.string().min(2, 'Zone name is required'),
@@ -99,7 +100,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
       toast.success(`Zone "${data.name}" added!`);
     } catch (error) {
       logger.error('Failed to add delivery zone', error instanceof Error ? error : new Error(String(error)), { component: 'DeliveryZonesStep' });
-      toast.error('Failed to add zone. Please try again.');
+      toast.error('Failed to add zone. Please try again.', { description: humanizeError(error) });
     } finally {
       setIsSubmitting(false);
     }
@@ -122,7 +123,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
       toast.success(`Zone "${zone.name}" removed`);
     } catch (error) {
       logger.error('Failed to remove delivery zone', error instanceof Error ? error : new Error(String(error)), { component: 'DeliveryZonesStep' });
-      toast.error('Failed to remove zone');
+      toast.error('Failed to remove zone', { description: humanizeError(error) });
     }
   };
 

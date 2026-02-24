@@ -6,6 +6,7 @@ import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeFormInput, sanitizeEmail, sanitizePhoneInput } from "@/lib/utils/sanitize";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { apiFetch } from "@/lib/utils/apiClient";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import {
@@ -138,7 +139,7 @@ export const AddCourierDialog = ({
       onSuccess();
     } catch (error: unknown) {
       logger.error("Failed to add courier", error as Error, { component: 'AddCourierDialog' });
-      toast.error(error instanceof Error ? error.message : 'Failed to add courier');
+      toast.error('Failed to add courier', { description: humanizeError(error) });
     } finally {
       setIsSubmitting(false);
     }

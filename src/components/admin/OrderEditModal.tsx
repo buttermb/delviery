@@ -19,6 +19,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Plus from "lucide-react/dist/esm/icons/plus";
 import Minus from "lucide-react/dist/esm/icons/minus";
@@ -312,7 +313,7 @@ export function OrderEditModal({
       onSuccess?.();
     } catch (error) {
       logger.error('Failed to update order', error, { component: 'OrderEditModal' });
-      toast.error('Failed to update order');
+      toast.error('Failed to update order', { description: humanizeError(error) });
     } finally {
       setIsSubmitting(false);
     }

@@ -22,6 +22,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
@@ -119,7 +120,7 @@ export function ProductArchiveButton({
         component: 'ProductArchiveButton',
         productId: product.id,
       });
-      toast.error(`Failed to ${action} product. Please try again.`);
+      toast.error(`Failed to ${action} product. Please try again.`, { description: humanizeError(error) });
     } finally {
       setIsLoading(false);
     }

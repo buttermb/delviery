@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Building } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 interface Account {
   id: string;
   company_name: string;
@@ -48,8 +49,8 @@ export function AccountSwitcher() {
     try {
       await switchAccount(accountId);
       toast.success("Viewing data for selected account");
-    } catch {
-      toast.error("Failed to switch account");
+    } catch (error) {
+      toast.error("Failed to switch account", { description: humanizeError(error) });
     } finally {
       setLoading(false);
     }
