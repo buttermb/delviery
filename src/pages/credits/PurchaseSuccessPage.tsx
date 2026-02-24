@@ -25,6 +25,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { logger } from '@/lib/logger';
 import { showCopyToast } from '@/utils/toastHelpers';
 import confetti from 'canvas-confetti';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CreditSuggestion {
   icon: React.ReactNode;
@@ -70,8 +71,8 @@ export function PurchaseSuccessPage() {
   // Refresh credits balance on mount
   useEffect(() => {
     if (!hasRefreshed) {
-      queryClient.invalidateQueries({ queryKey: ['credits'] });
-      queryClient.invalidateQueries({ queryKey: ['tenant-credits'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.credits.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantCredits.all });
       setHasRefreshed(true);
     }
   }, [queryClient, hasRefreshed]);

@@ -17,6 +17,7 @@ import { humanizeError } from '@/lib/humanizeError';
 import { toast } from 'sonner';
 import { PackageCheck, Plus, X, Loader2 } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ReceivingItem {
   product_id: string;
@@ -32,7 +33,7 @@ export function QuickReceiving() {
   const [quantity, setQuantity] = useState('');
 
   const { data: products, isLoading: productsLoading, isError: productsError } = useQuery({
-    queryKey: ['products-for-receiving', tenant?.id],
+    queryKey: queryKeys.productsForReceiving.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       
@@ -126,9 +127,9 @@ export function QuickReceiving() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['products-for-receiving'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory-alerts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.productsForReceiving.byTenant() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventoryAlerts.all });
       toast.success(`Successfully received ${items.length} items`);
       setItems([]);
     },

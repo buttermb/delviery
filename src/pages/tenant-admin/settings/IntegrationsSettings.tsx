@@ -44,6 +44,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useNavigate } from 'react-router-dom';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Integration {
   id: string;
@@ -134,7 +135,7 @@ export default function IntegrationsSettings() {
 
   // Fetch real webhooks from custom_integrations table
   const { data: webhooks = [], isLoading: webhooksLoading } = useQuery({
-    queryKey: ['webhooks', tenant?.id],
+    queryKey: queryKeys.webhooks.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -182,7 +183,7 @@ export default function IntegrationsSettings() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks.byTenant(tenant?.id) });
       setNewWebhookUrl('');
       setAddWebhookOpen(false);
       toast.success('Webhook added');
@@ -203,7 +204,7 @@ export default function IntegrationsSettings() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks.byTenant(tenant?.id) });
       toast.success('Webhook deleted');
     },
     onError: (error) => {
@@ -222,9 +223,9 @@ export default function IntegrationsSettings() {
       if (error) throw error;
     },
     onMutate: async ({ id, active }) => {
-      await queryClient.cancelQueries({ queryKey: ['webhooks', tenant?.id] });
-      const previousWebhooks = queryClient.getQueryData<WebhookEndpoint[]>(['webhooks', tenant?.id]);
-      queryClient.setQueryData<WebhookEndpoint[]>(['webhooks', tenant?.id], (old) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.webhooks.byTenant(tenant?.id) });
+      const previousWebhooks = queryClient.getQueryData<WebhookEndpoint[]>(queryKeys.webhooks.byTenant(tenant?.id));
+      queryClient.setQueryData<WebhookEndpoint[]>(queryKeys.webhooks.byTenant(tenant?.id), (old) => {
         if (!old) return old;
         return old.map((webhook) =>
           webhook.id === id ? { ...webhook, active } : webhook
@@ -234,13 +235,13 @@ export default function IntegrationsSettings() {
     },
     onError: (error: Error, _variables, context) => {
       if (context?.previousWebhooks) {
-        queryClient.setQueryData(['webhooks', tenant?.id], context.previousWebhooks);
+        queryClient.setQueryData(queryKeys.webhooks.byTenant(tenant?.id), context.previousWebhooks);
       }
       logger.error('Failed to toggle webhook', { error });
       toast.error('Failed to toggle webhook', { description: humanizeError(error) });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhooks', tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks.byTenant(tenant?.id) });
     },
   });
 

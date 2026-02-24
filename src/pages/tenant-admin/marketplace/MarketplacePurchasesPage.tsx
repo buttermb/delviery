@@ -226,8 +226,8 @@ export default function MarketplacePurchasesPage() {
                                                         View Details
                                                     </DropdownMenuItem>
                                                     {order.status === 'shipped' && (
-                                                        <DropdownMenuItem onClick={() => markReceivedMutation.mutate(order.id)}>
-                                                            <CheckCircle className="h-4 w-4 mr-2" />
+                                                        <DropdownMenuItem onClick={() => markReceivedMutation.mutate(order.id)} disabled={markReceivedMutation.isPending}>
+                                                            {markReceivedMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-2" />}
                                                             Mark Received
                                                         </DropdownMenuItem>
                                                     )}

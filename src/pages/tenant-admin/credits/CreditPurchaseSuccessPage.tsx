@@ -6,6 +6,7 @@ import { CheckCircle, Coins, Loader2 } from 'lucide-react';
 import { useCredits } from '@/hooks/useCredits';
 import { useTenantNavigation } from '@/hooks/useTenantNavigation';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function CreditPurchaseSuccessPage() {
   const [searchParams] = useSearchParams();
@@ -18,7 +19,7 @@ export default function CreditPurchaseSuccessPage() {
   // Refresh credits on mount
   useEffect(() => {
     if (!hasRefreshed) {
-      queryClient.invalidateQueries({ queryKey: ['tenant-credits'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantCredits.all });
       setHasRefreshed(true);
     }
   }, [queryClient, hasRefreshed]);

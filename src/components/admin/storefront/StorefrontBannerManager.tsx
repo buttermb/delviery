@@ -23,6 +23,7 @@ import {
 import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
+import { queryKeys } from '@/lib/queryKeys';
     Plus,
     Trash2,
     Edit,
@@ -70,7 +71,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
 
     // Fetch Banners
     const { data: banners = [], isLoading } = useQuery({
-        queryKey: ['marketplace-banners', storeId],
+        queryKey: queryKeys.marketplaceBanners.byStore(storeId),
         queryFn: async () => {
             const { data, error } = await supabase
                 .from('marketplace_banners')
@@ -117,7 +118,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
             }
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-banners', storeId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBanners.byStore(storeId) });
             toast.success(editingBanner ? 'Banner updated!' : 'Banner created!');
             setIsDialogOpen(false);
             resetForm();
@@ -134,7 +135,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-banners', storeId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBanners.byStore(storeId) });
             toast.success("Banner deleted");
         },
     });
@@ -149,7 +150,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-banners', storeId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBanners.byStore(storeId) });
         },
     });
 
@@ -177,7 +178,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
             return;
         }
 
-        queryClient.invalidateQueries({ queryKey: ['marketplace-banners', storeId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBanners.byStore(storeId) });
     };
 
     const resetForm = () => {

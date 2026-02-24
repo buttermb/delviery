@@ -11,6 +11,7 @@ import { BetterEmptyState } from '@/components/BetterEmptyState';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface LiveOrder {
   id: string;
@@ -26,7 +27,7 @@ export default function RealtimeDashboard() {
   const [liveOrders, setLiveOrders] = useState<LiveOrder[]>([]);
 
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['realtime-dashboard', tenantId],
+    queryKey: queryKeys.realtimeDashboard.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 

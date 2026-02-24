@@ -17,6 +17,7 @@ import { AlertTriangle, RefreshCw, Eye, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { callAdminFunction } from '@/utils/adminFunctionHelper';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function PanicResetTool() {
   const queryClient = useQueryClient();
@@ -27,7 +28,7 @@ export function PanicResetTool() {
 
   // Fetch tenants
   const { data: tenants } = useQuery({
-    queryKey: ['tenants-list'],
+    queryKey: queryKeys.superAdminTools.tenantsList(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tenants')
@@ -78,7 +79,7 @@ export function PanicResetTool() {
       });
       setConfirmation('');
       setShowPreview(false);
-      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenants.all });
     },
     onError: (error: unknown) => {
       logger.error('Panic reset error', error);

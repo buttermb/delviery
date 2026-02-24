@@ -17,6 +17,7 @@ import { DateRange } from 'react-day-picker';
 import { subDays, format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface MenuImageAnalyticsProps {
   menuId: string;
@@ -63,7 +64,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
 
   // Fetch real trend data from menu_access_logs
   const { data: trendData = [] } = useQuery({
-    queryKey: ['menu-trend-data', menuId, dateRange],
+    queryKey: queryKeys.menuImageTrend.byMenu(menuId, dateRange),
     queryFn: async () => {
       const days = 7;
       const trends = [];

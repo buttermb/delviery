@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface StorefrontOrder {
   id: string;
@@ -173,7 +174,7 @@ export function useStorefrontOrders({
     },
     onSuccess: () => {
       toast.success('Order cancelled successfully');
-      queryClient.invalidateQueries({ queryKey: ['storefront-orders', storeId, customerId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefrontOrders.byStoreCustomer(storeId, customerId) });
     },
     onError: (error) => {
       toast.error(humanizeError(error, 'Failed to cancel order'));
@@ -220,7 +221,7 @@ export function useStorefrontOrders({
  */
 export function useStorefrontOrderByToken(trackingToken: string | undefined) {
   return useQuery({
-    queryKey: ['storefront-order-token', trackingToken],
+    queryKey: queryKeys.storefrontOrders.byToken(trackingToken),
     queryFn: async (): Promise<StorefrontOrder | null> => {
       if (!trackingToken) return null;
 

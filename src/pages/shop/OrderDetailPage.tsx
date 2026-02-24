@@ -50,6 +50,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
 import type { StorefrontOrder, StorefrontOrderItem } from '@/hooks/useStorefrontOrders';
+import { queryKeys } from '@/lib/queryKeys';
 
 const STATUS_STEPS = [
   { status: 'pending', label: 'Order Placed', icon: Package },
@@ -96,7 +97,7 @@ export function OrderDetailPage() {
 
   // Fetch order details
   const { data: order, isLoading, error, refetch } = useQuery({
-    queryKey: ['storefront-order-detail', store?.id, orderId],
+    queryKey: queryKeys.storefrontOrders.detail(store?.id, orderId),
     queryFn: async (): Promise<StorefrontOrder | null> => {
       if (!store?.id || !orderId || !customerId) return null;
 
@@ -140,7 +141,7 @@ export function OrderDetailPage() {
         },
         (payload) => {
           logger.debug('Shop order status update received', payload.new, 'OrderDetailPage');
-          queryClient.invalidateQueries({ queryKey: ['storefront-order-detail', store?.id, orderId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.storefrontOrders.detail(store?.id, orderId) });
         }
       )
       .subscribe((status) => {

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Users, TrendingUp, DollarSign } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
@@ -27,7 +28,7 @@ export default function CustomerAnalytics() {
   const tenantId = tenant?.id;
 
   const { data: customers, isLoading: customersLoading, error: customersError, refetch: refetchCustomers } = useQuery({
-    queryKey: ['customers', tenantId],
+    queryKey: queryKeys.customerAnalytics.customers(tenantId),
     queryFn: async (): Promise<Customer[]> => {
       if (!tenantId) return [];
 
@@ -49,7 +50,7 @@ export default function CustomerAnalytics() {
   });
 
   const { data: orders, isLoading: ordersLoading, error: ordersError, refetch: refetchOrders } = useQuery({
-    queryKey: ['customer-orders', tenantId],
+    queryKey: queryKeys.customerAnalytics.orders(tenantId),
     queryFn: async (): Promise<Order[]> => {
       if (!tenantId) return [];
 

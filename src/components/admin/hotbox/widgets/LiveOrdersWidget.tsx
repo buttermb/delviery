@@ -20,6 +20,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   Activity,
   Clock,
   Package,
@@ -118,7 +119,7 @@ export function LiveOrdersWidget() {
 
   // Fetch active orders
   const { data: orders = [], isLoading } = useQuery({
-    queryKey: ['hotbox-live-orders', tenant?.id],
+    queryKey: queryKeys.hotbox.liveOrders(tenant?.id),
     queryFn: async (): Promise<LiveOrderItem[]> => {
       if (!tenant?.id) return [];
 

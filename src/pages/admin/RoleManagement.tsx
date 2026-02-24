@@ -87,7 +87,7 @@ export function RoleManagement() {
 
   // Fetch roles with their permissions
   const { data: roles = [], isLoading, error } = useQuery({
-    queryKey: ['roles', tenantId],
+    queryKey: queryKeys.roles.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -176,7 +176,7 @@ export function RoleManagement() {
       return roleData;
     },
     onSuccess: (roleData) => {
-      queryClient.invalidateQueries({ queryKey: ['roles', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.roles.byTenant(tenantId) });
       toast.success("Role has been successfully created.");
 
       // Log activity for audit trail
@@ -252,7 +252,7 @@ export function RoleManagement() {
       return roleData;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roles', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.roles.byTenant(tenantId) });
       toast.success("Role has been successfully updated.");
 
       // Log activity for audit trail
@@ -299,7 +299,7 @@ export function RoleManagement() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roles', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.roles.byTenant(tenantId) });
       toast.success("The role has been deleted successfully.");
       setRoleToDelete(null);
       setIsDeleteDialogOpen(false);
@@ -500,7 +500,7 @@ export function RoleManagement() {
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <AlertTriangle className="h-12 w-12 text-destructive" />
         <p className="text-muted-foreground">Failed to load roles. Please try again.</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['roles', tenantId] })}>
+        <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.roles.byTenant(tenantId) })}>
           Retry
         </Button>
       </div>

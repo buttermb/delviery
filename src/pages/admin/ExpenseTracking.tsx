@@ -37,6 +37,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Expense {
   id: string;
@@ -106,7 +107,7 @@ export default function ExpenseTracking() {
   }, [resetForm]);
 
   const { data: expenses, isLoading } = useQuery({
-    queryKey: ['expenses', tenantId],
+    queryKey: queryKeys.expenses.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -148,7 +149,7 @@ export default function ExpenseTracking() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.byTenant(tenantId) });
       showSuccessToast('Expense Added', 'The expense has been recorded successfully');
       setIsAddDialogOpen(false);
       setFormData(DEFAULT_EXPENSE_FORM);
@@ -170,7 +171,7 @@ export default function ExpenseTracking() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.byTenant(tenantId) });
       showSuccessToast('Expense Deleted', 'The expense has been removed');
       setDeleteDialogOpen(false);
       setExpenseToDelete(null);

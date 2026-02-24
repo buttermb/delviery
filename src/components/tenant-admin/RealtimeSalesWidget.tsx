@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { LastUpdated } from '@/components/shared/LastUpdated';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function RealtimeSalesWidget() {
     const { tenant } = useTenantAdminAuth();
@@ -25,7 +26,7 @@ export function RealtimeSalesWidget() {
     const [lastUpdatedAt, setLastUpdatedAt] = useState<Date>(new Date());
 
     const { data: salesMetrics, isLoading, refetch, isFetching } = useQuery({
-        queryKey: ['realtime-sales', tenantId],
+        queryKey: queryKeys.tenantWidgets.realtimeSales(tenantId),
         queryFn: async () => {
             setLastUpdatedAt(new Date());
             if (!tenantId) return null;

@@ -52,6 +52,7 @@ import { useRecordPayment } from '@/hooks/useRecordPayment';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TruncatedText } from '@/components/shared/TruncatedText';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Types
 interface CollectionClient {
@@ -85,7 +86,7 @@ function useCollectionData() {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ['collection-mode', tenant?.id],
+    queryKey: queryKeys.collections.mode(tenant?.id),
     queryFn: async () => {
       const now = new Date();
 
@@ -176,7 +177,7 @@ function useClientActivities(clientId: string | null) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ['collection-activities', clientId],
+    queryKey: queryKeys.collections.activities(clientId),
     queryFn: async () => {
       if (!clientId) return [];
 
@@ -236,8 +237,8 @@ function useCollectionActions() {
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['collection-activities', variables.clientId] });
-      queryClient.invalidateQueries({ queryKey: ['collection-mode'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collections.activities(variables.clientId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collections.mode() });
     }
   });
 
@@ -273,7 +274,7 @@ function useCollectionActions() {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['collection-mode'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collections.mode() });
       toast.success('Payment recorded successfully');
     },
     onError: (error) => {

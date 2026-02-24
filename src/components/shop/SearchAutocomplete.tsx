@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, X, Package, TrendingUp, Clock, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useDebounce } from '@/hooks/useDebounce';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface SearchAutocompleteProps {
   storeId: string;
@@ -57,7 +58,7 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
 
   // Search products
   const { data: results = [], isLoading } = useQuery({
-    queryKey: ['search-autocomplete', storeId, debouncedQuery],
+    queryKey: queryKeys.searchAutocomplete.results(storeId, debouncedQuery),
     queryFn: async () => {
       if (!debouncedQuery || debouncedQuery.length < 2) return [];
 
@@ -79,7 +80,7 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
 
   // Get popular categories
   const { data: categories = [] } = useQuery({
-    queryKey: ['search-categories', storeId],
+    queryKey: queryKeys.searchAutocomplete.categories(storeId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('marketplace_categories')

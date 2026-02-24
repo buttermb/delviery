@@ -16,6 +16,7 @@ import { FileText, Plus, Edit, Download, Trash2, Loader2 } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CustomReport {
   id: string;
@@ -46,7 +47,7 @@ export default function CustomReports() {
   });
 
   const { data: reports, isLoading } = useQuery({
-    queryKey: ['custom-reports', tenantId],
+    queryKey: queryKeys.customReports.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -97,7 +98,7 @@ export default function CustomReports() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom-reports', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customReports.byTenant(tenantId) });
       toast.success('Custom report has been created.');
       resetForm();
     },
@@ -134,7 +135,7 @@ export default function CustomReports() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom-reports', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customReports.byTenant(tenantId) });
       toast.success('Custom report has been updated.');
       resetForm();
     },
@@ -159,7 +160,7 @@ export default function CustomReports() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom-reports', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customReports.byTenant(tenantId) });
       toast.success('Custom report has been removed.');
       setDeleteDialogOpen(false);
       setReportToDelete(null);

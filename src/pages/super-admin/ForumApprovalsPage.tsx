@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, XCircle, Search, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
@@ -40,7 +41,7 @@ export default function ForumApprovalsPage() {
 
   // Fetch approvals with user emails from auth
   const { data: approvals, isLoading, error: queryError } = useQuery({
-    queryKey: ['forum-approvals', activeTab],
+    queryKey: queryKeys.superAdminTools.forumApprovals(activeTab),
     queryFn: async () => {
       logger.debug('Fetching forum approvals', { activeTab, component: 'ForumApprovalsPage' });
       
@@ -93,7 +94,7 @@ export default function ForumApprovalsPage() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['forum-approvals'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.forumApprovals() });
       toast.success('User approved successfully');
     },
     onError: (error: unknown) => {
@@ -127,7 +128,7 @@ export default function ForumApprovalsPage() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['forum-approvals'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.forumApprovals() });
       toast.success('User rejected');
     },
     onError: (error: unknown) => {

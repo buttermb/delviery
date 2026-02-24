@@ -100,7 +100,7 @@ export default function RunnerLocationTracking() {
 
   // Fetch all active deliveries for live tracking ETA display
   const { data: allActiveDeliveries = [] } = useQuery({
-    queryKey: ['active-deliveries-eta', tenant?.id],
+    queryKey: queryKeys.activeDeliveriesEta.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

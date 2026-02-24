@@ -42,6 +42,7 @@ import { useCredits } from "@/hooks/useCredits";
 import { CreditBalance } from "@/components/credits/CreditBalance";
 import { CreditPurchaseModal } from "@/components/credits/CreditPurchaseModal";
 import { FREE_TIER_MONTHLY_CREDITS, CREDIT_PACKAGES } from "@/lib/credits";
+import { queryKeys } from '@/lib/queryKeys';
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 
@@ -75,13 +76,13 @@ export default function TenantAdminBillingPage() {
       setSearchParams({});
 
       // Refresh tenant data
-      queryClient.invalidateQueries({ queryKey: ['tenant'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenants.all });
     }
   }, [searchParams, setSearchParams, queryClient]);
 
   // Check Stripe configuration health
   const { data: stripeHealth } = useQuery({
-    queryKey: ['stripe-health'],
+    queryKey: queryKeys.stripeHealth.all,
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('check-stripe-config');
       if (error) throw error;
@@ -136,7 +137,7 @@ export default function TenantAdminBillingPage() {
 
   // Fetch subscription plans
   const { data: subscriptionPlans = [] } = useQuery({
-    queryKey: ['subscription-plans'],
+    queryKey: queryKeys.subscriptionPlans.all,
     queryFn: async () => {
       logger.info('[BillingPage] Fetching subscription plans...', { component: 'BillingPage' });
 
@@ -224,7 +225,7 @@ export default function TenantAdminBillingPage() {
         window.open(data.url, '_blank', 'noopener,noreferrer');
         toast.success('Redirecting to Stripe', { description: 'Opening checkout in new tab...' });
       }
-      queryClient.invalidateQueries({ queryKey: ['tenant'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenants.all });
       setUpgradeDialogOpen(false);
       setUpgradeLoading(false);
     },

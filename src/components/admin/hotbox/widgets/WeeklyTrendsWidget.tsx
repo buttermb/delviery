@@ -6,12 +6,13 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function WeeklyTrendsWidget() {
     const { tenant } = useTenantAdminAuth();
 
     const { data: progress, isLoading } = useQuery({
-        queryKey: ['hotbox-weekly', tenant?.id],
+        queryKey: queryKeys.hotbox.weekly(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return null;
 

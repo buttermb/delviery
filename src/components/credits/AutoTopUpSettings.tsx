@@ -50,6 +50,7 @@ import {
   getMaxPerMonthOptions,
 } from '@/lib/credits/autoTopUp';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface AutoTopUpSettingsProps {
   className?: string;
@@ -75,7 +76,7 @@ export function AutoTopUpSettings({
 
   // Fetch existing config
   const { data: config, isLoading } = useQuery({
-    queryKey: ['auto-topup-config', tenantId],
+    queryKey: queryKeys.creditWidgets.autoTopupConfig(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
       return getAutoTopUpConfig(tenantId);
@@ -110,7 +111,7 @@ export function AutoTopUpSettings({
     onSuccess: (result) => {
       if (result.success) {
         toast.success('Auto top-up settings saved');
-        queryClient.invalidateQueries({ queryKey: ['auto-topup-config', tenantId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.creditWidgets.autoTopupConfig(tenantId) });
       } else {
         toast.error(result.error || 'Failed to save settings');
       }

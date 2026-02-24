@@ -47,6 +47,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Announcement {
   id: string;
@@ -103,7 +104,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
 
   // Fetch announcements for this tenant
   const { data: announcements = [], isLoading, error } = useQuery({
-    queryKey: ['storefront-announcements', tenantId, storeId],
+    queryKey: queryKeys.storefrontAnnouncements.byTenantStore(tenantId, storeId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -147,7 +148,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
         },
         () => {
           queryClient.invalidateQueries({
-            queryKey: ['storefront-announcements', tenantId, storeId],
+            queryKey: queryKeys.storefrontAnnouncements.byTenantStore(tenantId, storeId),
           });
         }
       )
@@ -202,7 +203,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['storefront-announcements', tenantId, storeId],
+        queryKey: queryKeys.storefrontAnnouncements.byTenantStore(tenantId, storeId),
       });
       toast.success(editingAnnouncement ? 'Announcement updated!' : 'Announcement created!');
       setIsDialogOpen(false);
@@ -231,7 +232,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['storefront-announcements', tenantId, storeId],
+        queryKey: queryKeys.storefrontAnnouncements.byTenantStore(tenantId, storeId),
       });
       toast.success("Announcement deleted");
     },
@@ -258,7 +259,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['storefront-announcements', tenantId, storeId],
+        queryKey: queryKeys.storefrontAnnouncements.byTenantStore(tenantId, storeId),
       });
     },
   });
@@ -279,7 +280,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
     }
 
     queryClient.invalidateQueries({
-      queryKey: ['storefront-announcements', tenantId, storeId],
+      queryKey: queryKeys.storefrontAnnouncements.byTenantStore(tenantId, storeId),
     });
   };
 

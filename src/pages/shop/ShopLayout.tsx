@@ -31,6 +31,7 @@ import { StorefrontAgeGate } from '@/components/shop/StorefrontAgeGate';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 import { CartDrawer } from '@/components/shop/CartDrawer';
 import { useShopCart } from '@/hooks/useShopCart';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface StoreInfo {
   id: string;
@@ -122,7 +123,7 @@ export default function ShopLayout() {
 
   // Fetch store by slug
   const { data: store, isLoading, error } = useQuery({
-    queryKey: ['shop-store', storeSlug],
+    queryKey: queryKeys.shopPages.store(storeSlug),
     queryFn: async (): Promise<StoreInfo | null> => {
       if (!storeSlug) return null;
 

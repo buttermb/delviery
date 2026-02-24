@@ -17,6 +17,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { InventoryStatusBadge } from './InventoryStatusBadge';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ForecastItem {
     id: string;
@@ -50,7 +51,7 @@ export function InventoryForecastWidget() {
     const tenantId = tenant?.id;
 
     const { data: atRiskItems, isLoading } = useQuery({
-        queryKey: ['inventory-forecast', tenantId],
+        queryKey: queryKeys.tenantWidgets.inventoryForecast(tenantId),
         queryFn: async () => {
             if (!tenantId) return [];
 

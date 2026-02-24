@@ -21,6 +21,7 @@ import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { OrderDetailsDialog } from './OrderDetailsDialog';
 import { ConvertToInvoiceDialog } from './ConvertToInvoiceDialog';
 import { cn } from '@/lib/utils';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface OrderKanbanProps {
   onViewDetails?: (order: any) => void;
@@ -128,8 +129,8 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
       if (error) throw error;
 
       showSuccessToast('Status Updated', `Order marked as ${newStatus}`);
-      queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.menuOrders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
     } catch {
       showErrorToast('Update Failed', 'Could not update order status');
     } finally {

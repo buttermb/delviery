@@ -101,7 +101,7 @@ export function useTenantPaymentSettings() {
  */
 export function useMenuPaymentSettings(menuId: string | undefined) {
   return useQuery({
-    queryKey: ['menu-payment-settings', menuId],
+    queryKey: queryKeys.menuPaymentSettings(menuId),
     queryFn: async (): Promise<PaymentSettings> => {
       if (!menuId) return DEFAULT_SETTINGS;
 

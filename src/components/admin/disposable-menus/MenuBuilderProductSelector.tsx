@@ -33,6 +33,7 @@ import Check from 'lucide-react/dist/esm/icons/check';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
 import PackageX from 'lucide-react/dist/esm/icons/package-x';
 import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Stock level thresholds
 const LOW_STOCK_THRESHOLD = 10;
@@ -403,7 +404,7 @@ export function MenuBuilderProductSelector({
 
   // Fetch products with live inventory data
   const { data: rawProducts, isLoading, error } = useQuery({
-    queryKey: ['menu-builder-products', tenant?.id],
+    queryKey: queryKeys.menuProducts.builder(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

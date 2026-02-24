@@ -36,6 +36,7 @@ import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useGuestCart } from '@/hooks/useGuestCart';
 import { SEOHead } from '@/components/SEOHead';
+import { queryKeys } from '@/lib/queryKeys';
 
 type CustomerMode = 'retail' | 'wholesale';
 
@@ -73,7 +74,7 @@ export default function BusinessMenuPage() {
 
   // Fetch business/tenant info
   const { data: business } = useQuery({
-    queryKey: ['retail-business', targetBusinessSlug],
+    queryKey: queryKeys.retailBusinesses.detail(targetBusinessSlug),
     queryFn: async () => {
       if (!targetBusinessSlug) return null;
 
@@ -97,7 +98,7 @@ export default function BusinessMenuPage() {
 
   // Fetch products
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['retail-products', businessId, categoryFilter],
+    queryKey: queryKeys.retailBusinesses.products(businessId, categoryFilter),
     queryFn: async () => {
       if (!businessId) return [];
 
@@ -127,7 +128,7 @@ export default function BusinessMenuPage() {
 
   // Fetch categories
   const { data: categories = [] } = useQuery({
-    queryKey: ['retail-categories', businessId],
+    queryKey: queryKeys.retailBusinesses.categories(businessId),
     queryFn: async () => {
       if (!businessId) return [];
 
@@ -202,7 +203,7 @@ export default function BusinessMenuPage() {
     },
     onSuccess: () => {
       if (user) {
-        queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.cart.user(user?.id) });
       }
       toast.success('Added to Cart', {
         description: user ? 'Item added to your cart' : 'Item added to cart. Sign in to save your cart.',

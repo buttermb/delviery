@@ -46,6 +46,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function OrdersPage() {
     const { tenant } = useTenantAdminAuth();
@@ -58,7 +59,7 @@ export default function OrdersPage() {
 
     // Fetch marketplace profile
     const { data: profile } = useQuery({
-        queryKey: ['marketplace-profile', tenantId],
+        queryKey: queryKeys.marketplaceProfileAdmin.byTenant(tenantId),
         queryFn: async () => {
             if (!tenantId) return null;
 
@@ -76,7 +77,7 @@ export default function OrdersPage() {
 
     // Fetch orders
     const { data: orders = [], isLoading } = useQuery({
-        queryKey: ['marketplace-orders', tenantId, statusFilter, activeTab],
+        queryKey: queryKeys.marketplaceOrders.byTenant(tenantId, statusFilter, activeTab),
         queryFn: async () => {
             if (!tenantId || !profile?.id) return [];
 
@@ -146,7 +147,7 @@ export default function OrdersPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-orders', tenantId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.byTenant(tenantId) });
             toast.success("Order status has been updated");
         },
         onError: (error: unknown) => {
@@ -284,7 +285,7 @@ export default function OrdersPage() {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => queryClient.invalidateQueries({ queryKey: ['marketplace-orders', tenantId, statusFilter, activeTab] })}
+                        onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.byTenant(tenantId, statusFilter, activeTab) })}
                         data-component="OrdersPage"
                         data-action="refresh-orders"
                     >

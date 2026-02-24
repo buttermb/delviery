@@ -29,6 +29,7 @@ import {
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface NotificationPreference {
   email: boolean;
@@ -78,7 +79,7 @@ export default function NotificationSettings() {
   // - This is a simplification for persistence. Ideally we'd have a JSON column.
 
   const { data: preferences, isLoading } = useQuery({
-    queryKey: ['notification-preferences', admin?.id],
+    queryKey: queryKeys.notificationPreferences.byUser(admin?.id),
     queryFn: async () => {
       if (!admin?.id) return null;
 
@@ -168,7 +169,7 @@ export default function NotificationSettings() {
     onSuccess: () => {
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
-      queryClient.invalidateQueries({ queryKey: ['notification-preferences', admin?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notificationPreferences.byUser(admin?.id) });
     },
     onError: (err) => {
       setSaveStatus('error');

@@ -6,12 +6,13 @@ import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function CommissionTrackingPage() {
     const { isPlatformAdmin } = usePlatformAdmin();
 
     const { data: metrics, isLoading } = useQuery({
-        queryKey: ['platform-metrics'],
+        queryKey: queryKeys.superAdminTools.platformMetrics(),
         queryFn: async () => {
             const { data, error } = await (supabase as any).rpc('get_platform_metrics');
             if (error) throw error;

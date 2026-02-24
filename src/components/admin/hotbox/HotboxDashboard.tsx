@@ -85,6 +85,7 @@ function _PriorityIcon({ priority }: { priority: 'critical' | 'important' | 'inf
 
 // Use centralized icon map
 import { iconMap } from '@/lib/icons/iconMap';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function HotboxDashboard() {
   const { tenant, admin } = useTenantAdminAuth();
@@ -111,7 +112,7 @@ export function HotboxDashboard() {
 
   // Fetch ONLY pulse metrics (attention queue comes from hook)
   const { data: pulseData, isLoading: pulseLoading } = useQuery({
-    queryKey: ['hotbox-pulse', tenant?.id],
+    queryKey: queryKeys.hotbox.pulse(tenant?.id),
     queryFn: async (): Promise<{ pulseMetrics: PulseMetric[] }> => {
       if (!tenant?.id) throw new Error('No tenant');
 

@@ -6,13 +6,14 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { MapPin, TrendingUp, DollarSign } from 'lucide-react';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function LocationAnalytics() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
   const { data: locations, isLoading } = useQuery({
-    queryKey: ['location-analytics', tenantId],
+    queryKey: queryKeys.locationAnalytics.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

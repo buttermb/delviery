@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function usePlatformAdmin() {
     const { data, isLoading, error } = useQuery({
-        queryKey: ['platform-admin-check'],
+        queryKey: queryKeys.platformAdmin.check(),
         queryFn: async () => {
             const { data, error } = await supabase.rpc('check_platform_admin_access');
             if (error) throw error;

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import {
+import { queryKeys } from '@/lib/queryKeys';
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -39,7 +40,7 @@ export default function ProductVisibilityManager() {
 
     // Fetch listings
     const { data: listings, isLoading } = useQuery<MarketplaceListing[]>({
-        queryKey: ['marketplace-listings', tenant?.id],
+        queryKey: queryKeys.marketplaceListings.byTenant(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
 
@@ -70,7 +71,7 @@ export default function ProductVisibilityManager() {
             return newVisibility;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceListings.all });
             toast.success("Visibility updated");
         },
         onError: (error) => {
@@ -93,7 +94,7 @@ export default function ProductVisibilityManager() {
             return newStatus;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceListings.all });
             toast.success("Status updated");
         },
         onError: (error) => {

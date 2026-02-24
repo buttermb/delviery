@@ -5,11 +5,12 @@ import { Activity, TrendingUp, Zap, Clock } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useMemo } from 'react';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function APIUsagePage() {
   // Fetch API logs from database
   const { data: apiLogs = [], isLoading } = useQuery({
-    queryKey: ['super-admin-api-logs'],
+    queryKey: queryKeys.superAdminTools.apiUsageLogs(),
     queryFn: async () => {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const { data, error } = await (supabase as any)

@@ -16,6 +16,7 @@ import { ProductQuickViewModal } from './ProductQuickViewModal';
 import { CartPreviewPopup } from '../CartPreviewPopup';
 import { cn } from '@/lib/utils';
 import { StorefrontProductCard, type MarketplaceProduct } from '../StorefrontProductCard';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface LuxuryProductGridSectionProps {
   content?: {
@@ -75,7 +76,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
   const customAccent = styles?.accent_color || '#015358';
 
   const { data: products = [], isLoading, error: _error } = useQuery({
-    queryKey: ['luxury-products', storeId],
+    queryKey: queryKeys.shopPages.luxuryProducts(storeId),
     queryFn: async () => {
       if (!storeId || storeId.length < 32) return [];
       try {

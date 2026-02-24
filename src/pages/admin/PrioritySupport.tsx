@@ -16,6 +16,7 @@ import { Headphones, Plus, MessageCircle, Clock, CheckCircle, Trash2, Loader2 } 
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface SupportTicket {
   id: string;
@@ -41,7 +42,7 @@ export default function PrioritySupport() {
   const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
 
   const { data: tickets, isLoading } = useQuery({
-    queryKey: ['support-tickets', tenantId],
+    queryKey: queryKeys.superAdminTools.supportTickets(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -88,7 +89,7 @@ export default function PrioritySupport() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['support-tickets', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.supportTickets(tenantId) });
       toast.success("Support ticket has been created with priority support.");
       setFormData({ subject: '', description: '', priority: 'high' });
       setIsDialogOpen(false);
@@ -118,7 +119,7 @@ export default function PrioritySupport() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['support-tickets', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.supportTickets(tenantId) });
       toast.success("Support ticket has been removed.");
       setDeleteDialogOpen(false);
       setTicketToDelete(null);

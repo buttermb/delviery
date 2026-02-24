@@ -2890,4 +2890,47 @@ export const queryKeys = {
     teamMembers: (tenantId?: string) =>
       ['team', 'members', tenantId] as const,
   },
+
+  // Storefront Customers
+  storefrontCustomers: {
+    byStore: (storeId?: string) =>
+      ['storefront-customers', storeId] as const,
+  },
+
+  // Storefront Live Orders
+  storefrontLiveOrders: {
+    all: ['storefront-live-orders'] as const,
+    byStore: (storeId?: string, statusFilter?: string) =>
+      ['storefront-live-orders', storeId, statusFilter] as const,
+  },
+
+  // Tenant Products (storefront product list)
+  tenantProducts: {
+    byTenant: (tenantId?: string) =>
+      ['tenant-products', tenantId] as const,
+  },
+
+  // Marketplace Product Settings by Store
+  marketplaceProductSettingsByStore: {
+    byStore: (storeId?: string) =>
+      ['marketplace-product-settings', storeId] as const,
+  },
+
+  // Featured Products Preview
+  featuredProductsPreview: {
+    byIds: (productIds?: string[]) =>
+      ['featured-products-preview', productIds] as const,
+  },
+
+  // Store Orders Tab
+  storeOrdersTab: {
+    all: ['store-orders'] as const,
+    byStore: (storeId?: string, statusFilter?: string) =>
+      ['store-orders', storeId, statusFilter] as const,
+  },
+
+  // Shop Store (key for shop-store invalidation)
+  shopStore: {
+    all: ['shop-store'] as const,
+  },
 } as const;

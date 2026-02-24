@@ -40,6 +40,7 @@ import GripVertical from "lucide-react/dist/esm/icons/grip-vertical";
 import X from "lucide-react/dist/esm/icons/x";
 import Package from "lucide-react/dist/esm/icons/package";
 import Check from "lucide-react/dist/esm/icons/check";
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Product {
   id: string;
@@ -199,7 +200,7 @@ export function MenuProductPicker({
 
   // Fetch all products for this tenant
   const { data: products, isLoading } = useQuery({
-    queryKey: ['menu-products-list', tenant?.id],
+    queryKey: queryKeys.menuProducts.productsList(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase

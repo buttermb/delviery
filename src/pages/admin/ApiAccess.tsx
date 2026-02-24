@@ -14,6 +14,7 @@ import { Key, Plus, Copy, Loader2 } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { humanizeError } from '@/lib/humanizeError';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function ApiAccess() {
   const { tenant } = useTenantAdminAuth();
@@ -26,7 +27,7 @@ export default function ApiAccess() {
   });
 
   const { data: apiKeys, isLoading, error, refetch } = useQuery({
-    queryKey: ['api-keys', tenantId],
+    queryKey: queryKeys.apiKeys.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -56,7 +57,7 @@ export default function ApiAccess() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['api-keys', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiKeys.byTenant(tenantId) });
       toast.success("New API key has been generated.");
       setFormData({ name: '', permissions: [] });
       setIsDialogOpen(false);

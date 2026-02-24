@@ -36,6 +36,7 @@ import {
 } from '@/utils/barcodeService';
 import jsPDF from 'jspdf';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { queryKeys } from '@/lib/queryKeys';
 
 type BarcodeType = 'CODE128' | 'EAN13' | 'CODE39' | 'QR';
 type LabelType = 'product' | 'small_package' | 'batch' | 'custom';
@@ -78,7 +79,7 @@ export default function GenerateBarcodes() {
 
   // Fetch products
   const { data: products } = useQuery({
-    queryKey: ['products-for-barcode', tenant?.id],
+    queryKey: queryKeys.productsForBarcode.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data } = await supabase

@@ -35,6 +35,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function MarketplaceProductDetailPage() {
     const { productId } = useParams<{ productId: string }>();
@@ -48,7 +49,7 @@ export default function MarketplaceProductDetailPage() {
 
     // Fetch product details
     const { data: product, isLoading } = useQuery({
-        queryKey: ['marketplace-product', productId],
+        queryKey: queryKeys.marketplaceProduct.byProduct(productId),
         enabled: !!productId,
         queryFn: async () => {
             const { data, error } = await supabase
@@ -106,7 +107,7 @@ export default function MarketplaceProductDetailPage() {
         },
         onSuccess: () => {
             toast.success('Added to Cart', { description: `${quantity} ${product?.unit_of_measure}(s) of ${product?.product_name} added to your cart.` });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-cart-count'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCart.count() });
             // navigate(`/${tenant?.slug}/admin/marketplace/cart`); // Optional: redirect to cart or stay
         },
         onError: (error) => {

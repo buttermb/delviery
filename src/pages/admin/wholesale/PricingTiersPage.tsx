@@ -33,6 +33,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Plus, MoreVertical, Edit2, Trash2, ShieldCheck, Users, DollarSign, Percent, Loader2 } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface PricingTier {
     id: string;
@@ -83,7 +84,7 @@ export default function PricingTiersPage() {
 
     // Fetch settings to get tiers
     const { data: settings } = useQuery({
-        queryKey: ['account-settings', tenant?.id],
+        queryKey: queryKeys.accountSettings.byTenant(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return null;
             const { data, error } = await supabase
@@ -127,7 +128,7 @@ export default function PricingTiersPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['account-settings'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.accountSettings.all });
             toast.success('Pricing tiers updated successfully');
             setIsDialogOpen(false);
             setEditingTier(null);

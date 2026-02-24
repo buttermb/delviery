@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { isCancelled } from '@/utils/subscriptionStatus';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface GrowthMetricsCardProps {
   stats: {
@@ -18,7 +19,7 @@ interface GrowthMetricsCardProps {
 
 export function GrowthMetricsCard({ stats }: GrowthMetricsCardProps) {
   const { data: growthMetrics } = useQuery({
-    queryKey: ['super-admin-growth-metrics'],
+    queryKey: queryKeys.superAdminTools.growthMetrics(),
     queryFn: async () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

@@ -22,6 +22,7 @@ import { useFullScreenEditor } from '@/hooks/useFullScreenEditor';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 
 import type { MarketplaceStore } from '@/types/marketplace-extended';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function StorefrontDesignPage() {
     const { tenant } = useTenantAdminAuth();
@@ -31,7 +32,7 @@ export function StorefrontDesignPage() {
 
     // Fetch storefront data
     const { data: store, isLoading } = useQuery({
-        queryKey: ['marketplace-settings', tenant?.id],
+        queryKey: queryKeys.marketplaceSettings.byTenant(tenant?.id),
         queryFn: async (): Promise<MarketplaceStore | null> => {
             try {
                 const { data, error } = await (supabase as any)
@@ -60,7 +61,7 @@ export function StorefrontDesignPage() {
         },
         onSuccess: () => {
             toast.success('Draft saved');
-            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
             setHasUnsavedChanges(false);
         },
         onError: (error) => {

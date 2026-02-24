@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface StorefrontAgeGateProps {
     storeId?: string;
@@ -28,7 +29,7 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
     // Fetch store settings to check if age gate is enabled
     // Note: These columns may not exist yet, so we handle errors gracefully
     const { data: settings } = useQuery({
-        queryKey: ['store-age-settings', storeId],
+        queryKey: queryKeys.storeAgeSettings.byStore(storeId),
         queryFn: async (): Promise<StoreAgeSettings | null> => {
             if (!storeId) return null;
             try {

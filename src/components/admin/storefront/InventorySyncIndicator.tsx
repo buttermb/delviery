@@ -37,6 +37,7 @@ import Wifi from 'lucide-react/dist/esm/icons/wifi';
 import WifiOff from 'lucide-react/dist/esm/icons/wifi-off';
 import Database from 'lucide-react/dist/esm/icons/database';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
+import { queryKeys } from '@/lib/queryKeys';
 
 type SyncStatus = 'synced' | 'syncing' | 'lagging' | 'error' | 'disconnected';
 type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
@@ -213,13 +214,13 @@ export function InventorySyncIndicator({
 
       // Invalidate all inventory-related queries
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['products'] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.products.all }),
         queryClient.invalidateQueries({ queryKey: ['products', tenantId] }),
-        queryClient.invalidateQueries({ queryKey: ['inventory'] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all }),
         queryClient.invalidateQueries({ queryKey: ['inventory', tenantId] }),
-        queryClient.invalidateQueries({ queryKey: ['inventory_batches'] }),
-        queryClient.invalidateQueries({ queryKey: ['shop-products'] }),
-        queryClient.invalidateQueries({ queryKey: ['storefront-products'] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.inventorySyncKeys.inventoryBatches() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.shopStoreProducts.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.inventorySyncKeys.storefrontProducts() }),
       ]);
 
       setLastSyncAt(new Date());

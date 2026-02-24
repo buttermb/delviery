@@ -6,12 +6,13 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function ExecutiveSummaryWidget() {
     const { tenant } = useTenantAdminAuth();
 
     const { data: summary, isLoading } = useQuery({
-        queryKey: ['hotbox-executive', tenant?.id],
+        queryKey: queryKeys.hotbox.executive(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return null;
 

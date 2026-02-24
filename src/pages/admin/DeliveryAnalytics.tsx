@@ -6,13 +6,14 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Truck, Clock, Package, TrendingUp } from 'lucide-react';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function DeliveryAnalytics() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
   const { data: deliveries, isLoading } = useQuery({
-    queryKey: ['delivery-analytics', tenantId],
+    queryKey: queryKeys.deliveryAnalytics.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

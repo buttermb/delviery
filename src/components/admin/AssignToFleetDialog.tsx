@@ -102,8 +102,8 @@ export function AssignToFleetDialog({
       queryClient.invalidateQueries({ queryKey: queryKeys.deliveries.active() });
       queryClient.invalidateQueries({ queryKey: queryKeys.runners.available() });
       queryClient.invalidateQueries({ queryKey: queryKeys.runners.lists() });
-      queryClient.invalidateQueries({ queryKey: ['pending-orders-for-assignment'] });
-      queryClient.invalidateQueries({ queryKey: ['live-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pendingOrdersForAssignment.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.liveOrders.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.lists() });
 
       onOpenChange(false);

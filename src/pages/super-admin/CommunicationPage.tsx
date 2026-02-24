@@ -9,6 +9,7 @@ import { Mail, Send, Users, TrendingUp, Clock } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function CommunicationPage() {
   const [subject, setSubject] = useState("");
@@ -16,7 +17,7 @@ export default function CommunicationPage() {
 
   // Fetch campaigns from all tenants
   const { data: campaigns = [], isLoading } = useQuery({
-    queryKey: ['super-admin-campaigns'],
+    queryKey: queryKeys.superAdminTools.campaigns(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('marketing_campaigns')

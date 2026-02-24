@@ -26,6 +26,7 @@ import Wifi from "lucide-react/dist/esm/icons/wifi";
 import WifiOff from "lucide-react/dist/esm/icons/wifi-off";
 import User from "lucide-react/dist/esm/icons/user";
 import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
+import { queryKeys } from '@/lib/queryKeys';
 
 interface PickupOrderItem {
   id: string;
@@ -82,7 +83,7 @@ export function ReadyForPickupWidget() {
 
   // Fetch orders ready for pickup
   const { data: orders = [], isLoading } = useQuery({
-    queryKey: ['hotbox-ready-for-pickup', tenant?.id],
+    queryKey: queryKeys.hotbox.readyForPickup(tenant?.id),
     queryFn: async (): Promise<PickupOrderItem[]> => {
       if (!tenant?.id) return [];
 

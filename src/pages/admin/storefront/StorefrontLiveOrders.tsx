@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StorefrontLiveOrdersKanban } from '@/components/admin/storefront/StorefrontLiveOrdersKanban';
+import { queryKeys } from '@/lib/queryKeys';
 
 /** Status progression order */
 const STATUS_PROGRESSION = [
@@ -141,7 +142,7 @@ export function StorefrontLiveOrders() {
 
   // Fetch store
   const { data: store } = useQuery({
-    queryKey: ['marketplace-store', tenantId],
+    queryKey: queryKeys.marketplaceStore.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
       const { data } = await supabase

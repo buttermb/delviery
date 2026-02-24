@@ -12,10 +12,11 @@ import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function RevenueForecastChart() {
   const { data: revenueData } = useQuery({
-    queryKey: ['revenue-forecast'],
+    queryKey: queryKeys.superAdminTools.revenueForecast(),
     queryFn: async () => {
       const { data: tenants } = await supabase
         .from('tenants')

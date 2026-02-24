@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 
 import type {
+import { queryKeys } from '@/lib/queryKeys';
   Organization,
   OrganizationWithStats,
   OrganizationMember,
@@ -881,7 +882,7 @@ export function useCustomerOrganizations(customerId: string | undefined) {
   const tenantId = tenant?.id;
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['customer-organizations', tenantId, customerId],
+    queryKey: queryKeys.customerOrganizations.byCustomer(tenantId, customerId),
     queryFn: async () => {
       if (!tenantId || !customerId) return [];
 

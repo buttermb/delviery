@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CreditBalanceProps {
   className?: string;
@@ -28,7 +29,7 @@ export function CreditBalance({
 
   // Fetch usage stats for tooltip (must be before conditional return per rules-of-hooks)
   const { data: usageStats } = useQuery({
-    queryKey: ['credit-usage-quick', tenant?.id],
+    queryKey: queryKeys.creditWidgets.usageQuick(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return null;
 

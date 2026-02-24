@@ -15,6 +15,7 @@ import { OrderProgressBar } from "@/components/customer/OrderProgressBar";
 import { OrderTrackingMap } from "@/components/customer/OrderTrackingMap";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
+import { queryKeys } from '@/lib/queryKeys';
 
 type OrderStatus = "pending" | "confirmed" | "preparing" | "ready_for_pickup" | "out_for_delivery" | "delivered" | "cancelled";
 
@@ -187,7 +188,7 @@ export default function OrderTrackingPage() {
         },
         (payload) => {
           logger.debug('Order status update received (orders)', payload.new, 'OrderTrackingPage');
-          queryClient.invalidateQueries({ queryKey: ['customer-order', orderId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.customerOrder.byId(orderId) });
         }
       )
       .on(
@@ -200,7 +201,7 @@ export default function OrderTrackingPage() {
         },
         (payload) => {
           logger.debug('Order status update received (marketplace_orders)', payload.new, 'OrderTrackingPage');
-          queryClient.invalidateQueries({ queryKey: ['customer-order', orderId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.customerOrder.byId(orderId) });
         }
       )
       .subscribe((status) => {

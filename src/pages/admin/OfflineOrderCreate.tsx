@@ -46,6 +46,7 @@ import { useOfflineOrderCreation, OfflineOrderItem, OfflineOrderData } from '@/h
 import { db as idb } from '@/lib/idb';
 import { cn } from '@/lib/utils';
 import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ProductForOrder {
   id: string;
@@ -86,7 +87,7 @@ export default function OfflineOrderCreate() {
 
   // Fetch products (from Supabase if online, from IndexedDB if offline)
   const { data: products = [], isLoading: productsLoading } = useQuery({
-    queryKey: ['products-for-offline-order', tenant?.id, isOnline],
+    queryKey: queryKeys.productsForOfflineOrder.byTenant(tenant?.id, isOnline),
     queryFn: async (): Promise<ProductForOrder[]> => {
       if (isOnline && tenant?.id) {
         // Fetch from Supabase and cache in IndexedDB

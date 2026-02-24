@@ -66,7 +66,7 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
 
   // Fetch current menu data
   const { data: menuData, isLoading: isLoadingMenu } = useQuery({
-    queryKey: ['edit-menu', menuId],
+    queryKey: queryKeys.editMenu.byMenu(menuId),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant context');
 
@@ -207,7 +207,7 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
-      queryClient.invalidateQueries({ queryKey: ['edit-menu', menuId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.editMenu.byMenu(menuId) });
       showSuccessToast('Menu Updated', 'Menu name, products, and expiration updated successfully');
       onSuccess?.();
       onOpenChange(false);

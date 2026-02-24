@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { Plug, Plus, Edit, ArrowLeft, Webhook, Loader2, AlertCircle } from 'lucide-react';
 import { IntegrationWebhooks } from '@/components/integrations/IntegrationWebhooks';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Integration {
   id: string;
@@ -49,7 +50,7 @@ export default function CustomIntegrations() {
   });
 
   const { data: integrations, isLoading, error } = useQuery({
-    queryKey: ['custom-integrations', tenantId],
+    queryKey: queryKeys.customIntegrations.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -100,7 +101,7 @@ export default function CustomIntegrations() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom-integrations', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customIntegrations.byTenant(tenantId) });
       toast.success("Custom integration has been created.");
       resetForm();
     },
@@ -137,7 +138,7 @@ export default function CustomIntegrations() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom-integrations', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customIntegrations.byTenant(tenantId) });
       toast.success("Integration has been updated successfully.");
       resetForm();
     },

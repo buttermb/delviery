@@ -52,6 +52,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
+import { queryKeys } from '@/lib/queryKeys';
 
 const TIMEZONES = [
   { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
@@ -188,7 +189,7 @@ export default function BusinessSettings() {
       await new Promise(resolve => setTimeout(resolve, 300));
 
       // invalidate
-      queryClient.invalidateQueries({ queryKey: ['tenant'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenants.all });
     },
     onSuccess: () => toast.success('Business info saved'),
     versionTracking: {

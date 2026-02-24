@@ -40,6 +40,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { getCreditCostInfo } from '@/lib/credits';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface CreditActivityFeedProps {
   className?: string;
@@ -92,7 +93,7 @@ export function CreditActivityFeed({
     refetch,
     isFetching,
   } = useQuery({
-    queryKey: ['credit-activity', tenantId, limit],
+    queryKey: queryKeys.creditWidgets.activity(tenantId, limit),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -130,7 +131,7 @@ export function CreditActivityFeed({
           filter: `tenant_id=eq.${tenantId}`,
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['credit-activity', tenantId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.creditWidgets.activity(tenantId) });
         }
       )
       .subscribe();

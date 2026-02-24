@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 import { formatCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CustomerActivityTimelineProps {
   whitelistId: string;
@@ -27,7 +28,7 @@ export const CustomerActivityTimeline = ({
 }: CustomerActivityTimelineProps) => {
   // Fetch access logs for this customer
   const { data: accessLogs, isLoading: logsLoading } = useQuery({
-    queryKey: ['customer-access-logs', whitelistId],
+    queryKey: queryKeys.customerAccessLogs.byWhitelist(whitelistId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_access_logs')
@@ -43,7 +44,7 @@ export const CustomerActivityTimeline = ({
 
   // Fetch orders for this customer
   const { data: orders, isLoading: ordersLoading } = useQuery({
-    queryKey: ['customer-orders', whitelistId],
+    queryKey: queryKeys.customerDetail.orders(whitelistId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_orders')
@@ -59,7 +60,7 @@ export const CustomerActivityTimeline = ({
 
   // Fetch security events for this customer
   const { data: securityEvents, isLoading: eventsLoading } = useQuery({
-    queryKey: ['customer-security-events', whitelistId],
+    queryKey: queryKeys.customerSecurityEvents.byWhitelist(whitelistId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_security_events')

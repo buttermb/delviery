@@ -28,6 +28,7 @@ import { useCredits } from '@/hooks/useCredits';
 import { getCreditTransactions, type CreditTransaction } from '@/lib/credits';
 import { logger } from '@/lib/logger';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 // ============================================================================
 // Helper Functions
@@ -359,7 +360,7 @@ export function CreditsPage() {
 
   // Fetch recent transactions (last 5)
   const { data: recentTransactions = [], isLoading: isTransactionsLoading } = useQuery({
-    queryKey: ['credits', 'recent-transactions', tenantId],
+    queryKey: queryKeys.creditWidgets.recentTransactions(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       try {

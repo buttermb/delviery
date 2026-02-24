@@ -22,6 +22,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { useNavigate, useParams } from 'react-router-dom';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 type OrderChannel = 'wholesale' | 'pos' | 'online';
 
@@ -73,7 +74,7 @@ export function MultiChannelOrderList() {
     const [channelFilter, setChannelFilter] = useState<OrderChannel | 'all'>('all');
 
     const { data: orders = [], isLoading } = useQuery({
-        queryKey: ['multi-channel-orders', tenantId, channelFilter],
+        queryKey: queryKeys.tenantWidgets.multiChannelOrders(tenantId, channelFilter),
         queryFn: async () => {
             if (!tenantId) return [];
 

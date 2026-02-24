@@ -48,6 +48,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface MarketplaceOrder {
   id: string;
@@ -96,7 +97,7 @@ export default function StorefrontOrders() {
 
   // Fetch store
   const { data: store } = useQuery({
-    queryKey: ['marketplace-store', tenantId],
+    queryKey: queryKeys.marketplaceStore.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
       const { data } = await supabase
@@ -180,7 +181,7 @@ export default function StorefrontOrders() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.all });
       toast.success("Order status updated!");
     },
     onError: (error) => {

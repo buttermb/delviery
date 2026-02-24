@@ -44,6 +44,7 @@ import { formatSmartDate } from '@/lib/utils/formatDate';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function OrderDetailPage() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -59,7 +60,7 @@ export default function OrderDetailPage() {
 
     // Fetch order details
     const { data: order, isLoading } = useQuery({
-        queryKey: ['marketplace-order-detail', orderId],
+        queryKey: queryKeys.marketplaceOrders.orderDetail(orderId),
         queryFn: async () => {
             if (!orderId) return null;
 
@@ -111,8 +112,8 @@ export default function OrderDetailPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-order-detail', orderId] });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.orderDetail(orderId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.all });
             toast.success("Order status has been updated");
             setShowTrackingDialog(false);
             setTrackingNumber('');
@@ -137,7 +138,7 @@ export default function OrderDetailPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-order-detail', orderId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.orderDetail(orderId) });
             toast.success("Seller notes have been saved");
             setShowNotesDialog(false);
         },
@@ -196,8 +197,8 @@ export default function OrderDetailPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-order-detail', orderId] });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.orderDetail(orderId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.all });
             toast.success("Order marked as paid");
         },
         onError: (error: unknown) => {

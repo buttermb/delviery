@@ -40,6 +40,7 @@ const WEBHOOK_EVENTS = [
 ];
 
 import { type Database } from '@/integrations/supabase/types';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Workaround for missing table types
 type TableKey = keyof Database['public']['Tables'];
@@ -61,7 +62,7 @@ export default function Webhooks() {
   });
 
   const { data: webhooks, isLoading } = useQuery({
-    queryKey: ['webhooks', tenantId],
+    queryKey: queryKeys.webhooks.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -109,7 +110,7 @@ export default function Webhooks() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhooks', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks.byTenant(tenantId) });
       toast.success("Webhook has been created successfully.");
       resetForm();
     },
@@ -149,7 +150,7 @@ export default function Webhooks() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['webhooks', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.webhooks.byTenant(tenantId) });
       toast.success("Webhook has been updated successfully.");
       resetForm();
     },

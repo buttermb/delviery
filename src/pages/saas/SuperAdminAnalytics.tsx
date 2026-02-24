@@ -33,6 +33,7 @@ import {
   SUBSCRIPTION_STATUS
 } from '@/utils/subscriptionStatus';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function SuperAdminAnalytics() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export default function SuperAdminAnalytics() {
 
   // Platform Analytics
   const { data: analytics } = useQuery({
-    queryKey: ['platform-analytics', timeRange],
+    queryKey: queryKeys.superAdminTools.platformAnalytics(timeRange),
     queryFn: async () => {
       const { data: tenants } = await supabase.from('tenants').select('*');
 

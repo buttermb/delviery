@@ -21,11 +21,12 @@ import { useForumProfile } from '@/hooks/useForumProfile';
 import { ApprovalBanner } from '@/components/community/ApprovalBanner';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function CreatePostPage() {
   const navigate = useNavigate();
   const { data: categories } = useQuery({
-    queryKey: ['forum', 'categories'],
+    queryKey: queryKeys.forum.categories.all(),
     queryFn: () => forumApi.getCategories(),
   });
   const { data: profile } = useForumProfile();
@@ -40,7 +41,7 @@ export function CreatePostPage() {
   const [listingSearchQuery, setListingSearchQuery] = useState('');
 
   const { data: listings = [] } = useQuery({
-    queryKey: ['marketplace-listings-for-forum'],
+    queryKey: queryKeys.marketplaceListings.forForum(),
     queryFn: () => marketplaceApi.getActiveMarketplaceListings(100),
   });
 

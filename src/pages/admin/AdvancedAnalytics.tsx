@@ -13,6 +13,7 @@ import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { exportAnalyticsToCSV, exportAnalyticsToPDF, formatCurrencyForReport } from '@/lib/utils/analyticsExport';
 import { toast } from 'sonner';
+import { queryKeys } from '@/lib/queryKeys';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
@@ -22,7 +23,7 @@ export default function AdvancedAnalytics() {
   const [isExporting, setIsExporting] = useState(false);
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
-    queryKey: ['advanced-analytics-orders', tenantId],
+    queryKey: queryKeys.advancedAnalyticsOrders.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -47,7 +48,7 @@ export default function AdvancedAnalytics() {
   });
 
   const { data: customers, isLoading: customersLoading } = useQuery({
-    queryKey: ['advanced-analytics-customers', tenantId],
+    queryKey: queryKeys.advancedAnalyticsOrders.customers(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

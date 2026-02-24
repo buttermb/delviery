@@ -13,6 +13,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { queryKeys } from '@/lib/queryKeys';
 
 // ============================================================================
 // Types
@@ -198,8 +199,8 @@ export function usePurchaseCredits(): UsePurchaseCreditsReturn {
 
     onSuccess: (data) => {
       // Invalidate credits balance queries so they refetch on return
-      queryClient.invalidateQueries({ queryKey: ['credits', tenant?.id] });
-      queryClient.invalidateQueries({ queryKey: ['tenant-credits'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.credits.balance(tenant?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantCredits.all });
 
       logger.info('Credit purchase checkout initiated', {
         sessionId: data.session_id,
@@ -294,8 +295,8 @@ export function usePurchaseSuccess() {
 
   const confirmPurchase = (newBalance?: number) => {
     // Invalidate all credit-related queries to fetch fresh balance
-    queryClient.invalidateQueries({ queryKey: ['credits', tenant?.id] });
-    queryClient.invalidateQueries({ queryKey: ['tenant-credits'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.credits.balance(tenant?.id) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.tenantCredits.all });
 
     if (newBalance !== undefined) {
       toast.success('Credits Added!', {

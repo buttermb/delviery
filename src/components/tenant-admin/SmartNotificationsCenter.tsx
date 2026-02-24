@@ -28,6 +28,7 @@ import {
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Type definitions
 type NotificationPriority = 'critical' | 'high' | 'medium' | 'low';
@@ -84,7 +85,7 @@ export function SmartNotificationsCenter() {
 
   // Fetch notifications
   const { data: notifications = [] } = useQuery<Notification[]>({
-    queryKey: ['smart-notifications', tenantId, readNotificationIds.length],
+    queryKey: queryKeys.tenantWidgets.smartNotifications(tenantId, readNotificationIds.length),
     queryFn: async () => {
       if (!tenantId) return [];
 

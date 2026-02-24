@@ -267,7 +267,7 @@ export function OrderEditModal({
         if (orderError) throw orderError;
 
         // Invalidate menu order queries
-        queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.menuOrders.all });
       } else if (orderTable === 'wholesale_orders') {
         const { error: orderError } = await supabase
           .from('wholesale_orders')

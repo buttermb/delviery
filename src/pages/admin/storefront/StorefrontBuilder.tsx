@@ -51,6 +51,7 @@ import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Define available section types (8 total)
 const SECTION_TYPES = {
@@ -279,7 +280,7 @@ export function StorefrontBuilder({
 
     // Fetch Store Config
     const { data: store } = useQuery({
-        queryKey: ['marketplace-settings', tenant?.id],
+        queryKey: queryKeys.marketplaceSettings.byTenant(tenant?.id),
         queryFn: async (): Promise<MarketplaceStore> => {
             try {
                 const { data, error } = await (supabase as any)
@@ -467,7 +468,7 @@ export function StorefrontBuilder({
             toast.success('Store created!', {
                 description: `Your storefront "${storeData.store_name}" has been created. 500 credits have been deducted.`,
             });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
             setShowCreateDialog(false);
             setNewStoreName('');
             setNewStoreSlug('');
@@ -564,7 +565,7 @@ export function StorefrontBuilder({
         },
         onSuccess: () => {
             toast.success('Draft saved', { description: 'Your changes have been saved as a draft.' });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
             queryClient.invalidateQueries({ queryKey: ['shop-store'] });
             easyModeBuilder.markClean();
         },
@@ -606,7 +607,7 @@ export function StorefrontBuilder({
         },
         onSuccess: () => {
             toast.success('Store published!', { description: 'Your storefront is now live and visible to customers.' });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
             queryClient.invalidateQueries({ queryKey: ['shop-store'] });
             easyModeBuilder.markClean();
         },

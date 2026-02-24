@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface LocationPoint {
   id: string;
@@ -45,7 +46,7 @@ export function useRunnerLocationHistory({
 
   // Fetch location history
   const { data: locations = [], refetch, isLoading } = useQuery({
-    queryKey: ['runner-location-history', runnerId, deliveryId, startTime, endTime],
+    queryKey: queryKeys.runnerLocationHistory.track(runnerId, deliveryId, startTime, endTime),
     queryFn: async () => {
       if (!runnerId) return [];
 
@@ -82,7 +83,7 @@ export function useRunnerLocationHistory({
 
   // Fetch route statistics
   const { data: statistics } = useQuery({
-    queryKey: ['route-statistics', runnerId, deliveryId, startTime, endTime],
+    queryKey: queryKeys.runnerLocationHistory.routeStats(runnerId, deliveryId, startTime, endTime),
     queryFn: async () => {
       if (!runnerId) return null;
 

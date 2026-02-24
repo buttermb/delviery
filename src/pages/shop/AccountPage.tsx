@@ -44,6 +44,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
 import { formatPhoneNumber } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface OrderItem {
   product_id: string;
@@ -747,7 +748,7 @@ function WishlistSection({
 
   // Fetch wishlist products
   const { data: products = [], isLoading, refetch } = useQuery({
-    queryKey: ['wishlist-products', storeId, wishlistIds],
+    queryKey: queryKeys.shopPages.wishlistProducts(storeId, wishlistIds),
     queryFn: async () => {
       if (wishlistIds.length === 0) return [];
 
@@ -1171,7 +1172,7 @@ function ProfileSection({
 
   // Fetch customer profile
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['customer-profile', customerId, tenantId],
+    queryKey: queryKeys.shopPages.customerProfile(customerId, tenantId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customers')
@@ -1226,7 +1227,7 @@ function ProfileSection({
     },
     onSuccess: () => {
       toast.success('Profile updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['customer-profile', customerId, tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.shopPages.customerProfile(customerId, tenantId) });
       setIsEditing(false);
       onProfileUpdated(formData.first_name.trim() || null);
     },

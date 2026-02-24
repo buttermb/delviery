@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   getPlatformCreditStats,
   getTenantsWithCredits,
   type TenantCreditInfo,
@@ -35,14 +36,14 @@ import {
 export default function CreditsOverviewPage() {
   // Fetch platform stats
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
-    queryKey: ['platform-credit-stats'],
+    queryKey: queryKeys.superAdminTools.platformCreditStats(),
     queryFn: getPlatformCreditStats,
     refetchInterval: 60000, // Refresh every minute
   });
 
   // Fetch tenants needing attention (critical + depleted)
   const { data: criticalTenants, isLoading: tenantsLoading } = useQuery({
-    queryKey: ['critical-tenants'],
+    queryKey: queryKeys.superAdminTools.criticalTenants(),
     queryFn: async () => {
       const critical = await getTenantsWithCredits({ status: 'critical', limit: 5 });
       const depleted = await getTenantsWithCredits({ status: 'depleted', limit: 5 });

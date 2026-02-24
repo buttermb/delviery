@@ -119,7 +119,7 @@ export default function InventoryAudit() {
 
   // Fetch audit history
   const { data: auditHistory, isLoading: historyLoading } = useQuery({
-    queryKey: ['inventory-audits', tenant?.id],
+    queryKey: queryKeys.inventoryAudits.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -308,7 +308,7 @@ export default function InventoryAudit() {
       // Invalidate related queries
       if (tenant?.id) {
         invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenant.id);
-        queryClient.invalidateQueries({ queryKey: ['inventory-audits', tenant.id] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.inventoryAudits.byTenant(tenant.id) });
         queryClient.invalidateQueries({ queryKey: queryKeys.products.list(tenant.id) });
       }
 

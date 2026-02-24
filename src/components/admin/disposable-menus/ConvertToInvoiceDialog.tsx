@@ -159,7 +159,7 @@ export function ConvertToInvoiceDialog({
       );
 
       // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['menu-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.menuOrders.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
 
       // Cross-panel invalidation — finance hub, dashboard, collections

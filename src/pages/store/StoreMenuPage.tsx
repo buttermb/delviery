@@ -32,6 +32,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -119,7 +120,7 @@ export default function StoreMenuPage() {
     isLoading: storeLoading,
     error: storeError,
   } = useQuery({
-    queryKey: ['store-menu', slug],
+    queryKey: queryKeys.storePages.menu(slug),
     queryFn: async (): Promise<StoreData | null> => {
       if (!slug) return null;
 
@@ -144,7 +145,7 @@ export default function StoreMenuPage() {
   // ── Fetch All Products ──────────────────────────────────────────────────
 
   const { data: allProducts = [], isLoading: productsLoading } = useQuery({
-    queryKey: ['store-menu-products', store?.tenant_id],
+    queryKey: queryKeys.storePages.menuProducts(store?.tenant_id),
     queryFn: async (): Promise<MenuProduct[]> => {
       if (!store?.tenant_id) return [];
 

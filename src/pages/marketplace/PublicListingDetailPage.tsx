@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { SEOHead } from '@/components/SEOHead';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function PublicListingDetailPage() {
   const { listingId } = useParams<{ listingId: string }>();
@@ -28,7 +29,7 @@ export default function PublicListingDetailPage() {
 
   // Fetch listing details
   const { data: listing, isLoading } = useQuery({
-    queryKey: ['marketplace-listing-public', listingId],
+    queryKey: queryKeys.marketplaceListings.publicDetail(listingId),
     queryFn: async () => {
       if (!listingId) return null;
 

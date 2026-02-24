@@ -89,19 +89,19 @@ export function useProductMutations() {
 
       // 3. Invalidate marketplace product settings (admin storefront config)
       queryClient.invalidateQueries({
-        queryKey: ['marketplace-product-settings'],
+        queryKey: queryKeys.marketplaceProductSettings.all,
       });
 
       // 4. Invalidate product sync status
       if (tenantId) {
         queryClient.invalidateQueries({
-          queryKey: ['products-sync', tenantId],
+          queryKey: queryKeys.marketplaceProductSettings.sync(tenantId),
         });
       }
 
       // 5. Invalidate marketplace product stats
       queryClient.invalidateQueries({
-        queryKey: ['marketplace-product-stats'],
+        queryKey: queryKeys.marketplaceProductSettings.stats(),
       });
 
       // 6. Invalidate POS products (if tenant uses POS)

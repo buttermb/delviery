@@ -12,6 +12,7 @@ import { Activity } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface SystemHealthMonitorProps {
   className?: string;
@@ -21,7 +22,7 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
   const navigate = useNavigate();
   // Fetch system metrics from database
   const { data: systemHealth } = useQuery({
-    queryKey: ['system-health'],
+    queryKey: queryKeys.superAdminTools.systemHealth(),
     queryFn: async () => {
       // Fetch latest metrics for each type
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();

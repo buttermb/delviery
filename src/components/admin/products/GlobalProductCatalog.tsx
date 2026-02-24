@@ -26,6 +26,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import {
+import { queryKeys } from '@/lib/queryKeys';
     Search,
     Loader2,
     Download,
@@ -69,7 +70,7 @@ export function GlobalProductCatalog() {
 
     // Fetch Global Products
     const { data: products = [], isLoading } = useQuery({
-        queryKey: ['global-products', debouncedSearch, categoryFilter, debouncedBrand],
+        queryKey: queryKeys.globalProducts.list(debouncedSearch, categoryFilter, debouncedBrand),
         queryFn: async () => {
             const { data, error } = await (supabase.rpc as any)('search_global_products', {
                 p_query: debouncedSearch || null,
@@ -86,7 +87,7 @@ export function GlobalProductCatalog() {
 
     // Fetch already imported products
     const { data: imports = [] } = useQuery({
-        queryKey: ['global-product-imports', tenant?.id],
+        queryKey: queryKeys.globalProducts.imports(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
             const { data, error } = await (supabase
@@ -126,7 +127,7 @@ export function GlobalProductCatalog() {
             return data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['global-product-imports'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.globalProducts.imports() });
             toast.success("Check your Products tab to set pricing and publish.");
             setIsImportDialogOpen(false);
             setSelectedProduct(null);

@@ -12,12 +12,13 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function StrategicDashboardPage() {
     const { tenant } = useTenantAdminAuth();
 
     const { data: strategicData, isLoading } = useQuery({
-        queryKey: ['strategic-metrics', tenant?.id],
+        queryKey: queryKeys.strategicDashboard.metrics(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) throw new Error('No tenant');
 

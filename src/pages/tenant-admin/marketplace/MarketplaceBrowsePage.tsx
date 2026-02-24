@@ -26,6 +26,7 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface MarketplaceListing {
     id: string;
@@ -49,7 +50,7 @@ export default function MarketplaceBrowsePage() {
     const [typeFilter, setTypeFilter] = useState('all');
 
     const { data: listings, isLoading, error } = useQuery({
-        queryKey: ['marketplace-browse', typeFilter],
+        queryKey: queryKeys.marketplaceBrowse.list(typeFilter),
         queryFn: async () => {
             let query = supabase
                 .from('marketplace_listings')

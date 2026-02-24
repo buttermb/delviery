@@ -35,6 +35,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   adjustTenantCredits,
   getTenantCreditDetail,
   type AdjustmentReason,
@@ -71,7 +72,7 @@ export function CreditAdjustmentForm({
 
   // Fetch current tenant balance
   const { data: tenantDetail } = useQuery({
-    queryKey: ['tenant-credit-detail-form', tenantId],
+    queryKey: queryKeys.superAdminTools.creditAdjustmentForm(tenantId),
     queryFn: () => getTenantCreditDetail(tenantId),
     enabled: open && !!tenantId,
   });

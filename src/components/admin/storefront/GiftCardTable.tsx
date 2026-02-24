@@ -55,6 +55,7 @@ import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface GiftCard {
   id: string;
@@ -86,7 +87,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
   const [cardToDelete, setCardToDelete] = useState<GiftCard | null>(null);
 
   const { data: giftCards = [], isLoading } = useQuery({
-    queryKey: ['gift-cards', storeId],
+    queryKey: queryKeys.giftCards.byStore(storeId),
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('marketplace_gift_cards')
@@ -138,7 +139,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['gift-cards', storeId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.byStore(storeId) });
       toast.success("${variables.ids.length} card(s) ${variables.newStatus === ");
       setSelectedIds(new Set());
       setBulkAction(null);
@@ -162,7 +163,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gift-cards', storeId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.byStore(storeId) });
       toast.success('Gift card deleted successfully');
       setDeleteDialogOpen(false);
       setCardToDelete(null);

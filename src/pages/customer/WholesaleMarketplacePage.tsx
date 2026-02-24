@@ -33,6 +33,7 @@ import {
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
 import { useState as useReactState, useEffect } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
+import { queryKeys } from '@/lib/queryKeys';
 
 type CustomerMode = 'retail' | 'wholesale';
 
@@ -60,7 +61,7 @@ export default function WholesaleMarketplacePage() {
 
   // Fetch active marketplace listings
   const { data: listings = [], isLoading } = useQuery({
-    queryKey: ['marketplace-listings-browse', productTypeFilter, strainTypeFilter],
+    queryKey: queryKeys.marketplaceListings.browse(productTypeFilter, strainTypeFilter),
     queryFn: async () => {
       let query = supabase
         .from('marketplace_listings')
@@ -141,7 +142,7 @@ export default function WholesaleMarketplacePage() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-cart', buyerTenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCart.byBuyer(buyerTenantId) });
       toast.success('Added to Cart', {
         description: 'Item added to wholesale cart',
       });

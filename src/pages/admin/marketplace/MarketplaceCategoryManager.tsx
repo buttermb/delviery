@@ -15,6 +15,7 @@ import { logger } from "@/lib/logger";
 import { Loader2, Plus, FolderTree, Edit2, Trash2 } from "lucide-react";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { queryKeys } from '@/lib/queryKeys';
 
 type MarketplaceCategory = {
     id: string;
@@ -41,7 +42,7 @@ export default function MarketplaceCategoryManager() {
 
     // Fetch categories
     const { data: categories, isLoading } = useQuery({
-        queryKey: ['marketplace-categories', tenant?.id],
+        queryKey: queryKeys.marketplaceCategories.byTenant(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
             const { data, error } = await (supabase as any)
@@ -82,7 +83,7 @@ export default function MarketplaceCategoryManager() {
             }
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-categories'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCategories.all });
             setIsDialogOpen(false);
             setEditingCategory(null);
             setFormData({ is_active: true, display_order: 0 });
@@ -102,7 +103,7 @@ export default function MarketplaceCategoryManager() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-categories'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCategories.all });
             toast.success("Category deleted");
         },
         onError: (error: Error) => {

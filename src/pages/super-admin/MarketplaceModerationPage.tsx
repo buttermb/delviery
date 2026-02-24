@@ -36,6 +36,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function MarketplaceModerationPage() {
   const { superAdmin } = useSuperAdminAuth();
@@ -49,7 +50,7 @@ export default function MarketplaceModerationPage() {
 
   // Fetch marketplace profiles pending verification (both sellers and buyers)
   const { data: profiles = [], isLoading } = useQuery({
-    queryKey: ['marketplace-profiles-moderation', statusFilter],
+    queryKey: queryKeys.superAdminTools.marketplaceModeration(statusFilter),
     queryFn: async () => {
       let query = supabase
         .from('marketplace_profiles')
@@ -140,7 +141,7 @@ export default function MarketplaceModerationPage() {
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-profiles-moderation'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.marketplaceModeration() });
       toast.success(variables.action === 'approve'
           ? 'Profile verified and activated'
           : 'License verification rejected');

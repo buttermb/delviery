@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Truck, MapPin, User, Check, Loader2 } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Courier {
   id: string;
@@ -58,7 +59,7 @@ export function AssignToFleetDialog({
 
   // Fetch available couriers
   const { data: couriers = [], isLoading } = useQuery({
-    queryKey: ['fleet-couriers', tenant?.id],
+    queryKey: queryKeys.fleetCouriers.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -97,9 +98,9 @@ export function AssignToFleetDialog({
     },
     onSuccess: () => {
       toast.success('Courier assigned successfully');
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['deliveries'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.deliveries.all });
       onOpenChange(false);
     },
     onError: (error) => {

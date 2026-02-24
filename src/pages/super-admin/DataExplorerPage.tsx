@@ -9,6 +9,7 @@ import { Database, Play, Download, History, AlertCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from 'sonner';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Store recent queries in localStorage
 const getRecentQueries = (): Array<{ query: string; timestamp: string }> => {
@@ -40,7 +41,7 @@ export default function DataExplorerPage() {
 
   // Execute query via Supabase RPC (safe read-only queries)
   const { data: results, isLoading, error } = useQuery({
-    queryKey: ['data-explorer-query', queryToRun],
+    queryKey: queryKeys.superAdminTools.dataExplorer(queryToRun),
     queryFn: async () => {
       if (!queryToRun) return [];
 

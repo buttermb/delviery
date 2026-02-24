@@ -17,6 +17,7 @@ import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
 import { TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
 
 
 interface CartUpsellsSectionProps {
@@ -49,7 +50,7 @@ export function CartUpsellsSection({
 
     // Fetch products using the RPC that we know exists
     const { data: products = [], isLoading } = useQuery({
-        queryKey: ['upsell-products', storeId],
+        queryKey: queryKeys.upsellProducts.byStore(storeId),
         queryFn: async (): Promise<MarketplaceProduct[]> => {
             try {
                 // Use the RPC that exists in the schema

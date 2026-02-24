@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface BulkOperation {
   id: string;
@@ -171,7 +172,7 @@ export default function BulkOperationsPage() {
     },
     onSuccess: () => {
       toast.success('Bulk operation completed successfully!');
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       setOperationDialogOpen(false);
       setSelectedProducts(new Set());
       setSelectedOperation(null);

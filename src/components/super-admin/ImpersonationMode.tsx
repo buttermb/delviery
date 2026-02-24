@@ -15,6 +15,7 @@ import { User, AlertTriangle, LogOut } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { auditActions } from '@/lib/auditLog';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ImpersonationModeProps {
   tenantId: string;
@@ -25,7 +26,7 @@ export function ImpersonationMode({ tenantId, onStartImpersonation }: Impersonat
   const [isImpersonating, setIsImpersonating] = useState(false);
 
   const { data: tenant } = useQuery({
-    queryKey: ['tenant', tenantId],
+    queryKey: queryKeys.tenantSingle.byId(tenantId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tenants')

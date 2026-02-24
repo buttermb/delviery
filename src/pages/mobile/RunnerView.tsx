@@ -47,6 +47,7 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { useOnlineStatus } from '@/hooks/useOfflineQueue';
 import { cn } from '@/lib/utils';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Types for delivery data
 interface DeliveryItem {
@@ -137,7 +138,7 @@ export default function RunnerView() {
 
   // Fetch assigned deliveries
   const { data: deliveries = [], isLoading, refetch } = useQuery({
-    queryKey: ['runner-deliveries', runnerId],
+    queryKey: queryKeys.runnerDeliveries.byRunner(runnerId),
     queryFn: async (): Promise<RunnerDelivery[]> => {
       if (!runnerId) return [];
 
@@ -264,7 +265,7 @@ export default function RunnerView() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['runner-deliveries'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runnerDeliveries.all });
       toast.success('Status updated');
     },
     onError: (error) => {
@@ -315,7 +316,7 @@ export default function RunnerView() {
       return publicUrl;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['runner-deliveries'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runnerDeliveries.all });
       toast.success('Delivery completed with proof');
       setPhotoProofDeliveryId(null);
       setProofPhoto(null);

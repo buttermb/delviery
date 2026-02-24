@@ -22,6 +22,7 @@ import { useCustomerPortalOrders } from '@/hooks/useCustomerPortalOrders';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { formatPhoneNumber } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CustomerUser {
   id: string;
@@ -280,7 +281,7 @@ function PortalProfileSection({ customerUser }: { customerUser: CustomerUser }) 
 
   // Fetch customer profile from customers table
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['customer-portal-profile', customerUser.customer_id, customerUser.tenant_id],
+    queryKey: queryKeys.customerPortal.profile(customerUser.customer_id, customerUser.tenant_id),
     queryFn: async () => {
       let query = supabase
         .from('customers')
@@ -343,7 +344,7 @@ function PortalProfileSection({ customerUser }: { customerUser: CustomerUser }) 
     },
     onSuccess: () => {
       toast.success('Profile updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['customer-portal-profile', customerUser.customer_id, customerUser.tenant_id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customerPortal.profile(customerUser.customer_id, customerUser.tenant_id) });
       setIsEditing(false);
 
       // Update localStorage with new name

@@ -20,6 +20,7 @@ import {
 import { toast } from 'sonner';
 import { Plus, Loader2 } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface IssueFormData {
   initial_balance: string;
@@ -69,7 +70,7 @@ export function StorefrontGiftCardManager({ storeId }: GiftCardManagerProps) {
       return cardId;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gift-cards', storeId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.byStore(storeId) });
       toast.success("Gift Card Issued Successfully");
       setIsIssueDialogOpen(false);
       setIssueForm(initialFormData);

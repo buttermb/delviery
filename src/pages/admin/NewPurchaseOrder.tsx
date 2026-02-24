@@ -23,6 +23,7 @@ import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { SmartVendorPicker } from '@/components/wholesale/SmartVendorPicker';
 import { Vendor } from '@/hooks/useVendors';
 import { format } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface OrderProduct {
     id: string;
@@ -47,7 +48,7 @@ export default function NewPurchaseOrder() {
 
     // Products for PO (All products, regardless of stock)
     const { data: allProducts = [] } = useQuery({
-        queryKey: ['products-for-po', tenant?.id],
+        queryKey: queryKeys.productsForPO.byTenant(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
             const { data, error } = await supabase
@@ -196,7 +197,7 @@ export default function NewPurchaseOrder() {
             }
 
             toast.success("Purchase Order created successfully");
-            queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.all });
             navigateToAdmin('wholesale-orders'); // Back to main list
 
         } catch (error: any) {

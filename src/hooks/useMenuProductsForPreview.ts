@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface MenuProductPreview {
   id: string;
@@ -29,7 +30,7 @@ export interface MenuProductPreview {
 
 export const useMenuProductsForPreview = (menuId: string | undefined, enabled = true) => {
   return useQuery({
-    queryKey: ['menu-products-preview', menuId],
+    queryKey: queryKeys.menuProductsPreview.byMenu(menuId),
     queryFn: async (): Promise<MenuProductPreview[]> => {
       if (!menuId) {
         return [];

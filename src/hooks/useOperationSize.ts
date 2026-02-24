@@ -13,6 +13,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import type { OperationSize } from '@/types/sidebar';
 
 import { useBusinessTier } from './useBusinessTier';
+import { queryKeys } from '@/lib/queryKeys';
 
 /**
  * Detect operation size from tenant usage metrics and business tier
@@ -75,7 +76,7 @@ export function useOperationSize() {
 
   // Fetch user's manual override preference
   const { data: preferences, isLoading: preferencesLoading } = useQuery({
-    queryKey: ['sidebar-preferences', tenant?.id, admin?.userId],
+    queryKey: queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId),
     queryFn: async () => {
       if (!tenant?.id || !admin?.userId) return null;
 
@@ -147,7 +148,7 @@ export function useOperationSize() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId) });
     },
     onError: (error: unknown) => {
       logger.error('Failed to update operation size', error, { component: 'useOperationSize' });
@@ -168,7 +169,7 @@ export function useOperationSize() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId) });
     },
     onError: (error: unknown) => {
       logger.error('Failed to reset operation size', error, { component: 'useOperationSize' });

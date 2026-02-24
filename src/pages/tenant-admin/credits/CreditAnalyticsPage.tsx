@@ -64,6 +64,7 @@ import {
 } from '@/lib/credits';
 import { AutoTopUpSettings } from '@/components/credits/AutoTopUpSettings';
 import { CreditPurchaseModal } from '@/components/credits/CreditPurchaseModal';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Chart colors
 const CATEGORY_COLORS: Record<string, string> = {
@@ -132,7 +133,7 @@ export function CreditAnalyticsPage() {
 
   // Fetch usage data for the last 30 days
   const { data: usageData, isLoading: usageLoading, refetch: refetchUsage } = useQuery({
-    queryKey: ['credit-analytics', tenantId],
+    queryKey: queryKeys.creditWidgets.analytics(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 
@@ -253,7 +254,7 @@ export function CreditAnalyticsPage() {
 
   // Fetch purchase history
   const { data: purchaseHistory, isLoading: purchasesLoading, refetch: refetchPurchases } = useQuery({
-    queryKey: ['credit-purchases', tenantId],
+    queryKey: queryKeys.creditWidgets.purchases(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

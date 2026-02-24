@@ -40,6 +40,7 @@ import { Bell, Mail, MessageSquare, Globe, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 
 const notificationSchema = z.object({
   recipients: z.enum(['all', 'active', 'trial', 'past_due', 'custom']),
@@ -88,7 +89,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
 
   // Fetch tenants for custom selection
   const { data: tenants } = useQuery<TenantRow[]>({
-    queryKey: ['all-tenants-for-notification'],
+    queryKey: queryKeys.allTenantsForNotification.all,
     queryFn: async () => {
       const { data } = await supabase
         .from('tenants')

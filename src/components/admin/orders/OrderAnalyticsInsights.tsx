@@ -30,6 +30,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface OrderAnalyticsInsightsProps {
   orderId: string;
@@ -94,7 +95,7 @@ export function OrderAnalyticsInsights({
 
   // Fetch analytics data
   const { data: analytics, isLoading, isError } = useQuery({
-    queryKey: ['order-analytics-insights', tenant?.id, orderId, customerId],
+    queryKey: queryKeys.orderAnalyticsInsights.byOrder(tenant?.id, orderId, customerId),
     queryFn: async (): Promise<AnalyticsData | null> => {
       if (!tenant?.id) return null;
 

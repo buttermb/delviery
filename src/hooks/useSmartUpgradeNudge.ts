@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from './useCredits';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   CREDIT_WARNING_THRESHOLDS,
   BEHAVIORAL_TRIGGERS,
   projectDepletion,
@@ -172,7 +173,7 @@ export function useSmartUpgradeNudge(): UseSmartUpgradeNudgeReturn {
 
   // Fetch usage data for behavioral triggers
   const { data: usageData } = useQuery({
-    queryKey: ['credit-usage-data', tenantId],
+    queryKey: queryKeys.creditWidgets.usageData(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 
@@ -236,7 +237,7 @@ export function useSmartUpgradeNudge(): UseSmartUpgradeNudgeReturn {
 
   // Get projection data
   const { data: projection } = useQuery({
-    queryKey: ['credit-projection-nudge', tenantId, balance],
+    queryKey: queryKeys.creditWidgets.projectionNudge(tenantId, balance),
     queryFn: async () => {
       if (!tenantId) return null;
       return projectDepletion(tenantId, balance);

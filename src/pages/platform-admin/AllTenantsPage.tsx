@@ -17,13 +17,14 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
 import { useNavigate } from 'react-router-dom';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function AllTenantsPage() {
     const { isPlatformAdmin, isLoading: authLoading } = usePlatformAdmin();
     const navigate = useNavigate();
 
     const { data: tenants = [], isLoading } = useQuery({
-        queryKey: ['admin-all-tenants'],
+        queryKey: queryKeys.superAdminTools.allTenantsPage(),
         queryFn: async () => {
             const { data, error } = await supabase
                 .from('tenants')

@@ -38,7 +38,7 @@ export default function StorefrontAnalytics() {
 
   // Get the store ID for this tenant
   const { data: store, isLoading: storeLoading } = useQuery({
-    queryKey: ['storefront-analytics-store', tenant?.id],
+    queryKey: queryKeys.storefrontAnalyticsStore.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return null;
       const { data } = await supabase

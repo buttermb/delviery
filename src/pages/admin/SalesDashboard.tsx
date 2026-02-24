@@ -20,6 +20,7 @@ import { useSalesReportDrilldown } from '@/hooks/useSalesReportDrilldown';
 import { SalesReportDrilldownModal } from '@/components/admin/analytics/SalesReportDrilldownModal';
 import { format, parseISO } from 'date-fns';
 import { formatCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 const STATUS_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -56,7 +57,7 @@ export default function SalesDashboard() {
   const drilldown = useSalesReportDrilldown();
 
   const { data: orders, isLoading, refetch } = useQuery({
-    queryKey: ['sales-dashboard', tenantId, timeRange],
+    queryKey: queryKeys.salesDashboard.main(tenantId, timeRange),
     queryFn: async (): Promise<OrderRecord[]> => {
       if (!tenantId) return [];
 

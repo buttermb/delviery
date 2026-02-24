@@ -14,6 +14,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import type { SidebarPreferences } from '@/types/sidebar';
 import { toast } from 'sonner';
 import { STORAGE_KEYS, safeStorage, safeJsonParse, safeJsonStringify } from '@/constants/storageKeys';
+import { queryKeys } from '@/lib/queryKeys';
 
 /**
  * Get collapsed sections from localStorage
@@ -71,7 +72,7 @@ export function useSidebarPreferences() {
 
   // Fetch preferences
   const { data: preferences, isLoading } = useQuery({
-    queryKey: ['sidebar-preferences', tenant?.id, admin?.userId],
+    queryKey: queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId),
     queryFn: async (): Promise<SidebarPreferences> => {
       if (!tenant?.id) {
         // Return defaults with localStorage collapsed sections for fast initial render
@@ -240,7 +241,7 @@ export function useSidebarPreferences() {
     onSuccess: async (updatedData) => {
       // Directly set the cache to the confirmed data
       queryClient.setQueryData<SidebarPreferences>(
-        ['sidebar-preferences', tenant?.id, admin?.userId],
+        queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId),
         updatedData
       );
 
@@ -248,7 +249,7 @@ export function useSidebarPreferences() {
       await new Promise(resolve => setTimeout(resolve, 300));
 
       // Invalidate related queries
-      await queryClient.invalidateQueries({ queryKey: ['sidebar-config'] });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.sidebarPreferences.config() });
 
       // Note: Toast removed - was showing on every auto-save and background update
       // Toast should only be shown for explicit user actions in the calling component
@@ -258,7 +259,7 @@ export function useSidebarPreferences() {
       toast.error('Failed to save preferences');
 
       // Refetch to get correct state
-      queryClient.invalidateQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId) });
     },
   });
 
@@ -279,11 +280,11 @@ export function useSidebarPreferences() {
       await updatePreferencesMutation.mutateAsync({ favorites: newFavorites });
     },
     onMutate: async (itemId) => {
-      await queryClient.cancelQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.userId] });
-      const previous = queryClient.getQueryData<SidebarPreferences>(['sidebar-preferences', tenant?.id, admin?.userId]);
+      await queryClient.cancelQueries({ queryKey: queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId) });
+      const previous = queryClient.getQueryData<SidebarPreferences>(queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId));
 
       queryClient.setQueryData<SidebarPreferences>(
-        ['sidebar-preferences', tenant?.id, admin?.userId],
+        queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId),
         (old) => {
           const current = old || DEFAULT_PREFERENCES;
           const newFavorites = current.favorites.includes(itemId)
@@ -298,7 +299,7 @@ export function useSidebarPreferences() {
     onError: (error: unknown, variables, context) => {
       if (context?.previous) {
         queryClient.setQueryData(
-          ['sidebar-preferences', tenant?.id, admin?.userId],
+          queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId),
           context.previous
         );
       }
@@ -319,8 +320,8 @@ export function useSidebarPreferences() {
       await updatePreferencesMutation.mutateAsync({ collapsedSections: newCollapsed });
     },
     onMutate: async (sectionName) => {
-      await queryClient.cancelQueries({ queryKey: ['sidebar-preferences', tenant?.id, admin?.userId] });
-      const previous = queryClient.getQueryData<SidebarPreferences>(['sidebar-preferences', tenant?.id, admin?.userId]);
+      await queryClient.cancelQueries({ queryKey: queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId) });
+      const previous = queryClient.getQueryData<SidebarPreferences>(queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId));
 
       // Calculate new collapsed sections
       const current = previous || DEFAULT_PREFERENCES;
@@ -332,7 +333,7 @@ export function useSidebarPreferences() {
       saveCollapsedSectionsToStorage(newCollapsed);
 
       queryClient.setQueryData<SidebarPreferences>(
-        ['sidebar-preferences', tenant?.id, admin?.userId],
+        queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId),
         (old) => {
           const curr = old || DEFAULT_PREFERENCES;
           const collapsed = curr.collapsedSections.includes(sectionName)
@@ -347,7 +348,7 @@ export function useSidebarPreferences() {
     onError: (error: unknown, variables, context) => {
       if (context?.previous) {
         queryClient.setQueryData(
-          ['sidebar-preferences', tenant?.id, admin?.userId],
+          queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId),
           context.previous
         );
         // Restore localStorage to previous state on error
@@ -370,7 +371,7 @@ export function useSidebarPreferences() {
 
     // Update optimistically without showing toast
     queryClient.setQueryData<SidebarPreferences>(
-      ['sidebar-preferences', tenant?.id, admin?.userId],
+      queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId),
       (old) => ({
         ...(old || DEFAULT_PREFERENCES),
         lastAccessedFeatures: newLastAccessed,

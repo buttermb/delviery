@@ -3,12 +3,13 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function LocationOverviewWidget() {
     const { tenant } = useTenantAdminAuth();
 
     const { data: locations, isLoading } = useQuery({
-        queryKey: ['hotbox-locations', tenant?.id],
+        queryKey: queryKeys.hotbox.locations(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
 

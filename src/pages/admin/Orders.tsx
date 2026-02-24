@@ -58,6 +58,7 @@ import { TruncatedText } from "@/components/shared/TruncatedText";
 import { DateRangePickerWithPresets } from "@/components/ui/date-picker-with-presets";
 import { format, isWithinInterval, startOfDay, endOfDay, parseISO } from "date-fns";
 import type { OrderWithSLATimestamps } from "@/types/sla";
+import { queryKeys } from '@/lib/queryKeys';
 
 interface OrderItem {
   id: string;
@@ -183,7 +184,7 @@ export default function Orders() {
 
   // Data Fetching - includes both regular orders and POS orders from unified_orders
   const { data: orders = [], isLoading, isError, isFetching, refetch } = useQuery({
-    queryKey: ['orders', tenant?.id],
+    queryKey: queryKeys.orders.byTenant(tenant?.id!),
     queryFn: async () => {
       if (!tenant) return [];
 
@@ -314,13 +315,13 @@ export default function Orders() {
     },
     onMutate: async ({ id, status }) => {
       // Cancel outgoing refetches to avoid overwriting optimistic update
-      await queryClient.cancelQueries({ queryKey: ['orders', tenant?.id] });
+      await queryClient.cancelQueries({ queryKey: queryKeys.orders.byTenant(tenant?.id!) });
 
       // Snapshot previous value for rollback
-      const previousOrders = queryClient.getQueryData<Order[]>(['orders', tenant?.id]);
+      const previousOrders = queryClient.getQueryData<Order[]>(queryKeys.orders.byTenant(tenant?.id!));
 
       // Optimistically update the UI immediately
-      queryClient.setQueryData(['orders', tenant?.id], (old: Order[] = []) =>
+      queryClient.setQueryData(queryKeys.orders.byTenant(tenant?.id!), (old: Order[] = []) =>
         old.map(o => o.id === id ? { ...o, status } : o)
       );
 
@@ -336,14 +337,14 @@ export default function Orders() {
     onError: (error, _variables, context) => {
       // Rollback to previous state on failure
       if (context?.previousOrders) {
-        queryClient.setQueryData(['orders', tenant?.id], context.previousOrders);
+        queryClient.setQueryData(queryKeys.orders.byTenant(tenant?.id!), context.previousOrders);
       }
       logger.error('Error updating status:', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error("Failed to update status");
     },
     onSettled: () => {
       // Always refetch to ensure server consistency
-      queryClient.invalidateQueries({ queryKey: ['orders', tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.byTenant(tenant?.id!) });
     }
   });
 

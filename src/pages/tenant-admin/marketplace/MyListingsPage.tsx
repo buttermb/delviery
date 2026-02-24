@@ -42,6 +42,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { queryKeys } from '@/lib/queryKeys';
+
+interface MarketplaceListing {
+  id: string;
+  product_name: string;
+  description?: string;
+  product_type?: string;
+  base_price: number;
+  quantity_available: number;
+  status?: string;
+  images?: string[];
+  created_at: string;
+  strain_type?: string;
+  unit_type?: string;
+  views?: number;
+}
 
 export default function MyListingsPage() {
   const { tenant } = useTenantAdminAuth();
@@ -53,7 +69,7 @@ export default function MyListingsPage() {
 
   // Fetch marketplace profile first (required to have listings)
   const { data: profile } = useQuery({
-    queryKey: ['marketplace-profile', tenantId],
+    queryKey: queryKeys.marketplaceProfileAdmin.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 
@@ -75,12 +91,12 @@ export default function MyListingsPage() {
 
   // Fetch listings
   const { data: listings = [], isLoading } = useQuery({
-    queryKey: ['marketplace-listings', tenantId, statusFilter],
-    queryFn: async (): Promise<any[]> => {
+    queryKey: queryKeys.marketplaceListings.byTenant(tenantId, statusFilter),
+    queryFn: async (): Promise<MarketplaceListing[]> => {
       if (!tenantId || !profile?.id) return [];
 
-      const result = await (supabase as any)
-        .from('marketplace_listings')
+      const result = await supabase
+        .from('marketplace_listings' as 'tenants')
         .select('*')
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false});
@@ -90,13 +106,13 @@ export default function MyListingsPage() {
         throw result.error;
       }
 
-      const allListings = result.data || [];
-      
+      const allListings = (result.data || []) as unknown as MarketplaceListing[];
+
       if (statusFilter === 'all' || !statusFilter) {
         return allListings;
       }
       
-      return allListings.filter((item: any) => item.status === statusFilter);
+      return (allListings as unknown as MarketplaceListing[]).filter((item) => item.status === statusFilter);
     },
     enabled: !!tenantId && !!profile?.id,
   });
@@ -123,7 +139,7 @@ export default function MyListingsPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-listings', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceListings.byTenant(tenantId) });
       toast.success('Status Updated', { description: 'Listing status has been updated' });
     },
     onError: (error: unknown) => {
@@ -143,7 +159,7 @@ export default function MyListingsPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-listings', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceListings.byTenant(tenantId) });
       toast.success('Listing Deleted', { description: 'Listing has been removed' });
     },
     onError: (error: unknown) => {
@@ -349,8 +365,8 @@ export default function MyListingsPage() {
                           )}
                           <div>
                             <div className="font-medium">{listing.product_name}</div>
-                            {(listing as any).strain_type && (
-                              <div className="text-xs text-muted-foreground">{(listing as any).strain_type}</div>
+                            {listing.strain_type && (
+                              <div className="text-xs text-muted-foreground">{listing.strain_type}</div>
                             )}
                           </div>
                         </div>
@@ -358,10 +374,10 @@ export default function MyListingsPage() {
                       <TableCell className="capitalize">{listing.product_type || '—'}</TableCell>
                       <TableCell>{formatCurrency(listing.base_price as number || 0)}</TableCell>
                       <TableCell>
-                        {listing.quantity_available} {(listing as any).unit_type || 'lb'}
+                        {listing.quantity_available} {listing.unit_type || 'lb'}
                       </TableCell>
                       <TableCell>{getStatusBadge(listing.status || 'draft')}</TableCell>
-                      <TableCell>{(listing as any).views || 0}</TableCell>
+                      <TableCell>{listing.views || 0}</TableCell>
                       <TableCell>{formatSmartDate(listing.created_at as string)}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>

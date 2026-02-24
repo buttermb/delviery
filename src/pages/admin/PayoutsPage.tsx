@@ -42,6 +42,7 @@ import { BetterEmptyState } from '@/components/BetterEmptyState';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { format, addDays, startOfWeek, endOfWeek, parseISO } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface PayoutScheduleItem {
   id: string;
@@ -72,7 +73,7 @@ export default function PayoutsPage() {
 
   // Fetch payout history
   const { data: payoutHistory = [], isLoading: isLoadingHistory } = useQuery({
-    queryKey: ['payout-history', tenantId],
+    queryKey: queryKeys.payoutsAdmin.history(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -99,7 +100,7 @@ export default function PayoutsPage() {
 
   // Fetch orders that are ready for payout (delivered but not yet paid)
   const { data: pendingOrders = [], isLoading: isLoadingOrders } = useQuery({
-    queryKey: ['payout-pending-orders', tenantId],
+    queryKey: queryKeys.payoutsAdmin.pendingOrders(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

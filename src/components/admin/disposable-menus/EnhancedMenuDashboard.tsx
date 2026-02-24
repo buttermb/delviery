@@ -21,6 +21,7 @@ import { useDisposableMenus } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { showCopyToast } from '@/utils/toastHelpers';
 import type { DisposableMenu } from '@/types/admin';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface SecurityAlert {
   id: string;
@@ -38,7 +39,7 @@ export function EnhancedMenuDashboard() {
 
   // Calculate overview stats
   const { data: overviewStats } = useQuery({
-    queryKey: ['menu-overview-stats'],
+    queryKey: queryKeys.menuOverviewStats.all,
     queryFn: async () => {
       const activeMenus = menus?.filter((m: DisposableMenu) => m.status === 'active') || [];
       const burnedMenus = menus?.filter((m: DisposableMenu) => 
@@ -89,7 +90,7 @@ export function EnhancedMenuDashboard() {
 
   // Recent security alerts
   const { data: recentAlerts } = useQuery({
-    queryKey: ['menu-recent-alerts'],
+    queryKey: queryKeys.menuOverviewStats.recentAlerts(),
     queryFn: async () => {
       const { data } = await supabase
         .from('menu_security_events')
@@ -103,7 +104,7 @@ export function EnhancedMenuDashboard() {
 
   // Recent burned menus (last 30 days)
   const { data: recentBurnedMenus } = useQuery({
-    queryKey: ['recent-burned-menus'],
+    queryKey: queryKeys.menuOverviewStats.recentBurned(),
     queryFn: async () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

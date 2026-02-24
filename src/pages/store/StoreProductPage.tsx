@@ -44,6 +44,7 @@ import ProductImage from '@/components/ProductImage';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -119,7 +120,7 @@ export default function StoreProductPage() {
     isLoading: storeLoading,
     error: storeError,
   } = useQuery({
-    queryKey: ['store-product-page', slug],
+    queryKey: queryKeys.storePages.product(slug),
     queryFn: async (): Promise<StoreData | null> => {
       if (!slug) return null;
 
@@ -148,7 +149,7 @@ export default function StoreProductPage() {
     isLoading: productLoading,
     error: productError,
   } = useQuery({
-    queryKey: ['store-product-detail', store?.tenant_id, id],
+    queryKey: queryKeys.storePages.productDetail(store?.tenant_id, id),
     queryFn: async (): Promise<ProductDetail | null> => {
       if (!store?.tenant_id || !id) return null;
 
@@ -176,7 +177,7 @@ export default function StoreProductPage() {
   // ── Fetch Related Products (same category, excluding current) ────────────
 
   const { data: relatedProducts = [] } = useQuery({
-    queryKey: ['store-related-products', store?.tenant_id, product?.category, id],
+    queryKey: queryKeys.storePages.relatedProducts(store?.tenant_id, product?.category, id),
     queryFn: async (): Promise<RelatedProduct[]> => {
       if (!store?.tenant_id || !product?.category) return [];
 

@@ -16,6 +16,7 @@ import { handleError } from '@/utils/errorHandling/handlers';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CommissionRecord {
   id: string;
@@ -40,7 +41,7 @@ export default function CommissionTracking() {
   const [isExporting, setIsExporting] = useState(false);
 
   const { data: commissions, isLoading } = useQuery({
-    queryKey: ['commission-tracking', tenantId],
+    queryKey: queryKeys.commissionTracking.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -94,7 +95,7 @@ export default function CommissionTracking() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['commission-tracking', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.commissionTracking.byTenant(tenantId) });
       showSuccessToast('Status Updated');
     },
     onError: (error) => {

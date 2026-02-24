@@ -66,6 +66,7 @@ import {
 } from '@/lib/credits';
 import { TenantCreditDetailPanel } from '@/components/super-admin/TenantCreditDetailPanel';
 import { CreditAdjustmentForm } from '@/components/super-admin/CreditAdjustmentForm';
+import { queryKeys } from '@/lib/queryKeys';
 
 type CreditStatus = 'all' | 'healthy' | 'warning' | 'critical' | 'depleted' | 'unlimited';
 
@@ -90,7 +91,7 @@ export default function TenantCreditsPage() {
 
   // Fetch tenants
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['admin-tenants-credits', statusFilter, search],
+    queryKey: queryKeys.superAdminTools.tenantCredits(statusFilter, search),
     queryFn: () => getTenantsWithCredits({
       status: statusFilter === 'all' ? null : statusFilter,
       search: search || undefined,
@@ -100,7 +101,7 @@ export default function TenantCreditsPage() {
 
   // Fetch detail for selected tenant
   const { data: detailData, isLoading: detailLoading } = useQuery({
-    queryKey: ['admin-tenant-credit-detail', detailTenantId],
+    queryKey: queryKeys.superAdminTools.tenantCreditDetail(detailTenantId),
     queryFn: () => detailTenantId ? getTenantCreditDetail(detailTenantId) : null,
     enabled: !!detailTenantId,
   });
@@ -119,7 +120,7 @@ export default function TenantCreditsPage() {
         toast.success(`Granted credits to ${result.count} tenants`);
         setSelectedTenants([]);
         setShowBulkGrant(false);
-        queryClient.invalidateQueries({ queryKey: ['admin-tenants-credits'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.tenantCredits() });
       } else {
         toast.error(result.error || 'Failed to grant credits');
       }
@@ -436,9 +437,9 @@ export default function TenantCreditsPage() {
         onSuccess={() => {
           setShowAdjustForm(false);
           setAdjustTenantId(null);
-          queryClient.invalidateQueries({ queryKey: ['admin-tenants-credits'] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.tenantCredits() });
           if (detailTenantId) {
-            queryClient.invalidateQueries({ queryKey: ['admin-tenant-credit-detail', detailTenantId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.tenantCreditDetail(detailTenantId) });
           }
         }}
       />

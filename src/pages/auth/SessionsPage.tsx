@@ -34,6 +34,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { queryKeys } from '@/lib/queryKeys';
 
 type RevokeTarget = { type: 'single'; sessionId: string } | { type: 'all-others' } | null;
 
@@ -68,7 +69,7 @@ export function SessionsPage() {
 
   // Auth guard: verify user is authenticated
   const { data: user, isLoading: isAuthLoading } = useQuery({
-    queryKey: ['auth-user'],
+    queryKey: queryKeys.authUser.all,
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       return user;

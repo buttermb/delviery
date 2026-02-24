@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function VerifyEmailPage() {
   const { tenantSlug } = useParams();
@@ -22,7 +23,7 @@ export default function VerifyEmailPage() {
 
   // Check current verification status
   const { data: verificationStatus, isLoading, refetch } = useQuery({
-    queryKey: ['email-verification-status', admin?.id],
+    queryKey: queryKeys.emailVerification.byAdmin(admin?.id),
     queryFn: async () => {
       if (!admin?.id) return null;
       

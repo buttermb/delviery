@@ -14,6 +14,7 @@ import { useForumRealtimePosts } from '@/hooks/useForumRealtime';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function CategoryPage() {
   const { categorySlug } = useParams<{ categorySlug: string }>();
@@ -22,7 +23,7 @@ export function CategoryPage() {
   useForumRealtimePosts();
   
   const { data: category } = useQuery({
-    queryKey: ['category', categorySlug],
+    queryKey: queryKeys.communityCategory.bySlug(categorySlug),
     queryFn: async () => {
       const categories = await forumApi.getCategories();
       return categories.find(c => c.slug === categorySlug);

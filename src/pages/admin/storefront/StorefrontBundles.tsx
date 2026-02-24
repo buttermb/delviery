@@ -56,6 +56,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Bundle {
   id: string;
@@ -99,7 +100,7 @@ export default function StorefrontBundles() {
 
   // Fetch store
   const { data: store } = useQuery({
-    queryKey: ['marketplace-store', tenant?.id],
+    queryKey: queryKeys.marketplaceStore.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return null;
       const { data, error } = await supabase
@@ -115,7 +116,7 @@ export default function StorefrontBundles() {
 
   // Fetch bundles
   const { data: bundles = [], isLoading: bundlesLoading } = useQuery({
-    queryKey: ['marketplace-bundles', store?.id],
+    queryKey: queryKeys.marketplaceBundles.byStore(store?.id),
     queryFn: async () => {
       if (!store?.id) return [];
       const { data, error } = await supabase
@@ -131,7 +132,7 @@ export default function StorefrontBundles() {
 
   // Fetch products for selection
   const { data: products = [] } = useQuery({
-    queryKey: ['store-products', tenant?.id],
+    queryKey: queryKeys.storePages.storeProducts(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase
@@ -166,7 +167,7 @@ export default function StorefrontBundles() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-bundles'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
       setShowCreateDialog(false);
       resetForm();
       toast.success("Bundle created!");
@@ -198,7 +199,7 @@ export default function StorefrontBundles() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-bundles'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
       setEditingBundle(null);
       resetForm();
       toast.success("Bundle updated!");
@@ -221,7 +222,7 @@ export default function StorefrontBundles() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-bundles'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
     },
     onError: (error: Error) => {
       logger.error('Failed to toggle bundle status', { error });
@@ -241,7 +242,7 @@ export default function StorefrontBundles() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-bundles'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceBundles.all });
       toast.success("Bundle deleted");
     },
     onError: (error: Error) => {

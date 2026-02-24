@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { showErrorToast } from '@/utils/toastHelpers';
 import { useStandalonePayment } from '@/hooks/useRecordPayment';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function BigPlugRunnerPortal() {
   const { completeDelivery, isLoading: isCompletingDelivery } = useStandalonePayment();
@@ -22,7 +23,7 @@ export function BigPlugRunnerPortal() {
   // Get runner ID from auth or params
   // In production, this would come from runner login
   const { data: runner } = useQuery({
-    queryKey: ['runner-info', runnerId],
+    queryKey: queryKeys.runnerInfo.byRunner(runnerId),
     queryFn: async () => {
       if (!runnerId) return null;
       const { data } = await supabase
@@ -37,7 +38,7 @@ export function BigPlugRunnerPortal() {
 
   // Active deliveries
   const { data: activeDeliveries } = useQuery({
-    queryKey: ['runner-active-deliveries', runnerId],
+    queryKey: queryKeys.runnerActiveDeliveries.byRunner(runnerId),
     queryFn: async () => {
       if (!runnerId) return [];
       const { data } = await supabase
@@ -63,7 +64,7 @@ export function BigPlugRunnerPortal() {
 
   // Today's stats
   const { data: todayStats } = useQuery({
-    queryKey: ['runner-today-stats', runnerId],
+    queryKey: queryKeys.runnerTodayStats.byRunner(runnerId),
     queryFn: async () => {
       if (!runnerId) return null;
 

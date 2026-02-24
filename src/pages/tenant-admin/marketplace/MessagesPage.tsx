@@ -31,6 +31,7 @@ import {
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Message {
   id: string;
@@ -84,7 +85,7 @@ export default function MessagesPage() {
 
   // Fetch all messages (sent and received) for this tenant
   const { data: messages = [], isLoading } = useQuery<Message[]>({
-    queryKey: ['marketplace-messages', tenantId],
+    queryKey: queryKeys.marketplaceMessages.byTenant(tenantId),
     queryFn: async (): Promise<Message[]> => {
       if (!tenantId) return [];
 
@@ -212,7 +213,7 @@ export default function MessagesPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-messages', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceMessages.byTenant(tenantId) });
     },
     onError: (error: Error) => {
       logger.error('Failed to mark messages as read', { error });
@@ -250,7 +251,7 @@ export default function MessagesPage() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-messages', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceMessages.byTenant(tenantId) });
       setReplyText('');
       setReplyingTo(null);
       toast.success('Message sent', { description: 'Your reply has been sent to the buyer' });

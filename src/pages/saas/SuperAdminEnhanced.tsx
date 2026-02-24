@@ -99,6 +99,7 @@ import {
   SUBSCRIPTION_STATUS
 } from '@/utils/subscriptionStatus';
 import { SUBSCRIPTION_PLANS, SubscriptionPlan } from '@/utils/subscriptionPlans';
+import { queryKeys } from '@/lib/queryKeys';
 
 // ... imports
 
@@ -115,7 +116,7 @@ export default function SuperAdminEnhanced() {
 
   // Fetch platform stats
   const { data: stats, isLoading: statsLoading } = useQuery<PlatformStats>({
-    queryKey: ['super-admin-stats'],
+    queryKey: queryKeys.superAdminTools.superAdminStats(),
     queryFn: async () => {
       const { data: tenants } = await supabase
         .from('tenants')
@@ -164,7 +165,7 @@ export default function SuperAdminEnhanced() {
 
   // Fetch tenant list
   const { data: tenants, isLoading: tenantsLoading, refetch: refetchTenants } = useQuery<TenantSummary[]>({
-    queryKey: ['super-admin-tenants', searchTerm, statusFilter, planFilter],
+    queryKey: queryKeys.superAdminTools.superAdminTenants(searchTerm, statusFilter, planFilter),
     queryFn: async () => {
       let query = supabase
         .from('tenants')
@@ -248,7 +249,7 @@ export default function SuperAdminEnhanced() {
 
   // Fetch at-risk tenants
   const { data: atRiskTenants } = useQuery({
-    queryKey: ['at-risk-tenants'],
+    queryKey: queryKeys.superAdminTools.atRiskTenantsSimple(),
     queryFn: async () => {
       const { data: allTenants } = await supabase
         .from('tenants')
@@ -786,7 +787,7 @@ export default function SuperAdminEnhanced() {
 // Tenant Detail View Component
 function TenantDetailView({ tenantId }: { tenantId: string }) {
   const { data: tenant } = useQuery({
-    queryKey: ['tenant-detail', tenantId],
+    queryKey: queryKeys.superAdminTools.tenantDetailById(tenantId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tenants')
@@ -999,7 +1000,7 @@ function FeatureManagement({ tenant }: { tenant: Record<string, unknown> }) {
 // Usage Monitoring Component
 function UsageMonitoring({ tenant }: { tenant: Record<string, unknown> }) {
   const { data: usage } = useQuery({
-    queryKey: ['tenant-usage', tenant.id],
+    queryKey: queryKeys.superAdminTools.tenantUsage(tenant.id),
     queryFn: async () => {
       const { data } = await supabase
         .from('tenants')
@@ -1156,7 +1157,7 @@ function BillingManagement({ tenant }: { tenant: Record<string, unknown> }) {
 // Activity Timeline Component
 function ActivityTimeline({ tenantId }: { tenantId: string }) {
   const { data: events } = useQuery({
-    queryKey: ['tenant-activity', tenantId],
+    queryKey: queryKeys.superAdminTools.tenantActivity(tenantId),
     queryFn: async () => {
       const { data: subscriptionEvents } = await supabase
         .from('subscription_events')

@@ -6,13 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function CompliancePage() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
   const { data: compliance, isLoading } = useQuery({
-    queryKey: ['compliance', tenantId],
+    queryKey: queryKeys.compliancePage.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 

@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
 import { ArrowDown, Eye, Package, ShoppingCart, CreditCard, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface StorefrontFunnelProps {
   storeId: string;
@@ -27,7 +28,7 @@ interface FunnelData {
 
 export function StorefrontFunnel({ storeId, primaryColor = '#6366f1' }: StorefrontFunnelProps) {
   const { data: funnel, isLoading } = useQuery({
-    queryKey: ['storefront-funnel', storeId],
+    queryKey: queryKeys.storefrontFunnel.byStore(storeId),
     queryFn: async (): Promise<FunnelData | null> => {
       try {
         const { data, error } = await supabase

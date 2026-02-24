@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function useRunnerStats(runnerId?: string) {
   return useQuery({
-    queryKey: ['runner-stats', runnerId],
+    queryKey: queryKeys.runnerStats.byRunner(runnerId),
     queryFn: async () => {
       if (!runnerId) throw new Error('Runner ID required');
 

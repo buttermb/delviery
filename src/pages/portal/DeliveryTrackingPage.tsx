@@ -39,6 +39,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   Package,
   Truck,
   CheckCircle2,
@@ -184,7 +185,7 @@ export default function DeliveryTrackingPage() {
     refetch,
     isFetching
   } = useQuery({
-    queryKey: ['public-delivery-tracking', trackingCode, lookupOrderNumber, lookupPhone],
+    queryKey: queryKeys.publicDeliveryTracking.byParams(trackingCode, lookupOrderNumber, lookupPhone),
     queryFn: async (): Promise<DeliveryInfo | null> => {
       try {
         let query = (supabase as any)
@@ -315,7 +316,7 @@ export default function DeliveryTrackingPage() {
           });
           // Invalidate query to refetch
           queryClient.invalidateQueries({
-            queryKey: ['public-delivery-tracking']
+            queryKey: queryKeys.publicDeliveryTracking.all
           });
         }
       )

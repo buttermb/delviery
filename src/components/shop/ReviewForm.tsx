@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { Star, Loader2, CheckCircle, PenLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ReviewFormProps {
   storeId: string;
@@ -87,7 +88,7 @@ export function ReviewForm({
       setTitle('');
       setComment('');
       // Invalidate reviews query
-      queryClient.invalidateQueries({ queryKey: ['product-reviews', storeId, productId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.reviews.byStoreProduct(storeId, productId) });
     },
     onError: (error) => {
       logger.error('Failed to submit review', error, { component: 'ReviewForm' });

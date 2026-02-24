@@ -32,6 +32,7 @@ import {
   type CreditCategory,
 } from '@/lib/credits';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface CreditUsageStatsProps {
   className?: string;
@@ -78,7 +79,7 @@ export function CreditUsageStats({
 
   // Fetch usage data from credit_transactions
   const { data: usageData, isLoading: _usageLoading } = useQuery({
-    queryKey: ['credit-usage-stats', tenantId],
+    queryKey: queryKeys.creditWidgets.usageStats(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 

@@ -41,6 +41,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from '@/components/ui/input';
+import { queryKeys } from '@/lib/queryKeys';
 
 type OrderStatus = 'pending' | 'confirmed' | 'ready' | 'delivered' | 'cancelled';
 
@@ -234,7 +235,7 @@ export function OrderPipelineBoard() {
     const hasActiveFilters = searchQuery || minAmount;
 
     const { data: orders = [], isLoading, refetch, isFetching } = useQuery({
-        queryKey: ['pipeline-orders', tenantId],
+        queryKey: queryKeys.tenantWidgets.pipelineOrders(tenantId),
         queryFn: async () => {
             if (!tenantId) return [];
 
@@ -296,12 +297,12 @@ export function OrderPipelineBoard() {
         },
         onSuccess: () => {
             // Invalidate all related queries
-            queryClient.invalidateQueries({ queryKey: ['pipeline-orders'] });
-            queryClient.invalidateQueries({ queryKey: ['orders'] });
-            queryClient.invalidateQueries({ queryKey: ['products'] });
-            queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tenantWidgets.pipelineOrders() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleInventory.all });
             queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-            queryClient.invalidateQueries({ queryKey: ['wholesale-clients'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
             toast.success('Order status updated');
         },
         onError: (error: Error) => {

@@ -88,7 +88,7 @@ function useSourceMenu(menuId: string | null | undefined, tenantId: string | und
  */
 function useSourceSession(sessionId: string | null | undefined, tenantId: string | undefined) {
   return useQuery({
-    queryKey: ['storefront-session', tenantId, sessionId],
+    queryKey: queryKeys.storefrontSession.bySession(tenantId, sessionId),
     queryFn: async (): Promise<SessionInfo | null> => {
       if (!sessionId || !tenantId) return null;
 

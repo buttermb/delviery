@@ -27,6 +27,7 @@ import { Table as _Table, TableBody as _TableBody, TableCell as _TableCell, Tabl
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
 import { useState as useReactState, useEffect } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
+import { queryKeys } from '@/lib/queryKeys';
 
 type CustomerMode = 'retail' | 'wholesale';
 
@@ -53,7 +54,7 @@ export default function WholesaleCartPage() {
 
   // Fetch cart items
   const { data: cartItems = [], isLoading } = useQuery({
-    queryKey: ['marketplace-cart', buyerTenantId],
+    queryKey: queryKeys.marketplaceCart.byBuyer(buyerTenantId),
     queryFn: async () => {
       if (!buyerTenantId) return [];
 
@@ -109,7 +110,7 @@ export default function WholesaleCartPage() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-cart', buyerTenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCart.byBuyer(buyerTenantId) });
     },
     onError: (error: unknown) => {
       logger.error('Failed to update cart', error, { component: 'WholesaleCartPage' });
@@ -130,7 +131,7 @@ export default function WholesaleCartPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-cart', buyerTenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCart.byBuyer(buyerTenantId) });
       toast.success('Item Removed', {
         description: 'Item removed from cart',
       });

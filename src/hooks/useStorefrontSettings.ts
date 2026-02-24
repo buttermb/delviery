@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface StorefrontSettings {
   id: string;
@@ -40,7 +41,7 @@ export function useStorefrontSettings() {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: ['storefront-settings', tenant?.id],
+    queryKey: queryKeys.storefrontSettingsHook.byTenant(tenant?.id),
     queryFn: async (): Promise<StorefrontSettings | null> => {
       if (!tenant?.id) return null;
 

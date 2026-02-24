@@ -3,12 +3,13 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function TeamActivityWidget() {
     const { tenant } = useTenantAdminAuth();
 
     const { data: team, isLoading } = useQuery({
-        queryKey: ['hotbox-team', tenant?.id],
+        queryKey: queryKeys.hotbox.team(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
 

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface LedgerEntry {
   id: string;
@@ -55,7 +56,7 @@ interface GiftCardLedgerProps {
 
 export function GiftCardLedger({ storeId, card, onBack }: GiftCardLedgerProps) {
   const { data: ledgerEntries = [], isLoading } = useQuery({
-    queryKey: ['gift-card-ledger', card.id],
+    queryKey: queryKeys.giftCards.ledger(card.id),
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('marketplace_gift_card_ledger')

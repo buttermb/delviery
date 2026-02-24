@@ -10,6 +10,7 @@ import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/formatters';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function SalesDashboardPage() {
   const { tenant } = useTenantAdminAuth();
@@ -27,7 +28,7 @@ export default function SalesDashboardPage() {
 
   // Fetch orders for the selected time period
   const { data: orders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ['sales-dashboard-orders', tenant?.id, timeRange],
+    queryKey: queryKeys.salesDashboard.orders(tenant?.id, timeRange),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const days = getDaysFromRange(timeRange);
@@ -59,7 +60,7 @@ export default function SalesDashboardPage() {
 
   // Fetch previous period for comparison
   const { data: prevOrders = [] } = useQuery({
-    queryKey: ['sales-dashboard-prev-orders', tenant?.id, timeRange],
+    queryKey: queryKeys.salesDashboard.prevOrders(tenant?.id, timeRange),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const days = getDaysFromRange(timeRange);

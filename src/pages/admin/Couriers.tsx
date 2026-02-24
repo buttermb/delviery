@@ -17,6 +17,7 @@ import { AddCourierDialog } from '@/components/admin/AddCourierDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Courier {
   id: string;
@@ -54,7 +55,7 @@ export default function Couriers() {
   const [courierToDelete, setCourierToDelete] = useState<Courier | null>(null);
 
   const { data: couriers = [], isLoading, refetch } = useQuery({
-    queryKey: ['couriers', tenant?.id],
+    queryKey: queryKeys.couriersAdmin.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase
@@ -80,7 +81,7 @@ export default function Couriers() {
     },
     onSuccess: () => {
       toast.success('Courier deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['couriers', tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.couriersAdmin.byTenant(tenant?.id) });
       setDeleteDialogOpen(false);
       setCourierToDelete(null);
     },

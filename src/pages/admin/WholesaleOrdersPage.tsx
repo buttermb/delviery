@@ -48,6 +48,7 @@ import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/Responsiv
 import { SearchInput } from '@/components/shared/SearchInput';
 import { wholesaleOrderFlowManager, WholesaleOrderStatus } from '@/lib/orders/wholesaleOrderFlowManager';
 import { canChangeStatus, getEditRestrictionMessage } from '@/lib/utils/orderEditability';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface WholesaleOrder {
   id: string;
@@ -284,7 +285,7 @@ export default function WholesaleOrdersPage() {
 
   // Fetch orders (Wholesale or Purchase based on viewMode)
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: ['orders', viewMode, tenant?.id],
+    queryKey: queryKeys.orders.list(tenant?.id, { viewMode }),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -433,7 +434,7 @@ export default function WholesaleOrdersPage() {
       }
 
       toast.success(`Order status updated to ${STATUS_CONFIG[newStatus]?.label || newStatus}`);
-      queryClient.invalidateQueries({ queryKey: ['orders', viewMode, tenant?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.list(tenant?.id, { viewMode }) });
       handleRefresh();
     } catch (error) {
       const isNetworkError = error instanceof Error &&
@@ -498,9 +499,9 @@ export default function WholesaleOrdersPage() {
       }
       
       // Invalidate all related queries
-      queryClient.invalidateQueries({ queryKey: ['orders', viewMode, tenant?.id] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['wholesale-inventory'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.list(tenant?.id, { viewMode }) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleInventory.all });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       handleRefresh();
       setSelectedOrders([]);

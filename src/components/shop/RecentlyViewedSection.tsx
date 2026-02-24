@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { useShopCart } from '@/hooks/useShopCart';
 import { toast } from 'sonner';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface RecentlyViewedSectionProps {
     currentProductId?: string;
@@ -40,7 +41,7 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
     });
     // Fetch product details
     const { data: products = [], isLoading } = useQuery({
-        queryKey: ['recently-viewed-products', store?.id, productIds],
+        queryKey: queryKeys.recentlyViewed.byStore(store?.id, productIds),
         queryFn: async (): Promise<MarketplaceProduct[]> => {
             if (!store?.id || productIds.length === 0) return [];
 

@@ -35,6 +35,7 @@ import { ModeBanner } from '@/components/customer/ModeSwitcher';
 import { useState as useReactState, useEffect } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 import { SEOHead } from '@/components/SEOHead';
+import { queryKeys } from '@/lib/queryKeys';
 
 type CustomerMode = 'retail' | 'wholesale';
 
@@ -61,7 +62,7 @@ export default function BusinessFinderPage() {
 
   // Fetch active businesses/tenants
   const { data: businesses = [], isLoading } = useQuery({
-    queryKey: ['retail-businesses', stateFilter, deliveryFilter],
+    queryKey: queryKeys.retailBusinesses.list(stateFilter, deliveryFilter),
     queryFn: async () => {
       const query = (supabase as any)
         .from('tenants')

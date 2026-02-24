@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { usePlatformAdmin } from '@/hooks/usePlatformAdmin';
@@ -28,6 +28,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function PlatformPayoutsPage() {
     const { isPlatformAdmin } = usePlatformAdmin();
@@ -37,7 +38,7 @@ export default function PlatformPayoutsPage() {
 
     // Fetch pending payouts
     const { data: payouts = [], isLoading } = useQuery({
-        queryKey: ['admin-payouts-pending'],
+        queryKey: queryKeys.platformPayouts.pending(),
         queryFn: async () => {
             // Need to join with tenants to see WHO is asking
             // Supabase join syntax: tenant:tenants!marketplace_payouts_seller_tenant_id_fkey (*)
@@ -73,7 +74,7 @@ export default function PlatformPayoutsPage() {
         },
         onSuccess: () => {
             toast.success("Payout Approved", { description: "Funds marked as transferred." });
-            queryClient.invalidateQueries({ queryKey: ['admin-payouts-pending'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.platformPayouts.pending() });
         },
         onError: (error) => {
             toast.error("Error", { description: humanizeError(error) });
@@ -98,7 +99,7 @@ export default function PlatformPayoutsPage() {
             toast.success("Payout Rejected", { description: "Vendor has been notified." });
             setRejectDialog({ open: false, id: null });
             setRejectReason('');
-            queryClient.invalidateQueries({ queryKey: ['admin-payouts-pending'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.platformPayouts.pending() });
         },
         onError: (error) => {
             toast.error("Error", { description: humanizeError(error) });
@@ -146,8 +147,8 @@ export default function PlatformPayoutsPage() {
                                     <TableCell><Badge variant="secondary">{payout.status}</Badge></TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button size="sm" variant="outline" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => approveMutation.mutate(payout.id)}>
-                                                <CheckCircle className="h-4 w-4 mr-1" />
+                                            <Button size="sm" variant="outline" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => approveMutation.mutate(payout.id)} disabled={approveMutation.isPending || rejectMutation.isPending}>
+                                                {approveMutation.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-1" />}
                                                 Approve
                                             </Button>
                                             <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => setRejectDialog({ open: true, id: payout.id })}>
@@ -181,7 +182,10 @@ export default function PlatformPayoutsPage() {
                     </div>
                     <DialogFooter>
                         <Button variant="ghost" onClick={() => setRejectDialog({ open: false, id: null })}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => rejectMutation.mutate()} disabled={!rejectReason.trim()}>Reject Request</Button>
+                        <Button variant="destructive" onClick={() => rejectMutation.mutate()} disabled={!rejectReason.trim() || rejectMutation.isPending}>
+                            {rejectMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            Reject Request
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

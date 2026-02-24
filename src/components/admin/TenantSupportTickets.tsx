@@ -12,6 +12,7 @@ import { Ticket, MessageSquare, Clock, CheckCircle, AlertCircle } from 'lucide-r
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { getStatusColor } from '@/lib/utils/statusColors';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface TenantSupportTicketsProps {
     tenantId: string;
@@ -19,7 +20,7 @@ interface TenantSupportTicketsProps {
 
 export function TenantSupportTickets({ tenantId }: TenantSupportTicketsProps) {
     const { data: tickets, isLoading } = useQuery({
-        queryKey: ['tenant-tickets', tenantId],
+        queryKey: queryKeys.tenantTickets.byTenant(tenantId),
         queryFn: async () => {
             try {
                 const { data, error } = await supabase

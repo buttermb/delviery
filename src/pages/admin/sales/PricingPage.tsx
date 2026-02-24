@@ -32,6 +32,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { queryKeys } from '@/lib/queryKeys';
 
 type ColumnDef<T> = {
   accessorKey?: keyof T | string;
@@ -65,7 +66,7 @@ export default function PricingPage() {
   });
 
   const { data: pricingTiers, isLoading } = useQuery({
-    queryKey: ['pricing-tiers', tenantId],
+    queryKey: queryKeys.pricingTiers.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -107,7 +108,7 @@ export default function PricingPage() {
   });
 
   const { data: products } = useQuery({
-    queryKey: ['products-for-pricing', tenantId],
+    queryKey: queryKeys.pricingTiers.products(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -225,7 +226,7 @@ export default function PricingPage() {
         price_per_lb: '',
         bulk_discount_percent: '',
       });
-      queryClient.invalidateQueries({ queryKey: ['pricing-tiers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTiers.byTenant() });
     },
     onError: (error) => {
       handleError(error, { component: 'PricingPage', toastTitle: 'Failed to update pricing' });

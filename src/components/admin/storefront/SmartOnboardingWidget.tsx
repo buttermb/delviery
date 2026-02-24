@@ -8,6 +8,7 @@ import { Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { humanizeError } from '@/lib/humanizeError';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface SmartOnboardingWidgetProps {
     productCount: number;
@@ -55,8 +56,8 @@ export function SmartOnboardingWidget({ productCount, className }: SmartOnboardi
             return data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-product-stats'] });
-            queryClient.invalidateQueries({ queryKey: ['products'] }); // Invalidate main product list too
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.stats() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.products.all }); // Invalidate main product list too
             toast.success("Sample product added!", {
                 description: "You can now see how it looks in your store."
             });

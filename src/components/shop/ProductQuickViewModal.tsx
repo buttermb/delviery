@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ProductQuickViewModalProps {
     productId: string | null;
@@ -62,7 +63,7 @@ export function ProductQuickViewModal({
 
     // Fetch product details
     const { data: product, isLoading } = useQuery({
-        queryKey: ['quick-view-product', store?.id, productId],
+        queryKey: queryKeys.shopPages.quickView(store?.id, productId),
         queryFn: async () => {
             if (!store?.id || !productId) return null;
 

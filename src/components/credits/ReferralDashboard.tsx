@@ -42,6 +42,7 @@ import {
   REFERRAL_REWARDS,
 } from '@/lib/credits/referralService';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface ReferralDashboardProps {
   className?: string;
@@ -62,7 +63,7 @@ export function ReferralDashboard({
     data: referralCode,
     isLoading: codeLoading,
   } = useQuery({
-    queryKey: ['referral-code', tenantId],
+    queryKey: queryKeys.referrals.code(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
       return getOrCreateReferralCode(tenantId);
@@ -75,7 +76,7 @@ export function ReferralDashboard({
   const {
     data: stats,
   } = useQuery({
-    queryKey: ['referral-stats', tenantId],
+    queryKey: queryKeys.referrals.stats(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
       return getReferralStats(tenantId);

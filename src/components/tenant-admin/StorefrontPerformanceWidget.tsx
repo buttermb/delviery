@@ -13,6 +13,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function StorefrontPerformanceWidget() {
     const { tenant } = useTenantAdminAuth();
@@ -21,7 +22,7 @@ export function StorefrontPerformanceWidget() {
     const tenantId = tenant?.id;
 
     const { data: performance, isLoading } = useQuery({
-        queryKey: ['storefront-performance', tenantId],
+        queryKey: queryKeys.tenantWidgets.storefrontPerformance(tenantId),
         queryFn: async () => {
             if (!tenantId) return null;
 

@@ -154,7 +154,7 @@ export function AssignDeliveryRunnerDialog({
 
   // Geocode delivery address to get coordinates (simplified - in production use a geocoding service)
   const { data: deliveryCoords } = useQuery({
-    queryKey: ['geocode-address', deliveryAddress],
+    queryKey: queryKeys.geocodeAddress.byAddress(deliveryAddress),
     queryFn: async () => {
       // Placeholder: In production, use a geocoding API (Google Maps, Mapbox, etc.)
       // For now, return null to indicate we don't have coordinates

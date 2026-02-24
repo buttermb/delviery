@@ -13,6 +13,7 @@ import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function WholesaleInventory() {
   const { navigateToAdmin } = useTenantNavigation();
@@ -92,7 +93,7 @@ export default function WholesaleInventory() {
 
   // Fetch Top Movers from wholesale_order_items (last 30 days)
   const { data: topMovers = [] } = useQuery({
-    queryKey: ['wholesale-top-movers', tenant?.id],
+    queryKey: queryKeys.wholesaleInventory.topMovers(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

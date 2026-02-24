@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
 import confetti from 'canvas-confetti';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface OrderItem {
   name: string;
@@ -57,7 +58,7 @@ export function OrderConfirmationPage() {
 
   // Fetch order details to show items ordered
   const { data: orderDetails, isLoading: orderLoading } = useQuery({
-    queryKey: ['order-confirmation', trackingToken || orderNumber],
+    queryKey: queryKeys.shopPages.orderConfirmation(trackingToken || orderNumber),
     queryFn: async () => {
       if (!trackingToken && !orderNumber) return null;
 

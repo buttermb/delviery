@@ -44,6 +44,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { getAllTransactions } from '@/lib/credits';
+import { queryKeys } from '@/lib/queryKeys';
 
 type TransactionType = 'all' | 'usage' | 'purchase' | 'free_grant' | 'bonus' | 'adjustment' | 'refund';
 
@@ -58,7 +59,7 @@ export default function CreditAuditLogPage() {
 
   // Fetch transactions
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['credit-audit-log', typeFilter, dateFrom, dateTo, page],
+    queryKey: queryKeys.superAdminTools.creditAuditLog(typeFilter, dateFrom, dateTo, page),
     queryFn: () => getAllTransactions({
       transactionType: typeFilter === 'all' ? undefined : typeFilter,
       startDate: dateFrom?.toISOString(),

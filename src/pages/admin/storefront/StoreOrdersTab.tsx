@@ -50,6 +50,7 @@ import {
 } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface StoreOrder {
   id: string;
@@ -122,7 +123,7 @@ export function StoreOrdersTab({
 
   // Fetch store if not provided
   const { data: store } = useQuery({
-    queryKey: ['marketplace-store', tenantId],
+    queryKey: queryKeys.marketplaceStore.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
       const { data } = await supabase
@@ -197,7 +198,7 @@ export function StoreOrdersTab({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.all });
       toast.success("Order status updated!");
     },
     onError: (error) => {

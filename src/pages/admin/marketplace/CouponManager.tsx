@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { formatCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 type Coupon = {
     id: string;
@@ -56,7 +57,7 @@ export default function CouponManager() {
 
     // Fetch coupons
     const { data: coupons, isLoading } = useQuery({
-        queryKey: ['marketplace-coupons', tenant?.id],
+        queryKey: queryKeys.marketplaceCoupons.byTenant(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
             const { data, error } = await supabase
@@ -97,7 +98,7 @@ export default function CouponManager() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-coupons'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCoupons.all });
             setIsDialogOpen(false);
             setNewCoupon({ type: 'percentage', is_active: true, used_count: 0 });
             toast.success("Coupon created successfully");
@@ -116,7 +117,7 @@ export default function CouponManager() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-coupons'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCoupons.all });
             toast.success("Coupon deleted");
         },
         onError: () => toast.error("Failed to delete coupon")

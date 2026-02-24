@@ -15,6 +15,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from '@/hooks/useCredits';
 import { formatSmartDate } from '@/lib/formatters';
 import { projectDepletion } from '@/lib/credits/creditProjection';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface CreditBurnRateDisplayProps {
   className?: string;
@@ -31,7 +32,7 @@ export function CreditBurnRateDisplay({
 
   // Fetch projection data
   const { data: projection, isLoading } = useQuery({
-    queryKey: ['credit-projection', tenantId, balance],
+    queryKey: queryKeys.creditWidgets.projection(tenantId, balance),
     queryFn: async () => {
       if (!tenantId) return null;
       return projectDepletion(tenantId, balance);

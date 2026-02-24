@@ -23,6 +23,7 @@ import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
 import { formatCurrency, displayValue } from '@/lib/formatters';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function ClientDetail() {
   const { id } = useParams<{ id: string; tenantSlug: string }>();
@@ -48,7 +49,7 @@ export default function ClientDetail() {
     },
     onSuccess: () => {
       showSuccessToast("Client Removed", `${client?.business_name} has been removed`);
-      queryClient.invalidateQueries({ queryKey: ['wholesale-clients'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
       navigate('wholesale-clients');
     },
     onError: (error) => {
@@ -69,7 +70,7 @@ export default function ClientDetail() {
     },
     onSuccess: () => {
       showSuccessToast("Account Suspended", `${client?.business_name} has been suspended`);
-      queryClient.invalidateQueries({ queryKey: ['wholesale-client', id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClient.byId(id) });
     },
     onError: (error) => {
       logger.error("Failed to suspend client", error, { component: "ClientDetail", clientId: id });
@@ -89,7 +90,7 @@ export default function ClientDetail() {
     },
     onSuccess: () => {
       showSuccessToast("Credit Limit Updated", `New limit: ${formatCurrency(Number(newCreditLimit))}`);
-      queryClient.invalidateQueries({ queryKey: ['wholesale-client', id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClient.byId(id) });
       setCreditLimitDialogOpen(false);
       setNewCreditLimit("");
     },

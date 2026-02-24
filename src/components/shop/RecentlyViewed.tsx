@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface RecentlyViewedProps {
   storeId: string;
@@ -51,7 +52,7 @@ export function RecentlyViewed({
 
   // Fetch product details
   const { data: products = [] } = useQuery({
-    queryKey: ['recently-viewed-products', storeId, recentIds],
+    queryKey: queryKeys.recentlyViewed.byStoreIds(storeId, recentIds),
     queryFn: async () => {
       if (recentIds.length === 0) return [];
 

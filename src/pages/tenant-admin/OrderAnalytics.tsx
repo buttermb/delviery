@@ -4,12 +4,13 @@ import { Card } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Package, TrendingUp, DollarSign } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function OrderAnalytics() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: orders = [], isLoading } = useQuery({
-    queryKey: ['order-analytics', tenant?.id],
+    queryKey: queryKeys.orderAnalyticsAdmin.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       

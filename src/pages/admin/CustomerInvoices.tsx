@@ -165,8 +165,9 @@ export default function CustomerInvoices() {
           showToast: false,
         });
 
-        if (!edgeError && edgeData && typeof edgeData === 'object' && 'invoices' in edgeData && Array.isArray((edgeData as any).invoices)) {
-          const invoicesData = (edgeData as any).invoices;
+        const edgeRecord = edgeData as Record<string, unknown> | null;
+        if (!edgeError && edgeRecord && typeof edgeRecord === 'object' && 'invoices' in edgeRecord && Array.isArray(edgeRecord.invoices)) {
+          const invoicesData = edgeRecord.invoices as Invoice[];
           // Store all invoices for client-side pagination
           setAllInvoices(invoicesData);
           const paginatedData = invoicesData.slice(0, PAGE_SIZE);
@@ -281,9 +282,9 @@ export default function CustomerInvoices() {
       // Prefer generating a unique invoice number via RPC (guaranteed unique per tenant/year)
       let invoiceNumber = `INV-${Date.now()}`;
       try {
-        const { data: genNum, error: genErr } = await (supabase as any).rpc('generate_invoice_number', {
+        const { data: genNum, error: genErr } = await supabase.rpc('generate_invoice_number' as 'get_secret', {
           tenant_id: tenant.id,
-        });
+        } as Record<string, unknown>);
         if (!genErr && typeof genNum === 'string' && genNum.trim()) {
           invoiceNumber = genNum;
         }
@@ -325,7 +326,7 @@ export default function CustomerInvoices() {
       if (edgeError) {
         // Fallback to direct insert
         const { error } = await supabase
-          .from('customer_invoices')
+          .from('customer_invoices' as 'tenants')
           .insert({
             tenant_id: tenant.id,
             customer_id: formData.customer_id,
@@ -336,7 +337,7 @@ export default function CustomerInvoices() {
             status: 'unpaid',
             due_date: formData.due_date || null,
             notes: formData.notes || null,
-          } as any);
+          } as Record<string, unknown>);
 
         if (error) throw error;
       }

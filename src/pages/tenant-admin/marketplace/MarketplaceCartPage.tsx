@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function MarketplaceCartPage() {
     const { tenant } = useTenantAdminAuth();
@@ -28,7 +29,7 @@ export default function MarketplaceCartPage() {
 
     // Fetch Cart Items
     const { data: cartItems = [], isLoading } = useQuery({
-        queryKey: ['marketplace-cart'],
+        queryKey: queryKeys.marketplaceCart.all,
         queryFn: async () => {
             const { data, error } = await supabase
                 .from('marketplace_cart')
@@ -62,7 +63,7 @@ export default function MarketplaceCartPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-cart'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCart.all });
             toast.success('Item removed');
         },
         onError: (error: Error) => {
@@ -203,8 +204,9 @@ export default function MarketplaceCartPage() {
                                                     size="icon"
                                                     className="h-8 w-8 text-destructive"
                                                     onClick={() => removeItemMutation.mutate(item.id)}
+                                                    disabled={removeItemMutation.isPending}
                                                 >
-                                                    <Trash2 className="h-4 w-4" />
+                                                    {removeItemMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                                                 </Button>
                                             </div>
                                         </div>

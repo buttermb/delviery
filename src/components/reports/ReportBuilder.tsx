@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { REPORT_TYPES, REPORT_FIELDS, DATE_RANGES, SCHEDULE_OPTIONS, ReportField } from '@/lib/constants/reportFields';
 import { Plus, X, Calendar, Mail } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function ReportBuilder({ onClose }: { onClose?: () => void }) {
   const { tenant } = useTenantAdminAuth();
@@ -82,7 +83,7 @@ export function ReportBuilder({ onClose }: { onClose?: () => void }) {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom-reports', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customReports.byTenant(tenantId) });
       toast.success('Your custom report has been saved.');
       onClose?.();
     },

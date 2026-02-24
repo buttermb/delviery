@@ -22,6 +22,7 @@ import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function InventoryTransfers() {
   const { tenant } = useTenantAdminAuth();
@@ -38,7 +39,7 @@ export default function InventoryTransfers() {
 
   // Fetch products for dropdown
   const { data: products = [] } = useQuery({
-    queryKey: ['products-for-transfer', tenantId],
+    queryKey: queryKeys.inventoryTransfersAdmin.products(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       const { data, error } = await supabase
@@ -55,7 +56,7 @@ export default function InventoryTransfers() {
 
   // Fetch locations for dropdowns
   const { data: locations = [] } = useQuery({
-    queryKey: ['inventory-locations', tenantId],
+    queryKey: queryKeys.inventoryTransfersAdmin.locations(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       try {
@@ -87,7 +88,7 @@ export default function InventoryTransfers() {
   });
 
   const { data: transfers, isLoading } = useQuery({
-    queryKey: ['inventory-transfers', tenantId],
+    queryKey: queryKeys.inventoryTransfersAdmin.transfers(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -136,7 +137,7 @@ export default function InventoryTransfers() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory-transfers', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventoryTransfersAdmin.transfers(tenantId) });
       toast.success("Inventory transfer has been created.");
       setFormData({
         product_id: '',

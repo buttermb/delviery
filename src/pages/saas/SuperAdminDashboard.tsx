@@ -42,6 +42,7 @@ import {
 } from '@/utils/subscriptionStatus';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function SuperAdminDashboard() {
   const [selectedTenant, setSelectedTenant] = useState<any>(null);
@@ -50,7 +51,7 @@ export default function SuperAdminDashboard() {
 
   // Platform Stats
   const { data: platformStats } = useQuery({
-    queryKey: ['platform-stats'],
+    queryKey: queryKeys.superAdminTools.platformStatsSimple(),
     queryFn: async () => {
       // Get all tenants (super admin bypasses RLS)
       const { data: tenants } = await supabase.from('tenants').select('*');
@@ -101,7 +102,7 @@ export default function SuperAdminDashboard() {
 
   // All Tenants
   const { data: tenants, isLoading } = useQuery({
-    queryKey: ['all-tenants'],
+    queryKey: queryKeys.superAdminTools.allTenants(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tenants')
@@ -119,7 +120,7 @@ export default function SuperAdminDashboard() {
 
   // Feature Flags
   const { data: featureFlags } = useQuery({
-    queryKey: ['feature-flags'],
+    queryKey: queryKeys.saasAdmin.featureFlags(),
     queryFn: async () => {
       const { data, error } = await supabase.from('feature_flags').select('*');
       if (error) throw error;

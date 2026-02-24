@@ -17,6 +17,7 @@ import {
     FileText,
 } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface TenantActivityTimelineProps {
     tenantId: string;
@@ -33,7 +34,7 @@ interface ActivityEvent {
 
 export function TenantActivityTimeline({ tenantId, limit = 20 }: TenantActivityTimelineProps) {
     const { data: activities, isLoading } = useQuery({
-        queryKey: ['tenant-activity', tenantId],
+        queryKey: queryKeys.superAdminTools.tenantActivity(tenantId),
         queryFn: async () => {
             try {
                 // This assumes an 'activity_logs' or similar table exists. 

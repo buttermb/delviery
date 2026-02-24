@@ -16,6 +16,7 @@ import { StarRating } from './StarRating';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Loader2 } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ReviewSubmissionFormProps {
     productId: string;
@@ -60,7 +61,7 @@ export function ReviewSubmissionForm({
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['product-reviews', productId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.reviews.byProduct(productId) });
             toast.success('Your review has been submitted for moderation.');
             // Reset form
             setRating(5);

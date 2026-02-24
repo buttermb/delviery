@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { Zap, Plus, Edit, Play, Loader2, AlertCircle } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface AutomationRule {
   id: string;
@@ -46,7 +47,7 @@ export default function Automation() {
   });
 
   const { data: rules, isLoading, error } = useQuery({
-    queryKey: ['automation-rules', tenantId],
+    queryKey: queryKeys.automationRules.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -98,7 +99,7 @@ export default function Automation() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automation-rules', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.automationRules.byTenant(tenantId) });
       toast.success("Automation rule has been created.");
       resetForm();
     },
@@ -136,7 +137,7 @@ export default function Automation() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automation-rules', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.automationRules.byTenant(tenantId) });
       toast.success("Automation rule has been updated.");
       resetForm();
     },

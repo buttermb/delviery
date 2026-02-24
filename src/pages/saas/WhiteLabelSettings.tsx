@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { hasFeature } from '@/lib/tenant';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function WhiteLabelSettings() {
   const { tenant, refresh } = useTenant();
@@ -94,9 +95,9 @@ export default function WhiteLabelSettings() {
       toast.success('White-label settings have been updated');
 
       refresh();
-      queryClient.invalidateQueries({ queryKey: ['tenant', tenant.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantSingle.byId(tenant.id) });
       refresh();
-      queryClient.invalidateQueries({ queryKey: ['tenant', tenant.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantSingle.byId(tenant.id) });
     } catch (error) {
       handleError(error, { component: 'WhiteLabelSettings', toastTitle: 'Failed to Save' });
     } finally {

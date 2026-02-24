@@ -311,8 +311,8 @@ export function useOrderBulkRunnerAssign({ tenantId, userId, onSuccess }: UseOrd
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.runners.all });
-      queryClient.invalidateQueries({ queryKey: ['wholesale-deliveries'] });
-      queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleDeliveries.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.fulfillment.all });
 
       // Cross-panel invalidation

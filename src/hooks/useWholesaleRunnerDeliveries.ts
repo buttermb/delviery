@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface WholesaleDelivery {
   id: string;
@@ -38,7 +39,7 @@ export interface WholesaleDelivery {
 
 export function useWholesaleRunnerDeliveries(runnerId?: string) {
   return useQuery({
-    queryKey: ['wholesale-runner-deliveries', runnerId],
+    queryKey: queryKeys.wholesaleRunnerDeliveries.byRunner(runnerId),
     queryFn: async () => {
       if (!runnerId) return [];
 
@@ -80,7 +81,7 @@ export function useWholesaleRunnerDeliveries(runnerId?: string) {
 
 export function useRunnerStats(runnerId?: string) {
   return useQuery({
-    queryKey: ['runner-stats', runnerId],
+    queryKey: queryKeys.runnerStats.byRunner(runnerId),
     queryFn: async () => {
       if (!runnerId) return null;
 

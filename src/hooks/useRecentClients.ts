@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { safeStorage } from '@/constants/storageKeys';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface RecentClient {
   id: string;
@@ -55,7 +56,7 @@ export function useRecentClients() {
 
   // Fetch full client data for recent client IDs
   const { data: recentClients = [], isLoading } = useQuery({
-    queryKey: ['recent-wholesale-clients', tenant?.id, recentClientIds.map(c => c.id)],
+    queryKey: queryKeys.recentWholesaleClients.byTenant(tenant?.id, recentClientIds.map(c => c.id)),
     queryFn: async () => {
       if (!tenant?.id || recentClientIds.length === 0) return [];
 

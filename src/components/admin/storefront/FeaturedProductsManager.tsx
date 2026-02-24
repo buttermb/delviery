@@ -35,6 +35,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   Search,
   Star,
   GripVertical,
@@ -188,7 +189,7 @@ export function FeaturedProductsManager({
 
   // Fetch all products for this tenant
   const { data: products, isLoading } = useQuery({
-    queryKey: ['storefront-products-list', tenant?.id],
+    queryKey: queryKeys.featuredProducts.list(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await (supabase as any)

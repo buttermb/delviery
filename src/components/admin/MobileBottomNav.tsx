@@ -26,6 +26,7 @@ import { ErrorBoundary } from './MobileBottomNavErrorBoundary';
 import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 import { MobileErrorBoundary } from '@/components/mobile/MobileErrorBoundary';
 import { OfflineIndicator } from '@/components/mobile/OfflineIndicator';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function MobileBottomNav() {
   const location = useLocation();
@@ -157,7 +158,7 @@ export function MobileBottomNav() {
                   triggerHaptic('medium');
                   if (tenant?.id) {
                     queryClient.invalidateQueries({
-                      queryKey: ['sidebar-preferences', tenant.id]
+                      queryKey: queryKeys.sidebarPreferences.byUser(tenant.id)
                     });
                     setSidebarError(null);
                   }
@@ -259,7 +260,7 @@ export function MobileBottomNav() {
                           onClick={() => {
                             setSidebarError(null);
                             queryClient.invalidateQueries({
-                              queryKey: ['sidebar-preferences', tenant.id]
+                              queryKey: queryKeys.sidebarPreferences.byUser(tenant.id)
                             });
                           }}
                           variant="ghost"

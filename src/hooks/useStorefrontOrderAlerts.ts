@@ -95,14 +95,14 @@ export function useStorefrontOrderAlerts({
                         }
 
                         // Also invalidate storefront-specific queries
-                        queryClient.invalidateQueries({ queryKey: ['storefront-orders'] });
-                        queryClient.invalidateQueries({ queryKey: ['realtime-sales'] });
-                        queryClient.invalidateQueries({ queryKey: ['multi-channel-orders'] });
-                        queryClient.invalidateQueries({ queryKey: ['storefront-performance'] });
+                        queryClient.invalidateQueries({ queryKey: queryKeys.storefrontOrders.all });
+                        queryClient.invalidateQueries({ queryKey: queryKeys.tenantWidgets.realtimeSales() });
+                        queryClient.invalidateQueries({ queryKey: queryKeys.tenantWidgets.multiChannelOrders() });
+                        queryClient.invalidateQueries({ queryKey: queryKeys.storefrontPerformance.byTenant() });
 
                         // Admin orders panel should see this immediately
                         queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
-                        queryClient.invalidateQueries({ queryKey: ['unified-orders'] });
+                        queryClient.invalidateQueries({ queryKey: queryKeys.unifiedOrders.all });
                         queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
 
                         logger.info('New storefront order received', {

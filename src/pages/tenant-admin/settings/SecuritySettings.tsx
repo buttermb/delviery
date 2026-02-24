@@ -35,6 +35,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePasswordBreachCheck } from '@/hooks/usePasswordBreachCheck';
 import { PasswordBreachWarning } from '@/components/auth/PasswordBreachWarning';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Session {
   id: string;
@@ -112,7 +113,7 @@ export default function SecuritySettings() {
 
   // Fetch real sessions from admin_sessions table
   const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
-    queryKey: ['admin-sessions', admin?.id],
+    queryKey: queryKeys.adminSessions.byAdmin(admin?.id),
     queryFn: async () => {
       if (!admin?.id) return [];
 
@@ -157,7 +158,7 @@ export default function SecuritySettings() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-sessions', admin?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminSessions.byAdmin(admin?.id) });
       toast.success('Session revoked', { description: 'The device has been signed out.' });
     },
     onError: (error) => {
@@ -180,7 +181,7 @@ export default function SecuritySettings() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-sessions', admin?.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminSessions.byAdmin(admin?.id) });
       toast.success('All sessions revoked', { description: 'You have been signed out of all other devices.' });
     },
     onError: (error) => {

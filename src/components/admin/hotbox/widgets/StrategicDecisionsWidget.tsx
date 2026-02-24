@@ -5,13 +5,14 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { formatCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function StrategicDecisionsWidget() {
     const { tenant } = useTenantAdminAuth();
     const navigate = useTenantNavigate();
 
     const { data: decisions, isLoading } = useQuery({
-        queryKey: ['hotbox-strategic', tenant?.id],
+        queryKey: queryKeys.hotbox.strategic(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
 

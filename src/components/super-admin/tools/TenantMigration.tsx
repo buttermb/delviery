@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { Database, ArrowRight, Download, Upload, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface MigrationStep {
   step: string;
@@ -37,7 +38,7 @@ export function TenantMigration() {
   const [progress, setProgress] = useState(0);
 
   const { data: tenants } = useQuery({
-    queryKey: ['all-tenants'],
+    queryKey: queryKeys.superAdminTools.allTenants(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tenants')

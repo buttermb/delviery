@@ -27,6 +27,7 @@ import { useQuery } from '@tanstack/react-query';
 import { addDays, format } from 'date-fns';
 import { useCreditGatedAction } from '@/hooks/useCredits';
 import { formatCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ScannedProduct {
   barcode: string;
@@ -74,7 +75,7 @@ export default function DispatchInventory() {
 
   // Fetch pre-selected client if URL param exists
   const { data: preselectedClient } = useQuery({
-    queryKey: ['preselected-client', preselectedClientId],
+    queryKey: queryKeys.preselectedClient.byId(preselectedClientId),
     queryFn: async () => {
       if (!preselectedClientId || !tenant?.id) return null;
       const { data, error } = await supabase

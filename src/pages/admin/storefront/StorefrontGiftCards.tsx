@@ -12,6 +12,7 @@ import { GiftCardTable } from '@/components/admin/storefront/GiftCardTable';
 import { GiftCardLedger } from '@/components/admin/storefront/GiftCardLedger';
 import { GiftCardBalanceCheck } from '@/components/admin/storefront/GiftCardBalanceCheck';
 import { Skeleton } from '@/components/ui/skeleton';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface SelectedCard {
   id: string;
@@ -29,7 +30,7 @@ export default function StorefrontGiftCards() {
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
 
   const { data: store, isLoading: storeLoading } = useQuery({
-    queryKey: ['marketplace-store', tenantId],
+    queryKey: queryKeys.marketplaceStore.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
       const { data } = await supabase

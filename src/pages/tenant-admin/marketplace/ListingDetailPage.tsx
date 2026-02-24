@@ -28,6 +28,7 @@ import { formatSmartDate } from '@/lib/utils/formatDate';
 import { MarketplaceListing } from '@/types/marketplace-extended';
 import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Type helper to avoid excessive deep instantiation
 const asListing = (data: any): MarketplaceListing => data as MarketplaceListing;
@@ -41,7 +42,7 @@ export default function ListingDetailPage() {
 
   // Fetch listing details
   const { data: listing, isLoading } = useQuery<MarketplaceListing | null>({
-    queryKey: ['marketplace-listing-detail', listingId],
+    queryKey: queryKeys.marketplaceListings.detailPage(listingId),
     queryFn: async (): Promise<MarketplaceListing | null> => {
       if (!listingId) return null;
 

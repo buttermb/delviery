@@ -35,6 +35,7 @@ import { formatSmartDate } from '@/lib/utils/formatDate';
 import { isTrial as checkIsTrial, SUBSCRIPTION_STATUS } from '@/utils/subscriptionStatus';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { queryKeys } from '@/lib/queryKeys';
 
 // ... imports
 
@@ -46,7 +47,7 @@ export default function BillingDashboard() {
 
   // Fetch usage stats
   const { data: usageStats } = useQuery({
-    queryKey: ['usage-stats', tenant?.id],
+    queryKey: queryKeys.tenantDashboard.usageStats(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return null;
 

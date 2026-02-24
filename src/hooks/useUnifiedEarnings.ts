@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, endOfWeek, endOfMonth } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 type Timeframe = 'today' | 'week' | 'month';
 
@@ -24,7 +25,7 @@ export function useUnifiedEarnings(
   timeframe: Timeframe
 ) {
   return useQuery({
-    queryKey: ['unified-earnings', role, userId, timeframe],
+    queryKey: queryKeys.unifiedEarnings.byUser(role, userId, timeframe),
     queryFn: async () => {
       if (!userId) throw new Error('User ID required');
 

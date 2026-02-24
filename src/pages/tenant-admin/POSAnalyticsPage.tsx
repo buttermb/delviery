@@ -11,6 +11,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   DollarSign, TrendingUp, ShoppingCart, Clock,
   CreditCard, Award, Activity
 } from 'lucide-react';
@@ -35,7 +36,7 @@ export default function POSAnalyticsPage() {
 
   // Fetch POS transactions
   const { data: transactions = [], isLoading } = useQuery<POSTransaction[]>({
-    queryKey: ['pos-transactions', tenantId, timeRange],
+    queryKey: queryKeys.posTransactions.byTenant(tenantId, timeRange),
     queryFn: async (): Promise<POSTransaction[]> => {
       if (!tenantId) return [];
 

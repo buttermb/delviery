@@ -37,6 +37,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { queryKeys } from '@/lib/queryKeys';
 
 type CustomerMode = 'retail' | 'wholesale';
 type OrderType = 'all' | 'retail' | 'wholesale';
@@ -78,7 +79,7 @@ export default function UnifiedOrdersPage() {
 
   // Fetch retail orders
   const { data: retailOrders = [], isLoading: retailLoading } = useQuery({
-    queryKey: ['customer-retail-orders', tenantId, customerId, statusFilter],
+    queryKey: queryKeys.customerRetailOrders.byCustomer(tenantId, customerId, statusFilter),
     queryFn: async () => {
       if (!tenantId || !customerId) return [];
 
@@ -115,7 +116,7 @@ export default function UnifiedOrdersPage() {
 
   // Fetch wholesale orders
   const { data: wholesaleOrders = [], isLoading: wholesaleLoading } = useQuery({
-    queryKey: ['customer-wholesale-orders', tenantId, statusFilter],
+    queryKey: queryKeys.customerWholesaleOrders.byTenant(tenantId, statusFilter),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -158,7 +159,7 @@ export default function UnifiedOrdersPage() {
 
   // Fetch storefront orders (placed via checkout, stored in marketplace_orders by customer_email)
   const { data: storefrontOrders = [], isLoading: storefrontLoading } = useQuery({
-    queryKey: ['customer-storefront-orders', tenantId, customerEmail, statusFilter],
+    queryKey: queryKeys.customerStorefrontOrders.byEmail(tenantId, customerEmail, statusFilter),
     queryFn: async () => {
       if (!tenantId || !customerEmail) return [];
 

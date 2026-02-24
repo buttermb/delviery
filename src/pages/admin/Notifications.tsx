@@ -16,6 +16,7 @@ import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface NotificationTemplate {
   id: string;
@@ -46,7 +47,7 @@ export default function Notifications() {
   });
 
   const { data: templates, isLoading } = useQuery({
-    queryKey: ['notification-templates', tenantId],
+    queryKey: queryKeys.notificationTemplates.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -95,7 +96,7 @@ export default function Notifications() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-templates', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notificationTemplates.byTenant(tenantId) });
       toast.success('Notification template has been created.');
       resetForm();
     },
@@ -136,7 +137,7 @@ export default function Notifications() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-templates', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notificationTemplates.byTenant(tenantId) });
       toast.success('Notification template has been updated.');
       resetForm();
     },
@@ -165,7 +166,7 @@ export default function Notifications() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-templates', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notificationTemplates.byTenant(tenantId) });
       toast.success('Notification template has been removed.');
       setDeleteDialogOpen(false);
       setTemplateToDelete(null);

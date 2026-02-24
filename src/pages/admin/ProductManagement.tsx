@@ -80,7 +80,7 @@ import { ProductMarginBadge } from "@/components/admin/products/ProductMarginBad
 import { ColumnVisibilityControl } from "@/components/admin/ColumnVisibilityControl";
 import Columns from "lucide-react/dist/esm/icons/columns";
 
-type Product = Database['public']['Tables']['products']['Row'] & {
+type Product = Database['public']['Tables']queryKeys.products.all['Row'] & {
   // Add fields that might be missing from generated types or are dynamic
   metrc_retail_id?: string | null;
   exclude_from_discounts?: boolean;
@@ -196,7 +196,7 @@ export default function ProductManagement() {
 
   // Fetch store settings for potency alerts
   useQuery({
-    queryKey: ['store-settings-potency'],
+    queryKey: queryKeys.storeSettingsPotency.all,
     queryFn: async () => {
       // Find the marketplace profile for this tenant
       const { data: profile } = await supabase
@@ -268,7 +268,7 @@ export default function ProductManagement() {
 
   // Fetch store for publishing
   const { data: store } = useQuery({
-    queryKey: ['marketplace-store', tenant?.id],
+    queryKey: queryKeys.marketplaceStore.byTenant(tenant?.id),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('marketplace_stores')

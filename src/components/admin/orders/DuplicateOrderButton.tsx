@@ -96,7 +96,7 @@ export function DuplicateOrderButton({
 
   // Fetch current stock levels for all products in the order
   const { data: stockValidation, isLoading: isValidating } = useQuery({
-    queryKey: ['order-stock-validation', orderId, orderItems.map(i => i.product_id)],
+    queryKey: queryKeys.orderStockValidation.byOrder(orderId, orderItems.map(i => i.product_id)),
     queryFn: async (): Promise<StockValidationItem[]> => {
       if (!tenant?.id || orderItems.length === 0) return [];
 

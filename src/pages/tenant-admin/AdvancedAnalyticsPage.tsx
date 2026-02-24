@@ -5,12 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function AdvancedAnalyticsPage() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: orders = [], isLoading, isError } = useQuery({
-    queryKey: ['advanced-analytics-orders', tenant?.id],
+    queryKey: queryKeys.advancedAnalyticsOrders.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       

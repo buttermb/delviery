@@ -134,7 +134,7 @@ export function OrderProductQuickView({
 
   // Fetch price history (if table exists, otherwise return empty)
   const { data: priceHistory = [], isLoading: historyLoading } = useQuery({
-    queryKey: ['product-price-history', tenant?.id, productId],
+    queryKey: queryKeys.productPriceHistory.byProduct(tenant?.id, productId),
     queryFn: async (): Promise<PriceHistoryEntry[]> => {
       if (!tenant?.id || !productId) return [];
 

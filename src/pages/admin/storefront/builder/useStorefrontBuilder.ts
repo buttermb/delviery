@@ -14,6 +14,7 @@ import { logger } from '@/lib/logger';
 import { MarketplaceStore } from '@/types/marketplace-extended';
 import { type ThemePreset } from '@/lib/storefrontThemes';
 import {
+import { queryKeys } from '@/lib/queryKeys';
     type SectionConfig,
     type ThemeConfig,
     type TemplateKey,
@@ -123,7 +124,7 @@ export function useStorefrontBuilder() {
 
     // Fetch Store Config
     const { data: store, isLoading } = useQuery({
-        queryKey: ['marketplace-settings', tenant?.id],
+        queryKey: queryKeys.marketplaceSettings.byTenant(tenant?.id),
         queryFn: async (): Promise<MarketplaceStore> => {
             try {
                 const { data, error } = await supabase
@@ -258,7 +259,7 @@ export function useStorefrontBuilder() {
             toast.success('Store created!', {
                 description: `Your storefront "${newStore.store_name}" has been created. 500 credits have been deducted.`,
             });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
             queryClient.invalidateQueries({ queryKey: ['shop-store'] });
             setShowCreateDialog(false);
             setNewStoreName('');
@@ -314,7 +315,7 @@ export function useStorefrontBuilder() {
         },
         onSuccess: () => {
             toast.success('Draft saved', { description: 'Your changes have been saved as a draft.' });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
             queryClient.invalidateQueries({ queryKey: ['shop-store'] });
         },
         onError: (err) => {
@@ -346,7 +347,7 @@ export function useStorefrontBuilder() {
         },
         onSuccess: () => {
             toast.success('Store published!', { description: 'Your storefront is now live and visible to customers.' });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
             queryClient.invalidateQueries({ queryKey: ['shop-store'] });
         },
         onError: (err) => {
@@ -372,7 +373,7 @@ export function useStorefrontBuilder() {
         },
         onSuccess: () => {
             toast.success('Store unpublished', { description: 'Your storefront is now in draft mode.' });
-            queryClient.invalidateQueries({ queryKey: ['marketplace-settings'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
             queryClient.invalidateQueries({ queryKey: ['shop-store'] });
         },
         onError: (err) => {

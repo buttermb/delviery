@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 export interface DaySchedule {
     isOpen: boolean;
@@ -19,7 +20,7 @@ export interface OperatingHours {
 
 export function useStoreStatus(storeId: string | undefined) {
     return useQuery({
-        queryKey: ['store-status', storeId],
+        queryKey: queryKeys.storeStatus.byStore(storeId),
         queryFn: async () => {
             if (!storeId) return null;
 

@@ -24,6 +24,7 @@ import Truck from "lucide-react/dist/esm/icons/truck";
 import Clock from "lucide-react/dist/esm/icons/clock";
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 import MapPin from "lucide-react/dist/esm/icons/map-pin";
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Courier {
   id: string;
@@ -46,7 +47,7 @@ export function CourierStatusWidget() {
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['hotbox-courier-status', tenant?.id],
+    queryKey: queryKeys.hotbox.courierStatus(tenant?.id),
     queryFn: async (): Promise<{ couriers: CourierWithStatus[]; counts: { available: number; busy: number; offline: number } }> => {
       if (!tenant?.id) return { couriers: [], counts: { available: 0, busy: 0, offline: 0 } };
 

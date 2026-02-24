@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SEOHead } from '@/components/SEOHead';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function PublicMarketplacePage() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export default function PublicMarketplacePage() {
 
   // Fetch active marketplace listings (public)
   const { data: listings = [], isLoading } = useQuery({
-    queryKey: ['marketplace-listings-public', productTypeFilter, strainTypeFilter],
+    queryKey: queryKeys.marketplaceListings.public(productTypeFilter, strainTypeFilter),
     queryFn: async () => {
       let query = (supabase as any)
         .from('marketplace_listings')

@@ -43,6 +43,7 @@ import { SmartClientPicker } from '@/components/wholesale/SmartClientPicker';
 import { formatCurrency } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { queryKeys } from '@/lib/queryKeys';
 
 type OrderStep = 'client' | 'products' | 'payment' | 'delivery' | 'review';
 
@@ -87,7 +88,7 @@ export default function NewWholesaleOrder() {
 
   // Fetch pricing tiers
   const { data: pricingTiers = [] } = useQuery({
-    queryKey: ['wholesale-pricing-tiers', tenant?.id],
+    queryKey: queryKeys.wholesalePricingTiers.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data } = await supabase
@@ -341,8 +342,8 @@ export default function NewWholesaleOrder() {
         }
 
         // Invalidate queries to refresh data
-        queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] });
-        queryClient.invalidateQueries({ queryKey: ['wholesale-clients'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
 
         setRetryCount(0);
         showSuccessToast('Order Created', `Order #${data.order_number} created successfully`);

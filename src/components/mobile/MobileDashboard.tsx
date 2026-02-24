@@ -41,6 +41,7 @@ import { logger } from '@/lib/logger';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { MobileErrorBoundary } from '@/components/mobile/MobileErrorBoundary';
 import { triggerHaptic } from '@/lib/utils/mobile';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface MobileKPIData {
   todayRevenue: number;
@@ -73,7 +74,7 @@ export function MobileDashboard() {
 
   // Fetch KPI data
   const { data: kpiData, isLoading: kpiLoading, refetch: refetchKpi } = useQuery({
-    queryKey: ['mobile-dashboard-kpi', tenantId],
+    queryKey: queryKeys.mobileDashboard.kpi(tenantId),
     queryFn: async (): Promise<MobileKPIData> => {
       if (!tenantId) {
         return {
@@ -171,7 +172,7 @@ export function MobileDashboard() {
 
   // Fetch low stock items for alerts
   const { data: lowStockItems, refetch: refetchLowStock } = useQuery({
-    queryKey: ['mobile-dashboard-low-stock', tenantId],
+    queryKey: queryKeys.mobileDashboard.lowStock(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -232,7 +233,7 @@ export function MobileDashboard() {
     await Promise.all([
       refetchKpi(),
       refetchLowStock(),
-      queryClient.invalidateQueries({ queryKey: ['mobile-dashboard'] }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.mobileDashboard.all }),
     ]);
   }, [refetchKpi, refetchLowStock, queryClient]);
 

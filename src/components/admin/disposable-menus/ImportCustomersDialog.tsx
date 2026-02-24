@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { formatPhoneNumber } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ImportCustomersDialogProps {
   menuId: string;
@@ -37,7 +38,7 @@ export const ImportCustomersDialog = ({
 
   // Fetch wholesale clients
   const { data: clients, isLoading } = useQuery({
-    queryKey: ['wholesale-clients-for-import'],
+    queryKey: queryKeys.importCustomersWholesale.all,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wholesale_clients')
@@ -53,7 +54,7 @@ export const ImportCustomersDialog = ({
 
   // Fetch already whitelisted customers
   const { data: existingWhitelist } = useQuery({
-    queryKey: ['menu-whitelist', menuId],
+    queryKey: queryKeys.menuWhitelist.byMenu(menuId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_access_whitelist')

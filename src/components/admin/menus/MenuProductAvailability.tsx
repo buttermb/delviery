@@ -20,7 +20,6 @@ import Boxes from 'lucide-react/dist/esm/icons/boxes';
 import Plus from 'lucide-react/dist/esm/icons/plus';
 import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
 import Edit2 from 'lucide-react/dist/esm/icons/edit-2';
-import Eye from 'lucide-react/dist/esm/icons/eye';
 import EyeOff from 'lucide-react/dist/esm/icons/eye-off';
 import Check from 'lucide-react/dist/esm/icons/check';
 import X from 'lucide-react/dist/esm/icons/x';
@@ -29,7 +28,7 @@ import RotateCcw from 'lucide-react/dist/esm/icons/rotate-ccw';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import Info from 'lucide-react/dist/esm/icons/info';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -60,14 +59,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Checkbox } from '@/components/ui/checkbox';
 
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import {
@@ -191,7 +183,7 @@ function ProductRuleCard({
     return evaluateProductAvailability(rules);
   }, [rules]);
 
-  const activeRules = rules.filter((r) => r.isActive);
+  const _activeRules = rules.filter((r) => r.isActive);
 
   return (
     <Card className={cn(!availability.isAvailable && 'border-amber-500/50 bg-amber-50/30')}>
@@ -379,7 +371,7 @@ function ProductRuleCard({
 function RuleFormDialog({
   isOpen,
   onClose,
-  productId,
+  productId: _productId,
   productName,
   existingRule,
   onSave,

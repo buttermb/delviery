@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { TruncatedText } from '@/components/shared/TruncatedText';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -30,7 +31,7 @@ export default function RevenueReports() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders' },
-        () => queryClient.invalidateQueries({ queryKey: ['revenue-reports'] })
+        () => queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.revenueReports() })
       )
       .subscribe((status) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -42,7 +43,7 @@ export default function RevenueReports() {
   }, [queryClient]);
 
   const { data: rawOrders, isLoading } = useQuery({
-    queryKey: ['revenue-reports', tenantId, dateRange],
+    queryKey: queryKeys.revenueReports.byTenant(tenantId, dateRange),
     queryFn: async () => {
       if (!tenantId) return [];
 

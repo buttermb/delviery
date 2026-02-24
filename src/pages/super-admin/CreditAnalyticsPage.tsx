@@ -29,6 +29,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   getCreditAnalytics,
   getPlatformCreditStats,
   FREE_TIER_MONTHLY_CREDITS,
@@ -59,13 +60,13 @@ export default function CreditAnalyticsPage() {
 
   // Fetch analytics
   const { data: analytics, isLoading, refetch } = useQuery({
-    queryKey: ['credit-analytics', startDate, endDate],
+    queryKey: queryKeys.superAdminTools.creditAnalytics(startDate, endDate),
     queryFn: () => getCreditAnalytics({ startDate, endDate }),
   });
 
   // Fetch platform stats
   const { data: stats } = useQuery({
-    queryKey: ['platform-credit-stats-analytics'],
+    queryKey: queryKeys.superAdminTools.creditPlatformStats(),
     queryFn: getPlatformCreditStats,
   });
 

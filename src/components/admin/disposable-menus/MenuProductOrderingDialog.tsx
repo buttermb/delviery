@@ -15,6 +15,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import Package from 'lucide-react/dist/esm/icons/package';
 import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface MenuProductOrderingDialogProps {
   open: boolean;
@@ -33,7 +34,7 @@ export function MenuProductOrderingDialog({
 
   // Fetch menu products with product details
   const { data: menuProducts, isLoading, error } = useQuery({
-    queryKey: ['menu-products-ordering', menuId, tenant?.id],
+    queryKey: queryKeys.menuProducts.ordering(menuId, tenant?.id),
     queryFn: async () => {
       if (!tenant?.id || !menuId) return [];
 

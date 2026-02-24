@@ -84,7 +84,7 @@ export function useStorefrontInventorySync({
 
         // Invalidate product stock query
         queryClient.invalidateQueries({
-          queryKey: ['product-stock', newProduct.id],
+          queryKey: queryKeys.productStock.byProduct(newProduct.id),
         });
 
         // Show notification for out-of-stock events
@@ -121,7 +121,7 @@ export function useStorefrontInventorySync({
 
         // Invalidate product stock query
         queryClient.invalidateQueries({
-          queryKey: ['product-stock', newBatch.product_id],
+          queryKey: queryKeys.productStock.byProduct(newBatch.product_id),
         });
       }
     },

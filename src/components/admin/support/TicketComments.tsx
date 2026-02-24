@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Loader2, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { queryKeys } from '@/lib/queryKeys';
 
 interface TicketCommentsProps {
   ticketId: string;
@@ -22,7 +23,7 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
 
   // Fetch comments
   const { data: comments, isLoading } = useQuery({
-    queryKey: ['support-ticket-comments', ticketId],
+    queryKey: queryKeys.supportTicketComments.byTicket(ticketId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('support_ticket_comments')
@@ -52,7 +53,7 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['support-ticket-comments', ticketId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.supportTicketComments.byTicket(ticketId) });
       setComment("");
       toast.success("Comment added");
     },

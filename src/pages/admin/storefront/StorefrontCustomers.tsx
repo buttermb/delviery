@@ -45,6 +45,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   Select,
   SelectContent,
   SelectItem,
@@ -85,7 +86,7 @@ export default function StorefrontCustomers() {
 
   // Fetch store
   const { data: store } = useQuery({
-    queryKey: ['marketplace-store', tenantId],
+    queryKey: queryKeys.marketplaceStore.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
       const { data } = await supabase

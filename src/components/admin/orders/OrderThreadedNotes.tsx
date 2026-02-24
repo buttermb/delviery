@@ -51,15 +51,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { queryKeys } from '@/lib/queryKeys';
-import { PIN_REASONS, PinReason } from '@/hooks/usePinnedOrderNotes';
+import type { PinReason } from '@/hooks/usePinnedOrderNotes';
 
 /** Team member for @mentions */
 interface TeamMember {
@@ -129,7 +122,7 @@ export function OrderThreadedNotes({
 
   // Fetch team members for @mentions
   const { data: teamMembers = [] } = useQuery({
-    queryKey: ['team', 'members', tenantId],
+    queryKey: queryKeys.orderThreadedNotes.teamMembers(tenantId),
     queryFn: async (): Promise<TeamMember[]> => {
       if (!tenantId) return [];
 
@@ -253,7 +246,7 @@ export function OrderThreadedNotes({
           if (mentionedUserId === currentUserId) continue;
 
           const mentionedMember = teamMembers.find((m) => m.user_id === mentionedUserId);
-          const mentionedName = mentionedMember?.full_name || mentionedMember?.email || 'Someone';
+          const _mentionedName = mentionedMember?.full_name || mentionedMember?.email || 'Someone';
 
           try {
             await dispatchNotification({
@@ -359,8 +352,8 @@ export function OrderThreadedNotes({
   });
 
   // State for pin reason dialog
-  const [pinningNoteId, setPinningNoteId] = useState<string | null>(null);
-  const [selectedPinReason, setSelectedPinReason] = useState<PinReason>('custom');
+  const [_pinningNoteId, setPinningNoteId] = useState<string | null>(null);
+  const [_selectedPinReason, _setSelectedPinReason] = useState<PinReason>('custom');
 
   const handlePinNote = (noteId: string, reason?: PinReason) => {
     pinNoteMutation.mutate({ noteId, reason });

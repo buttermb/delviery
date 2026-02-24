@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import ProductImage from '@/components/ProductImage';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface StoreData {
   id: string;
@@ -77,7 +78,7 @@ export default function StoreLandingPage() {
     isLoading: storeLoading,
     error: storeError,
   } = useQuery({
-    queryKey: ['store-landing', slug],
+    queryKey: queryKeys.storePages.landing(slug),
     queryFn: async (): Promise<StoreData | null> => {
       if (!slug) return null;
 
@@ -104,7 +105,7 @@ export default function StoreLandingPage() {
 
   // Fetch featured products (top 8 visible products, ordered by display_order as sales proxy)
   const { data: featuredProducts, isLoading: productsLoading } = useQuery({
-    queryKey: ['store-landing-products', store?.tenant_id],
+    queryKey: queryKeys.storePages.landingProducts(store?.tenant_id),
     queryFn: async (): Promise<FeaturedProduct[]> => {
       if (!store?.tenant_id) return [];
 
@@ -129,7 +130,7 @@ export default function StoreLandingPage() {
 
   // Fetch categories with product counts
   const { data: categories, isLoading: categoriesLoading } = useQuery({
-    queryKey: ['store-landing-categories', store?.tenant_id],
+    queryKey: queryKeys.storePages.landingCategories(store?.tenant_id),
     queryFn: async (): Promise<CategoryInfo[]> => {
       if (!store?.tenant_id) return [];
 

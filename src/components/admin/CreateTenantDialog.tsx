@@ -39,6 +39,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Loader2 } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
 
 type TenantLimits = {
   customers: number;
@@ -232,8 +233,8 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
 
       toast.success("${data.business_name} has been created successfully");
 
-      queryClient.invalidateQueries({ queryKey: ['super-admin-tenants'] });
-      queryClient.invalidateQueries({ queryKey: ['platform-stats'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.superAdminTenants() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.platformStatsSimple() });
       setOpen(false);
       form.reset();
     } catch (error: unknown) {

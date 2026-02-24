@@ -18,6 +18,7 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 
 export const PanicModeButton = () => {
   const [open, setOpen] = useState(false);
@@ -89,8 +90,8 @@ export const PanicModeButton = () => {
       );
 
       // Invalidate queries to refresh UI
-      queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
-      queryClient.invalidateQueries({ queryKey: ['menu-security-events'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.disposableMenus.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.menuSecurityEvents.all });
 
       setOpen(false);
       setConfirmText('');

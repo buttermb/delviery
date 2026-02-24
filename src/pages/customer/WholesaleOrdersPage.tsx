@@ -38,6 +38,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
 import { useState as useReactState, useEffect } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
+import { queryKeys } from '@/lib/queryKeys';
 
 type CustomerMode = 'retail' | 'wholesale';
 
@@ -65,7 +66,7 @@ export default function WholesaleOrdersPage() {
 
   // Fetch orders
   const { data: orders = [], isLoading } = useQuery({
-    queryKey: ['marketplace-orders-customer', buyerTenantId, statusFilter],
+    queryKey: queryKeys.marketplaceOrders.customer(buyerTenantId, statusFilter),
     queryFn: async () => {
       if (!buyerTenantId) return [];
 

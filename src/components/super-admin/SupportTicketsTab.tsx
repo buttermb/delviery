@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { MessageSquare, AlertCircle, Clock, CheckCircle } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { cn } from '@/lib/utils';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface SupportTicketsTabProps {
   tenantId: string;
@@ -20,7 +21,7 @@ interface SupportTicketsTabProps {
 export function SupportTicketsTab({ tenantId }: SupportTicketsTabProps) {
   // Fetch support tickets for this tenant
   const { data: tickets = [], isLoading } = useQuery({
-    queryKey: ['support-tickets', tenantId],
+    queryKey: queryKeys.superAdminTools.supportTickets(tenantId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('support_tickets')

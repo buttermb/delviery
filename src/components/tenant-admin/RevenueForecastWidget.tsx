@@ -15,13 +15,14 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function RevenueForecastWidget() {
     const { tenant } = useTenantAdminAuth();
     const tenantId = tenant?.id;
 
     const { data: forecast, isLoading } = useQuery({
-        queryKey: ['revenue-forecast', tenantId],
+        queryKey: queryKeys.tenantWidgets.revenueForecast(tenantId),
         queryFn: async () => {
             if (!tenantId) return null;
 

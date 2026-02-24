@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UserPlus, Shield, UserX, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface AdminUser {
   id: string;
@@ -40,7 +41,7 @@ export default function AdminUsersPage() {
 
   // Fetch admin users
   const { data: adminUsers, isLoading } = useQuery({
-    queryKey: ['admin-users'],
+    queryKey: queryKeys.superAdminTools.adminUsers(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('admin_users')
@@ -67,7 +68,7 @@ export default function AdminUsersPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.adminUsers() });
       toast.success('Admin status updated');
     },
     onError: (error: unknown) => {
@@ -86,7 +87,7 @@ export default function AdminUsersPage() {
       toast.info('Admin creation requires backend implementation');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.adminUsers() });
       setIsAddDialogOpen(false);
       setNewAdminEmail('');
       setNewAdminName('');

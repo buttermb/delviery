@@ -9,6 +9,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--secondary))', 'hsl(var(--muted))'];
 
@@ -17,7 +18,7 @@ export default function LocationAnalyticsPage() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: locationData, isLoading } = useQuery({
-    queryKey: ['location-analytics', tenant?.id],
+    queryKey: queryKeys.locationAnalytics.byTenant(tenant?.id),
     queryFn: async () => {
       const { data: orders } = await supabase
         .from('orders')

@@ -31,6 +31,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { AnalyticsDateRangePicker } from '@/components/admin/disposable-menus/AnalyticsDateRangePicker';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface MenuAnalyticsProps {
   menuId?: string;
@@ -140,7 +141,7 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
 
   // Fetch menus for selector
   const { data: menus = [], isLoading: menusLoading } = useQuery({
-    queryKey: ['menu-analytics-menus', tenantId],
+    queryKey: queryKeys.menuAnalytics.menus(tenantId),
     queryFn: async (): Promise<MenuOption[]> => {
       if (!tenantId) return [];
 
@@ -286,14 +287,14 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
   }, [dateRange, tenantId]);
 
   const { data: analytics, isLoading: analyticsLoading, refetch } = useQuery({
-    queryKey: ['menu-specific-analytics', currentMenuId, dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryKey: queryKeys.menuAnalytics.specific(currentMenuId, dateRange?.from?.toISOString(), dateRange?.to?.toISOString()),
     queryFn: () => fetchMenuAnalytics(currentMenuId!),
     enabled: !!tenantId && !!currentMenuId,
     staleTime: 30 * 1000,
   });
 
   const { data: compareAnalytics, isLoading: compareLoading } = useQuery({
-    queryKey: ['menu-compare-analytics', compareMenuId, dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryKey: queryKeys.menuAnalytics.compare(compareMenuId, dateRange?.from?.toISOString(), dateRange?.to?.toISOString()),
     queryFn: () => fetchMenuAnalytics(compareMenuId!),
     enabled: !!tenantId && !!compareMenuId,
     staleTime: 30 * 1000,

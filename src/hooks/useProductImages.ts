@@ -72,12 +72,12 @@ export const useGenerateProductImage = () => {
     },
     onMutate: async ({ productId }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.products.all });
-      const previousProducts = queryClient.getQueryData(['products']);
+      const previousProducts = queryClient.getQueryData(queryKeys.products.all);
       return { previousProducts, productId };
     },
     onError: (error, _variables, context) => {
       if (context?.previousProducts) {
-        queryClient.setQueryData(['products'], context.previousProducts);
+        queryClient.setQueryData(queryKeys.products.all, context.previousProducts);
       }
       const message = error instanceof Error ? error.message : 'Failed to generate image';
       logger.error('Image generation failed', error, { component: 'useGenerateProductImage' });
@@ -88,7 +88,7 @@ export const useGenerateProductImage = () => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-      queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.productsForWholesale.all });
     },
   });
 };
@@ -194,12 +194,12 @@ export const useBulkGenerateImages = () => {
     },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: queryKeys.products.all });
-      const previousProducts = queryClient.getQueryData(['products']);
+      const previousProducts = queryClient.getQueryData(queryKeys.products.all);
       return { previousProducts };
     },
     onError: (error, _variables, context) => {
       if (context?.previousProducts) {
-        queryClient.setQueryData(['products'], context.previousProducts);
+        queryClient.setQueryData(queryKeys.products.all, context.previousProducts);
       }
       const message = error instanceof Error ? error.message : 'Failed to generate images';
       logger.error('Bulk image generation failed', error, { component: 'useBulkGenerateImages' });
@@ -211,7 +211,7 @@ export const useBulkGenerateImages = () => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-      queryClient.invalidateQueries({ queryKey: ['products-for-wholesale'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.productsForWholesale.all });
     },
   });
 };

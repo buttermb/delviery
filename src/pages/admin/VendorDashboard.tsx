@@ -44,6 +44,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   Table,
   TableBody,
   TableCell,
@@ -141,7 +142,7 @@ export default function VendorDashboard() {
 
   // Fetch vendor stats
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['vendor-dashboard-stats', tenantId],
+    queryKey: queryKeys.vendorDashboard.stats(tenantId),
     queryFn: async (): Promise<VendorStats> => {
       if (!tenantId) {
         return {
@@ -219,7 +220,7 @@ export default function VendorDashboard() {
 
   // Fetch top vendors by spend
   const { data: topVendors = [], isLoading: topVendorsLoading } = useQuery({
-    queryKey: ['vendor-dashboard-top-vendors', tenantId],
+    queryKey: queryKeys.vendorDashboard.topVendors(tenantId),
     queryFn: async (): Promise<TopVendor[]> => {
       if (!tenantId) return [];
 
@@ -308,7 +309,7 @@ export default function VendorDashboard() {
 
   // Fetch recent PO activity
   const { data: recentActivity = [], isLoading: activityLoading } = useQuery({
-    queryKey: ['vendor-dashboard-activity', tenantId],
+    queryKey: queryKeys.vendorDashboard.activity(tenantId),
     queryFn: async (): Promise<POActivity[]> => {
       if (!tenantId) return [];
 
@@ -346,7 +347,7 @@ export default function VendorDashboard() {
 
   // Fetch vendor distribution by category
   const { data: categoryDistribution = [], isLoading: categoryLoading } = useQuery({
-    queryKey: ['vendor-dashboard-categories', tenantId],
+    queryKey: queryKeys.vendorDashboard.categories(tenantId),
     queryFn: async (): Promise<VendorCategory[]> => {
       if (!tenantId) return [];
 
@@ -383,10 +384,10 @@ export default function VendorDashboard() {
   const handleRefresh = async () => {
     setRefreshing(true);
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['vendor-dashboard-stats', tenantId] }),
-      queryClient.invalidateQueries({ queryKey: ['vendor-dashboard-top-vendors', tenantId] }),
-      queryClient.invalidateQueries({ queryKey: ['vendor-dashboard-activity', tenantId] }),
-      queryClient.invalidateQueries({ queryKey: ['vendor-dashboard-categories', tenantId] }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorDashboard.stats(tenantId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorDashboard.topVendors(tenantId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorDashboard.activity(tenantId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorDashboard.categories(tenantId) }),
     ]);
     setRefreshing(false);
   };

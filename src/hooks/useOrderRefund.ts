@@ -560,7 +560,7 @@ export function useOrderRefund(): UseOrderRefundResult {
       queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
 
     onError: (error, { orderId }, context) => {

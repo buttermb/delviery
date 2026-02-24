@@ -38,6 +38,7 @@ import { encryptLabResults } from '@/lib/encryption/sensitive-fields';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useFeatureFlags } from '@/config/featureFlags';
 import { Checkbox } from '@/components/ui/checkbox';
+import { queryKeys } from '@/lib/queryKeys';
 
 const PRODUCT_TYPES = [
   { value: 'flower', label: 'Flower' },
@@ -121,7 +122,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
 
   // Fetch existing listing if editing
   const { data: existingListing } = useQuery({
-    queryKey: ['marketplace-listing', listingId],
+    queryKey: queryKeys.marketplaceListings.detail(listingId),
     queryFn: async () => {
       if (!listingId) return null;
 
@@ -143,7 +144,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
 
   // Fetch marketplace profile
   const { data: profile } = useQuery({
-    queryKey: ['marketplace-profile', tenant?.id],
+    queryKey: queryKeys.marketplaceProfileAdmin.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return null;
 

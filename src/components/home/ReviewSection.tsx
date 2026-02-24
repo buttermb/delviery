@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Review {
   id: string;
@@ -38,7 +39,7 @@ export function ReviewSection() {
 
   // Fetch reviews with pagination
   const { data, isLoading } = useQuery({
-    queryKey: ['home-reviews', page],
+    queryKey: queryKeys.home.reviews(page),
     queryFn: async () => {
       const { data: reviewsData, error } = await supabase
         .from('reviews')
@@ -119,7 +120,7 @@ export function ReviewSection() {
       setComment('');
       setRating(5);
       setShowForm(false);
-      queryClient.invalidateQueries({ queryKey: ['home-reviews'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.home.reviews() });
     },
     onError: (error: unknown) => {
       toast.error(humanizeError(error, 'Failed to submit review'));

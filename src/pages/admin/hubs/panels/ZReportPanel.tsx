@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useRealtimeShifts } from '@/hooks/useRealtimePOS';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function ZReportPanel() {
     const { tenant } = useTenantAdminAuth();
@@ -26,7 +27,7 @@ export default function ZReportPanel() {
     useRealtimeShifts(tenantId);
 
     const { data: shifts, isLoading } = useQuery({
-        queryKey: ['closed-shifts', tenantId],
+        queryKey: queryKeys.closedShifts.byTenant(tenantId),
         queryFn: async () => {
             if (!tenantId) return [];
 

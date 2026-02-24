@@ -16,6 +16,7 @@ import { useCredits } from '@/hooks/useCredits';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { getCreditCost, getCreditCostInfo } from '@/lib/credits';
+import { queryKeys } from '@/lib/queryKeys';
 
 // ============================================================================
 // Types
@@ -195,7 +196,7 @@ export function useCreditGatedAction(): UseCreditGatedActionReturn {
 
       try {
         // OPTIMISTIC UPDATE: Deduct credits immediately in the UI
-        queryClient.setQueryData(['credits', tenantId], (oldData: unknown) => {
+        queryClient.setQueryData(queryKeys.credits.balance(tenantId), (oldData: unknown) => {
           if (!oldData || typeof oldData !== 'object') return oldData;
           const data = oldData as { balance?: number };
           return {
@@ -209,7 +210,7 @@ export function useCreditGatedAction(): UseCreditGatedActionReturn {
 
         if (!creditResult.success) {
           // ROLLBACK: Revert optimistic update
-          queryClient.setQueryData(['credits', tenantId], (oldData: unknown) => {
+          queryClient.setQueryData(queryKeys.credits.balance(tenantId), (oldData: unknown) => {
             if (!oldData || typeof oldData !== 'object') return oldData;
             return {
               ...(oldData as object),
@@ -249,7 +250,7 @@ export function useCreditGatedAction(): UseCreditGatedActionReturn {
         const result = await action();
 
         // Sync with server balance
-        queryClient.invalidateQueries({ queryKey: ['credits', tenantId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.credits.balance(tenantId) });
 
         onSuccess?.(result);
 
@@ -272,7 +273,7 @@ export function useCreditGatedAction(): UseCreditGatedActionReturn {
           previousBalance,
         });
 
-        queryClient.setQueryData(['credits', tenantId], (oldData: unknown) => {
+        queryClient.setQueryData(queryKeys.credits.balance(tenantId), (oldData: unknown) => {
           if (!oldData || typeof oldData !== 'object') return oldData;
           return {
             ...(oldData as object),
@@ -281,7 +282,7 @@ export function useCreditGatedAction(): UseCreditGatedActionReturn {
         });
 
         // Invalidate to sync with server
-        queryClient.invalidateQueries({ queryKey: ['credits', tenantId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.credits.balance(tenantId) });
 
         const error = err instanceof Error ? err : new Error(String(err));
         toast.error('Action Failed', {

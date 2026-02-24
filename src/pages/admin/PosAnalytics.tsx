@@ -8,6 +8,7 @@ import { useRealtimeShifts, useRealtimeTransactions } from '@/hooks/useRealtimeP
 import { POSCharts } from '@/components/analytics/POSCharts';
 import { ChartExport } from '@/components/analytics/ChartExport';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface POSTransaction {
   id: string;
@@ -52,7 +53,7 @@ export default function PosAnalytics() {
   useRealtimeTransactions(tenantId);
 
   const { data: transactions, isLoading } = useQuery({
-    queryKey: ['pos-analytics', tenantId],
+    queryKey: queryKeys.posTransactions.analytics(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -73,7 +74,7 @@ export default function PosAnalytics() {
 
   // Get shift summary
   const { data: shifts } = useQuery({
-    queryKey: ['pos-shifts-summary', tenantId],
+    queryKey: queryKeys.posTransactions.shiftsSummary(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

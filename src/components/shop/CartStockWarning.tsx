@@ -9,6 +9,7 @@ import { AlertTriangle, Ban, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CartItem {
   productId: string;
@@ -36,7 +37,7 @@ interface CartStockCheckResult {
 // Hook to check stock for multiple cart items
 export function useCartStockCheck(cartItems: CartItem[]) {
   return useQuery({
-    queryKey: ['cart-stock-check', cartItems.map(i => `${i.productId}:${i.quantity}`).join(',')],
+    queryKey: queryKeys.cartStockCheck.byItems(cartItems.map(i => `${i.productId}:${i.quantity}`).join(',')),
     queryFn: async (): Promise<CartStockCheckResult> => {
       if (cartItems.length === 0) {
         return { hasInsufficientStock: false, insufficientItems: [] };
@@ -90,7 +91,7 @@ export function CartItemStockWarning({
   variant = 'minimal'
 }: CartStockWarningProps) {
   const { data, isLoading } = useQuery({
-    queryKey: ['product-stock', productId],
+    queryKey: queryKeys.productStock.byProduct(productId),
     queryFn: async () => {
       const { data: product, error } = await supabase
         .from('products')

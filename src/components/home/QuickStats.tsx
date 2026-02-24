@@ -7,10 +7,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import { Users, Package, Truck, Star } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function QuickStats() {
   const { data: stats } = useQuery({
-    queryKey: ['quick-stats'],
+    queryKey: queryKeys.home.quickStats(),
     queryFn: async () => {
       const [ordersResult, reviewsResult] = await Promise.all([
         supabase

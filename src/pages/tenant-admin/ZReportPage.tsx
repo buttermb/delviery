@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useRealtimeShifts } from '@/hooks/useRealtimePOS';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function ZReportPage() {
   const { tenant } = useTenantAdminAuth();
@@ -21,7 +22,7 @@ export default function ZReportPage() {
   useRealtimeShifts(tenantId);
 
   const { data: shifts, isLoading } = useQuery({
-    queryKey: ['closed-shifts', tenantId],
+    queryKey: queryKeys.closedShifts.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

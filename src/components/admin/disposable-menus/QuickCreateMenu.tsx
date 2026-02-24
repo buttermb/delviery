@@ -26,6 +26,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface QuickCreateMenuProps {
   open: boolean;
@@ -91,7 +92,7 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
 
   // Fetch products from products table (unified with Product Management, POS, Migration)
   const { data: products = [], isLoading: productsLoading } = useQuery({
-    queryKey: ['menu-products', tenant?.id],
+    queryKey: queryKeys.menuProducts.list(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase

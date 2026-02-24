@@ -12,6 +12,7 @@ import { SETUP_WIZARD_STEPS } from '@/types/setup-wizard';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function useSetupWizard() {
   const { tenant, refreshTenant } = useTenantAdminAuth();
@@ -69,7 +70,7 @@ export function useSetupWizard() {
       if (error) throw error;
 
       await refreshTenant();
-      queryClient.invalidateQueries({ queryKey: ['tenant', tenant.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantSingle.byId(tenant.id) });
 
       toast.success('Setup complete! Welcome to FloraIQ.');
       logger.info('Onboarding completed', { tenantId: tenant.id }, { component: 'useSetupWizard' });
@@ -98,7 +99,7 @@ export function useSetupWizard() {
       if (error) throw error;
 
       await refreshTenant();
-      queryClient.invalidateQueries({ queryKey: ['tenant', tenant.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantSingle.byId(tenant.id) });
 
       toast.info('Setup skipped. You can complete it anytime from Settings.');
       logger.info('Onboarding skipped', { tenantId: tenant.id }, { component: 'useSetupWizard' });

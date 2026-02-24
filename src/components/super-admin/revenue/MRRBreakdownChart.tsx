@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface MRRDataPoint {
   month: string;
@@ -23,7 +24,7 @@ interface MRRDataPoint {
 
 export function MRRBreakdownChart() {
   const { data: mrrData, isLoading } = useQuery({
-    queryKey: ['mrr-breakdown'],
+    queryKey: queryKeys.superAdminTools.mrrBreakdown(),
     queryFn: async () => {
       const { data: tenants, error } = await supabase
         .from('tenants')

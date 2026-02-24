@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { Search, Filter } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ReviewModerationQueueProps {
     tenantId: string;
@@ -33,7 +34,7 @@ export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQue
 
     // Fetch reviews
     const { data: reviews = [], isLoading } = useQuery({
-        queryKey: ['reviews', tenantId, storeId, statusFilter, ratingFilter],
+        queryKey: queryKeys.reviews.list(tenantId, storeId, statusFilter, ratingFilter),
         queryFn: async () => {
             let query = supabase
                 .from('product_reviews')
@@ -91,7 +92,7 @@ export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQue
             if (error) throw error;
         },
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['reviews'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.reviews.all });
             toast.success(variables.status === 'approved' ? 'Review approved' : 'Review rejected');
         },
         onError: (error) => {
@@ -118,7 +119,7 @@ export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQue
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['reviews'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.reviews.all });
             toast.success('Response submitted');
         },
         onError: (error) => {

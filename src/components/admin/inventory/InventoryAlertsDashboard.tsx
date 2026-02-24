@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { humanizeError } from '@/lib/humanizeError';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface InventoryAlert {
   id: string;
@@ -26,7 +27,7 @@ export function InventoryAlertsDashboard() {
   const { tenant } = useTenantAdminAuth();
 
   const { data: alerts, isLoading } = useQuery({
-    queryKey: ['inventory-alerts', tenant?.id],
+    queryKey: queryKeys.inventoryAlerts.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       
@@ -53,7 +54,7 @@ export function InventoryAlertsDashboard() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory-alerts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventoryAlerts.all });
       toast.success('Alert resolved');
     },
     onError: (error: Error) => {

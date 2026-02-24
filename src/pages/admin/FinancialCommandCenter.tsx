@@ -25,6 +25,7 @@ import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 
 // Financial Components
 import {
+import { queryKeys } from '@/lib/queryKeys';
   QuickStatsHeader,
   CashFlowPulse,
   ARCommand,
@@ -93,11 +94,11 @@ export default function FinancialCommandCenter() {
   });
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['financial-quick-stats'] });
-    queryClient.invalidateQueries({ queryKey: ['financial-cash-flow-pulse'] });
-    queryClient.invalidateQueries({ queryKey: ['financial-ar-command'] });
-    queryClient.invalidateQueries({ queryKey: ['financial-fronted-inventory'] });
-    queryClient.invalidateQueries({ queryKey: ['financial-performance-pulse'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.quickStats() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.cashFlowPulse() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.arCommand() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.frontedInventory() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.performancePulse() });
   };
 
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {

@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 
 type ColumnDef<T> = {
   accessorKey?: keyof T | string;
@@ -40,7 +41,7 @@ export default function RunnersPage() {
 
   const { data: runners, isLoading } = useQuery({
 
-    queryKey: ['runners', account?.id],
+    queryKey: queryKeys.runnersAdmin.byAccount(account?.id),
     queryFn: async () => {
       if (!account?.id) return [];
 

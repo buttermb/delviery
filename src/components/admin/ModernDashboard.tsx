@@ -26,6 +26,7 @@ import { DashboardLayoutEditor } from './dashboard/DashboardLayoutEditor';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface DashboardData {
   revenue: number;
@@ -42,7 +43,7 @@ export function ModernDashboard() {
 
   // Fetch dashboard data with proper error handling
   const { data: dashboardData, isLoading } = useQuery<DashboardData | null>({
-    queryKey: ['modern-dashboard', tenantId],
+    queryKey: queryKeys.modernDashboard.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 

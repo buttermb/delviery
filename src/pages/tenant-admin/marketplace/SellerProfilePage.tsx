@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { ProfileForm } from './ProfileForm';
 import { Building2, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function SellerProfilePage() {
   const { tenant } = useTenantAdminAuth();
@@ -24,7 +25,7 @@ export default function SellerProfilePage() {
 
   // Fetch existing marketplace profile
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['marketplace-profile', tenantId],
+    queryKey: queryKeys.marketplaceProfileAdmin.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 
@@ -270,7 +271,7 @@ export default function SellerProfilePage() {
         </CardHeader>
         <CardContent>
           <ProfileForm onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-profile', tenantId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProfileAdmin.byTenant(tenantId) });
             toast.success('Profile Created', { description: 'Your profile is pending verification. You\'ll be notified once approved.' });
           }} />
         </CardContent>

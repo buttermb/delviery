@@ -10,6 +10,7 @@ import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
@@ -29,7 +30,7 @@ export default function CustomerInsightsPage() {
 
   // Fetch all customers for metrics
   const { data: customers = [], isLoading: customersLoading, isError: customersError } = useQuery({
-    queryKey: ['customer-insights-customers', tenant?.id, timeRange],
+    queryKey: queryKeys.customerInsights.customers(tenant?.id, timeRange),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase
@@ -45,7 +46,7 @@ export default function CustomerInsightsPage() {
 
   // Fetch orders for frequency analysis
   const { data: orders = [], isLoading: ordersLoading, isError: ordersError } = useQuery({
-    queryKey: ['customer-insights-orders', tenant?.id, timeRange],
+    queryKey: queryKeys.customerInsights.orders(tenant?.id, timeRange),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const days = getDaysFromRange(timeRange);
@@ -177,7 +178,7 @@ export default function CustomerInsightsPage() {
 
   // Top customers by spending
   const { data: topCustomers = [], isLoading: topLoading } = useQuery({
-    queryKey: ['customer-insights-top', tenant?.id],
+    queryKey: queryKeys.customerInsights.top(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
       const { data, error } = await supabase

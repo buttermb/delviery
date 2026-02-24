@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
 
 /**
  * Hook to prefetch dashboard data for faster navigation
@@ -31,7 +32,7 @@ export function usePrefetchDashboard() {
       await Promise.allSettled([
         // Today's metrics
         queryClient.prefetchQuery({
-          queryKey: ['tenant-dashboard-today', tenantId],
+          queryKey: queryKeys.tenantDashboard.today(tenantId),
           queryFn: async () => {
             const { data: salesData } = await supabase
               .from('wholesale_orders')
@@ -77,7 +78,7 @@ export function usePrefetchDashboard() {
 
         // Recent orders (for dashboard widgets)
         queryClient.prefetchQuery({
-          queryKey: ['recent-orders', tenantId],
+          queryKey: queryKeys.tenantDashboard.recentOrders(tenantId),
           queryFn: async () => {
             const { data } = await supabase
               .from('wholesale_orders')
@@ -93,7 +94,7 @@ export function usePrefetchDashboard() {
 
         // Usage stats (for limit indicators)
         queryClient.prefetchQuery({
-          queryKey: ['usage-stats', tenantId],
+          queryKey: queryKeys.tenantDashboard.usageStats(tenantId),
           queryFn: async () => {
             const { data: tenant } = await supabase
               .from('tenants')

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { Users } from 'lucide-react';
 import { format } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface CohortData {
   cohort: string;
@@ -22,7 +23,7 @@ interface CohortData {
 
 export function CohortAnalysis() {
   const { data: cohortData, isLoading } = useQuery({
-    queryKey: ['cohort-analysis'],
+    queryKey: queryKeys.superAdminTools.cohortAnalysis(),
     queryFn: async () => {
       const { data: tenants, error } = await supabase
         .from('tenants')

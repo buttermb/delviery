@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ExecutionLog {
   status: 'success' | 'error';
@@ -59,7 +60,7 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
   });
 
   const { data: executions, isLoading, refetch } = useQuery({
-    queryKey: ['workflow-executions', tenant?.id, limit],
+    queryKey: queryKeys.workflowExecutions.all,
     queryFn: async () => {
       if (!tenant?.id) return [];
 

@@ -11,6 +11,7 @@ import { format } from 'date-fns/format';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import { useState } from 'react';
 import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface WebhookLog {
   id: string;
@@ -38,7 +39,7 @@ export function WebhookLogs({ webhookId, limit = 10, showTitle = true }: Webhook
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
 
   const { data: logs, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: ['webhook-logs', tenantId, webhookId, limit],
+    queryKey: queryKeys.webhooks.logs(tenantId, webhookId, limit),
     queryFn: async () => {
       if (!tenantId) return [];
 

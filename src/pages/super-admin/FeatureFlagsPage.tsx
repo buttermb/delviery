@@ -10,6 +10,7 @@ import { Flag, Plus, Search } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function FeatureFlagsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,7 +18,7 @@ export default function FeatureFlagsPage() {
 
   // Fetch feature flags from database
   const { data: flags = [], isLoading } = useQuery({
-    queryKey: ['super-admin-feature-flags'],
+    queryKey: queryKeys.superAdminTools.featureFlags(),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('feature_flags')
@@ -66,9 +67,9 @@ export default function FeatureFlagsPage() {
       if (error) throw error;
     },
     onMutate: async ({ flagId, enabled }) => {
-      await queryClient.cancelQueries({ queryKey: ['super-admin-feature-flags'] });
-      const previousFlags = queryClient.getQueryData<typeof flags>(['super-admin-feature-flags']);
-      queryClient.setQueryData<typeof flags>(['super-admin-feature-flags'], (old) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.superAdminTools.featureFlags() });
+      const previousFlags = queryClient.getQueryData<typeof flags>(queryKeys.superAdminTools.featureFlags());
+      queryClient.setQueryData<typeof flags>(queryKeys.superAdminTools.featureFlags(), (old) => {
         if (!old) return old;
         return old.map((flag) =>
           flag.id === flagId ? { ...flag, enabled } : flag
@@ -78,13 +79,13 @@ export default function FeatureFlagsPage() {
     },
     onError: (error: unknown, _variables, context) => {
       if (context?.previousFlags) {
-        queryClient.setQueryData(['super-admin-feature-flags'], context.previousFlags);
+        queryClient.setQueryData(queryKeys.superAdminTools.featureFlags(), context.previousFlags);
       }
       logger.error('Failed to toggle feature flag', error);
       toast.error('Failed to update feature flag. Please try again.');
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['super-admin-feature-flags'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.featureFlags() });
     },
   });
 

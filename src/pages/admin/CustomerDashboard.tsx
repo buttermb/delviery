@@ -54,6 +54,7 @@ import {
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { displayName } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Segment color palette for charts
 const SEGMENT_COLORS: Record<CustomerSegment, string> = {
@@ -76,7 +77,7 @@ interface CustomerGrowthPoint {
  */
 function useCustomerGrowth(tenantId: string | undefined) {
   return useQuery({
-    queryKey: ['customer-growth', tenantId],
+    queryKey: queryKeys.customerGrowth.byTenant(tenantId),
     queryFn: async (): Promise<CustomerGrowthPoint[]> => {
       if (!tenantId) return [];
 
@@ -155,7 +156,7 @@ function useCustomerGrowth(tenantId: string | undefined) {
  */
 function useRecentCustomerActivity(tenantId: string | undefined) {
   return useQuery({
-    queryKey: ['recent-customer-activity', tenantId],
+    queryKey: queryKeys.customerGrowth.recentActivity(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

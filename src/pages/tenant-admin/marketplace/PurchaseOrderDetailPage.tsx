@@ -34,6 +34,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { DetailPageSkeleton } from '@/components/admin/shared/LoadingSkeletons';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function PurchaseOrderDetailPage() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -45,7 +46,7 @@ export default function PurchaseOrderDetailPage() {
 
     // Fetch order details
     const { data: order, isLoading } = useQuery({
-        queryKey: ['marketplace-purchase-detail', orderId],
+        queryKey: queryKeys.marketplacePurchaseDetail.byOrder(orderId),
         queryFn: async () => {
             if (!orderId) return null;
 
@@ -82,7 +83,7 @@ export default function PurchaseOrderDetailPage() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-purchase-detail', orderId] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplacePurchaseDetail.byOrder(orderId) });
             toast.success('Order marked as received');
         },
         onError: (error) => {

@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface AnalyticsData {
     total_revenue: number;
@@ -38,7 +39,7 @@ export default function MarketplaceDashboard() {
 
     // Fetch store profile
     const { data: profile } = useQuery({
-        queryKey: ['marketplace-profile', tenant?.id],
+        queryKey: queryKeys.marketplaceProfileAdmin.byTenant(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return null;
             const { data, error } = await supabase
@@ -58,7 +59,7 @@ export default function MarketplaceDashboard() {
 
     // Fetch analytics
     const { data: analytics } = useQuery({
-        queryKey: ['marketplace-analytics', profile?.id],
+        queryKey: queryKeys.marketplaceAnalytics.byProfile(profile?.id),
         queryFn: async () => {
             if (!profile?.id) return null;
             const { data, error } = await supabase

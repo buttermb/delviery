@@ -42,6 +42,7 @@ import { toast } from 'sonner';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { humanizeError } from '@/lib/humanizeError';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface SupportTicket {
   id: string;
@@ -71,7 +72,7 @@ export default function SuperAdminSupport() {
 
   // Fetch tickets
   const { data: tickets } = useQuery<SupportTicket[]>({
-    queryKey: ['support-tickets', statusFilter, priorityFilter, searchTerm],
+    queryKey: queryKeys.saasAdmin.supportTickets(statusFilter, priorityFilter, searchTerm),
     queryFn: async () => {
       let query = supabase
         .from('support_tickets')
@@ -133,15 +134,15 @@ export default function SuperAdminSupport() {
       if (error) throw error;
 
       toast.success('Ticket has been marked as resolved');
-      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
-      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.supportTickets() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.supportTickets() });
     } catch (error) {
       // If table doesn't exist, just show success (mock behavior for dev)
       if ((error as any)?.code === '42P01') {
         toast.success('Ticket resolved', {
           description: 'Ticket has been marked as resolved',
         });
-        queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.supportTickets() });
         return;
       }
       handleError(error, { component: 'SuperAdminSupport', toastTitle: 'Failed to resolve ticket' });

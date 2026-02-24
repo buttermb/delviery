@@ -13,6 +13,7 @@ import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { formatSmartDate } from '@/lib/formatters';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function CustomDomain() {
   const { tenant } = useTenantAdminAuth();
@@ -21,7 +22,7 @@ export default function CustomDomain() {
   const [domain, setDomain] = useState('');
 
   const { data: domains, isLoading, error, refetch } = useQuery({
-    queryKey: ['custom-domains', tenantId],
+    queryKey: queryKeys.customDomains.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -66,7 +67,7 @@ export default function CustomDomain() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom-domains', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customDomains.byTenant(tenantId) });
       toast.success("Domain has been added. Please configure DNS settings.");
       setDomain('');
     },

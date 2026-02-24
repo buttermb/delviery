@@ -14,6 +14,7 @@ import { AlertCircle, Download } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface QuickExportProps {
   onExportComplete?: () => void;
@@ -27,7 +28,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
   const [customStartDate, _setCustomStartDate] = useState<Date>();
   const [customEndDate, _setCustomEndDate] = useState<Date>();
   const { data: exportData, isLoading, error } = useQuery({
-    queryKey: ['quick-export', exportType, dateRange, tenantId],
+    queryKey: queryKeys.quickExport.byParams(exportType, dateRange, tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
       let startDate: Date | null = null;

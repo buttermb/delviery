@@ -27,6 +27,7 @@ import {
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, subMonths } from 'date-fns';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface TaxSummary {
   totalSales: number;
@@ -56,7 +57,7 @@ export default function TaxManagementPage() {
   };
 
   const { data: taxData, isLoading } = useQuery<TaxSummary>({
-    queryKey: ['tax-summary', tenantId, selectedPeriod],
+    queryKey: queryKeys.taxManagement.summary(tenantId, selectedPeriod),
     queryFn: async () => {
       if (!tenantId) return { totalSales: 0, taxCollected: 0, taxRate: 0, pendingFilings: 0, lastFilingDate: null };
 

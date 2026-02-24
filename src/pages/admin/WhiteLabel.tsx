@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Upload } from 'lucide-react';
 import { handleError } from "@/utils/errorHandling/handlers";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function WhiteLabel() {
   const { tenant } = useTenantAdminAuth();
@@ -28,7 +29,7 @@ export default function WhiteLabel() {
   });
 
   const { data: branding, isLoading } = useQuery({
-    queryKey: ['white-label', tenantId],
+    queryKey: queryKeys.whiteLabel.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 
@@ -88,8 +89,8 @@ export default function WhiteLabel() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['white-label', tenantId] });
-      queryClient.invalidateQueries({ queryKey: ['tenant', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.whiteLabel.byTenant(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantSingle.byId(tenantId) });
       toast.success("White label settings have been saved.");
     },
     onError: (error) => {

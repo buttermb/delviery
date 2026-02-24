@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ShoppingCart, DollarSign, TrendingUp } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface DayData {
   day: string;
@@ -17,7 +18,7 @@ export default function OrderAnalytics() {
   const tenantId = tenant?.id;
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: ['order-analytics', tenantId],
+    queryKey: queryKeys.orderAnalyticsAdmin.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

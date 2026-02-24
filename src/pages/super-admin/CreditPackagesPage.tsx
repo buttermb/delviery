@@ -49,6 +49,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   getAllCreditPackages,
   upsertCreditPackage,
   type CreditPackageDB,
@@ -61,7 +62,7 @@ export default function CreditPackagesPage() {
 
   // Fetch packages
   const { data: packages, isLoading, refetch } = useQuery({
-    queryKey: ['admin-credit-packages'],
+    queryKey: queryKeys.superAdminTools.creditPackages(),
     queryFn: getAllCreditPackages,
   });
 
@@ -295,7 +296,7 @@ export default function CreditPackagesPage() {
         onSuccess={() => {
           setShowEdit(false);
           setEditingPackage(null);
-          queryClient.invalidateQueries({ queryKey: ['admin-credit-packages'] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.creditPackages() });
         }}
       />
     </div>

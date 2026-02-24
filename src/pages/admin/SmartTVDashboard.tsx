@@ -25,6 +25,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 
 import {
+import { queryKeys } from '@/lib/queryKeys';
     TVHeaderBar,
     TVMetricsWidget,
     TVLiveOrdersWidget,
@@ -62,7 +63,7 @@ export default function SmartTVDashboard() {
 
     // Fetch today's orders and metrics
     const { data: ordersData } = useQuery({
-        queryKey: ['tv-dashboard-orders', tenant?.id],
+        queryKey: queryKeys.smartTVDashboard.orders(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return { orders: [], metrics: { revenue: 0, completed: 0, itemsSold: 0 } };
 
@@ -125,7 +126,7 @@ export default function SmartTVDashboard() {
 
     // Fetch hourly revenue data
     const { data: hourlyData } = useQuery({
-        queryKey: ['tv-dashboard-hourly', tenant?.id],
+        queryKey: queryKeys.smartTVDashboard.hourly(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
 
@@ -164,7 +165,7 @@ export default function SmartTVDashboard() {
 
     // Fetch inventory alerts
     const { data: inventoryAlerts } = useQuery({
-        queryKey: ['tv-dashboard-inventory', tenant?.id],
+        queryKey: queryKeys.smartTVDashboard.inventory(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
 
@@ -225,7 +226,7 @@ export default function SmartTVDashboard() {
                     setActivityEvents(prev => [event, ...prev].slice(0, 20));
 
                     // Invalidate queries
-                    queryClient.invalidateQueries({ queryKey: ['tv-dashboard-orders'] });
+                    queryClient.invalidateQueries({ queryKey: queryKeys.smartTVDashboard.orders() });
                 }
             )
             .subscribe((status) => {

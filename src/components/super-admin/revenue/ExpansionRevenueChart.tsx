@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface RevenueData {
   month: string;
@@ -23,7 +24,7 @@ interface RevenueData {
 
 export function ExpansionRevenueChart() {
   const { data: revenueData, isLoading } = useQuery({
-    queryKey: ['expansion-revenue'],
+    queryKey: queryKeys.superAdminTools.expansionRevenue(),
     queryFn: async () => {
       const { data: tenants, error } = await supabase
         .from('tenants')

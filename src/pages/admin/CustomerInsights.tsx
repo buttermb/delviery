@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { User, DollarSign, ShoppingCart, TrendingUp } from 'lucide-react';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function CustomerInsights() {
   const { id } = useParams();
@@ -16,7 +17,7 @@ export default function CustomerInsights() {
   const tenantId = tenant?.id;
 
   const { data: customer, isLoading: customerLoading } = useQuery({
-    queryKey: ['customer', id, tenantId],
+    queryKey: queryKeys.customerInsightsAdmin.customer(id, tenantId),
     queryFn: async () => {
       if (!id || !tenantId) return null;
 
@@ -43,7 +44,7 @@ export default function CustomerInsights() {
   useBreadcrumbLabel(customerRecord ? `${customerRecord.first_name ?? ''} ${customerRecord.last_name ?? ''}`.trim() || null : null);
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
-    queryKey: ['customer-orders', id, tenantId],
+    queryKey: queryKeys.customerInsightsAdmin.orders(id, tenantId),
     queryFn: async () => {
       if (!id || !tenantId) return [];
 

@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { Calculator } from 'lucide-react';
 import { useState } from 'react';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface LTVMetrics {
   avgLTV: number;
@@ -30,7 +31,7 @@ export function LTVCalculator() {
   const [customARPU, setCustomARPU] = useState<number | null>(null);
 
   const { data: ltvData, isLoading } = useQuery({
-    queryKey: ['ltv-calculator', customChurnRate, customARPU],
+    queryKey: queryKeys.superAdminTools.ltvCalculator(customChurnRate, customARPU),
     queryFn: async () => {
       const { data: tenants, error } = await supabase
         .from('tenants')

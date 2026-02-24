@@ -38,8 +38,9 @@ import { logger } from '@/lib/logger';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { queryKeys } from '@/lib/queryKeys';
 
-type Product = Database['public']['Tables']['products']['Row'];
+type Product = Database['public']['Tables']queryKeys.products.all['Row'];
 
 interface MarketplaceStore {
   id: string;
@@ -72,7 +73,7 @@ export function ProductQRGenerator({ product, open, onOpenChange }: ProductQRGen
 
   // Fetch available stores for the tenant
   const { data: stores = [], isLoading: storesLoading } = useQuery({
-    queryKey: ['marketplace-stores-for-qr', tenant?.id],
+    queryKey: queryKeys.productsQR.stores(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

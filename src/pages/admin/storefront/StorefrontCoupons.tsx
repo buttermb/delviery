@@ -55,6 +55,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   Select,
   SelectContent,
   SelectItem,
@@ -107,7 +108,7 @@ export default function StorefrontCoupons() {
 
   // Fetch store
   const { data: store } = useQuery({
-    queryKey: ['marketplace-store', tenantId],
+    queryKey: queryKeys.marketplaceStore.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
       const { data } = await supabase
@@ -122,7 +123,7 @@ export default function StorefrontCoupons() {
 
   // Fetch coupons
   const { data: coupons = [], isLoading } = useQuery({
-    queryKey: ['storefront-coupons', store?.id],
+    queryKey: queryKeys.storefrontCoupons.byStore(store?.id),
     queryFn: async () => {
       if (!store?.id) return [];
 
@@ -169,7 +170,7 @@ export default function StorefrontCoupons() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['storefront-coupons'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefrontCoupons.all });
       setIsDialogOpen(false);
       setFormData(initialFormData);
       setEditingCoupon(null);
@@ -194,7 +195,7 @@ export default function StorefrontCoupons() {
       if (error) throw error;
     },
     onSuccess: (_, { isActive }) => {
-      queryClient.invalidateQueries({ queryKey: ['storefront-coupons'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefrontCoupons.all });
       toast.success(isActive ? 'Coupon activated' : 'Coupon deactivated');
     },
   });
@@ -211,7 +212,7 @@ export default function StorefrontCoupons() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['storefront-coupons'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storefrontCoupons.all });
       toast.success("Coupon deleted");
     },
   });

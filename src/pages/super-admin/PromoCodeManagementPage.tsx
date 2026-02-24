@@ -60,6 +60,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import {
+import { queryKeys } from '@/lib/queryKeys';
   getAllPromoCodes as getAdminPromoCodes,
   createPromoCode as createAdminPromoCode,
   updatePromoCode,
@@ -76,13 +77,13 @@ export default function PromoCodeManagementPage() {
 
   // Fetch promo codes
   const { data: promoCodes, isLoading, refetch } = useQuery({
-    queryKey: ['admin-promo-codes'],
+    queryKey: queryKeys.superAdminTools.promoCodes(),
     queryFn: getAdminPromoCodes,
   });
 
   // Fetch redemptions for selected code
   const { data: redemptions, isLoading: redemptionsLoading } = useQuery({
-    queryKey: ['promo-code-redemptions', selectedCode?.id],
+    queryKey: queryKeys.superAdminTools.promoRedemptions(selectedCode?.id),
     queryFn: () => selectedCode ? getPromoCodeRedemptions(selectedCode.id) : null,
     enabled: !!selectedCode && showRedemptions,
   });
@@ -99,7 +100,7 @@ export default function PromoCodeManagementPage() {
       updatePromoCode(id, { isActive }),
     onSuccess: () => {
       toast.success('Promo code updated');
-      queryClient.invalidateQueries({ queryKey: ['admin-promo-codes'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.promoCodes() });
     },
     onError: () => {
       toast.error('Failed to update promo code');
@@ -315,7 +316,7 @@ export default function PromoCodeManagementPage() {
         onOpenChange={setShowCreate}
         onSuccess={() => {
           setShowCreate(false);
-          queryClient.invalidateQueries({ queryKey: ['admin-promo-codes'] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.promoCodes() });
         }}
       />
 

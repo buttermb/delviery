@@ -14,6 +14,7 @@ import { WebhookLogs } from './WebhookLogs';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface WebhookConfig {
   id: string;
@@ -59,7 +60,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
   });
 
   const { data: webhooks, isLoading } = useQuery({
-    queryKey: ['integration-webhooks', tenantId, integrationId],
+    queryKey: queryKeys.integrationWebhooks.byIntegration(tenantId, integrationId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -109,7 +110,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['integration-webhooks', tenantId, integrationId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.integrationWebhooks.byIntegration(tenantId, integrationId) });
       toast.success('Webhook created — Webhook has been linked to this integration.');
       resetForm();
     },
@@ -143,7 +144,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['integration-webhooks', tenantId, integrationId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.integrationWebhooks.byIntegration(tenantId, integrationId) });
       toast.success('Webhook updated — Webhook configuration has been updated.');
       resetForm();
     },
@@ -169,7 +170,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['integration-webhooks', tenantId, integrationId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.integrationWebhooks.byIntegration(tenantId, integrationId) });
       toast.success('Webhook deleted — Webhook has been removed from this integration.');
       if (selectedWebhookId) setSelectedWebhookId(null);
     },

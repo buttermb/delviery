@@ -58,7 +58,7 @@ export default function ProductSyncPage() {
 
     // 1. Fetch Store (Needed for store_id)
     const { data: store, isLoading: isLoadingStore } = useQuery({
-        queryKey: ['marketplace-store', tenant?.id],
+        queryKey: queryKeys.marketplaceStore.byTenant(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return null;
             const { data, error } = await supabase
@@ -78,7 +78,7 @@ export default function ProductSyncPage() {
 
     // 2. Fetch Products with Sync Status
     const { data: products, isLoading: isLoadingProducts, refetch } = useQuery({
-        queryKey: ['products-sync', tenant?.id],
+        queryKey: queryKeys.marketplaceProductSettings.sync(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
 
@@ -139,8 +139,8 @@ export default function ProductSyncPage() {
             });
             if (!error) {
                 toast.success("Product synced successfully");
-                queryClient.invalidateQueries({ queryKey: ['products-sync'] });
-                queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
+                queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.sync() });
+                queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceListings.all });
                 // Invalidate storefront product caches for instant sync
                 queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
             } else {

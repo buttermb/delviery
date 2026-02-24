@@ -43,6 +43,7 @@ import {
 } from 'recharts';
 import { useState, useEffect } from 'react';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface TenantPayload {
   id?: string;
@@ -80,9 +81,9 @@ export default function SuperAdminDashboardPage() {
           });
 
           // Invalidate stats queries to trigger refetch
-          queryClient.invalidateQueries({ queryKey: ['super-admin-platform-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['super-admin-at-risk-tenants'] });
-          queryClient.invalidateQueries({ queryKey: ['super-admin-recent-activity'] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.platformStats() });
+          queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.atRiskTenants() });
+          queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.recentActivity() });
 
           // If subscription plan or status changed, also invalidate tenant detail queries
           if (newData?.subscription_plan !== oldData?.subscription_plan ||
@@ -95,8 +96,8 @@ export default function SuperAdminDashboardPage() {
               newStatus: newData?.subscription_status,
               component: 'SuperAdminDashboard',
             });
-            queryClient.invalidateQueries({ queryKey: ['super-admin-tenant', newData?.id] });
-            queryClient.invalidateQueries({ queryKey: ['super-admin-tenants-list'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.tenantDetail(newData?.id) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.tenantsListPage() });
           }
         }
       )
@@ -115,7 +116,7 @@ export default function SuperAdminDashboardPage() {
 
   // Fetch platform stats
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['super-admin-platform-stats'],
+    queryKey: queryKeys.superAdminTools.platformStats(),
     queryFn: async () => {
       const { data: tenants } = await supabase
         .from('tenants')
@@ -167,7 +168,7 @@ export default function SuperAdminDashboardPage() {
 
   // Fetch at-risk tenants
   const { data: atRiskTenants = [] } = useQuery({
-    queryKey: ['super-admin-at-risk-tenants'],
+    queryKey: queryKeys.superAdminTools.atRiskTenants(),
     queryFn: async () => {
       const { data: tenants } = await supabase
         .from('tenants')
@@ -194,7 +195,7 @@ export default function SuperAdminDashboardPage() {
 
   // Fetch active trials
   const { data: activeTrials = [] } = useQuery({
-    queryKey: ['super-admin-active-trials'],
+    queryKey: queryKeys.superAdminTools.activeTrials(),
     queryFn: async () => {
       const { data: tenants } = await supabase
         .from('tenants')
@@ -207,7 +208,7 @@ export default function SuperAdminDashboardPage() {
 
   // Fetch revenue data over time (last 12 months)
   const { data: revenueData = [] } = useQuery({
-    queryKey: ['super-admin-revenue-history', timeRange],
+    queryKey: queryKeys.superAdminTools.revenueHistory(timeRange),
     queryFn: async () => {
       const { data: tenants } = await supabase
         .from('tenants')
@@ -252,7 +253,7 @@ export default function SuperAdminDashboardPage() {
 
   // Fetch recent activity from audit logs
   const { data: recentActivity = [] } = useQuery({
-    queryKey: ['super-admin-recent-activity'],
+    queryKey: queryKeys.superAdminTools.recentActivity(),
     queryFn: async () => {
       const { data: logs, error } = await (supabase as any)
         .from('audit_logs')
@@ -322,7 +323,7 @@ export default function SuperAdminDashboardPage() {
 
   // Calculate trial conversion rate from actual data
   const { data: trialConversionRate = 0 } = useQuery({
-    queryKey: ['super-admin-trial-conversion'],
+    queryKey: queryKeys.superAdminTools.trialConversion(),
     queryFn: async () => {
       const { data: allTenants } = await supabase
         .from('tenants')

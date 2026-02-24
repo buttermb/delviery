@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDistanceToNow } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function AuditLogsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,7 +17,7 @@ export default function AuditLogsPage() {
 
   // Fetch audit logs from database
   const { data: auditLogs = [], isLoading } = useQuery({
-    queryKey: ['super-admin-audit-logs', actionFilter],
+    queryKey: queryKeys.superAdminTools.auditLogs(actionFilter),
     queryFn: async () => {
       let query = (supabase as any)
         .from('audit_logs')
@@ -43,7 +44,7 @@ export default function AuditLogsPage() {
   );
 
   const { data: tenants = [] } = useQuery({
-    queryKey: ['audit-logs-tenants', tenantIds],
+    queryKey: queryKeys.superAdminTools.auditLogsTenants(tenantIds),
     queryFn: async () => {
       if (tenantIds.length === 0) return [];
       const { data } = await supabase
@@ -67,7 +68,7 @@ export default function AuditLogsPage() {
   );
 
   const { data: actors = [] } = useQuery({
-    queryKey: ['audit-logs-actors', actorIds],
+    queryKey: queryKeys.superAdminTools.auditLogsActors(actorIds),
     queryFn: async () => {
       if (actorIds.length === 0) return [];
       const { data } = await (supabase as any)

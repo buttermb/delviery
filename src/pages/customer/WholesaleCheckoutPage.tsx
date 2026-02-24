@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/select';
 import { calculateOrderTotal } from '@/lib/marketplace/feeCalculation';
 import { useFeatureFlags } from '@/config/featureFlags';
+import { queryKeys } from '@/lib/queryKeys';
 
 type CustomerMode = 'retail' | 'wholesale';
 
@@ -88,7 +89,7 @@ export default function WholesaleCheckoutPage() {
 
   // Fetch cart items
   const { data: cartItems = [] } = useQuery({
-    queryKey: ['marketplace-cart', buyerTenantId],
+    queryKey: queryKeys.marketplaceCart.byBuyer(buyerTenantId),
     queryFn: async () => {
       if (!buyerTenantId) return [];
 
@@ -230,8 +231,8 @@ export default function WholesaleCheckoutPage() {
       return orders;
     },
     onSuccess: (orders) => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-cart', buyerTenantId] });
-      queryClient.invalidateQueries({ queryKey: ['marketplace-orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceCart.byBuyer(buyerTenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceOrders.all });
       
       toast.success(shouldAutoApprove('ORDERS') ? 'Order Auto\u2011Approved' : 'Order Placed!', {
         description: shouldAutoApprove('ORDERS')

@@ -103,15 +103,15 @@ export function useRecordPayment(): UseRecordPaymentReturn {
     }
 
     // Collection mode data
-    queryClient.invalidateQueries({ queryKey: ['collection-mode'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.collections.mode() });
     queryClient.invalidateQueries({ queryKey: ['collection-activities'] });
 
     // Financial data
-    queryClient.invalidateQueries({ queryKey: ['financial-command-center'] });
-    queryClient.invalidateQueries({ queryKey: ['financial-data'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.quickStats() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.financialData.paymentSchedules() });
 
     // Fronted inventory
-    queryClient.invalidateQueries({ queryKey: ['fronted-inventory'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.frontedInventory.all });
 
     // Orders
     queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
@@ -226,8 +226,8 @@ export function useRecordPayment(): UseRecordPaymentReturn {
     },
     onSuccess: (result, input) => {
       // Invalidate delivery and runner-specific queries
-      queryClient.invalidateQueries({ queryKey: ['runner-active-deliveries'] });
-      queryClient.invalidateQueries({ queryKey: ['runner-today-stats'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runnerActiveDeliveries.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runnerTodayStats.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.deliveries.all });
       invalidatePaymentQueries();
 
@@ -327,8 +327,8 @@ export function useStandalonePayment() {
       return result;
     },
     onSuccess: (_, input) => {
-      queryClient.invalidateQueries({ queryKey: ['runner-active-deliveries'] });
-      queryClient.invalidateQueries({ queryKey: ['runner-today-stats'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runnerActiveDeliveries.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runnerTodayStats.all });
       
       if (input.showToast !== false) {
         showSuccessToast('Delivery marked complete');

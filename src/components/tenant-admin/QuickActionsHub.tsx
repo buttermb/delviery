@@ -23,6 +23,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface QuickAction {
     id: string;
@@ -42,7 +43,7 @@ export function QuickActionsHub() {
 
     // Fetch counts for badges
     const { data: counts } = useQuery({
-        queryKey: ['quick-actions-counts', tenantId],
+        queryKey: queryKeys.tenantWidgets.quickActionsCounts(tenantId),
         queryFn: async () => {
             if (!tenantId) return { pendingOrders: 0, lowStockItems: 0, todayDeliveries: 0 };
 

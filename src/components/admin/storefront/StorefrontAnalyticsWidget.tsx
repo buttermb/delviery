@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
 import { Eye, Users, ShoppingCart, TrendingUp } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface StorefrontAnalyticsWidgetProps {
   storeId: string;
@@ -50,7 +51,7 @@ function getLast7Days(): { start: Date; end: Date; days: Date[] } {
 
 export function StorefrontAnalyticsWidget({ storeId, className }: StorefrontAnalyticsWidgetProps) {
   const { data: analytics, isLoading } = useQuery({
-    queryKey: ['storefront-analytics', storeId, '7d'] as const,
+    queryKey: queryKeys.storefrontAnalyticsWidget.byStore(storeId, '7d'),
     queryFn: async (): Promise<AnalyticsSummary> => {
       const { start, days } = getLast7Days();
 

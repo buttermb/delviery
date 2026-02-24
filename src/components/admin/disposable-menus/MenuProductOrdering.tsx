@@ -54,6 +54,7 @@ import Eye from 'lucide-react/dist/esm/icons/eye';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
 import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Types
 interface MenuProduct {
@@ -567,7 +568,7 @@ export function MenuProductOrdering({
     onSuccess: () => {
       setHasChanges(false);
       toast.success('Product order saved');
-      queryClient.invalidateQueries({ queryKey: ['disposable-menus'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.disposableMenus.all });
     },
     onError: (error) => {
       logger.error('Failed to save product order', error, {

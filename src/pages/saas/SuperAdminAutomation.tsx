@@ -20,6 +20,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface AutomationRule {
   id: string;
@@ -145,7 +146,7 @@ export default function SuperAdminAutomation() {
 
   // Get recent enforcement events
   const { data: recentEvents } = useQuery({
-    queryKey: ['automation-events'],
+    queryKey: queryKeys.superAdminTools.automationEvents(),
     queryFn: async () => {
       const { data } = await supabase
         .from('subscription_events')

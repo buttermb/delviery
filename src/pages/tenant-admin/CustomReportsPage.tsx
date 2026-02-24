@@ -12,6 +12,7 @@ import { Plus, Play, Calendar, Mail, Trash2, FileText } from 'lucide-react';
 import { REPORT_TYPES } from '@/lib/constants/reportFields';
 import { humanizeError } from '@/lib/humanizeError';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function CustomReportsPage() {
   const { tenant } = useTenantAdminAuth();
@@ -20,7 +21,7 @@ export default function CustomReportsPage() {
   const [showBuilder, setShowBuilder] = useState(false);
 
   const { data: reports, isLoading } = useQuery({
-    queryKey: ['custom-reports', tenantId],
+    queryKey: queryKeys.customReports.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -46,7 +47,7 @@ export default function CustomReportsPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom-reports', tenantId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customReports.byTenant(tenantId) });
       toast.success('Report deleted');
     },
     onError: (error: Error) => {

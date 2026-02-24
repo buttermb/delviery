@@ -21,11 +21,12 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getAdminReferralStats, REFERRAL_REWARDS } from '@/lib/credits';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function ReferralManagementPage() {
   // Fetch referral stats
   const { data: stats, isLoading, refetch } = useQuery({
-    queryKey: ['admin-referral-stats'],
+    queryKey: queryKeys.superAdminTools.referralStats(),
     queryFn: getAdminReferralStats,
   });
 

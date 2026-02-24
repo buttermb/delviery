@@ -83,6 +83,7 @@ import { Label } from '@/components/ui/label';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 import { showInfoToast } from '@/utils/toastHelpers';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function TenantsListPage() {
   const navigate = useNavigate();
@@ -113,7 +114,7 @@ export default function TenantsListPage() {
 
   // Fetch tenants
   const { data: tenants = [], isLoading } = useQuery({
-    queryKey: ['super-admin-tenants-list', debouncedSearch, statusFilter, planFilter],
+    queryKey: queryKeys.superAdminTools.tenantsListPage(debouncedSearch, statusFilter, planFilter),
     queryFn: async () => {
       let query = supabase.from('tenants').select('*');
 

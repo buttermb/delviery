@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { format } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ScheduledJob {
   id: string;
@@ -35,7 +36,7 @@ interface ScheduledJob {
 export function ScheduledJobsManager() {
   // Mock data - in production would come from database
   const { data: jobs } = useQuery({
-    queryKey: ['scheduled-jobs'],
+    queryKey: queryKeys.superAdminTools.scheduledJobs(),
     queryFn: async () => {
       // In production, fetch from scheduled_jobs table
       const mockJobs: ScheduledJob[] = [

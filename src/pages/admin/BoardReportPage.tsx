@@ -17,13 +17,14 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { showInfoToast, showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function BoardReportPage() {
     const { tenant } = useTenantAdminAuth();
 
     // Fetch key metrics for board report
     const { data: metricsData, isLoading } = useQuery({
-        queryKey: ['board-report-metrics', tenant?.id],
+        queryKey: queryKeys.boardReport.metrics(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) throw new Error('No tenant');
 

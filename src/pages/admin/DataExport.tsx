@@ -16,6 +16,7 @@ import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { humanizeError } from '@/lib/humanizeError';
 import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog } from '@/components/credits';
 import { useCredits } from '@/hooks/useCredits';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function DataExport() {
   const { tenant } = useTenantAdminAuth();
@@ -25,7 +26,7 @@ export default function DataExport() {
   const { isFreeTier, performAction } = useCredits();
 
   const { data: exportHistory, isLoading: historyLoading } = useQuery({
-    queryKey: ['data-export-history', tenantId],
+    queryKey: queryKeys.dataExport.history(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

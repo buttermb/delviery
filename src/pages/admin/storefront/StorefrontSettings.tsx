@@ -47,6 +47,7 @@ import { generateUrlToken } from '@/utils/menuHelpers';
 import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/StorefrontSettingsLivePreview';
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
 import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
+import { queryKeys } from '@/lib/queryKeys';
 // Skeleton already imported above
 
 interface DeliveryZone {
@@ -151,7 +152,7 @@ export default function StorefrontSettings() {
 
   // Fetch store data
   const { data: store, isLoading } = useQuery({
-    queryKey: ['marketplace-store', tenantId],
+    queryKey: queryKeys.marketplaceStore.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
 

@@ -21,6 +21,7 @@ import {
     ShoppingBag,
 } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface Deal {
     id: string;
@@ -40,7 +41,7 @@ export default function DealsPage() {
     const { isLuxuryTheme, cardBg, cardBorder, textPrimary, textMuted } = useLuxuryTheme();
 
     const { data: deals = [], isLoading } = useQuery({
-        queryKey: ['store-active-deals', store?.id],
+        queryKey: queryKeys.storePages.activeDeals(store?.id),
         queryFn: async (): Promise<Deal[]> => {
             if (!store?.id) return [];
 

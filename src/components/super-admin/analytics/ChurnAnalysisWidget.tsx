@@ -10,6 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingDown, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface ChurnData {
   month: string;
@@ -21,7 +22,7 @@ interface ChurnData {
 
 export function ChurnAnalysisWidget() {
   const { data: churnData, isLoading } = useQuery({
-    queryKey: ['churn-analysis'],
+    queryKey: queryKeys.superAdminTools.churnAnalysis(),
     queryFn: async () => {
       // Get all tenants with cancellation dates
       const { data: tenants, error } = await supabase

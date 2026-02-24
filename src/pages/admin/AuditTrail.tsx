@@ -10,6 +10,7 @@ import { History, Search, User, Clock, Shield } from 'lucide-react';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { formatSmartDate } from '@/lib/formatters';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function AuditTrail() {
   const { tenant } = useTenantAdminAuth();
@@ -17,7 +18,7 @@ export default function AuditTrail() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data: auditLogs, isLoading } = useQuery({
-    queryKey: ['audit-trail', tenantId],
+    queryKey: queryKeys.auditTrail.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
 

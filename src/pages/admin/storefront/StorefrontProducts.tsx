@@ -80,7 +80,7 @@ export default function StorefrontProducts() {
 
   // Fetch store
   const { data: store } = useQuery({
-    queryKey: ['marketplace-store', tenantId],
+    queryKey: queryKeys.marketplaceStore.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return null;
       const { data } = await supabase
@@ -190,7 +190,7 @@ export default function StorefrontProducts() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-product-settings'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.all });
       // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
     },
@@ -227,7 +227,7 @@ export default function StorefrontProducts() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-product-settings'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.all });
       // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
       toast.success("Price updated!");
@@ -275,7 +275,7 @@ export default function StorefrontProducts() {
       }
     },
     onSuccess: (_, isVisible) => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-product-settings'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.all });
       // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
       setSelectedProducts(new Set());
@@ -354,7 +354,7 @@ export default function StorefrontProducts() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace-product-settings'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.all });
       // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
     },

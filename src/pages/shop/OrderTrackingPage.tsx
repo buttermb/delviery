@@ -28,6 +28,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
 import { DeliveryRatingForm } from '@/components/shop/DeliveryRatingForm';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface OrderDetails {
   order_id: string;
@@ -64,7 +65,7 @@ export default function OrderTrackingPage() {
 
   // Fetch order details with retry and auto-refresh
   const { data: order, isLoading, error, refetch, isFetching } = useQuery({
-    queryKey: ['order-tracking', trackingToken],
+    queryKey: queryKeys.shopPages.orderTracking(trackingToken),
     queryFn: async () => {
       if (!trackingToken) return null;
 
@@ -109,7 +110,7 @@ export default function OrderTrackingPage() {
         },
         (payload) => {
           logger.debug('Order tracking status update received', payload.new, 'ShopOrderTrackingPage');
-          queryClient.invalidateQueries({ queryKey: ['order-tracking', trackingToken] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.shopPages.orderTracking(trackingToken) });
         }
       )
       .subscribe((status) => {

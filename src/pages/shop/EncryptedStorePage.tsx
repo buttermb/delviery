@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Store, AlertTriangle } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function EncryptedStorePage() {
   const { token } = useParams<{ token: string }>();
@@ -19,7 +20,7 @@ export default function EncryptedStorePage() {
 
   // Look up store by encrypted token
   const { data: store, isLoading, isError } = useQuery({
-    queryKey: ['encrypted-store', token],
+    queryKey: queryKeys.shopPages.encryptedStore(token),
     queryFn: async () => {
       if (!token) throw new Error('No token provided');
 

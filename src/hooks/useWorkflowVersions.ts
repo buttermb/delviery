@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface WorkflowAction {
   id?: string;
@@ -47,7 +48,7 @@ export function useWorkflowVersions(workflowId: string | null) {
   const queryClient = useQueryClient();
 
   const { data: versions, isLoading } = useQuery<WorkflowVersion[]>({
-    queryKey: ['workflow-versions', workflowId, tenant?.id],
+    queryKey: queryKeys.workflowVersions.byWorkflow(workflowId, tenant?.id),
     queryFn: async () => {
       if (!workflowId || !tenant?.id) return [];
 
@@ -93,8 +94,8 @@ export function useWorkflowVersions(workflowId: string | null) {
       return data;
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['workflow-versions'] });
-      queryClient.invalidateQueries({ queryKey: ['workflows'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.workflowVersions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.workflows.all });
       toast.success(`Successfully restored to version ${variables.versionNumber}`);
     },
     onError: (error: unknown) => {
@@ -141,7 +142,7 @@ export function useWorkflowVersionStats(workflowId: string | null) {
   const { tenant } = useTenantAdminAuth();
 
   const { data: versions } = useQuery<WorkflowVersion[]>({
-    queryKey: ['workflow-versions', workflowId, tenant?.id],
+    queryKey: queryKeys.workflowVersions.byWorkflow(workflowId, tenant?.id),
     queryFn: async () => {
       if (!workflowId || !tenant?.id) return [];
 

@@ -16,6 +16,7 @@ import { humanizeError } from "@/lib/humanizeError";
 import { Loader2, Save, Store, Palette, Truck, Upload } from "lucide-react";
 import { MarketplaceProfile } from "@/types/marketplace-extended";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function StoreSettings() {
     const { tenant } = useTenantAdminAuth();
@@ -24,7 +25,7 @@ export default function StoreSettings() {
 
     // Fetch store profile
     const { data: profile, isLoading } = useQuery({
-        queryKey: ['marketplace-profile', tenant?.id],
+        queryKey: queryKeys.marketplaceProfileAdmin.byTenant(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) throw new Error("No tenant ID");
 
@@ -76,7 +77,7 @@ export default function StoreSettings() {
             }
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-profile'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProfileAdmin.byTenant() });
             toast.success("Store settings updated successfully");
         },
         onError: (error) => {
