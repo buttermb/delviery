@@ -238,6 +238,7 @@ export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQue
                             onApprove={() => handleApprove(review.id)}
                             onReject={() => handleReject(review.id)}
                             onRespond={(content) => handleRespond(review.id, content)}
+                            isUpdating={updateStatusMutation.isPending}
                         />
                     ))}
                 </div>

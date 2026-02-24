@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { logger } from '@/lib/logger';
 import { Textarea } from '@/components/ui/textarea';
 import { StarRating } from './StarRating';
-import { Check, X, ThumbsUp, ShieldCheck } from 'lucide-react';
+import { Check, X, ThumbsUp, ShieldCheck, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -42,6 +42,7 @@ interface ReviewCardProps {
     onReject?: () => Promise<void>;
     onRespond?: (content: string) => Promise<void>;
     showActions?: boolean;
+    isUpdating?: boolean;
     className?: string;
 }
 
@@ -51,6 +52,7 @@ export function ReviewCard({
     onReject,
     onRespond,
     showActions = false,
+    isUpdating = false,
     className,
 }: ReviewCardProps) {
     const [isResponding, setIsResponding] = useState(false);
@@ -119,18 +121,20 @@ export function ReviewCard({
                                         size="sm"
                                         variant="outline"
                                         onClick={onApprove}
+                                        disabled={isUpdating}
                                         className="gap-1 text-green-600 hover:text-green-700"
                                     >
-                                        <Check className="w-4 h-4" />
+                                        {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                                         Approve
                                     </Button>
                                     <Button
                                         size="sm"
                                         variant="outline"
                                         onClick={onReject}
+                                        disabled={isUpdating}
                                         className="gap-1 text-red-600 hover:text-red-700"
                                     >
-                                        <X className="w-4 h-4" />
+                                        {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
                                         Reject
                                     </Button>
                                 </>
