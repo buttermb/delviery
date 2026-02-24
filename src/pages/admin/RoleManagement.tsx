@@ -324,7 +324,7 @@ export function RoleManagement() {
     setEditingRole(role);
     setFormData({
       name: role.name,
-      description: role.description || '',
+      description: role.description ?? '',
       permissions: role.permissions ?? [],
     });
     // Expand categories that have selected permissions

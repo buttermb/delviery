@@ -35,7 +35,7 @@ export default function LinkChecker() {
         const check: LinkCheck = {
           url: href,
           status: 'checking',
-          text: link.textContent?.trim() || '',
+          text: link.textContent?.trim() ?? '',
           element: link.tagName
         };
 

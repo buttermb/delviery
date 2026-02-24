@@ -109,7 +109,7 @@ export default function OfflineOrderCreate() {
           id: p.id,
           name: p.name,
           price: p.price || 0,
-          sku: p.sku || '',
+          sku: p.sku ?? '',
         }));
 
         // Cache products in IndexedDB for offline use

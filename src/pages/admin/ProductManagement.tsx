@@ -131,7 +131,7 @@ export default function ProductManagement() {
   });
 
   // Read URL search params for filtering
-  const urlSearch = searchParams.get('search') || '';
+  const urlSearch = searchParams.get('search') ?? '';
   const urlNewProduct = searchParams.get('new') === 'true';
 
   // Use optimistic list for products

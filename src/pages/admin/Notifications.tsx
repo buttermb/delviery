@@ -198,7 +198,7 @@ export default function Notifications() {
     setFormData({
       name: template.name,
       type: template.type,
-      subject: template.subject || '',
+      subject: template.subject ?? '',
       body: template.body,
       trigger_event: template.trigger_event,
       enabled: template.enabled,

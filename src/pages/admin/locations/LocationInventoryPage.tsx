@@ -96,7 +96,7 @@ export default function LocationInventoryPage() {
       let comparison = 0;
       switch (sortField) {
         case 'product_name':
-          comparison = (a.product?.name || '').localeCompare(b.product?.name || '');
+          comparison = (a.product?.name ?? '').localeCompare(b.product?.name ?? '');
           break;
         case 'quantity':
           comparison = a.quantity - b.quantity;

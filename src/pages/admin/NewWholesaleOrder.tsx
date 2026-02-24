@@ -232,7 +232,7 @@ export default function NewWholesaleOrder() {
     setOrderData((prev) => ({
       ...prev,
       client,
-      deliveryAddress: client.address || '',
+      deliveryAddress: client.address ?? '',
       collectOutstanding: client.outstanding_balance > 0,
     }));
     // Auto-advance to next step
@@ -359,7 +359,7 @@ export default function NewWholesaleOrder() {
             payment_method: orderData.paymentTerms,
             runner_id: orderData.runnerId || null,
             delivery_address: orderData.deliveryAddress || orderData.client!.address || 'No address provided',
-            delivery_notes: orderData.notes || '',
+            delivery_notes: orderData.notes ?? '',
             collect_outstanding: orderData.collectOutstanding,
             scheduled_time: orderData.scheduledTime || null,
           },
@@ -1006,7 +1006,7 @@ export default function NewWholesaleOrder() {
                       variant="link"
                       size="sm"
                       className="h-auto p-0 text-xs"
-                      onClick={() => setOrderData((prev) => ({ ...prev, deliveryAddress: prev.client?.address || '' }))}
+                      onClick={() => setOrderData((prev) => ({ ...prev, deliveryAddress: prev.client?.address ?? '' }))}
                     >
                       Use client's default address
                     </Button>

@@ -181,7 +181,7 @@ export default function Webhooks() {
       name: webhook.name,
       url: webhook.url,
       events: webhook.events ?? [],
-      secret: webhook.secret || '',
+      secret: webhook.secret ?? '',
       status: webhook.status,
     });
     setIsDialogOpen(true);

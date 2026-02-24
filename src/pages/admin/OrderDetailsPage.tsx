@@ -247,7 +247,7 @@ export function OrderDetailsPage() {
 
   // Fetch order details
   const { data: order, isLoading, error } = useQuery({
-    queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || ''),
+    queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId ?? ''),
     queryFn: async (): Promise<OrderDetails | null> => {
       if (!tenant?.id || !orderId) return null;
 
@@ -405,7 +405,7 @@ export function OrderDetailsPage() {
               .from('products')
               .select('stock_quantity')
               .eq('id', item.product_id)
-              .eq('tenant_id', tenant?.id || '')
+              .eq('tenant_id', tenant?.id ?? '')
               .maybeSingle();
             if (product) {
               const previousQuantity = product.stock_quantity || 0;
@@ -418,7 +418,7 @@ export function OrderDetailsPage() {
                   updated_at: new Date().toISOString(),
                 })
                 .eq('id', item.product_id)
-                .eq('tenant_id', tenant?.id || '');
+                .eq('tenant_id', tenant?.id ?? '');
               // Log to inventory_history for audit trail
               await (supabase as unknown as { from: (table: string) => { insert: (data: Record<string, unknown>) => Promise<{ error: unknown }> } })
                 .from('inventory_history')
@@ -457,14 +457,14 @@ export function OrderDetailsPage() {
               .from('products')
               .select('stock_quantity')
               .eq('id', item.product_id)
-              .eq('tenant_id', tenant?.id || '')
+              .eq('tenant_id', tenant?.id ?? '')
               .maybeSingle();
             if (product) {
               await supabase
                 .from('products')
                 .update({ stock_quantity: Math.max(0, (product.stock_quantity || 0) - item.quantity) })
                 .eq('id', item.product_id)
-                .eq('tenant_id', tenant?.id || '');
+                .eq('tenant_id', tenant?.id ?? '');
             }
           }
           logger.info('Stock deducted for delivered order', { component: 'OrderDetailsPage', orderId });
@@ -477,7 +477,7 @@ export function OrderDetailsPage() {
         }
       }
 
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId ?? '') });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
       toast.success('Order status updated');
       setShowStatusDialog(false);
@@ -548,7 +548,7 @@ export function OrderDetailsPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId ?? '') });
       toast.success('Delivery notes saved');
       setIsEditingDeliveryNotes(false);
     },
@@ -592,7 +592,7 @@ export function OrderDetailsPage() {
           created_at: order.created_at,
           total_amount: order.total_amount,
           status: order.status,
-          delivery_address: order.delivery_address || '',
+          delivery_address: order.delivery_address ?? '',
           order_items: (order.order_items ?? []).map(item => ({
             quantity: item.quantity,
             price: item.unit_price,
@@ -1382,7 +1382,7 @@ export function OrderDetailsPage() {
                           size="sm"
                           className="h-6 px-2 text-xs"
                           onClick={() => {
-                            setDeliveryNotesValue(order.delivery_notes || '');
+                            setDeliveryNotesValue(order.delivery_notes ?? '');
                             setIsEditingDeliveryNotes(true);
                           }}
                           disabled={saveDeliveryNotesMutation.isPending}
@@ -1522,7 +1522,7 @@ export function OrderDetailsPage() {
                 currentPaymentStatus={order.payment_status}
                 autoUpdateOrderStatus={true}
                 onPaymentStatusChange={() => {
-                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId ?? '') });
                 }}
               />
             </div>
@@ -1597,7 +1597,7 @@ export function OrderDetailsPage() {
                 orderId={order.id}
                 autoUpdateOrderStatus={true}
                 onDeliveryStatusChange={() => {
-                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+                  queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId ?? '') });
                 }}
               />
             </div>
@@ -1699,9 +1699,9 @@ export function OrderDetailsPage() {
                 tableName={'unified_orders' as 'marketplace_orders'}
                 internalNotesField="notes"
                 customerNotesField="delivery_notes"
-                additionalFilter={{ field: 'tenant_id', value: tenant?.id || '' }}
+                additionalFilter={{ field: 'tenant_id', value: tenant?.id ?? '' }}
                 queryKeysToInvalidate={[
-                  [...queryKeys.orders.detail(tenant?.id || '', orderId || '')],
+                  [...queryKeys.orders.detail(tenant?.id ?? '', orderId ?? '')],
                 ]}
                 readOnly={isCancelled}
               />
@@ -1763,7 +1763,7 @@ export function OrderDetailsPage() {
           open={showEditModal}
           onOpenChange={setShowEditModal}
           onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId ?? '') });
             queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
             toast.success('Order updated');
           }}
@@ -1777,7 +1777,7 @@ export function OrderDetailsPage() {
           onOpenChange={setShowRefundModal}
           order={order ? {
             id: order.id,
-            tenant_id: tenant?.id || '',
+            tenant_id: tenant?.id ?? '',
             order_number: order.order_number,
             order_type: 'wholesale',
             source: order.order_source || 'admin',
@@ -1822,7 +1822,7 @@ export function OrderDetailsPage() {
             })),
           } : null}
           onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId ?? '') });
             queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
             toast.success('Refund processed successfully');
           }}
@@ -1853,7 +1853,7 @@ export function OrderDetailsPage() {
           open={showAssignRunnerDialog}
           onOpenChange={setShowAssignRunnerDialog}
           onAssigned={() => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId ?? '') });
           }}
         />
       </div>
@@ -1862,12 +1862,12 @@ export function OrderDetailsPage() {
       <div className="print:hidden">
         <OrderAssignCourier
           orderId={order.id}
-          orderAddress={order.delivery_address || ''}
+          orderAddress={order.delivery_address ?? ''}
           orderNumber={order.order_number}
           open={showAssignCourierDialog}
           onOpenChange={setShowAssignCourierDialog}
           onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId || '') });
+            queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId ?? '') });
           }}
         />
       </div>

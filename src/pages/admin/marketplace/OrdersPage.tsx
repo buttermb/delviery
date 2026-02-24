@@ -250,7 +250,7 @@ export default function OrdersPage() {
         pending: filteredOrders.filter((o) => o.status === 'pending').length,
         processing: filteredOrders.filter((o) => o.status === 'processing').length,
         shipped: filteredOrders.filter((o) => o.status === 'shipped').length,
-        unpaid: filteredOrders.filter((o) => ['pending', 'partial', 'overdue'].includes(o.payment_status || '')).length,
+        unpaid: filteredOrders.filter((o) => ['pending', 'partial', 'overdue'].includes(o.payment_status ?? '')).length,
         totalRevenue: filteredOrders
             .filter((o) => o.payment_status === 'paid')
             .reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0),

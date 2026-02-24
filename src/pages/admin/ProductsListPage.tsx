@@ -181,7 +181,7 @@ export function ProductsListPage() {
     isFetching,
     refetch,
   } = useQuery({
-    queryKey: queryKeys.products.byTenant(tenant?.id || ''),
+    queryKey: queryKeys.products.byTenant(tenant?.id ?? ''),
     queryFn: async () => {
       if (!tenant?.id) throw new Error('Tenant required');
 
@@ -353,7 +353,7 @@ export function ProductsListPage() {
         let cmp = 0;
         switch (sortBy) {
           case 'name':
-            cmp = (a.name || '').localeCompare(b.name || '');
+            cmp = (a.name ?? '').localeCompare(b.name ?? '');
             break;
           case 'price':
             cmp = (a.wholesale_price || 0) - (b.wholesale_price || 0);
@@ -362,7 +362,7 @@ export function ProductsListPage() {
             cmp = (a.available_quantity || 0) - (b.available_quantity || 0);
             break;
           case 'category':
-            cmp = (a.category || '').localeCompare(b.category || '');
+            cmp = (a.category ?? '').localeCompare(b.category ?? '');
             break;
         }
         return sortOrder === 'asc' ? cmp : -cmp;

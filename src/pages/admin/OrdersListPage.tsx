@@ -202,7 +202,7 @@ export function OrdersListPage() {
         if (orderItemsData) {
           orderProductsMap = orderItemsData.reduce((acc, item) => {
             const orderId = item.order_id;
-            const productName = (item.products as { name?: string } | null)?.name || '';
+            const productName = (item.products as { name?: string } | null)?.name ?? '';
             if (!acc[orderId]) acc[orderId] = [];
             if (productName) acc[orderId].push(productName);
             return acc;
@@ -229,13 +229,13 @@ export function OrdersListPage() {
       // Merge orders with related data
       return ordersList.map((order) => ({
         id: order.id,
-        order_number: order.order_number || '',
-        created_at: order.created_at || '',
-        status: order.status || 'pending',
+        order_number: order.order_number ?? '',
+        created_at: order.created_at ?? '',
+        status: order.status ?? 'pending',
         total_amount: order.total_amount || 0,
-        user_id: order.user_id || '',
+        user_id: order.user_id ?? '',
         courier_id: order.courier_id || undefined,
-        tenant_id: order.tenant_id || '',
+        tenant_id: order.tenant_id ?? '',
         order_source: undefined,
         payment_status: order.payment_status || undefined,
         delivery_status: deliveryStatusMap[order.id] || undefined,
@@ -269,7 +269,7 @@ export function OrdersListPage() {
 
       // Customer name filter
       if (activeFilters.customerName) {
-        const customerName = order.user?.full_name?.toLowerCase() || '';
+        const customerName = order.user?.full_name?.toLowerCase() ?? '';
         if (!customerName.includes((activeFilters.customerName as string).toLowerCase())) {
           return false;
         }

@@ -139,7 +139,7 @@ export default function WholesaleClients() {
       // Map to expected format
       return (data ?? []).map((client) => ({
         ...client,
-        territory: (client.address || '').split(',')[1]?.trim() || 'Unknown',
+        territory: (client.address ?? '').split(',')[1]?.trim() || 'Unknown',
         monthly_volume_lbs: client.monthly_volume,
         total_spent: client.wholesale_payments?.reduce((sum: number, p: { amount: number | null }) => sum + (Number(p.amount) || 0), 0) || 0
       })) as WholesaleClient[];
@@ -186,7 +186,7 @@ export default function WholesaleClients() {
       let cmp = 0;
       switch (sortField) {
         case 'business_name':
-          cmp = (a.business_name || '').localeCompare(b.business_name || '');
+          cmp = (a.business_name ?? '').localeCompare(b.business_name ?? '');
           break;
         case 'outstanding_balance':
           cmp = (Number(a.outstanding_balance) || 0) - (Number(b.outstanding_balance) || 0);
@@ -195,7 +195,7 @@ export default function WholesaleClients() {
           cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
           break;
         case 'status':
-          cmp = (a.status || '').localeCompare(b.status || '');
+          cmp = (a.status ?? '').localeCompare(b.status ?? '');
           break;
       }
       return sortOrder === 'asc' ? cmp : -cmp;
@@ -692,7 +692,7 @@ export default function WholesaleClients() {
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact</div>
                         <div className="text-sm">
                           <TruncatedText text={client.contact_name} className="text-sm" maxWidthClass="max-w-[180px]" />
-                          <TruncatedText text={client.phone || ''} className="text-muted-foreground text-sm" maxWidthClass="max-w-[180px]" />
+                          <TruncatedText text={client.phone ?? ''} className="text-muted-foreground text-sm" maxWidthClass="max-w-[180px]" />
                         </div>
                       </div>
 
@@ -885,7 +885,7 @@ export default function WholesaleClients() {
                         const values = lines[i].split(',');
                         const client: Record<string, string | number> = { tenant_id: tenant.id };
                         headers.forEach((header, idx) => {
-                          const value = values[idx]?.trim() || '';
+                          const value = values[idx]?.trim() ?? '';
                           if (header === 'credit_limit') {
                             client[header] = parseFloat(value) || 0;
                           } else {

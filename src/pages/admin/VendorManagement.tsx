@@ -160,13 +160,13 @@ export function VendorManagement() {
     setEditingVendor(vendor);
     setFormData({
       name: vendor.name,
-      contact_name: vendor.contact_name || '',
-      email: vendor.contact_email || '',
-      phone: vendor.contact_phone || '',
-      address: vendor.address || '',
-      website: vendor.website || '',
-      license_number: vendor.license_number || '',
-      notes: vendor.notes || ''
+      contact_name: vendor.contact_name ?? '',
+      email: vendor.contact_email ?? '',
+      phone: vendor.contact_phone ?? '',
+      address: vendor.address ?? '',
+      website: vendor.website ?? '',
+      license_number: vendor.license_number ?? '',
+      notes: vendor.notes ?? ''
     });
     setIsDialogOpen(true);
   };

@@ -199,7 +199,7 @@ export default function FrontedInventoryAnalytics() {
 
         // Add revenue from payments
         (front.fronted_payments as unknown as Array<{ amount: number | null; received_at?: string }>)?.forEach((payment) => {
-          const paymentDate = new Date(payment.received_at || '');
+          const paymentDate = new Date(payment.received_at ?? '');
           const dayIndex = last30Days.findIndex(
             (d) => format(paymentDate, "MMM dd") === d.date
           );

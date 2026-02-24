@@ -123,9 +123,9 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       const metadata = (account as unknown as Record<string, unknown>).metadata as Record<string, unknown> | undefined;
       generalForm.reset({
         companyName: account.company_name,
-        email: account.billing_email || '',
-        phone: (metadata?.phone as string) || '',
-        address: (metadata?.address as string) || '',
+        email: account.billing_email ?? '',
+        phone: (metadata?.phone as string) ?? '',
+        address: (metadata?.address as string) ?? '',
       });
 
       const secSettings = (metadata?.security as Record<string, unknown>) || {};
@@ -299,9 +299,9 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
         // Update form with imported values
         generalForm.reset({
           companyName: generalData.companyName || account.company_name,
-          email: generalData.email || account.billing_email || '',
-          phone: generalData.phone || '',
-          address: generalData.address || '',
+          email: generalData.email ?? account.billing_email ?? '',
+          phone: generalData.phone ?? '',
+          address: generalData.address ?? '',
         });
       }
 

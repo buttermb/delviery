@@ -369,7 +369,7 @@ export default function DeliveryZones() {
 
     form.reset({
       name: zone.name,
-      description: zone.description || '',
+      description: zone.description ?? '',
       color: zone.color,
       zip_codes: zone.zip_codes.join(', '),
       delivery_fee: zone.delivery_fee,

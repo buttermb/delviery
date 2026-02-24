@@ -111,9 +111,9 @@ export default function PointOfSale() {
 
         return (data ?? []).map((c): Customer => ({
           id: c.id,
-          first_name: c.first_name || '',
-          last_name: c.last_name || '',
-          customer_type: c.customer_type || '',
+          first_name: c.first_name ?? '',
+          last_name: c.last_name ?? '',
+          customer_type: c.customer_type ?? '',
           loyalty_points: typeof c.loyalty_points === 'number' ? c.loyalty_points : 0,
         }));
       } catch (err) {
@@ -160,7 +160,7 @@ export default function PointOfSale() {
       // Map to our Product interface with proper type checking
       const mappedProducts: Product[] = (data ?? []).map((p) => ({
         id: p.id,
-        name: p.name || '',
+        name: p.name ?? '',
         price: typeof p.price === 'number' ? p.price : 0,
         category: p.category || null,
         stock_quantity: typeof p.stock_quantity === 'number' ? p.stock_quantity : 0,

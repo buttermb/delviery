@@ -128,7 +128,7 @@ export default function TeamManagement() {
 
       const members = (tenantUsers ?? []).map((user): TeamMember => ({
         id: user.id,
-        user_id: user.user_id || '',
+        user_id: user.user_id ?? '',
         email: user.email,
         first_name: user.first_name,
         last_name: null,
@@ -136,7 +136,7 @@ export default function TeamManagement() {
         role: user.role as TeamMember['role'],
         status: user.status as TeamMember['status'],
         avatar_url: user.avatar_url,
-        created_at: user.created_at || '',
+        created_at: user.created_at ?? '',
         last_login_at: user.last_login_at,
         is_owner: false,
       }));
@@ -689,7 +689,7 @@ export default function TeamManagement() {
       {!loadingInvitations && pendingInvitations.length > 0 && (
         <PendingInvitations
           invitations={pendingInvitations}
-          tenantId={tenant?.id || ''}
+          tenantId={tenant?.id ?? ''}
           onInvitationsChange={() =>
             queryClient.invalidateQueries({ queryKey: queryKeys.team.invitations(tenant?.id) })
           }

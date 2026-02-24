@@ -75,7 +75,7 @@ export default function InvoiceDetailPage() {
     const { tenant } = useTenant();
     const { useInvoiceQuery, useMarkInvoiceSent, useVoidInvoice, useDuplicateInvoice, useDeleteInvoice } = useInvoices();
 
-    const { data: invoice, isLoading, error } = useInvoiceQuery(invoiceId || '');
+    const { data: invoice, isLoading, error } = useInvoiceQuery(invoiceId ?? '');
     const relatedPreOrders = useRelatedInvoicePreOrders(invoice?.client_id, invoiceId);
     const markAsSent = useMarkInvoiceSent();
     const voidInvoiceMutation = useVoidInvoice();

@@ -128,9 +128,9 @@ export default function LocationsManagement() {
       city: location.city,
       state: location.state,
       zip_code: location.zip_code,
-      phone: location.phone || '',
-      email: location.email || '',
-      license_number: location.license_number || ''
+      phone: location.phone ?? '',
+      email: location.email ?? '',
+      license_number: location.license_number ?? ''
     });
     setIsDialogOpen(true);
   };

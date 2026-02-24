@@ -97,7 +97,7 @@ export default function OperationsHubPage() {
     usePageTitle('Operations');
     const [searchParams, setSearchParams] = useSearchParams();
     const rawTab = searchParams.get('tab') || 'team';
-    const rawSub = searchParams.get('sub') || '';
+    const rawSub = searchParams.get('sub') ?? '';
 
     // Redirect legacy tab IDs to new structure
     useEffect(() => {

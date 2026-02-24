@@ -177,7 +177,7 @@ export default function FleetManagement() {
       {/* Route Optimization Preview */}
       {activeDeliveries && activeDeliveries.length > 0 && (
         <RouteOptimizationPreview
-          runnerId={activeDeliveries[0]?.runner_id || ''}
+          runnerId={activeDeliveries[0]?.runner_id ?? ''}
           runnerName={activeDeliveries[0]?.runners?.full_name || 'Runner'}
           stops={activeDeliveries.slice(0, 5).map((d: Delivery, i: number) => ({
             id: d.id,

@@ -164,7 +164,7 @@ export default function CouponManager() {
                                 <Label htmlFor="code" className="text-right">Code</Label>
                                 <Input
                                     id="code"
-                                    value={newCoupon.code || ''}
+                                    value={newCoupon.code ?? ''}
                                     onChange={e => setNewCoupon(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
                                     placeholder="SUMMER25"
                                     className="col-span-3 uppercase"

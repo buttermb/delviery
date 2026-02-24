@@ -53,11 +53,11 @@ export default function WhiteLabel() {
       const data = branding as Record<string, unknown>;
       const theme = (data.theme && typeof data.theme === 'object' ? data.theme : {}) as Record<string, unknown>;
       setFormData({
-        brand_name: (data.brand_name as string) || '',
-        logo_url: (data.logo as string) || (data.logo_url as string) || '',
-        primary_color: (theme.primaryColor as string) || (data.primary_color as string) || '#000000',
-        secondary_color: (theme.secondaryColor as string) || (data.secondary_color as string) || '#ffffff',
-        custom_css: (theme.customCSS as string) || (data.custom_css as string) || '',
+        brand_name: (data.brand_name as string) ?? '',
+        logo_url: (data.logo as string) ?? (data.logo_url as string) ?? '',
+        primary_color: (theme.primaryColor as string) ?? (data.primary_color as string) ?? '#000000',
+        secondary_color: (theme.secondaryColor as string) ?? (data.secondary_color as string) ?? '#ffffff',
+        custom_css: (theme.customCSS as string) ?? (data.custom_css as string) ?? '',
         enabled: Boolean(data.enabled),
       });
     }

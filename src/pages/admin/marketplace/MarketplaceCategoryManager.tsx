@@ -62,7 +62,7 @@ export default function MarketplaceCategoryManager() {
         mutationFn: async (category: Partial<MarketplaceCategory>) => {
             if (!tenant?.id) throw new Error("No tenant");
 
-            const slug = category.slug || category.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || '';
+            const slug = category.slug ?? category.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') ?? '';
             const payload = {
                 ...category,
                 tenant_id: tenant.id,
@@ -163,7 +163,7 @@ export default function MarketplaceCategoryManager() {
                                 <Label htmlFor="name">Name</Label>
                                 <Input
                                     id="name"
-                                    value={formData.name || ''}
+                                    value={formData.name ?? ''}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                                 />
                             </div>
@@ -171,7 +171,7 @@ export default function MarketplaceCategoryManager() {
                                 <Label htmlFor="slug">Slug (URL)</Label>
                                 <Input
                                     id="slug"
-                                    value={formData.slug || ''}
+                                    value={formData.slug ?? ''}
                                     placeholder="Auto-generated if empty"
                                     onChange={e => setFormData({ ...formData, slug: e.target.value })}
                                 />

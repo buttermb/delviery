@@ -120,7 +120,7 @@ export default function ReportsPage() {
       const inventoryRecord = inventory as unknown as Array<Record<string, unknown>>;
       exportCSV(
         inventoryRecord.map(i => ({
-          product: (i.product_name as string) || '',
+          product: (i.product_name as string) ?? '',
           quantity_lbs: Number(i.quantity_lbs || 0),
           quantity_units: (i.quantity_units as number) || 0,
           category: (i.category as string) || 'N/A',

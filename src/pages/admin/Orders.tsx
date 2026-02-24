@@ -239,7 +239,7 @@ export default function Orders() {
         status: posOrder.status,
         total_amount: posOrder.total_amount || 0,
         delivery_method: 'pickup', // POS orders are typically pickup/in-store
-        user_id: posOrder.customer_id || '',
+        user_id: posOrder.customer_id ?? '',
         courier_id: undefined,
         order_source: 'pos',
         order_items: [], // Items stored in metadata for POS orders
@@ -278,7 +278,7 @@ export default function Orders() {
       // Merge regular orders with user info (including SLA timestamp fields)
       const regularOrdersWithUsers = (ordersData ?? []).map(order => ({
         ...order,
-        delivery_method: (order as unknown as Record<string, unknown>).delivery_method as string || '',
+        delivery_method: (order as unknown as Record<string, unknown>).delivery_method as string ?? '',
         accepted_at: order.accepted_at || null,
         courier_assigned_at: order.courier_assigned_at || null,
         courier_accepted_at: order.courier_accepted_at || null,
@@ -492,7 +492,7 @@ export default function Orders() {
     // Execute the bulk status update
     const ordersToUpdate = selectedOrders.map(id => {
       const order = orders?.find(o => o.id === id);
-      return { id, status: bulkStatusConfirm.targetStatus, order_number: order?.order_number || '' };
+      return { id, status: bulkStatusConfirm.targetStatus, order_number: order?.order_number ?? '' };
     });
     await bulkStatusUpdate.executeBulkUpdate(ordersToUpdate, bulkStatusConfirm.targetStatus);
   };
@@ -559,11 +559,11 @@ export default function Orders() {
           cmp = (a.total_amount || 0) - (b.total_amount || 0);
           break;
         case 'status':
-          cmp = (a.status || '').localeCompare(b.status || '');
+          cmp = (a.status ?? '').localeCompare(b.status ?? '');
           break;
         case 'customer': {
-          const nameA = a.user?.full_name || a.user?.email || '';
-          const nameB = b.user?.full_name || b.user?.email || '';
+          const nameA = a.user?.full_name ?? a.user?.email ?? '';
+          const nameB = b.user?.full_name ?? b.user?.email ?? '';
           cmp = nameA.localeCompare(nameB);
           break;
         }
@@ -1426,7 +1426,7 @@ export default function Orders() {
         }}
         onCancel={() => setCancelConfirmOrder(null)}
         title="Cancel Order"
-        description={`Are you sure you want to cancel order #${cancelConfirmOrder?.order_number || cancelConfirmOrder?.id.slice(0, 8) || ''}? This action cannot be undone.`}
+        description={`Are you sure you want to cancel order #${cancelConfirmOrder?.order_number ?? cancelConfirmOrder?.id.slice(0, 8) ?? ''}? This action cannot be undone.`}
         confirmLabel="Cancel Order"
         variant="destructive"
       />
@@ -1477,7 +1477,7 @@ export default function Orders() {
         }}
         order={refundOrder ? {
           id: refundOrder.id,
-          tenant_id: tenant?.id || '',
+          tenant_id: tenant?.id ?? '',
           order_number: refundOrder.order_number,
           order_type: refundOrder.order_source === 'pos' ? 'pos' : 'wholesale',
           source: refundOrder.order_source || 'admin',
@@ -1565,7 +1565,7 @@ export default function Orders() {
                 <p className="text-sm">
                   <CustomerLink
                     customerId={selectedOrder.user_id}
-                    customerName={selectedOrder.user?.full_name || selectedOrder.user?.email || selectedOrder.user?.phone || ''}
+                    customerName={selectedOrder.user?.full_name ?? selectedOrder.user?.email ?? selectedOrder.user?.phone ?? ''}
                     customerEmail={selectedOrder.user?.email}
                   />
                 </p>

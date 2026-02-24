@@ -469,7 +469,7 @@ export default function OrderDetailPage() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => {
-                                        setSellerNotes(order.seller_notes || '');
+                                        setSellerNotes(order.seller_notes ?? '');
                                         setShowNotesDialog(true);
                                     }}
                                 >

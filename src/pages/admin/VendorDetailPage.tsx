@@ -51,7 +51,7 @@ export default function VendorDetailPage() {
 
   // Fetch vendor details
   const { data: vendor, isLoading, error } = useQuery({
-    queryKey: queryKeys.vendors.detail(tenant?.id || '', vendorId || ''),
+    queryKey: queryKeys.vendors.detail(tenant?.id ?? '', vendorId ?? ''),
     queryFn: async () => {
       if (!tenant?.id || !vendorId) return null;
 

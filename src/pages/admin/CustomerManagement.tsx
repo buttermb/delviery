@@ -145,8 +145,8 @@ export function CustomerManagement() {
               const nameParts = typeof decrypted.name === 'string' ? decrypted.name.split(' ') : ['', ''];
               return {
                 ...customer,
-                first_name: nameParts[0] || customer.first_name || '',
-                last_name: nameParts.slice(1).join(' ') || customer.last_name || '',
+                first_name: nameParts[0] ?? customer.first_name ?? '',
+                last_name: nameParts.slice(1).join(' ') ?? customer.last_name ?? '',
                 email: decrypted.email || customer.email || null,
                 phone: decrypted.phone || customer.phone || null,
               };
@@ -276,8 +276,8 @@ export function CustomerManagement() {
       ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
       ...filteredCustomers.map(c => [
         displayName(c.first_name, c.last_name),
-        c.email || '',
-        c.phone || '',
+        c.email ?? '',
+        c.phone ?? '',
         c.customer_type,
         c.total_spent,
         c.loyalty_points,
@@ -665,7 +665,7 @@ export function CustomerManagement() {
                     <td className="px-4 py-2.5">
                       <div className="flex items-center min-w-0">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
-                          {customer.first_name?.[0] || ''}{customer.last_name?.[0] || '?'}
+                          {customer.first_name?.[0] ?? ''}{customer.last_name?.[0] ?? '?'}
                         </div>
                         <div className="ml-4 min-w-0">
                           <TruncatedText
@@ -836,7 +836,7 @@ export function CustomerManagement() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <TruncatedText
-                          text={`${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Unknown'}
+                          text={`${customer.first_name ?? ''} ${customer.last_name ?? ''}`.trim() || 'Unknown'}
                           className="font-semibold text-base"
                           as="p"
                         />
