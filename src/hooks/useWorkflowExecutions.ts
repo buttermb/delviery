@@ -95,7 +95,7 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
       );
       const avgDuration =
         completedExecutions.length > 0
-          ? completedExecutions.reduce((sum, e) => sum + (e.duration_ms || 0), 0) /
+          ? completedExecutions.reduce((sum, e) => sum + (e.duration_ms ?? 0), 0) /
             completedExecutions.length
           : 0;
 

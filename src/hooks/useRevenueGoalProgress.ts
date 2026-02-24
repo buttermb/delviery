@@ -206,7 +206,7 @@ export function useRevenueGoalProgress(options: UseRevenueGoalProgressOptions = 
         0
       ) || 0;
       const actualRevenue = retailRevenue + wholesaleRevenue;
-      const orderCount = (ordersResult.data?.length || 0) + (wholesaleResult.data?.length || 0);
+      const orderCount = (ordersResult.data?.length ?? 0) + (wholesaleResult.data?.length ?? 0);
 
       // Calculate last month revenue
       const lastMonthRetail = lastMonthOrdersResult.data?.reduce(

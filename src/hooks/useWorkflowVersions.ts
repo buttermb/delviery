@@ -161,10 +161,10 @@ export function useWorkflowVersionStats(workflowId: string | null) {
   });
 
   const stats = {
-    totalVersions: versions?.length || 0,
-    latestVersion: versions?.[0]?.version_number || 0,
+    totalVersions: versions?.length ?? 0,
+    latestVersion: versions?.[0]?.version_number ?? 0,
     lastUpdated: versions?.[0]?.created_at,
-    restoredCount: versions?.filter((v) => v.restored_from_version).length || 0,
+    restoredCount: versions?.filter((v) => v.restored_from_version).length ?? 0,
   };
 
   return stats;

@@ -107,16 +107,16 @@ export function useRunnerStats(runnerId?: string) {
       if (countError) throw countError;
 
       // Calculate stats
-      const todayCount = todayDeliveries?.length || 0;
+      const todayCount = todayDeliveries?.length ?? 0;
       const todayEarnings = todayDeliveries?.reduce((sum, d) => {
         const order = d.order as { total_amount?: number } | null;
-        return sum + (order?.total_amount || 0) * 0.05; // 5% commission example
+        return sum + (order?.total_amount ?? 0) * 0.05; // 5% commission example
       }, 0) || 0;
 
       return {
         todayDeliveries: todayCount,
         todayEarnings,
-        totalDeliveries: totalDeliveries || 0,
+        totalDeliveries: totalDeliveries ?? 0,
         completionRate: 100, // Can be calculated from delivery history
       };
     },

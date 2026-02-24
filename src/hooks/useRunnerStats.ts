@@ -42,8 +42,8 @@ export function useRunnerStats(runnerId?: string) {
       if (statsError) throw statsError;
 
       // Calculate earnings (flat $5 per delivery)
-      const todayEarnings = (todayDeliveries?.length || 0) * 5;
-      const totalDeliveries = runner?.total_deliveries || 0;
+      const todayEarnings = (todayDeliveries?.length ?? 0) * 5;
+      const totalDeliveries = runner?.total_deliveries ?? 0;
       const completionRate = totalDeliveries > 0 ? 100 : 0;
 
       // Calculate average delivery time
@@ -59,7 +59,7 @@ export function useRunnerStats(runnerId?: string) {
       }
 
       return {
-        todayDeliveries: todayDeliveries?.length || 0,
+        todayDeliveries: todayDeliveries?.length ?? 0,
         todayEarnings,
         totalDeliveries,
         completionRate,

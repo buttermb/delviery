@@ -92,7 +92,7 @@ export function useVendorsWithStats() {
           if (product.vendor_name) {
             productCountMap.set(
               product.vendor_name,
-              (productCountMap.get(product.vendor_name) || 0) + 1
+              (productCountMap.get(product.vendor_name) ?? 0) + 1
             );
           }
         }
@@ -147,9 +147,9 @@ export function useVendorsWithStats() {
           lead_time_days: (vendor as unknown as Record<string, unknown>).lead_time_days as number | null || null,
           status: vendor.status,
           notes: vendor.notes,
-          product_count: productCountMap.get(vendor.name) || 0,
+          product_count: productCountMap.get(vendor.name) ?? 0,
           avg_rating: avgRating,
-          rating_count: ratingData?.count || 0,
+          rating_count: ratingData?.count ?? 0,
         };
       });
     },
@@ -231,9 +231,9 @@ export function useVendorDetails(vendorName: string | null | undefined) {
         lead_time_days: (vendor as unknown as Record<string, unknown>).lead_time_days as number | null || null,
         status: vendor.status,
         notes: vendor.notes,
-        product_count: productCount || 0,
+        product_count: productCount ?? 0,
         avg_rating: avgRating,
-        rating_count: ratings?.length || 0,
+        rating_count: ratings?.length ?? 0,
       };
     },
     enabled: !!tenantId && !!vendorName,

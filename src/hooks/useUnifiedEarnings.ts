@@ -70,8 +70,8 @@ export function useUnifiedEarnings(
             total_earned: e.total_earned,
             type: 'courier',
             commission_amount: e.commission_amount,
-            tip_amount: e.tip_amount || 0,
-            bonus_amount: e.bonus_amount || 0,
+            tip_amount: e.tip_amount ?? 0,
+            bonus_amount: e.bonus_amount ?? 0,
           });
         });
       } else {
@@ -108,10 +108,10 @@ export function useUnifiedEarnings(
 
       const totals = earnings.reduce(
         (acc, e) => ({
-          commission: acc.commission + (e.commission_amount || 0),
-          tips: acc.tips + (e.tip_amount || 0),
-          bonuses: acc.bonuses + (e.bonus_amount || 0),
-          deliveryFees: acc.deliveryFees + (e.delivery_fee || 0),
+          commission: acc.commission + (e.commission_amount ?? 0),
+          tips: acc.tips + (e.tip_amount ?? 0),
+          bonuses: acc.bonuses + (e.bonus_amount ?? 0),
+          deliveryFees: acc.deliveryFees + (e.delivery_fee ?? 0),
           total: acc.total + e.total_earned,
         }),
         { commission: 0, tips: 0, bonuses: 0, deliveryFees: 0, total: 0 }

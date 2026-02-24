@@ -251,7 +251,7 @@ export function useRelatedCustomerOrders(customerId: string | undefined) {
         statusVariant: order.status === 'completed' ? 'default' as const
           : order.status === 'cancelled' ? 'destructive' as const
           : 'secondary' as const,
-        meta: formatCurrency(order.total_amount || 0),
+        meta: formatCurrency(order.total_amount ?? 0),
       }));
     },
     { accountId, entityId: customerId }
@@ -352,7 +352,7 @@ export function useRelatedClientPayments(clientId: string | undefined) {
 
       return (payments ?? []).map((payment) => ({
         id: payment.id,
-        title: formatCurrency(payment.amount || 0),
+        title: formatCurrency(payment.amount ?? 0),
         subtitle: `${payment.payment_method || 'Unknown'} - ${format(new Date(payment.created_at), 'MMM d, yyyy')}`,
         status: payment.payment_status,
         statusVariant: payment.payment_status === 'completed' ? 'default' as const

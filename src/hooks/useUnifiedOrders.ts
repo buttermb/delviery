@@ -498,7 +498,7 @@ export function useUpdateOrderStatus() {
 
               if (!product) continue;
 
-              const previousQuantity = product.stock_quantity || 0;
+              const previousQuantity = product.stock_quantity ?? 0;
               const newQuantity = previousQuantity + item.quantity;
 
               await supabase
@@ -571,7 +571,7 @@ export function useUpdateOrderStatus() {
 
               if (!product) continue;
 
-              const previousQuantity = product.stock_quantity || 0;
+              const previousQuantity = product.stock_quantity ?? 0;
               const newQuantity = Math.max(0, previousQuantity - item.quantity);
 
               await supabase
@@ -824,7 +824,7 @@ export function useCancelOrder() {
 
             if (!product) continue;
 
-            const previousQuantity = product.stock_quantity || 0;
+            const previousQuantity = product.stock_quantity ?? 0;
             const newQuantity = previousQuantity + item.quantity;
 
             await supabase
@@ -997,7 +997,7 @@ export function useOrderStats(orderType: OrderType = 'all') {
         cancelled: data.filter(o => o.status === 'cancelled').length,
         revenue: data
           .filter(o => ['completed', 'delivered'].includes(o.status))
-          .reduce((sum, o) => sum + (o.total_amount || 0), 0),
+          .reduce((sum, o) => sum + (o.total_amount ?? 0), 0),
       };
 
       return stats;

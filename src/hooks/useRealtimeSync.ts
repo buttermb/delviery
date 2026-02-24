@@ -353,7 +353,7 @@ export function useRealtimeSync({
     // Subscribe to each table
     tables.forEach((table) => {
       const failureKey = `${table}-${tenantId}`;
-      const failures = connectionFailures.get(failureKey) || 0;
+      const failures = connectionFailures.get(failureKey) ?? 0;
 
       // Skip if too many failures
       if (failures >= MAX_FAILURES) {
@@ -426,7 +426,7 @@ export function useRealtimeSync({
                 component: 'useRealtimeSync',
               });
             } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-              const currentFailures = connectionFailures.get(failureKey) || 0;
+              const currentFailures = connectionFailures.get(failureKey) ?? 0;
               connectionFailures.set(failureKey, currentFailures + 1);
 
               if (currentFailures < MAX_FAILURES) {
@@ -442,7 +442,7 @@ export function useRealtimeSync({
 
         channelsRef.current.push(channel);
       } catch (error) {
-        const currentFailures = connectionFailures.get(failureKey) || 0;
+        const currentFailures = connectionFailures.get(failureKey) ?? 0;
         connectionFailures.set(failureKey, currentFailures + 1);
 
         if (currentFailures < MAX_FAILURES) {

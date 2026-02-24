@@ -82,7 +82,7 @@ export function useStorefrontOrderAlerts({
 
                         const storeName = storeNameMap[storeId] || 'Storefront';
                         const customerName = (order.customer_name as string) || 'Customer';
-                        const total = (order.total as number) || 0;
+                        const total = (order.total as number) ?? 0;
 
                         // Show toast notification
                         toast.success(`${customerName} placed an order for ${formatCurrency(total)}`, {
