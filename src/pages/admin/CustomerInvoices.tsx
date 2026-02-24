@@ -359,7 +359,7 @@ export default function CustomerInvoices() {
       loadInvoices(1, false);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error("Error");
+      toast.error(`Failed to create invoice: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }

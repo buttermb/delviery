@@ -271,7 +271,7 @@ export default function DispatchInventory() {
         navigateToAdmin('inventory/fronted');
       } catch (error) {
         logger.error('Error dispatching inventory:', error);
-        toast.error("Error");
+        toast.error("Failed to dispatch inventory. Please try again.");
       } finally {
         setLoading(false);
       }

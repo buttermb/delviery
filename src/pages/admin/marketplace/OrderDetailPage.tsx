@@ -119,7 +119,7 @@ export default function OrderDetailPage() {
         },
         onError: (error: unknown) => {
             logger.error('Failed to update order status', error, { component: 'OrderDetailPage' });
-            toast.error("Error");
+            toast.error(`Failed to update order status: ${humanizeError(error)}`);
         },
     });
 
@@ -143,7 +143,7 @@ export default function OrderDetailPage() {
         },
         onError: (error: unknown) => {
             logger.error('Failed to update notes', error, { component: 'OrderDetailPage' });
-            toast.error("Error");
+            toast.error(`Failed to save seller notes: ${humanizeError(error)}`);
         },
     });
 
@@ -202,7 +202,7 @@ export default function OrderDetailPage() {
         },
         onError: (error: unknown) => {
             logger.error('Failed to mark order as paid', error, { component: 'OrderDetailPage' });
-            toast.error("Error");
+            toast.error(`Failed to mark order as paid: ${humanizeError(error)}`);
         },
     });
 

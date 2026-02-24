@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface FrontedItem {
   id: string;
@@ -96,7 +97,7 @@ export default function FrontedInventory() {
 
       if (error) {
         logger.error('Error loading fronted inventory:', error);
-        toast.error("Failed to load fronted inventory: ${error.message}");
+        toast.error(`Failed to load fronted inventory: ${humanizeError(error)}`);
         return;
       }
 

@@ -62,7 +62,7 @@ export default function ApiAccess() {
       setIsDialogOpen(false);
     },
     onError: (error: Error) => {
-      toast.error("Error");
+      toast.error(`Failed to create API key: ${humanizeError(error)}`);
     },
   });
 

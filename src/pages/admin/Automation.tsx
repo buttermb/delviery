@@ -103,7 +103,7 @@ export default function Automation() {
       resetForm();
     },
     onError: (error: Error) => {
-      toast.error("Error");
+      toast.error(`Failed to create automation rule: ${humanizeError(error)}`);
     },
   });
 
@@ -141,7 +141,7 @@ export default function Automation() {
       resetForm();
     },
     onError: (error: Error) => {
-      toast.error("Error");
+      toast.error(`Failed to update automation rule: ${humanizeError(error)}`);
     },
   });
 

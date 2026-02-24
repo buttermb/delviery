@@ -151,7 +151,7 @@ export default function OrdersPage() {
         },
         onError: (error: unknown) => {
             logger.error('Failed to update order status', error, { component: 'OrdersPage' });
-            toast.error("Error");
+            toast.error("Failed to update order status. Please try again.");
         },
     });
 
