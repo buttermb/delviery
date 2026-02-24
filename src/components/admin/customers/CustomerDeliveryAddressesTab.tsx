@@ -548,7 +548,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
                         disabled={setPrimaryMutation.isPending}
                         title="Set as primary"
                       >
-                        <Star className="h-4 w-4" />
+                        {setPrimaryMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
                       </Button>
                     )}
                     <Button

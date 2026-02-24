@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { AlertTriangle, AlertCircle, CheckCircle2, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { humanizeError } from '@/lib/humanizeError';
@@ -161,7 +161,7 @@ export function InventoryAlertsDashboard() {
                   onClick={() => resolveAlertMutation.mutate(alert.id)}
                   disabled={resolveAlertMutation.isPending}
                 >
-                  <X className="h-4 w-4" />
+                  {resolveAlertMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
                 </Button>
               </div>
             ))}

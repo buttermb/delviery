@@ -255,11 +255,14 @@ export default function CommissionTracking() {
                       {formatCurrency(commission.amount || 0)}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Switch
-                        checked={commission.status === 'paid'}
-                        onCheckedChange={() => handleToggleStatus(commission.id, commission.status)}
-                        disabled={toggleStatusMutation.isPending}
-                      />
+                      <div className="flex items-center gap-1">
+                        <Switch
+                          checked={commission.status === 'paid'}
+                          onCheckedChange={() => handleToggleStatus(commission.id, commission.status)}
+                          disabled={toggleStatusMutation.isPending}
+                        />
+                        {toggleStatusMutation.isPending && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                      </div>
                       <Badge
                         variant={commission.status === 'paid' ? 'default' : 'secondary'}
                         className={commission.status === 'paid'

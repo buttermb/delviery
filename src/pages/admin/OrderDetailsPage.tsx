@@ -816,8 +816,8 @@ export function OrderDetailsPage() {
 
           <div className="flex flex-wrap gap-2 print:hidden">
             <Button variant="outline" size="sm" onClick={() => setShowPrintDialog(true)} disabled={updateStatusMutation.isPending}>
-              <Printer className="w-4 h-4 mr-1" />
-              Print
+              {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Printer className="w-4 h-4 mr-1" />}
+              {updateStatusMutation.isPending ? 'Printing...' : 'Print'}
             </Button>
 
             <OrderExportButton
@@ -849,16 +849,16 @@ export function OrderDetailsPage() {
 
             {order.tracking_token && (
               <Button variant="outline" size="sm" onClick={handleCopyTrackingUrl} disabled={updateStatusMutation.isPending}>
-                <Copy className="w-4 h-4 mr-1" />
-                Share Tracking
+                {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Copy className="w-4 h-4 mr-1" />}
+                {updateStatusMutation.isPending ? 'Sharing...' : 'Share Tracking'}
               </Button>
             )}
 
             {/* Edit Order Button — only for pending/confirmed */}
             {['pending', 'confirmed'].includes(order.status) && (
               <Button variant="outline" size="sm" onClick={() => setShowEditModal(true)} disabled={updateStatusMutation.isPending}>
-                <Edit className="w-4 h-4 mr-1" />
-                Edit Order
+                {updateStatusMutation.isPending ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Edit className="w-4 h-4 mr-1" />}
+                {updateStatusMutation.isPending ? 'Editing...' : 'Edit Order'}
               </Button>
             )}
 
