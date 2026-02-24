@@ -241,6 +241,7 @@ function FeaturesEditor({ section, onUpdateContent, onUpdateStyles }: SectionEdi
                                         size="icon"
                                         className="h-5 w-5 text-muted-foreground hover:text-destructive"
                                         onClick={() => removeFeature(index)}
+                                        aria-label="Remove feature"
                                     >
                                         <Trash2 className="w-3 h-3" />
                                     </Button>
@@ -474,6 +475,7 @@ function TestimonialsEditor({ section, onUpdateContent, onUpdateStyles }: Sectio
                                         size="icon"
                                         className="h-5 w-5 text-muted-foreground hover:text-destructive"
                                         onClick={() => removeTestimonial(index)}
+                                        aria-label="Remove testimonial"
                                     >
                                         <Trash2 className="w-3 h-3" />
                                     </Button>
@@ -707,6 +709,7 @@ function GalleryEditor({ section, onUpdateContent, onUpdateStyles }: SectionEdit
                                         size="icon"
                                         className="h-5 w-5 text-muted-foreground hover:text-destructive"
                                         onClick={() => removeImage(index)}
+                                        aria-label="Remove image"
                                     >
                                         <Trash2 className="w-3 h-3" />
                                     </Button>
@@ -834,6 +837,7 @@ function FAQEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorPr
                                         size="icon"
                                         className="h-5 w-5 text-muted-foreground hover:text-destructive"
                                         onClick={() => removeFAQ(index)}
+                                        aria-label="Remove FAQ"
                                     >
                                         <Trash2 className="w-3 h-3" />
                                     </Button>

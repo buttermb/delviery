@@ -79,6 +79,7 @@ export function StorefrontSettingsLivePreview({
             onClick={() => setOrientation(prev => prev === 'portrait' ? 'landscape' : 'portrait')}
             disabled={deviceMode === 'desktop'}
             title="Rotate Orientation"
+            aria-label="Rotate orientation"
           >
             <RotateCcw className={`h-3.5 w-3.5 transition-transform ${orientation === 'landscape' ? 'rotate-90' : ''}`} />
           </Button>
@@ -87,6 +88,7 @@ export function StorefrontSettingsLivePreview({
             size="icon"
             className="h-11 w-11"
             onClick={() => { setDeviceMode('desktop'); setOrientation('portrait'); }}
+            aria-label="Desktop preview"
           >
             <Monitor className="h-3.5 w-3.5" />
           </Button>
@@ -95,6 +97,7 @@ export function StorefrontSettingsLivePreview({
             size="icon"
             className="h-11 w-11"
             onClick={() => setDeviceMode('tablet')}
+            aria-label="Tablet preview"
           >
             <Tablet className="h-3.5 w-3.5" />
           </Button>
@@ -103,6 +106,7 @@ export function StorefrontSettingsLivePreview({
             size="icon"
             className="h-11 w-11"
             onClick={() => setDeviceMode('mobile')}
+            aria-label="Mobile preview"
           >
             <Smartphone className="h-3.5 w-3.5" />
           </Button>

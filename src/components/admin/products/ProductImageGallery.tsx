@@ -370,6 +370,7 @@ export function ProductImageGallery({
                     e.stopPropagation();
                     handlePrevious();
                   }}
+                  aria-label="Previous image"
                 >
                   <ChevronLeft className="h-6 w-6" />
                 </Button>
@@ -381,6 +382,7 @@ export function ProductImageGallery({
                     e.stopPropagation();
                     handleNext();
                   }}
+                  aria-label="Next image"
                 >
                   <ChevronRight className="h-6 w-6" />
                 </Button>
@@ -456,6 +458,7 @@ export function ProductImageGallery({
                         }}
                         disabled={isUpdating}
                         title="Set as primary"
+                        aria-label="Set as primary image"
                       >
                         <Star className="h-3 w-3" />
                       </Button>
@@ -470,6 +473,7 @@ export function ProductImageGallery({
                       }}
                       disabled={isUpdating}
                       title="Remove image"
+                      aria-label="Remove image"
                     >
                       <X className="h-3 w-3" />
                     </Button>
@@ -498,6 +502,7 @@ export function ProductImageGallery({
               size="icon"
               className="absolute top-4 right-4 z-10 text-white hover:bg-white/20"
               onClick={() => setShowZoom(false)}
+              aria-label="Close zoom"
             >
               <X className="h-6 w-6" />
             </Button>
@@ -518,6 +523,7 @@ export function ProductImageGallery({
                   size="icon"
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 h-12 w-12"
                   onClick={handlePrevious}
+                  aria-label="Previous image"
                 >
                   <ChevronLeft className="h-8 w-8" />
                 </Button>
@@ -526,6 +532,7 @@ export function ProductImageGallery({
                   size="icon"
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 h-12 w-12"
                   onClick={handleNext}
+                  aria-label="Next image"
                 >
                   <ChevronRight className="h-8 w-8" />
                 </Button>

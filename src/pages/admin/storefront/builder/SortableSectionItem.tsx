@@ -70,6 +70,7 @@ export function SortableSectionItem({
                     size="icon"
                     className="h-11 w-11 sm:h-6 sm:w-6 text-muted-foreground hover:text-foreground"
                     onClick={onToggleVisibility}
+                    aria-label={isHidden ? "Show section" : "Hide section"}
                 >
                     {isHidden ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                 </Button>
@@ -78,6 +79,7 @@ export function SortableSectionItem({
                     size="icon"
                     className="h-11 w-11 sm:h-6 sm:w-6 text-muted-foreground hover:text-foreground"
                     onClick={onDuplicate}
+                    aria-label="Duplicate section"
                 >
                     <Copy className="w-3 h-3" />
                 </Button>
@@ -86,6 +88,7 @@ export function SortableSectionItem({
                     size="icon"
                     className="h-11 w-11 sm:h-6 sm:w-6 text-muted-foreground hover:text-destructive"
                     onClick={onRemove}
+                    aria-label="Remove section"
                 >
                     <Trash2 className="w-3 h-3" />
                 </Button>

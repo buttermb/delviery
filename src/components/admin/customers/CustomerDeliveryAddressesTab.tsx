@@ -555,6 +555,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
                         onClick={() => setPrimaryMutation.mutate(address.id)}
                         disabled={setPrimaryMutation.isPending}
                         title="Set as primary"
+                        aria-label="Set as primary address"
                       >
                         {setPrimaryMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
                       </Button>
@@ -564,6 +565,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
                       variant="ghost"
                       onClick={() => openInMaps(address)}
                       title="Open in Maps"
+                      aria-label="Open in Maps"
                     >
                       <Navigation className="h-4 w-4" />
                     </Button>
@@ -572,6 +574,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
                       variant="ghost"
                       onClick={() => handleOpenDialog(address)}
                       title="Edit address"
+                      aria-label="Edit address"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -580,6 +583,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
                       variant="ghost"
                       onClick={() => handleDeleteClick(address.id)}
                       title="Delete address"
+                      aria-label="Delete address"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

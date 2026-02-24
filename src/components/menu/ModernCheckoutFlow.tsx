@@ -376,6 +376,7 @@ function SwipeableCartItem({
                     variant="ghost"
                     className="h-7 w-7 rounded-full"
                     onClick={() => onUpdateQuantity(item.quantity - 1)}
+                    aria-label="Decrease quantity"
                   >
                     <Minus className="h-3 w-3" />
                   </Button>
@@ -385,6 +386,7 @@ function SwipeableCartItem({
                     variant="ghost"
                     className="h-7 w-7 rounded-full"
                     onClick={() => onUpdateQuantity(item.quantity + 1)}
+                    aria-label="Increase quantity"
                   >
                     <Plus className="h-3 w-3" />
                   </Button>
@@ -1048,6 +1050,7 @@ function PaymentStep({
                                 navigator.clipboard.writeText(method.username!);
                                 toast.success('Copied!');
                               }}
+                              aria-label="Copy username"
                             >
                               <Copy className="h-3 w-3" />
                             </Button>
@@ -1148,6 +1151,7 @@ function PaymentStep({
                                 e.stopPropagation();
                               copyToClipboard(method.address!);
                             }}
+                            aria-label="Copy address"
                           >
                             {copiedAddress ? (
                               <Check className="h-4 w-4 text-emerald-500" />

@@ -150,6 +150,7 @@ function SortableSectionItem({
                     size="icon"
                     className="h-6 w-6 text-muted-foreground hover:text-foreground"
                     onClick={onToggleVisibility}
+                    aria-label={isHidden ? "Show section" : "Hide section"}
                 >
                     {isHidden ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                 </Button>
@@ -158,6 +159,7 @@ function SortableSectionItem({
                     size="icon"
                     className="h-6 w-6 text-muted-foreground hover:text-foreground"
                     onClick={onDuplicate}
+                    aria-label="Duplicate section"
                 >
                     <Copy className="w-3 h-3" />
                 </Button>
@@ -166,6 +168,7 @@ function SortableSectionItem({
                     size="icon"
                     className="h-6 w-6 text-muted-foreground hover:text-destructive"
                     onClick={onRemove}
+                    aria-label="Remove section"
                 >
                     <Trash2 className="w-3 h-3" />
                 </Button>
@@ -779,15 +782,15 @@ export function StorefrontBuilder({
                         <Button
                             variant={devicePreview === 'desktop' ? 'secondary' : 'ghost'}
                             size="icon" className="h-11 w-11"
-                            onClick={() => setDevicePreview('desktop')}><Monitor className="w-4 h-4" /></Button>
+                            onClick={() => setDevicePreview('desktop')} aria-label="Desktop preview"><Monitor className="w-4 h-4" /></Button>
                         <Button
                             variant={devicePreview === 'tablet' ? 'secondary' : 'ghost'}
                             size="icon" className="h-11 w-11"
-                            onClick={() => setDevicePreview('tablet')}><Tablet className="w-4 h-4" /></Button>
+                            onClick={() => setDevicePreview('tablet')} aria-label="Tablet preview"><Tablet className="w-4 h-4" /></Button>
                         <Button
                             variant={devicePreview === 'mobile' ? 'secondary' : 'ghost'}
                             size="icon" className="h-11 w-11"
-                            onClick={() => setDevicePreview('mobile')}><Smartphone className="w-4 h-4" /></Button>
+                            onClick={() => setDevicePreview('mobile')} aria-label="Mobile preview"><Smartphone className="w-4 h-4" /></Button>
                     </div>
                     <Separator orientation="vertical" className="h-6" />
                     <div className="flex gap-1">
@@ -797,6 +800,7 @@ export function StorefrontBuilder({
                             className="h-11 w-11"
                             onClick={undo}
                             disabled={historyIndex <= 0}
+                            aria-label="Undo"
                         >
                             <Undo2 className="w-4 h-4" />
                         </Button>
@@ -806,6 +810,7 @@ export function StorefrontBuilder({
                             className="h-11 w-11"
                             onClick={redo}
                             disabled={historyIndex >= history.length - 1}
+                            aria-label="Redo"
                         >
                             <Redo2 className="w-4 h-4" />
                         </Button>
@@ -819,6 +824,7 @@ export function StorefrontBuilder({
                             className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => setPreviewZoom(Math.max(0.5, previewZoom - 0.1))}
                             disabled={previewZoom <= 0.5}
+                            aria-label="Zoom out"
                         >
                             <ZoomOut className="w-3 h-3" />
                         </Button>
@@ -829,6 +835,7 @@ export function StorefrontBuilder({
                             className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => setPreviewZoom(Math.min(1.2, previewZoom + 0.1))}
                             disabled={previewZoom >= 1.2}
+                            aria-label="Zoom in"
                         >
                             <ZoomIn className="w-3 h-3" />
                         </Button>

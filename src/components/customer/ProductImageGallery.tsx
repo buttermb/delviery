@@ -143,6 +143,7 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
               size="icon"
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={handlePrevious}
+              aria-label="Previous image"
             >
               <ChevronLeft className="h-6 w-6" />
             </Button>
@@ -151,6 +152,7 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
               size="icon"
               className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={handleNext}
+              aria-label="Next image"
             >
               <ChevronRight className="h-6 w-6" />
             </Button>
@@ -198,6 +200,7 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
               size="icon"
               className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white"
               onClick={() => setShowZoom(false)}
+              aria-label="Close zoom"
             >
               <X className="h-6 w-6" />
             </Button>
@@ -220,6 +223,7 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
                   size="icon"
                   className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
                   onClick={handlePrevious}
+                  aria-label="Previous image"
                 >
                   <ChevronLeft className="h-8 w-8" />
                 </Button>
@@ -228,6 +232,7 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
                   size="icon"
                   className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
                   onClick={handleNext}
+                  aria-label="Next image"
                 >
                   <ChevronRight className="h-8 w-8" />
                 </Button>

@@ -173,6 +173,7 @@ export function CashCountDialog({ open, onOpenChange, expectedAmount, shiftId }:
                         className="h-6 w-6"
                         onClick={() => handleQuickAdd(key, -1)}
                         disabled={cashCount[key] <= 0}
+                        aria-label={`Remove one ${label}`}
                       >
                         -
                       </Button>
@@ -190,6 +191,7 @@ export function CashCountDialog({ open, onOpenChange, expectedAmount, shiftId }:
                         size="icon"
                         className="h-6 w-6"
                         onClick={() => handleQuickAdd(key, 1)}
+                        aria-label={`Add one ${label}`}
                       >
                         +
                       </Button>
@@ -219,6 +221,7 @@ export function CashCountDialog({ open, onOpenChange, expectedAmount, shiftId }:
                         className="h-6 w-6"
                         onClick={() => handleQuickAdd(key, -1)}
                         disabled={cashCount[key] <= 0}
+                        aria-label={`Remove one ${label}`}
                       >
                         -
                       </Button>
@@ -236,6 +239,7 @@ export function CashCountDialog({ open, onOpenChange, expectedAmount, shiftId }:
                         size="icon"
                         className="h-6 w-6"
                         onClick={() => handleQuickAdd(key, 1)}
+                        aria-label={`Add one ${label}`}
                       >
                         +
                       </Button>

@@ -504,6 +504,7 @@ export default function StorefrontCoupons() {
                             size="icon"
                             className="h-11 w-11 sm:h-6 sm:w-6"
                             onClick={() => copyCode(coupon.code)}
+                            aria-label="Copy coupon code"
                           >
                             <Copy className="w-3 h-3" />
                           </Button>
@@ -576,12 +577,14 @@ export default function StorefrontCoupons() {
                             variant="ghost"
                             size="icon"
                             onClick={() => openEditDialog(coupon)}
+                            aria-label="Edit coupon"
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
+                            aria-label="Delete coupon"
                             onClick={() => {
                               confirm({
                                 title: 'Delete Coupon',

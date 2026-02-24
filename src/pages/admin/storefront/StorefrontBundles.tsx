@@ -474,6 +474,7 @@ export default function StorefrontBundles() {
                     variant="ghost"
                     size="icon"
                     onClick={() => removeProduct(bp.product_id)}
+                    aria-label="Remove product from bundle"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -632,6 +633,7 @@ export default function StorefrontBundles() {
                         variant="ghost"
                         size="icon"
                         onClick={() => openEditDialog(bundle)}
+                        aria-label="Edit bundle"
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
@@ -643,6 +645,7 @@ export default function StorefrontBundles() {
                           setBundleToDelete(bundle.id);
                           setDeleteDialogOpen(true);
                         }}
+                        aria-label="Delete bundle"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
