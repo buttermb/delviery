@@ -314,7 +314,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
                   <FormItem>
                     <FormLabel>Phone</FormLabel>
                     <FormControl>
-                      <Input placeholder="(555) 123-4567" {...field} />
+                      <Input placeholder="(555) 123-4567" type="tel" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
