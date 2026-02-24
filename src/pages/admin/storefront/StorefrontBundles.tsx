@@ -118,8 +118,8 @@ export default function StorefrontBundles() {
     queryKey: ['marketplace-bundles', store?.id],
     queryFn: async () => {
       if (!store?.id) return [];
-      const { data, error } = await (supabase as any)
-        .from('marketplace_bundles')
+      const { data, error } = await supabase
+        .from('marketplace_bundles' as 'tenants')
         .select('*')
         .eq('store_id', store.id)
         .order('created_at', { ascending: false });
@@ -134,7 +134,7 @@ export default function StorefrontBundles() {
     queryKey: ['store-products', tenant?.id],
     queryFn: async () => {
       if (!tenant?.id) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('products')
         .select('id, name, price, image_url')
         .eq('tenant_id', tenant.id)
@@ -150,8 +150,8 @@ export default function StorefrontBundles() {
     mutationFn: async () => {
       if (!store?.id || !tenant?.id) throw new Error('No store');
 
-      const { error } = await (supabase as any)
-        .from('marketplace_bundles')
+      const { error } = await supabase
+        .from('marketplace_bundles' as 'tenants')
         .insert({
           store_id: store.id,
           tenant_id: tenant.id,
@@ -181,8 +181,8 @@ export default function StorefrontBundles() {
   const updateBundleMutation = useMutation({
     mutationFn: async (bundle: Bundle) => {
       if (!store?.id) throw new Error('No store');
-      const { error } = await (supabase as any)
-        .from('marketplace_bundles')
+      const { error } = await supabase
+        .from('marketplace_bundles' as 'tenants')
         .update({
           name: formData.name,
           description: formData.description || null,
@@ -213,8 +213,8 @@ export default function StorefrontBundles() {
   const toggleBundleMutation = useMutation({
     mutationFn: async ({ bundleId, isActive }: { bundleId: string; isActive: boolean }) => {
       if (!store?.id) throw new Error('No store');
-      const { error } = await (supabase as any)
-        .from('marketplace_bundles')
+      const { error } = await supabase
+        .from('marketplace_bundles' as 'tenants')
         .update({ is_active: isActive, updated_at: new Date().toISOString() })
         .eq('id', bundleId)
         .eq('store_id', store.id);
@@ -233,8 +233,8 @@ export default function StorefrontBundles() {
   const deleteBundleMutation = useMutation({
     mutationFn: async (bundleId: string) => {
       if (!store?.id) throw new Error('No store');
-      const { error } = await (supabase as any)
-        .from('marketplace_bundles')
+      const { error } = await supabase
+        .from('marketplace_bundles' as 'tenants')
         .delete()
         .eq('id', bundleId)
         .eq('store_id', store.id);

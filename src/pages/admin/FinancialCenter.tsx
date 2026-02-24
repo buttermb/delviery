@@ -237,11 +237,13 @@ export default function FinancialCenter() {
                 {creditOutData.overdue.map((client, idx) => (
                   <div key={idx} className="flex items-center justify-between text-sm">
                     <span>• {client.client}: ${client.amount.toLocaleString()} ({client.days} days)</span>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="destructive"
+                      disabled={createCollection.isPending}
                       onClick={() => handleCollect({ id: client.client_id, name: client.client, amount: client.amount })}
                     >
+                      {createCollection.isPending && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                       Collect
                     </Button>
                   </div>
@@ -350,13 +352,15 @@ export default function FinancialCenter() {
                 id="collection-notes"
               />
             </div>
-            <Button 
+            <Button
               className="w-full"
+              disabled={createCollection.isPending}
               onClick={() => {
                 const notes = (document.getElementById("collection-notes") as HTMLTextAreaElement)?.value;
                 submitCollection(notes);
               }}
             >
+              {createCollection.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Log Collection Activity
             </Button>
           </div>
@@ -404,9 +408,9 @@ export default function FinancialCenter() {
               <Button
                 className="w-full"
                 onClick={submitSchedule}
-                disabled={!scheduleData.amount || !scheduleData.due_date}
+                disabled={!scheduleData.amount || !scheduleData.due_date || createSchedule.isPending}
               >
-                <Calendar className="h-4 w-4 mr-2" />
+                {createSchedule.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Calendar className="h-4 w-4 mr-2" />}
                 Schedule Payment
               </Button>
             </DisabledTooltip>

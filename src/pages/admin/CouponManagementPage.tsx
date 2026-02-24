@@ -383,10 +383,13 @@ export default function CouponManagementPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleToggleStatus(coupon)}
+                          disabled={toggleStatusMutation.isPending}
                           className="h-9 w-9 p-0"
                           title={coupon.status === "active" ? "Deactivate" : "Activate"}
                         >
-                          {coupon.status === "active" ? (
+                          {toggleStatusMutation.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : coupon.status === "active" ? (
                             <XCircle className="h-4 w-4" />
                           ) : (
                             <CheckCircle2 className="h-4 w-4" />
@@ -502,10 +505,13 @@ export default function CouponManagementPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleToggleStatus(coupon)}
+                                disabled={toggleStatusMutation.isPending}
                                 className="h-11 w-11 p-0"
                                 title={coupon.status === "active" ? "Deactivate" : "Activate"}
                               >
-                                {coupon.status === "active" ? (
+                                {toggleStatusMutation.isPending ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : coupon.status === "active" ? (
                                   <XCircle className="h-4 w-4" />
                                 ) : (
                                   <CheckCircle2 className="h-4 w-4" />

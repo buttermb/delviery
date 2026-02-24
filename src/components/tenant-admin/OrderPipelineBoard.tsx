@@ -396,6 +396,7 @@ export function OrderPipelineBoard() {
                     icon={AlertCircle}
                     color="text-orange-600 bg-orange-50 dark:bg-orange-900/20"
                     onMove={handleMove}
+                    isMutating={updateStatusMutation.isPending}
                 />
                 <PipelineColumn
                     title="Confirmed"
@@ -404,6 +405,7 @@ export function OrderPipelineBoard() {
                     icon={Package}
                     color="text-blue-600 bg-blue-50 dark:bg-blue-900/20"
                     onMove={handleMove}
+                    isMutating={updateStatusMutation.isPending}
                 />
                 <PipelineColumn
                     title="Ready to Ship"
@@ -412,6 +414,7 @@ export function OrderPipelineBoard() {
                     icon={CheckCircle2}
                     color="text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20"
                     onMove={handleMove}
+                    isMutating={updateStatusMutation.isPending}
                 />
                 <PipelineColumn
                     title="Delivered"
@@ -420,6 +423,7 @@ export function OrderPipelineBoard() {
                     icon={Truck}
                     color="text-slate-600 bg-slate-50 dark:bg-slate-900/20"
                     onMove={handleMove}
+                    isMutating={updateStatusMutation.isPending}
                 />
             </div>
         </div>

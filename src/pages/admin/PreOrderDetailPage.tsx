@@ -13,7 +13,8 @@ import {
     ArrowLeft,
     ArrowRight,
     Trash2,
-    Receipt
+    Receipt,
+    Loader2
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { format } from "date-fns";
@@ -125,7 +126,8 @@ export default function PreOrderDetailPage() {
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Back</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleCancel} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                        <AlertDialogAction onClick={handleCancel} disabled={cancelPreOrder.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                            {cancelPreOrder.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                                             Cancel Order
                                         </AlertDialogAction>
                                     </AlertDialogFooter>

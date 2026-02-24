@@ -203,6 +203,7 @@ export default function ProductVisibilityManager() {
                                         <TableCell>
                                             <Switch
                                                 checked={listing.visibility === 'public'}
+                                                disabled={toggleVisibility.isPending}
                                                 onCheckedChange={() => toggleVisibility.mutate({
                                                     id: listing.id,
                                                     currentVisibility: listing.visibility || 'hidden'
@@ -222,11 +223,13 @@ export default function ProductVisibilityManager() {
                                                     <DropdownMenuItem onClick={() => navigateTenant(`/admin/marketplace/listings/${listing.id}`)}>Manage Bulk Pricing</DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem
+                                                        disabled={toggleStatus.isPending}
                                                         onClick={() => toggleStatus.mutate({
                                                             id: listing.id,
                                                             currentStatus: listing.status
                                                         })}
                                                     >
+                                                        {toggleStatus.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                                                         {listing.status === 'active' ? 'Deactivate' : 'Activate'}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>

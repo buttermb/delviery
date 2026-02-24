@@ -52,7 +52,7 @@ export default function CustomReports() {
 
       try {
         const { data, error } = await supabase
-          .from('custom_reports' as any)
+          .from('custom_reports' as 'tenants')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -62,7 +62,8 @@ export default function CustomReports() {
         return data || [];
       } catch (error) {
         logger.error('Failed to fetch reports', error, { component: 'CustomReports' });
-        if (error instanceof Error && (error as any).code === '42P01') return [];
+        const pgError = error as { code?: string };
+        if (error instanceof Error && pgError.code === '42P01') return [];
         throw error;
       }
     },
@@ -74,7 +75,7 @@ export default function CustomReports() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('custom_reports' as any)
+        .from('custom_reports' as 'tenants')
         .insert({
           tenant_id: tenantId,
           name: report.name,
@@ -110,7 +111,7 @@ export default function CustomReports() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('custom_reports' as any)
+        .from('custom_reports' as 'tenants')
         .update({
           name: report.name,
           description: report.description || null,
@@ -146,7 +147,7 @@ export default function CustomReports() {
     mutationFn: async (reportId: string) => {
       if (!tenantId) throw new Error('Tenant ID required');
       const { error } = await supabase
-        .from('custom_reports' as any)
+        .from('custom_reports' as 'tenants')
         .delete()
         .eq('id', reportId)
         .eq('tenant_id', tenantId);
@@ -225,7 +226,7 @@ export default function CustomReports() {
 
       {reports && reports.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {(reports as any[]).filter((r): r is CustomReport => !!r.id).map((report) => (
+          {(reports as unknown as CustomReport[]).filter((r): r is CustomReport => !!r.id).map((report) => (
             <Card key={report.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -259,7 +260,7 @@ export default function CustomReports() {
                             const headers = Object.keys(items[0]);
                             const csvContent = [
                               headers.join(','),
-                              ...items.map((item: any) => headers.map(header =>
+                              ...items.map((item: Record<string, unknown>) => headers.map(header =>
                                 JSON.stringify(item[header] || '')
                               ).join(','))
                             ].join('\n');

@@ -248,7 +248,7 @@ export function useMenuOrderNotifications(
         }
       }
     },
-    [tenantId]
+    [tenantId, tenantSlug]
   );
 
   /**

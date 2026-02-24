@@ -98,8 +98,8 @@ export default function CustomerInvoices() {
       const to = from + PAGE_SIZE - 1;
 
       // Try direct query with pagination first (most reliable for pagination)
-      const { data, error, count } = await (supabase as any)
-        .from('customer_invoices')
+      const { data, error, count } = await supabase
+        .from('customer_invoices' as 'tenants')
         .select('*', { count: 'exact' })
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
@@ -140,9 +140,9 @@ export default function CustomerInvoices() {
       // Fallback: Try RPC (may not support pagination, so load all and paginate client-side)
       if (page === 1) {
         try {
-          const { data: rpcData, error: rpcError } = await (supabase as any).rpc('get_tenant_invoices', {
+          const { data: rpcData, error: rpcError } = await supabase.rpc('get_tenant_invoices' as 'get_secret', {
             tenant_id: tenant.id,
-          });
+          } as Record<string, unknown>);
           if (!rpcError && Array.isArray(rpcData)) {
             // Store all invoices for client-side pagination
             setAllInvoices(rpcData);
