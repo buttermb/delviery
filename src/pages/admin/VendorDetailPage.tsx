@@ -14,7 +14,6 @@ import {
   Phone,
   MapPin,
   Edit,
-  Loader2,
   FileText,
   DollarSign,
   Users,

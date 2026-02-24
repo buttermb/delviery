@@ -40,7 +40,6 @@ import {
   Star,
   PanelRightClose,
   PanelRightOpen,
-  Loader2
 } from 'lucide-react';
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';

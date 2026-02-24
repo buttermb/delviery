@@ -4,7 +4,7 @@
  * Set delivery fee, minimum order, and delivery hours per zone
  */
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,7 +20,7 @@ import { logger } from '@/lib/logger';
 import { formatCurrency } from '@/lib/formatters';
 import { SEOHead } from '@/components/SEOHead';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -47,11 +47,9 @@ import {
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
   MapPin,
-  Plus,
   Trash2,
   Edit2,
   Save,
-  X,
   Clock,
   DollarSign,
   Loader2,

@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
-import { formatCurrency, displayValue } from '@/lib/formatters';
+import { formatCurrency } from '@/lib/formatters';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { queryKeys } from '@/lib/queryKeys';
 

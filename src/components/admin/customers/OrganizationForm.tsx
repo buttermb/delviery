@@ -62,8 +62,6 @@ import {
   ORGANIZATION_TYPE_LABELS,
   ORGANIZATION_STATUS_LABELS,
   type Organization,
-  type OrganizationType,
-  type OrganizationStatus,
 } from '@/types/organization';
 
 // ============================================================================

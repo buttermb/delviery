@@ -8,7 +8,7 @@ import {
   Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, ComposedChart, Area
 } from 'recharts';
-import { DollarSign, TrendingUp, ShoppingBag, Activity } from 'lucide-react';
+import { DollarSign, TrendingUp, ShoppingBag } from 'lucide-react';
 import { subDays, startOfYear, format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";

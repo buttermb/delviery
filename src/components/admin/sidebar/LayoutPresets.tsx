@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSidebarPreferences } from '@/hooks/useSidebarPreferences';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import { getLayoutPresets } from '@/lib/sidebar/layoutPresets';
-import { getAllFeatures, ESSENTIAL_FEATURES as _ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
+import { getAllFeatures } from '@/lib/sidebar/featureRegistry';
 import { Check, Download, Upload, RotateCcw, Eye, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';

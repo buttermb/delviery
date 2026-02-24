@@ -71,14 +71,12 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  FileText,
   Edit,
   Trash2,
   History,
   Calendar,
   MapPin,
   Tag,
-  ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
 

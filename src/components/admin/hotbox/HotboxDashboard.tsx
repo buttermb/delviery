@@ -11,7 +11,7 @@
  * - Kanban view option for attention items
  */
 
-import { useMemo, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -30,7 +30,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTierDashboard } from '@/hooks/useTierDashboard';
 import { useFeatureTracking } from '@/hooks/useFeatureTracking';
 import { cn } from '@/lib/utils';
-import { generateGreeting } from '@/lib/presets/businessTiers';
+
 import { formatCurrency } from '@/lib/formatters';
 
 import {

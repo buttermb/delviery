@@ -3,7 +3,6 @@
  * Shows offline status and pending sync queue
  */
 
-import React from 'react';
 import {
   Popover,
   PopoverContent,

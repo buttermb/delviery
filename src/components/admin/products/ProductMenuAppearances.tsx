@@ -11,7 +11,6 @@
  */
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import Menu from 'lucide-react/dist/esm/icons/menu';
@@ -51,7 +50,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { format, isPast } from 'date-fns';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
-import type { Database, Json } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 
 type DisposableMenu = Database['public']['Tables']['disposable_menus']['Row'];
 type DisposableMenuProduct = Database['public']['Tables']['disposable_menu_products']['Row'];

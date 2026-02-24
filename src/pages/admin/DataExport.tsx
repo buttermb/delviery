@@ -13,7 +13,7 @@ import { Download } from 'lucide-react';
 import { DisabledTooltip } from '@/components/shared/DisabledTooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
-import { humanizeError } from '@/lib/humanizeError';
+
 import { CreditCostBadge, CreditCostIndicator, useCreditConfirm, CreditConfirmDialog } from '@/components/credits';
 import { useCredits } from '@/hooks/useCredits';
 import { queryKeys } from '@/lib/queryKeys';

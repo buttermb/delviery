@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
   ShoppingCart, DollarSign, CreditCard, Search, Plus, Minus, Trash2, WifiOff, Loader2,
-  Percent, Receipt, Printer, X, Keyboard, Tag, Wallet, RotateCcw, TrendingUp, Award, Clock
+  Percent, Receipt, Printer, Keyboard, Tag, Wallet, RotateCcw, TrendingUp, Award, Clock
 } from 'lucide-react';
 import {
   Dialog,

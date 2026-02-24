@@ -32,7 +32,6 @@ import {
   LayoutGrid,
   List,
   Filter,
-  Loader2,
   Printer,
   MoreVertical,
   Store,

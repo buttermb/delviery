@@ -6,7 +6,7 @@
  * stock, vendor, category, price history, and a link to the full product page.
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -14,7 +14,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { DetailPanel, type DetailPanelAction } from '@/components/admin/shared/DetailPanel';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
+
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { queryKeys } from '@/lib/queryKeys';

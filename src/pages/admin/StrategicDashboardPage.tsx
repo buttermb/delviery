@@ -6,7 +6,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, TrendingUp, Target, Zap, DollarSign, ShoppingCart, Users, Package2, ArrowUpRight, ArrowDownRight, Sparkles, Loader2 } from 'lucide-react';
+import { BarChart3, TrendingUp, Target, Zap, DollarSign, ShoppingCart, Users, Package2, ArrowUpRight, ArrowDownRight, Sparkles } from 'lucide-react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';

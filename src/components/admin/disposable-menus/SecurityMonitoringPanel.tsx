@@ -20,7 +20,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { humanizeError } from '@/lib/humanizeError';
+
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 import type { Json } from '@/integrations/supabase/types';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';

@@ -12,7 +12,6 @@
  * Connects product view directly to vendor module.
  */
 
-import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
@@ -36,7 +35,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useEntityNavigation } from '@/hooks/useEntityNavigation';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
 
 type Vendor = Database['public']['Tables']['vendors']['Row'];

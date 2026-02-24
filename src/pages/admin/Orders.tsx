@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Package, ShoppingBag, ShoppingCart, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Filter } from 'lucide-react';
+import { Package, ShoppingBag, TrendingUp, Clock, XCircle, Eye, Archive, Trash2, Plus, Printer, FileText, X, Store, Monitor, Utensils, Zap, Truck, CheckCircle, WifiOff, UserPlus, ArrowUp, ArrowDown, ArrowUpDown, AlertTriangle, RefreshCw, Filter } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TakeTourButton } from '@/components/tutorial/TakeTourButton';
@@ -42,7 +42,7 @@ import { OrderHoverCard } from "@/components/admin/OrderHoverCard";
 import { OrderRefundModal } from "@/components/admin/orders/OrderRefundModal";
 import { OrderActionsDropdown } from "@/components/admin/orders/OrderActionsDropdown";
 import type { OrderAction } from "@/components/admin/orders/OrderActionsDropdown";
-import { isOrderEditable } from "@/lib/utils/orderEditability";
+
 import Merge from "lucide-react/dist/esm/icons/merge";
 import { useAdminKeyboardShortcuts } from "@/hooks/useAdminKeyboardShortcuts";
 import { useAdminOrdersRealtime } from "@/hooks/useAdminOrdersRealtime";

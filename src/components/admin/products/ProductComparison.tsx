@@ -49,7 +49,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useBulkProductVelocity } from '@/hooks/useProductVelocity';
-import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';

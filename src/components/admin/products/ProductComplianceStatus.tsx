@@ -14,7 +14,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { format, formatDistanceToNow, differenceInDays, isPast, isFuture } from 'date-fns';
+import { format, formatDistanceToNow, differenceInDays } from 'date-fns';
 
 import Shield from 'lucide-react/dist/esm/icons/shield';
 import ShieldAlert from 'lucide-react/dist/esm/icons/shield-alert';

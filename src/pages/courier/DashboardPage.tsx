@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { Menu, LogOut, DollarSign, Clock, Settings, Package, Truck } from 'lucide-react';
+import { Menu, LogOut, DollarSign, Clock, Settings, Truck } from 'lucide-react';
 import CourierKeyboardShortcuts from '@/components/courier/CourierKeyboardShortcuts';
 import OnlineStatusCard from '@/components/courier/OnlineStatusCard';
 import QuickStatsCard from '@/components/courier/QuickStatsCard';
