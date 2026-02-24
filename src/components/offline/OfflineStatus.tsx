@@ -101,6 +101,15 @@ export function OfflineStatusIndicator({ className }: { className?: string }) {
                 <Button
                     variant="ghost"
                     size="sm"
+                    aria-label={
+                        !isOnline
+                            ? 'Sync status: offline'
+                            : failedCount > 0
+                            ? `Sync status: ${failedCount} failed`
+                            : pendingCount > 0
+                            ? `Sync status: ${pendingCount} pending changes`
+                            : 'Sync status: online'
+                    }
                     className={cn(
                         'flex items-center gap-1.5',
                         !isOnline && 'text-red-500',

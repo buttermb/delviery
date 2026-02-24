@@ -43,11 +43,11 @@ export function KPICard({ title, value, icon, description, variant = 'default', 
       <CardContent>
         <div className="text-lg sm:text-2xl font-bold truncate">{value}</div>
         {trend && (
-          <div className="flex items-center gap-1 mt-1">
+          <div className="flex items-center gap-1 mt-1" aria-label={trend.value >= 0 ? 'Trending up' : 'Trending down'}>
             {trend.value >= 0 ? (
-              <TrendingUp className="h-3 w-3 text-green-600" />
+              <TrendingUp className="h-3 w-3 text-green-600" aria-hidden="true" />
             ) : (
-              <TrendingDown className="h-3 w-3 text-red-600" />
+              <TrendingDown className="h-3 w-3 text-red-600" aria-hidden="true" />
             )}
             <span className={trend.value >= 0 ? 'text-green-600 text-xs font-medium' : 'text-red-600 text-xs font-medium'}>
               {trend.value >= 0 ? '+' : ''}{trend.value.toFixed(1)}%

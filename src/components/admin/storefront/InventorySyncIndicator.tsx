@@ -347,6 +347,7 @@ export function InventorySyncIndicator({
           <TooltipTrigger asChild>
             <Badge
               variant="outline"
+              aria-label={`Inventory sync status: ${statusConfig.label}`}
               className={cn(
                 'gap-1 font-normal border cursor-default',
                 statusConfig.color,

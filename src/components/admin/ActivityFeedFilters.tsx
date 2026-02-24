@@ -88,7 +88,7 @@ export function ActivityFeedFilters({
           value={filters.category || 'all'}
           onValueChange={(value) => onFilterChange({ category: value as ActivityCategory | 'all' })}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[160px]" aria-label="Filter by category">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
@@ -105,7 +105,7 @@ export function ActivityFeedFilters({
           value={filters.severity || 'all'}
           onValueChange={(value) => onFilterChange({ severity: value as ActivitySeverity | 'all' })}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[160px]" aria-label="Filter by severity">
             <SelectValue placeholder="Severity" />
           </SelectTrigger>
           <SelectContent>

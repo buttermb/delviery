@@ -109,10 +109,10 @@ export function ReportsDashboard() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-5">
+        <Card className="p-5" aria-label="Outstanding credit metric">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-muted-foreground">Outstanding Credit</span>
-            <DollarSign className="h-5 w-5 text-yellow-500" />
+            <DollarSign className="h-5 w-5 text-yellow-500" aria-hidden="true" />
           </div>
           <div className="text-2xl font-bold font-mono text-yellow-500">
             ${(totalOutstanding / 1000).toFixed(0)}k
@@ -122,10 +122,10 @@ export function ReportsDashboard() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-5" aria-label="Inventory value metric">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-muted-foreground">Inventory Value</span>
-            <Package className="h-5 w-5 text-blue-500" />
+            <Package className="h-5 w-5 text-blue-500" aria-hidden="true" />
           </div>
           <div className="text-2xl font-bold font-mono text-blue-500">
             ${(totalInventoryValue / 1000).toFixed(0)}k
@@ -135,10 +135,10 @@ export function ReportsDashboard() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-5" aria-label="Active clients metric">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-muted-foreground">Active Clients</span>
-            <Users className="h-5 w-5 text-emerald-500" />
+            <Users className="h-5 w-5 text-emerald-500" aria-hidden="true" />
           </div>
           <div className="text-2xl font-bold font-mono text-emerald-500">
             {clients.length}
@@ -148,10 +148,10 @@ export function ReportsDashboard() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-5" aria-label="Average order size metric">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-muted-foreground">Avg Order Size</span>
-            <TrendingUp className="h-5 w-5 text-purple-500" />
+            <TrendingUp className="h-5 w-5 text-purple-500" aria-hidden="true" />
           </div>
           <div className="text-2xl font-bold font-mono text-purple-500">
             ${orders.length > 0 ? ((orders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) / orders.length) / 1000).toFixed(1) : 0}k
