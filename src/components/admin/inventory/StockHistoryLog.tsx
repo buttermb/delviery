@@ -39,6 +39,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { useDebounce } from '@/hooks/useDebounce';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
@@ -141,16 +142,19 @@ export function StockHistoryLog({
   const [page, setPage] = useState(1);
   const pageSize = compact ? 10 : 25;
 
+  // Debounce search to avoid firing a query on every keystroke
+  const debouncedSearch = useDebounce(searchTerm, 300);
+
   // Build filters
   const filters: StockHistoryFilters = useMemo(() => ({
     productId,
     changeType: changeTypeFilter !== 'all' ? changeTypeFilter : undefined,
     startDate: startDate ? startOfDay(startDate).toISOString() : undefined,
     endDate: endDate ? endOfDay(endDate).toISOString() : undefined,
-    search: searchTerm || undefined,
+    search: debouncedSearch || undefined,
     page,
     pageSize,
-  }), [productId, changeTypeFilter, startDate, endDate, searchTerm, page, pageSize]);
+  }), [productId, changeTypeFilter, startDate, endDate, debouncedSearch, page, pageSize]);
 
   // Fetch history with pagination
   const { data, isLoading, error } = useQuery({
