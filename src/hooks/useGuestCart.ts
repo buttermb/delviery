@@ -1,5 +1,6 @@
-import { safeStorage } from '@/utils/safeStorage';
 import { useState, useEffect } from 'react';
+import { safeStorage } from '@/utils/safeStorage';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export interface GuestCartItem {
   product_id: string;
@@ -8,7 +9,7 @@ export interface GuestCartItem {
   product?: Record<string, unknown>;
 }
 
-const GUEST_CART_KEY = 'guest_cart';
+const GUEST_CART_KEY = STORAGE_KEYS.GUEST_CART;
 
 function readCartFromStorage(): GuestCartItem[] {
   const saved = safeStorage.getItem(GUEST_CART_KEY);

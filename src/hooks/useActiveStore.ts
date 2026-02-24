@@ -4,13 +4,12 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-
-const STORAGE_KEY = 'activeStoreId';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export function useActiveStore(tenantId: string | undefined) {
   const [activeStoreId, setActiveStoreId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
-    const stored = localStorage.getItem(`${STORAGE_KEY}_${tenantId}`);
+    const stored = localStorage.getItem(`${STORAGE_KEYS.ACTIVE_STORE_PREFIX}${tenantId}`);
     return stored || null;
   });
 
@@ -19,9 +18,9 @@ export function useActiveStore(tenantId: string | undefined) {
     if (!tenantId) return;
     
     if (activeStoreId) {
-      localStorage.setItem(`${STORAGE_KEY}_${tenantId}`, activeStoreId);
+      localStorage.setItem(`${STORAGE_KEYS.ACTIVE_STORE_PREFIX}${tenantId}`, activeStoreId);
     } else {
-      localStorage.removeItem(`${STORAGE_KEY}_${tenantId}`);
+      localStorage.removeItem(`${STORAGE_KEYS.ACTIVE_STORE_PREFIX}${tenantId}`);
     }
   }, [activeStoreId, tenantId]);
 

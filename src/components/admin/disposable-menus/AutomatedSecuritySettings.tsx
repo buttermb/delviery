@@ -17,6 +17,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 interface SecuritySettings {
   auto_block_enabled: boolean;
   auto_block_threshold: number;
@@ -53,7 +54,7 @@ export const AutomatedSecuritySettings = () => {
     try {
       // Save settings to localStorage for now
       // In production, this would be saved to a database table
-      localStorage.setItem('disposable_menus_security_settings', JSON.stringify(settings));
+      localStorage.setItem(STORAGE_KEYS.DISPOSABLE_MENUS_SECURITY_SETTINGS, JSON.stringify(settings));
 
       toast.success("Security automation settings have been updated");
     } catch (error: unknown) {

@@ -5,6 +5,7 @@
 
 import { Capacitor } from '@capacitor/core';
 import { logger } from '@/lib/logger';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 // Sound file paths (relative to public directory)
 const SOUND_FILES = {
@@ -196,7 +197,7 @@ export function playErrorSound(options?: SoundAlertOptions): Promise<void> {
 export function setSoundEnabled(enabled: boolean): void {
     audioEnabled = enabled;
     if (typeof window !== 'undefined') {
-        localStorage.setItem('sound-alerts-enabled', String(enabled));
+        localStorage.setItem(STORAGE_KEYS.SOUND_ALERTS_ENABLED, String(enabled));
     }
 }
 
@@ -213,7 +214,7 @@ export function isSoundEnabled(): boolean {
 export function setDefaultVolume(volume: number): void {
     defaultVolume = Math.max(0, Math.min(1, volume));
     if (typeof window !== 'undefined') {
-        localStorage.setItem('sound-alerts-volume', String(defaultVolume));
+        localStorage.setItem(STORAGE_KEYS.SOUND_ALERTS_VOLUME, String(defaultVolume));
     }
 }
 
@@ -230,12 +231,12 @@ export function getDefaultVolume(): number {
 export function loadSoundPreferences(): void {
     if (typeof window === 'undefined') return;
 
-    const saved = localStorage.getItem('sound-alerts-enabled');
+    const saved = localStorage.getItem(STORAGE_KEYS.SOUND_ALERTS_ENABLED);
     if (saved !== null) {
         audioEnabled = saved === 'true';
     }
 
-    const savedVolume = localStorage.getItem('sound-alerts-volume');
+    const savedVolume = localStorage.getItem(STORAGE_KEYS.SOUND_ALERTS_VOLUME);
     if (savedVolume !== null) {
         defaultVolume = parseFloat(savedVolume);
     }

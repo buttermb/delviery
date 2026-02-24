@@ -7,8 +7,9 @@
  */
 
 import { logger } from '@/lib/logger';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
-const STORAGE_KEY = 'floraiq_browser_notifications_enabled';
+const BROWSER_NOTIF_KEY = STORAGE_KEYS.BROWSER_NOTIFICATIONS_ENABLED;
 
 // ============================================================================
 // Permission & Settings
@@ -34,7 +35,7 @@ export function getBrowserNotificationPermission(): NotificationPermission | 'un
  */
 export function isBrowserNotificationEnabled(): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) !== 'false';
+    return localStorage.getItem(BROWSER_NOTIF_KEY) !== 'false';
   } catch {
     return true;
   }
@@ -45,7 +46,7 @@ export function isBrowserNotificationEnabled(): boolean {
  */
 export function setBrowserNotificationEnabled(enabled: boolean): void {
   try {
-    localStorage.setItem(STORAGE_KEY, String(enabled));
+    localStorage.setItem(BROWSER_NOTIF_KEY, String(enabled));
   } catch {
     // Ignore storage errors
   }

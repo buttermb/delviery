@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export interface UserPattern {
   mostUsedFeatures: string[];
@@ -20,7 +21,7 @@ interface FeatureUsage {
   lastUsed: string;
 }
 
-const STORAGE_KEY = 'user_feature_patterns';
+const FEATURE_STORAGE_KEY = STORAGE_KEYS.USER_FEATURE_PATTERNS;
 const MAX_TRACKED_FEATURES = 20;
 
 export function useFeatureTracking() {
@@ -32,7 +33,7 @@ export function useFeatureTracking() {
   // Load patterns from localStorage on mount
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(FEATURE_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         setPatterns(parsed.patterns || null);
@@ -46,7 +47,7 @@ export function useFeatureTracking() {
   // Save patterns to localStorage whenever they change
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      localStorage.setItem(FEATURE_STORAGE_KEY, JSON.stringify({
         patterns,
         featureUsage,
       }));

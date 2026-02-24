@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 interface TooltipGuideProps {
   title: string;
@@ -68,7 +69,7 @@ export function TooltipGuide({
     setIsDismissed(true);
     setShowBanner(false);
     if (tenantId) {
-      localStorage.setItem(`tenant_${tenantId}_tooltips_dismissed`, "true");
+      localStorage.setItem(`${STORAGE_KEYS.TOOLTIPS_DISMISSED_PREFIX}${tenantId}${STORAGE_KEYS.TOOLTIPS_DISMISSED_SUFFIX}`, "true");
       // Also update in database if needed
       // This could be done via an Edge Function or directly
     }

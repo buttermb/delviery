@@ -75,7 +75,7 @@ export function clearPreAuthSessionData(tier: 'tenant_admin' | 'customer' | 'sup
   } catch {
     // sessionStorage may not be available
   }
-  safeStorage.removeItem('floraiq_user_id' as typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS]);
+  safeStorage.removeItem(STORAGE_KEYS.FLORAIQ_USER_ID as typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS]);
 
   logger.debug('[SESSION_FIXATION] Pre-auth session data cleared', { tier });
 }

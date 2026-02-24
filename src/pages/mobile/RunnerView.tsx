@@ -49,6 +49,7 @@ import { logger } from '@/lib/logger';
 import { useOnlineStatus } from '@/hooks/useOfflineQueue';
 import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 // Types for delivery data
 interface DeliveryItem {
@@ -86,7 +87,7 @@ interface OfflineAction {
 }
 
 // Offline storage key
-const OFFLINE_QUEUE_KEY = 'runner_offline_queue';
+const OFFLINE_QUEUE_KEY = STORAGE_KEYS.RUNNER_OFFLINE_QUEUE;
 
 export default function RunnerView() {
   const queryClient = useQueryClient();
@@ -131,7 +132,7 @@ export default function RunnerView() {
 
   // Check for existing runner session
   useEffect(() => {
-    const storedRunnerId = localStorage.getItem('runner_id');
+    const storedRunnerId = localStorage.getItem(STORAGE_KEYS.RUNNER_ID);
     if (storedRunnerId) {
       setRunnerId(storedRunnerId);
     }
@@ -502,13 +503,13 @@ export default function RunnerView() {
       toast.error('Please enter your runner ID');
       return;
     }
-    localStorage.setItem('runner_id', runnerIdInput.trim());
+    localStorage.setItem(STORAGE_KEYS.RUNNER_ID, runnerIdInput.trim());
     setRunnerId(runnerIdInput.trim());
   }, [runnerIdInput]);
 
   // Handle logout
   const handleLogout = useCallback(() => {
-    localStorage.removeItem('runner_id');
+    localStorage.removeItem(STORAGE_KEYS.RUNNER_ID);
     setRunnerId(null);
     setRunnerIdInput('');
   }, []);

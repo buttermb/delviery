@@ -10,6 +10,8 @@ import { logger } from '@/lib/logger';
  * - Export functionality for debugging
  */
 
+import { STORAGE_KEYS } from '@/constants/storageKeys';
+
 export type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
 export type LogCategory = 
@@ -123,7 +125,7 @@ class ProductionLogger {
    */
   getStoredErrors(): LogEntry[] {
     try {
-      return JSON.parse(localStorage.getItem('production_debug_logs') || '[]');
+      return JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTION_DEBUG_LOGS) || '[]');
     } catch {
       return [];
     }
@@ -134,7 +136,7 @@ class ProductionLogger {
    */
   clearStoredErrors(): void {
     try {
-      localStorage.removeItem('production_debug_logs');
+      localStorage.removeItem(STORAGE_KEYS.PRODUCTION_DEBUG_LOGS);
     } catch {
       // Silent fail
     }

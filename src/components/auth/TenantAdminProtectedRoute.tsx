@@ -10,6 +10,7 @@ import { VerificationProvider } from '@/contexts/VerificationContext';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { intendedDestinationUtils } from '@/hooks/useIntendedDestination';
 import { getTenantFromSlug } from '@/lib/tenant';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import TenantNotFoundPage from '@/pages/TenantNotFoundPage';
 
 interface TenantAdminProtectedRouteProps {
@@ -363,7 +364,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
     // Try URL slug first, then fallback to localStorage, then saas/login
     const redirectSlug = isValidSlug ? tenantSlugFromUrl :
-      localStorage.getItem('lastTenantSlug');
+      localStorage.getItem(STORAGE_KEYS.LAST_TENANT_SLUG);
 
     if (redirectSlug) {
       logger.debug('[PROTECTED ROUTE] Redirecting to tenant login', { redirectSlug, intendedDestination: currentPath });

@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export function SubtleNotification() {
   const [isVisible, setIsVisible] = useState(false);
@@ -13,7 +14,7 @@ export function SubtleNotification() {
 
   useEffect(() => {
     // Check if user has already dismissed
-    const dismissed = localStorage.getItem('notificationDismissed');
+    const dismissed = localStorage.getItem(STORAGE_KEYS.NOTIFICATION_DISMISSED);
     if (dismissed) return;
 
     const timer = setTimeout(() => {
@@ -25,7 +26,7 @@ export function SubtleNotification() {
 
   const handleDismiss = () => {
     setIsVisible(false);
-    localStorage.setItem('notificationDismissed', 'true');
+    localStorage.setItem(STORAGE_KEYS.NOTIFICATION_DISMISSED, 'true');
   };
 
   const handleShopNow = () => {

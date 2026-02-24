@@ -12,6 +12,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useCredits } from '@/hooks/useCredits';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 // ============================================================================
 // Types
@@ -57,7 +58,7 @@ export interface UseFreeTierOnboardingReturn {
 // ============================================================================
 
 const STEPS: OnboardingStep[] = ['welcome', 'credits', 'limits', 'upgrade'];
-const STORAGE_KEY = 'floraiq_free_tier_onboarding';
+const ONBOARDING_STORAGE_KEY = STORAGE_KEYS.FREE_TIER_ONBOARDING;
 
 const initialState: FreeTierOnboardingState = {
     currentStep: 'welcome',
@@ -81,7 +82,7 @@ export function useFreeTierOnboarding(): UseFreeTierOnboardingReturn {
     const [isOpen, setIsOpen] = useState(false);
 
     // Generate storage key per tenant
-    const storageKey = tenant?.id ? `${STORAGE_KEY}_${tenant.id}` : STORAGE_KEY;
+    const storageKey = tenant?.id ? `${ONBOARDING_STORAGE_KEY}_${tenant.id}` : ONBOARDING_STORAGE_KEY;
 
     // Load persisted state on mount
     useEffect(() => {

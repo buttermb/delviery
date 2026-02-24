@@ -51,6 +51,7 @@ import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
 import type { StorefrontOrder, StorefrontOrderItem } from '@/hooks/useStorefrontOrders';
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 const STATUS_STEPS = [
   { status: 'pending', label: 'Order Placed', icon: Package },
@@ -87,7 +88,7 @@ export function OrderDetailPage() {
   const customerId = store?.id
     ? (() => {
         try {
-          const saved = localStorage.getItem(`shop_customer_${store.id}`);
+          const saved = localStorage.getItem(`${STORAGE_KEYS.SHOP_CUSTOMER_PREFIX}${store.id}`);
           return saved ? JSON.parse(saved).id : null;
         } catch {
           return null;

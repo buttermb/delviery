@@ -20,6 +20,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import {
   Package,
   Search,
@@ -88,7 +89,7 @@ export function OrdersHubPage() {
   // Check if customer is logged in
   useEffect(() => {
     if (store?.id) {
-      const savedCustomer = localStorage.getItem(`shop_customer_${store.id}`);
+      const savedCustomer = localStorage.getItem(`${STORAGE_KEYS.SHOP_CUSTOMER_PREFIX}${store.id}`);
       if (savedCustomer) {
         try {
           const customer = JSON.parse(savedCustomer);
@@ -147,7 +148,7 @@ export function OrdersHubPage() {
     if (!order.items || !store?.id) return;
 
     try {
-      const cart = JSON.parse(localStorage.getItem(`shop_cart_${store.id}`) || '[]');
+      const cart = JSON.parse(localStorage.getItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`) || '[]');
 
       order.items.forEach((item) => {
         const existingIndex = cart.findIndex((c: { productId: string }) => c.productId === item.product_id);
@@ -164,7 +165,7 @@ export function OrdersHubPage() {
         }
       });
 
-      localStorage.setItem(`shop_cart_${store.id}`, JSON.stringify(cart));
+      localStorage.setItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`, JSON.stringify(cart));
       setCartItemCount(cart.reduce((sum: number, c: { quantity: number }) => sum + c.quantity, 0));
 
       toast.success('Items added to cart', { description: `${order.items.length} ${order.items.length === 1 ? 'item' : 'items'} from order #${order.order_number}` });

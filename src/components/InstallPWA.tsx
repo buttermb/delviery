@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Download, X } from 'lucide-react';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -18,8 +19,8 @@ const InstallPWA = () => {
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       
       // Check if user has dismissed this before
-      const dismissed = localStorage.getItem('pwa-install-dismissed');
-      const dismissedTime = localStorage.getItem('pwa-install-dismissed-time');
+      const dismissed = localStorage.getItem(STORAGE_KEYS.PWA_INSTALL_DISMISSED);
+      const dismissedTime = localStorage.getItem(STORAGE_KEYS.PWA_INSTALL_DISMISSED_TIME);
       
       // Show again after 7 days
       if (dismissed && dismissedTime) {
@@ -61,8 +62,8 @@ const InstallPWA = () => {
 
   const handleDismiss = () => {
     setShowInstallPrompt(false);
-    localStorage.setItem('pwa-install-dismissed', 'true');
-    localStorage.setItem('pwa-install-dismissed-time', Date.now().toString());
+    localStorage.setItem(STORAGE_KEYS.PWA_INSTALL_DISMISSED, 'true');
+    localStorage.setItem(STORAGE_KEYS.PWA_INSTALL_DISMISSED_TIME, Date.now().toString());
   };
 
   if (!showInstallPrompt || !deferredPrompt) return null;

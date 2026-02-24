@@ -33,7 +33,7 @@ const SuperAdminAuthContext = createContext<SuperAdminAuthContextType | undefine
 
 const TOKEN_KEY = STORAGE_KEYS.SUPER_ADMIN_ACCESS_TOKEN;
 const SUPER_ADMIN_KEY = STORAGE_KEYS.SUPER_ADMIN_USER;
-const SUPABASE_SESSION_KEY = 'superadmin_supabase_session';
+const SUPABASE_SESSION_KEY = STORAGE_KEYS.SUPERADMIN_SUPABASE_SESSION;
 
 // Initialize connection monitoring on module load
 if (typeof window !== 'undefined') {

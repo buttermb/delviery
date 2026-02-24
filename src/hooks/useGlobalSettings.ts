@@ -22,6 +22,7 @@ import { useAccount } from '@/contexts/AccountContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 // Types
 export interface SecuritySettings {
@@ -114,7 +115,7 @@ export function useGlobalSettings() {
     };
 
     // Theme from localStorage (ThemeContext handles this)
-    const storedTheme = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
+    const storedTheme = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEYS.THEME) : null;
     const theme = (storedTheme === 'dark' || storedTheme === 'light') ? storedTheme : 'light';
 
     return {

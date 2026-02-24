@@ -20,6 +20,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { Badge } from '@/components/ui/badge';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -65,8 +66,8 @@ export function MobileNav() {
   const handleRefreshAuth = async () => {
     setIsRefreshing(true);
     try {
-      localStorage.removeItem('tenant_admin_token');
-      localStorage.removeItem('tenant_admin_refresh_token');
+      localStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.TENANT_ADMIN_REFRESH_TOKEN);
       
       toast.success('Refreshing...');
       

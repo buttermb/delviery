@@ -48,6 +48,7 @@ import { handleError } from '@/utils/errorHandling/handlers';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import FloraIQLogo from '@/components/FloraIQLogo';
 import { useCsrfToken } from '@/hooks/useCsrfToken';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 
 
@@ -104,8 +105,8 @@ const COMPANY_SIZES = [
   { value: '200+', label: '200+ employees' },
 ];
 
-const STORAGE_KEY = 'signup_form_data';
-const STORAGE_EXPIRY_KEY = 'signup_form_data_expiry';
+const SIGNUP_STORAGE_KEY = STORAGE_KEYS.SIGNUP_FORM_DATA;
+const SIGNUP_EXPIRY_KEY = STORAGE_KEYS.SIGNUP_FORM_DATA_EXPIRY;
 const DRAFT_EXPIRY_HOURS = 24;
 const SUBMIT_COOLDOWN_MS = 3000;
 
@@ -155,8 +156,8 @@ export default function SignUpPage() {
     const subscription = form.watch((value) => {
       try {
         const expiryTime = Date.now() + (DRAFT_EXPIRY_HOURS * 60 * 60 * 1000);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-        localStorage.setItem(STORAGE_EXPIRY_KEY, expiryTime.toString());
+        localStorage.setItem(SIGNUP_STORAGE_KEY, JSON.stringify(value));
+        localStorage.setItem(SIGNUP_EXPIRY_KEY, expiryTime.toString());
       } catch (error) {
         logger.error('Failed to save form data to localStorage', error);
       }
@@ -167,8 +168,8 @@ export default function SignUpPage() {
   // Load saved form data on mount (with expiry check)
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      const expiry = localStorage.getItem(STORAGE_EXPIRY_KEY);
+      const saved = localStorage.getItem(SIGNUP_STORAGE_KEY);
+      const expiry = localStorage.getItem(SIGNUP_EXPIRY_KEY);
 
       if (saved && expiry) {
         const expiryTime = parseInt(expiry, 10);
@@ -247,8 +248,8 @@ export default function SignUpPage() {
 
       // Clear saved form data
       try {
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(STORAGE_EXPIRY_KEY);
+        localStorage.removeItem(SIGNUP_STORAGE_KEY);
+        localStorage.removeItem(SIGNUP_EXPIRY_KEY);
       } catch (error) {
         logger.warn('Failed to clear localStorage', error);
       }
@@ -343,7 +344,7 @@ export default function SignUpPage() {
 
       // Always set lastTenantSlug immediately after tenant creation
       try {
-        localStorage.setItem('lastTenantSlug', tenant.slug);
+        localStorage.setItem(STORAGE_KEYS.LAST_TENANT_SLUG, tenant.slug);
         logger.info('[SIGNUP] Saved lastTenantSlug', { slug: tenant.slug });
       } catch (error) {
         logger.error('[SIGNUP] Failed to save lastTenantSlug', error);
@@ -355,8 +356,8 @@ export default function SignUpPage() {
       } else {
         // Fallback: Store non-sensitive user and tenant data
         try {
-          localStorage.setItem('tenant_admin_user', JSON.stringify(result.user));
-          localStorage.setItem('tenant_data', JSON.stringify(result.tenant));
+          localStorage.setItem(STORAGE_KEYS.TENANT_ADMIN_USER, JSON.stringify(result.user));
+          localStorage.setItem(STORAGE_KEYS.TENANT_DATA, JSON.stringify(result.tenant));
         } catch (error) {
           logger.error('Failed to store auth data in localStorage', error);
           // Continue anyway as tokens are in httpOnly cookies

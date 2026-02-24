@@ -6,6 +6,7 @@ import { isCancelled } from '@/utils/subscriptionStatus';
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export interface Tenant {
   id: string;
@@ -125,7 +126,7 @@ export async function getTenantById(tenantId: string): Promise<Tenant | null> {
 export async function setTenantContext(tenantId: string): Promise<void> {
   // Set tenant context via localStorage for frontend filtering
   // Backend RLS will use X-Tenant-ID header set by middleware
-  localStorage.setItem('current_tenant_id', tenantId);
+  localStorage.setItem(STORAGE_KEYS.CURRENT_TENANT_ID, tenantId);
 
   // Note: RPC call handled by backend middleware
 }

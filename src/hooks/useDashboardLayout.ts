@@ -7,6 +7,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export type WidgetId =
     | 'stats'
@@ -80,7 +81,7 @@ const INVENTORY_PRESET: WidgetConfig[] = [
     { id: 'insights', label: 'Actionable Insights', visible: true, order: 11, size: 'full' },
 ];
 
-const STORAGE_KEY = 'dashboard-layout';
+const LAYOUT_STORAGE_KEY = STORAGE_KEYS.DASHBOARD_LAYOUT;
 
 function getPresetWidgets(preset: DashboardLayout['preset']): WidgetConfig[] {
     switch (preset) {
@@ -102,7 +103,7 @@ export function useDashboardLayout() {
             return { widgets: DEFAULT_WIDGETS, preset: 'default' };
         }
 
-        const key = tenantId ? `${STORAGE_KEY}-${tenantId}` : STORAGE_KEY;
+        const key = tenantId ? `${LAYOUT_STORAGE_KEY}-${tenantId}` : LAYOUT_STORAGE_KEY;
         const saved = localStorage.getItem(key);
 
         if (saved) {
@@ -122,7 +123,7 @@ export function useDashboardLayout() {
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
-        const key = tenantId ? `${STORAGE_KEY}-${tenantId}` : STORAGE_KEY;
+        const key = tenantId ? `${LAYOUT_STORAGE_KEY}-${tenantId}` : LAYOUT_STORAGE_KEY;
         localStorage.setItem(key, JSON.stringify(layout));
     }, [layout, tenantId]);
 

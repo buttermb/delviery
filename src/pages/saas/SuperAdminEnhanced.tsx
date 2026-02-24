@@ -300,7 +300,7 @@ export default function SuperAdminEnhanced() {
       // Set tenant context via localStorage (UI state only, not for auth)
       // Note: Super admin auth is token-based, this is just for UI context
       localStorage.setItem(STORAGE_KEYS.SUPER_ADMIN_TENANT_ID, tenantId);
-      localStorage.setItem('impersonating_tenant', 'true');
+      localStorage.setItem(STORAGE_KEYS.IMPERSONATING_TENANT, 'true');
 
       toast.success(`You are now viewing as ${tenant.business_name}`);
 

@@ -11,15 +11,14 @@ import { Label } from '@/components/ui/label';
 import { Volume2, VolumeX } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-
-const STORAGE_KEY = 'floraiq_sound_alerts_enabled';
+import { STORAGE_KEYS.SOUND_ALERTS_TOGGLES } from '@/constants/storageKeys';
 
 /**
  * Check if sound alerts are enabled
  */
 export function isSoundAlertEnabled(): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) === 'true';
+    return localStorage.getItem(STORAGE_KEYS.SOUND_ALERTS_TOGGLE) === 'true';
   } catch {
     return false;
   }
@@ -30,7 +29,7 @@ export function isSoundAlertEnabled(): boolean {
  */
 export function setSoundAlertEnabled(enabled: boolean): void {
   try {
-    localStorage.setItem(STORAGE_KEY, String(enabled));
+    localStorage.setItem(STORAGE_KEYS.SOUND_ALERTS_TOGGLE, String(enabled));
   } catch {
     // Ignore storage errors
   }

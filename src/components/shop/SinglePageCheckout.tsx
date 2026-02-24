@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { humanizeError } from '@/lib/humanizeError';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -83,7 +84,7 @@ export function SinglePageCheckout() {
   });
 
   // Load saved form data
-  const formStorageKey = store?.id ? `checkout_form_${store.id}` : null;
+  const formStorageKey = store?.id ? `${STORAGE_KEYS.SHOP_CHECKOUT_FORM_PREFIX}${store.id}` : null;
   
   useEffect(() => {
     if (formStorageKey) {
@@ -232,7 +233,7 @@ export function SinglePageCheckout() {
     onSuccess: async (data) => {
       // Clear cart and form
       if (store?.id) {
-        localStorage.removeItem(`shop_cart_${store.id}`);
+        localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
         if (formStorageKey) localStorage.removeItem(formStorageKey);
         setCartItemCount(0);
       }

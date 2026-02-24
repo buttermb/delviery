@@ -53,6 +53,7 @@ import {
 import { ReviewForm } from '@/components/shop/ReviewForm';
 import { cn } from '@/lib/utils';
 import { RecentlyViewedSection } from '@/components/shop/RecentlyViewedSection';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { EnhancedStickyAddToCart } from '@/components/shop/EnhancedStickyAddToCart';
 import { ScrollProgress } from '@/components/shop/ScrollProgress';
@@ -304,7 +305,7 @@ export function ProductDetailPage() {
   // Check wishlist status
   useEffect(() => {
     if (store?.id && product?.product_id) {
-      const wishlist = safeJsonParse<string[]>(localStorage.getItem(`shop_wishlist_${store.id}`), []);
+      const wishlist = safeJsonParse<string[]>(localStorage.getItem(`${STORAGE_KEYS.SHOP_WISHLIST_PREFIX}${store.id}`), []);
       setIsWishlisted(wishlist.includes(product.product_id));
     }
   }, [store?.id, product?.product_id]);
@@ -421,7 +422,7 @@ export function ProductDetailPage() {
     if (!store?.id || !product?.product_id) return;
 
     try {
-      const wishlist = JSON.parse(localStorage.getItem(`shop_wishlist_${store.id}`) || '[]');
+      const wishlist = JSON.parse(localStorage.getItem(`${STORAGE_KEYS.SHOP_WISHLIST_PREFIX}${store.id}`) || '[]');
       let newWishlist;
 
       if (isWishlisted) {
@@ -432,7 +433,7 @@ export function ProductDetailPage() {
         toast.success('Added to wishlist');
       }
 
-      localStorage.setItem(`shop_wishlist_${store.id}`, JSON.stringify(newWishlist));
+      localStorage.setItem(`${STORAGE_KEYS.SHOP_WISHLIST_PREFIX}${store.id}`, JSON.stringify(newWishlist));
       setIsWishlisted(!isWishlisted);
     } catch (error) {
       logger.error('Wishlist operation failed', error);

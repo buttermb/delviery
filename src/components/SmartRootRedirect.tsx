@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { LoadingFallback } from "./LoadingFallback";
 import { getCurrentUserType } from "@/lib/utils/authHelpers";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 export function SmartRootRedirect() {
   const [checking, setChecking] = useState(true);
@@ -34,7 +35,7 @@ export function SmartRootRedirect() {
 
         // Check tenant admin
         if (userType === "tenant_admin") {
-          const tenantData = localStorage.getItem("tenant_data");
+          const tenantData = localStorage.getItem(STORAGE_KEYS.TENANT_DATA);
           if (tenantData) {
             try {
               const tenant = JSON.parse(tenantData);
@@ -58,7 +59,7 @@ export function SmartRootRedirect() {
 
         // Check customer
         if (userType === "customer") {
-          const tenantData = localStorage.getItem("customer_tenant_data");
+          const tenantData = localStorage.getItem(STORAGE_KEYS.CUSTOMER_TENANT_DATA);
           if (tenantData) {
             try {
               const tenant = JSON.parse(tenantData);

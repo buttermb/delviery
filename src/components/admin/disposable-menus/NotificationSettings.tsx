@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Bell, Mail, MessageSquare, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 interface NotificationTemplate {
   event: string;
   enabled: boolean;
@@ -51,7 +52,7 @@ export const NotificationSettings = () => {
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem('notification_settings');
+    const saved = localStorage.getItem(STORAGE_KEYS.NOTIFICATION_SETTINGS);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed.templates) {
@@ -66,7 +67,7 @@ export const NotificationSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      localStorage.setItem('notification_settings', JSON.stringify({
+      localStorage.setItem(STORAGE_KEYS.NOTIFICATION_SETTINGS, JSON.stringify({
         templates,
         channels: notificationChannels
       }));

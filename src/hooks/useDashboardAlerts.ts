@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import type { PredictiveAlert, AlertSeverity, AlertCategory } from '@/hooks/usePredictiveAlerts';
 
 interface DashboardAlert extends PredictiveAlert {
@@ -23,7 +24,7 @@ interface UseDashboardAlertsResult {
   markAsRead: (id: string) => void;
 }
 
-const STORAGE_KEY_PREFIX = 'dashboard_alerts_dismissed_';
+const STORAGE_KEY_PREFIX = STORAGE_KEYS.DASHBOARD_ALERTS_DISMISSED_PREFIX;
 
 export function useDashboardAlerts(): UseDashboardAlertsResult {
   const { tenant, tenantSlug } = useTenantAdminAuth();

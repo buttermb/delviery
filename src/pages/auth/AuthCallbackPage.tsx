@@ -6,6 +6,7 @@ import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { intendedDestinationUtils } from "@/hooks/useIntendedDestination";
 import { Button } from "@/components/ui/button";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 type AuthPortal = "tenant-admin" | "super-admin" | "customer";
 
@@ -181,7 +182,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
     // Clear all sessions and storage
     await supabase.auth.signOut();
     sessionStorage.clear();
-    localStorage.removeItem('supabase.auth.token'); // Attempt to clear persisted token
+    localStorage.removeItem(STORAGE_KEYS.SUPABASE_AUTH_TOKEN); // Attempt to clear persisted token
 
     const loginUrl = portal === "tenant-admin"
       ? `/${tenantSlug}/admin/login`

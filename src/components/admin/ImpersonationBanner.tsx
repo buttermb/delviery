@@ -17,7 +17,7 @@ export function ImpersonationBanner() {
 
     useEffect(() => {
         const checkImpersonation = async () => {
-            const impersonating = localStorage.getItem('impersonating_tenant');
+            const impersonating = localStorage.getItem(STORAGE_KEYS.IMPERSONATING_TENANT);
             const tenantId = localStorage.getItem(STORAGE_KEYS.SUPER_ADMIN_TENANT_ID);
 
             if (impersonating === 'true' && tenantId) {
@@ -48,9 +48,9 @@ export function ImpersonationBanner() {
     }, []);
 
     const handleExitImpersonation = () => {
-        localStorage.removeItem('impersonating_tenant');
+        localStorage.removeItem(STORAGE_KEYS.IMPERSONATING_TENANT);
         localStorage.removeItem(STORAGE_KEYS.SUPER_ADMIN_TENANT_ID);
-        localStorage.removeItem('impersonation_timestamp');
+        localStorage.removeItem(STORAGE_KEYS.IMPERSONATION_TIMESTAMP);
 
         setIsImpersonating(false);
         navigate('/saas/admin/enhanced');

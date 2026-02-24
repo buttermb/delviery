@@ -32,6 +32,7 @@ import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 import { CartDrawer } from '@/components/shop/CartDrawer';
 import { useShopCart } from '@/hooks/useShopCart';
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface StoreInfo {
   id: string;
@@ -207,7 +208,7 @@ export default function ShopLayout() {
     if (store?.id) {
       // Initial load
       const loadCart = () => {
-        const cart = localStorage.getItem(`shop_cart_${store.id}`);
+        const cart = localStorage.getItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
         if (cart) {
           try {
             const items = JSON.parse(cart);
@@ -238,7 +239,7 @@ export default function ShopLayout() {
   // Check age verification
   useEffect(() => {
     if (store?.require_age_verification) {
-      const verified = localStorage.getItem(`age_verified_${store.id}`);
+      const verified = localStorage.getItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${store.id}`);
       setAgeVerified(verified === 'true');
     } else {
       setAgeVerified(true);
@@ -261,7 +262,7 @@ export default function ShopLayout() {
   // Handle age verification
   const handleAgeVerification = (verified: boolean) => {
     if (verified && store?.id) {
-      localStorage.setItem(`age_verified_${store.id}`, 'true');
+      localStorage.setItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${store.id}`, 'true');
       setAgeVerified(true);
     } else {
       navigate('/');

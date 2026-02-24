@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Shield } from 'lucide-react';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface LuxuryAgeVerificationProps {
   storeName?: string;
@@ -26,7 +27,7 @@ export function LuxuryAgeVerification({
   // Check if already verified
   useEffect(() => {
     if (storeId) {
-      const verified = localStorage.getItem(`age_verified_${storeId}`);
+      const verified = localStorage.getItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeId}`);
       if (verified === 'true') {
         setIsVisible(false);
         onVerify(true);
@@ -39,7 +40,7 @@ export function LuxuryAgeVerification({
 
     setTimeout(() => {
       if (isOfAge && storeId) {
-        localStorage.setItem(`age_verified_${storeId}`, 'true');
+        localStorage.setItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeId}`, 'true');
       }
       setIsVisible(false);
       onVerify(isOfAge);

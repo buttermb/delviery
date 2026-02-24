@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 /**
  * Production Error Logger
  * Logs critical errors in production where console is stripped
@@ -13,7 +14,7 @@ interface LogEntry {
 }
 
 const MAX_LOGS = 100;
-const STORAGE_KEY = 'app_production_logs';
+const PROD_LOG_KEY = STORAGE_KEYS.APP_PRODUCTION_LOGS;
 
 class ProductionLogger {
   private logs: LogEntry[] = [];
@@ -24,7 +25,7 @@ class ProductionLogger {
 
   private loadLogs() {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(PROD_LOG_KEY);
       if (stored) {
         this.logs = JSON.parse(stored);
       }
@@ -37,7 +38,7 @@ class ProductionLogger {
     try {
       // Keep only the most recent logs
       const recentLogs = this.logs.slice(-MAX_LOGS);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(recentLogs));
+      localStorage.setItem(PROD_LOG_KEY, JSON.stringify(recentLogs));
     } catch {
       // Silent fail
     }
@@ -90,7 +91,7 @@ class ProductionLogger {
   clearLogs() {
     this.logs = [];
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(PROD_LOG_KEY);
     } catch {
       // Silent fail
     }

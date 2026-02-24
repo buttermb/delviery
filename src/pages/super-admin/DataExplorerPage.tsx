@@ -11,11 +11,12 @@ import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 // Store recent queries in localStorage
 const getRecentQueries = (): Array<{ query: string; timestamp: string }> => {
   try {
-    const stored = localStorage.getItem('data_explorer_recent_queries');
+    const stored = localStorage.getItem(STORAGE_KEYS.DATA_EXPLORER_RECENT_QUERIES);
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
@@ -29,7 +30,7 @@ const saveRecentQuery = (query: string) => {
       { query, timestamp: new Date().toISOString() },
       ...recent.filter((q) => q.query !== query).slice(0, 9), // Keep last 10
     ];
-    localStorage.setItem('data_explorer_recent_queries', JSON.stringify(updated));
+    localStorage.setItem(STORAGE_KEYS.DATA_EXPLORER_RECENT_QUERIES, JSON.stringify(updated));
   } catch {
     // Ignore localStorage errors
   }

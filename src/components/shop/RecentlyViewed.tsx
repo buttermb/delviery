@@ -12,6 +12,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface RecentlyViewedProps {
   storeId: string;
@@ -37,7 +38,7 @@ export function RecentlyViewed({
 
   // Get recently viewed product IDs from localStorage
   const recentIds = useMemo(() => {
-    const saved = localStorage.getItem(`shop_recently_viewed_${storeId}`);
+    const saved = localStorage.getItem(`${STORAGE_KEYS.SHOP_RECENTLY_VIEWED_PREFIX}${storeId}`);
     if (saved) {
       try {
         return JSON.parse(saved)
@@ -116,7 +117,7 @@ export function RecentlyViewed({
 
 // Helper function to track recently viewed
 export function trackRecentlyViewed(storeId: string, productId: string) {
-  const key = `shop_recently_viewed_${storeId}`;
+  const key = `${STORAGE_KEYS.SHOP_RECENTLY_VIEWED_PREFIX}${storeId}`;
   const saved = localStorage.getItem(key);
   let recent: string[] = [];
 

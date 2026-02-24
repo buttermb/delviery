@@ -15,6 +15,7 @@ import { AuthOfflineIndicator } from '@/components/auth/AuthOfflineIndicator';
 import { useAuthOffline } from '@/hooks/useAuthOffline';
 import { useCsrfToken } from '@/hooks/useCsrfToken';
 import { humanizeError } from '@/lib/humanizeError';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export default function CourierLoginPage() {
   useAuthRedirect(); // Auto-redirect if already logged in
@@ -59,7 +60,7 @@ export default function CourierLoginPage() {
       try {
         if (authData.user?.id) {
           sessionStorage.setItem('floraiq_user_id', authData.user.id);
-          localStorage.setItem('floraiq_user_id', authData.user.id);
+          localStorage.setItem(STORAGE_KEYS.FLORAIQ_USER_ID, authData.user.id);
           await clientEncryption.initialize(password, authData.user.id);
           logger.debug('Encryption initialized successfully', { component: 'CourierLoginPage' });
         }
@@ -165,7 +166,7 @@ export default function CourierLoginPage() {
       if (sessionError) throw sessionError;
 
       // Store session token
-      localStorage.setItem('courier_pin_session', sessionData);
+      localStorage.setItem(STORAGE_KEYS.COURIER_PIN_SESSION, sessionData);
 
       toast.success("Login Successful", {
         description: "Welcome back!",

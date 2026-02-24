@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
@@ -47,7 +48,7 @@ export function usePushNotifications() {
       }
 
       setIsSubscribed(true);
-      localStorage.setItem('notifications_enabled', 'true');
+      localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS_ENABLED, 'true');
 
       // Test notification via service worker
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -77,7 +78,7 @@ export function usePushNotifications() {
       
       setSubscription(null);
       setIsSubscribed(false);
-      localStorage.removeItem('notifications_enabled');
+      localStorage.removeItem(STORAGE_KEYS.NOTIFICATIONS_ENABLED);
 
       toast.info("You won't receive push notifications");
     } catch (error) {

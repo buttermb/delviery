@@ -46,6 +46,7 @@ import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
 import { formatPhoneNumber } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface OrderItem {
   product_id: string;
@@ -88,7 +89,7 @@ export default function AccountPage() {
   // Check if customer is logged in (from localStorage)
   useEffect(() => {
     if (store?.id) {
-      const savedCustomer = localStorage.getItem(`shop_customer_${store.id}`);
+      const savedCustomer = localStorage.getItem(`${STORAGE_KEYS.SHOP_CUSTOMER_PREFIX}${store.id}`);
       if (savedCustomer) {
         try {
           const customer = JSON.parse(savedCustomer);
@@ -146,7 +147,7 @@ export default function AccountPage() {
     const customer = Array.isArray(data) ? data[0] : data;
 
     // Save to localStorage
-    localStorage.setItem(`shop_customer_${store.id}`, JSON.stringify(customer));
+    localStorage.setItem(`${STORAGE_KEYS.SHOP_CUSTOMER_PREFIX}${store.id}`, JSON.stringify(customer));
     setCustomerId(customer.id);
     setCustomerName(customer.first_name || null);
     setIsLoggedIn(true);
@@ -179,7 +180,7 @@ export default function AccountPage() {
   // Logout
   const handleLogout = () => {
     if (store?.id) {
-      localStorage.removeItem(`shop_customer_${store.id}`);
+      localStorage.removeItem(`${STORAGE_KEYS.SHOP_CUSTOMER_PREFIX}${store.id}`);
     }
     setIsLoggedIn(false);
     setCustomerId(null);
@@ -244,7 +245,7 @@ export default function AccountPage() {
       }
 
       // Success - Login
-      localStorage.setItem(`shop_customer_${store.id}`, JSON.stringify(customer));
+      localStorage.setItem(`${STORAGE_KEYS.SHOP_CUSTOMER_PREFIX}${store.id}`, JSON.stringify(customer));
       setCustomerId(customer.id);
       setEmail(customer.email);
       setCustomerName(customer.first_name || null);
@@ -676,12 +677,12 @@ export default function AccountPage() {
             onProfileUpdated={(name: string | null) => {
               setCustomerName(name);
               // Update localStorage with new name
-              const saved = localStorage.getItem(`shop_customer_${store.id}`);
+              const saved = localStorage.getItem(`${STORAGE_KEYS.SHOP_CUSTOMER_PREFIX}${store.id}`);
               if (saved) {
                 try {
                   const parsed = JSON.parse(saved);
                   parsed.first_name = name;
-                  localStorage.setItem(`shop_customer_${store.id}`, JSON.stringify(parsed));
+                  localStorage.setItem(`${STORAGE_KEYS.SHOP_CUSTOMER_PREFIX}${store.id}`, JSON.stringify(parsed));
                 } catch { /* ignore */ }
               }
             }}
@@ -745,7 +746,7 @@ function WishlistSection({
   // Get wishlist from localStorage with error handling
   let wishlistIds: string[] = [];
   try {
-    wishlistIds = JSON.parse(localStorage.getItem(`shop_wishlist_${storeId}`) || '[]');
+    wishlistIds = JSON.parse(localStorage.getItem(`${STORAGE_KEYS.SHOP_WISHLIST_PREFIX}${storeId}`) || '[]');
     if (!Array.isArray(wishlistIds)) wishlistIds = [];
   } catch {
     wishlistIds = [];
@@ -771,7 +772,7 @@ function WishlistSection({
   const removeFromWishlist = (productId: string) => {
     try {
       const newWishlist = wishlistIds.filter((id) => id !== productId);
-      localStorage.setItem(`shop_wishlist_${storeId}`, JSON.stringify(newWishlist));
+      localStorage.setItem(`${STORAGE_KEYS.SHOP_WISHLIST_PREFIX}${storeId}`, JSON.stringify(newWishlist));
       refetch();
       toast.success('Removed from wishlist');
     } catch {
@@ -783,7 +784,7 @@ function WishlistSection({
   // Add to cart with error handling
   const addToCart = (product: Record<string, unknown>) => {
     try {
-      const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]') as Array<Record<string, unknown>>;
+      const cart = JSON.parse(localStorage.getItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${storeId}`) || '[]') as Array<Record<string, unknown>>;
       const existingIndex = cart.findIndex((item) => item.productId === product.product_id);
 
       if (existingIndex >= 0) {
@@ -798,7 +799,7 @@ function WishlistSection({
         });
       }
 
-      localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
+      localStorage.setItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${storeId}`, JSON.stringify(cart));
       setCartItemCount(cart.reduce((sum: number, item) => sum + (item.quantity as number), 0));
       toast.success('Added to cart');
     } catch (error) {
@@ -937,7 +938,7 @@ function OrderCard({
   // Add individual item to cart
   const addItemToCart = (item: OrderItem) => {
     try {
-      const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]') as Array<Record<string, unknown>>;
+      const cart = JSON.parse(localStorage.getItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${storeId}`) || '[]') as Array<Record<string, unknown>>;
       const existingIndex = cart.findIndex((c) => c.productId === item.product_id);
 
       if (existingIndex >= 0) {
@@ -952,7 +953,7 @@ function OrderCard({
         });
       }
 
-      localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
+      localStorage.setItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${storeId}`, JSON.stringify(cart));
       setCartItemCount(cart.reduce((sum: number, c) => sum + (c.quantity as number), 0));
 
       toast.success('Added to bag!', { description: item.name });
@@ -1090,7 +1091,7 @@ function QuickReorderButton({
 
     try {
       // Get current cart
-      const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]') as Array<Record<string, unknown>>;
+      const cart = JSON.parse(localStorage.getItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${storeId}`) || '[]') as Array<Record<string, unknown>>;
 
       // Add order items to cart
       (order.items || []).forEach((item: OrderItem) => {
@@ -1110,7 +1111,7 @@ function QuickReorderButton({
       });
 
       // Save cart
-      localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
+      localStorage.setItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${storeId}`, JSON.stringify(cart));
       setCartItemCount(cart.reduce((sum: number, c) => sum + (c.quantity as number), 0));
 
       toast.success('Items added to cart', {

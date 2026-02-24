@@ -6,15 +6,14 @@
  */
 
 import { useState, useCallback } from 'react';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export type SidebarMode = 'classic' | 'optimized';
-
-const STORAGE_KEY = 'floraiq_sidebar_mode';
 
 export function useSidebarMode() {
     const [mode, setModeState] = useState<SidebarMode>(() => {
         if (typeof window !== 'undefined') {
-            const stored = localStorage.getItem(STORAGE_KEY);
+            const stored = localStorage.getItem(STORAGE_KEYS.SIDEBAR_MODE);
             return (stored as SidebarMode) || 'classic';
         }
         return 'classic';
@@ -22,7 +21,7 @@ export function useSidebarMode() {
 
     const setMode = useCallback((newMode: SidebarMode) => {
         setModeState(newMode);
-        localStorage.setItem(STORAGE_KEY, newMode);
+        localStorage.setItem(STORAGE_KEYS.SIDEBAR_MODE, newMode);
     }, []);
 
     const toggleMode = useCallback(() => {

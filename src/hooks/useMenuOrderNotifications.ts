@@ -24,6 +24,7 @@ import {
   getBrowserNotificationPermission,
 } from '@/utils/browserNotifications';
 import { showServiceWorkerNotification } from '@/utils/serviceWorkerNotifications';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 /**
  * Settings for menu order notifications
@@ -37,7 +38,7 @@ export interface MenuOrderNotificationSettings {
   vibrateEnabled: boolean;
 }
 
-const SETTINGS_STORAGE_KEY = 'floraiq_menu_order_notification_settings';
+const SETTINGS_STORAGE_KEY = STORAGE_KEYS.MENU_ORDER_NOTIFICATION_SETTINGS;
 
 /**
  * Get notification settings from localStorage

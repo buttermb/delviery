@@ -22,6 +22,7 @@ import { initializeSecurityObfuscation } from "./utils/securityObfuscation";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import bugFinder from "./utils/bugFinder";
 import { setupGlobalErrorHandlers } from "./lib/globalErrorHandler";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 // Setup global error handlers
 setupGlobalErrorHandlers();
@@ -130,7 +131,7 @@ logger.debug('[APP] Starting app initialization...');
 
 // Debug: Log theme state during initialization
 logger.debug('[APP] Theme state:', {
-  localStorage: localStorage.getItem('theme'),
+  localStorage: localStorage.getItem(STORAGE_KEYS.THEME),
   htmlClasses: document.documentElement.className,
   prefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
 });

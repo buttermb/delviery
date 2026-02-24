@@ -14,6 +14,7 @@ import { CartDrawer } from '@/components/menu/CartDrawer';
 import { ModernCheckoutFlow } from '@/components/menu/ModernCheckoutFlow';
 import { useMenuCartStore } from '@/stores/menuCartStore';
 import { toast } from 'sonner';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface MenuProduct {
   id: string;
@@ -141,7 +142,7 @@ export default function MenuAccess() {
         encrypted_url_token: token,
         access_code: accessCode,
         location: userLocation,
-        device_fingerprint: localStorage.getItem('device_fingerprint'),
+        device_fingerprint: localStorage.getItem(STORAGE_KEYS.DEVICE_FINGERPRINT),
         user_agent: navigator.userAgent,
       }, 'MenuAccess');
 
@@ -150,7 +151,7 @@ export default function MenuAccess() {
           encrypted_url_token: token,
           access_code: accessCode,
           location: userLocation,
-          device_fingerprint: localStorage.getItem('device_fingerprint'),
+          device_fingerprint: localStorage.getItem(STORAGE_KEYS.DEVICE_FINGERPRINT),
           user_agent: navigator.userAgent,
         },
       });

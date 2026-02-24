@@ -15,6 +15,7 @@ import { Search, X, Package, TrendingUp, Clock, ArrowRight } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useDebounce } from '@/hooks/useDebounce';
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface SearchAutocompleteProps {
   storeId: string;
@@ -46,7 +47,7 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
 
   // Load recent searches from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem(`shop_recent_searches_${storeId}`);
+    const saved = localStorage.getItem(`${STORAGE_KEYS.SHOP_RECENT_SEARCHES_PREFIX}${storeId}`);
     if (saved) {
       try {
         setRecentSearches(JSON.parse(saved).slice(0, 5));
@@ -117,7 +118,7 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
     ].slice(0, 5);
 
     setRecentSearches(updated);
-    localStorage.setItem(`shop_recent_searches_${storeId}`, JSON.stringify(updated));
+    localStorage.setItem(`${STORAGE_KEYS.SHOP_RECENT_SEARCHES_PREFIX}${storeId}`, JSON.stringify(updated));
   }, [recentSearches, storeId]);
 
   // Handle search submit
@@ -143,7 +144,7 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
   // Clear recent searches
   const clearRecentSearches = () => {
     setRecentSearches([]);
-    localStorage.removeItem(`shop_recent_searches_${storeId}`);
+    localStorage.removeItem(`${STORAGE_KEYS.SHOP_RECENT_SEARCHES_PREFIX}${storeId}`);
   };
 
   // Handle recent search click

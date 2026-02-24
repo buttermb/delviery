@@ -35,6 +35,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatCurrency } from '@/lib/formatters';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 // ============================================================================
@@ -70,7 +71,7 @@ interface AdminNotification {
 // ============================================================================
 
 const MAX_NOTIFICATIONS = 50;
-const STORAGE_READ_KEY = 'floraiq_admin_notifications_read';
+const STORAGE_READ_KEY = STORAGE_KEYS.ADMIN_NOTIFICATIONS_READ;
 
 const NOTIFICATION_TYPE_CONFIG: Record<NotificationEventType, {
   icon: typeof Bell;

@@ -12,6 +12,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useCredits } from './useCredits';
 import {
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
   CREDIT_WARNING_THRESHOLDS,
   BEHAVIORAL_TRIGGERS,
   projectDepletion,
@@ -67,8 +68,8 @@ export interface UseSmartUpgradeNudgeReturn {
 // Storage Keys
 // ============================================================================
 
-const STORAGE_KEY_DISMISSED = 'credit_nudges_dismissed';
-const STORAGE_KEY_SHOWN_SESSION = 'credit_nudges_shown_session';
+const NUDGE_DISMISSED_KEY = STORAGE_KEYS.CREDIT_NUDGES_DISMISSED;
+const NUDGE_SHOWN_SESSION_KEY = STORAGE_KEYS.CREDIT_NUDGES_SHOWN_SESSION;
 
 // ============================================================================
 // Nudge Configurations
@@ -158,11 +159,11 @@ export function useSmartUpgradeNudge(): UseSmartUpgradeNudgeReturn {
   // Load dismissed nudges from storage
   useEffect(() => {
     try {
-      const stored = sessionStorage.getItem(STORAGE_KEY_DISMISSED);
+      const stored = sessionStorage.getItem(NUDGE_DISMISSED_KEY);
       if (stored) {
         setDismissedNudges(new Set(JSON.parse(stored)));
       }
-      const shownSession = sessionStorage.getItem(STORAGE_KEY_SHOWN_SESSION);
+      const shownSession = sessionStorage.getItem(NUDGE_SHOWN_SESSION_KEY);
       if (shownSession) {
         setShownThisSession(new Set(JSON.parse(shownSession)));
       }
@@ -368,7 +369,7 @@ export function useSmartUpgradeNudge(): UseSmartUpgradeNudgeReturn {
         const next = new Set(prev);
         next.add(activeNudge.type);
         try {
-          sessionStorage.setItem(STORAGE_KEY_SHOWN_SESSION, JSON.stringify([...next]));
+          sessionStorage.setItem(NUDGE_SHOWN_SESSION_KEY, JSON.stringify([...next]));
         } catch {
           // Ignore
         }
@@ -384,7 +385,7 @@ export function useSmartUpgradeNudge(): UseSmartUpgradeNudgeReturn {
         const next = new Set(prev);
         next.add(activeNudge.type);
         try {
-          sessionStorage.setItem(STORAGE_KEY_DISMISSED, JSON.stringify([...next]));
+          sessionStorage.setItem(NUDGE_DISMISSED_KEY, JSON.stringify([...next]));
         } catch {
           // Ignore
         }
@@ -399,7 +400,7 @@ export function useSmartUpgradeNudge(): UseSmartUpgradeNudgeReturn {
       const next = new Set(prev);
       next.add(type);
       try {
-        sessionStorage.setItem(STORAGE_KEY_DISMISSED, JSON.stringify([...next]));
+        sessionStorage.setItem(NUDGE_DISMISSED_KEY, JSON.stringify([...next]));
       } catch {
         // Ignore
       }
@@ -419,8 +420,8 @@ export function useSmartUpgradeNudge(): UseSmartUpgradeNudgeReturn {
     setDismissedNudges(new Set());
     setShownThisSession(new Set());
     try {
-      sessionStorage.removeItem(STORAGE_KEY_DISMISSED);
-      sessionStorage.removeItem(STORAGE_KEY_SHOWN_SESSION);
+      sessionStorage.removeItem(NUDGE_DISMISSED_KEY);
+      sessionStorage.removeItem(NUDGE_SHOWN_SESSION_KEY);
     } catch {
       // Ignore
     }

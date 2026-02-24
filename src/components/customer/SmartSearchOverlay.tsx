@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cleanProductName } from '@/utils/productName';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface Product {
     id: string;
@@ -28,12 +29,12 @@ export function SmartSearchOverlay({ isOpen, onClose, products, onProductSelect 
     // Load recent searches from local storage
     useEffect(() => {
         try {
-            const saved = localStorage.getItem('recent_searches');
+            const saved = localStorage.getItem(STORAGE_KEYS.CUSTOMER_RECENT_SEARCHES);
             if (saved) {
                 setRecentSearches(JSON.parse(saved) as string[]);
             }
         } catch {
-            localStorage.removeItem('recent_searches');
+            localStorage.removeItem(STORAGE_KEYS.CUSTOMER_RECENT_SEARCHES);
         }
     }, []);
 
@@ -50,7 +51,7 @@ export function SmartSearchOverlay({ isOpen, onClose, products, onProductSelect 
         if (term.trim()) {
             const newRecent = [term, ...recentSearches.filter(s => s !== term)].slice(0, 5);
             setRecentSearches(newRecent);
-            localStorage.setItem('recent_searches', JSON.stringify(newRecent));
+            localStorage.setItem(STORAGE_KEYS.CUSTOMER_RECENT_SEARCHES, JSON.stringify(newRecent));
         }
     };
 

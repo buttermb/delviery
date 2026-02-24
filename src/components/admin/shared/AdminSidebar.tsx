@@ -42,10 +42,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRoutePrefetch } from '@/hooks/useRoutePrefetch';
-
-// Storage key for sidebar state
-const SIDEBAR_COLLAPSED_KEY = 'admin-sidebar-collapsed';
-const SIDEBAR_SECTIONS_KEY = 'admin-sidebar-sections';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 /**
  * Navigation item structure
@@ -157,7 +154,7 @@ const navigationSections: NavSection[] = [
  */
 function getPersistedCollapsedState(): boolean {
   try {
-    const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+    const stored = localStorage.getItem(STORAGE_KEYS.ADMIN_SIDEBAR_COLLAPSED);
     return stored === 'true';
   } catch {
     return false;
@@ -169,7 +166,7 @@ function getPersistedCollapsedState(): boolean {
  */
 function getPersistedSectionStates(): Record<string, boolean> {
   try {
-    const stored = localStorage.getItem(SIDEBAR_SECTIONS_KEY);
+    const stored = localStorage.getItem(STORAGE_KEYS.ADMIN_SIDEBAR_SECTIONS);
     if (stored) {
       return JSON.parse(stored) as Record<string, boolean>;
     }
@@ -189,7 +186,7 @@ function getPersistedSectionStates(): Record<string, boolean> {
  */
 function persistCollapsedState(collapsed: boolean): void {
   try {
-    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed));
+    localStorage.setItem(STORAGE_KEYS.ADMIN_SIDEBAR_COLLAPSED, String(collapsed));
   } catch {
     logger.warn('Failed to persist sidebar collapsed state', { component: 'AdminSidebar' });
   }
@@ -200,7 +197,7 @@ function persistCollapsedState(collapsed: boolean): void {
  */
 function persistSectionStates(states: Record<string, boolean>): void {
   try {
-    localStorage.setItem(SIDEBAR_SECTIONS_KEY, JSON.stringify(states));
+    localStorage.setItem(STORAGE_KEYS.ADMIN_SIDEBAR_SECTIONS, JSON.stringify(states));
   } catch {
     logger.warn('Failed to persist sidebar section states', { component: 'AdminSidebar' });
   }

@@ -20,14 +20,14 @@ interface MigrationResult {
  * Check if migration has already been completed for this user
  */
 function hasMigrationCompleted(): boolean {
-  return localStorage.getItem('sidebar_migration_complete') === 'true';
+  return localStorage.getItem(STORAGE_KEYS.SIDEBAR_MIGRATION_COMPLETE) === 'true';
 }
 
 /**
  * Mark migration as completed
  */
 function markMigrationComplete(): void {
-  localStorage.setItem('sidebar_migration_complete', 'true');
+  localStorage.setItem(STORAGE_KEYS.SIDEBAR_MIGRATION_COMPLETE, 'true');
 }
 
 /**
@@ -38,7 +38,7 @@ function readLegacyPreferences(): Partial<SidebarPreferences> {
     const operationSize = localStorage.getItem(STORAGE_KEYS.SIDEBAR_OPERATION_SIZE) as OperationSize | null;
     const favorites = JSON.parse(localStorage.getItem(STORAGE_KEYS.SIDEBAR_FAVORITES) || '[]');
     const collapsedSections = JSON.parse(localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED_SECTIONS) || '[]');
-    const pinnedItems = JSON.parse(localStorage.getItem('sidebar_pinned_items') || '[]');
+    const pinnedItems = JSON.parse(localStorage.getItem(STORAGE_KEYS.SIDEBAR_PINNED_ITEMS) || '[]');
 
     return {
       operationSize,
@@ -68,7 +68,7 @@ function clearLegacyStorage(): void {
   localStorage.removeItem(STORAGE_KEYS.SIDEBAR_OPERATION_SIZE);
   localStorage.removeItem(STORAGE_KEYS.SIDEBAR_FAVORITES);
   localStorage.removeItem(STORAGE_KEYS.SIDEBAR_COLLAPSED_SECTIONS);
-  localStorage.removeItem('sidebar_pinned_items');
+  localStorage.removeItem(STORAGE_KEYS.SIDEBAR_PINNED_ITEMS);
 }
 
 /**
@@ -157,6 +157,6 @@ export async function migrateLocalStorageToDatabase(
  * Reset migration state (for testing/debugging)
  */
 export function resetMigrationState(): void {
-  localStorage.removeItem('sidebar_migration_complete');
+  localStorage.removeItem(STORAGE_KEYS.SIDEBAR_MIGRATION_COMPLETE);
   logger.info('Migration state reset', { component: 'migrateLocalStorageToDatabase' });
 }

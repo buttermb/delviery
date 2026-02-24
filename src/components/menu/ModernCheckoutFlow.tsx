@@ -32,6 +32,7 @@ import { humanizeError } from '@/lib/humanizeError';
 import { useMenuPaymentSettings, type PaymentSettings } from '@/hooks/usePaymentSettings';
 import { publish } from '@/lib/eventBus';
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface CheckoutFlowProps {
   open: boolean;
@@ -1675,7 +1676,7 @@ export function ModernCheckoutFlow({
   // Load saved data from localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('checkout_customer_data');
+      const saved = localStorage.getItem(STORAGE_KEYS.CHECKOUT_CUSTOMER_DATA);
       if (saved) {
         const parsed = JSON.parse(saved);
         setFormData(prev => ({ ...prev, ...parsed }));
@@ -1689,7 +1690,7 @@ export function ModernCheckoutFlow({
   useEffect(() => {
     if (formData.rememberMe) {
       try {
-        localStorage.setItem('checkout_customer_data', JSON.stringify({
+        localStorage.setItem(STORAGE_KEYS.CHECKOUT_CUSTOMER_DATA, JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
           phone: formData.phone,

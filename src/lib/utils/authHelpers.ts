@@ -145,11 +145,11 @@ export async function performFullLogout(): Promise<void> {
   } catch {
     // sessionStorage may not be available
   }
-  safeStorage.removeItem('floraiq_user_id');
+  safeStorage.removeItem(STORAGE_KEYS.FLORAIQ_USER_ID);
 
   // 6. Clear lastTenantSlug (used by TenantAdminAuth for session restoration)
   try {
-    localStorage.removeItem('lastTenantSlug');
+    localStorage.removeItem(STORAGE_KEYS.LAST_TENANT_SLUG);
   } catch {
     // localStorage may not be available
   }

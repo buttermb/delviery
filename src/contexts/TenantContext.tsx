@@ -10,6 +10,7 @@ import type { Tenant, TenantUser } from '@/lib/tenant';
 import { getTenantById } from '@/lib/tenant';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface TenantContextType {
   tenant: Tenant | null;
@@ -74,7 +75,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
   useEffect(() => {
     if (tenant?.id) {
       // Store tenant ID in localStorage for API calls
-      localStorage.setItem('current_tenant_id', tenant.id);
+      localStorage.setItem(STORAGE_KEYS.CURRENT_TENANT_ID, tenant.id);
       // For RLS, we'll pass tenant_id as a header in API calls
       // The backend Edge Function will handle setting the context
     }

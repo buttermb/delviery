@@ -55,8 +55,8 @@ export function TenantQuickActions({ tenant, onViewDetails, onRefresh }: TenantQ
         try {
             // Set tenant context via localStorage (UI state only)
             localStorage.setItem(STORAGE_KEYS.SUPER_ADMIN_TENANT_ID, tenant.id);
-            localStorage.setItem('impersonating_tenant', 'true');
-            localStorage.setItem('impersonation_timestamp', Date.now().toString());
+            localStorage.setItem(STORAGE_KEYS.IMPERSONATING_TENANT, 'true');
+            localStorage.setItem(STORAGE_KEYS.IMPERSONATION_TIMESTAMP, Date.now().toString());
 
             toast.success(`Logged in as ${tenant.business_name}`);
 

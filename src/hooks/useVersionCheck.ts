@@ -2,10 +2,11 @@ import { logger } from '@/lib/logger';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { safeFetch } from '@/utils/safeFetch';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 const CHECK_INTERVAL = 10 * 60 * 1000; // Check every 10 minutes
-const VERSION_KEY = 'app_version';
-const LAST_CHECK_KEY = 'app_version_last_check';
+const VERSION_KEY = STORAGE_KEYS.APP_VERSION;
+const LAST_CHECK_KEY = STORAGE_KEYS.APP_VERSION_LAST_CHECK;
 
 // @ts-expect-error - Injected at build time by Vite
 const _BUILD_TIME: string = __BUILD_TIME__;

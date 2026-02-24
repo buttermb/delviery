@@ -6,6 +6,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useEffect, useRef } from 'react';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export function PremiumHero() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -17,7 +18,7 @@ export function PremiumHero() {
       
       // Set filter in localStorage and trigger filter event
       if (filterType) {
-        localStorage.setItem('productFilter', filterType);
+        localStorage.setItem(STORAGE_KEYS.PRODUCT_FILTER, filterType);
         setTimeout(() => {
           window.dispatchEvent(new CustomEvent('setProductFilter', { 
             detail: { filter: filterType } 

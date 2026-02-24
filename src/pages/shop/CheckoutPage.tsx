@@ -44,6 +44,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Clock, Ban, Tag } from 'lucide-react';
 import { isCustomerBlockedByEmail, FLAG_REASON_LABELS } from '@/hooks/useCustomerFlags';
 import { humanizeError } from '@/lib/humanizeError';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -160,7 +161,7 @@ export function CheckoutPage() {
   const [mobileSummaryExpanded, setMobileSummaryExpanded] = useState(false);
 
   // Form persistence key
-  const formStorageKey = store?.id ? `checkout_form_${store.id}` : null;
+  const formStorageKey = store?.id ? `${STORAGE_KEYS.SHOP_CHECKOUT_FORM_PREFIX}${store.id}` : null;
 
   // Load saved form data on mount
   useEffect(() => {
@@ -647,7 +648,7 @@ export function CheckoutPage() {
           const { url } = response.data;
           if (url) {
             // Clear cart before redirecting to Stripe (order already created)
-            localStorage.removeItem(`shop_cart_${store.id}`);
+            localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
             if (formStorageKey) {
               localStorage.removeItem(formStorageKey);
             }
@@ -669,7 +670,7 @@ export function CheckoutPage() {
       // For cash/other payments, go directly to confirmation
       // Clear cart and saved form data
       if (store?.id) {
-        localStorage.removeItem(`shop_cart_${store.id}`);
+        localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
         if (formStorageKey) {
           localStorage.removeItem(formStorageKey);
         }

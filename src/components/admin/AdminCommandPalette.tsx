@@ -40,8 +40,7 @@ import {
     Map,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-const RECENT_SEARCHES_KEY = 'admin_recent_searches';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 const MAX_RECENT_SEARCHES = 5;
 
 interface RecentSearch {
@@ -69,7 +68,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
     // Load recent searches from localStorage
     useEffect(() => {
         try {
-            const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+            const saved = localStorage.getItem(STORAGE_KEYS.ADMIN_RECENT_SEARCHES);
             if (saved) {
                 setRecentSearches(JSON.parse(saved));
             }
@@ -93,7 +92,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
         setRecentSearches((prev) => {
             const filtered = prev.filter((r) => !(r.id === result.id && r.type === result.type));
             const updated = [newRecent, ...filtered].slice(0, MAX_RECENT_SEARCHES);
-            localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+            localStorage.setItem(STORAGE_KEYS.ADMIN_RECENT_SEARCHES, JSON.stringify(updated));
             return updated;
         });
     }, []);
@@ -101,7 +100,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
     // Clear all recent searches
     const clearRecentSearches = useCallback(() => {
         setRecentSearches([]);
-        localStorage.removeItem(RECENT_SEARCHES_KEY);
+        localStorage.removeItem(STORAGE_KEYS.ADMIN_RECENT_SEARCHES);
     }, []);
 
     // Reset search when dialog closes

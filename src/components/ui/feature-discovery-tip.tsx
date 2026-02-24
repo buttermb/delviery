@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Lightbulb, Sparkles, Keyboard, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 interface FeatureTip {
   id: string;
@@ -29,7 +30,7 @@ interface FeatureDiscoveryTipProps {
   className?: string;
 }
 
-const DISMISSED_TIPS_KEY = 'dismissed_feature_tips';
+const DISMISSED_TIPS_KEY = STORAGE_KEYS.DISMISSED_FEATURE_TIPS;
 
 function getDismissedTips(): string[] {
   try {

@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/logger';
 import { safeStorage } from '@/utils/safeStorage';
 import { supabase } from '@/integrations/supabase/client';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export interface ShopCartItem {
     productId: string;
@@ -23,9 +24,9 @@ export interface ShopCartItem {
     minExpiryDays?: number;
 }
 
-const getCartKey = (storeId: string) => `shop_cart_${storeId}`;
-const GUEST_CART_KEY = 'guest_cart';
-const getCouponKey = (storeId: string) => `shop_coupon_${storeId}`;
+const getCartKey = (storeId: string) => `${STORAGE_KEYS.SHOP_CART_PREFIX}${storeId}`;
+const GUEST_CART_KEY = STORAGE_KEYS.GUEST_CART;
+const getCouponKey = (storeId: string) => `${STORAGE_KEYS.SHOP_COUPON_PREFIX}${storeId}`;
 const MAX_QUANTITY_PER_ITEM = 10; // Maximum quantity per product in cart
 
 interface UseShopCartOptions {

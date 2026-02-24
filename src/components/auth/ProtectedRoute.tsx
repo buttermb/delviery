@@ -11,6 +11,7 @@ import { type ReactNode, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { logger } from '@/lib/logger';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { ShieldAlert, ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Role, Permission } from '@/lib/permissions/rolePermissions';
@@ -140,7 +141,7 @@ function getLoginPath(tenantSlug: string | undefined): string {
   }
 
   try {
-    const lastSlug = localStorage.getItem('lastTenantSlug');
+    const lastSlug = localStorage.getItem(STORAGE_KEYS.LAST_TENANT_SLUG);
     if (lastSlug) {
       return `/${lastSlug}/admin/login`;
     }

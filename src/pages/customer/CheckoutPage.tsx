@@ -34,6 +34,7 @@ import type { LucideIcon } from "lucide-react";
 import { CustomerMobileNav } from "@/components/customer/CustomerMobileNav";
 import { CustomerMobileBottomNav } from "@/components/customer/CustomerMobileBottomNav";
 import { queryKeys } from "@/lib/queryKeys";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 
 type CheckoutStep = "cart" | "delivery" | "payment" | "review";
 
@@ -214,7 +215,7 @@ export default function CheckoutPage() {
         await supabase.from("cart_items").delete().eq("user_id", user.id);
         queryClient.invalidateQueries({ queryKey: queryKeys.cart.user(user.id, tenantId) });
       } else {
-        localStorage.removeItem("guest_cart");
+        localStorage.removeItem(STORAGE_KEYS.GUEST_CART);
       }
 
       toast.success("Order placed successfully!", {

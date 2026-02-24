@@ -29,6 +29,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { queryKeys } from '@/lib/queryKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 // Type definitions
 type NotificationPriority = 'critical' | 'high' | 'medium' | 'low';
@@ -60,7 +61,7 @@ export function SmartNotificationsCenter() {
   // Local state for read/dismissed notifications
   const [readNotificationIds, setReadNotificationIds] = useState<string[]>(() => {
     try {
-      const stored = localStorage.getItem(`notifications_read_${tenantId}`);
+      const stored = localStorage.getItem(`${STORAGE_KEYS.NOTIFICATIONS_READ_PREFIX}${tenantId}`);
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -71,7 +72,7 @@ export function SmartNotificationsCenter() {
   const markAsRead = (id: string) => {
     const newIds = [...readNotificationIds, id];
     setReadNotificationIds(newIds);
-    localStorage.setItem(`notifications_read_${tenantId}`, JSON.stringify(newIds));
+    localStorage.setItem(`${STORAGE_KEYS.NOTIFICATIONS_READ_PREFIX}${tenantId}`, JSON.stringify(newIds));
   };
 
   const markAllAsRead = () => {
@@ -80,7 +81,7 @@ export function SmartNotificationsCenter() {
     // Deduplicate
     const uniqueIds = Array.from(new Set(newIds));
     setReadNotificationIds(uniqueIds);
-    localStorage.setItem(`notifications_read_${tenantId}`, JSON.stringify(uniqueIds));
+    localStorage.setItem(`${STORAGE_KEYS.NOTIFICATIONS_READ_PREFIX}${tenantId}`, JSON.stringify(uniqueIds));
   };
 
   // Fetch notifications

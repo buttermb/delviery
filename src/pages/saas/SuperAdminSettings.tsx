@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { handleError } from '@/utils/errorHandling/handlers';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export default function SuperAdminSettings() {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ export default function SuperAdminSettings() {
     try {
       // In production, save to a platform_settings table
       // For now, save to localStorage
-      localStorage.setItem('platform_settings', JSON.stringify(platformSettings));
+      localStorage.setItem(STORAGE_KEYS.PLATFORM_SETTINGS, JSON.stringify(platformSettings));
 
       toast.success('Platform settings have been updated');
     } catch (error) {

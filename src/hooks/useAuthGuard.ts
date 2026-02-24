@@ -11,6 +11,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { logger } from '@/lib/logger';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 import type { Role, Permission } from '@/lib/permissions/rolePermissions';
 
 interface UseAuthGuardOptions {
@@ -163,7 +164,7 @@ function getLoginPath(tenantSlug: string | undefined): string {
 
   // Try localStorage fallback
   try {
-    const lastSlug = localStorage.getItem('lastTenantSlug');
+    const lastSlug = localStorage.getItem(STORAGE_KEYS.LAST_TENANT_SLUG);
     if (lastSlug) {
       return `/${lastSlug}/admin/login`;
     }

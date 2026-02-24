@@ -49,6 +49,7 @@ import { toast } from "sonner";
 import { formatSmartDate } from "@/lib/formatters";
 import { handleError } from "@/utils/errorHandling/handlers";
 import { queryKeys } from "@/lib/queryKeys";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -507,7 +508,7 @@ export default function TenantAdminDashboardPage() {
         setIsEmptyAccount(isEmpty);
 
         // If completely empty AND onboarding not completed, show quick start
-        const onboardingCompleted = localStorage.getItem(`onboarding_completed_${tenantId}`);
+        const onboardingCompleted = localStorage.getItem(`${STORAGE_KEYS.ONBOARDING_COMPLETED_PREFIX}${tenantId}`);
         if (isEmpty && !onboardingCompleted && !showWelcomeModal) {
           // Small delay to avoid conflicting with welcome modal
           quickStartTimer = setTimeout(() => {
@@ -1358,7 +1359,7 @@ export default function TenantAdminDashboardPage() {
         onOpenChange={setShowQuickStart}
         onComplete={() => {
           setShowQuickStart(false);
-          localStorage.setItem(`onboarding_completed_${tenantId}`, 'true');
+          localStorage.setItem(`${STORAGE_KEYS.ONBOARDING_COMPLETED_PREFIX}${tenantId}`, 'true');
           window.location.reload(); // Refresh to show new data
         }}
       />

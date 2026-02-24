@@ -5,6 +5,7 @@
 
 
 import { logger } from '@/lib/logger';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 interface ErrorReport {
   message: string;
   stack?: string;
@@ -15,7 +16,7 @@ interface ErrorReport {
 }
 
 const MAX_ERRORS = 50;
-const STORAGE_KEY = 'admin_error_logs';
+const ERROR_LOG_KEY = STORAGE_KEYS.ADMIN_ERROR_LOGS;
 
 class ErrorReporter {
   private errors: ErrorReport[] = [];
@@ -26,7 +27,7 @@ class ErrorReporter {
 
   private loadErrors() {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(ERROR_LOG_KEY);
       if (stored) {
         this.errors = JSON.parse(stored);
       }
@@ -38,7 +39,7 @@ class ErrorReporter {
   private saveErrors() {
     try {
       const recentErrors = this.errors.slice(-MAX_ERRORS);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(recentErrors));
+      localStorage.setItem(ERROR_LOG_KEY, JSON.stringify(recentErrors));
     } catch (e) {
       logger.error('Failed to save error logs', e);
     }
@@ -70,7 +71,7 @@ class ErrorReporter {
   clearErrors() {
     this.errors = [];
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(ERROR_LOG_KEY);
     } catch (e) {
       logger.error('Failed to clear error logs', e);
     }

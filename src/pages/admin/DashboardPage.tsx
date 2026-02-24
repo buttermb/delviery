@@ -42,6 +42,7 @@ import { KPICard, KPICardSkeleton } from '@/components/admin/dashboard/KPICard';
 import { SetupCompletionWidget } from '@/components/admin/dashboard/SetupCompletionWidget';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { EmptyState } from '@/components/admin/shared/EmptyState';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 // Lazy load RevenueWidget for better performance
 const RevenueWidget = lazy(() => import('@/components/admin/dashboard/RevenueWidget').then(module => ({ default: module.RevenueWidget })));
@@ -170,7 +171,7 @@ const PERIOD_LABELS: Record<DashboardPeriod, string> = {
   'ytd': 'YTD',
 };
 
-const WHATS_NEW_KEY = 'floraiq_whats_new_r3';
+const WHATS_NEW_KEY = STORAGE_KEYS.WHATS_NEW;
 
 export function DashboardPage() {
   usePageTitle('Dashboard');

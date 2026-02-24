@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 import { useEffect, useState, useCallback } from 'react';
 import { clientEncryption } from '../encryption/clientEncryption';
 import type { EncryptionHookResult } from '../encryption/types';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 /**
  * React hook for encryption operations
@@ -39,7 +40,7 @@ export function useEncryption(): EncryptionHookResult {
   const initialize = useCallback(async (password: string) => {
     // Get user ID from sessionStorage or localStorage
     // This should be set by auth context after login
-    const userId = sessionStorage.getItem('floraiq_user_id') || localStorage.getItem('floraiq_user_id');
+    const userId = sessionStorage.getItem('floraiq_user_id') || localStorage.getItem(STORAGE_KEYS.FLORAIQ_USER_ID);
     
     if (!userId) {
       throw new Error('User not authenticated');

@@ -12,13 +12,14 @@ import { cn } from '@/lib/utils';
 import { useCredits } from '@/hooks/useCredits';
 import { GRACE_PERIOD } from '@/lib/credits';
 import { CreditPurchaseModal } from './CreditPurchaseModal';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 export interface GracePeriodBannerProps {
   className?: string;
   onDismiss?: () => void;
 }
 
-const GRACE_STORAGE_KEY = 'credit_grace_period_start';
+const GRACE_STORAGE_KEY = STORAGE_KEYS.CREDIT_GRACE_PERIOD_START;
 
 export function GracePeriodBanner({ className, onDismiss }: GracePeriodBannerProps) {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);

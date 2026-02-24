@@ -15,6 +15,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 /**
  * Notification type matching the database schema
@@ -316,7 +317,7 @@ export const useSendNotification = () => {
   return useMutation({
     mutationFn: async ({ orderId, event, customMessage }: SendNotificationParams): Promise<NotificationResult> => {
       // Get notification settings
-      const settingsStr = localStorage.getItem('notification_settings');
+      const settingsStr = localStorage.getItem(STORAGE_KEYS.NOTIFICATION_SETTINGS);
       if (!settingsStr) {
         logger.warn('Notification settings not configured, using defaults');
       }
