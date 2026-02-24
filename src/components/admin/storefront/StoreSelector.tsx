@@ -89,6 +89,7 @@ export function StoreSelector({
                   src={store.logo_url}
                   alt={`${store.store_name} logo`}
                   className="w-8 h-8 rounded object-cover"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">

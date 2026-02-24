@@ -288,8 +288,7 @@ export function useCredits(): UseCreditsReturn {
       setShowWarning(true);
       trackCreditEvent(tenantId, 'low_credit_warning_shown', balance);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLowCredits, showWarning, tenantId]);
+  }, [isLowCredits, showWarning, tenantId, balance]);
 
   // Show progressive low balance warnings at 2000, 1000, 500, 100 credits
   useEffect(() => {

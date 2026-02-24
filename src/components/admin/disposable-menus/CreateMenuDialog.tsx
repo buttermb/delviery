@@ -294,6 +294,8 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
       setCustomMessage('');
       setHeaderImage('');
     }
+  // Deps: only `open` matters. All other calls are React state setters (stable)
+  // and `generateAccessCode` is a component-scoped function with no external deps.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 

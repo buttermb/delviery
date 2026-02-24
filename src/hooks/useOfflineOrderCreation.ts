@@ -4,7 +4,7 @@
  * Uses IndexedDB for persistence and the offline queue for sync.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from '@/lib/logger';
 import { db as idb } from '@/lib/idb';
@@ -75,12 +75,16 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
     }
   }, [tenantId]);
 
+  // Ref holds latest syncOfflineOrders so event listeners don't go stale.
+  // Updated below after syncOfflineOrders is defined.
+  const syncOfflineOrdersRef = useRef<() => Promise<{ success: number; failed: number }>>(() => Promise.resolve({ success: 0, failed: 0 }));
+
   // Monitor online status
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
       // Auto-sync when coming back online
-      syncOfflineOrders();
+      syncOfflineOrdersRef.current();
     };
     const handleOffline = () => setIsOnline(false);
 
@@ -91,7 +95,6 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantId]);
 
   // Load orders on mount and when tenantId changes
@@ -276,8 +279,15 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
     }
 
     return { success, failed };
+  // syncSingleOrder is an unstable local async function. Wrapping it in useCallback
+  // would require deep dependency chains (supabase, idb, queryClient, state setters).
+  // Omitting it here is safe because syncOfflineOrders always reads the latest
+  // offlineOrders and calls the current syncSingleOrder closure.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offlineOrders, isSyncing, loadOfflineOrders]);
+
+  // Keep the ref current so event listeners always call the latest version
+  useEffect(() => { syncOfflineOrdersRef.current = syncOfflineOrders; }, [syncOfflineOrders]);
 
   // Remove an offline order
   const removeOfflineOrder = useCallback(async (id: string): Promise<void> => {
@@ -317,6 +327,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
     );
 
     await syncSingleOrder(resetOrder);
+  // syncSingleOrder is an unstable local async function (same rationale as syncOfflineOrders).
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offlineOrders]);
 

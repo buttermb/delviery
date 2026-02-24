@@ -54,6 +54,7 @@ export function GoogleSearchPreview({
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">

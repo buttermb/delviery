@@ -140,6 +140,9 @@ export default function FinancialCenterReal() {
       avgDealSize,
       clientProfits,
     };
+  // `now`, `monthStart`, `monthEnd` are derived from `new Date()` inside the memo.
+  // Adding `now` would defeat memoization since it changes every render.
+  // Recomputation is correctly driven by data changes (orders/clients/payments).
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders, clients, payments]);
 

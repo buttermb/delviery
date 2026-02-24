@@ -31,8 +31,7 @@ export default function Contact() {
   useEffect(() => {
     const saved = restoreForm();
     if (saved) setFormData(saved);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [restoreForm]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

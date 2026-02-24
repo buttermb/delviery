@@ -751,8 +751,11 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => {
       clearTimeout(safetyTimeout);
     };
+    // Mount-only: initializeAuth captures refs, auth helpers, and location from closure.
+    // Re-running on every dependency change would re-trigger the full auth flow on every
+    // route navigation, causing login loops and session thrashing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount - auth state persists across route changes
+  }, []);
 
   // Periodic token validation - acts as a safety net alongside the visibility-aware timer.
   // The primary refresh mechanism is the createRefreshTimer (handles visibility + sleep detection).

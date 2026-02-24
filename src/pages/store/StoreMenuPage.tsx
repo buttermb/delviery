@@ -771,6 +771,7 @@ export default function StoreMenuPage() {
                   src={store.logo_url}
                   alt={store.store_name}
                   className="h-5 object-contain"
+                  loading="lazy"
                 />
               ) : (
                 <Leaf className="w-4 h-4" style={{ color: primaryColor }} />

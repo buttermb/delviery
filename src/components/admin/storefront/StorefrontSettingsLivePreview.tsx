@@ -154,6 +154,7 @@ export function StorefrontSettingsLivePreview({
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                       }}
+                      loading="lazy"
                     />
                   ) : (
                     <div

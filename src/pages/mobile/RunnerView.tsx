@@ -11,7 +11,7 @@
  * - Offline support with queue sync
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import type { DeliveryStatus } from '@/types/interconnected';
@@ -122,12 +122,17 @@ export default function RunnerView() {
     }
   }, [offlineQueue]);
 
-  // Sync offline queue when online
+  // Keep a ref to the latest syncOfflineQueue so the effect
+  // always calls the current version without re-running when the callback identity changes.
+  const syncOfflineQueueRef = useRef(syncOfflineQueue);
+  useEffect(() => { syncOfflineQueueRef.current = syncOfflineQueue; }, [syncOfflineQueue]);
+
+  // Sync offline queue when coming back online.
+  // Only `isOnline` is a trigger — the queue length guard prevents unnecessary calls.
   useEffect(() => {
-    if (isOnline && offlineQueue.length > 0) {
-      syncOfflineQueue();
+    if (isOnline) {
+      syncOfflineQueueRef.current();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
   // Check for existing runner session
