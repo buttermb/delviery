@@ -208,13 +208,6 @@ export default function CouponManagementPage() {
     return new Date(coupon.end_date) < new Date();
   };
 
-  const isActive = (coupon: Coupon) => {
-    if (coupon.status !== "active") return false;
-    if (isExpired(coupon)) return false;
-    if (coupon.start_date && new Date(coupon.start_date) > new Date()) return false;
-    return true;
-  };
-
   if (error) {
     return (
       <div className="p-8 text-center">
@@ -439,7 +432,6 @@ export default function CouponManagementPage() {
                     {filteredCoupons.map((coupon) => {
                       const StatusIcon = STATUS_ICONS[coupon.status || "inactive"] || XCircle;
                       const expired = isExpired(coupon);
-                      const _active = isActive(coupon);
                       const displayStatus = expired ? "expired" : (coupon.status || "inactive");
 
                       return (

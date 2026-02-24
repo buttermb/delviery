@@ -20,7 +20,6 @@ import { toast } from "sonner";
 import { inventoryTutorial } from "@/lib/tutorials/tutorialConfig";
 import { formatCurrency, formatQuantity } from '@/lib/formatters';
 import { TruncatedText } from '@/components/shared/TruncatedText';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 
 
 interface Product {
@@ -175,15 +174,6 @@ export function InventoryManagement() {
       return acc;
     }, {} as Record<string, Product[]>);
   }, [products]);
-
-  const _filteredProducts = products.filter(p => {
-    const searchLower = sanitizeSearchInput(searchTerm).toLowerCase();
-    return (
-      p.name?.toLowerCase().includes(searchLower) ||
-      p.sku?.toLowerCase().includes(searchLower) ||
-      p.batch_number?.toLowerCase().includes(searchLower)
-    );
-  });
 
   const totalStock = products.reduce((sum, item) => sum + Number(item.available_quantity || 0), 0);
 

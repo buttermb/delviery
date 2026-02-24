@@ -55,10 +55,6 @@ export default function FinancialCenter() {
     setCollectionDialogOpen(true);
   };
 
-  const _handleSchedulePayment = () => {
-    setScheduleDialogOpen(true);
-  };
-
   const submitCollection = async (notes: string) => {
     if (!selectedClient) return;
     

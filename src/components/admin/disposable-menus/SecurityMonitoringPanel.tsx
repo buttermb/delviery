@@ -99,25 +99,6 @@ export const SecurityMonitoringPanel = () => {
     if (data) setBlockedIPs(data);
   };
 
-  const _handleBlockIP = async (ipAddress: string, reason: string) => {
-    const { error } = await supabase
-      .from('blocked_ips')
-      .insert({
-        ip_address: ipAddress,
-        reason: reason,
-        blocked_by: (await supabase.auth.getUser()).data.user?.id
-      });
-
-    if (error) {
-      toast.error("Failed to block IP");
-      return;
-    }
-
-    toast.success("${ipAddress} has been blocked successfully");
-
-    loadBlockedIPs();
-  };
-
   const handleUnblockIP = async () => {
     if (!ipToUnblock) return;
     setIsUnblocking(true);

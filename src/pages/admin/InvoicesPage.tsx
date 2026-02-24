@@ -31,9 +31,7 @@ import {
     MoreHorizontal,
     FileText,
     Filter,
-    ExternalLink,
     CheckCircle,
-    AlertCircle,
     Clock,
     DollarSign,
     Send,
@@ -642,37 +640,6 @@ export function InvoicesPage() {
         errorMessage: "Failed to duplicate invoice"
     });
 
-    const _handlePrintInvoice = useCallback(async (invoice: CRMInvoice) => {
-        if (isGeneratingPDF) return;
-
-        setIsGeneratingPDF(true);
-        try {
-            const doc = new jsPDF({
-                orientation: "portrait",
-                unit: "mm",
-                format: "a4",
-            });
-
-            // Generate PDF content (reuse the same generation logic)
-            await generateEnhancedInvoicePDF({ invoice, settings: crmSettings });
-
-            // For print, we generate and open in a new window
-            const pdfBlob = doc.output('blob');
-            const pdfUrl = URL.createObjectURL(pdfBlob);
-            const printWindow = window.open(pdfUrl);
-            if (printWindow) {
-                printWindow.onload = () => {
-                    printWindow.print();
-                };
-            }
-        } catch (error) {
-            logger.error("PDF print failed:", error instanceof Error ? error : new Error(String(error)), { component: 'InvoicesPage' });
-            toast.error("Failed to print invoice");
-        } finally {
-            setIsGeneratingPDF(false);
-        }
-    }, [crmSettings, isGeneratingPDF]);
-
     const handleDownloadPDF = useCallback(async (invoice: CRMInvoice) => {
         if (isGeneratingPDF) return;
 
@@ -708,21 +675,6 @@ export function InvoicesPage() {
                 return <Badge className="bg-gray-900 text-white border-gray-900 dark:bg-gray-100/10 dark:text-gray-300 dark:border-gray-600">{status === "void" ? "Void" : "Cancelled"}</Badge>;
             default:
                 return <Badge variant="outline">{status}</Badge>;
-        }
-    };
-
-    const _getStatusIcon = (status: string) => {
-        switch (status) {
-            case "paid":
-                return <CheckCircle className="h-4 w-4 text-green-500" />;
-            case "overdue":
-                return <AlertCircle className="h-4 w-4 text-red-500" />;
-            case "sent":
-                return <ExternalLink className="h-4 w-4 text-blue-500" />;
-            case "draft":
-                return <FileText className="h-4 w-4 text-muted-foreground" />;
-            default:
-                return <Clock className="h-4 w-4 text-muted-foreground" />;
         }
     };
 
@@ -762,10 +714,6 @@ export function InvoicesPage() {
 
     const outstandingAmount = invoices
         ?.filter((i) => i.status === "sent" || i.status === "overdue")
-        .reduce((sum, i) => sum + i.total, 0) || 0;
-
-    const _overdueAmount = invoices
-        ?.filter((i) => i.status === "overdue")
         .reduce((sum, i) => sum + i.total, 0) || 0;
 
     // Calculate paid this month

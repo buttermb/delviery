@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { logger } from '@/lib/logger';
-import { sanitizeFormInput, sanitizeUrlInput, sanitizeTextareaInput } from '@/lib/utils/sanitize';
+import { sanitizeUrlInput } from '@/lib/utils/sanitize';
 import { SafeModal, useFormDirtyState } from '@/components/ui/safe-modal';
 import { DialogFooterActions } from '@/components/ui/dialog-footer-actions';
 import { Input } from '@/components/ui/input';
@@ -67,9 +67,7 @@ export function CustomIntegrationForm({
     setIsSubmitting(true);
 
     // Sanitize form inputs before processing
-    const _sanitizedName = sanitizeFormInput(formData.name, 100);
     const sanitizedUrl = sanitizeUrlInput(formData.endpoint_url);
-    const _sanitizedDescription = sanitizeTextareaInput(formData.description, 500);
 
     if (!sanitizedUrl) {
       toast.error('Invalid endpoint URL');

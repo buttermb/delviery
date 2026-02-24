@@ -155,31 +155,6 @@ export default function OrdersPage() {
         },
     });
 
-    // Mark as paid - available for future use
-    const _markPaidMutation = useMutation({
-        mutationFn: async (orderId: string) => {
-            if (!tenantId) throw new Error('No tenant');
-            const { error } = await supabase
-                .from('marketplace_orders')
-                .update({
-                    payment_status: 'paid',
-                    paid_at: new Date().toISOString(),
-                })
-                .eq('id', orderId)
-                .eq('seller_tenant_id', tenantId);
-
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['marketplace-orders', tenantId] });
-            toast.success("Order marked as paid");
-        },
-        onError: (error: unknown) => {
-            logger.error('Failed to mark order as paid', error, { component: 'OrdersPage' });
-            toast.error("Error");
-        },
-    });
-
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'pending':
