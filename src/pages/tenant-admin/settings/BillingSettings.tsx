@@ -95,8 +95,8 @@ function mapInvoiceToPdfData(invoice: ExtendedInvoice, tenant: ExtendedTenant | 
     issueDate: invoice.issue_date || new Date().toISOString(),
     dueDate: invoice.due_date || new Date().toISOString(),
     customerName: tenant?.name || 'Customer',
-    customerAddress: tenant?.address || '',
-    customerEmail: tenant?.contact_email || '',
+    customerAddress: tenant?.address ?? '',
+    customerEmail: tenant?.contact_email ?? '',
     companyName: 'FloraIQ',
     companyAddress: '123 Business Ave, Suite 100',
     lineItems: Array.isArray(invoice.line_items)
@@ -116,7 +116,7 @@ function mapInvoiceToPdfData(invoice: ExtendedInvoice, tenant: ExtendedTenant | 
     tax: invoice.tax || 0,
     taxRate: invoice.tax_rate || 0,
     total: invoice.total || 0,
-    notes: invoice.notes || '',
+    notes: invoice.notes ?? '',
   };
 }
 
@@ -402,7 +402,7 @@ export default function BillingSettings() {
   <div class="section">
     <strong>Bill To:</strong><br/>
     ${invoiceData.customerName}<br/>
-    ${invoiceData.customerEmail || ''}
+    ${invoiceData.customerEmail ?? ''}
   </div>
   <table>
     <thead>
@@ -1137,7 +1137,7 @@ export default function BillingSettings() {
       <AddPaymentMethodDialog
         open={paymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
-        tenantId={tenantId || ''}
+        tenantId={tenantId ?? ''}
       />
     </div>
   );

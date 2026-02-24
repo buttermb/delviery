@@ -153,7 +153,7 @@ export default function IntegrationsSettings() {
 
       return (data ?? []).map(item => ({
         id: item.id,
-        url: (item.config as Record<string, unknown>)?.url as string || '',
+        url: (item.config as Record<string, unknown>)?.url as string ?? '',
         events: (item.config as Record<string, unknown>)?.events as string[] || ['order.created'],
         active: item.status === 'active',
         lastTriggered: item.updated_at ? formatSmartDate(item.updated_at, { includeTime: true }) : undefined,

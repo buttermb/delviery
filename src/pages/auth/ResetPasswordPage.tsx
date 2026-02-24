@@ -210,7 +210,7 @@ export function ResetPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Error Alert */}
             <AuthErrorAlert
-              message={resetError || ''}
+              message={resetError ?? ''}
               type="error"
               variant="light"
               className="mb-2"

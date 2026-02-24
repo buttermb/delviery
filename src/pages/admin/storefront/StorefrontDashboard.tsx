@@ -287,7 +287,7 @@ export default function StorefrontDashboard() {
           tenant_id: tenantId,
           store_name: data.storeName,
           slug: data.slug,
-          tagline: data.tagline || 'Welcome to our store',
+          tagline: data.tagline ?? 'Welcome to our store',
           is_active: false,
           is_public: false,
         })
@@ -411,7 +411,7 @@ export default function StorefrontDashboard() {
           onOpenChange={setCreateDialogOpen}
           onSubmit={(data) => createNewStoreMutation.mutate(data)}
           isCreating={createNewStoreMutation.isPending}
-          defaultStoreName={tenant?.business_name || ''}
+          defaultStoreName={tenant?.business_name ?? ''}
         />
       </div>
     );
@@ -447,7 +447,7 @@ export default function StorefrontDashboard() {
           open={deleteDialogOpen}
           onOpenChange={setDeleteDialogOpen}
           onConfirm={() => storeToDelete && deleteStoreMutation.mutate(storeToDelete.id)}
-          storeName={storeToDelete?.store_name || ''}
+          storeName={storeToDelete?.store_name ?? ''}
           isDeleting={deleteStoreMutation.isPending}
         />
 
@@ -456,7 +456,7 @@ export default function StorefrontDashboard() {
           onOpenChange={setCreateDialogOpen}
           onSubmit={(data) => createNewStoreMutation.mutate(data)}
           isCreating={createNewStoreMutation.isPending}
-          defaultStoreName={tenant?.business_name || ''}
+          defaultStoreName={tenant?.business_name ?? ''}
         />
       </div>
     );
@@ -490,7 +490,7 @@ export default function StorefrontDashboard() {
                 {activeStore?.is_active ? '● Live' : 'Draft'}
               </Badge>
             </div>
-            <p className="text-muted-foreground text-sm">{activeStore?.tagline || 'Your online storefront'}</p>
+            <p className="text-muted-foreground text-sm">{activeStore?.tagline ?? 'Your online storefront'}</p>
           </div>
         </div>
 
@@ -639,7 +639,7 @@ export default function StorefrontDashboard() {
       {activeStoreId && (
         <StorefrontFunnel
           storeId={activeStoreId}
-          primaryColor={activeStore?.primary_color || '#000'}
+          primaryColor={activeStore?.primary_color ?? '#000'}
         />
       )}
 
@@ -731,7 +731,7 @@ export default function StorefrontDashboard() {
                       <div>
                         <p className="font-medium">{order.order_number}</p>
                         <p className="text-sm text-muted-foreground">
-                          {order.customer_name || 'Guest'} • {formatSmartDate(order.created_at)}
+                          {order.customer_name ?? 'Guest'} • {formatSmartDate(order.created_at)}
                         </p>
                       </div>
                     </div>
@@ -791,7 +791,7 @@ export default function StorefrontDashboard() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={() => storeToDelete && deleteStoreMutation.mutate(storeToDelete.id)}
-        storeName={storeToDelete?.store_name || ''}
+        storeName={storeToDelete?.store_name ?? ''}
         isDeleting={deleteStoreMutation.isPending}
       />
 
@@ -800,7 +800,7 @@ export default function StorefrontDashboard() {
         onOpenChange={setCreateDialogOpen}
         onSubmit={(data) => createNewStoreMutation.mutate(data)}
         isCreating={createNewStoreMutation.isPending}
-        defaultStoreName={tenant?.business_name || ''}
+        defaultStoreName={tenant?.business_name ?? ''}
       />
     </div>
   );

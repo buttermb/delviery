@@ -190,10 +190,10 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
   useEffect(() => {
     if (existingListing) {
       form.reset({
-        product_name: existingListing.product_name || '',
-        product_type: existingListing.product_type || '',
-        strain_type: existingListing.strain_type || '',
-        description: existingListing.description || '',
+        product_name: existingListing.product_name ?? '',
+        product_type: existingListing.product_type ?? '',
+        strain_type: existingListing.strain_type ?? '',
+        description: existingListing.description ?? '',
         base_price: Number(existingListing.base_price) || 0,
         bulk_pricing: (existingListing.bulk_pricing as Array<{ quantity: number; price: number }>) ?? [],
         min_order_quantity: existingListing.min_order_quantity || 1,
@@ -218,10 +218,10 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
       };
 
       form.reset({
-        product_name: productData.name || '',
-        product_type: productTypeMap[productData.category?.toLowerCase() || ''] || productData.category || '',
-        strain_type: productData.strain_type || '',
-        description: productData.description || '',
+        product_name: productData.name ?? '',
+        product_type: productTypeMap[productData.category?.toLowerCase() ?? ''] ?? productData.category ?? '',
+        strain_type: productData.strain_type ?? '',
+        description: productData.description ?? '',
         base_price: Number(productData.wholesale_price) || 0,
         bulk_pricing: [],
         min_order_quantity: 1,

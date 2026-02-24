@@ -45,7 +45,7 @@ export default function TenantAdminLoginPage() {
 
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
     async (qEmail, qPassword, qSlug) => {
-      await login(qEmail, qPassword, qSlug || '');
+      await login(qEmail, qPassword, qSlug ?? '');
       toast.success("Welcome back!", {
         description: `Logged in to ${tenant?.business_name || tenantSlug}`,
       });
@@ -237,9 +237,9 @@ export default function TenantAdminLoginPage() {
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-[hsl(var(--tenant-surface))] p-6 sm:p-8">
           <AccountLockedScreen
             email={email}
-            tenantSlug={tenantSlug || ''}
+            tenantSlug={tenantSlug ?? ''}
             lockDurationSeconds={lockDurationSeconds}
-            businessName={tenant.business_name || tenantSlug || ''}
+            businessName={tenant.business_name ?? tenantSlug ?? ''}
             onUnlocked={() => {
               setAccountLocked(false);
               setLockDurationSeconds(0);
@@ -322,7 +322,7 @@ export default function TenantAdminLoginPage() {
 
           {/* Error Alert */}
           <AuthErrorAlert
-            message={loginError || ''}
+            message={loginError ?? ''}
             type={loginError ? getAuthErrorType(loginError) : 'error'}
             variant="light"
             className="mb-4"

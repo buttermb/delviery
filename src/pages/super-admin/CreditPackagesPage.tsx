@@ -310,11 +310,11 @@ function EditPackageDialog({
   package: CreditPackageDB | null;
   onSuccess: () => void;
 }) {
-  const [name, setName] = useState(pkg?.name || '');
+  const [name, setName] = useState(pkg?.name ?? '');
   const [credits, setCredits] = useState(pkg?.credits || 1000);
   const [priceCents, setPriceCents] = useState(pkg?.priceCents || 2999);
-  const [description, setDescription] = useState(pkg?.description || '');
-  const [badge, setBadge] = useState(pkg?.badge || '');
+  const [description, setDescription] = useState(pkg?.description ?? '');
+  const [badge, setBadge] = useState(pkg?.badge ?? '');
   const [isActive, setIsActive] = useState(pkg?.isActive ?? true);
   const [sortOrder, setSortOrder] = useState(pkg?.sortOrder || 0);
 
@@ -324,8 +324,8 @@ function EditPackageDialog({
       setName(pkg.name);
       setCredits(pkg.credits);
       setPriceCents(pkg.priceCents);
-      setDescription(pkg.description || '');
-      setBadge(pkg.badge || '');
+      setDescription(pkg.description ?? '');
+      setBadge(pkg.badge ?? '');
       setIsActive(pkg.isActive);
       setSortOrder(pkg.sortOrder);
     } else {

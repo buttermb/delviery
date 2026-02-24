@@ -266,7 +266,7 @@ export default function CartPage() {
                 <AnimatePresence mode="popLayout">
                   {cartItems.map((item, index) => (
                     <motion.div
-                      key={`${item.productId}-${item.variant || ''}`}
+                      key={`${item.productId}-${item.variant ?? ''}`}
                       data-testid="cart-item"
                       className="flex gap-4"
                       initial={{ opacity: 0, x: -20 }}

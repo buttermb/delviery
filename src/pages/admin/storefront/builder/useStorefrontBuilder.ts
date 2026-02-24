@@ -47,7 +47,7 @@ export function useStorefrontBuilder() {
         if (fromMenuId) {
             logger.info('StorefrontBuilder opened from menu', { menuId: fromMenuId, menuName });
             toast.info('Creating Storefront from Menu', {
-                description: `Starting with products from "${menuName || 'your menu'}"`,
+                description: `Starting with products from "${menuName ?? 'your menu'}"`,
             });
         }
     }, [fromMenuId, menuName]);
@@ -140,8 +140,8 @@ export function useStorefrontBuilder() {
                 logger.warn("Using mock data as DB fetch failed", e);
                 return {
                     id: 'mock-id',
-                    tenant_id: tenant?.id || '',
-                    store_name: tenant?.business_name || 'Mock Store',
+                    tenant_id: tenant?.id ?? '',
+                    store_name: tenant?.business_name ?? 'Mock Store',
                     slug: 'mock-store',
                     layout_config: [],
                     theme_config: { colors: { primary: '#000000', background: '#ffffff' } }

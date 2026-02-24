@@ -106,7 +106,7 @@ export default function AuditLogsPage() {
     return auditLogs.filter(log => {
       const actorEmail = log.actor_id ? actorMap.get(log.actor_id) : '';
       const tenantName = log.tenant_id ? tenantMap.get(log.tenant_id) : '';
-      const target = log.resource_type || tenantName || '';
+      const target = log.resource_type ?? tenantName ?? '';
       
       const matchesSearch = !searchTerm || 
         actorEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||

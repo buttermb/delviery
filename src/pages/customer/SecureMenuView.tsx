@@ -423,7 +423,7 @@ const SecureMenuView = () => {
     trackCheckoutStart,
     trackOrderComplete,
   } = useMenuEvents({
-    menuId: menuData?.menu_id || '',
+    menuId: menuData?.menu_id ?? '',
     tenantId: menuData?.tenant_id,
   });
 

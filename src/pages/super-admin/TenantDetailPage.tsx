@@ -56,7 +56,7 @@ export default function TenantDetailPage() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   // Validate UUID format
-  const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenantId || '');
+  const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenantId ?? '');
 
   // Fetch tenant details
   const { data: tenant, isLoading } = useQuery({
@@ -1140,7 +1140,7 @@ export default function TenantDetailPage() {
           </TabsContent>
 
           <TabsContent value="support" className="space-y-6">
-            <SupportTicketsTab tenantId={tenantId || ''} />
+            <SupportTicketsTab tenantId={tenantId ?? ''} />
           </TabsContent>
         </Tabs>
       </div>

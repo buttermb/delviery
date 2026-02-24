@@ -228,9 +228,9 @@ export default function StorefrontCoupons() {
       code: coupon.code,
       discount_type: coupon.discount_type,
       discount_value: coupon.discount_value.toString(),
-      minimum_order: coupon.minimum_order?.toString() || '',
-      max_uses: coupon.max_uses?.toString() || '',
-      expires_at: coupon.expires_at?.split('T')[0] || '',
+      minimum_order: coupon.minimum_order?.toString() ?? '',
+      max_uses: coupon.max_uses?.toString() ?? '',
+      expires_at: coupon.expires_at?.split('T')[0] ?? '',
     });
     setIsDialogOpen(true);
   };

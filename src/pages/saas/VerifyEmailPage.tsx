@@ -21,8 +21,8 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     if (location.state) {
-      setEmail(location.state.email || '');
-      setTenantId(location.state.tenantId || '');
+      setEmail(location.state.email ?? '');
+      setTenantId(location.state.tenantId ?? '');
     }
   }, [location]);
 

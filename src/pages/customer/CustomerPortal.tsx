@@ -309,13 +309,13 @@ function PortalProfileSection({ customerUser }: { customerUser: CustomerUser }) 
   useEffect(() => {
     if (profile) {
       setFormData({
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
-        phone: profile.phone || '',
-        address: profile.address || '',
-        city: profile.city || '',
-        state: profile.state || '',
-        zip_code: profile.zip_code || '',
+        first_name: profile.first_name ?? '',
+        last_name: profile.last_name ?? '',
+        phone: profile.phone ?? '',
+        address: profile.address ?? '',
+        city: profile.city ?? '',
+        state: profile.state ?? '',
+        zip_code: profile.zip_code ?? '',
       });
     }
   }, [profile]);
@@ -375,13 +375,13 @@ function PortalProfileSection({ customerUser }: { customerUser: CustomerUser }) 
   const handleCancel = () => {
     if (profile) {
       setFormData({
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
-        phone: profile.phone || '',
-        address: profile.address || '',
-        city: profile.city || '',
-        state: profile.state || '',
-        zip_code: profile.zip_code || '',
+        first_name: profile.first_name ?? '',
+        last_name: profile.last_name ?? '',
+        phone: profile.phone ?? '',
+        address: profile.address ?? '',
+        city: profile.city ?? '',
+        state: profile.state ?? '',
+        zip_code: profile.zip_code ?? '',
       });
     }
     setIsEditing(false);

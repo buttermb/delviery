@@ -165,8 +165,8 @@ export default function DeliveryTrackingPage() {
   const form = useForm<LookupFormData>({
     resolver: zodResolver(lookupSchema),
     defaultValues: {
-      orderNumber: searchParams.get('order') || '',
-      phone: searchParams.get('phone') || '',
+      orderNumber: searchParams.get('order') ?? '',
+      phone: searchParams.get('phone') ?? '',
     },
   });
 
@@ -252,7 +252,7 @@ export default function DeliveryTrackingPage() {
         return {
           id: data.id,
           order_id: data.id,
-          tracking_code: data.tracking_code || '',
+          tracking_code: data.tracking_code ?? '',
           status: data.status || 'pending',
           customer_name: data.customer_name,
           customer_phone: data.customer_phone,

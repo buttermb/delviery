@@ -74,7 +74,7 @@ export default function StorefrontCustomers() {
   });
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<string>(preferences.sortBy || 'total_spent');
+  const [sortBy, setSortBy] = useState<string>(preferences.sortBy ?? 'total_spent');
 
   // Marketplace customer sync hook
   const { sync: syncCustomers, isSyncing, syncResult } = useMarketplaceCustomerSync();
@@ -134,8 +134,8 @@ export default function StorefrontCustomers() {
           existing.total_spent += order.total_amount || 0;
           if (new Date(order.created_at) > new Date(existing.last_order)) {
             existing.last_order = order.created_at;
-            existing.customer_name = order.customer_name || existing.customer_name;
-            existing.customer_phone = order.customer_phone || existing.customer_phone;
+            existing.customer_name = order.customer_name ?? existing.customer_name;
+            existing.customer_phone = order.customer_phone ?? existing.customer_phone;
           }
           if (new Date(order.created_at) < new Date(existing.first_order)) {
             existing.first_order = order.created_at;
@@ -183,7 +183,7 @@ export default function StorefrontCustomers() {
         case 'recent':
           return new Date(b.last_order).getTime() - new Date(a.last_order).getTime();
         case 'name':
-          return (a.customer_name || '').localeCompare(b.customer_name || '');
+          return (a.customer_name ?? '').localeCompare(b.customer_name ?? '');
         default:
           return 0;
       }
@@ -395,7 +395,7 @@ export default function StorefrontCustomers() {
                         </div>
                         <div>
                           <p className="font-medium">
-                            {customer.customer_name || 'Guest'}
+                            {customer.customer_name ?? 'Guest'}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {customer.customer_email}

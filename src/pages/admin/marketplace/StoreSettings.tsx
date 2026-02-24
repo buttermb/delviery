@@ -140,7 +140,7 @@ export default function StoreSettings() {
                                 <Label htmlFor="business_name">Business Name</Label>
                                 <Input
                                     id="business_name"
-                                    defaultValue={profile?.business_name || tenant?.business_name}
+                                    defaultValue={profile?.business_name ?? tenant?.business_name}
                                     onChange={(e) => handleChange('business_name', e.target.value)}
                                 />
                             </div>
@@ -151,7 +151,7 @@ export default function StoreSettings() {
                                     id="business_description"
                                     placeholder="Tell customers about your store..."
                                     className="min-h-[100px]"
-                                    defaultValue={profile?.business_description || ''}
+                                    defaultValue={profile?.business_description ?? ''}
                                     onChange={(e) => handleChange('business_description', e.target.value)}
                                 />
                             </div>
@@ -208,7 +208,7 @@ export default function StoreSettings() {
                                 <Input
                                     placeholder="Or Image URL"
                                     aria-label="Logo image URL"
-                                    value={currentProfile?.logo_url || ''}
+                                    value={currentProfile?.logo_url ?? ''}
                                     onChange={(e) => handleChange('logo_url', e.target.value)}
                                 />
                             </div>
@@ -230,7 +230,7 @@ export default function StoreSettings() {
                                         placeholder="Or Image URL"
                                         aria-label="Cover image URL"
                                         className="flex-1"
-                                        value={currentProfile?.cover_image_url || ''}
+                                        value={currentProfile?.cover_image_url ?? ''}
                                         onChange={(e) => handleChange('cover_image_url', e.target.value)}
                                     />
                                 </div>
@@ -252,7 +252,7 @@ export default function StoreSettings() {
                                     id="shipping_policy"
                                     placeholder="Explain your shipping rates, times, and restrictions..."
                                     className="min-h-[150px]"
-                                    defaultValue={profile?.shipping_policy || ''}
+                                    defaultValue={profile?.shipping_policy ?? ''}
                                     onChange={(e) => handleChange('shipping_policy', e.target.value)}
                                 />
                             </div>
@@ -263,7 +263,7 @@ export default function StoreSettings() {
                                     id="return_policy"
                                     placeholder="Explain your return and refund policy..."
                                     className="min-h-[150px]"
-                                    defaultValue={profile?.return_policy || ''}
+                                    defaultValue={profile?.return_policy ?? ''}
                                     onChange={(e) => handleChange('return_policy', e.target.value)}
                                 />
                             </div>
@@ -273,7 +273,7 @@ export default function StoreSettings() {
                                 <p className="text-sm text-muted-foreground mb-2">Comma separated list of state codes (e.g. CA, NY, TX)</p>
                                 <Input
                                     placeholder="CA, NY, NV"
-                                    defaultValue={profile?.shipping_states?.join(', ') || ''}
+                                    defaultValue={profile?.shipping_states?.join(', ') ?? ''}
                                     onChange={(e) => {
                                         const states = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
                                         handleChange('shipping_states', states);

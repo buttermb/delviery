@@ -97,7 +97,7 @@ export default function POReceivingPage() {
 
   // Fetch items for selected PO
   const { data: selectedPOItems } = useQuery({
-    queryKey: queryKeys.purchaseOrders.items(selectedPO?.id || ''),
+    queryKey: queryKeys.purchaseOrders.items(selectedPO?.id ?? ''),
     queryFn: async () => {
       if (!selectedPO?.id) return [];
 
@@ -143,7 +143,7 @@ export default function POReceivingPage() {
   });
 
   const filteredPOs = purchaseOrders?.filter((po) => {
-    const vendorName = vendors?.[po.vendor_id] || '';
+    const vendorName = vendors?.[po.vendor_id] ?? '';
     const matchesSearch =
       po.po_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       vendorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -313,7 +313,7 @@ export default function POReceivingPage() {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className={`${STATUS_COLORS[po.status || 'approved']} text-white border-0`}
+                            className={`${STATUS_COLORS[po.status ?? 'approved']} text-white border-0`}
                           >
                             {po.status === 'approved' ? 'Ready' : 'Pending'}
                           </Badge>
@@ -321,7 +321,7 @@ export default function POReceivingPage() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Building2 className="h-4 w-4 text-muted-foreground" />
-                            <span>{vendors?.[po.vendor_id] || 'Unknown Vendor'}</span>
+                            <span>{vendors?.[po.vendor_id] ?? 'Unknown Vendor'}</span>
                           </div>
                         </TableCell>
                         <TableCell>

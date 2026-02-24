@@ -124,13 +124,13 @@ export default function TeamSettings() {
 
       return data.map((u) => ({
         id: u.id,
-        user_id: u.user_id || '',
+        user_id: u.user_id ?? '',
         role: u.role || 'staff',
         status: (u.accepted_at ? 'active' : (u.status || 'invited')) as TenantUser['status'],
         email: u.email || 'No email on file',
-        full_name: `${profilesMap[u.user_id]?.first_name || u.first_name || ''} ${profilesMap[u.user_id]?.last_name || ''}`.trim() || u.name || 'Team Member',
+        full_name: `${profilesMap[u.user_id]?.first_name ?? u.first_name ?? ''} ${profilesMap[u.user_id]?.last_name ?? ''}`.trim() || u.name || 'Team Member',
         avatar_url: u.avatar_url || undefined,
-        created_at: u.created_at || '',
+        created_at: u.created_at ?? '',
         accepted_at: u.accepted_at || undefined,
       })) as TenantUser[];
     },

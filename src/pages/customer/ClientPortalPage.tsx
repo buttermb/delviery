@@ -16,7 +16,7 @@ export default function ClientPortalPage() {
   const { portalToken } = useParams<{ portalToken: string }>();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.portal.history(portalToken || ''),
+    queryKey: queryKeys.portal.history(portalToken ?? ''),
     queryFn: async () => {
       if (!portalToken) {
         throw new Error('Portal token is required');

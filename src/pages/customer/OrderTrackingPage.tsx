@@ -143,7 +143,7 @@ export default function OrderTrackingPage() {
             courier_id: null,
             order_items: rawItems.map((item, idx) => ({
               id: `sf-item-${idx}`,
-              product_id: item.product_id || '',
+              product_id: item.product_id ?? '',
               product_name: item.name || 'Product',
               quantity: item.quantity,
               price: item.price,

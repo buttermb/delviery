@@ -96,8 +96,8 @@ export default function StoreMenuPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // State from URL params for shareability
-  const initialCategory = searchParams.get('category') || '';
-  const initialSearch = searchParams.get('q') || '';
+  const initialCategory = searchParams.get('category') ?? '';
+  const initialSearch = searchParams.get('q') ?? '';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');

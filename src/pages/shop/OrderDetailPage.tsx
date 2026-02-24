@@ -287,7 +287,7 @@ export function OrderDetailPage() {
           </Link>
           <Separator orientation="vertical" className="h-5" />
           <h1 className="text-xl font-bold">Order #{order.order_number}</h1>
-          <Badge variant="outline" className={STATUS_COLORS[order.status] || ''}>
+          <Badge variant="outline" className={STATUS_COLORS[order.status] ?? ''}>
             {order.status.replace('_', ' ')}
           </Badge>
         </div>
@@ -599,7 +599,7 @@ export function OrderDetailPage() {
                   <p className="text-sm">
                     {typeof deliveryAddress === 'string'
                       ? deliveryAddress
-                      : `${(deliveryAddress as Record<string, string>).street || ''}${(deliveryAddress as Record<string, string>).apartment ? `, ${(deliveryAddress as Record<string, string>).apartment}` : ''}, ${(deliveryAddress as Record<string, string>).city || ''}, ${(deliveryAddress as Record<string, string>).state || ''} ${(deliveryAddress as Record<string, string>).zip || ''}`
+                      : `${(deliveryAddress as Record<string, string>).street ?? ''}${(deliveryAddress as Record<string, string>).apartment ? `, ${(deliveryAddress as Record<string, string>).apartment}` : ''}, ${(deliveryAddress as Record<string, string>).city ?? ''}, ${(deliveryAddress as Record<string, string>).state ?? ''} ${(deliveryAddress as Record<string, string>).zip ?? ''}`
                     }
                   </p>
                 ) : (

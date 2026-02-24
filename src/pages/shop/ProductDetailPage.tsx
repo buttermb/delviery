@@ -551,7 +551,7 @@ export function ProductDetailPage() {
         item={lastAddedItem}
         cartCount={cartCount}
         cartTotal={subtotal}
-        storeSlug={storeSlug || ''}
+        storeSlug={storeSlug ?? ''}
         onClose={() => setLastAddedItem(null)}
       />
 

@@ -205,7 +205,7 @@ export default function StorefrontSettings() {
 
   // Memoize preview settings to avoid unnecessary re-renders
   const previewSettings = useMemo(() => ({
-    store_name: formData.store_name || '',
+    store_name: formData.store_name ?? '',
     tagline: formData.tagline || null,
     logo_url: formData.logo_url || null,
     banner_url: formData.banner_url || null,
@@ -213,7 +213,7 @@ export default function StorefrontSettings() {
     secondary_color: formData.secondary_color || '#059669',
     accent_color: formData.accent_color || '#34d399',
     font_family: formData.font_family || 'Inter',
-    theme_config: formData.theme_config || null,
+    theme_config: formData.theme_config ?? null,
     featured_product_ids: formData.featured_product_ids ?? [],
   }), [
     formData.store_name,
@@ -538,7 +538,7 @@ export default function StorefrontSettings() {
                     <Label htmlFor="store_name">Store Name</Label>
                     <Input
                       id="store_name"
-                      value={formData.store_name || ''}
+                      value={formData.store_name ?? ''}
                       onChange={(e) => updateField('store_name', e.target.value)}
                       placeholder="My Store"
                     />
@@ -552,7 +552,7 @@ export default function StorefrontSettings() {
                       <span className="text-sm text-muted-foreground">/shop/</span>
                       <Input
                         id="slug"
-                        value={formData.slug || ''}
+                        value={formData.slug ?? ''}
                         onChange={(e) => updateField('slug', e.target.value.toLowerCase().replace(/\s+/g, '-'))}
                         placeholder="my-store"
                       />
@@ -564,7 +564,7 @@ export default function StorefrontSettings() {
                   <Label htmlFor="tagline">Tagline</Label>
                   <Input
                     id="tagline"
-                    value={formData.tagline || ''}
+                    value={formData.tagline ?? ''}
                     onChange={(e) => updateField('tagline', e.target.value)}
                     placeholder="Welcome to our store"
                   />
@@ -574,7 +574,7 @@ export default function StorefrontSettings() {
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
-                    value={formData.description || ''}
+                    value={formData.description ?? ''}
                     onChange={(e) => updateField('description', e.target.value)}
                     placeholder="Tell customers about your store..."
                     rows={4}
@@ -719,7 +719,7 @@ export default function StorefrontSettings() {
                       <Label htmlFor="logo_url">Logo URL</Label>
                       <Input
                         id="logo_url"
-                        value={formData.logo_url || ''}
+                        value={formData.logo_url ?? ''}
                         onChange={(e) => updateField('logo_url', e.target.value)}
                         placeholder="https://..."
                       />
@@ -739,7 +739,7 @@ export default function StorefrontSettings() {
                       <Label htmlFor="banner_url">Banner URL</Label>
                       <Input
                         id="banner_url"
-                        value={formData.banner_url || ''}
+                        value={formData.banner_url ?? ''}
                         onChange={(e) => updateField('banner_url', e.target.value)}
                         placeholder="https://..."
                       />
@@ -760,7 +760,7 @@ export default function StorefrontSettings() {
                     <Label htmlFor="favicon_url">Favicon URL</Label>
                     <Input
                       id="favicon_url"
-                      value={formData.favicon_url || ''}
+                      value={formData.favicon_url ?? ''}
                       onChange={(e) => updateField('favicon_url', e.target.value)}
                       placeholder="https://... (32x32 recommended)"
                     />
@@ -790,7 +790,7 @@ export default function StorefrontSettings() {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div
-                      className={`p-4 border rounded-lg cursor-pointer transition-all ${(formData.theme_config?.theme || 'standard') === 'standard'
+                      className={`p-4 border rounded-lg cursor-pointer transition-all ${(formData.theme_config?.theme ?? 'standard') === 'standard'
                         ? 'border-primary ring-2 ring-primary/20'
                         : 'border-muted hover:border-primary/50'
                         }`}
@@ -904,7 +904,7 @@ export default function StorefrontSettings() {
                       <Input
                         placeholder="Zip code"
                         aria-label="Delivery zone zip code"
-                        value={zone.zip_code || ''}
+                        value={zone.zip_code ?? ''}
                         onChange={(e) => {
                           const zones = [...(formData.delivery_zones ?? [])];
                           zones[index] = { ...zones[index], zip_code: e.target.value };
@@ -1315,7 +1315,7 @@ export default function StorefrontSettings() {
                         <>
                           <Input
                             type="time"
-                            value={formData.operating_hours?.[day]?.open || '09:00'}
+                            value={formData.operating_hours?.[day]?.open ?? '09:00'}
                             onChange={(e) => updateHours(day, 'open', e.target.value)}
                             aria-label={`${day} opening time`}
                             className="w-32"
@@ -1323,7 +1323,7 @@ export default function StorefrontSettings() {
                           <span className="text-muted-foreground">to</span>
                           <Input
                             type="time"
-                            value={formData.operating_hours?.[day]?.close || '21:00'}
+                            value={formData.operating_hours?.[day]?.close ?? '21:00'}
                             onChange={(e) => updateHours(day, 'close', e.target.value)}
                             aria-label={`${day} closing time`}
                             className="w-32"
@@ -1355,7 +1355,7 @@ export default function StorefrontSettings() {
                   <Label htmlFor="meta_title">Meta Title</Label>
                   <Input
                     id="meta_title"
-                    value={formData.meta_title || ''}
+                    value={formData.meta_title ?? ''}
                     onChange={(e) => updateField('meta_title', e.target.value)}
                     placeholder="Your Store Name - Tagline"
                   />
@@ -1365,7 +1365,7 @@ export default function StorefrontSettings() {
                   <Label htmlFor="meta_description">Meta Description</Label>
                   <Textarea
                     id="meta_description"
-                    value={formData.meta_description || ''}
+                    value={formData.meta_description ?? ''}
                     onChange={(e) => updateField('meta_description', e.target.value)}
                     placeholder="A brief description of your store for search engines..."
                     rows={3}
@@ -1376,7 +1376,7 @@ export default function StorefrontSettings() {
                   <Label htmlFor="og_image_url">Social Sharing Image URL</Label>
                   <Input
                     id="og_image_url"
-                    value={formData.og_image_url || ''}
+                    value={formData.og_image_url ?? ''}
                     onChange={(e) => updateField('og_image_url', e.target.value)}
                     placeholder="https://..."
                   />
@@ -1391,7 +1391,7 @@ export default function StorefrontSettings() {
                   <Label htmlFor="custom_domain">Custom Domain</Label>
                   <Input
                     id="custom_domain"
-                    value={formData.custom_domain || ''}
+                    value={formData.custom_domain ?? ''}
                     onChange={(e) => updateField('custom_domain', e.target.value)}
                     placeholder="shop.yourdomain.com"
                   />
@@ -1406,7 +1406,7 @@ export default function StorefrontSettings() {
                   <Label htmlFor="ga4_measurement_id">Google Analytics 4 Measurement ID</Label>
                   <Input
                     id="ga4_measurement_id"
-                    value={formData.ga4_measurement_id || ''}
+                    value={formData.ga4_measurement_id ?? ''}
                     onChange={(e) => updateField('ga4_measurement_id', e.target.value)}
                     placeholder="G-XXXXXXXXXX"
                   />

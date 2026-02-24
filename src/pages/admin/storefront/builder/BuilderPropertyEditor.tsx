@@ -42,7 +42,7 @@ export function BuilderPropertyEditor({
                                 <div key={key} className="space-y-2">
                                     <Label className="capitalize text-xs">{key.replace(/_/g, ' ')}</Label>
                                     <Input
-                                        value={(selectedSection.content[key] as string) || ''}
+                                        value={(selectedSection.content[key] as string) ?? ''}
                                         onChange={(e) => onUpdateSection(selectedSection.id, 'content', key, e.target.value)}
                                     />
                                 </div>
@@ -62,19 +62,19 @@ export function BuilderPropertyEditor({
                                                 <Input
                                                     type="color"
                                                     className="w-10 h-10 p-0"
-                                                    value={(selectedSection.styles[key] as string) || '#ffffff'}
+                                                    value={(selectedSection.styles[key] as string) ?? '#ffffff'}
                                                     onChange={(e) => onUpdateSection(selectedSection.id, 'styles', key, e.target.value)}
                                                 />
                                                 <Input
                                                     type="text"
-                                                    value={(selectedSection.styles[key] as string) || ''}
+                                                    value={(selectedSection.styles[key] as string) ?? ''}
                                                     onChange={(e) => onUpdateSection(selectedSection.id, 'styles', key, e.target.value)}
                                                     className="flex-1"
                                                 />
                                             </div>
                                         ) : (
                                             <Input
-                                                value={(selectedSection.styles[key] as string) || ''}
+                                                value={(selectedSection.styles[key] as string) ?? ''}
                                                 onChange={(e) => onUpdateSection(selectedSection.id, 'styles', key, e.target.value)}
                                             />
                                         )}

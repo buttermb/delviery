@@ -229,7 +229,7 @@ export function SignupPage() {
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/^-|-$/g, '')
-        : data.tenantSlug || '';
+        : data.tenantSlug ?? '';
 
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -370,7 +370,7 @@ export function SignupPage() {
           <CardContent>
             {/* Error Alert */}
             <AuthErrorAlert
-              message={signupError || ''}
+              message={signupError ?? ''}
               type="error"
               variant="light"
               className="mb-4"

@@ -38,7 +38,7 @@ export function StorefrontDesignPage() {
                 const { data, error } = await supabase
                     .from('marketplace_stores')
                     .select('*')
-                    .eq('tenant_id', tenant?.id || '')
+                    .eq('tenant_id', tenant?.id ?? '')
                     .maybeSingle();
 
                 if (error) throw error;
@@ -123,9 +123,9 @@ export function StorefrontDesignPage() {
                 )}
             >
                 <EditorEntryCard
-                    storeName={store?.store_name || null}
-                    isPublished={store?.is_public || false}
-                    updatedAt={store?.updated_at || null}
+                    storeName={store?.store_name ?? null}
+                    isPublished={store?.is_public ?? false}
+                    updatedAt={store?.updated_at ?? null}
                     isLoading={isLoading}
                     onOpenFullScreen={openFullScreen}
                     onOpenCompact={handleOpenCompact}

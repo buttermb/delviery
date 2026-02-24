@@ -40,7 +40,7 @@ export default function CustomerLoginPage() {
 
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
     async (qEmail, qPassword, qSlug) => {
-      await login(qEmail, qPassword, qSlug || '');
+      await login(qEmail, qPassword, qSlug ?? '');
       toast.success("Welcome!", {
         description: "Logged in successfully",
       });
@@ -251,7 +251,7 @@ export default function CustomerLoginPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <RateLimitWarning remainingSeconds={remainingSeconds} variant="dark" />
             <AuthErrorAlert
-              message={loginError || ''}
+              message={loginError ?? ''}
               type={loginError ? getAuthErrorType(loginError) : 'error'}
               variant="dark"
               className="mb-2"

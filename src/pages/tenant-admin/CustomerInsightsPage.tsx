@@ -205,7 +205,7 @@ export default function CustomerInsightsPage() {
       });
 
       return (data ?? []).map(c => ({
-        name: `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Unknown',
+        name: `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() || 'Unknown',
         orders: countMap[c.id] || 0,
         spent: c.total_spent || 0,
         lastOrder: c.last_purchase_at 

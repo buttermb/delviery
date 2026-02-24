@@ -84,7 +84,7 @@ export default function BusinessSettings() {
   const [isRestoring, setIsRestoring] = useState(false);
 
   const [businessInfo, setBusinessInfo] = useState({
-    name: tenant?.business_name || '',
+    name: tenant?.business_name ?? '',
     phone: '',
     address: '',
     website: '',

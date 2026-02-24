@@ -17,7 +17,7 @@ import { useState } from 'react';
 
 export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get('q') || '';
+  const query = searchParams.get('q') ?? '';
   const [searchInput, setSearchInput] = useState(query);
 
   const { data: posts, isLoading } = useQuery({

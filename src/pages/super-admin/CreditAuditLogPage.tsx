@@ -131,12 +131,12 @@ export default function CreditAuditLogPage() {
     const headers = ['Date', 'Tenant', 'Type', 'Action', 'Amount', 'Balance After', 'Description'];
     const rows = data.transactions.map(tx => [
       new Date(tx.createdAt).toISOString(),
-      tx.metadata?.tenantName || '',
+      tx.metadata?.tenantName ?? '',
       tx.transactionType,
-      tx.actionType || '',
+      tx.actionType ?? '',
       tx.amount.toString(),
       tx.balanceAfter.toString(),
-      tx.description || '',
+      tx.description ?? '',
     ]);
 
     const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');

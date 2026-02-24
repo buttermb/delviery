@@ -160,7 +160,7 @@ export default function MarketplaceModerationPage() {
   const handleVerify = (profile: MarketplaceProfile, action: 'approve' | 'reject') => {
     setSelectedProfile(profile);
     setVerificationAction(action);
-    setVerificationNotes(profile.license_verification_notes || '');
+    setVerificationNotes(profile.license_verification_notes ?? '');
     setShowVerificationDialog(true);
   };
 

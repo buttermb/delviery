@@ -274,7 +274,7 @@ export default function CustomerSignUpPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <RateLimitWarning remainingSeconds={remainingSeconds} variant="dark" />
             <AuthErrorAlert
-              message={signupError || ''}
+              message={signupError ?? ''}
               type="error"
               variant="dark"
               className="mb-2"

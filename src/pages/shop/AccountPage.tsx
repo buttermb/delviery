@@ -290,7 +290,7 @@ export default function AccountPage() {
       refunded: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
     };
     return (
-      <Badge variant="outline" className={colors[status] || ''}>
+      <Badge variant="outline" className={colors[status] ?? ''}>
         {status.replace('_', ' ')}
       </Badge>
     );
@@ -1202,13 +1202,13 @@ function ProfileSection({
   useEffect(() => {
     if (profile) {
       setFormData({
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
-        phone: profile.phone || '',
-        address: profile.address || '',
-        city: profile.city || '',
-        state: profile.state || '',
-        zip_code: profile.zip_code || '',
+        first_name: profile.first_name ?? '',
+        last_name: profile.last_name ?? '',
+        phone: profile.phone ?? '',
+        address: profile.address ?? '',
+        city: profile.city ?? '',
+        state: profile.state ?? '',
+        zip_code: profile.zip_code ?? '',
       });
     }
   }, [profile]);
@@ -1256,13 +1256,13 @@ function ProfileSection({
   const handleCancel = () => {
     if (profile) {
       setFormData({
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
-        phone: profile.phone || '',
-        address: profile.address || '',
-        city: profile.city || '',
-        state: profile.state || '',
-        zip_code: profile.zip_code || '',
+        first_name: profile.first_name ?? '',
+        last_name: profile.last_name ?? '',
+        phone: profile.phone ?? '',
+        address: profile.address ?? '',
+        city: profile.city ?? '',
+        state: profile.state ?? '',
+        zip_code: profile.zip_code ?? '',
       });
     }
     setIsEditing(false);

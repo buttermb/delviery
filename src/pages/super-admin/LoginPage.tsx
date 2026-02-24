@@ -140,7 +140,7 @@ export default function SuperAdminLoginPage() {
 
           {/* Error Alert */}
           <AuthErrorAlert
-            message={loginError || ''}
+            message={loginError ?? ''}
             type={loginError ? getAuthErrorType(loginError) : 'error'}
             variant="light"
             className="mb-4"

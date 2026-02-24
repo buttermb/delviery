@@ -274,7 +274,7 @@ export default function BulkOperationsPage() {
               <Input
                 type="number"
                 placeholder={operationParams.priceChangeType === 'percentage' ? '10' : '100.00'}
-                value={operationParams.priceChange || ''}
+                value={operationParams.priceChange ?? ''}
                 onChange={(e) => setOperationParams({ ...operationParams, priceChange: e.target.value })}
               />
             </div>
@@ -288,7 +288,7 @@ export default function BulkOperationsPage() {
               <Input
                 type="number"
                 placeholder="+10 or -5"
-                value={operationParams.stockChange || ''}
+                value={operationParams.stockChange ?? ''}
                 onChange={(e) => setOperationParams({ ...operationParams, stockChange: e.target.value })}
               />
             </div>
@@ -316,7 +316,7 @@ export default function BulkOperationsPage() {
               <Label>Tags (comma-separated)</Label>
               <Input
                 placeholder="sale, featured, new"
-                value={operationParams.tags || ''}
+                value={operationParams.tags ?? ''}
                 onChange={(e) => setOperationParams({ ...operationParams, tags: e.target.value })}
               />
             </div>

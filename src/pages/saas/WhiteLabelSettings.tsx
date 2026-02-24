@@ -29,8 +29,8 @@ export default function WhiteLabelSettings() {
   const [whiteLabelEnabled, setWhiteLabelEnabled] = useState(
     tenant?.white_label?.enabled || false
   );
-  const [customDomain, setCustomDomain] = useState(tenant?.white_label?.domain || '');
-  const [logo, setLogo] = useState(tenant?.white_label?.logo || '');
+  const [customDomain, setCustomDomain] = useState(tenant?.white_label?.domain ?? '');
+  const [logo, setLogo] = useState(tenant?.white_label?.logo ?? '');
   const [theme, setTheme] = useState<Record<string, string>>(
     (tenant?.white_label?.theme as Record<string, string>) || {
       primaryColor: '#10b981',
@@ -42,10 +42,10 @@ export default function WhiteLabelSettings() {
     }
   );
   const wl = tenant?.white_label as Record<string, unknown> | null;
-  const [emailFrom, setEmailFrom] = useState((wl?.emailFrom as string) || '');
-  const [emailLogo, setEmailLogo] = useState((wl?.emailLogo as string) || '');
-  const [emailFooter, setEmailFooter] = useState((wl?.emailFooter as string) || '');
-  const [smsFrom, setSmsFrom] = useState((wl?.smsFrom as string) || '');
+  const [emailFrom, setEmailFrom] = useState((wl?.emailFrom as string) ?? '');
+  const [emailLogo, setEmailLogo] = useState((wl?.emailLogo as string) ?? '');
+  const [emailFooter, setEmailFooter] = useState((wl?.emailFooter as string) ?? '');
+  const [smsFrom, setSmsFrom] = useState((wl?.smsFrom as string) ?? '');
 
   if (!tenant) {
     return (
@@ -309,7 +309,7 @@ export default function WhiteLabelSettings() {
                   id="customCSS"
                   className="w-full mt-1 p-3 border rounded-md font-mono text-sm"
                   rows={8}
-                  value={theme.customCSS || ''}
+                  value={theme.customCSS ?? ''}
                   onChange={(e) =>
                     setTheme({ ...theme, customCSS: e.target.value })
                   }

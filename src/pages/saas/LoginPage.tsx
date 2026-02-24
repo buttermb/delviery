@@ -334,7 +334,7 @@ export function LoginPage() {
 
               {/* Login Error Alert */}
               <AuthErrorAlert
-                message={loginError || ''}
+                message={loginError ?? ''}
                 type={loginError ? getAuthErrorType(loginError) : 'error'}
                 variant="light"
                 className="mb-4"
@@ -423,7 +423,7 @@ export function LoginPage() {
                       onClick={() => {
                         setShowForgotPassword(true);
                         setResetEmailSent(false);
-                        setForgotPasswordEmail(form.getValues('email') || '');
+                        setForgotPasswordEmail(form.getValues('email') ?? '');
                       }}
                       className="text-sm font-medium text-primary hover:underline"
                     >

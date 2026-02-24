@@ -212,7 +212,7 @@ export function StoreOrdersTab({
     const statusConfig = STATUS_OPTIONS.find((s) => s.value === status);
     return (
       <Badge variant="outline" className="flex items-center gap-1">
-        <div className={`w-2 h-2 rounded-full ${statusConfig?.color || 'bg-gray-500 dark:bg-gray-600'}`} />
+        <div className={`w-2 h-2 rounded-full ${statusConfig?.color ?? 'bg-gray-500 dark:bg-gray-600'}`} />
         <span className="capitalize">{status.replace('_', ' ')}</span>
       </Badge>
     );
@@ -226,7 +226,7 @@ export function StoreOrdersTab({
       refunded: 'bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-300',
     };
     return (
-      <Badge variant="outline" className={colors[status] || ''}>
+      <Badge variant="outline" className={colors[status] ?? ''}>
         {status}
       </Badge>
     );
@@ -393,7 +393,7 @@ export function StoreOrdersTab({
               )}
             </div>
           ) : (
-            <ScrollArea style={{ maxHeight: maxHeight || 'auto' }}>
+            <ScrollArea style={{ maxHeight: maxHeight ?? 'auto' }}>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -418,7 +418,7 @@ export function StoreOrdersTab({
                       </TableCell>
                       <TableCell onClick={() => setSelectedOrder(order)}>
                         <div>
-                          <p className="font-medium">{order.customer_name || 'Guest'}</p>
+                          <p className="font-medium">{order.customer_name ?? 'Guest'}</p>
                           <p className="text-sm text-muted-foreground">{order.customer_email}</p>
                         </div>
                       </TableCell>
@@ -527,9 +527,9 @@ export function StoreOrdersTab({
                 <div>
                   <h3 className="font-medium mb-3">Customer</h3>
                   <div className="space-y-2 text-sm">
-                    <p><span className="text-muted-foreground">Name:</span> {selectedOrder.customer_name || 'Guest'}</p>
-                    <p><span className="text-muted-foreground">Email:</span> {selectedOrder.customer_email || '-'}</p>
-                    <p><span className="text-muted-foreground">Phone:</span> {selectedOrder.customer_phone || '-'}</p>
+                    <p><span className="text-muted-foreground">Name:</span> {selectedOrder.customer_name ?? 'Guest'}</p>
+                    <p><span className="text-muted-foreground">Email:</span> {selectedOrder.customer_email ?? '-'}</p>
+                    <p><span className="text-muted-foreground">Phone:</span> {selectedOrder.customer_phone ?? '-'}</p>
                   </div>
                 </div>
 
@@ -620,7 +620,7 @@ export function StoreOrdersTab({
                   <div className="p-4 bg-primary/5 rounded-lg">
                     <p className="text-sm font-medium mb-1">Tracking Link</p>
                     <code className="text-xs text-muted-foreground break-all">
-                      {window.location.origin}/shop/{store?.slug || effectiveStoreId}/track/{selectedOrder.tracking_token}
+                      {window.location.origin}/shop/{store?.slug ?? effectiveStoreId}/track/{selectedOrder.tracking_token}
                     </code>
                   </div>
                 )}

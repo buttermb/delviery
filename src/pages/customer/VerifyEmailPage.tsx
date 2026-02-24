@@ -22,8 +22,8 @@ export default function CustomerVerifyEmailPage() {
   const codeFromUrl = searchParams.get('code');
   const emailFromUrl = searchParams.get('email');
 
-  const [code, setCode] = useState(codeFromUrl || '');
-  const [email, setEmail] = useState(emailFromUrl || '');
+  const [code, setCode] = useState(codeFromUrl ?? '');
+  const [email, setEmail] = useState(emailFromUrl ?? '');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [verified, setVerified] = useState(false);

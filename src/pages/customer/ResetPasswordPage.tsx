@@ -27,8 +27,8 @@ export default function CustomerResetPasswordPage() {
   const tokenFromUrl = searchParams.get('token');
   const emailFromUrl = searchParams.get('email');
 
-  const [token, _setToken] = useState(tokenFromUrl || '');
-  const [email, setEmail] = useState(emailFromUrl || '');
+  const [token, _setToken] = useState(tokenFromUrl ?? '');
+  const [email, setEmail] = useState(emailFromUrl ?? '');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -179,7 +179,7 @@ export default function CustomerResetPasswordPage() {
         <CardContent>
           <form onSubmit={handleReset} className="space-y-4">
             <AuthErrorAlert
-              message={resetError || ''}
+              message={resetError ?? ''}
               type="error"
               variant="light"
               className="mb-2"

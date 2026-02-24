@@ -267,7 +267,7 @@ export default function StorefrontBundles() {
   const openEditDialog = (bundle: Bundle) => {
     setFormData({
       name: bundle.name,
-      description: bundle.description || '',
+      description: bundle.description ?? '',
       discount_type: bundle.discount_type,
       discount_value: bundle.discount_value,
       products: bundle.products,

@@ -195,7 +195,7 @@ export default function StorefrontOrders() {
     const statusConfig = STATUS_OPTIONS.find((s) => s.value === status);
     return (
       <Badge variant="outline" className="flex items-center gap-1">
-        <div className={`w-2 h-2 rounded-full ${statusConfig?.color || 'bg-gray-500 dark:bg-gray-600'}`} />
+        <div className={`w-2 h-2 rounded-full ${statusConfig?.color ?? 'bg-gray-500 dark:bg-gray-600'}`} />
         <span className="capitalize">{status.replace('_', ' ')}</span>
       </Badge>
     );
@@ -209,7 +209,7 @@ export default function StorefrontOrders() {
       refunded: 'bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-300',
     };
     return (
-      <Badge variant="outline" className={colors[status] || ''}>
+      <Badge variant="outline" className={colors[status] ?? ''}>
         {status}
       </Badge>
     );
@@ -334,8 +334,8 @@ export default function StorefrontOrders() {
                     <div className="flex items-start justify-between mb-2">
                       <div className="min-w-0 flex-1">
                         <p className="font-mono font-semibold text-sm">{order.order_number}</p>
-                        <TruncatedText text={order.customer_name || 'Guest'} className="text-sm font-medium" as="p" />
-                        <TruncatedText text={order.customer_email || ''} className="text-xs text-muted-foreground" as="p" />
+                        <TruncatedText text={order.customer_name ?? 'Guest'} className="text-sm font-medium" as="p" />
+                        <TruncatedText text={order.customer_email ?? ''} className="text-xs text-muted-foreground" as="p" />
                       </div>
                       <div className="flex flex-col items-end gap-1 ml-3">
                         <span className="font-bold">{formatCurrency(order.total)}</span>
@@ -384,7 +384,7 @@ export default function StorefrontOrders() {
                             <p className="font-medium">
                               <CustomerLink
                                 customerId={order.customer_id}
-                                customerName={order.customer_name || 'Guest'}
+                                customerName={order.customer_name ?? 'Guest'}
                               />
                             </p>
                             <p className="text-sm text-muted-foreground">{order.customer_email}</p>
@@ -488,7 +488,7 @@ export default function StorefrontOrders() {
                     <p><span className="text-muted-foreground">Name:</span>{' '}
                       <CustomerLink
                         customerId={selectedOrder.customer_id}
-                        customerName={selectedOrder.customer_name || 'Guest'}
+                        customerName={selectedOrder.customer_name ?? 'Guest'}
                       />
                     </p>
                     <p><span className="text-muted-foreground">Email:</span> {selectedOrder.customer_email}</p>
@@ -523,7 +523,7 @@ export default function StorefrontOrders() {
                           <p className="font-medium">
                             <ProductLink
                               productId={item.product_id as string}
-                              productName={(item.name as string) || 'Unknown Product'}
+                              productName={(item.name as string) ?? 'Unknown Product'}
                             />
                           </p>
                           <p className="text-muted-foreground">Qty: {item.quantity as number}</p>

@@ -33,7 +33,7 @@ export function SignupSuccessPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState | null;
-  const email = state?.email || '';
+  const email = state?.email ?? '';
 
   const [isResending, setIsResending] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);

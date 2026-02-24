@@ -20,7 +20,7 @@ export function UserProfilePage() {
   const { username } = useParams<{ username: string }>();
   const { data: profile, isLoading: profileLoading } = useForumProfileByUsername(username);
   const { data: reputation } = useQuery({
-    queryKey: queryKeys.forum.reputation.user(profile?.id || ''),
+    queryKey: queryKeys.forum.reputation.user(profile?.id ?? ''),
     queryFn: () => {
       if (!profile?.id) return null;
       return forumApi.getUserReputation(profile.id);

@@ -76,7 +76,7 @@ export default function TenantCreditsPage() {
   const navigate = useNavigate();
 
   // State
-  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [statusFilter, setStatusFilter] = useState<CreditStatus>(
     (searchParams.get('status') as CreditStatus) || 'all'
   );
@@ -434,7 +434,7 @@ export default function TenantCreditsPage() {
       <CreditAdjustmentForm
         open={showAdjustForm}
         onOpenChange={setShowAdjustForm}
-        tenantId={adjustTenantId || ''}
+        tenantId={adjustTenantId ?? ''}
         onSuccess={() => {
           setShowAdjustForm(false);
           setAdjustTenantId(null);

@@ -40,7 +40,7 @@ export function OrderConfirmationPage() {
   const [verifying, setVerifying] = useState(false);
 
   // Get cart clearing function
-  const { clearCart } = useShopCart({ storeId: store?.id || '' });
+  const { clearCart } = useShopCart({ storeId: store?.id ?? '' });
 
   // Read from location.state first, fall back to URL query params (for Stripe redirects and page refreshes)
   // Support both CheckoutPage state (orderNumber) and SinglePageCheckout state (orderId)

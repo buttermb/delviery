@@ -81,7 +81,7 @@ export default function MarketplacePurchasesPage() {
     const filteredPurchases = purchases.filter((order) => {
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
-        const sellerName = order.marketplace_profiles?.business_name?.toLowerCase() || '';
+        const sellerName = order.marketplace_profiles?.business_name?.toLowerCase() ?? '';
         return (
             order.order_number?.toLowerCase().includes(query) ||
             sellerName.includes(query) ||

@@ -151,7 +151,7 @@ export default function CustomerMenuViewPage() {
     getProductStatus,
     isConnected: isRealtimeConnected,
   } = useMenuInventorySync({
-    menuId: menuId || '',
+    menuId: menuId ?? '',
     tenantId: tenantId || null,
     productIds,
     enabled: !!menuId && !!tenantId && productIds.length > 0,

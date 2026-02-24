@@ -1140,7 +1140,7 @@ export default function TenantAdminBillingPage() {
       <AddPaymentMethodDialog
         open={paymentDialogOpen}
         onOpenChange={setPaymentDialogOpen}
-        tenantId={tenantId || ''}
+        tenantId={tenantId ?? ''}
       />
 
       {/* Credit Purchase Modal */}

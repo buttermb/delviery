@@ -32,7 +32,7 @@ import { getInitials } from '@/lib/utils/getInitials';
 
 export default function AccountSettings() {
   const { admin, tenant } = useTenantAdminAuth();
-  const [name, setName] = useState(admin?.name || '');
+  const [name, setName] = useState(admin?.name ?? '');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

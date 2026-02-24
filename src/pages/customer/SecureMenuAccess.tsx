@@ -139,7 +139,7 @@ function CodeInput({
           type="text"
           inputMode="text"
           maxLength={1}
-          value={value[index] || ''}
+          value={value[index] ?? ''}
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(index, e)}
           disabled={disabled}
@@ -1102,7 +1102,7 @@ export const SecureMenuAccess = () => {
   if (menuData) {
     return (
       <div className="min-h-dvh bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <MenuBrowseView menuData={menuData} token={token || ''} />
+        <MenuBrowseView menuData={menuData} token={token ?? ''} />
       </div>
     );
   }

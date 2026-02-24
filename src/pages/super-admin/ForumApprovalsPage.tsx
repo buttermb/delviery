@@ -139,7 +139,7 @@ export default function ForumApprovalsPage() {
 
   const filteredApprovals = approvals?.filter((approval) => {
     const userId = approval.customer_user_id.toLowerCase();
-    const message = approval.request_message?.toLowerCase() || '';
+    const message = approval.request_message?.toLowerCase() ?? '';
     const search = searchQuery.toLowerCase();
     return userId.includes(search) || message.includes(search);
   });

@@ -141,10 +141,10 @@ export function ProductCatalogPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { store } = useShop();
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? '');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'name');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') ?? '');
   const [selectedStrainTypes, setSelectedStrainTypes] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
@@ -219,9 +219,9 @@ export function ProductCatalogPage() {
     product_id: p.product_id,
     product_name: p.name,
     category: p.marketplace_category_name || p.category || 'Uncategorized',
-    strain_type: p.strain_type || '',
+    strain_type: p.strain_type ?? '',
     price: p.display_price,
-    description: p.description || '',
+    description: p.description ?? '',
     image_url: p.image_url,
     images: p.images,
     thc_content: p.thc_content,
@@ -460,7 +460,7 @@ export function ProductCatalogPage() {
   };
 
   const handleFiltersChange = (newFilters: FilterState) => {
-    setSelectedCategory(newFilters.categories[0] || '');
+    setSelectedCategory(newFilters.categories[0] ?? '');
     setSelectedStrainTypes(newFilters.strainTypes);
     setPriceRange(newFilters.priceRange);
     setSortBy(newFilters.sortBy);

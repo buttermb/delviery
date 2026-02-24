@@ -211,7 +211,7 @@ export function StorefrontBuilder({
         if (fromMenuId) {
             logger.info('StorefrontBuilder opened from menu', { menuId: fromMenuId, menuName });
             toast.info('Creating Storefront from Menu', {
-                description: `Starting with products from "${menuName || 'your menu'}"`,
+                description: `Starting with products from "${menuName ?? 'your menu'}"`,
             });
         }
     }, [fromMenuId, menuName]);
@@ -290,7 +290,7 @@ export function StorefrontBuilder({
                 const { data, error } = await supabase
                     .from('marketplace_stores')
                     .select('*')
-                    .eq('tenant_id', tenant?.id || '')
+                    .eq('tenant_id', tenant?.id ?? '')
                     .maybeSingle();
 
                 if (error) throw error;
@@ -299,8 +299,8 @@ export function StorefrontBuilder({
                 logger.warn("Using mock data as DB fetch failed", e);
                 return {
                     id: 'mock-id',
-                    tenant_id: tenant?.id || '',
-                    store_name: tenant?.business_name || 'Mock Store',
+                    tenant_id: tenant?.id ?? '',
+                    store_name: tenant?.business_name ?? 'Mock Store',
                     slug: 'mock-store',
                     layout_config: [],
                     theme_config: { colors: { primary: '#000000', background: '#ffffff' } }
@@ -529,7 +529,7 @@ export function StorefrontBuilder({
                     layout_config: JSON.parse(JSON.stringify(layoutCfg)),
                     theme_config: themeCfg,
                 })
-                .eq('tenant_id', tenant?.id || '');
+                .eq('tenant_id', tenant?.id ?? '');
             if (error) {
                 logger.warn('Failed to sync config to marketplace_profiles', error);
             }
@@ -558,7 +558,7 @@ export function StorefrontBuilder({
             const { error } = await (supabase as unknown as { from: (t: string) => { update: (d: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: unknown }> } } })
                 .from('marketplace_stores')
                 .update(updatePayload)
-                .eq('tenant_id', tenant?.id || '');
+                .eq('tenant_id', tenant?.id ?? '');
 
             if (error) throw error;
 
@@ -598,7 +598,7 @@ export function StorefrontBuilder({
             const { error } = await (supabase as unknown as { from: (t: string) => { update: (d: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: unknown }> } } })
                 .from('marketplace_stores')
                 .update(updatePayload)
-                .eq('tenant_id', tenant?.id || '');
+                .eq('tenant_id', tenant?.id ?? '');
 
             if (error) throw error;
 
@@ -905,8 +905,8 @@ export function StorefrontBuilder({
                 /* Simple Mode - Easy Mode Editor */
                 <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/20">
                     <EasyModeEditor
-                        storeId={store?.id || ''}
-                        storeSlug={store?.slug || ''}
+                        storeId={store?.id ?? ''}
+                        storeSlug={store?.slug ?? ''}
                         selectedPresetId={easyModeBuilder.selectedPreset?.id || null}
                         onSelectPreset={easyModeBuilder.selectPreset}
                         featureToggles={easyModeBuilder.featureToggles}
@@ -995,29 +995,29 @@ export function StorefrontBuilder({
                                             <div className="space-y-1">
                                                 <Label className="text-xs">Primary</Label>
                                                 <div className="flex gap-2 items-center">
-                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.primary || '#000000'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, primary: e.target.value } }))} />
-                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.primary || ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, primary: e.target.value } }))} />
+                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.primary ?? '#000000'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, primary: e.target.value } }))} />
+                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.primary ?? ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, primary: e.target.value } }))} />
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
                                                 <Label className="text-xs">Accent</Label>
                                                 <div className="flex gap-2 items-center">
-                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.accent || '#3b82f6'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, accent: e.target.value } }))} />
-                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.accent || ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, accent: e.target.value } }))} />
+                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.accent ?? '#3b82f6'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, accent: e.target.value } }))} />
+                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.accent ?? ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, accent: e.target.value } }))} />
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
                                                 <Label className="text-xs">Background</Label>
                                                 <div className="flex gap-2 items-center">
-                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.background || '#ffffff'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, background: e.target.value } }))} />
-                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.background || ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, background: e.target.value } }))} />
+                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.background ?? '#ffffff'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, background: e.target.value } }))} />
+                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.background ?? ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, background: e.target.value } }))} />
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
                                                 <Label className="text-xs">Text</Label>
                                                 <div className="flex gap-2 items-center">
-                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.text || '#000000'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, text: e.target.value } }))} />
-                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.text || ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, text: e.target.value } }))} />
+                                                    <Input type="color" className="w-8 h-8 p-0 border-0 cursor-pointer rounded" value={themeConfig.colors?.text ?? '#000000'} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, text: e.target.value } }))} />
+                                                    <Input className="flex-1 h-8 text-xs" value={themeConfig.colors?.text ?? ''} onChange={(e) => setThemeConfig(prev => ({ ...prev, colors: { ...prev.colors, text: e.target.value } }))} />
                                                 </div>
                                             </div>
                                         </div>
@@ -1025,7 +1025,7 @@ export function StorefrontBuilder({
                                         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Typography</p>
                                         <div className="space-y-1">
                                             <Label className="text-xs">Font Family</Label>
-                                            <Select value={themeConfig.typography?.fontFamily || 'Inter'} onValueChange={(v) => setThemeConfig(prev => ({ ...prev, typography: { ...prev.typography, fontFamily: v } }))}>
+                                            <Select value={themeConfig.typography?.fontFamily ?? 'Inter'} onValueChange={(v) => setThemeConfig(prev => ({ ...prev, typography: { ...prev.typography, fontFamily: v } }))}>
                                                 <SelectTrigger className="h-8 text-xs">
                                                     <SelectValue placeholder="Select font" />
                                                 </SelectTrigger>
@@ -1080,7 +1080,7 @@ export function StorefrontBuilder({
                     >
                         {/* Simulated Header */}
                         <div className="h-16 border-b flex items-center px-6 justify-between sticky top-0 bg-background/80 backdrop-blur-md z-50">
-                            <span className="font-bold text-lg">{store?.store_name || 'Store Name'}</span>
+                            <span className="font-bold text-lg">{store?.store_name ?? 'Store Name'}</span>
                             <div className="hidden md:flex gap-6 text-sm">
                                 <span>Home</span>
                                 <span>Shop</span>
