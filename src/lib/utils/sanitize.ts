@@ -3,6 +3,21 @@
  * Strips potentially dangerous HTML tags and attributes to prevent XSS
  */
 
+/**
+ * Escapes special HTML characters in a string to prevent XSS.
+ * Use this when injecting user-generated plain text into HTML templates
+ * (e.g., map popup innerHTML / setHTML calls).
+ */
+export function escapeHtml(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Configuration constants for future use / documentation
 const _ALLOWED_TAGS = new Set([
   'p', 'br', 'b', 'i', 'em', 'strong', 'u', 'a', 'ul', 'ol', 'li',

@@ -8,6 +8,7 @@ import { useWholesaleClients } from "@/hooks/useWholesaleData";
 import { MapPin, AlertCircle } from "lucide-react";
 import { themeColors } from "@/lib/utils/colorConversion";
 import { formatCurrency } from '@/lib/formatters';
+import { escapeHtml } from '@/lib/utils/sanitize';
 
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
@@ -92,8 +93,8 @@ export function TerritoryMapView() {
       
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
         <div style="padding: 8px; min-width: 200px;">
-          <h3 style="font-weight: 600; margin-bottom: 4px;">${client.business_name}</h3>
-          <p style="font-size: 12px; color: #666; margin-bottom: 8px;">${client.contact_name}</p>
+          <h3 style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(client.business_name)}</h3>
+          <p style="font-size: 12px; color: #666; margin-bottom: 8px;">${escapeHtml(client.contact_name)}</p>
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
             <span style="font-size: 12px; font-weight: 500;">Balance:</span>
             <span style="font-size: 14px; font-weight: 600; color: ${markerColor};">

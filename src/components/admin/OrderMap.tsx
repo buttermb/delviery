@@ -9,6 +9,7 @@ import { AlertCircle, Navigation, Route, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatStatus } from '@/utils/stringHelpers';
 import { getStatusColorInline, themeColors } from '@/lib/utils/colorConversion';
+import { escapeHtml } from '@/lib/utils/sanitize';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -215,10 +216,10 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
         const popupContent = `
           <div style="padding: 12px; min-width: 200px;">
             <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px; color: ${statusColor};">
-              ${order.tracking_code}
+              ${escapeHtml(order.tracking_code)}
             </div>
             <div style="font-size: 14px; margin-bottom: 4px;">
-              ${order.delivery_address}
+              ${escapeHtml(order.delivery_address)}
             </div>
             <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
               Status: <span style="color: ${statusColor}; font-weight: 600;">${formatStatus(order.status).toUpperCase()}</span>
@@ -287,13 +288,13 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
         const courierPopup = `
           <div style="padding: 12px;">
             <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #8b5cf6;">
-              ${order.courier.full_name}
+              ${escapeHtml(order.courier.full_name)}
             </div>
             <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
-              Delivering: ${order.tracking_code}
+              Delivering: ${escapeHtml(order.tracking_code)}
             </div>
             <div style="font-size: 12px; color: #666;">
-              Vehicle: ${order.courier.vehicle_type || 'N/A'}
+              Vehicle: ${escapeHtml(order.courier.vehicle_type || 'N/A')}
             </div>
           </div>
         `;
@@ -371,13 +372,13 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
           const courierPopup = `
             <div style="padding: 12px;">
               <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #10b981;">
-                ${courier.full_name}
+                ${escapeHtml(courier.full_name)}
               </div>
               <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
                 Status: <span style="color: #10b981; font-weight: 600;">AVAILABLE</span>
               </div>
               <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
-                Vehicle: ${courier.vehicle_type || 'N/A'}
+                Vehicle: ${escapeHtml(courier.vehicle_type || 'N/A')}
               </div>
               <div style="font-size: 12px; color: #666;">
                 Rating: ${courier.rating?.toFixed(1) || '5.0'}

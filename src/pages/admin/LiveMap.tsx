@@ -22,6 +22,7 @@ import { AddCourierDialog } from '@/components/admin/AddCourierDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { formatCurrency, formatPhoneNumber } from '@/lib/formatters';
+import { escapeHtml } from '@/lib/utils/sanitize';
 
 interface CourierLocation {
   id: string;
@@ -490,10 +491,10 @@ export default function LiveMap() {
           <div class="p-4 min-w-[200px]">
             <div class="flex items-center gap-3 mb-3">
               <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold">
-                ${courier.full_name.charAt(0).toUpperCase()}
+                ${escapeHtml(courier.full_name.charAt(0).toUpperCase())}
               </div>
               <div>
-                <div class="font-semibold text-sm">${courier.full_name}</div>
+                <div class="font-semibold text-sm">${escapeHtml(courier.full_name)}</div>
                 <div class="flex items-center gap-1">
                   <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   <span class="text-xs text-gray-500">Online</span>
@@ -509,7 +510,7 @@ export default function LiveMap() {
                 <span>${courier.current_lat?.toFixed(4)}, ${courier.current_lng?.toFixed(4)}</span>
               </div>
               ${courier.phone ? `
-                <a href="tel:${courier.phone}" class="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium">
+                <a href="tel:${escapeHtml(courier.phone)}" class="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                   </svg>
@@ -597,7 +598,7 @@ export default function LiveMap() {
         }).setHTML(`
           <div class="p-4 min-w-[220px]">
             <div class="flex items-center justify-between mb-3">
-              <div class="font-bold text-sm">#${order.order_number || 'N/A'}</div>
+              <div class="font-bold text-sm">#${escapeHtml(order.order_number || 'N/A')}</div>
               <span class="px-2 py-1 text-xs font-medium rounded-full" style="background-color: ${statusColor.hex}20; color: ${statusColor.hex};">
                 ${statusLabel}
               </span>
@@ -608,14 +609,14 @@ export default function LiveMap() {
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                   </svg>
-                  <span class="font-medium">${order.customer_name}</span>
+                  <span class="font-medium">${escapeHtml(order.customer_name)}</span>
                 </div>
               ` : ''}
               <div class="flex items-start gap-2">
                 <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                 </svg>
-                <span class="line-clamp-2">${order.delivery_address}</span>
+                <span class="line-clamp-2">${escapeHtml(order.delivery_address)}</span>
               </div>
               ${order.eta_minutes ? `
                 <div class="flex items-center gap-2 text-emerald-600 font-medium">
@@ -629,7 +630,7 @@ export default function LiveMap() {
                 <div class="font-semibold text-gray-900">${formatCurrency(order.total_amount)}</div>
               </div>
               ${order.customer_phone ? `
-                <a href="tel:${order.customer_phone}" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium pt-1">
+                <a href="tel:${escapeHtml(order.customer_phone)}" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium pt-1">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                   </svg>

@@ -17,6 +17,7 @@ import { formatSmartDate } from '@/lib/formatters';
 import { useMapboxToken } from "@/hooks/useMapboxToken";
 import { showErrorToast } from "@/utils/toastHelpers";
 import { cn } from "@/lib/utils";
+import { escapeHtml } from '@/lib/utils/sanitize';
 
 interface LiveDeliveryMapProps {
   deliveryId?: string;
@@ -275,7 +276,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
               if (result) {
                 etasRef.current.set(delivery.id, result);
                 // Update popup with real ETA
-                const updatedPopup = new mapboxgl.Popup({ 
+                const updatedPopup = new mapboxgl.Popup({
                   offset: 25,
                   closeButton: false,
                   className: 'delivery-popup'
@@ -283,11 +284,11 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
                   <div style="padding: 16px; min-width: 220px;">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                       <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
-                        ${runnerName.charAt(0).toUpperCase()}
+                        ${escapeHtml(runnerName.charAt(0).toUpperCase())}
                       </div>
                       <div>
-                        <div style="font-weight: 600; font-size: 14px;">${runnerName}</div>
-                        <div style="font-size: 12px; color: #6b7280;">Order #${orderNumber}</div>
+                        <div style="font-weight: 600; font-size: 14px;">${escapeHtml(runnerName)}</div>
+                        <div style="font-size: 12px; color: #6b7280;">Order #${escapeHtml(orderNumber)}</div>
                       </div>
                     </div>
                     <div style="background: #f0fdf4; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;">
@@ -296,8 +297,8 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
                       <div style="font-size: 11px; color: #6b7280;">at ${formatSmartDate(result.eta, { includeTime: true })}</div>
                     </div>
                     <div style="display: flex; gap: 8px;">
-                      <button 
-                        onclick="window.callDriver && window.callDriver('${delivery.runner_id || ''}')" 
+                      <button
+                        onclick="window.callDriver && window.callDriver('${escapeHtml(delivery.runner_id || '')}')"
                         style="flex: 1; padding: 8px 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px;"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
@@ -311,7 +312,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
             });
           }
 
-          const runnerPopup = new mapboxgl.Popup({ 
+          const runnerPopup = new mapboxgl.Popup({
             offset: 25,
             closeButton: false,
             className: 'delivery-popup'
@@ -319,11 +320,11 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
             <div style="padding: 16px; min-width: 220px;">
               <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                 <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
-                  ${runnerName.charAt(0).toUpperCase()}
+                  ${escapeHtml(runnerName.charAt(0).toUpperCase())}
                 </div>
                 <div>
-                  <div style="font-weight: 600; font-size: 14px;">${runnerName}</div>
-                  <div style="font-size: 12px; color: #6b7280;">Order #${orderNumber}</div>
+                  <div style="font-weight: 600; font-size: 14px;">${escapeHtml(runnerName)}</div>
+                  <div style="font-size: 12px; color: #6b7280;">Order #${escapeHtml(orderNumber)}</div>
                 </div>
               </div>
               <div style="background: #fef3c7; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;">
@@ -352,7 +353,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
             </div>
           `;
 
-          const destPopup = new mapboxgl.Popup({ 
+          const destPopup = new mapboxgl.Popup({
             offset: 25,
             closeButton: false,
             className: 'delivery-popup'
@@ -364,11 +365,11 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
                 </div>
                 <div>
                   <div style="font-weight: 600; font-size: 14px;">Destination</div>
-                  <div style="font-size: 12px; color: #6b7280;">${clientName}</div>
+                  <div style="font-size: 12px; color: #6b7280;">${escapeHtml(clientName)}</div>
                 </div>
               </div>
               <div style="font-size: 12px; color: #6b7280; padding-top: 8px; border-top: 1px solid #e5e7eb;">
-                ${(delivery as any).delivery_address || (delivery.order as any)?.delivery_address || 'Address pending'}
+                ${escapeHtml((delivery as any).delivery_address || (delivery.order as any)?.delivery_address || 'Address pending')}
               </div>
             </div>
           `);
