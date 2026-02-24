@@ -59,7 +59,7 @@ export default function StoreSettings() {
                         ...updates
                     }])
                     .select()
-                    .single();
+                    .maybeSingle();
 
                 if (error) throw error;
                 return data;
@@ -69,7 +69,7 @@ export default function StoreSettings() {
                     .update(updates)
                     .eq('tenant_id', tenant.id)
                     .select()
-                    .single();
+                    .maybeSingle();
 
                 if (error) throw error;
                 return data;

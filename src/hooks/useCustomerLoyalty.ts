@@ -433,7 +433,7 @@ export function useLoyaltyConfig(): UseLoyaltyConfigReturn {
           .eq('id', existing.id)
           .eq('tenant_id', tenantId)
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) {
           logger.error('Failed to update loyalty config', error, {
@@ -460,7 +460,7 @@ export function useLoyaltyConfig(): UseLoyaltyConfigReturn {
             created_by: admin?.userId || null,
           })
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) {
           logger.error('Failed to create loyalty config', error, {
@@ -637,7 +637,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
           created_by: admin?.userId || null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to award loyalty points', error, {
@@ -702,7 +702,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
           created_by: admin?.userId || null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to redeem loyalty points', error, {
@@ -762,7 +762,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
           created_by: admin?.userId || null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to adjust loyalty points', error, {

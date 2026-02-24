@@ -163,7 +163,7 @@ export const useArchiveMenu = () => {
         })
         .eq('id', menuId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -243,7 +243,7 @@ export const useReactivateMenu = () => {
         .update(updateData)
         .eq('id', menuId)
         .select('id, name, tenant_id, status')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

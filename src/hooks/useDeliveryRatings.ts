@@ -62,7 +62,7 @@ export function useSubmitDeliveryRating() {
         .from('delivery_ratings')
         .insert(input)
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Error submitting delivery rating', error as Error, {

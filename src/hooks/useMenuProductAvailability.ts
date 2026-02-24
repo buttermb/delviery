@@ -201,7 +201,7 @@ export const useCreateAvailabilityRule = () => {
         .from('menu_product_availability_rules')
         .insert(insertData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data ? transformRow(data) : null;
@@ -245,7 +245,7 @@ export const useUpdateAvailabilityRule = () => {
         .eq('id', input.id)
         .eq('tenant_id', input.tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data ? transformRow(data) : null;
@@ -330,7 +330,7 @@ export const useIncrementRuleQuantity = () => {
         .eq('id', ruleId)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data ? transformRow(data) : null;
