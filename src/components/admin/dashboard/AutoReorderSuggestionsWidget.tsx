@@ -13,7 +13,7 @@
 import { useState } from 'react';
 import { useAutoReorder, useCreateReorderPO, type ReorderSuggestion } from '@/hooks/useAutoReorder';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

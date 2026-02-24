@@ -30,7 +30,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAccountIdSafe } from '@/hooks/crm/useAccountId';
 import { queryKeys } from '@/lib/queryKeys';
 import { invalidateOnEvent } from '@/lib/invalidation';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
 import { toast } from 'sonner';

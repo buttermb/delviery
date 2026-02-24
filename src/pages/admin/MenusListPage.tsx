@@ -21,7 +21,7 @@ import LinkIcon from "lucide-react/dist/esm/icons/link";
 import LayoutGrid from "lucide-react/dist/esm/icons/layout-grid";
 import List from "lucide-react/dist/esm/icons/list";
 import Filter from "lucide-react/dist/esm/icons/filter";
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePagination } from '@/hooks/usePagination';

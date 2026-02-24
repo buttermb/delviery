@@ -37,7 +37,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { StandardPagination } from '@/components/shared/StandardPagination';
 import { usePagination } from '@/hooks/usePagination';

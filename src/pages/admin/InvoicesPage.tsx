@@ -42,7 +42,7 @@ import {
     ArrowDown,
     ArrowUpDown,
 } from "lucide-react";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { CRMInvoice, CRMSettings } from "@/types/crm";

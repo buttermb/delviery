@@ -31,7 +31,7 @@ import { ClientSelector } from "@/components/crm/ClientSelector";
 import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
 import { LineItem } from "@/types/crm";
 import { toast } from "sonner";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
 import { useFormKeyboardShortcuts } from "@/hooks/useFormKeyboardShortcuts";
 

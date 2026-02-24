@@ -35,7 +35,7 @@ import { ClientSelector } from "./ClientSelector";
 import { LineItemsEditor, type InventoryValidationResult } from "./LineItemsEditor";
 import type { LineItem, CRMClient } from "@/types/crm";
 import { toast } from "sonner";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 
 const formSchema = z.object({
     client_id: z.string().min(1, "Customer is required"),

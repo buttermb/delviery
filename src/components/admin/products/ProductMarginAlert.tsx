@@ -6,7 +6,7 @@
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";

@@ -9,7 +9,7 @@
 import { useMemo } from 'react';
 import { useProductReorder, useCreateReorderPO } from '@/hooks/useAutoReorder';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

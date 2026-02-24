@@ -46,7 +46,7 @@ import { DisabledTooltip } from "@/components/shared/DisabledTooltip";
 import { LineItemsEditor } from "@/components/crm/LineItemsEditor";
 import { LineItem } from "@/types/crm";
 import { toast } from "sonner";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 
 const formSchema = z.object({
     client_id: z.string().min(1, "Client is required"),

@@ -22,7 +22,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Badge } from '@/components/ui/badge';
 import { usePriceHistoryChart, calculatePriceChangePercent, getPriceChangeDirection } from '@/hooks/usePriceHistory';
 import type { PriceChartDataPoint, PriceHistoryEntry } from '@/hooks/usePriceHistory';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';

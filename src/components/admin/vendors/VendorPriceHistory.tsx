@@ -57,7 +57,7 @@ import {
   useVendorPriceAlertSettings,
   useUpdatePriceAlertSettings,
 } from '@/hooks/useVendorPriceHistory';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';

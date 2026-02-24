@@ -13,7 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { User, Phone, Mail, DollarSign, Users, Plus, AlertCircle } from 'lucide-react';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { useUrlFilters } from '@/hooks/useUrlFilters';

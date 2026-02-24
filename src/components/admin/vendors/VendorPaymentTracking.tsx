@@ -60,7 +60,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/formatters';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { StandardPagination } from '@/components/shared/StandardPagination';

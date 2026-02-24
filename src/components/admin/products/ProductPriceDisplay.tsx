@@ -6,7 +6,7 @@
 
 import { useMemo } from 'react';
 import { useRecentPriceChange, getPriceChangeDirection } from '@/hooks/usePriceHistory';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format } from 'date-fns';

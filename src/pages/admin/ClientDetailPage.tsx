@@ -26,7 +26,7 @@ import {
     Users,
     AlertCircle
 } from 'lucide-react';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { toast } from 'sonner';
 import { formatSmartDate } from '@/lib/formatters';
 import { SwipeBackWrapper } from '@/components/mobile/SwipeBackWrapper';

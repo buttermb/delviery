@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';

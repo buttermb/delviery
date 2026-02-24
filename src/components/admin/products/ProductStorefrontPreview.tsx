@@ -47,7 +47,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/hooks/useProduct';
 import type { Database } from '@/integrations/supabase/types';

@@ -38,7 +38,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { useProducts } from "@/hooks/crm/useProducts";
 import { useRealTimeSubscription } from "@/hooks/useRealtimeSubscription";
 import { useAccountIdSafe } from "@/hooks/crm/useAccountId";

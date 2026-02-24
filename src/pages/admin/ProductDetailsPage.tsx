@@ -33,7 +33,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { format } from 'date-fns';
 import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import Package from "lucide-react/dist/esm/icons/package";

@@ -29,7 +29,7 @@ import { CommunicationTimeline } from "@/components/admin/crm/CommunicationTimel
 import { queryKeys } from "@/lib/queryKeys";
 import { useCRMDashboard } from "@/hooks/crm/useCRMDashboard";
 import { ActivityTimeline } from "@/components/crm/ActivityTimeline";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate, displayName } from '@/lib/formatters';
 import type { CRMActivityLog } from '@/types/crm';
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";

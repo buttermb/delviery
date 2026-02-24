@@ -24,7 +24,7 @@ import {
     Loader2
 } from "lucide-react";
 import { logger } from "@/lib/logger";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatPhoneNumber } from "@/lib/formatters";
 import { format, parseISO, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";

@@ -16,7 +16,7 @@ import {
     Receipt,
     Loader2
 } from "lucide-react";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import {

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/shared/DataTable';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useProductOrders, type ProductOrder } from '@/hooks/useProduct';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { format } from 'date-fns';
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";

@@ -84,7 +84,7 @@ import {
   type CreateVariantInput,
 } from '@/hooks/useProductVariants';
 import { logger } from '@/lib/logger';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 
 // ============================================================================

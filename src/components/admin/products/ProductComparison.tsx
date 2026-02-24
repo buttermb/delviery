@@ -51,7 +51,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useBulkProductVelocity } from '@/hooks/useProductVelocity';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 
 // ============================================================================

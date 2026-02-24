@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Printer, Download, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
-import { formatCurrency } from "@/utils/formatters";
+import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format } from "date-fns";
 import {
     Table,

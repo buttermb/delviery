@@ -7,7 +7,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import type { RelatedEntityItem } from '@/components/admin/RelatedEntitiesPanel';
 import type { EntityType } from '@/types/interconnected';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { format } from 'date-fns';
 
 // ============================================================================
