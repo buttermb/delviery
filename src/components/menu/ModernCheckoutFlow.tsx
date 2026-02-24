@@ -591,6 +591,7 @@ function DetailsStep({
             </Label>
             <Input
               id="firstName"
+              autoComplete="given-name"
               placeholder="John"
               value={formData.firstName}
               onChange={(e) => onUpdate('firstName', e.target.value)}
@@ -606,6 +607,7 @@ function DetailsStep({
             </Label>
             <Input
               id="lastName"
+              autoComplete="family-name"
               placeholder="Doe"
               value={formData.lastName}
               onChange={(e) => onUpdate('lastName', e.target.value)}
@@ -630,6 +632,7 @@ function DetailsStep({
             <Input
               id="phone"
               type="tel"
+              autoComplete="tel"
               placeholder="(555) 123-4567"
               value={formData.phone}
               onChange={(e) => onUpdate('phone', formatPhoneNumber(e.target.value))}
@@ -653,6 +656,7 @@ function DetailsStep({
           <Input
             id="email"
             type="email"
+            autoComplete="email"
             placeholder="john@example.com"
             value={formData.email}
             onChange={(e) => onUpdate('email', e.target.value)}

@@ -190,6 +190,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               <Label htmlFor="business_name">Business Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input
                 id="business_name"
+                autoComplete="organization"
                 value={formData.business_name}
                 onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
                 placeholder="e.g., Big Mike's Shop"
@@ -203,6 +204,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               <Label htmlFor="contact_name">Contact Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
               <Input
                 id="contact_name"
+                autoComplete="name"
                 value={formData.contact_name}
                 onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
                 placeholder="e.g., Mike Johnson"
@@ -219,6 +221,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               <Input
                 id="phone"
                 type="tel"
+                autoComplete="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="(555) 123-4567"
@@ -233,6 +236,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="mike@example.com"
@@ -246,6 +250,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
             <Label htmlFor="address">Address</Label>
             <Input
               id="address"
+              autoComplete="street-address"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="123 Main St, Bronx, NY"

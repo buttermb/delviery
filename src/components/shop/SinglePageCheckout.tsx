@@ -338,6 +338,7 @@ export function SinglePageCheckout() {
                   <Label htmlFor="firstName">First Name *</Label>
                   <Input
                     id="firstName"
+                    autoComplete="given-name"
                     value={formData.firstName}
                     onChange={(e) => updateField('firstName', e.target.value)}
                     className={errors.firstName ? 'border-destructive' : ''}
@@ -350,6 +351,7 @@ export function SinglePageCheckout() {
                   <Label htmlFor="lastName">Last Name *</Label>
                   <Input
                     id="lastName"
+                    autoComplete="family-name"
                     value={formData.lastName}
                     onChange={(e) => updateField('lastName', e.target.value)}
                     className={errors.lastName ? 'border-destructive' : ''}
@@ -364,6 +366,7 @@ export function SinglePageCheckout() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   value={formData.email}
                   onChange={(e) => updateField('email', e.target.value)}
                   className={errors.email ? 'border-destructive' : ''}
@@ -377,6 +380,7 @@ export function SinglePageCheckout() {
                 <Input
                   id="phone"
                   type="tel"
+                  autoComplete="tel"
                   value={formData.phone}
                   onChange={(e) => updateField('phone', e.target.value)}
                 />
@@ -397,6 +401,7 @@ export function SinglePageCheckout() {
                 <Label htmlFor="street">Street Address *</Label>
                 <Input
                   id="street"
+                  autoComplete="street-address"
                   value={formData.street}
                   onChange={(e) => updateField('street', e.target.value)}
                   className={errors.street ? 'border-destructive' : ''}
@@ -418,6 +423,7 @@ export function SinglePageCheckout() {
                   <Label htmlFor="city">City *</Label>
                   <Input
                     id="city"
+                    autoComplete="address-level2"
                     value={formData.city}
                     onChange={(e) => updateField('city', e.target.value)}
                     className={errors.city ? 'border-destructive' : ''}
@@ -430,6 +436,7 @@ export function SinglePageCheckout() {
                   <Label htmlFor="state">State</Label>
                   <Input
                     id="state"
+                    autoComplete="address-level1"
                     value={formData.state}
                     onChange={(e) => updateField('state', e.target.value)}
                   />
@@ -438,6 +445,7 @@ export function SinglePageCheckout() {
                   <Label htmlFor="zip">ZIP *</Label>
                   <Input
                     id="zip"
+                    autoComplete="postal-code"
                     value={formData.zip}
                     onChange={(e) => updateField('zip', e.target.value)}
                     className={errors.zip ? 'border-destructive' : ''}
