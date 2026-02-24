@@ -301,7 +301,7 @@ export function CustomerQuickView({
     queryFn: async () => {
       if (!tenant?.id || !customer?.id) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_delivery_addresses')
         .select('id, label, street_address, city, state, zip_code, is_primary')
         .eq('customer_id', customer.id)
