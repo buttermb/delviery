@@ -232,15 +232,15 @@ export function OrderExportButton({
     if (order.order_items && order.order_items.length > 0) {
       return order.order_items.map(item => ({
         product_name: item.product_name ?? '',
-        quantity: item.quantity || 0,
+        quantity: item.quantity ?? 0,
         price: item.unit_price ?? item.price ?? 0,
       }));
     }
     if (order.items && order.items.length > 0) {
       return order.items.map(item => ({
         product_name: item.name ?? '',
-        quantity: item.quantity || 0,
-        price: item.price || 0,
+        quantity: item.quantity ?? 0,
+        price: item.price ?? 0,
       }));
     }
     return [];

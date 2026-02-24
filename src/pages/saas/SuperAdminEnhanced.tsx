@@ -128,7 +128,7 @@ export default function SuperAdminEnhanced() {
       const trials = tenants.filter((t) => isTrial(t.subscription_status));
       const cancelled = tenants.filter((t) => isCancelled(t.subscription_status));
 
-      const mrr = tenants.reduce((sum, t) => sum + (t.mrr || 0), 0);
+      const mrr = tenants.reduce((sum, t) => sum + (t.mrr ?? 0), 0);
       const arr = mrr * 12;
 
       // Calculate churn rate (last 30 days)
@@ -226,7 +226,7 @@ export default function SuperAdminEnhanced() {
             case 'past_due':
               return tenant.subscription_status === 'past_due';
             case 'high_value':
-              return (tenant.mrr || 0) > 500;
+              return (tenant.mrr ?? 0) > 500;
             default:
               return true;
           }
@@ -239,12 +239,12 @@ export default function SuperAdminEnhanced() {
 
   // Calculate filter counts
   const filterCounts = {
-    all: stats?.totalTenants || 0,
-    needs_attention: tenants?.filter(t => t.health_score < 50 || t.subscription_status === 'past_due').length || 0,
-    onboarding: tenants?.filter(t => (Date.now() - new Date(t.created_at).getTime()) / (1000 * 60 * 60 * 24) < 7).length || 0,
-    trial_ending: tenants?.filter(t => isTrial(t.subscription_status) && (14 - (Date.now() - new Date(t.created_at).getTime()) / (1000 * 60 * 60 * 24)) <= 3).length || 0,
-    past_due: tenants?.filter(t => t.subscription_status === 'past_due').length || 0,
-    high_value: tenants?.filter(t => (t.mrr || 0) > 500).length || 0,
+    all: stats?.totalTenants ?? 0,
+    needs_attention: tenants?.filter(t => t.health_score < 50 || t.subscription_status === 'past_due').length ?? 0,
+    onboarding: tenants?.filter(t => (Date.now() - new Date(t.created_at).getTime()) / (1000 * 60 * 60 * 24) < 7).length ?? 0,
+    trial_ending: tenants?.filter(t => isTrial(t.subscription_status) && (14 - (Date.now() - new Date(t.created_at).getTime()) / (1000 * 60 * 60 * 24)) <= 3).length ?? 0,
+    past_due: tenants?.filter(t => t.subscription_status === 'past_due').length ?? 0,
+    high_value: tenants?.filter(t => (t.mrr ?? 0) > 500).length ?? 0,
   };
 
   // Fetch at-risk tenants
@@ -688,7 +688,7 @@ export default function SuperAdminEnhanced() {
                         <Badge variant="outline">{tenant.subscription_plan}</Badge>
                       </td>
                       <td className="p-3">{getStatusBadge(tenant.subscription_status)}</td>
-                      <td className="p-3">{formatCurrency(tenant.mrr || 0)}</td>
+                      <td className="p-3">{formatCurrency(tenant.mrr ?? 0)}</td>
                       <td className="p-3">
                         <HealthScoreTooltip score={tenant.health_score} reasons={tenant.health_reasons}>
                           <div className="flex items-center gap-2">
@@ -825,7 +825,7 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
               <CardTitle className="text-sm">MRR</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(tenant.mrr || 0)}</div>
+              <div className="text-2xl font-bold">{formatCurrency(tenant.mrr ?? 0)}</div>
               <p className="text-xs text-muted-foreground">Next: Nov 15</p>
             </CardContent>
           </Card>
@@ -846,7 +846,7 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {((tenant.usage as Record<string, unknown>)?.customers as number || 0)} / {((tenant.limits as Record<string, unknown>)?.customers === -1 ? '∞' : (tenant.limits as Record<string, unknown>)?.customers as number || 0)}
+                {((tenant.usage as Record<string, unknown>)?.customers as number ?? 0)} / {((tenant.limits as Record<string, unknown>)?.customers === -1 ? '∞' : (tenant.limits as Record<string, unknown>)?.customers as number ?? 0)}
               </div>
               <p className="text-xs text-muted-foreground">Usage</p>
             </CardContent>
@@ -1024,7 +1024,7 @@ function UsageMonitoring({ tenant }: { tenant: Record<string, unknown> }) {
   ];
 
   const getUsagePercentage = (key: string, usage: Record<string, number>, limits: Record<string, number>) => {
-    const current = usage[key] || 0;
+    const current = usage[key] ?? 0;
     const limit = limits[key];
     if (limit === -1) return null;
     return (current / limit) * 100;
@@ -1033,7 +1033,7 @@ function UsageMonitoring({ tenant }: { tenant: Record<string, unknown> }) {
   return (
     <div className="space-y-4">
       {resources.map((resource) => {
-        const current = usageData[resource.key] || 0;
+        const current = usageData[resource.key] ?? 0;
         const limit = limitsData[resource.key];
         const unlimited = limit === -1;
         const percentage = getUsagePercentage(resource.key, usageData, limitsData);
@@ -1115,7 +1115,7 @@ function BillingManagement({ tenant }: { tenant: Record<string, unknown> }) {
           <div className="space-y-2">
             <p className="text-2xl font-bold">{(tenant.subscription_plan as string)?.toUpperCase()} PLAN</p>
             <p className="text-muted-foreground">
-              ${plans.find((p) => p.id === (tenant.subscription_plan as string))?.price || 0}/month
+              ${plans.find((p) => p.id === (tenant.subscription_plan as string))?.price ?? 0}/month
             </p>
             <p className="text-sm text-muted-foreground">
               Next billing: {formatSmartDate((tenant.subscription_current_period_end as string) || (tenant.created_at as string))}

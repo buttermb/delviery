@@ -91,7 +91,7 @@ export default function CreditsOverviewPage() {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className="text-2xl font-bold">{stats?.totalFreeTierTenants || 0}</div>
+                <div className="text-2xl font-bold">{stats?.totalFreeTierTenants ?? 0}</div>
                 <p className="text-xs text-muted-foreground">
                   Using credit system
                 </p>
@@ -111,7 +111,7 @@ export default function CreditsOverviewPage() {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className="text-2xl font-bold">{stats?.totalPaidTierTenants || 0}</div>
+                <div className="text-2xl font-bold">{stats?.totalPaidTierTenants ?? 0}</div>
                 <p className="text-xs text-muted-foreground">
                   Unlimited access
                 </p>
@@ -132,10 +132,10 @@ export default function CreditsOverviewPage() {
             ) : (
               <>
                 <div className="text-2xl font-bold">
-                  {formatNumber(stats?.totalCreditsConsumedToday || 0)}
+                  {formatNumber(stats?.totalCreditsConsumedToday ?? 0)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  This week: {formatNumber(stats?.totalCreditsConsumedWeek || 0)}
+                  This week: {formatNumber(stats?.totalCreditsConsumedWeek ?? 0)}
                 </p>
               </>
             )}
@@ -154,7 +154,7 @@ export default function CreditsOverviewPage() {
             ) : (
               <>
                 <div className="text-2xl font-bold">
-                  {formatCurrency((stats?.totalCreditPurchasesRevenue || 0) / 100)}
+                  {formatCurrency((stats?.totalCreditPurchasesRevenue ?? 0) / 100)}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   From credit pack purchases
@@ -190,10 +190,10 @@ export default function CreditsOverviewPage() {
                       <CheckCircle className="h-4 w-4 text-green-500" />
                       <span>Healthy (&gt;200 credits)</span>
                     </div>
-                    <span className="font-medium">{stats?.tenantsHealthy || 0}</span>
+                    <span className="font-medium">{stats?.tenantsHealthy ?? 0}</span>
                   </div>
                   <Progress 
-                    value={stats?.totalFreeTierTenants ? ((stats?.tenantsHealthy || 0) / stats.totalFreeTierTenants) * 100 : 0} 
+                    value={stats?.totalFreeTierTenants ? ((stats?.tenantsHealthy ?? 0) / stats.totalFreeTierTenants) * 100 : 0} 
                     className="h-2 bg-green-100 [&>div]:bg-green-500" 
                   />
                 </div>
@@ -205,10 +205,10 @@ export default function CreditsOverviewPage() {
                       <AlertTriangle className="h-4 w-4 text-yellow-500" />
                       <span>Warning (50-200 credits)</span>
                     </div>
-                    <span className="font-medium">{stats?.tenantsWarning || 0}</span>
+                    <span className="font-medium">{stats?.tenantsWarning ?? 0}</span>
                   </div>
                   <Progress 
-                    value={stats?.totalFreeTierTenants ? ((stats?.tenantsWarning || 0) / stats.totalFreeTierTenants) * 100 : 0} 
+                    value={stats?.totalFreeTierTenants ? ((stats?.tenantsWarning ?? 0) / stats.totalFreeTierTenants) * 100 : 0} 
                     className="h-2 bg-yellow-100 [&>div]:bg-yellow-500" 
                   />
                 </div>
@@ -220,10 +220,10 @@ export default function CreditsOverviewPage() {
                       <AlertTriangle className="h-4 w-4 text-orange-500" />
                       <span>Critical (1-50 credits)</span>
                     </div>
-                    <span className="font-medium">{stats?.tenantsCritical || 0}</span>
+                    <span className="font-medium">{stats?.tenantsCritical ?? 0}</span>
                   </div>
                   <Progress 
-                    value={stats?.totalFreeTierTenants ? ((stats?.tenantsCritical || 0) / stats.totalFreeTierTenants) * 100 : 0} 
+                    value={stats?.totalFreeTierTenants ? ((stats?.tenantsCritical ?? 0) / stats.totalFreeTierTenants) * 100 : 0} 
                     className="h-2 bg-orange-100 [&>div]:bg-orange-500" 
                   />
                 </div>
@@ -235,10 +235,10 @@ export default function CreditsOverviewPage() {
                       <XCircle className="h-4 w-4 text-red-500" />
                       <span>Depleted (0 credits)</span>
                     </div>
-                    <span className="font-medium">{stats?.tenantsAtZero || 0}</span>
+                    <span className="font-medium">{stats?.tenantsAtZero ?? 0}</span>
                   </div>
                   <Progress 
-                    value={stats?.totalFreeTierTenants ? ((stats?.tenantsAtZero || 0) / stats.totalFreeTierTenants) * 100 : 0} 
+                    value={stats?.totalFreeTierTenants ? ((stats?.tenantsAtZero ?? 0) / stats.totalFreeTierTenants) * 100 : 0} 
                     className="h-2 bg-red-100 [&>div]:bg-red-500" 
                   />
                 </div>
@@ -248,11 +248,11 @@ export default function CreditsOverviewPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Avg. Free Tier Balance</span>
                     <span className="font-medium">
-                      {Math.round(stats?.avgBalanceFreeTier || 0).toLocaleString()} credits
+                      {Math.round(stats?.avgBalanceFreeTier ?? 0).toLocaleString()} credits
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {Math.round(((stats?.avgBalanceFreeTier || 0) / FREE_TIER_MONTHLY_CREDITS) * 100)}% of monthly allocation
+                    {Math.round(((stats?.avgBalanceFreeTier ?? 0) / FREE_TIER_MONTHLY_CREDITS) * 100)}% of monthly allocation
                   </p>
                 </div>
               </>
@@ -350,7 +350,7 @@ export default function CreditsOverviewPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatNumber(stats?.totalCreditsConsumedMonth || 0)}
+              {formatNumber(stats?.totalCreditsConsumedMonth ?? 0)}
             </div>
             <p className="text-xs text-muted-foreground">Total consumed</p>
           </CardContent>
@@ -363,7 +363,7 @@ export default function CreditsOverviewPage() {
           <CardContent>
             <div className="text-2xl font-bold">
               {stats?.totalFreeTierTenants 
-                ? Math.round((stats?.totalCreditsConsumedMonth || 0) / stats.totalFreeTierTenants).toLocaleString()
+                ? Math.round((stats?.totalCreditsConsumedMonth ?? 0) / stats.totalFreeTierTenants).toLocaleString()
                 : 0}
             </div>
             <p className="text-xs text-muted-foreground">Credits used this month</p>
@@ -376,7 +376,7 @@ export default function CreditsOverviewPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(stats?.tenantsCritical || 0) + (stats?.tenantsAtZero || 0)}
+              {(stats?.tenantsCritical ?? 0) + (stats?.tenantsAtZero ?? 0)}
             </div>
             <p className="text-xs text-muted-foreground">Tenants likely to upgrade</p>
           </CardContent>

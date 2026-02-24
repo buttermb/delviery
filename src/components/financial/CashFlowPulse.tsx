@@ -48,11 +48,11 @@ export function CashFlowPulse() {
             <div className="text-center p-3 sm:p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
               <ArrowDownRight className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 mx-auto mb-1.5 sm:mb-2" />
               <div className="text-xl sm:text-2xl font-bold text-emerald-400 font-mono">
-                {formatCompactCurrency(data?.todayIn || 0)}
+                {formatCompactCurrency(data?.todayIn ?? 0)}
               </div>
               <div className="text-xs text-zinc-500 mt-1">IN</div>
               <div className="text-[10px] text-emerald-400/70 mt-1">
-                {data?.paymentsReceived || 0} payments
+                {data?.paymentsReceived ?? 0} payments
               </div>
             </div>
 
@@ -60,29 +60,29 @@ export function CashFlowPulse() {
             <div className="text-center p-3 sm:p-4 rounded-lg bg-red-500/10 border border-red-500/20">
               <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-red-400 mx-auto mb-1.5 sm:mb-2" />
               <div className="text-xl sm:text-2xl font-bold text-red-400 font-mono">
-                {formatCompactCurrency(data?.todayOut || 0)}
+                {formatCompactCurrency(data?.todayOut ?? 0)}
               </div>
               <div className="text-xs text-zinc-500 mt-1">OUT</div>
               <div className="text-[10px] text-red-400/70 mt-1">
-                {data?.payoutsProcessed || 0} payouts
+                {data?.payoutsProcessed ?? 0} payouts
               </div>
             </div>
 
             {/* Net */}
             <div className={cn(
               "text-center p-3 sm:p-4 rounded-lg border",
-              (data?.todayNet || 0) >= 0 
+              (data?.todayNet ?? 0) >= 0 
                 ? "bg-emerald-500/10 border-emerald-500/20" 
                 : "bg-red-500/10 border-red-500/20"
             )}>
               <div className="text-xl sm:text-2xl font-bold font-mono" style={{
-                color: (data?.todayNet || 0) >= 0 ? '#34d399' : '#f87171'
+                color: (data?.todayNet ?? 0) >= 0 ? '#34d399' : '#f87171'
               }}>
-                {(data?.todayNet || 0) >= 0 ? '+' : ''}{formatCompactCurrency(data?.todayNet || 0)}
+                {(data?.todayNet ?? 0) >= 0 ? '+' : ''}{formatCompactCurrency(data?.todayNet ?? 0)}
               </div>
               <div className="text-xs text-zinc-500 mt-1">NET</div>
               <Progress 
-                value={Math.min(100, Math.abs((data?.todayNet || 0) / 1000) * 10)} 
+                value={Math.min(100, Math.abs((data?.todayNet ?? 0) / 1000) * 10)} 
                 className="h-1.5 mt-2 bg-zinc-800"
               />
             </div>
@@ -134,22 +134,22 @@ export function CashFlowPulse() {
             <div className="text-center">
               <div className="text-[10px] sm:text-xs text-zinc-500">Expected In</div>
               <div className="text-xs sm:text-sm font-bold text-emerald-400 font-mono">
-                {formatCompactCurrency(data?.expectedCollections || 0)}
+                {formatCompactCurrency(data?.expectedCollections ?? 0)}
               </div>
             </div>
             <div className="text-center">
               <div className="text-[10px] sm:text-xs text-zinc-500">Scheduled Out</div>
               <div className="text-xs sm:text-sm font-bold text-red-400 font-mono">
-                {formatCompactCurrency(data?.scheduledPayouts || 0)}
+                {formatCompactCurrency(data?.scheduledPayouts ?? 0)}
               </div>
             </div>
             <div className="text-center">
               <div className="text-[10px] sm:text-xs text-zinc-500">Projected Net</div>
               <div className={cn(
                 "text-xs sm:text-sm font-bold font-mono",
-                (data?.projectedNet || 0) >= 0 ? "text-emerald-400" : "text-red-400"
+                (data?.projectedNet ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"
               )}>
-                {(data?.projectedNet || 0) >= 0 ? '+' : ''}{formatCompactCurrency(data?.projectedNet || 0)}
+                {(data?.projectedNet ?? 0) >= 0 ? '+' : ''}{formatCompactCurrency(data?.projectedNet ?? 0)}
               </div>
             </div>
           </div>
@@ -173,14 +173,14 @@ export function CashFlowPulse() {
               RUNWAY
             </span>
             <span className="text-xs text-zinc-500">
-              Avg burn: {formatCompactCurrency(data?.cashRunway.avgDailyBurn || 0)}/day
+              Avg burn: {formatCompactCurrency(data?.cashRunway.avgDailyBurn ?? 0)}/day
             </span>
           </div>
           
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <Progress 
-                value={Math.min(100, ((data?.cashRunway.daysRemaining || 0) / 90) * 100)}
+                value={Math.min(100, ((data?.cashRunway.daysRemaining ?? 0) / 90) * 100)}
                 className={cn(
                   "h-3 bg-zinc-800",
                   data?.cashRunway.isHealthy ? "[&>div]:bg-emerald-500" : "[&>div]:bg-amber-500"
@@ -192,7 +192,7 @@ export function CashFlowPulse() {
                 "text-2xl font-bold font-mono",
                 data?.cashRunway.isHealthy ? "text-emerald-400" : "text-amber-400"
               )}>
-                {data?.cashRunway.daysRemaining || 0}
+                {data?.cashRunway.daysRemaining ?? 0}
               </div>
               <div className="text-[10px] text-zinc-500">days</div>
             </div>

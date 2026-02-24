@@ -203,7 +203,7 @@ export function ProductVariants({
   }), [variants]);
 
   const totalStock = useMemo(() =>
-    variants?.reduce((sum, v) => sum + (v.available_quantity || 0), 0) || 0,
+    variants?.reduce((sum, v) => sum + (v.available_quantity ?? 0), 0) ?? 0,
   [variants]);
 
   const lowStockVariants = useMemo(() =>
@@ -480,7 +480,7 @@ export function ProductVariants({
           <div>
             <CardTitle className="text-lg">Product Variants</CardTitle>
             <CardDescription>
-              {variants?.length || 0} variants · {totalStock} total units
+              {variants?.length ?? 0} variants · {totalStock} total units
               {lowStockVariants.length > 0 && (
                 <span className="text-amber-600 ml-2">
                   · {lowStockVariants.length} low stock

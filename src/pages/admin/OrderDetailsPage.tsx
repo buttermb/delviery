@@ -271,10 +271,10 @@ export function OrderDetailsPage() {
           order_number: unifiedOrder.order_number,
           status: unifiedOrder.status,
           payment_status: unifiedOrder.payment_status || 'unpaid',
-          total_amount: unifiedOrder.total_amount || 0,
-          subtotal: unifiedOrder.subtotal || 0,
-          tax_amount: unifiedOrder.tax_amount || 0,
-          discount_amount: unifiedOrder.discount_amount || 0,
+          total_amount: unifiedOrder.total_amount ?? 0,
+          subtotal: unifiedOrder.subtotal ?? 0,
+          tax_amount: unifiedOrder.tax_amount ?? 0,
+          discount_amount: unifiedOrder.discount_amount ?? 0,
           delivery_method: (unifiedOrder as Record<string, unknown>).delivery_method as string | null,
           delivery_address: unifiedOrder.delivery_address,
           delivery_notes: unifiedOrder.delivery_notes,
@@ -408,7 +408,7 @@ export function OrderDetailsPage() {
               .eq('tenant_id', tenant?.id ?? '')
               .maybeSingle();
             if (product) {
-              const previousQuantity = product.stock_quantity || 0;
+              const previousQuantity = product.stock_quantity ?? 0;
               const newQuantity = previousQuantity + item.quantity;
               await supabase
                 .from('products')
@@ -462,7 +462,7 @@ export function OrderDetailsPage() {
             if (product) {
               await supabase
                 .from('products')
-                .update({ stock_quantity: Math.max(0, (product.stock_quantity || 0) - item.quantity) })
+                .update({ stock_quantity: Math.max(0, (product.stock_quantity ?? 0) - item.quantity) })
                 .eq('id', item.product_id)
                 .eq('tenant_id', tenant?.id ?? '');
             }
@@ -598,9 +598,9 @@ export function OrderDetailsPage() {
             price: item.unit_price,
             product_name: item.product_name,
           })),
-          subtotal: order.subtotal || 0,
-          tax: order.tax_amount || 0,
-          discount: order.discount_amount || 0,
+          subtotal: order.subtotal ?? 0,
+          tax: order.tax_amount ?? 0,
+          discount: order.discount_amount ?? 0,
           notes: order.notes || undefined,
         },
         customerId: order.customer_id,
@@ -1163,7 +1163,7 @@ export function OrderDetailsPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Package className="w-5 h-5" />
-                  Items ({order.order_items?.length || 0})
+                  Items ({order.order_items?.length ?? 0})
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -1235,21 +1235,21 @@ export function OrderDetailsPage() {
                 <div className="p-6 flex flex-col items-end gap-2 text-sm border-t">
                   <div className="flex justify-between w-48">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span>{formatCurrency(order.subtotal || 0)}</span>
+                    <span>{formatCurrency(order.subtotal ?? 0)}</span>
                   </div>
-                  {(order.discount_amount || 0) > 0 && (
+                  {(order.discount_amount ?? 0) > 0 && (
                     <div className="flex justify-between w-48 text-success">
                       <span>Discount</span>
                       <span>-{formatCurrency(order.discount_amount)}</span>
                     </div>
                   )}
-                  {(order.tax_amount || 0) > 0 && (
+                  {(order.tax_amount ?? 0) > 0 && (
                     <div className="flex justify-between w-48">
                       <span className="text-muted-foreground">Tax</span>
                       <span>{formatCurrency(order.tax_amount)}</span>
                     </div>
                   )}
-                  {(order.delivery_fee || 0) > 0 && (
+                  {(order.delivery_fee ?? 0) > 0 && (
                     <div className="flex justify-between w-48">
                       <span className="text-muted-foreground">Delivery Fee</span>
                       <span>{formatCurrency(order.delivery_fee)}</span>
@@ -1624,8 +1624,8 @@ export function OrderDetailsPage() {
               <div className="print:hidden">
                 <DeliveryPLCard
                   orderId={order.id}
-                  deliveryFee={order.delivery_fee || 0}
-                  tipAmount={((order as unknown as Record<string, unknown>).tip_amount as number) || 0}
+                  deliveryFee={order.delivery_fee ?? 0}
+                  tipAmount={((order as unknown as Record<string, unknown>).tip_amount as number) ?? 0}
                   courierId={order.courier_id}
                   distanceMiles={((order as unknown as Record<string, unknown>).distance_miles as number) || null}
                   deliveryTimeMinutes={((order as unknown as Record<string, unknown>).eta_minutes as number) || null}
@@ -1782,9 +1782,9 @@ export function OrderDetailsPage() {
             order_type: 'wholesale',
             source: order.order_source || 'admin',
             status: order.status as 'delivered' | 'completed',
-            subtotal: order.subtotal || 0,
-            tax_amount: order.tax_amount || 0,
-            discount_amount: order.discount_amount || 0,
+            subtotal: order.subtotal ?? 0,
+            tax_amount: order.tax_amount ?? 0,
+            discount_amount: order.discount_amount ?? 0,
             total_amount: order.total_amount,
             payment_method: null,
             payment_status: (order.payment_status === 'partially_paid' ? 'partial' : order.payment_status) as 'paid' | 'unpaid' | 'refunded' | 'partial',
@@ -1883,10 +1883,10 @@ export function OrderDetailsPage() {
             created_at: order.created_at,
             status: order.status,
             total_amount: order.total_amount,
-            subtotal: order.subtotal || 0,
-            tax_amount: order.tax_amount || 0,
-            discount_amount: order.discount_amount || 0,
-            delivery_fee: order.delivery_fee || 0,
+            subtotal: order.subtotal ?? 0,
+            tax_amount: order.tax_amount ?? 0,
+            discount_amount: order.discount_amount ?? 0,
+            delivery_fee: order.delivery_fee ?? 0,
             delivery_method: order.delivery_method || undefined,
             payment_status: order.payment_status,
             notes: order.notes || undefined,

@@ -242,7 +242,7 @@ export function ProductsListPage() {
 
   // Derived: max price for filter slider
   const maxPrice = useMemo(() => {
-    return Math.max(...products.map((p) => p.wholesale_price || 0), 100);
+    return Math.max(...products.map((p) => p.wholesale_price ?? 0), 100);
   }, [products]);
 
   // Filtered and sorted products
@@ -277,8 +277,8 @@ export function ProductsListPage() {
         }
 
         // Stock status filter
-        const qty = product.available_quantity || 0;
-        const lowThreshold = product.low_stock_alert || 10;
+        const qty = product.available_quantity ?? 0;
+        const lowThreshold = product.low_stock_alert ?? 10;
 
         if (advancedFilters.stockStatus === 'in_stock' && qty <= 0) return false;
         if (advancedFilters.stockStatus === 'out_of_stock' && qty > 0) return false;
@@ -289,7 +289,7 @@ export function ProductsListPage() {
           return false;
 
         // Price range filter
-        const price = product.wholesale_price || 0;
+        const price = product.wholesale_price ?? 0;
         if (advancedFilters.priceMin !== null && price < advancedFilters.priceMin) {
           return false;
         }
@@ -356,10 +356,10 @@ export function ProductsListPage() {
             cmp = (a.name ?? '').localeCompare(b.name ?? '');
             break;
           case 'price':
-            cmp = (a.wholesale_price || 0) - (b.wholesale_price || 0);
+            cmp = (a.wholesale_price ?? 0) - (b.wholesale_price ?? 0);
             break;
           case 'stock':
-            cmp = (a.available_quantity || 0) - (b.available_quantity || 0);
+            cmp = (a.available_quantity ?? 0) - (b.available_quantity ?? 0);
             break;
           case 'category':
             cmp = (a.category ?? '').localeCompare(b.category ?? '');
@@ -404,17 +404,17 @@ export function ProductsListPage() {
   const stats = useMemo(() => {
     const totalProducts = products.length;
     const totalUnits = products.reduce(
-      (sum, p) => sum + (p.available_quantity || 0),
+      (sum, p) => sum + (p.available_quantity ?? 0),
       0
     );
     const inventoryValue = products.reduce(
       (sum, p) =>
-        sum + (p.available_quantity || 0) * (p.wholesale_price || 0),
+        sum + (p.available_quantity ?? 0) * (p.wholesale_price ?? 0),
       0
     );
     const lowStockCount = products.filter((p) => {
-      const qty = p.available_quantity || 0;
-      const threshold = p.low_stock_alert || 10;
+      const qty = p.available_quantity ?? 0;
+      const threshold = p.low_stock_alert ?? 10;
       return qty > 0 && qty <= threshold;
     }).length;
 
@@ -600,10 +600,10 @@ export function ProductsListPage() {
       accessorKey: 'available_quantity',
       cell: (product) => (
         <div className="flex items-center gap-2">
-          <span className="font-mono">{product.available_quantity || 0}</span>
+          <span className="font-mono">{product.available_quantity ?? 0}</span>
           <InventoryStatusBadge
-            quantity={product.available_quantity || 0}
-            lowStockThreshold={product.low_stock_alert || 10}
+            quantity={product.available_quantity ?? 0}
+            lowStockThreshold={product.low_stock_alert ?? 10}
           />
         </div>
       ),
@@ -683,10 +683,10 @@ export function ProductsListPage() {
         category: product.category || undefined,
         image_url: product.image_url || undefined,
         sku: product.sku || undefined,
-        available_quantity: product.available_quantity || 0,
-        low_stock_alert: product.low_stock_alert || 10,
-        wholesale_price: product.wholesale_price || 0,
-        cost_per_unit: product.cost_per_unit || 0,
+        available_quantity: product.available_quantity ?? 0,
+        low_stock_alert: product.low_stock_alert ?? 10,
+        wholesale_price: product.wholesale_price ?? 0,
+        cost_per_unit: product.cost_per_unit ?? 0,
       }}
       onEdit={() => handleEdit(product.id)}
       onDelete={() => handleDelete(product.id)}
@@ -992,10 +992,10 @@ export function ProductsListPage() {
                                 category: product.category || undefined,
                                 image_url: product.image_url || undefined,
                                 sku: product.sku || undefined,
-                                available_quantity: product.available_quantity || 0,
-                                low_stock_alert: product.low_stock_alert || 10,
-                                wholesale_price: product.wholesale_price || 0,
-                                cost_per_unit: product.cost_per_unit || 0,
+                                available_quantity: product.available_quantity ?? 0,
+                                low_stock_alert: product.low_stock_alert ?? 10,
+                                wholesale_price: product.wholesale_price ?? 0,
+                                cost_per_unit: product.cost_per_unit ?? 0,
                               }}
                               onEdit={() => handleEdit(product.id)}
                               onDelete={() => handleDelete(product.id)}

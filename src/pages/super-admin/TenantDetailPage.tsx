@@ -333,7 +333,7 @@ export default function TenantDetailPage() {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold capitalize text-[hsl(var(--super-admin-text))]">{tenant.subscription_plan}</p>
-              <p className="text-xs text-[hsl(var(--super-admin-text))]/60">{formatCurrency(tenant.mrr || 0)}/month</p>
+              <p className="text-xs text-[hsl(var(--super-admin-text))]/60">{formatCurrency(tenant.mrr ?? 0)}/month</p>
             </CardContent>
           </Card>
 
@@ -354,7 +354,7 @@ export default function TenantDetailPage() {
               <CardTitle className="text-sm font-medium text-[hsl(var(--super-admin-text))]/90">MRR</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">{formatCurrency(tenant.mrr || 0)}</p>
+              <p className="text-2xl font-bold text-[hsl(var(--super-admin-text))]">{formatCurrency(tenant.mrr ?? 0)}</p>
               <p className="text-xs text-[hsl(var(--super-admin-text))]/60">Monthly recurring</p>
             </CardContent>
           </Card>
@@ -448,7 +448,7 @@ export default function TenantDetailPage() {
               <CardContent>
                 <div className="space-y-3">
                   {Object.entries((tenant.usage as Record<string, number>) || {}).map(([key, value]) => {
-                    const limit = ((tenant.limits as Record<string, number>) || {})[key] || 0;
+                    const limit = ((tenant.limits as Record<string, number>) || {})[key] ?? 0;
                     const percentage = limit > 0 ? (Number(value) / limit) * 100 : 0;
                     return (
                       <div key={key} className="space-y-1">
@@ -711,7 +711,7 @@ export default function TenantDetailPage() {
                                 {invoice.invoice_number}
                               </td>
                               <td className="py-3 px-4 text-sm text-right font-medium text-[hsl(var(--super-admin-text))]">
-                                {formatCurrency(invoice.total || 0)}
+                                {formatCurrency(invoice.total ?? 0)}
                               </td>
                               <td className="py-3 px-4">
                                 <Badge
@@ -796,23 +796,23 @@ export default function TenantDetailPage() {
                                                 <table>
                                                   <tr>
                                                     <td>Subtotal:</td>
-                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.subtotal || 0))}</td>
+                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.subtotal ?? 0))}</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Tax:</td>
-                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.tax || 0))}</td>
+                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.tax ?? 0))}</td>
                                                   </tr>
                                                   <tr class="total-row">
                                                     <td>Total:</td>
-                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.total || 0))}</td>
+                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.total ?? 0))}</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Amount Paid:</td>
-                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.amount_paid || 0))}</td>
+                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.amount_paid ?? 0))}</td>
                                                   </tr>
                                                   <tr>
                                                     <td>Amount Due:</td>
-                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.amount_due || 0))}</td>
+                                                    <td style="text-align: right;">${formatCurrency(Number(invoice.amount_due ?? 0))}</td>
                                                   </tr>
                                                 </table>
                                               </div>
@@ -893,23 +893,23 @@ export default function TenantDetailPage() {
                                               <table>
                                                 <tr>
                                                   <td>Subtotal:</td>
-                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.subtotal || 0))}</td>
+                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.subtotal ?? 0))}</td>
                                                 </tr>
                                                 <tr>
                                                   <td>Tax:</td>
-                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.tax || 0))}</td>
+                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.tax ?? 0))}</td>
                                                 </tr>
                                                 <tr class="total-row">
                                                   <td>Total:</td>
-                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.total || 0))}</td>
+                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.total ?? 0))}</td>
                                                 </tr>
                                                 <tr>
                                                   <td>Amount Paid:</td>
-                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.amount_paid || 0))}</td>
+                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.amount_paid ?? 0))}</td>
                                                 </tr>
                                                 <tr>
                                                   <td>Amount Due:</td>
-                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.amount_due || 0))}</td>
+                                                  <td style="text-align: right;">${formatCurrency(Number(invoice.amount_due ?? 0))}</td>
                                                 </tr>
                                               </table>
                                             </div>
@@ -996,7 +996,7 @@ export default function TenantDetailPage() {
                       const credit = prompt("Enter credit amount (USD):");
                       if (credit && !isNaN(Number(credit))) {
                         const { error } = await supabase.from('tenants').update({
-                          mrr: (tenant.mrr || 0) - Number(credit)
+                          mrr: (tenant.mrr ?? 0) - Number(credit)
                         }).eq('id', tenantId);
 
                         if (!error) {
@@ -1108,29 +1108,29 @@ export default function TenantDetailPage() {
                     <div className="flex justify-between mb-2">
                       <span className="text-sm text-[hsl(var(--super-admin-text))]/70">Customers</span>
                       <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">
-                        {((tenant.usage as Record<string, number>)?.customers || 0)} / {((tenant.limits as Record<string, number>)?.customers || 'Unlimited')}
+                        {((tenant.usage as Record<string, number>)?.customers ?? 0)} / {((tenant.limits as Record<string, number>)?.customers || 'Unlimited')}
                       </span>
                     </div>
                     {((tenant.limits as Record<string, number>)?.customers || -1) !== -1 && (
-                      <Progress value={(((tenant.usage as Record<string, number>)?.customers || 0) / ((tenant.limits as Record<string, number>)?.customers || 1)) * 100} />
+                      <Progress value={(((tenant.usage as Record<string, number>)?.customers ?? 0) / ((tenant.limits as Record<string, number>)?.customers || 1)) * 100} />
                     )}
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm text-[hsl(var(--super-admin-text))]/70">Products</span>
                       <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">
-                        {((tenant.usage as Record<string, number>)?.products || 0)} / {((tenant.limits as Record<string, number>)?.products || 'Unlimited')}
+                        {((tenant.usage as Record<string, number>)?.products ?? 0)} / {((tenant.limits as Record<string, number>)?.products || 'Unlimited')}
                       </span>
                     </div>
                     {((tenant.limits as Record<string, number>)?.products || -1) !== -1 && (
-                      <Progress value={(((tenant.usage as Record<string, number>)?.products || 0) / ((tenant.limits as Record<string, number>)?.products || 1)) * 100} />
+                      <Progress value={(((tenant.usage as Record<string, number>)?.products ?? 0) / ((tenant.limits as Record<string, number>)?.products || 1)) * 100} />
                     )}
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm text-[hsl(var(--super-admin-text))]/70">Monthly Orders</span>
                       <span className="text-sm font-medium text-[hsl(var(--super-admin-text))]">
-                        {tenant.monthly_orders || 0}
+                        {tenant.monthly_orders ?? 0}
                       </span>
                     </div>
                   </div>

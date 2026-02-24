@@ -146,7 +146,7 @@ export function POReceiving({
       const initialQuantities: Record<string, number> = {};
       items.forEach((item) => {
         // Default to ordered quantity
-        initialQuantities[item.id] = item.quantity || 0;
+        initialQuantities[item.id] = item.quantity ?? 0;
       });
       setQuantities(initialQuantities);
       setReceivedDate(new Date().toISOString().split('T')[0]);
@@ -161,8 +161,8 @@ export function POReceiving({
     if (!items) return [];
 
     return items.map((item) => {
-      const ordered = item.quantity || 0;
-      const received = quantities[item.id] || 0;
+      const ordered = item.quantity ?? 0;
+      const received = quantities[item.id] ?? 0;
       const difference = received - ordered;
 
       let type: 'over' | 'under' | 'match' = 'match';
@@ -197,7 +197,7 @@ export function POReceiving({
       // Increment the received quantity by 1
       setQuantities((prev) => ({
         ...prev,
-        [matchingItem.id]: (prev[matchingItem.id] || 0) + 1,
+        [matchingItem.id]: (prev[matchingItem.id] ?? 0) + 1,
       }));
       logger.debug('Barcode matched', { barcode: scannedBarcode, itemId: matchingItem.id }, 'POReceiving');
     } else {
@@ -219,14 +219,14 @@ export function POReceiving({
   const incrementQuantity = useCallback((itemId: string) => {
     setQuantities((prev) => ({
       ...prev,
-      [itemId]: (prev[itemId] || 0) + 1,
+      [itemId]: (prev[itemId] ?? 0) + 1,
     }));
   }, []);
 
   const decrementQuantity = useCallback((itemId: string) => {
     setQuantities((prev) => ({
       ...prev,
-      [itemId]: Math.max(0, (prev[itemId] || 0) - 1),
+      [itemId]: Math.max(0, (prev[itemId] ?? 0) - 1),
     }));
   }, []);
 
@@ -253,7 +253,7 @@ export function POReceiving({
 
       // Process each item
       for (const item of items) {
-        const receivedQty = quantities[item.id] || 0;
+        const receivedQty = quantities[item.id] ?? 0;
         const productId = item.product_id;
 
         // Update PO item with received quantity
@@ -290,7 +290,7 @@ export function POReceiving({
           }
 
           if (product && !productError) {
-            const previousQuantity = product.stock_quantity || 0;
+            const previousQuantity = product.stock_quantity ?? 0;
             const newQuantity = previousQuantity + receivedQty;
 
             const { error: stockError } = await supabase
@@ -433,7 +433,7 @@ export function POReceiving({
   const isLoading = receiveMutation.isPending || itemsLoading;
 
   // Calculate totals
-  const totalOrdered = items?.reduce((sum, item) => sum + (item.quantity || 0), 0) ?? 0;
+  const totalOrdered = items?.reduce((sum, item) => sum + (item.quantity ?? 0), 0) ?? 0;
   const totalReceived = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
 
   return (
@@ -514,8 +514,8 @@ export function POReceiving({
                     </TableHeader>
                     <TableBody>
                       {items.map((item) => {
-                        const ordered = item.quantity || 0;
-                        const received = quantities[item.id] || 0;
+                        const ordered = item.quantity ?? 0;
+                        const received = quantities[item.id] ?? 0;
                         const diff = received - ordered;
                         const discrepancy = discrepancies.find((d) => d.itemId === item.id);
 

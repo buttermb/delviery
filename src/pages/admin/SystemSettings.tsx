@@ -84,13 +84,13 @@ const SystemSettings = () => {
       const dbSize = { size_mb: 0 }; // N/A - requires database admin access
       const avgResponseTime = { avg_ms: 0 }; // N/A - requires monitoring setup
 
-      const errorRate = ((errorCount.count || 0) / Math.max((ordersLastHour.count || 1), 1)) * 100;
+      const errorRate = ((errorCount.count ?? 0) / Math.max((ordersLastHour.count ?? 1), 1)) * 100;
 
       return {
-        ordersPerHour: ordersLastHour.count || 0,
-        ordersToday: ordersToday.count || 0,
+        ordersPerHour: ordersLastHour.count ?? 0,
+        ordersToday: ordersToday.count ?? 0,
         errorRate: errorRate.toFixed(2),
-        unresolvedErrors: errorCount.count || 0,
+        unresolvedErrors: errorCount.count ?? 0,
         activeUsers: 0, // Active user tracking requires last_sign_in column
         databaseSize: dbSize.size_mb.toFixed(2),
         avgResponseTime: avgResponseTime.avg_ms.toFixed(0),
@@ -127,10 +127,10 @@ const SystemSettings = () => {
       const [users, orders, products, fraudFlags] = results;
 
       return {
-        users: users.count || 0,
-        orders: orders.count || 0,
-        products: products.count || 0,
-        fraudFlags: fraudFlags.count || 0,
+        users: users.count ?? 0,
+        orders: orders.count ?? 0,
+        products: products.count ?? 0,
+        fraudFlags: fraudFlags.count ?? 0,
       };
     },
     enabled: !!tenant,
@@ -261,9 +261,9 @@ const SystemSettings = () => {
                 <Zap className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{systemHealth?.ordersPerHour || 0}</div>
+                <div className="text-2xl font-bold">{systemHealth?.ordersPerHour ?? 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  {systemHealth?.ordersToday || 0} today
+                  {systemHealth?.ordersToday ?? 0} today
                 </p>
               </CardContent>
             </Card>
@@ -274,9 +274,9 @@ const SystemSettings = () => {
                 <AlertTriangle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{systemHealth?.errorRate || 0}%</div>
+                <div className="text-2xl font-bold">{systemHealth?.errorRate ?? 0}%</div>
                 <p className="text-xs text-muted-foreground">
-                  {systemHealth?.unresolvedErrors || 0} unresolved
+                  {systemHealth?.unresolvedErrors ?? 0} unresolved
                 </p>
               </CardContent>
             </Card>
@@ -293,9 +293,9 @@ const SystemSettings = () => {
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">Active Users</span>
                   </div>
-                  <span className="font-bold">{systemHealth?.activeUsers || 0}</span>
+                  <span className="font-bold">{systemHealth?.activeUsers ?? 0}</span>
                 </div>
-                <Progress value={(systemHealth?.activeUsers || 0) / 10} />
+                <Progress value={(systemHealth?.activeUsers ?? 0) / 10} />
               </div>
 
               <Separator />
@@ -306,9 +306,9 @@ const SystemSettings = () => {
                     <Server className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">Avg Response Time</span>
                   </div>
-                  <span className="font-bold">{systemHealth?.avgResponseTime || 0}ms</span>
+                  <span className="font-bold">{systemHealth?.avgResponseTime ?? 0}ms</span>
                 </div>
-                <Progress value={Math.min(Number(systemHealth?.avgResponseTime || 0) / 2, 100)} />
+                <Progress value={Math.min(Number(systemHealth?.avgResponseTime ?? 0) / 2, 100)} />
               </div>
 
               <Separator />
@@ -319,9 +319,9 @@ const SystemSettings = () => {
                     <Database className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">Database Size</span>
                   </div>
-                  <span className="font-bold">{systemHealth?.databaseSize || 0} MB</span>
+                  <span className="font-bold">{systemHealth?.databaseSize ?? 0} MB</span>
                 </div>
-                <Progress value={Number(systemHealth?.databaseSize || 0) / 20} />
+                <Progress value={Number(systemHealth?.databaseSize ?? 0) / 20} />
               </div>
 
               <Separator />
@@ -506,7 +506,7 @@ const SystemSettings = () => {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dbStats?.users.toLocaleString() || 0}</div>
+                <div className="text-2xl font-bold">{dbStats?.users.toLocaleString() ?? 0}</div>
               </CardContent>
             </Card>
 
@@ -516,7 +516,7 @@ const SystemSettings = () => {
                 <HardDrive className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dbStats?.orders.toLocaleString() || 0}</div>
+                <div className="text-2xl font-bold">{dbStats?.orders.toLocaleString() ?? 0}</div>
               </CardContent>
             </Card>
 
@@ -526,7 +526,7 @@ const SystemSettings = () => {
                 <Database className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dbStats?.products.toLocaleString() || 0}</div>
+                <div className="text-2xl font-bold">{dbStats?.products.toLocaleString() ?? 0}</div>
               </CardContent>
             </Card>
 
@@ -536,7 +536,7 @@ const SystemSettings = () => {
                 <Shield className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{dbStats?.fraudFlags.toLocaleString() || 0}</div>
+                <div className="text-2xl font-bold">{dbStats?.fraudFlags.toLocaleString() ?? 0}</div>
               </CardContent>
             </Card>
           </div>

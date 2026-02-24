@@ -307,10 +307,10 @@ export default function LoyaltyProgramPage() {
           .select("points_spent")
           .eq("tenant_id", tenant?.id);
 
-        const totalCustomers = pointsData?.length || 0;
-        const totalPointsAwarded = (pointsData as unknown as CustomerLoyaltyPoints[])?.reduce((sum, p) => sum + (p.lifetime_points || 0), 0) || 0;
-        const totalPointsRedeemed = (redemptionsData as unknown as LoyaltyRewardRedemption[])?.reduce((sum, r) => sum + (r.points_spent || 0), 0) || 0;
-        const activePointsBalance = (pointsData as unknown as CustomerLoyaltyPoints[])?.reduce((sum, p) => sum + (p.total_points || 0), 0) || 0;
+        const totalCustomers = pointsData?.length ?? 0;
+        const totalPointsAwarded = (pointsData as unknown as CustomerLoyaltyPoints[])?.reduce((sum, p) => sum + (p.lifetime_points ?? 0), 0) ?? 0;
+        const totalPointsRedeemed = (redemptionsData as unknown as LoyaltyRewardRedemption[])?.reduce((sum, r) => sum + (r.points_spent ?? 0), 0) ?? 0;
+        const activePointsBalance = (pointsData as unknown as CustomerLoyaltyPoints[])?.reduce((sum, p) => sum + (p.total_points ?? 0), 0) ?? 0;
 
         return {
           totalCustomers,
@@ -360,7 +360,7 @@ export default function LoyaltyProgramPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalCustomers || 0}</div>
+            <div className="text-2xl font-bold">{stats?.totalCustomers ?? 0}</div>
             <p className="text-xs text-muted-foreground">Enrolled customers</p>
           </CardContent>
         </Card>
@@ -372,7 +372,7 @@ export default function LoyaltyProgramPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(stats?.totalPointsAwarded || 0).toLocaleString()}
+              {(stats?.totalPointsAwarded ?? 0).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">Lifetime total</p>
           </CardContent>
@@ -385,7 +385,7 @@ export default function LoyaltyProgramPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(stats?.totalPointsRedeemed || 0).toLocaleString()}
+              {(stats?.totalPointsRedeemed ?? 0).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
               {stats?.redemptionRate?.toFixed(1)}% redemption rate
@@ -400,7 +400,7 @@ export default function LoyaltyProgramPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(stats?.activePointsBalance || 0).toLocaleString()}
+              {(stats?.activePointsBalance ?? 0).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">Available to redeem</p>
           </CardContent>
@@ -426,21 +426,21 @@ export default function LoyaltyProgramPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-muted-foreground">Points per Dollar</div>
-                  <div className="text-2xl font-bold">{config?.points_per_dollar || 0}x</div>
+                  <div className="text-2xl font-bold">{config?.points_per_dollar ?? 0}x</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Points to Dollar Ratio</div>
                   <div className="text-2xl font-bold">
-                    ${(config?.points_to_dollar_ratio || 0).toFixed(2)}
+                    ${(config?.points_to_dollar_ratio ?? 0).toFixed(2)}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Signup Bonus</div>
-                  <div className="text-2xl font-bold">{config?.signup_bonus_points || 0} pts</div>
+                  <div className="text-2xl font-bold">{config?.signup_bonus_points ?? 0} pts</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Birthday Bonus</div>
-                  <div className="text-2xl font-bold">{config?.birthday_bonus_points || 0} pts</div>
+                  <div className="text-2xl font-bold">{config?.birthday_bonus_points ?? 0} pts</div>
                 </div>
               </div>
 
@@ -468,7 +468,7 @@ export default function LoyaltyProgramPage() {
             <div>
               <h3 className="text-lg font-semibold">Loyalty Tiers</h3>
               <p className="text-sm text-muted-foreground">
-                {tiers?.length || 0} tier(s) configured
+                {tiers?.length ?? 0} tier(s) configured
               </p>
             </div>
             <Button onClick={() => handleOpenTier()}>
@@ -551,7 +551,7 @@ export default function LoyaltyProgramPage() {
             <div>
               <h3 className="text-lg font-semibold">Rewards Catalog</h3>
               <p className="text-sm text-muted-foreground">
-                {rewards?.length || 0} reward(s) available
+                {rewards?.length ?? 0} reward(s) available
               </p>
             </div>
             <Button onClick={() => handleOpenReward()}>
@@ -649,7 +649,7 @@ export default function LoyaltyProgramPage() {
                 <Label>Points per Dollar</Label>
                 <Input
                   type="number"
-                  value={configForm.points_per_dollar || 0}
+                  value={configForm.points_per_dollar ?? 0}
                   onChange={(e) => setConfigForm({ ...configForm, points_per_dollar: parseFloat(e.target.value) })}
                 />
               </div>
@@ -658,7 +658,7 @@ export default function LoyaltyProgramPage() {
                 <Input
                   type="number"
                   step="0.01"
-                  value={configForm.points_to_dollar_ratio || 0}
+                  value={configForm.points_to_dollar_ratio ?? 0}
                   onChange={(e) => setConfigForm({ ...configForm, points_to_dollar_ratio: parseFloat(e.target.value) })}
                 />
               </div>
@@ -701,7 +701,7 @@ export default function LoyaltyProgramPage() {
                 <Label>Min Points</Label>
                 <Input
                   type="number"
-                  value={tierForm.min_points || 0}
+                  value={tierForm.min_points ?? 0}
                   onChange={(e) => setTierForm({ ...tierForm, min_points: parseInt(e.target.value) })}
                 />
               </div>
@@ -769,7 +769,7 @@ export default function LoyaltyProgramPage() {
                 <Input
                   id="reward-points-cost"
                   type="number"
-                  value={rewardForm.points_required || 0}
+                  value={rewardForm.points_required ?? 0}
                   onChange={(e) => setRewardForm({ ...rewardForm, points_required: parseInt(e.target.value) })}
                 />
               </div>

@@ -76,47 +76,47 @@ export default function FrontedInventoryAnalytics() {
 
       // Calculate stats
       const totalFronted = fronts?.reduce(
-        (sum, f) => sum + (parseFloat(String(f.expected_revenue || 0))),
+        (sum, f) => sum + (parseFloat(String(f.expected_revenue ?? 0))),
         0
-      ) || 0;
+      ) ?? 0;
 
       const totalRevenue = fronts?.reduce(
-        (sum, f) => sum + (parseFloat(String(f.payment_received || 0))),
+        (sum, f) => sum + (parseFloat(String(f.payment_received ?? 0))),
         0
-      ) || 0;
+      ) ?? 0;
 
       const totalProfit = fronts?.reduce(
         (sum, f) => {
-          const received = parseFloat(String(f.payment_received || 0));
-          const cost = parseFloat(String(f.cost_per_unit || 0)) * f.quantity_fronted;
-          return sum + Math.min(received, parseFloat(String(f.expected_revenue || 0))) - cost;
+          const received = parseFloat(String(f.payment_received ?? 0));
+          const cost = parseFloat(String(f.cost_per_unit ?? 0)) * f.quantity_fronted;
+          return sum + Math.min(received, parseFloat(String(f.expected_revenue ?? 0))) - cost;
         },
         0
-      ) || 0;
+      ) ?? 0;
 
       const totalOwed = fronts?.reduce(
-        (sum, f) => sum + (parseFloat(String(f.expected_revenue || 0)) - parseFloat(String(f.payment_received || 0))),
+        (sum, f) => sum + (parseFloat(String(f.expected_revenue ?? 0)) - parseFloat(String(f.payment_received ?? 0))),
         0
-      ) || 0;
+      ) ?? 0;
 
-      const activeFronts = fronts?.filter((f) => f.status === "active").length || 0;
+      const activeFronts = fronts?.filter((f) => f.status === "active").length ?? 0;
 
       const overdueFronts = fronts?.filter(
         (f) =>
           f.status === "active" &&
           f.payment_due_date &&
           new Date(f.payment_due_date) < new Date() &&
-          parseFloat(String(f.expected_revenue || 0)) > parseFloat(String(f.payment_received || 0))
-      ).length || 0;
+          parseFloat(String(f.expected_revenue ?? 0)) > parseFloat(String(f.payment_received ?? 0))
+      ).length ?? 0;
 
-      const totalUnits = fronts?.reduce((sum, f) => sum + f.quantity_fronted, 0) || 0;
+      const totalUnits = fronts?.reduce((sum, f) => sum + f.quantity_fronted, 0) ?? 0;
 
       const averageMargin =
         fronts && fronts.length > 0
           ? fronts.reduce(
             (sum, f) =>
               sum +
-              (parseFloat(String(f.expected_profit || 0)) / parseFloat(String(f.expected_revenue || 1))) * 100,
+              (parseFloat(String(f.expected_profit ?? 0)) / parseFloat(String(f.expected_revenue || 1))) * 100,
             0
           ) / fronts.length
           : 0;
@@ -136,8 +136,8 @@ export default function FrontedInventoryAnalytics() {
       const performerMap = new Map();
       fronts?.forEach((front) => {
         const name = front.fronted_to_customer_name || "Unknown";
-        const profit = parseFloat(String(front.expected_profit || 0));
-        const revenue = parseFloat(String(front.expected_revenue || 0));
+        const profit = parseFloat(String(front.expected_profit ?? 0));
+        const revenue = parseFloat(String(front.expected_revenue ?? 0));
 
         if (!performerMap.has(name)) {
           performerMap.set(name, { name, profit: 0, revenue: 0, fronts: 0 });
@@ -160,7 +160,7 @@ export default function FrontedInventoryAnalytics() {
       fronts?.forEach((front) => {
         const productName = front.products?.name || "Unknown";
         const units = front.quantity_fronted;
-        const revenue = parseFloat(String(front.expected_revenue || 0));
+        const revenue = parseFloat(String(front.expected_revenue ?? 0));
 
         if (!productMap.has(productName)) {
           productMap.set(productName, { name: productName, units: 0, revenue: 0, fronts: 0 });
@@ -194,7 +194,7 @@ export default function FrontedInventoryAnalytics() {
           (d) => format(frontDate, "MMM dd") === d.date
         );
         if (dayIndex !== -1) {
-          last30Days[dayIndex].fronted += parseFloat(String(front.expected_revenue || 0));
+          last30Days[dayIndex].fronted += parseFloat(String(front.expected_revenue ?? 0));
         }
 
         // Add revenue from payments
@@ -204,7 +204,7 @@ export default function FrontedInventoryAnalytics() {
             (d) => format(paymentDate, "MMM dd") === d.date
           );
           if (dayIndex !== -1) {
-            last30Days[dayIndex].revenue += parseFloat(String(payment.amount || 0));
+            last30Days[dayIndex].revenue += parseFloat(String(payment.amount ?? 0));
           }
         });
       });

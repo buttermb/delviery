@@ -178,7 +178,7 @@ function RecurringOrderSetupComponent({
     updated[index] = {
       ...updated[index],
       product_name: productName,
-      unit_price: product?.base_price || 0,
+      unit_price: product?.base_price ?? 0,
     };
     setOrderItems(updated);
   };

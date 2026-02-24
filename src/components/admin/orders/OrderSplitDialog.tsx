@@ -125,8 +125,8 @@ export function OrderSplitDialog({
     const split = orderItems.filter((item) => selectedItemIds.has(item.id));
     const remaining = orderItems.filter((item) => !selectedItemIds.has(item.id));
 
-    const splitSum = split.reduce((sum, item) => sum + (item.total_price || 0), 0);
-    const remainingSum = remaining.reduce((sum, item) => sum + (item.total_price || 0), 0);
+    const splitSum = split.reduce((sum, item) => sum + (item.total_price ?? 0), 0);
+    const remainingSum = remaining.reduce((sum, item) => sum + (item.total_price ?? 0), 0);
 
     return {
       splitItems: split,

@@ -262,7 +262,7 @@ export default function TenantAdminDashboardPage() {
             weight_lbs: currentQty, // For display consistency
           };
         }).filter(
-          (item) => Number(item.quantity_lbs || 0) <= item.reorder_point
+          (item) => Number(item.quantity_lbs ?? 0) <= item.reorder_point
         );
 
         return {
@@ -368,7 +368,7 @@ export default function TenantAdminDashboardPage() {
           orders.forEach((order) => {
             activities.push({
               type: "order_placed",
-              message: `Order #${order.id.slice(0, 8)} placed - ${formatCurrency(order.total_amount || 0)}`,
+              message: `Order #${order.id.slice(0, 8)} placed - ${formatCurrency(order.total_amount ?? 0)}`,
               timestamp: order.created_at,
             });
           });
@@ -591,9 +591,9 @@ export default function TenantAdminDashboardPage() {
 
   // Memoize onboarding progress
   const onboardingSteps = useMemo(() => [
-    { id: "products", completed: (tenantUsage.products || 0) > 0, title: "Add your first product", link: `/${tenant?.slug}/admin/inventory/products` },
-    { id: "customers", completed: (tenantUsage.customers || 0) > 0, title: "Add a customer", link: `/${tenant?.slug}/admin/customers` },
-    { id: "menu", completed: (tenantUsage.menus || 0) > 0, title: "Create a disposable menu", link: `/${tenant?.slug}/admin/disposable-menus` },
+    { id: "products", completed: (tenantUsage.products ?? 0) > 0, title: "Add your first product", link: `/${tenant?.slug}/admin/inventory/products` },
+    { id: "customers", completed: (tenantUsage.customers ?? 0) > 0, title: "Add a customer", link: `/${tenant?.slug}/admin/customers` },
+    { id: "menu", completed: (tenantUsage.menus ?? 0) > 0, title: "Create a disposable menu", link: `/${tenant?.slug}/admin/disposable-menus` },
     { id: "profile", completed: false, title: "Complete your business profile", link: `/${tenant?.slug}/admin/settings` },
   ], [tenantUsage.products, tenantUsage.customers, tenantUsage.menus, tenant?.slug]);
 
@@ -855,22 +855,22 @@ export default function TenantAdminDashboardPage() {
                   <p className="text-xs text-muted-foreground mb-2 font-medium">Today's Usage Limits</p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <div className="text-center p-2 rounded bg-muted/50">
-                      <span className="text-lg font-semibold">{usage.menusCreatedToday || 0}</span>
+                      <span className="text-lg font-semibold">{usage.menusCreatedToday ?? 0}</span>
                       <span className="text-muted-foreground">/{FREE_TIER_LIMITS.max_menus_per_day}</span>
                       <p className="text-[10px] text-muted-foreground">Menus</p>
                     </div>
                     <div className="text-center p-2 rounded bg-muted/50">
-                      <span className="text-lg font-semibold">{usage.ordersCreatedToday || 0}</span>
+                      <span className="text-lg font-semibold">{usage.ordersCreatedToday ?? 0}</span>
                       <span className="text-muted-foreground">/{FREE_TIER_LIMITS.max_orders_per_day}</span>
                       <p className="text-[10px] text-muted-foreground">Orders</p>
                     </div>
                     <div className="text-center p-2 rounded bg-muted/50">
-                      <span className="text-lg font-semibold">{usage.smsSentToday || 0}</span>
+                      <span className="text-lg font-semibold">{usage.smsSentToday ?? 0}</span>
                       <span className="text-muted-foreground">/{FREE_TIER_LIMITS.max_sms_per_day}</span>
                       <p className="text-[10px] text-muted-foreground">SMS</p>
                     </div>
                     <div className="text-center p-2 rounded bg-muted/50">
-                      <span className="text-lg font-semibold">{usage.exportsThisMonth || 0}</span>
+                      <span className="text-lg font-semibold">{usage.exportsThisMonth ?? 0}</span>
                       <span className="text-muted-foreground">/{FREE_TIER_LIMITS.max_exports_per_month}</span>
                       <p className="text-[10px] text-muted-foreground">Exports/mo</p>
                     </div>
@@ -959,8 +959,8 @@ export default function TenantAdminDashboardPage() {
         <QuickActionsWidget
           userTier={tenant?.subscription_plan === 'enterprise' ? 'ENTERPRISE' : tenant?.subscription_plan === 'professional' ? 'PROFESSIONAL' : 'STARTER'}
           badges={{
-            orders: todayMetrics?.orderCount || 0,
-            'stock-alerts': todayMetrics?.lowStock?.length || 0,
+            orders: todayMetrics?.orderCount ?? 0,
+            'stock-alerts': todayMetrics?.lowStock?.length ?? 0,
           }}
           className="mb-4"
         />
@@ -1116,7 +1116,7 @@ export default function TenantAdminDashboardPage() {
               </CardHeader>
               <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
                 <div className="text-2xl sm:text-3xl font-bold">
-                  {tenantUsage.products || 0}/{getDisplayLimit('products')}
+                  {tenantUsage.products ?? 0}/{getDisplayLimit('products')}
                 </div>
                 {!isUnlimited('products') && (
                   <>
@@ -1151,7 +1151,7 @@ export default function TenantAdminDashboardPage() {
               </CardHeader>
               <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
                 <div className="text-2xl sm:text-3xl font-bold">
-                  {tenantUsage.customers || 0}/{getDisplayLimit('customers')}
+                  {tenantUsage.customers ?? 0}/{getDisplayLimit('customers')}
                 </div>
                 {!isUnlimited('customers') && (
                   <>
@@ -1186,7 +1186,7 @@ export default function TenantAdminDashboardPage() {
               </CardHeader>
               <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
                 <div className="text-2xl sm:text-3xl font-bold text-[hsl(var(--tenant-text))]">
-                  {tenantUsage.menus || 0}/{getDisplayLimit('menus')}
+                  {tenantUsage.menus ?? 0}/{getDisplayLimit('menus')}
                 </div>
                 {!isUnlimited('menus') && (
                   <>
@@ -1316,7 +1316,7 @@ export default function TenantAdminDashboardPage() {
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-xs sm:text-sm text-[hsl(var(--tenant-text))] truncate">{item.strain || item.product_name || 'Unknown'}</p>
                       <p className="text-xs text-[hsl(var(--tenant-text-light))]">
-                        {Number(item.weight_lbs || 0).toFixed(2)} lbs remaining
+                        {Number(item.weight_lbs ?? 0).toFixed(2)} lbs remaining
                       </p>
                     </div>
                     <Badge className="bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700 text-xs flex-shrink-0">Low Stock</Badge>
