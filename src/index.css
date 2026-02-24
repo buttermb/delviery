@@ -445,44 +445,11 @@ body.keyboard-open [data-radix-dialog-content] {
     /* Subtle emerald border */
     --radius: 0.5rem;
 
-    /* Unified Design System - Spacing Scale (4px base unit) */
-    --spacing-1: 0.25rem;
-    /* 4px */
-    --spacing-2: 0.5rem;
-    /* 8px */
-    --spacing-3: 0.75rem;
-    /* 12px */
-    --spacing-4: 1rem;
-    /* 16px */
-    --spacing-6: 1.5rem;
-    /* 24px */
-    --spacing-8: 2rem;
-    /* 32px */
-    --spacing-12: 3rem;
-    /* 48px */
-    --spacing-16: 4rem;
-    /* 64px */
-
-    /* Unified Design System - Border Radius */
-    --radius-sm: 0.5rem;
-    /* 8px */
-    --radius-md: 0.75rem;
-    /* 12px */
-    --radius-lg: 1rem;
-    /* 16px */
-    --radius-xl: 1.5rem;
-    /* 24px */
-
     /* Unified Design System - Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--marketing-primary)) 0%, hsl(var(--marketing-primary) / 0.8) 50%, hsl(var(--marketing-accent)) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--marketing-accent)) 0%, hsl(var(--marketing-secondary)) 50%, hsl(var(--marketing-primary)) 100%);
-    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
 
     /* Unified Design System - Depth Hierarchy Shadows */
-    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
     --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.3), 0 0 40px rgba(37, 99, 235, 0.1);
-    --shadow-depth: 0 20px 60px -10px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    --shadow-glow-pulse: 0 0 0 0 rgba(37, 99, 235, 0.4), 0 0 20px rgba(37, 99, 235, 0.3);
 
     /* Unified Design System - Motion Variables */
     --motion-normal: 1;
@@ -643,32 +610,11 @@ body.keyboard-open [data-radix-dialog-content] {
     --marketing-border: 214 32% 91%;
     /* #e2e8f0 - Slate 200 */
 
-    /* Unified Design System - Spacing Scale (same for dark) */
-    --spacing-1: 0.25rem;
-    --spacing-2: 0.5rem;
-    --spacing-3: 0.75rem;
-    --spacing-4: 1rem;
-    --spacing-6: 1.5rem;
-    --spacing-8: 2rem;
-    --spacing-12: 3rem;
-    --spacing-16: 4rem;
-
-    /* Unified Design System - Border Radius (same for dark) */
-    --radius-sm: 0.5rem;
-    --radius-md: 0.75rem;
-    --radius-lg: 1rem;
-    --radius-xl: 1.5rem;
-
     /* Unified Design System - Gradients (adjusted for dark) */
     --gradient-primary: linear-gradient(135deg, hsl(var(--marketing-primary)) 0%, hsl(var(--marketing-primary) / 0.8) 50%, hsl(var(--marketing-accent)) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--marketing-accent)) 0%, hsl(var(--marketing-secondary)) 50%, hsl(var(--marketing-primary)) 100%);
-    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
 
     /* Unified Design System - Depth Hierarchy Shadows (adjusted for dark) */
-    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
     --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2);
-    --shadow-depth: 0 20px 60px -10px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    --shadow-glow-pulse: 0 0 0 0 rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.4);
 
     /* Unified Design System - Motion Variables */
     --motion-normal: 1;
