@@ -187,11 +187,11 @@ export default function CustomReports() {
     setEditingReport(report);
     setFormData({
       name: report.name,
-      description: report.description || '',
-      sql_query: report.sql_query || '',
-      query: report.query || '',
+      description: report.description ?? '',
+      sql_query: report.sql_query ?? '',
+      query: report.query ?? '',
       format: report.format || 'csv',
-      schedule: report.schedule || '',
+      schedule: report.schedule ?? '',
     });
     setIsDialogOpen(true);
   };

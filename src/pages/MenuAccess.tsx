@@ -95,7 +95,7 @@ export default function MenuAccess() {
     || 'CONFIDENTIAL';
 
   useScreenshotProtection({
-    menuId: validation?.menu_data?.id || '',
+    menuId: validation?.menu_data?.id ?? '',
     customerId: validation?.whitelist_entry?.id,
     customerName: validation?.whitelist_entry?.customer_name,
     enabled: screenshotProtectionEnabled && Boolean(validation?.access_granted),

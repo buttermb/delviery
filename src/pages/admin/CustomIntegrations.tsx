@@ -169,8 +169,8 @@ export default function CustomIntegrations() {
     setFormData({
       name: integration.name,
       type: integration.type,
-      api_key: (config?.api_key as string) || '',
-      api_secret: (config?.api_secret as string) || '',
+      api_key: (config?.api_key as string) ?? '',
+      api_secret: (config?.api_secret as string) ?? '',
       config: integration.config || {},
     });
     setIsDialogOpen(true);

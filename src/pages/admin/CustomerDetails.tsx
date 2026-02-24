@@ -192,8 +192,8 @@ export default function CustomerDetails() {
 
     try {
       const { error } = await supabase.from('customer_notes').insert({
-        account_id: customer?.account_id || '',
-        customer_id: id || '',
+        account_id: customer?.account_id ?? '',
+        customer_id: id ?? '',
         note: newNote,
         note_type: 'general'
       });

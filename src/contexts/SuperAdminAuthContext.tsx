@@ -144,7 +144,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
             // Set the session in Supabase client for RLS access
             supabase.auth.setSession({
               access_token: session.access_token,
-              refresh_token: session.refresh_token || '',
+              refresh_token: session.refresh_token ?? '',
             }).then(({ error }) => {
               if (error) {
                 logger.error('Failed to restore Supabase session', error, { component: 'SuperAdminAuth' });
@@ -250,7 +250,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
         // Set the session in Supabase client - this enables RLS access
         const { error: sessionError } = await supabase.auth.setSession({
           access_token: data.supabaseSession.access_token,
-          refresh_token: data.supabaseSession.refresh_token || '',
+          refresh_token: data.supabaseSession.refresh_token ?? '',
         });
 
         if (sessionError) {

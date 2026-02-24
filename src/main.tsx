@@ -32,7 +32,7 @@ let chunkReloadCount = 0;
 const MAX_CHUNK_RELOADS = 3;
 
 window.addEventListener('error', (event) => {
-  const errorMessage = event.message || '';
+  const errorMessage = event.message ?? '';
   const isChunkError = errorMessage.includes('chunk') ||
     errorMessage.toLowerCase().includes('loading chunk') ||
     errorMessage.toLowerCase().includes('loading module') ||

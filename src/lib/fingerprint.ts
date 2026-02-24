@@ -194,8 +194,8 @@ function getWebGLFingerprint(): { hash: string; vendor: string; renderer: string
 
     return {
       hash: murmurhash3(data).toString(16),
-      vendor: vendor || '',
-      renderer: renderer || '',
+      vendor: vendor ?? '',
+      renderer: renderer ?? '',
     };
   } catch {
     return { hash: '', vendor: '', renderer: '' };

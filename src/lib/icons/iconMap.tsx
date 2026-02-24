@@ -121,7 +121,7 @@ export function getIcon(
     return null;
   }
   
-  return <IconComponent className={`${sizeClasses[size]} ${className || ''}`} />;
+  return <IconComponent className={`${sizeClasses[size]} ${className ?? ''}`} />;
 }
 
 /**

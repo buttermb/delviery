@@ -104,7 +104,7 @@ export default function InvitationAcceptPage() {
         });
         // Store token for after login
         sessionStorage.setItem('pending_invitation', token);
-        navigate(`/signup?email=${encodeURIComponent(invitation?.email || '')}`);
+        navigate(`/signup?email=${encodeURIComponent(invitation?.email ?? '')}`);
         return;
       }
 

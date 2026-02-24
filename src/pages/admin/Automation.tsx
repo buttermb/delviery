@@ -165,7 +165,7 @@ export default function Automation() {
     setEditingRule(rule);
     setFormData({
       name: rule.name,
-      description: rule.description || '',
+      description: rule.description ?? '',
       trigger_type: rule.trigger_type,
       trigger_config: rule.trigger_config || {},
       action_type: rule.action_type,

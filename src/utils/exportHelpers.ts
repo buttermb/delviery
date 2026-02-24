@@ -84,7 +84,7 @@ export const exportOrders = (orders: Array<Record<string, unknown> & { whitelist
     total_amount: parseFloat(String(order.total_amount || 0)).toFixed(2),
     status: order.status || 'pending',
     delivery_method: order.delivery_method || 'N/A',
-    special_instructions: order.special_instructions || '',
+    special_instructions: order.special_instructions ?? '',
     created_at: format(new Date(order.created_at), 'yyyy-MM-dd HH:mm:ss'),
     order_items: JSON.stringify(order.order_items ?? [])
   }));
@@ -165,7 +165,7 @@ export const exportSecurityEvents = (events: Array<Record<string, unknown> & { m
     menu_name: event.menu?.name || 'N/A',
     event_type: event.event_type || 'unknown',
     severity: event.severity || 'low',
-    description: event.description || '',
+    description: event.description ?? '',
     customer_name: event.whitelist?.customer_name || 'N/A',
     ip_address: event.ip_address || 'Unknown',
     device_fingerprint: event.device_fingerprint || 'N/A',

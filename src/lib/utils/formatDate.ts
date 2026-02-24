@@ -113,7 +113,7 @@ export function formatDateWithTimezone(
         timeZoneName: 'short' 
       }).formatToParts(dateObj);
       const tzPart = parts.find(p => p.type === 'timeZoneName');
-      return tzPart?.value || '';
+      return tzPart?.value ?? '';
     } catch {
       return '';
     }
@@ -140,7 +140,7 @@ export function getUserTimezone(): { name: string; abbreviation: string; offset:
   const parts = new Intl.DateTimeFormat('en-US', { 
     timeZoneName: 'short' 
   }).formatToParts(now);
-  const abbreviation = parts.find(p => p.type === 'timeZoneName')?.value || '';
+  const abbreviation = parts.find(p => p.type === 'timeZoneName')?.value ?? '';
   
   const offsetMinutes = now.getTimezoneOffset();
   const offsetHours = Math.abs(offsetMinutes / 60);

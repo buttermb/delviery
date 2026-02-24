@@ -62,7 +62,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
 
   // Get tenant data
   const { data: tenant, isLoading: loadingTenant, error } = useQuery<Tenant | null>({
-    queryKey: queryKeys.tenants.detail(currentTenantId || ''),
+    queryKey: queryKeys.tenants.detail(currentTenantId ?? ''),
     queryFn: async () => {
       if (!currentTenantId) return null;
       return await getTenantById(currentTenantId);

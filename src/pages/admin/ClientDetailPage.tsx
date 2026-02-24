@@ -87,7 +87,7 @@ export default function ClientDetailPage() {
 
     const copyPortalLink = () => {
         // In a real app, this would be a real URL
-        const link = `${window.location.origin}/portal/login?email=${encodeURIComponent(client.email || '')}`;
+        const link = `${window.location.origin}/portal/login?email=${encodeURIComponent(client.email ?? '')}`;
         navigator.clipboard.writeText(link);
         toast.success('Portal link copied to clipboard');
     };

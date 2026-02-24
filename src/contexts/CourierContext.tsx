@@ -157,7 +157,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       if (runnerData) {
         setCourier({
           id: runnerData.id,
-          email: runnerData.email || session.user.email || '',
+          email: runnerData.email ?? session.user.email ?? '',
           full_name: runnerData.full_name,
           phone: runnerData.phone,
           vehicle_type: runnerData.vehicle_type,

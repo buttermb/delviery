@@ -177,9 +177,9 @@ const AdminLiveChat = function AdminLiveChat() {
   const filteredSessions = sessions.filter(session => {
     if (!searchQuery) return true;
     const searchLower = searchQuery.toLowerCase();
-    const customerName = session.customer_name?.toLowerCase() || '';
-    const customerEmail = session.customer_email?.toLowerCase() || '';
-    const guestId = session.guest_id?.toLowerCase() || '';
+    const customerName = session.customer_name?.toLowerCase() ?? '';
+    const customerEmail = session.customer_email?.toLowerCase() ?? '';
+    const guestId = session.guest_id?.toLowerCase() ?? '';
     return customerName.includes(searchLower) ||
            customerEmail.includes(searchLower) ||
            guestId.includes(searchLower);

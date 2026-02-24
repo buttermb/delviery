@@ -123,7 +123,7 @@ export function sanitizeFileName(fileName: string): string {
 
   // Limit filename length
   if (sanitized.length > 255) {
-    const ext = sanitized.split('.').pop() || '';
+    const ext = sanitized.split('.').pop() ?? '';
     const name = sanitized.substring(0, 255 - ext.length - 1);
     sanitized = `${name}.${ext}`;
   }
@@ -143,7 +143,7 @@ export function isExtensionAllowed(
   fileName: string,
   allowedExtensions: string[]
 ): boolean {
-  const ext = fileName.split('.').pop()?.toLowerCase() || '';
+  const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
 
   // Always reject dangerous extensions
   if (DANGEROUS_EXTENSIONS.has(ext)) {
@@ -448,7 +448,7 @@ export function generateSecureStoragePath(
   tenantId?: string
 ): string {
   const sanitized = sanitizeFileName(fileName);
-  const ext = sanitized.split('.').pop() || '';
+  const ext = sanitized.split('.').pop() ?? '';
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 10);
 

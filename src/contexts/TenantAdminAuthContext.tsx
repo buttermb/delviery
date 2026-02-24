@@ -366,7 +366,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
               if (tenantData) {
                 parsedAdmin = {
                   id: adminData.id,
-                  email: adminData.email || session.user.email || '',
+                  email: adminData.email ?? session.user.email ?? '',
                   name: adminData.email, // tenant_users doesn't have full_name
                   role: adminData.role,
                   tenant_id: adminData.tenant_id,

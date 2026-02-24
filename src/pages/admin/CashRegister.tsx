@@ -254,8 +254,8 @@ function CashRegisterContent() {
         if (error) throw error;
         return ((data ?? []) as Array<{ id: string; first_name: string | null; last_name: string | null; email: string | null; phone: string | null; customer_type: string | null; loyalty_points: number | null }>).map(c => ({
           id: c.id,
-          first_name: c.first_name || '',
-          last_name: c.last_name || '',
+          first_name: c.first_name ?? '',
+          last_name: c.last_name ?? '',
           email: c.email,
           phone: c.phone,
           customer_type: c.customer_type || 'recreational',
@@ -695,13 +695,13 @@ function CashRegisterContent() {
         const totalLabel = isRefund ? 'REFUND TOTAL' : 'TOTAL';
         const totalFormatted = isRefund ? `-${formatCurrency(totalAmount)}` : formatCurrency(totalAmount);
         const footerText = isRefund ? 'Refund processed.' : 'Thank you for your purchase!';
-        const receiptNumber = lastTransaction?.transaction_number || '';
+        const receiptNumber = lastTransaction?.transaction_number ?? '';
         const titlePrefix = isRefund ? 'Refund' : 'Receipt';
 
         const receiptHtml = `<!DOCTYPE html>
 <html>
 <head>
-  <title>${titlePrefix} - ${receiptNumber || lastRefundData?.originalOrderNumber || ''}</title>
+  <title>${titlePrefix} - ${receiptNumber ?? lastRefundData?.originalOrderNumber ?? ''}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -779,12 +779,12 @@ function CashRegisterContent() {
     </tr>
   </table>
   <hr class="sep" />
-  ${isRefund ? refundMethodRow : `<div class="info-row"><span>Payment:</span><span style="text-transform:capitalize">${lastTransaction?.payment_method || ''}</span></div>`}
+  ${isRefund ? refundMethodRow : `<div class="info-row"><span>Payment:</span><span style="text-transform:capitalize">${lastTransaction?.payment_method ?? ''}</span></div>`}
   ${refundNotesRow}
   <div class="footer">
     <p>${footerText}</p>
   </div>
-  <p class="receipt-id">${lastTransaction?.transaction_id || ''}</p>
+  <p class="receipt-id">${lastTransaction?.transaction_id ?? ''}</p>
 </body>
 </html>`;
         printWindow.document.write(receiptHtml);

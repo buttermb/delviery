@@ -114,15 +114,15 @@ export default function CustomerForm() {
         }
 
         form.reset({
-          first_name: customer.first_name || '',
-          last_name: customer.last_name || '',
-          email: customer.email || '',
-          phone: customer.phone || '',
-          date_of_birth: customer.date_of_birth || '',
-          address: customer.address || '',
+          first_name: customer.first_name ?? '',
+          last_name: customer.last_name ?? '',
+          email: customer.email ?? '',
+          phone: customer.phone ?? '',
+          date_of_birth: customer.date_of_birth ?? '',
+          address: customer.address ?? '',
           customer_type: (customer.customer_type || 'recreational') as 'medical' | 'recreational',
-          medical_card_number: customer.medical_card_number || '',
-          medical_card_expiration: customer.medical_card_expiration || '',
+          medical_card_number: customer.medical_card_number ?? '',
+          medical_card_expiration: customer.medical_card_expiration ?? '',
           status: (customer.status || 'active') as 'active' | 'inactive' | 'suspended',
         });
       }

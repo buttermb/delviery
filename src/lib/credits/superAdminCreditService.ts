@@ -301,7 +301,7 @@ export async function getTenantsWithCredits(
     const tenants: TenantCreditInfo[] = (data ?? []).map((row: TenantCreditRow) => ({
       tenantId: row.tenant_id,
       tenantName: row.tenant_name || 'Unknown',
-      tenantSlug: row.tenant_slug || '',
+      tenantSlug: row.tenant_slug ?? '',
       balance: row.balance ?? 0,
       tierStatus: row.tier_status || 'free',
       isFreeTier: row.is_free_tier ?? false,
@@ -388,7 +388,7 @@ export async function getTenantCreditDetail(
       tenant: {
         id: tenant.id,
         name: tenant.business_name || 'Unknown',
-        slug: tenant.slug || '',
+        slug: tenant.slug ?? '',
         isFreeTier: tenant.is_free_tier ?? false,
         createdAt: tenant.created_at,
       },

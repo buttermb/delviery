@@ -83,7 +83,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
 
         return orders.map((o: Record<string, unknown>) => ({
           ...o,
-          user_profile: profilesMap[(o.user_id as string) || '']
+          user_profile: profilesMap[(o.user_id as string) ?? '']
         }));
       }
 
@@ -132,7 +132,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
           const itemsSummary = items?.map((item) => {
             const productName = item.product?.name || item.product_name || 'Unknown Item';
             return `${item.quantity}x ${productName}`;
-          }).join('; ') || '';
+          }).join('; ') ?? '';
 
           return [
             order.id,

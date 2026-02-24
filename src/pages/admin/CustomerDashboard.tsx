@@ -214,7 +214,7 @@ function useRecentCustomerActivity(tenantId: string | undefined) {
           return {
             ...activity,
             customerName: info?.name || 'Unknown',
-            customerEmail: info?.email || '',
+            customerEmail: info?.email ?? '',
           };
         })
         .slice(0, 10);
