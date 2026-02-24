@@ -137,7 +137,7 @@ export function QuickMenuWizard({ open, onOpenChange, cartItems, tenantId }: Qui
                         </div>
 
                         <div className="flex items-center gap-2 w-full">
-                            <Input value={generatedUrl} readOnly className="font-mono text-xs" />
+                            <Input value={generatedUrl} readOnly className="font-mono text-xs" aria-label="Menu URL" />
                             <Button size="icon" variant="outline" onClick={copyToClipboard} aria-label="Copy menu URL">
                                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                             </Button>

@@ -208,6 +208,7 @@ export function DataTable<TData, TValue>({
                 goToPage(0); // Reset to first page on search
               }}
               className="pl-9"
+              aria-label={searchPlaceholder}
             />
           </div>
         )}

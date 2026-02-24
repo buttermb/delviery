@@ -151,6 +151,7 @@ export default function MarketplacePurchasesPage() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-10"
+                                aria-label="Search orders"
                             />
                         </div>
                         <Select value={statusFilter} onValueChange={setStatusFilter}>

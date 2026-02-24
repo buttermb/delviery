@@ -218,11 +218,13 @@ export function CustomIntegrationForm({
               <div key={index} className="flex gap-2">
                 <Input
                   placeholder="Header name"
+                  aria-label="Custom header name"
                   value={header.key}
                   onChange={(e) => handleHeaderChange(index, 'key', e.target.value)}
                 />
                 <Input
                   placeholder="Header value"
+                  aria-label="Custom header value"
                   value={header.value}
                   onChange={(e) => handleHeaderChange(index, 'key', e.target.value)}
                 />

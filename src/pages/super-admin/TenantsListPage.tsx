@@ -271,6 +271,7 @@ export default function TenantsListPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
+                  aria-label="Search tenants"
                 />
               </div>
             </div>

@@ -157,6 +157,7 @@ function PriceOverrideInput({
           onChange={(e) => setInputValue(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
+          aria-label="Custom price"
           className="h-6 w-20 text-xs px-1"
           autoFocus
         />

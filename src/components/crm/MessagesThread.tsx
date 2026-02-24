@@ -103,6 +103,7 @@ export function MessagesThread({ clientId }: MessagesThreadProps) {
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                         className="min-h-[80px] resize-none"
+                        aria-label="Type a message"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();

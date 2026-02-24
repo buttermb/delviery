@@ -66,6 +66,7 @@ export function SmartVendorPicker({
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10"
+                        aria-label="Search vendors"
                     />
                 </div>
                 <CreateVendorDialog

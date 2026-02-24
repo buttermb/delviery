@@ -490,6 +490,7 @@ export function TwoFactorSetup() {
                             className="font-mono tracking-widest text-center text-lg max-w-[200px]"
                             maxLength={6}
                             autoComplete="one-time-code"
+                            aria-label="Verification code"
                         />
                         <Button onClick={verifyAndEnable} disabled={loading || verificationCode.length !== 6} aria-busy={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -34,6 +34,7 @@ export function PendingPickupsPanel({ tenantId, onLoadOrder, onCancelOrder }: Pe
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-8"
+                        aria-label="Search pickups"
                     />
                 </div>
                 <Button variant="ghost" size="icon" onClick={refresh} disabled={loading} aria-label="Refresh pending pickups">

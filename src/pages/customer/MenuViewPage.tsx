@@ -343,6 +343,7 @@ export default function CustomerMenuViewPage() {
                 placeholder="Search menu..."
                 value={searchTerm}
                 className="pl-9 h-9 bg-gray-100/50 border-0 focus-visible:ring-1 focus-visible:ring-primary rounded-full cursor-pointer"
+                aria-label="Search menu"
               />
             </div>
 

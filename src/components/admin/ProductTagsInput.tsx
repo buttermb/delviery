@@ -415,6 +415,7 @@ function TagSelectorContent({
           <Input
             ref={searchInputRef}
             placeholder="Search tags..."
+            aria-label="Search tags"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-8 h-8"
@@ -491,6 +492,7 @@ function TagSelectorContent({
             <div className="p-3 space-y-2">
               <Input
                 placeholder="Tag name..."
+                aria-label="New tag name"
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
                 className="h-8 text-sm"

@@ -138,6 +138,7 @@ export default function SystemConfigPage() {
                 }
                 className="min-h-[100px]"
                 placeholder="Message to show during maintenance..."
+                aria-label="Maintenance message"
               />
             </CardContent>
           </Card>

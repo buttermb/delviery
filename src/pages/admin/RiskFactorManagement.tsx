@@ -126,6 +126,7 @@ export default function RiskFactorManagement() {
                         min="1"
                         max="10"
                         defaultValue={factor.risk_level}
+                        aria-label={`Risk level for ${factor.neighborhood}`}
                         className="w-20"
                         onBlur={(e) =>
                           updateRiskFactor(factor.id, { risk_level: parseInt(e.target.value) })
@@ -143,6 +144,7 @@ export default function RiskFactorManagement() {
                         type="number"
                         min="0"
                         defaultValue={factor.scam_reports}
+                        aria-label={`Scam reports for ${factor.neighborhood}`}
                         className="w-20"
                         onBlur={(e) =>
                           updateRiskFactor(factor.id, { scam_reports: parseInt(e.target.value) })
@@ -158,6 +160,7 @@ export default function RiskFactorManagement() {
                         type="number"
                         min="0"
                         defaultValue={factor.delivery_issues}
+                        aria-label={`Delivery issues for ${factor.neighborhood}`}
                         className="w-20"
                         onBlur={(e) =>
                           updateRiskFactor(factor.id, { delivery_issues: parseInt(e.target.value) })

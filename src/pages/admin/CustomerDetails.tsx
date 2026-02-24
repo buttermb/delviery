@@ -773,6 +773,7 @@ export default function CustomerDetails() {
                   <div className="space-y-3">
                     <Textarea
                       placeholder="Add a note about this customer..."
+                      aria-label="Customer note"
                       value={newNote}
                       onChange={(e) => setNewNote(e.target.value)}
                       rows={4}

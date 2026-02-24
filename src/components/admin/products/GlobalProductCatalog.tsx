@@ -186,6 +186,7 @@ export function GlobalProductCatalog() {
                         </Select>
                         <Input
                             placeholder="Brand..."
+                            aria-label="Filter by brand"
                             value={brandFilter}
                             onChange={(e) => setBrandFilter(e.target.value)}
                             className="w-[150px]"

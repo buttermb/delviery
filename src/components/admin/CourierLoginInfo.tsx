@@ -26,9 +26,10 @@ export function CourierLoginInfo() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
-          <Input 
-            value={courierLoginUrl} 
-            readOnly 
+          <Input
+            value={courierLoginUrl}
+            readOnly
+            aria-label="Courier login URL"
             className="font-mono text-sm"
           />
           <Button

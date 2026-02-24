@@ -233,6 +233,7 @@ export default function MarketplaceModerationPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
+                  aria-label="Search marketplace listings"
                 />
               </div>
             </div>

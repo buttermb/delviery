@@ -812,6 +812,7 @@ function MenuBrowseView({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-white/30"
+              aria-label="Search products"
             />
             {searchQuery && (
               <Button

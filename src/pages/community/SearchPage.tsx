@@ -52,6 +52,7 @@ export function SearchPage() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="pl-10"
+              aria-label="Search posts"
             />
           </div>
           <Button type="submit">Search</Button>

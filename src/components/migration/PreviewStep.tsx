@@ -126,6 +126,7 @@ export function PreviewStep({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
+            aria-label="Search products"
           />
         </div>
         

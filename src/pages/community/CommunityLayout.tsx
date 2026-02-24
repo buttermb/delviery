@@ -49,6 +49,7 @@ export function CommunityLayout() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleSearch}
+                  aria-label="Search posts"
                 />
               </div>
             </div>

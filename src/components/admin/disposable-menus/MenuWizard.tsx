@@ -53,6 +53,7 @@ export function MenuWizard({ open, onOpenChange }: MenuWizardProps) {
 
                                 <Textarea
                                     placeholder="e.g., Create a secure menu for a VIP event this Friday. Include my top 5 cocktails and set it to expire in 24 hours."
+                                    aria-label="Describe your menu"
                                     className="min-h-[120px] text-lg p-4 resize-none"
                                     value={prompt}
                                     onChange={(e) => setPrompt(e.target.value)}

@@ -271,6 +271,7 @@ export function ChatDrawer({
                             rows={2}
                             className="resize-none"
                             disabled={!activeConversationId}
+                            aria-label="Type a message"
                         />
                         <Button
                             onClick={handleSend}

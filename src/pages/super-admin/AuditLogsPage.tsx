@@ -200,6 +200,7 @@ export default function AuditLogsPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 bg-black/20 border-white/10 text-[hsl(var(--super-admin-text))]"
+                  aria-label="Search audit logs"
                 />
               </div>
               <Select value={actionFilter} onValueChange={setActionFilter}>

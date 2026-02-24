@@ -298,6 +298,7 @@ export function OrdersHubPage() {
                   value={orderSearchInput}
                   onChange={(e) => setOrderSearchInput(e.target.value)}
                   className="pl-9 h-10"
+                  aria-label="Search orders"
                 />
               </div>
               <Select

@@ -263,6 +263,7 @@ export function OrderFilters({
         <Input
           type="number"
           placeholder="Min"
+          aria-label="Minimum order total"
           value={(filters.minTotal as string) || ''}
           onChange={(e) => handleMinTotalChange(e.target.value)}
           className="w-[80px] h-9"
@@ -273,6 +274,7 @@ export function OrderFilters({
         <Input
           type="number"
           placeholder="Max"
+          aria-label="Maximum order total"
           value={(filters.maxTotal as string) || ''}
           onChange={(e) => handleMaxTotalChange(e.target.value)}
           className="w-[80px] h-9"

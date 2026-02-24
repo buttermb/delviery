@@ -689,6 +689,7 @@ const SecureMenuView = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-12 text-base"
+              aria-label="Search products"
             />
             {searchQuery && (
               <Button

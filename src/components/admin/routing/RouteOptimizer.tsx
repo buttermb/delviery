@@ -457,6 +457,7 @@ function StopItem({ stop, index, onRemove, onUpdate }: {
           <div className="flex gap-2">
             <Input
               placeholder="Value ($)"
+              aria-label="Stop order value"
               type="number"
               className="h-8 text-xs w-24"
               value={stop.orderValue || ''}
@@ -464,6 +465,7 @@ function StopItem({ stop, index, onRemove, onUpdate }: {
             />
             <Input
               placeholder="Notes / Name"
+              aria-label="Stop notes"
               className="h-8 text-xs flex-1"
               value={stop.notes || ''}
               onChange={(e) => onUpdate({ notes: e.target.value })}

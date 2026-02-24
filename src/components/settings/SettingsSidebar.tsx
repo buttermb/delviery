@@ -116,6 +116,7 @@ export function SettingsSidebar({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 bg-background"
+            aria-label="Search settings"
           />
         </div>
       </div>

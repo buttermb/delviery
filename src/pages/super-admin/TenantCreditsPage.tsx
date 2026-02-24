@@ -219,6 +219,7 @@ export default function TenantCreditsPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
+                aria-label="Search tenants"
               />
             </div>
 

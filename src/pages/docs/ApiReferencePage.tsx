@@ -340,6 +340,7 @@ export default function ApiReferencePage() {
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search endpoints"
             />
           </div>
 

@@ -199,6 +199,7 @@ export function BuyCreditsPage() {
               value={promoCode}
               onChange={(e) => setPromoCode(e.target.value)}
               disabled={!!promoApplied || isApplyingPromo}
+              aria-label="Promo code"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleApplyPromo();
               }}

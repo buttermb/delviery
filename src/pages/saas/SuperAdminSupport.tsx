@@ -219,6 +219,7 @@ export default function SuperAdminSupport() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
+                aria-label="Search tickets"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>

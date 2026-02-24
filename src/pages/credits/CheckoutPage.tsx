@@ -338,6 +338,7 @@ export function CheckoutPage() {
                       setPromoError(null);
                     }}
                     onKeyDown={handlePromoKeyDown}
+                    aria-label="Promo code"
                     className={cn(
                       'font-mono uppercase',
                       promoError && 'border-red-500 focus-visible:ring-red-500'

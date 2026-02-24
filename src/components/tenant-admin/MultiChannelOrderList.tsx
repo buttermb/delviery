@@ -329,6 +329,7 @@ export function MultiChannelOrderList() {
                         className="pl-9"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        aria-label="Search orders"
                     />
                 </div>
             </CardHeader>

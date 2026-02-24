@@ -96,6 +96,7 @@ export default function Blog() {
                 type="search"
                 placeholder="Search articles..."
                 className="pl-12 h-12"
+                aria-label="Search articles"
               />
             </div>
           </div>
@@ -225,6 +226,7 @@ export default function Blog() {
                     type="email"
                     placeholder="Enter your email"
                     className="flex-1"
+                    aria-label="Email for newsletter"
                   />
                   <Button>Subscribe</Button>
                 </div>

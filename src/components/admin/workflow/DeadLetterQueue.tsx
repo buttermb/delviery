@@ -293,6 +293,7 @@ export function DeadLetterQueue() {
                 <h3 className="font-semibold mb-2">Resolution Notes</h3>
                 <Textarea
                   placeholder="Add notes about resolution..."
+                  aria-label="Resolution notes"
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
                   rows={3}

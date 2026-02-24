@@ -360,6 +360,7 @@ export default function OrderDetailPage() {
                                         <div className="space-y-4 py-4">
                                             <Textarea
                                                 placeholder="Update on your order..."
+                                                aria-label="Message to buyer"
                                                 value={messageText}
                                                 onChange={(e) => setMessageText(e.target.value)}
                                                 rows={4}
@@ -711,6 +712,7 @@ export default function OrderDetailPage() {
                             value={sellerNotes}
                             onChange={(e) => setSellerNotes(e.target.value)}
                             placeholder="Add notes about this order..."
+                            aria-label="Seller notes"
                             rows={6}
                         />
                     </div>

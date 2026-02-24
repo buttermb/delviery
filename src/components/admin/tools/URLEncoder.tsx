@@ -189,6 +189,7 @@ export function URLEncoder() {
             id="encoder-output"
             readOnly
             value={output}
+            aria-label="Encoded output"
             className="font-mono text-sm min-h-[120px] bg-muted"
           />
         </div>

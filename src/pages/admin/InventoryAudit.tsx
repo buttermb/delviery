@@ -661,6 +661,7 @@ export default function InventoryAudit() {
                                 step="0.01"
                                 min="0"
                                 placeholder="Enter count"
+                                aria-label={`Actual count for ${product.name}`}
                                 value={entry?.actualQuantity ?? ''}
                                 onChange={(e) => updateActualCount(product.id, e.target.value, product)}
                                 className="w-full text-right font-mono"
@@ -695,6 +696,7 @@ export default function InventoryAudit() {
                             <TableCell>
                               <Input
                                 placeholder="Optional notes"
+                                aria-label={`Notes for ${product.name}`}
                                 value={entry?.notes ?? ''}
                                 onChange={(e) => updateNotes(product.id, e.target.value, product)}
                                 className="text-sm"
@@ -721,6 +723,7 @@ export default function InventoryAudit() {
             <CardContent>
               <Textarea
                 placeholder="Enter any notes about this audit (e.g., observations, issues found, etc.)"
+                aria-label="Audit notes"
                 value={auditNotes}
                 onChange={(e) => setAuditNotes(e.target.value)}
                 rows={3}

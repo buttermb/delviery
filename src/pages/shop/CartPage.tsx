@@ -386,6 +386,7 @@ export default function CartPage() {
                     onChange={(e) => setCouponCode(e.target.value)}
                     disabled={!!appliedCoupon}
                     className={isLuxuryTheme ? `${inputBg} ${inputBorder} ${inputText}` : ''}
+                    aria-label="Coupon code"
                   />
                   <Button
                     variant="outline"

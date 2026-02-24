@@ -103,6 +103,7 @@ export function CommentThread({
                     onChange={(e) => setReplyContent(e.target.value)}
                     rows={3}
                     className="resize-none"
+                    aria-label="Write a reply"
                   />
                   <div className="flex justify-end gap-2">
                     <Button

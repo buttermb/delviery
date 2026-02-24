@@ -904,6 +904,7 @@ export default function StorefrontSettings() {
                     <div key={index} className="flex flex-col sm:flex-row gap-4">
                       <Input
                         placeholder="Zip code"
+                        aria-label="Delivery zone zip code"
                         value={zone.zip_code || ''}
                         onChange={(e) => {
                           const zones = [...(formData.delivery_zones || [])];
@@ -1008,6 +1009,7 @@ export default function StorefrontSettings() {
                         />
                         <Input
                           value={slot.label}
+                          aria-label="Time slot label"
                           onChange={(e) => {
                             const slots = [...(formData.time_slots || [])];
                             slots[index] = { ...slots[index], label: e.target.value };
@@ -1018,6 +1020,7 @@ export default function StorefrontSettings() {
                         <Input
                           type="time"
                           value={slot.start}
+                          aria-label="Time slot start"
                           onChange={(e) => {
                             const slots = [...(formData.time_slots || [])];
                             slots[index] = { ...slots[index], start: e.target.value };
@@ -1029,6 +1032,7 @@ export default function StorefrontSettings() {
                         <Input
                           type="time"
                           value={slot.end}
+                          aria-label="Time slot end"
                           onChange={(e) => {
                             const slots = [...(formData.time_slots || [])];
                             slots[index] = { ...slots[index], end: e.target.value };
@@ -1312,6 +1316,7 @@ export default function StorefrontSettings() {
                             type="time"
                             value={formData.operating_hours?.[day]?.open || '09:00'}
                             onChange={(e) => updateHours(day, 'open', e.target.value)}
+                            aria-label={`${day} opening time`}
                             className="w-32"
                           />
                           <span className="text-muted-foreground">to</span>
@@ -1319,6 +1324,7 @@ export default function StorefrontSettings() {
                             type="time"
                             value={formData.operating_hours?.[day]?.close || '21:00'}
                             onChange={(e) => updateHours(day, 'close', e.target.value)}
+                            aria-label={`${day} closing time`}
                             className="w-32"
                           />
                         </>

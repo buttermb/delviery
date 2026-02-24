@@ -508,6 +508,7 @@ export default function CustomerInvoices() {
                       <div className="col-span-5">
                         <Input
                           placeholder="Description / Service"
+                          aria-label="Line item description"
                           value={item.description}
                           onChange={(e) => updateLineItem(index, 'description', e.target.value)}
                           required
@@ -536,6 +537,7 @@ export default function CustomerInvoices() {
                           step="0.01"
                           value={item.amount.toFixed(2)}
                           disabled
+                          aria-label="Line item amount"
                           className="bg-muted"
                         />
                       </div>
@@ -572,6 +574,7 @@ export default function CustomerInvoices() {
                         min={0}
                         value={formData.tax_rate}
                         onChange={(e) => setFormData({ ...formData, tax_rate: String(Math.max(0, parseFloat(e.target.value) || 0)) })}
+                        aria-label="Tax rate percentage"
                         className="w-20 h-8 text-right"
                       />
                       <span>%</span>

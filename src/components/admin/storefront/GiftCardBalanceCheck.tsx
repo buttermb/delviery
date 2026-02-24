@@ -84,6 +84,7 @@ export function GiftCardBalanceCheck({ storeId }: GiftCardBalanceCheckProps) {
         <div className="flex gap-2">
           <Input
             placeholder="Enter gift card code..."
+            aria-label="Gift card code"
             value={code}
             onChange={(e) => {
               setCode(e.target.value.toUpperCase());

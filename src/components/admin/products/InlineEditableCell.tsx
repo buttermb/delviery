@@ -78,6 +78,7 @@ export function InlineEditableCell({
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    aria-label="Edit cell value"
                     onBlur={() => {
                         // Small delay to allow button clicks to register
                         setTimeout(() => {

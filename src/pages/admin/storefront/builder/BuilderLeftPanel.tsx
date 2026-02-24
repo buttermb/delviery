@@ -160,6 +160,7 @@ export function BuilderLeftPanel({
                                                 <Input
                                                     type="color"
                                                     className="w-8 h-8 p-0 border-0 cursor-pointer"
+                                                    aria-label={`${colorKey} color picker`}
                                                     value={themeConfig.colors?.[colorKey] || '#000000'}
                                                     onChange={(e) => setThemeConfig({
                                                         ...themeConfig,
@@ -168,6 +169,7 @@ export function BuilderLeftPanel({
                                                 />
                                                 <Input
                                                     className="w-24 h-8 text-xs"
+                                                    aria-label={`${colorKey} color value`}
                                                     value={themeConfig.colors?.[colorKey] || '#000000'}
                                                     onChange={(e) => setThemeConfig({
                                                         ...themeConfig,

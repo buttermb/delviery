@@ -186,6 +186,7 @@ export function TagManager({ contactId, readOnly = false }: TagManagerProps) {
                 </p>
                 <Input
                   placeholder="Tag name..."
+                  aria-label="New tag name"
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
                   className="h-7 text-xs"

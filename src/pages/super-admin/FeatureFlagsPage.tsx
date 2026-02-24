@@ -173,6 +173,7 @@ export default function FeatureFlagsPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 bg-black/20 border-white/10 text-[hsl(var(--super-admin-text))]"
+                  aria-label="Search feature flags"
                 />
               </div>
               <Button className="bg-[hsl(var(--super-admin-primary))] hover:bg-[hsl(var(--super-admin-primary))]/90">

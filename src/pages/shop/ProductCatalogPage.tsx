@@ -497,6 +497,7 @@ export function ProductCatalogPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
+            aria-label="Search products"
           />
         </div>
 

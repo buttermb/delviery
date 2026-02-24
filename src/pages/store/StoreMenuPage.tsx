@@ -401,6 +401,7 @@ export default function StoreMenuPage() {
                 style={
                   { '--tw-ring-color': primaryColor } as React.CSSProperties
                 }
+                aria-label="Search products"
               />
               {searchQuery && (
                 <button

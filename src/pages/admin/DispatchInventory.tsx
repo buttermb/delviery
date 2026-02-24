@@ -411,6 +411,7 @@ export default function DispatchInventory() {
                         min="1"
                         value={product.quantity}
                         onChange={(e) => handleQuantityChange(product.barcode, parseInt(e.target.value) || 1)}
+                        aria-label={`Quantity for ${product.product_name}`}
                         className="w-20"
                       />
                       <span className="text-sm">×</span>
@@ -420,6 +421,7 @@ export default function DispatchInventory() {
                         step="0.01"
                         value={product.price_per_unit}
                         onChange={(e) => handlePriceChange(product.barcode, parseFloat(e.target.value) || 0)}
+                        aria-label={`Price for ${product.product_name}`}
                         className="w-24"
                         prefix="$"
                       />
@@ -537,6 +539,7 @@ export default function DispatchInventory() {
                   setPaymentDueDate(e.target.value);
                   setSelectedDuePreset(null);
                 }}
+                aria-label="Payment due date"
                 className="w-full"
               />
               {paymentDueDate && (
@@ -571,6 +574,7 @@ export default function DispatchInventory() {
           <CardContent>
             <Textarea
               placeholder="Add any notes about this front..."
+              aria-label="Dispatch notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}

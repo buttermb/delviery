@@ -363,6 +363,7 @@ export default function SuperAdminDashboard() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-8 w-64"
+                aria-label="Search tenants"
               />
             </div>
           </div>

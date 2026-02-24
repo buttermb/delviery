@@ -863,6 +863,7 @@ export default function DeliveryZones() {
                       type="time"
                       value={deliveryHours[day].open}
                       onChange={(e) => updateHours(day, 'open', e.target.value)}
+                      aria-label={`${day} delivery start time`}
                       className="w-28"
                     />
                     <span className="text-muted-foreground">to</span>
@@ -870,6 +871,7 @@ export default function DeliveryZones() {
                       type="time"
                       value={deliveryHours[day].close}
                       onChange={(e) => updateHours(day, 'close', e.target.value)}
+                      aria-label={`${day} delivery end time`}
                       className="w-28"
                     />
                   </div>

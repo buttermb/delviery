@@ -339,6 +339,7 @@ export default function MessagesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
+                aria-label="Search conversations"
               />
             </div>
           </CardHeader>
@@ -503,6 +504,7 @@ export default function MessagesPage() {
                       }}
                       rows={3}
                       className="resize-none"
+                      aria-label="Type your reply"
                     />
                     <Button
                       onClick={handleSendReply}

@@ -1396,6 +1396,7 @@ export function OrderDetailsPage() {
                       <div className="space-y-2">
                         <Textarea
                           placeholder="Gate code, delivery instructions, special requests..."
+                          aria-label="Delivery notes"
                           value={deliveryNotesValue}
                           onChange={(e) => setDeliveryNotesValue(e.target.value)}
                           rows={3}

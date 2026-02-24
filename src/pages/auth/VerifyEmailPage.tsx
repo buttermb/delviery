@@ -214,6 +214,7 @@ export function VerifyEmailPage() {
                   value={resendEmail}
                   onChange={(e) => setResendEmail(e.target.value)}
                   className="bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                  aria-label="Email address"
                 />
                 <Button
                   onClick={handleResend}
@@ -260,6 +261,7 @@ export function VerifyEmailPage() {
                   value={resendEmail}
                   onChange={(e) => setResendEmail(e.target.value)}
                   className="bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                  aria-label="Email address"
                 />
                 <Button
                   onClick={handleResend}
@@ -306,6 +308,7 @@ export function VerifyEmailPage() {
                   value={resendEmail}
                   onChange={(e) => setResendEmail(e.target.value)}
                   className="bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                  aria-label="Email address"
                 />
                 <Button
                   onClick={handleResend}

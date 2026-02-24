@@ -577,6 +577,7 @@ export function ReportBuilder({
                                 onChange={(e) =>
                                   setFormData({ ...formData, custom_start_date: e.target.value })
                                 }
+                                aria-label="Report start date"
                                 className="min-h-[44px] touch-manipulation"
                                 placeholder="Start Date"
                               />
@@ -586,6 +587,7 @@ export function ReportBuilder({
                                 onChange={(e) =>
                                   setFormData({ ...formData, custom_end_date: e.target.value })
                                 }
+                                aria-label="Report end date"
                                 className="min-h-[44px] touch-manipulation"
                                 placeholder="End Date"
                               />
@@ -668,6 +670,7 @@ export function ReportBuilder({
                                           updateFilter(index, { value: e.target.value })
                                         }
                                         placeholder="Value"
+                                        aria-label="Filter value"
                                         className="flex-1 min-h-[36px]"
                                       />
                                     )}

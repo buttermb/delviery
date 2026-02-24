@@ -230,6 +230,7 @@ export function OrderNotesSection({
                     value={editedInternalNotes}
                     onChange={(e) => setEditedInternalNotes(e.target.value)}
                     placeholder="Add internal notes about this order (e.g., special handling instructions, follow-up reminders)..."
+                    aria-label="Internal order notes"
                     rows={4}
                     maxLength={2000}
                     className="resize-none"
@@ -312,6 +313,7 @@ export function OrderNotesSection({
                     value={editedCustomerNotes}
                     onChange={(e) => setEditedCustomerNotes(e.target.value)}
                     placeholder="Add notes for the customer (e.g., delivery updates, special messages)..."
+                    aria-label="Customer-facing order notes"
                     rows={4}
                     maxLength={2000}
                     className="resize-none"

@@ -428,6 +428,7 @@ export default function WholesaleCheckoutPage() {
                   onChange={(e) => setBuyerNotes(e.target.value)}
                   placeholder="Add any special instructions or notes for the seller..."
                   rows={4}
+                  aria-label="Order notes"
                 />
               </CardContent>
             </Card>

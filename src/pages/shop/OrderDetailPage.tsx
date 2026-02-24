@@ -502,6 +502,7 @@ export function OrderDetailPage() {
                             value={cancellationReason}
                             onChange={(e) => setCancellationReason(e.target.value)}
                             rows={3}
+                            aria-label="Cancellation reason"
                           />
                         </div>
                         <AlertDialogFooter>

@@ -139,6 +139,7 @@ export default function DataExplorerPage() {
               onChange={(e) => setQuery(e.target.value)}
               className="font-mono text-sm bg-black/20 border-white/10 text-[hsl(var(--super-admin-text))] min-h-[150px]"
               placeholder="Enter your SQL query..."
+              aria-label="SQL query"
             />
             <div className="flex gap-2">
               <Button 

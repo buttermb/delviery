@@ -189,6 +189,7 @@ export function SmartClientPicker({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
+            aria-label="Search clients"
           />
         </div>
         <Button variant="outline" onClick={() => setShowCreateDialog(true)} className="gap-2">

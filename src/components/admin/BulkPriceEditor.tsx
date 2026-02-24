@@ -196,6 +196,7 @@ export function BulkPriceEditor({ open, onOpenChange, products, onApply }: BulkP
               value={adjustmentValue}
               onChange={(e) => setAdjustmentValue(e.target.value)}
               placeholder={adjustmentType.includes('percentage') ? '10' : '5.00'}
+              aria-label={adjustmentType.includes('percentage') ? 'Adjustment percentage' : 'Adjustment amount'}
               className="pl-9"
             />
           </div>

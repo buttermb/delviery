@@ -48,6 +48,7 @@ export function NotesPanel({ clientId }: NotesPanelProps) {
                             value={noteText}
                             onChange={(e) => setNoteText(e.target.value)}
                             className="min-h-[150px]"
+                            aria-label="Note text"
                         />
                         <Button type="submit" disabled={createNote.isPending || !noteText.trim()}>
                             {createNote.isPending ? (

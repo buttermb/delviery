@@ -123,6 +123,7 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="Add a comment..."
+          aria-label="Add a comment"
           rows={3}
         />
         <div className="flex justify-end">

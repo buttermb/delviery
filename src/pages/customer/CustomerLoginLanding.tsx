@@ -78,6 +78,7 @@ export default function CustomerLoginLanding() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
+                aria-label="Search business name or store ID"
               />
             </div>
 

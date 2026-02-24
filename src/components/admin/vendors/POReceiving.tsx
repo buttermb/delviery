@@ -465,6 +465,7 @@ export function POReceiving({
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Scan barcode or enter SKU..."
+                      aria-label="Scan barcode or enter SKU"
                       value={barcodeInput}
                       onChange={(e) => setBarcodeInput(e.target.value)}
                       onKeyDown={(e) => {
@@ -555,6 +556,7 @@ export function POReceiving({
                                   onChange={(e) =>
                                     handleQuantityChange(item.id, parseFloat(e.target.value) || 0)
                                   }
+                                  aria-label={`Received quantity for ${item.product_name || 'item'}`}
                                   className="w-20 text-center font-mono h-8"
                                 />
                                 <Button

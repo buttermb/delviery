@@ -185,6 +185,7 @@ export function UploadStep({ onFileUpload, onTextPaste }: UploadStepProps) {
         <TabsContent value="paste" className="mt-6">
           <div className="space-y-4">
             <Textarea
+              aria-label="Paste menu data"
               placeholder={`Paste your menu data here...
 
 Example formats we support:

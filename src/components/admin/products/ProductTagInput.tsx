@@ -164,6 +164,7 @@ export function ProductTagInput({ productId, className }: ProductTagInputProps) 
             <Input
               ref={inputRef}
               placeholder="Search or create tag..."
+              aria-label="Search or create tag"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => {

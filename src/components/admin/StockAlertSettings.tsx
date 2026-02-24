@@ -258,6 +258,7 @@ export function StockAlertSettings() {
                   max={1000}
                   value={bulkThreshold}
                   onChange={(e) => setBulkThreshold(parseInt(e.target.value) || 10)}
+                  aria-label="Stock alert threshold"
                   className="w-20"
                 />
               </div>

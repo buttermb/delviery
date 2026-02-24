@@ -195,6 +195,7 @@ export default function MarketplaceProductDetailPage() {
                                     value={messageText}
                                     onChange={(e) => setMessageText(e.target.value)}
                                     rows={4}
+                                    aria-label="Message to vendor"
                                 />
                             </div>
                             <DialogFooter>
@@ -264,6 +265,7 @@ export default function MarketplaceProductDetailPage() {
                                         className="w-20 text-center h-8"
                                         min={1}
                                         max={product.quantity_available}
+                                        aria-label="Quantity"
                                     />
                                     <Button variant="outline" size="icon" className="h-11 w-11 sm:h-8 sm:w-8" onClick={handleIncrement} disabled={quantity >= (product.quantity_available || 100)} aria-label="Increase quantity">
                                         <Plus className="h-3 w-3" />

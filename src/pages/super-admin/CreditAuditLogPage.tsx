@@ -186,6 +186,7 @@ export default function CreditAuditLogPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
+                aria-label="Search credit audit logs"
               />
             </div>
 

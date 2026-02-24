@@ -149,6 +149,7 @@ export default function PublicMarketplacePage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
+                  aria-label="Search products"
                 />
               </div>
               <Select value={productTypeFilter} onValueChange={setProductTypeFilter}>

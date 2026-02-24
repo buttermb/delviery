@@ -164,6 +164,7 @@ export function DeliveryRatingForm({
           onChange={(e) => setComment(e.target.value)}
           rows={3}
           maxLength={500}
+          aria-label="Delivery experience comment"
         />
 
         {/* Submit */}

@@ -93,6 +93,7 @@ export const GeofenceSettings = ({ rules, onChange }: GeofenceSettingsProps) => 
                   <div className="flex items-center justify-between">
                     <Input
                       placeholder="Zone name"
+                      aria-label="Geofence zone name"
                       value={rule.name || ''}
                       onChange={(e) => updateRule(index, { name: e.target.value })}
                       className="max-w-[200px]"

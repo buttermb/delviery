@@ -36,6 +36,7 @@ const MobileSearch = ({ value, onChange, placeholder = "Search products...", cla
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
+          aria-label="Search products"
           className={cn(
             "pl-10 pr-10 h-12 text-base rounded-full",
             "border-2 transition-all duration-200",

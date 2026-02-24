@@ -433,6 +433,7 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
                                                     value={item.description}
                                                     onChange={(e) => handleUpdateItem(index, "description", e.target.value)}
                                                     className="h-8 text-xs"
+                                                    aria-label="Item description"
                                                 />
                                             </div>
                                         </TableCell>

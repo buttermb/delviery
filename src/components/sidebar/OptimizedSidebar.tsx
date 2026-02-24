@@ -466,6 +466,7 @@ export function OptimizedSidebar({
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="border-0 focus-visible:ring-0 h-8 p-0"
+                                aria-label="Search features"
                             />
                             {searchQuery && (
                                 <Button

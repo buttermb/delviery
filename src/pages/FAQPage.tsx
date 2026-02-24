@@ -78,6 +78,7 @@ export default function FAQPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-12 text-base"
+                aria-label="Search FAQ"
               />
             </div>
             {searchQuery && (

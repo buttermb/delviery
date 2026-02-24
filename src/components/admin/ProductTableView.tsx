@@ -95,6 +95,7 @@ export function ProductTableView({
               if (e.key === "Enter") saveEdit(product.id, field);
               if (e.key === "Escape") cancelEdit();
             }}
+            aria-label={`Edit ${field}`}
             className="h-8 w-full"
             autoFocus
           />

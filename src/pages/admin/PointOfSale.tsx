@@ -800,6 +800,7 @@ export default function PointOfSale() {
                     <Input
                       className="h-9 font-mono"
                       placeholder="Amount Tendered"
+                      aria-label="Cash amount tendered"
                       type="number"
                       value={cashTendered}
                       onChange={(e) => setCashTendered(e.target.value)}

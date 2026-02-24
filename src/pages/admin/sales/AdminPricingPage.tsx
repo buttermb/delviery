@@ -184,6 +184,7 @@ export default function AdminPricingPage() {
                           min="0"
                           value={editData.price || ''}
                           onChange={(e) => setEditData({ ...editData, price: parseFloat(e.target.value) })}
+                          aria-label={`Retail price for ${product.name}`}
                           className="w-24 text-right"
                         />
                       ) : (
@@ -198,6 +199,7 @@ export default function AdminPricingPage() {
                           min="0"
                           value={editData.wholesale_price || ''}
                           onChange={(e) => setEditData({ ...editData, wholesale_price: parseFloat(e.target.value) })}
+                          aria-label={`Wholesale price for ${product.name}`}
                           className="w-24 text-right"
                         />
                       ) : (
@@ -212,6 +214,7 @@ export default function AdminPricingPage() {
                           min="0"
                           value={editData.cost_per_unit || ''}
                           onChange={(e) => setEditData({ ...editData, cost_per_unit: parseFloat(e.target.value) })}
+                          aria-label={`Cost per unit for ${product.name}`}
                           className="w-24 text-right"
                         />
                       ) : (
@@ -231,6 +234,7 @@ export default function AdminPricingPage() {
                           max="100"
                           value={editData.bulk_discount || 0}
                           onChange={(e) => setEditData({ ...editData, bulk_discount: parseInt(e.target.value) })}
+                          aria-label={`Bulk discount for ${product.name}`}
                           className="w-20 text-right"
                         />
                       ) : (

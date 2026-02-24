@@ -157,6 +157,7 @@ export default function BusinessFinderPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
+                    aria-label="Search businesses"
                   />
                 </div>
               </div>

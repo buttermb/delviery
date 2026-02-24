@@ -403,6 +403,7 @@ export function OrderEditModal({
                               Math.max(1, Number(e.target.value))
                             )
                           }
+                          aria-label={`Quantity for ${item.productName || 'item'}`}
                           className="h-7 w-16 text-center"
                           min={1}
                           disabled={!canEdit}
@@ -434,6 +435,7 @@ export function OrderEditModal({
                               Math.max(0, Number(e.target.value))
                             )
                           }
+                          aria-label={`Price for ${item.productName || 'item'}`}
                           className="h-7 w-20"
                           step="0.01"
                           min={0}

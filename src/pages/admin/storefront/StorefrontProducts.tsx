@@ -593,6 +593,7 @@ export default function StorefrontProducts() {
                             value={isEditing ? editingPrices[product.id] : (displayPrice ?? '')}
                             onChange={(e) => handlePriceChange(product.id, e.target.value)}
                             placeholder={formatCurrency(product.price)}
+                            aria-label={`Store price for ${product.name}`}
                             className="w-24 h-8"
                           />
                           {isEditing && (

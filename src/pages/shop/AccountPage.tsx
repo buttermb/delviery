@@ -335,6 +335,7 @@ export default function AccountPage() {
                     value={magicCode}
                     onChange={(e) => setMagicCode(e.target.value.replace(/\D/g, ''))}
                     placeholder="000000"
+                    aria-label="Verification code"
                     className="text-center text-3xl tracking-[1em] font-mono h-16 rounded-xl border-neutral-200 focus:border-neutral-900 focus:ring-neutral-900 bg-white dark:bg-zinc-950"
                     onKeyDown={(e) => e.key === 'Enter' && handleVerifyMagicCode()}
                     autoFocus
@@ -450,6 +451,7 @@ export default function AccountPage() {
                   onChange={(e) => setTrackingNumber(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleTrackOrder()}
                   className="h-12 rounded-lg bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 focus:bg-white dark:focus:bg-zinc-950"
+                  aria-label="Order number or tracking code"
                 />
                 <Button variant="secondary" onClick={handleTrackOrder} className="h-12 w-12 rounded-lg shrink-0">
                   <Search className="w-5 h-5" />
@@ -555,6 +557,7 @@ export default function AccountPage() {
                       value={orderSearchInput}
                       onChange={(e) => setOrderSearchInput(e.target.value)}
                       className="pl-9 h-9"
+                      aria-label="Search orders"
                     />
                   </div>
                   <Select
@@ -703,6 +706,7 @@ export default function AccountPage() {
                     onChange={(e) => setTrackingNumber(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleTrackOrder()}
                     className="h-12 text-lg"
+                    aria-label="Order number or tracking code"
                   />
                   <Button
                     className="h-12 px-6 font-bold rounded-lg"

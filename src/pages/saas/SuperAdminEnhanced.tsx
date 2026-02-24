@@ -591,6 +591,7 @@ export default function SuperAdminEnhanced() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
+                  aria-label="Search tenants"
                 />
               </div>
               <Select value={planFilter} onValueChange={setPlanFilter}>

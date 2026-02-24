@@ -250,6 +250,7 @@ export function WorkflowBuilder() {
                 {/* Action-specific config would go here */}
                 <Input
                   placeholder="Action configuration..."
+                  aria-label="Action configuration"
                   value={JSON.stringify(action.config)}
                   onChange={(e) => {
                     try {

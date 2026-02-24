@@ -481,6 +481,7 @@ export default function WholesaleClients() {
                                   <Input
                                     type="number"
                                     defaultValue={client.credit_limit || 0}
+                                    aria-label="Credit limit"
                                     className="h-8"
                                     disabled={updateClientMutation.isPending}
                                     onKeyDown={(e) => {

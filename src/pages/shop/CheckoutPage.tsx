@@ -1376,6 +1376,7 @@ export function CheckoutPage() {
                       onChange={(e) => { setCouponCode(e.target.value); setCouponError(null); }}
                       onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
                       className={isLuxuryTheme ? `${inputBg} ${inputBorder} ${inputText}` : ''}
+                      aria-label="Coupon code"
                     />
                     <Button
                       variant="outline"
@@ -1419,6 +1420,7 @@ export function CheckoutPage() {
                   value={giftCardCode}
                   onChange={(e) => setGiftCardCode(e.target.value.toUpperCase())}
                   className={isLuxuryTheme ? `${inputBg} ${inputBorder} ${inputText}` : ''}
+                  aria-label="Gift card code"
                 />
                 <Button
                   variant="outline"

@@ -286,6 +286,7 @@ export default function MyListingsPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
+                  aria-label="Search listings"
                 />
               </div>
             </div>

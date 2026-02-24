@@ -62,6 +62,7 @@ export default function NotFoundPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1"
+              aria-label="Search for a page"
             />
             <Button type="submit" variant="outline" className="gap-2">
               <Search className="h-4 w-4" />

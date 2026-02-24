@@ -502,6 +502,7 @@ function CartStep({
               onChange={(e) => setPromoCode(e.target.value)}
               className="pl-10 h-11"
               disabled={promoApplied}
+              aria-label="Promo code"
             />
           </div>
           <Button 

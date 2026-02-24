@@ -106,6 +106,7 @@ export default function MarketplaceBrowsePage() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-10"
+                                aria-label="Search products or vendors"
                             />
                         </div>
                         <Select value={typeFilter} onValueChange={setTypeFilter}>

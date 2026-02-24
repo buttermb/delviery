@@ -199,6 +199,7 @@ export function LocalAIIntegration() {
             </Select>
             <Textarea
               placeholder="Enter text to process..."
+              aria-label="Text to process with AI"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               rows={10}

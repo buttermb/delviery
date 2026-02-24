@@ -370,6 +370,7 @@ export function OrderSplitDialog({
                               onChange={(e) =>
                                 handleAllocationChange(allocation.itemId, i, e.target.value)
                               }
+                              aria-label={`Shipment ${i + 1} allocation for ${allocation.productName}`}
                               className="w-16 h-8 text-center mx-auto"
                             />
                           </TableCell>

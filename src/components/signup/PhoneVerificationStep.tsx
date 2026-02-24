@@ -313,6 +313,7 @@ export function PhoneVerificationStep({
                 onChange={handlePhoneChange}
                 maxLength={14}
                 className="flex-1"
+                aria-label="Phone number"
               />
             </div>
           </div>
@@ -359,6 +360,7 @@ export function PhoneVerificationStep({
                 value={digit}
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                aria-label={`Verification code digit ${index + 1}`}
                 className={cn(
                   'w-12 h-14 text-center text-2xl font-bold',
                   state.error && 'border-red-500'

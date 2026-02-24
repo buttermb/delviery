@@ -128,6 +128,7 @@ export function CreatePostPage() {
                 placeholder="Title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                aria-label="Post title"
               />
               <Textarea
                 placeholder="Text (optional)"
@@ -135,6 +136,7 @@ export function CreatePostPage() {
                 onChange={(e) => setContent(e.target.value)}
                 rows={8}
                 className="resize-none"
+                aria-label="Post content"
               />
             </TabsContent>
 
@@ -143,12 +145,14 @@ export function CreatePostPage() {
                 placeholder="Title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                aria-label="Post title"
               />
               <Input
                 placeholder="URL"
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
                 type="url"
+                aria-label="Link URL"
               />
             </TabsContent>
 
@@ -157,6 +161,7 @@ export function CreatePostPage() {
                 placeholder="Title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                aria-label="Post title"
               />
               
               <div className="space-y-2">

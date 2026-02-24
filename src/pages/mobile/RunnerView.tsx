@@ -566,6 +566,7 @@ export default function RunnerView() {
               value={runnerIdInput}
               onChange={(e) => setRunnerIdInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              aria-label="Runner ID"
             />
             <Button className="w-full" onClick={handleLogin}>
               Access Deliveries

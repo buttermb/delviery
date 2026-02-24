@@ -258,6 +258,7 @@ export default function WhiteLabel() {
               value={formData.custom_css}
               onChange={(e) => setFormData({ ...formData, custom_css: e.target.value })}
               placeholder="/* Add your custom CSS here */"
+              aria-label="Custom CSS"
             />
           </CardContent>
         </Card>

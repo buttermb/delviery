@@ -55,6 +55,7 @@ export function EditableCell({
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           className="h-8 w-full"
+          aria-label="Edit cell value"
         />
         <Button
           variant="ghost"

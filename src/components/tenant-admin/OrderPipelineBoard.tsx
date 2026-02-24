@@ -374,6 +374,7 @@ export function OrderPipelineBoard() {
                             value={searchQuery}
                             onChange={(e) => updateUrlFilter('search', e.target.value)}
                             className="h-9"
+                            aria-label="Search by customer name"
                         />
                     </div>
                     <div className="w-[150px]">
@@ -383,6 +384,7 @@ export function OrderPipelineBoard() {
                             value={minAmount}
                             onChange={(e) => updateUrlFilter('minAmount', e.target.value)}
                             className="h-9"
+                            aria-label="Minimum order amount"
                         />
                     </div>
                 </div>

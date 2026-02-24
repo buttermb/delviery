@@ -37,6 +37,7 @@ export function SearchBar({
           'pl-9',
           showClearButton && value && 'pr-9'
         )}
+        aria-label={placeholder}
       />
       {showClearButton && value && (
         <Button

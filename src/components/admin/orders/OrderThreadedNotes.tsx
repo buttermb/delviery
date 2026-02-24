@@ -664,6 +664,7 @@ export function OrderThreadedNotes({
                   value={noteContent}
                   onChange={handleContentChange}
                   placeholder="Add a note... Use @ to mention team members"
+                  aria-label="Add order note"
                   rows={3}
                   className="resize-none pr-10"
                   disabled={createNoteMutation.isPending}

@@ -178,6 +178,7 @@ export default function PlatformPayoutsPage() {
                             onChange={(e) => setRejectReason(e.target.value)}
                             placeholder="e.g., Invalid bank details..."
                             rows={4}
+                            aria-label="Rejection reason"
                         />
                     </div>
                     <DialogFooter>

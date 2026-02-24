@@ -292,6 +292,7 @@ export function EditWholesaleOrderDialog({
                             handleUpdateItem(item.id, 'quantity_lbs', Math.max(1, Number(e.target.value)))
                           }
                           className="h-7 w-16 text-center"
+                          aria-label="Quantity in pounds"
                         />
                         <Button
                           type="button"
@@ -317,6 +318,7 @@ export function EditWholesaleOrderDialog({
                           }
                           className="h-7 w-20"
                           step="0.01"
+                          aria-label="Unit price per pound"
                         />
                         <span className="text-xs text-muted-foreground">/lb</span>
                       </div>

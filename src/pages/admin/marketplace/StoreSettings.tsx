@@ -207,6 +207,7 @@ export default function StoreSettings() {
                                 </div>
                                 <Input
                                     placeholder="Or Image URL"
+                                    aria-label="Logo image URL"
                                     value={currentProfile?.logo_url || ''}
                                     onChange={(e) => handleChange('logo_url', e.target.value)}
                                 />
@@ -227,6 +228,7 @@ export default function StoreSettings() {
                                     </Button>
                                     <Input
                                         placeholder="Or Image URL"
+                                        aria-label="Cover image URL"
                                         className="flex-1"
                                         value={currentProfile?.cover_image_url || ''}
                                         onChange={(e) => handleChange('cover_image_url', e.target.value)}

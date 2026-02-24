@@ -363,6 +363,7 @@ export default function ShoppingCartPage() {
                     value={orderNotes}
                     onChange={(e) => setOrderNotes(e.target.value)}
                     className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                    aria-label="Order notes"
                   />
                 </CardContent>
               </Card>

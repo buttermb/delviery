@@ -225,6 +225,7 @@ export function PostDetailPage() {
               onChange={(e) => setCommentContent(e.target.value)}
               rows={4}
               className="mb-3 resize-none"
+              aria-label="Write a comment"
             />
             <div className="flex justify-end">
               <Button

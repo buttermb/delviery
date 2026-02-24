@@ -689,6 +689,7 @@ function AddNoteDialog({ open, onOpenChange, client, onSubmit, isLoading }: AddN
         <div className="py-4">
           <Textarea
             placeholder="Enter your note..."
+            aria-label="Collection note"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="bg-muted border-border min-h-[120px]"

@@ -852,6 +852,7 @@ export function ProductQR({
                       <Input
                         value={qr.url}
                         readOnly
+                        aria-label="QR code URL"
                         className="flex-1 text-xs"
                       />
                       <Button

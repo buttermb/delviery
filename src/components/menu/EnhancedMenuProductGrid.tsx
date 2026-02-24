@@ -124,6 +124,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
+              aria-label="Search products"
             />
           </div>
           <select

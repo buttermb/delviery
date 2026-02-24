@@ -168,6 +168,7 @@ export function ReferralDashboard({
                 value={referralCode.code}
                 readOnly
                 className="font-mono text-center bg-white dark:bg-background"
+                aria-label="Referral code"
               />
               <Button size="icon" variant="outline" onClick={handleCopy} aria-label="Copy referral code">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
