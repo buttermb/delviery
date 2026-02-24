@@ -28,6 +28,7 @@ import {
   TrendingUp,
   Timer,
 } from 'lucide-react';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface ExecutionLog {
   status: 'success' | 'error';
@@ -253,7 +254,7 @@ export function WorkflowMonitoringDashboard() {
                           {execution.workflow?.name || 'Unknown Workflow'}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(execution.started_at).toLocaleString()}
+                          {formatSmartDate(execution.started_at, { includeTime: true })}
                         </p>
                       </div>
                     </div>
@@ -308,7 +309,7 @@ export function WorkflowMonitoringDashboard() {
                     Started At
                   </p>
                   <p className="text-sm">
-                    {new Date(selectedExecution.started_at).toLocaleString()}
+                    {formatSmartDate(selectedExecution.started_at, { includeTime: true })}
                   </p>
                 </div>
                 {selectedExecution.completed_at && (
@@ -317,7 +318,7 @@ export function WorkflowMonitoringDashboard() {
                       Completed At
                     </p>
                     <p className="text-sm">
-                      {new Date(selectedExecution.completed_at).toLocaleString()}
+                      {formatSmartDate(selectedExecution.completed_at, { includeTime: true })}
                     </p>
                   </div>
                 )}

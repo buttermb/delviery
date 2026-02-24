@@ -20,6 +20,7 @@ import { DeadLetterQueue } from './DeadLetterQueue';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
+import { formatSmartDate } from '@/lib/formatters';
 // Enhanced workflow types inspired by Activepieces/Windmill
 interface WorkflowExecution {
   id: string;
@@ -136,7 +137,7 @@ export function AdvancedWorkflowBuilder() {
                             {execution.workflow?.name || 'Unknown Workflow'}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(execution.started_at).toLocaleString()}
+                            {formatSmartDate(execution.started_at, { includeTime: true })}
                           </p>
                         </div>
                       </div>

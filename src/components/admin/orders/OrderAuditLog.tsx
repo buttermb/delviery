@@ -237,7 +237,7 @@ function AuditEntryItem({ entry }: { entry: OrderAuditLogEntry }) {
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                {new Date(entry.created_at).toLocaleString()}
+                {formatSmartDate(entry.created_at, { includeTime: true })}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

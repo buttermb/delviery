@@ -227,7 +227,7 @@ function TimelineEvent({ event, isLast }: TimelineEventProps) {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {new Date(event.created_at).toLocaleString()}
+                  {formatSmartDate(event.created_at, { includeTime: true })}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

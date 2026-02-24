@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useKnownDevices, type KnownDevice, type SuspiciousLoginAlert } from '@/hooks/useKnownDevices';
 import { toast } from 'sonner';
+import { formatSmartDate } from '@/lib/formatters';
 
 interface SuspiciousActivityPanelProps {
   userId: string;
@@ -50,7 +51,7 @@ function getAlertBadge(alertType: string) {
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString();
+  return formatSmartDate(dateStr, { includeTime: true });
 }
 
 function DeviceCard({ device, onTrust, onUntrust, onRemove, isTrusting, isRemoving }: {
