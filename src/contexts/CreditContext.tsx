@@ -31,7 +31,7 @@ export const useCredits = () => {
   return context;
 };
 
-export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function CreditProvider({ children }: { children: React.ReactNode }) {
   const creditsHook = useCreditsHook();
   const [showLowCreditWarning, setShowLowCreditWarning] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
@@ -93,4 +93,4 @@ export const CreditProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       {children}
     </CreditContext.Provider>
   );
-};
+}

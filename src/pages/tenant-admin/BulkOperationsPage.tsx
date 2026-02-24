@@ -37,6 +37,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface BulkOperationParams {
+  priceChangeType?: string;
+  priceChange?: string;
+  stockChange?: string;
+  tagAction?: string;
+  tags?: string;
+  status?: string;
+}
+
 interface BulkOperation {
   id: string;
   name: string;
@@ -98,7 +107,7 @@ export default function BulkOperationsPage() {
   const [selectedOperation, setSelectedOperation] = useState<string | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [operationDialogOpen, setOperationDialogOpen] = useState(false);
-  const [operationParams, setOperationParams] = useState<any>({});
+  const [operationParams, setOperationParams] = useState<BulkOperationParams>({});
 
   // Fetch products
   const { data: products, isLoading, isError } = useQuery({
@@ -129,7 +138,7 @@ export default function BulkOperationsPage() {
 
   // Execute bulk operation
   const executeBulkOperation = useMutation({
-    mutationFn: async ({ operation, productIds, params }: { operation: string; productIds: string[]; params: Record<string, unknown> }) => {
+    mutationFn: async ({ operation, productIds, params }: { operation: string; productIds: string[]; params: BulkOperationParams }) => {
       if (!tenantId) throw new Error('Tenant ID missing');
 
       // Build update object based on operation

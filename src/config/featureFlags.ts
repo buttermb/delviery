@@ -93,7 +93,7 @@ async function fetchRuntimeFlags(): Promise<Partial<FeatureFlags>> {
   }
 }
 
-export const FeatureFlagsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function FeatureFlagsProvider({ children }: { children: React.ReactNode }) {
   const [flags, setFlags] = useState<FeatureFlags>(envDefaults);
   const hasLoggedRef = useRef(false);
 
@@ -146,7 +146,7 @@ export const FeatureFlagsProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Avoid JSX in .ts file to keep compatibility with current tsconfig settings
   return React.createElement(FeatureFlagsContext.Provider, { value }, children);
-};
+}
 
 export function useFeatureFlags(): FeatureFlagsContextValue {
   const ctx = useContext(FeatureFlagsContext);

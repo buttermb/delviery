@@ -111,13 +111,13 @@ function getIconSizeClasses(size: 'sm' | 'md' | 'lg'): string {
 /**
  * Badge component for displaying customer segments.
  */
-const CustomerSegmentBadge: React.FC<CustomerSegmentBadgeProps> = ({
+function CustomerSegmentBadge({
   segment,
   showIcon = true,
   showTooltip = true,
   size = 'md',
   className,
-}) => {
+}: CustomerSegmentBadgeProps) {
   const label = getSegmentLabel(segment);
   const colorClasses = getSegmentColorClasses(segment);
   const description = getSegmentDescription(segment);
@@ -154,7 +154,7 @@ const CustomerSegmentBadge: React.FC<CustomerSegmentBadgeProps> = ({
       </Tooltip>
     </TooltipProvider>
   );
-};
+}
 
 CustomerSegmentBadge.displayName = 'CustomerSegmentBadge';
 
@@ -187,13 +187,13 @@ export interface SegmentCountsDisplayProps {
  * Component to display segment counts as clickable badges.
  * Useful for dashboard widgets and filter controls.
  */
-export const SegmentCountsDisplay: React.FC<SegmentCountsDisplayProps> = ({
+export function SegmentCountsDisplay({
   counts,
   activeSegment,
   onSegmentClick,
   size = 'md',
   className,
-}) => {
+}: SegmentCountsDisplayProps) {
   const segments: CustomerSegment[] = ['vip', 'active', 'new', 'at_risk', 'churned'];
 
   return (
@@ -236,6 +236,6 @@ export const SegmentCountsDisplay: React.FC<SegmentCountsDisplayProps> = ({
       })}
     </div>
   );
-};
+}
 
 SegmentCountsDisplay.displayName = 'SegmentCountsDisplay';

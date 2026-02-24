@@ -34,7 +34,6 @@ export default function CustomerResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [reset, setReset] = useState(false);
-  const [_tenant, setTenant] = useState<any>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
   const [resetError, setResetError] = useState<string | null>(null);
   const { validateToken } = useCsrfToken();
@@ -53,8 +52,6 @@ export default function CustomerResetPasswordPage() {
 
         if (error) {
           logger.error('Failed to fetch tenant', error, { component: 'ResetPasswordPage', tenantSlug });
-        } else if (data) {
-          setTenant(data);
         }
         setTenantLoading(false);
       } else {

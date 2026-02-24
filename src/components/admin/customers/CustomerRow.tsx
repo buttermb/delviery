@@ -55,13 +55,13 @@ const getCustomerStatus = (customer: Customer) => {
   return <Badge variant="secondary">Regular</Badge>;
 };
 
-const CustomerRow: React.FC<CustomerRowProps> = ({
+function CustomerRow({
   customer,
   isSelected,
   tenantSlug,
   onSelectChange,
   onDeleteClick,
-}) => {
+}: CustomerRowProps) {
   const navigate = useNavigate();
 
   return (
@@ -156,7 +156,7 @@ const CustomerRow: React.FC<CustomerRowProps> = ({
       </td>
     </tr>
   );
-};
+}
 
 // Wrap with React.memo to prevent unnecessary re-renders
 export default React.memo(CustomerRow);
