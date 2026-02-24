@@ -122,25 +122,6 @@ body.keyboard-open [data-radix-dialog-content] {
 }
 
 
-/* Smooth scrolling for mobile */
-@supports (-webkit-touch-callout: none) {
-  .scroll-smooth {
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* Hide scrollbar on mobile sidebar */
-@media (max-width: 1024px) {
-  .sidebar-scroll::-webkit-scrollbar {
-    display: none;
-  }
-
-  .sidebar-scroll {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-}
-
 @keyframes blob {
 
   0%,
@@ -725,29 +706,12 @@ body.keyboard-open [data-radix-dialog-content] {
       text-rendering: optimizeLegibility;
     }
 
-    /* Larger click targets for mobile */
-    .mobile-touch-safe {
-      min-height: 44px;
-      min-width: 44px;
-      padding: 12px;
-    }
-
     /* Safe area insets for notched devices - see consolidated definitions at end of file */
 
     /* Better mobile spacing */
     .mobile-padding {
       padding-left: 1rem;
       padding-right: 1rem;
-    }
-
-    /* Mobile-friendly container */
-    .mobile-container {
-      width: 100%;
-      max-width: 100%;
-      padding-left: 1rem;
-      padding-right: 1rem;
-      margin-left: auto;
-      margin-right: auto;
     }
 
     /* Prevent zoom on input focus (iOS Safari) */
@@ -805,18 +769,6 @@ body.keyboard-open [data-radix-dialog-content] {
       border-radius: 0.5rem;
     }
 
-    /* Mobile spacing utilities */
-    .mobile-space-y>*+* {
-      margin-top: 1rem;
-    }
-
-    .mobile-gap-2 {
-      gap: 0.5rem;
-    }
-
-    .mobile-gap-4 {
-      gap: 1rem;
-    }
   }
 
   body {
@@ -855,12 +807,6 @@ body.keyboard-open [data-radix-dialog-content] {
   body.keyboard-open [data-radix-dialog-content] {
     max-height: calc(100dvh - 2rem);
     overflow-y: auto;
-  }
-
-  @supports (backdrop-filter: blur(10px)) {
-    .supports-backdrop-blur {
-      backdrop-filter: blur(10px);
-    }
   }
 
   /* Prevent zoom on input focus (iOS Safari) */
@@ -1005,10 +951,6 @@ body.keyboard-open [data-radix-dialog-content] {
 
   .scrollbar-hide::-webkit-scrollbar-thumb {
     display: none;
-  }
-
-  .scroll-smooth {
-    scroll-behavior: smooth;
   }
 
   .shadow-strong {
@@ -1293,14 +1235,6 @@ body.keyboard-open [data-radix-dialog-content] {
       padding-top: max(0.5rem, env(safe-area-inset-top));
     }
 
-    .safe-area-left {
-      padding-left: max(1rem, env(safe-area-inset-left));
-    }
-
-    .safe-area-right {
-      padding-right: max(1rem, env(safe-area-inset-right));
-    }
-
     /* Legacy safe area classes for backward compatibility */
     .pb-safe {
       padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
@@ -1313,15 +1247,6 @@ body.keyboard-open [data-radix-dialog-content] {
 
   /* iOS-Specific Mobile Optimizations */
   @media (max-width: 1024px) {
-
-    /* iOS momentum scrolling - ONLY apply to body, not nested containers */
-    /* CRITICAL FIX: Removed `-webkit-overflow-scrolling: touch` from main
-     * This was causing scroll hijacking where the grid scrolled instead of the page.
-     * The body element already has this property set globally at line 49.
-     */
-    .mobile-scroll-container {
-      -webkit-overflow-scrolling: touch;
-    }
 
     /* REMOVED: Global html/body scroll lock - was preventing admin layout scrolling
      * Instead, let body scroll naturally and main content containers handle their own scrolling
@@ -1474,10 +1399,6 @@ body.keyboard-open [data-radix-dialog-content] {
 }
 
 @layer utilities {
-  .glass-panel {
-    @apply bg-background/80 backdrop-blur-md border-r border-border/50;
-  }
-
   .glass-card {
     @apply bg-card/70 backdrop-blur-sm border border-border/40 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20 hover:bg-card/90;
   }
@@ -1495,13 +1416,6 @@ body.keyboard-open [data-radix-dialog-content] {
     background-attachment: fixed;
   }
 
-  .text-brand-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
-  }
-
-  .nav-item-active {
-    @apply bg-primary/10 text-primary border-l-2 border-primary;
-  }
 }
 
 /* New order highlight animation */
@@ -1600,8 +1514,7 @@ body.keyboard-open [data-radix-dialog-content] {
     background: white !important;
   }
 
-  .glass-card,
-  .glass-panel {
+  .glass-card {
     background: white !important;
     backdrop-filter: none !important;
     box-shadow: none !important;

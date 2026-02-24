@@ -99,10 +99,3 @@ export async function isFeatureAvailable(href: string): Promise<boolean> {
   return await checkAllTablesExist(requiredTables);
 }
 
-/**
- * Clear the table existence cache
- * Useful when migrations are applied
- */
-export function clearTableExistenceCache(): void {
-  tableExistenceCache.clear();
-}
