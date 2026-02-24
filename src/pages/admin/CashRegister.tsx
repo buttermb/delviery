@@ -156,6 +156,18 @@ function CashRegisterContent() {
   const barcodeBufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
 
+  // Ref for keyboard shortcut handler to avoid stale closures
+  const keyboardStateRef = useRef({
+    cartLength: 0,
+    isPaymentPending: false,
+    productDialogOpen: false,
+    customerDialogOpen: false,
+    discountDialogOpen: false,
+    receiptDialogOpen: false,
+    keyboardHelpOpen: false,
+    refundDialogOpen: false,
+  });
+
   // Core cart state
   const [cart, setCart] = useState<CartItem[]>([]);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -790,9 +802,23 @@ function CashRegisterContent() {
     }
   }, [lastTransaction, lastReceiptData, lastRefundData, tenant]);
 
-  // Keyboard shortcuts
+  // Keep keyboard state ref in sync to avoid stale closures in the keydown handler
+  keyboardStateRef.current = {
+    cartLength: cart.length,
+    isPaymentPending: processPayment.isPending,
+    productDialogOpen,
+    customerDialogOpen,
+    discountDialogOpen,
+    receiptDialogOpen,
+    keyboardHelpOpen,
+    refundDialogOpen,
+  };
+
+  // Keyboard shortcuts — uses refs so the listener is only registered once
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const state = keyboardStateRef.current;
+
       // Don't trigger if user is typing in an input
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
@@ -828,7 +854,7 @@ function CashRegisterContent() {
       }
 
       // F8 - Pay Cash
-      if (e.key === 'F8' && cart.length > 0 && !processPayment.isPending) {
+      if (e.key === 'F8' && state.cartLength > 0 && !state.isPaymentPending) {
         e.preventDefault();
         setPaymentMethod('cash');
         executeCreditAction('pos_process_sale', async () => {
@@ -842,7 +868,7 @@ function CashRegisterContent() {
       }
 
       // F9 - Pay Card
-      if (e.key === 'F9' && cart.length > 0 && !processPayment.isPending) {
+      if (e.key === 'F9' && state.cartLength > 0 && !state.isPaymentPending) {
         e.preventDefault();
         setPaymentMethod('credit');
         executeCreditAction('pos_process_sale', async () => {
@@ -857,7 +883,7 @@ function CashRegisterContent() {
 
       // Escape - Clear cart or close dialogs
       if (e.key === 'Escape') {
-        const anyDialogOpen = productDialogOpen || customerDialogOpen || discountDialogOpen || receiptDialogOpen || keyboardHelpOpen || refundDialogOpen;
+        const anyDialogOpen = state.productDialogOpen || state.customerDialogOpen || state.discountDialogOpen || state.receiptDialogOpen || state.keyboardHelpOpen || state.refundDialogOpen;
         if (anyDialogOpen) {
           setProductDialogOpen(false);
           setCustomerDialogOpen(false);
@@ -865,8 +891,8 @@ function CashRegisterContent() {
           setReceiptDialogOpen(false);
           setKeyboardHelpOpen(false);
           setRefundDialogOpen(false);
-        } else if (cart.length > 0) {
-          handleClearCart();
+        } else if (state.cartLength > 0) {
+          setClearCartDialogOpen(true);
         }
       }
 
@@ -879,8 +905,11 @@ function CashRegisterContent() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- processPayment.mutateAsync is stable
-  }, [cart, processPayment.isPending, executeCreditAction, productDialogOpen, customerDialogOpen, discountDialogOpen, receiptDialogOpen, keyboardHelpOpen, refundDialogOpen, resetTransaction]);
+    // State values are read via keyboardStateRef (always current), so only stable
+    // function references are needed here. processPayment.mutateAsync is stable per
+    // TanStack Query. State setters are stable per React.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [executeCreditAction, resetTransaction]);
 
   // Barcode scanner support
   useEffect(() => {
