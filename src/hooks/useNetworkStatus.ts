@@ -20,7 +20,8 @@ export function useNetworkStatus(): UseNetworkStatusReturn {
 
   // Check connection speed
   useEffect(() => {
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+    const nav = navigator as unknown as Record<string, { effectiveType?: string; addEventListener: (type: string, cb: () => void) => void; removeEventListener: (type: string, cb: () => void) => void } | undefined>;
+    const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
     
     if (connection) {
       const checkSpeed = () => {

@@ -151,7 +151,7 @@ function VirtualizedTableInner<T>({
         rowHeight={rowHeight}
         overscanCount={overscanCount}
         style={{ height: listHeight }}
-        rowComponent={VirtualizedRow as any}
+        rowComponent={VirtualizedRow as unknown as (props: RowExtraProps & { index: number; style: React.CSSProperties; ariaAttributes: Record<string, unknown> }) => React.ReactElement}
         rowProps={rowProps}
       />
     </div>

@@ -177,7 +177,7 @@ export function PackageScanner({
       try {
         const newTorchState = !torchOn;
         await scannerRef.current.applyVideoConstraints({
-          advanced: [{ torch: newTorchState }] as any
+          advanced: [{ torch: newTorchState }] as unknown as MediaTrackConstraintSet[]
         });
         setTorchOn(newTorchState);
       } catch (err) {

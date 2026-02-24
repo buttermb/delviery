@@ -159,7 +159,7 @@ export default function OrderDetailPage() {
             }
 
             const { error } = await supabase
-                .from('marketplace_messages' as any)
+                .from('marketplace_messages' as any) // Supabase type limitation
                 .insert({
                     sender_tenant_id: tenant.id,
                     receiver_tenant_id: order.buyer_tenant_id,

@@ -358,7 +358,8 @@ export function useRealTimeSubscription<T = Record<string, unknown>>(
     const channel = supabase
       .channel(channelName)
       .on(
-        'postgres_changes' as any,
+        // Supabase SDK overload expects a narrow literal; cast to satisfy .on() signature
+        'postgres_changes' as unknown as 'postgres_changes',
         {
           event,
           schema,

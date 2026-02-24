@@ -231,7 +231,7 @@ export default function SelectPlanPage() {
       if (updateError) throw updateError;
 
       // Grant initial credits
-      const { error: creditError } = await (supabase.rpc as any)('grant_free_credits', {
+      const { error: creditError } = await (supabase.rpc as any)('grant_free_credits', { // Supabase type limitation
         p_tenant_id: tenantId,
         p_amount: FREE_TIER_MONTHLY_CREDITS,
       });

@@ -113,9 +113,7 @@ export function StockAlerts() {
   // Mutation to acknowledge an alert
   const acknowledgeMutation = useMutation({
     mutationFn: async (alertId: string) => {
-      const rpcClient = supabase as any;
-
-      const { data, error } = await rpcClient.rpc('acknowledge_stock_alert', {
+      const { data, error } = await (supabase.rpc as any)('acknowledge_stock_alert', { // Supabase type limitation
         p_alert_id: alertId,
       });
 

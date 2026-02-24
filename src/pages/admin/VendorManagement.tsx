@@ -119,10 +119,9 @@ export function VendorManagement() {
       if (editingVendor) {
         if (!tenant?.id) throw new Error('Tenant context required');
 
-        const vendorClient = supabase as any;
-        const { error } = await vendorClient
+        const { error } = await supabase
           .from('vendors')
-          .update(vendorData as Record<string, unknown>)
+          .update(vendorData)
           .eq('id', editingVendor.id)
           .eq('account_id', tenant.id);
 
@@ -130,13 +129,12 @@ export function VendorManagement() {
 
         toast.success('Vendor updated successfully');
       } else {
-        const insertClient = supabase as any;
-        const { error } = await insertClient
+        const { error } = await supabase
           .from('vendors')
           .insert({
             ...vendorData,
             account_id: tenant.id
-          } as Record<string, unknown>);
+          });
 
         if (error) throw error;
 

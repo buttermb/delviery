@@ -24,7 +24,7 @@ export const useProducts = () => {
 
             // Break chain to avoid deep type instantiation
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase deep type instantiation workaround
-            const query = supabase.from("products") as any;
+            const query = supabase.from("products") as unknown;
             const result = await query
               .select("id, name, price, sku, description, stock_quantity, available_quantity, low_stock_alert")
               .eq("account_id", accountId)

@@ -332,8 +332,9 @@ export function useOrderRefund(): UseOrderRefundResult {
               },
             };
 
+            // inventory_history table is not in generated Supabase types
             const { error: historyError } = await (
-              supabase as any
+              supabase as unknown as { from: (table: string) => { insert: (data: Record<string, unknown>) => Promise<{ error: unknown }> } }
             )
               .from('inventory_history')
               .insert(historyEntry);

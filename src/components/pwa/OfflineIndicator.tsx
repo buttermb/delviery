@@ -10,6 +10,15 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 
+/** Background Sync API — not yet in standard TS lib typings */
+interface SyncManager {
+  register(tag: string): Promise<void>;
+}
+
+interface ServiceWorkerRegistrationWithSync extends ServiceWorkerRegistration {
+  sync: SyncManager;
+}
+
 interface OfflineIndicatorProps {
   /** Position of the indicator */
   position?: 'top' | 'bottom';
@@ -38,7 +47,7 @@ export function OfflineIndicator({
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.ready.then((registration) => {
             if ('sync' in registration) {
-              (registration as any).sync.register('sync-queue').catch(() => {
+              (registration as unknown as ServiceWorkerRegistrationWithSync).sync.register('sync-queue').catch(() => {
                 // Background sync not available
               });
             }
@@ -80,7 +89,7 @@ export function OfflineIndicator({
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
         if ('sync' in registration) {
-          await (registration as any).sync.register('sync-queue');
+          await (registration as unknown as ServiceWorkerRegistrationWithSync).sync.register('sync-queue');
         }
       }
       

@@ -83,12 +83,10 @@ export function OrderNotesSection({
     }) => {
       const updateData = { [field]: value };
 
-      // Build query - use explicit typing to avoid deep type inference with dynamic table names
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const baseQuery = supabase.from(tableName as any).update(updateData);
+      // Supabase type limitation: dynamic table names can't be statically typed
+      const baseQuery = supabase.from(tableName as any).update(updateData); // Supabase type limitation
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let query = baseQuery.eq('id', orderId) as any;
+      let query = baseQuery.eq('id', orderId) as any; // Supabase type limitation: dynamic chaining
 
       if (additionalFilter) {
         query = query.eq(additionalFilter.field, additionalFilter.value);
