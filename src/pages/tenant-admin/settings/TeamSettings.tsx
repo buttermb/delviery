@@ -44,6 +44,7 @@ import { z } from 'zod';
 import { FormFactory } from '@/components/shared/FormFactory';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { getInitials } from '@/lib/utils/getInitials';
 
 // --- Types & Schemas ---
 
@@ -231,14 +232,6 @@ export default function TeamSettings() {
   const activeMembers = teamMembers.filter(m => m.status === 'active');
   const pendingMembers = teamMembers.filter(m => m.status === 'invited' || (m.status as string) === 'pending');
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {

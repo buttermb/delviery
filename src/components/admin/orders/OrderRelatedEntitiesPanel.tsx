@@ -43,19 +43,11 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { cn } from '@/lib/utils';
+import { getInitials } from '@/lib/utils/getInitials';
 
 interface OrderRelatedEntitiesPanelProps {
   orderId: string;
   className?: string;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase();
 }
 
 function LoadingSkeleton() {

@@ -75,6 +75,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { getInitials } from '@/lib/utils/getInitials';
 
 interface TopNavProps {
   onCommandPaletteOpen?: () => void;
@@ -98,21 +99,6 @@ export function TopNav({
   const { superAdmin, logout } = useSuperAdminAuth();
   const env = import.meta.env.MODE === 'production' ? 'production' : 'development';
 
-  // Get admin initials for avatar
-  const getInitials = (name?: string, email?: string) => {
-    if (name) {
-      return name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-    }
-    if (email) {
-      return email.slice(0, 2).toUpperCase();
-    }
-    return 'SA';
-  };
 
   // Handle full_name - may not exist in type yet, so use fallback
   // Type assertion for fields that may be added via migration
@@ -130,7 +116,8 @@ export function TopNav({
     || 'Super Admin';
   const adminInitials = getInitials(
     admin?.full_name || (admin?.first_name && admin?.last_name ? `${admin.first_name} ${admin.last_name}` : undefined),
-    admin?.email
+    admin?.email,
+    'SA',
   );
 
   return (

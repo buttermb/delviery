@@ -45,6 +45,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
+import { getInitials } from '@/lib/utils/getInitials';
 
 interface OrderAuditLogProps {
   orderId: string;
@@ -66,20 +67,6 @@ const ACTION_ICONS: Record<OrderAuditAction, typeof History> = {
   delivered: CheckCircle,
   field_updated: Edit,
 };
-
-function getInitials(name: string | null, email: string | null): string {
-  if (name) {
-    const parts = name.split(' ').filter(Boolean);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return name.slice(0, 2).toUpperCase();
-  }
-  if (email) {
-    return email.slice(0, 2).toUpperCase();
-  }
-  return 'SY';
-}
 
 function formatChangeValue(value: string | null): string {
   if (!value) return 'None';
@@ -161,7 +148,7 @@ function AuditEntryItem({ entry }: { entry: OrderAuditLogEntry }) {
                     <div className="flex items-center gap-1.5">
                       <Avatar className="h-5 w-5">
                         <AvatarFallback className={`text-[10px] ${isSystem ? 'bg-muted' : 'bg-primary/10'}`}>
-                          {isSystem ? 'SY' : getInitials(entry.actor_name, entry.actor_email)}
+                          {isSystem ? 'SY' : getInitials(entry.actor_name, entry.actor_email, 'SY')}
                         </AvatarFallback>
                       </Avatar>
                       <span className={isSystem ? 'italic' : ''}>

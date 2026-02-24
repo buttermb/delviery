@@ -26,6 +26,7 @@ import { useCustomerStats } from '@/hooks/useCustomerStats';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { cn } from '@/lib/utils';
+import { getInitials } from '@/lib/utils/getInitials';
 
 export interface OrderCustomerData {
   id?: string;
@@ -44,15 +45,6 @@ interface OrderCustomerCardProps {
   className?: string;
   showActions?: boolean;
   compact?: boolean;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase();
 }
 
 function getCustomerName(customer: OrderCustomerData): string {

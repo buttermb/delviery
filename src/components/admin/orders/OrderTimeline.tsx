@@ -37,6 +37,7 @@ import { useRealTimeSubscription } from '@/hooks/useRealtimeSubscription';
 import { formatRelativeTime, formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { getInitials } from '@/lib/utils/getInitials';
 
 interface OrderTimelineProps {
   orderId: string;
@@ -134,29 +135,17 @@ function getEventConfig(action: string) {
 }
 
 /**
- * Get initials from user name or email
+ * Get initials from order event user info (metadata or userId)
  */
-function getInitials(userId: string | null, metadata: Record<string, unknown> | null): string {
+function getEventInitials(userId: string | null, metadata: Record<string, unknown> | null): string {
   if (metadata && typeof metadata === 'object') {
     const name = metadata.user_name as string | undefined;
     const email = metadata.user_email as string | undefined;
-
-    if (name) {
-      const parts = name.split(' ').filter(Boolean);
-      if (parts.length >= 2) {
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-      }
-      return name.slice(0, 2).toUpperCase();
-    }
-    if (email) {
-      return email.slice(0, 2).toUpperCase();
-    }
+    return getInitials(name, email, userId ? userId.slice(0, 2).toUpperCase() : 'SY');
   }
-
   if (userId) {
     return userId.slice(0, 2).toUpperCase();
   }
-
   return 'SY';
 }
 
@@ -192,7 +181,7 @@ function TimelineEvent({ event, isLast }: TimelineEventProps) {
   const Icon = config.icon;
   const isSystem = isSystemAction(event.user_id, event.metadata);
   const displayName = getUserDisplayName(event.user_id, event.metadata);
-  const initials = getInitials(event.user_id, event.metadata);
+  const initials = getEventInitials(event.user_id, event.metadata);
   const notes = event.metadata?.notes as string | undefined;
 
   return (

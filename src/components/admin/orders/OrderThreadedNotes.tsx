@@ -54,6 +54,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { queryKeys } from '@/lib/queryKeys';
 import type { PinReason } from '@/hooks/usePinnedOrderNotes';
+import { getInitials } from '@/lib/utils/getInitials';
 
 /** Team member for @mentions */
 interface TeamMember {
@@ -444,21 +445,6 @@ export function OrderThreadedNotes({
     [noteContent, createNoteMutation]
   );
 
-  // Get initials for avatar fallback
-  const getInitials = (name: string | null, email?: string): string => {
-    if (name) {
-      return name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-    }
-    if (email) {
-      return email[0].toUpperCase();
-    }
-    return '?';
-  };
 
   // Format note content with highlighted mentions
   const formatNoteContent = (content: string): React.ReactNode => {

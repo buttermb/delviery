@@ -45,6 +45,7 @@ import { formatSmartDate } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { getInitials } from '@/lib/utils/getInitials';
 
 // ============================================================================
 // Types
@@ -87,15 +88,6 @@ interface DeliveryAddress {
 // ============================================================================
 // Helper Functions
 // ============================================================================
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase();
-}
 
 function getCustomerName(customer: CustomerData): string {
   if (customer.full_name) return customer.full_name;

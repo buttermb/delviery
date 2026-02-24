@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { SidebarModeSwitcher } from '@/components/sidebar/SidebarModeSwitcher';
+import { getInitials } from '@/lib/utils/getInitials';
 
 export default function AccountSettings() {
   const { admin, tenant } = useTenantAdminAuth();
@@ -114,15 +115,6 @@ export default function AccountSettings() {
     }
   };
 
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -147,7 +139,7 @@ export default function AccountSettings() {
               <Avatar className="h-20 w-20 sm:h-24 sm:w-24 ring-4 ring-background shadow-xl">
                 <AvatarImage src={avatarUrl || undefined} alt={admin?.name || 'User'} />
                 <AvatarFallback className="text-xl sm:text-2xl bg-gradient-to-br from-primary/80 to-primary text-primary-foreground">
-                  {getInitials(admin?.name)}
+                  {getInitials(admin?.name, null, 'U')}
                 </AvatarFallback>
               </Avatar>
               <button

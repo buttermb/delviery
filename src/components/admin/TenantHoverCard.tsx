@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CalendarDays, CreditCard, Activity, Ticket } from 'lucide-react';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { getInitials } from '@/lib/utils/getInitials';
 
 interface TenantHoverCardProps {
     tenant: {
@@ -32,14 +33,6 @@ interface TenantHoverCardProps {
 }
 
 export function TenantHoverCard({ tenant, children }: TenantHoverCardProps) {
-    const getInitials = (name: string) => {
-        return name
-            .split(' ')
-            .map((n) => n[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2);
-    };
 
     return (
         <HoverCard openDelay={400}>

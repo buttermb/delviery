@@ -31,6 +31,7 @@ import Filter from "lucide-react/dist/esm/icons/filter";
 import { formatRelativeTime } from '@/lib/utils/formatDate';
 import { formatSmartDate } from '@/lib/formatters';
 import { useTeamActivity, type TeamActivityEntry } from '@/hooks/useTeamActivity';
+import { getInitials } from '@/lib/utils/getInitials';
 
 interface TeamActivityFeedProps {
   limit?: number;
@@ -55,18 +56,6 @@ function getCategoryConfig(category: string) {
   return CATEGORY_CONFIG[category] || CATEGORY_CONFIG.system;
 }
 
-function getInitials(firstName: string | null, lastName: string | null, email: string | null): string {
-  if (firstName && lastName) {
-    return `${firstName[0]}${lastName[0]}`.toUpperCase();
-  }
-  if (firstName) {
-    return firstName.slice(0, 2).toUpperCase();
-  }
-  if (email) {
-    return email.slice(0, 2).toUpperCase();
-  }
-  return 'TM';
-}
 
 function getFullName(firstName: string | null, lastName: string | null, email: string | null): string {
   if (firstName && lastName) {
@@ -232,11 +221,10 @@ export function TeamActivityFeed({
                         member?.last_name ?? null,
                         activity.user_email
                       );
-                      const initials = getInitials(
-                        member?.first_name ?? null,
-                        member?.last_name ?? null,
-                        activity.user_email
-                      );
+                      const memberName = member?.first_name && member?.last_name
+                        ? `${member.first_name} ${member.last_name}`
+                        : member?.first_name ?? null;
+                      const initials = getInitials(memberName, activity.user_email, 'TM');
 
                       return (
                         <div

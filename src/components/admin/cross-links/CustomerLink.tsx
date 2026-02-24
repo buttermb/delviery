@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useEntityNavigation } from "@/hooks/useEntityNavigation";
+import { getInitials } from "@/lib/utils/getInitials";
 
 interface CustomerLinkProps {
   customerId?: string | null;
@@ -25,19 +26,6 @@ interface CustomerLinkProps {
   customerAvatar?: string | null;
   className?: string;
   showAvatar?: boolean;
-}
-
-/**
- * Get initials from a customer name for the avatar fallback
- */
-function getInitials(name: string): string {
-  if (!name || name === "Walk-in") return "?";
-
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-  return name.slice(0, 2).toUpperCase();
 }
 
 export function CustomerLink({
