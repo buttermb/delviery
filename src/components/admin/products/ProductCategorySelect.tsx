@@ -24,6 +24,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 // Alias for backward compatibility
 type CategoryNode = CategoryTreeNode;
@@ -108,7 +109,7 @@ export function ProductCategorySelect({
     },
     onError: (error: Error) => {
       logger.error('Failed to delete category', { error: error.message });
-      toast.error('Failed to delete category');
+      toast.error('Failed to delete category', { description: humanizeError(error) });
     },
   });
 

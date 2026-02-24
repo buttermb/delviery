@@ -73,6 +73,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { humanizeError } from '@/lib/humanizeError';
 import {
   useVendorCommunications,
   useVendorPurchaseOrders,
@@ -250,7 +251,7 @@ export function VendorCommunicationLog({ vendorId, vendorName }: VendorCommunica
       setDeleteCommunicationId(null);
     } catch (error) {
       logger.error('Failed to delete communication', error, { component: 'VendorCommunicationLog' });
-      toast.error('Failed to delete communication');
+      toast.error('Failed to delete communication', { description: humanizeError(error) });
     }
   };
 

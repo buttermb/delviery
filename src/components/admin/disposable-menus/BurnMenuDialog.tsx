@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Flame, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { useBurnMenu } from '@/hooks/useDisposableMenus';
 import type { DisposableMenu } from '@/types/admin';
 
@@ -45,8 +46,8 @@ export const BurnMenuDialog = ({ menu, open, onOpenChange }: BurnMenuDialogProps
       setAutoRegenerate(false);
       setMigrateCustomers(false);
       onOpenChange(false);
-    } catch {
-      toast.error('Failed to burn menu');
+    } catch (error) {
+      toast.error('Failed to burn menu', { description: humanizeError(error) });
     }
   };
 

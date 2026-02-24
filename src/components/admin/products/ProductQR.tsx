@@ -5,6 +5,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
@@ -249,7 +250,7 @@ export function ProductQR({
       toast.success(`Generated ${newQRs.length} QR code(s)`);
     } catch (error) {
       logger.error('Failed to generate QR codes', { error });
-      toast.error('Failed to generate QR codes');
+      toast.error('Failed to generate QR codes', { description: humanizeError(error) });
     } finally {
       setIsGenerating(false);
     }
@@ -271,8 +272,8 @@ export function ProductQR({
       setCopiedId(qr.id);
       toast.success('URL copied to clipboard');
       setTimeout(() => setCopiedId(null), 2000);
-    } catch {
-      toast.error('Failed to copy URL');
+    } catch (error) {
+      toast.error('Failed to copy URL', { description: humanizeError(error) });
     }
   }, []);
 
@@ -311,7 +312,7 @@ export function ProductQR({
 
     img.onerror = () => {
       logger.error('Failed to load SVG for QR code download');
-      toast.error('Failed to download QR code');
+      toast.error('Failed to download QR code', { description: humanizeError('Failed to load SVG image') });
     };
 
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));

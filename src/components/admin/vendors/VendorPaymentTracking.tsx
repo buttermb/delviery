@@ -59,6 +59,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { formatCurrency } from '@/utils/formatters';
 import { formatSmartDate } from '@/lib/formatters';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
@@ -269,7 +270,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
     },
     onError: (error: Error) => {
       logger.error('Failed to create payment', error, { component: 'VendorPaymentTracking' });
-      toast.error('Failed to record payment');
+      toast.error('Failed to record payment', { description: humanizeError(error) });
     },
   });
 

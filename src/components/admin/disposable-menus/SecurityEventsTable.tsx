@@ -6,6 +6,7 @@ import { AlertTriangle, Eye, Shield, Clock, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface SecurityEvent {
   id: string;
@@ -58,8 +59,8 @@ export const SecurityEventsTable = ({ events, onRefresh }: SecurityEventsTablePr
 
       toast.success('Security event acknowledged');
       onRefresh?.();
-    } catch {
-      toast.error('Failed to acknowledge event');
+    } catch (error) {
+      toast.error('Failed to acknowledge event', { description: humanizeError(error) });
     }
   };
 

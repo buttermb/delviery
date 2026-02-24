@@ -55,6 +55,7 @@ import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 
 interface GiftCard {
@@ -170,7 +171,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
     },
     onError: (err: Error) => {
       logger.error('Failed to delete gift card', { error: err.message });
-      toast.error('Failed to delete gift card');
+      toast.error('Failed to delete gift card', { description: humanizeError(err) });
     },
   });
 

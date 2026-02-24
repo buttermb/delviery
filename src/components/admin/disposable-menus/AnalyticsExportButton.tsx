@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,8 +22,8 @@ export const AnalyticsExportButton = ({ data, filename }: AnalyticsExportButtonP
       const csvContent = convertToCSV(data);
       downloadFile(csvContent, `${filename}.csv`, 'text/csv');
       toast.success('Analytics exported to CSV');
-    } catch {
-      toast.error('Failed to export data');
+    } catch (error) {
+      toast.error('Failed to export data', { description: humanizeError(error) });
     }
   };
 
@@ -31,8 +32,8 @@ export const AnalyticsExportButton = ({ data, filename }: AnalyticsExportButtonP
       const jsonContent = JSON.stringify(data, null, 2);
       downloadFile(jsonContent, `${filename}.json`, 'application/json');
       toast.success('Analytics exported to JSON');
-    } catch {
-      toast.error('Failed to export data');
+    } catch (error) {
+      toast.error('Failed to export data', { description: humanizeError(error) });
     }
   };
 
@@ -68,7 +69,7 @@ export const AnalyticsExportButton = ({ data, filename }: AnalyticsExportButtonP
     } catch (error: unknown) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
       logger.error('Excel export error', errorObj, { component: 'AnalyticsExportButton' });
-      toast.error('Failed to export to Excel');
+      toast.error('Failed to export to Excel', { description: humanizeError(error) });
     }
   };
 

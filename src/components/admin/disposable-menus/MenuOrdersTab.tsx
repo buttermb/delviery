@@ -8,6 +8,7 @@ import { OrderRowContextMenu, useOrderContextActions } from '@/components/admin/
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface Order {
   id: string;
@@ -58,7 +59,7 @@ export const MenuOrdersTab = ({ orders, isLoading, onOrderUpdate }: MenuOrdersTa
       .eq('id', orderId);
 
     if (error) {
-      toast.error('Failed to update status');
+      toast.error('Failed to update status', { description: humanizeError(error) });
       throw error;
     }
 

@@ -79,6 +79,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { humanizeError } from '@/lib/humanizeError';
 import {
   useVendorDocuments,
   DOCUMENT_CATEGORY_LABELS,
@@ -269,7 +270,7 @@ export function VendorDocumentManager({ vendorId, vendorName }: VendorDocumentMa
       setDeleteDocumentId(null);
     } catch (error) {
       logger.error('Failed to delete document', error, { component: 'VendorDocumentManager' });
-      toast.error('Failed to delete document');
+      toast.error('Failed to delete document', { description: humanizeError(error) });
     }
   };
 

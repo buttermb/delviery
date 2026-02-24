@@ -21,6 +21,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -648,7 +649,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                             logger.error('Button click error', error, {
                               component: 'CreateMenuDialog',
                             });
-                            toast.error('Failed to start image generation');
+                            toast.error('Failed to start image generation', { description: humanizeError(error) });
                           }
                         }}
                         disabled={bulkGenerateImages.isPending}

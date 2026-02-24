@@ -60,6 +60,7 @@ import {
 import { formatCurrency } from '@/utils/formatters';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface VendorPriceHistoryProps {
   vendorId: string;
@@ -141,8 +142,8 @@ function AlertSettingsDialog({
       });
       toast.success('Alert settings saved');
       setOpen(false);
-    } catch {
-      toast.error('Failed to save settings');
+    } catch (error) {
+      toast.error('Failed to save settings', { description: humanizeError(error) });
     }
   };
 
@@ -222,8 +223,8 @@ function PriceAlertsSection({ vendorId }: { vendorId: string }) {
     try {
       await dismissAlert.mutateAsync(alertId);
       toast.success('Alert dismissed');
-    } catch {
-      toast.error('Failed to dismiss alert');
+    } catch (error) {
+      toast.error('Failed to dismiss alert', { description: humanizeError(error) });
     }
   };
 

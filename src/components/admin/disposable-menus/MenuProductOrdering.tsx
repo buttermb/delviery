@@ -43,6 +43,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import GripVertical from 'lucide-react/dist/esm/icons/grip-vertical';
 import Package from 'lucide-react/dist/esm/icons/package';
 import FolderOpen from 'lucide-react/dist/esm/icons/folder-open';
@@ -573,7 +574,7 @@ export function MenuProductOrdering({
       logger.error('Failed to save product order', error, {
         component: 'MenuProductOrdering',
       });
-      toast.error('Failed to save product order');
+      toast.error('Failed to save product order', { description: humanizeError(error) });
     },
   });
 

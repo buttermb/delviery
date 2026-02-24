@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -98,7 +99,7 @@ export const PanicModeButton = () => {
       setReason('');
     } catch (error) {
       logger.error('Panic mode error:', error);
-      toast.error('Failed to activate panic mode');
+      toast.error('Failed to activate panic mode', { description: humanizeError(error) });
     } finally {
       setLoading(false);
     }

@@ -22,6 +22,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { Truck, MapPin, User, Check, Loader2 } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -105,7 +106,7 @@ export function AssignToFleetDialog({
     },
     onError: (error) => {
       logger.error('Failed to assign courier', error instanceof Error ? error : new Error(String(error)));
-      toast.error('Failed to assign courier');
+      toast.error('Failed to assign courier', { description: humanizeError(error) });
     },
   });
 

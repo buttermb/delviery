@@ -80,6 +80,7 @@ import {
   type ContactHistoryAction,
 } from '@/hooks/useVendorContacts';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { formatSmartDate } from '@/lib/formatters';
 
@@ -234,7 +235,7 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
       setDeleteContactId(null);
     } catch (error) {
       logger.error('Failed to delete contact', error, { component: 'VendorContactsManager' });
-      toast.error('Failed to delete contact');
+      toast.error('Failed to delete contact', { description: humanizeError(error) });
     }
   };
 
@@ -245,7 +246,7 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
       toast.success('Primary contact updated');
     } catch (error) {
       logger.error('Failed to set primary contact', error, { component: 'VendorContactsManager' });
-      toast.error('Failed to set primary contact');
+      toast.error('Failed to set primary contact', { description: humanizeError(error) });
     }
   };
 
@@ -276,8 +277,8 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
     try {
       await navigator.clipboard.writeText(phone);
       toast.success('Phone number copied');
-    } catch {
-      toast.error('Failed to copy');
+    } catch (error) {
+      toast.error('Failed to copy', { description: humanizeError(error) });
     }
   };
 
@@ -285,8 +286,8 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
     try {
       await navigator.clipboard.writeText(email);
       toast.success('Email copied');
-    } catch {
-      toast.error('Failed to copy');
+    } catch (error) {
+      toast.error('Failed to copy', { description: humanizeError(error) });
     }
   };
 
@@ -309,7 +310,7 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
       historyForm.reset();
     } catch (error) {
       logger.error('Failed to log interaction', error, { component: 'VendorContactsManager' });
-      toast.error('Failed to log interaction');
+      toast.error('Failed to log interaction', { description: humanizeError(error) });
     }
   };
 

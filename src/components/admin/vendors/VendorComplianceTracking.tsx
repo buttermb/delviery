@@ -82,6 +82,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { humanizeError } from '@/lib/humanizeError';
 import {
   useVendorCompliance,
   useVendorComplianceAudit,
@@ -296,7 +297,7 @@ export function VendorComplianceTracking({
       logger.error('Failed to delete compliance', error, {
         component: 'VendorComplianceTracking',
       });
-      toast.error('Failed to delete compliance record');
+      toast.error('Failed to delete compliance record', { description: humanizeError(error) });
     }
   };
 
