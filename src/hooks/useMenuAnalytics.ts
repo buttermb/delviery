@@ -57,7 +57,7 @@ export const useMenuAnalytics = (menuId: string) => {
       if (!tenant?.id) throw new Error('No tenant');
 
       // Get basic menu stats
-      const { data: menu } = await supabase
+      const { data: menu } = await (supabase as any)
         .from('disposable_menus')
         .select(`
           *,
@@ -126,7 +126,7 @@ export const useProductImageAnalytics = (menuId: string) => {
   return useQuery({
     queryKey: queryKeys.productImageAnalytics.byMenu(menuId),
     queryFn: async () => {
-      const { data: menuProducts } = await supabase
+      const { data: menuProducts } = await (supabase as any)
         .from('disposable_menu_products')
         .select(`
           *,
@@ -141,7 +141,7 @@ export const useProductImageAnalytics = (menuId: string) => {
       if (!menuProducts) return [];
 
       // Fetch logs for this menu to aggregate per product
-      const { data: logs } = await supabase
+      const { data: logs } = await (supabase as any)
         .from('menu_access_logs')
         .select('actions_taken')
         .eq('menu_id', menuId)

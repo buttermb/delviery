@@ -131,7 +131,7 @@ export function useFreeTierLimits() {
       if (!tenantId || !isFreeTier) return null;
 
       // Get or create usage record
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tenant_free_tier_usage')
         .select('*')
         .eq('tenant_id', tenantId)

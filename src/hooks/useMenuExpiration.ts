@@ -47,7 +47,7 @@ export const useExpiringSoonMenus = (tenantId: string | undefined, hoursAhead: n
       const now = new Date();
       const futureTime = new Date(now.getTime() + hoursAhead * 60 * 60 * 1000);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('disposable_menus')
         .select(`
           id, name, tenant_id, status, scheduled_deactivation_time, is_scheduled,
@@ -82,7 +82,7 @@ export const useArchivedMenus = (tenantId: string | undefined) => {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('disposable_menus')
         .select(`
           id, name, tenant_id, status, scheduled_deactivation_time, is_scheduled,

@@ -32,7 +32,7 @@ export function useDeliveryZones() {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('delivery_zones')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -53,7 +53,7 @@ export function useDeliveryZones() {
   const fetchZone = async (zoneId: string): Promise<DeliveryZone | null> => {
     if (!tenantId) return null;
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('delivery_zones')
       .select('*')
       .eq('id', zoneId)
@@ -73,7 +73,7 @@ export function useDeliveryZones() {
     mutationFn: async (formData: DeliveryZoneFormData) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('delivery_zones')
         .insert({
           tenant_id: tenantId,
@@ -121,7 +121,7 @@ export function useDeliveryZones() {
     }) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('delivery_zones')
         .update({
           ...formData,
@@ -153,7 +153,7 @@ export function useDeliveryZones() {
     mutationFn: async (zoneId: string) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('delivery_zones')
         .delete()
         .eq('id', zoneId)
@@ -178,7 +178,7 @@ export function useDeliveryZones() {
     mutationFn: async ({ zoneId, isActive }: { zoneId: string; isActive: boolean }) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('delivery_zones')
         .update({ is_active: isActive, updated_at: new Date().toISOString() })
         .eq('id', zoneId)

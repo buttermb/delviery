@@ -343,7 +343,7 @@ const useCreateTemplate = () => {
       isShared: boolean;
       createdBy: string;
     }) => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await (supabase as any)
         .from('menu_templates')
         .insert({
           tenant_id: templateData.tenantId,

@@ -108,7 +108,7 @@ export function useStorefrontBuilder() {
         themeCfg: ThemeConfig,
     ) => {
         try {
-            const { error } = await (supabase as unknown as { from: (t: string) => { update: (d: Record<string, unknown>) => { eq: (c: string, v: string | undefined) => Promise<{ error: unknown }> } } })
+            const { error } = await (supabase as any)
                 .from('marketplace_profiles')
                 .update({
                     layout_config: JSON.parse(JSON.stringify(layoutCfg)),
