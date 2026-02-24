@@ -62,9 +62,9 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
   useEffect(() => {
     if (isWelcome || (isSuccess && isTrial)) {
       setOpen(true);
-      
+
       // Trigger confetti on open
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         confetti({
           particleCount: 100,
           spread: 70,
@@ -72,6 +72,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
           colors: ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'],
         });
       }, 300);
+      return () => clearTimeout(timer);
     }
   }, [isWelcome, isSuccess, isTrial]);
 

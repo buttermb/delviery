@@ -150,7 +150,8 @@ export function OptimizedSidebar({
     // Focus search input when dialog opens
     useEffect(() => {
         if (searchOpen && searchInputRef.current) {
-            setTimeout(() => searchInputRef.current?.focus(), 100);
+            const timer = setTimeout(() => searchInputRef.current?.focus(), 100);
+            return () => clearTimeout(timer);
         }
     }, [searchOpen]);
 

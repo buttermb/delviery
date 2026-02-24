@@ -207,6 +207,7 @@ export default function AuthConfirmPage() {
     };
 
     useEffect(() => {
+        let redirectTimer: ReturnType<typeof setTimeout>;
         const verifyToken = async () => {
             const tokenPrefix = tokenHash?.substring(0, 8) || 'none';
 
@@ -348,7 +349,7 @@ export default function AuthConfirmPage() {
 
                     // Different delay for different types
                     const redirectDelay = type === 'recovery' ? 2000 : 1500;
-                    setTimeout(() => {
+                    redirectTimer = setTimeout(() => {
                         navigate(redirectTarget);
                     }, redirectDelay);
                 } else {
@@ -380,6 +381,7 @@ export default function AuthConfirmPage() {
         };
 
         verifyToken();
+        return () => clearTimeout(redirectTimer);
     }, [tokenHash, type, navigate, next, logVerification]);
 
     // Get the appropriate resend button label based on type

@@ -107,12 +107,14 @@ export function SearchableFilterDropdown({
 
   // Focus search input when popover opens
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
     if (open && showSearch && searchInputRef.current) {
-      setTimeout(() => searchInputRef.current?.focus(), 0);
+      timer = setTimeout(() => searchInputRef.current?.focus(), 0);
     }
     if (!open) {
       setSearch('');
     }
+    return () => clearTimeout(timer);
   }, [open, showSearch]);
 
   return (

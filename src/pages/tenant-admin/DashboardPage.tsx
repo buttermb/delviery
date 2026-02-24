@@ -510,7 +510,7 @@ export default function TenantAdminDashboardPage() {
         const onboardingCompleted = localStorage.getItem(`onboarding_completed_${tenantId}`);
         if (isEmpty && !onboardingCompleted && !showWelcomeModal) {
           // Small delay to avoid conflicting with welcome modal
-          setTimeout(() => {
+          quickStartTimer = setTimeout(() => {
             setShowQuickStart(true);
           }, 3000);
         }
@@ -519,7 +519,9 @@ export default function TenantAdminDashboardPage() {
       }
     };
 
+    let quickStartTimer: ReturnType<typeof setTimeout>;
     checkIfEmpty();
+    return () => clearTimeout(quickStartTimer);
   }, [tenantId, authLoading, showWelcomeModal]);
 
   const handleGenerateDemoData = async () => {

@@ -244,7 +244,8 @@ const App = () => {
       };
 
       // Run after a short delay to not block initial render
-      setTimeout(runHealthCheck, 2000);
+      const timer = setTimeout(runHealthCheck, 2000);
+      return () => clearTimeout(timer);
     }
   }, []);
 

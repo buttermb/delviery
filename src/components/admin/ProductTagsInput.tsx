@@ -28,6 +28,7 @@ import Search from "lucide-react/dist/esm/icons/search";
 import Check from "lucide-react/dist/esm/icons/check";
 import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -171,8 +172,8 @@ export function ProductTagsInput({
       setNewTagName('');
       setSelectedColor(TAG_COLORS[8]);
       setShowCreateForm(false);
-    } catch {
-      toast.error('Failed to create tag');
+    } catch (error) {
+      toast.error('Failed to create tag', { description: humanizeError(error) });
     }
   };
 
@@ -183,13 +184,15 @@ export function ProductTagsInput({
 
   // Focus search input when popover opens
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
     if (isOpen && searchInputRef.current) {
-      setTimeout(() => searchInputRef.current?.focus(), 0);
+      timer = setTimeout(() => searchInputRef.current?.focus(), 0);
     }
     if (!isOpen) {
       setSearch('');
       setShowCreateForm(false);
     }
+    return () => clearTimeout(timer);
   }, [isOpen]);
 
   const isMutating = createTag.isPending;

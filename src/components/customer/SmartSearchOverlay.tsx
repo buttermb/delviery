@@ -40,7 +40,8 @@ export function SmartSearchOverlay({ isOpen, onClose, products, onProductSelect 
     // Focus input when opened
     useEffect(() => {
         if (isOpen) {
-            setTimeout(() => inputRef.current?.focus(), 100);
+            const timer = setTimeout(() => inputRef.current?.focus(), 100);
+            return () => clearTimeout(timer);
         }
     }, [isOpen]);
 

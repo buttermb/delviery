@@ -21,6 +21,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
     // Check for redirect loop
     const checkLoop = () => {
       try {
@@ -88,7 +89,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
           sessionStorage.removeItem('auth_redirect_timestamps');
 
           // Redirect to MFA challenge page based on portal
-          setTimeout(() => {
+          timers.push(setTimeout(() => {
             switch (portal) {
               case "tenant-admin":
                 navigate(`/${tenantSlug}/admin/auth/mfa-challenge`, { replace: true });
@@ -100,7 +101,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
                 navigate(`/${tenantSlug}/customer/auth/mfa-challenge`, { replace: true });
                 break;
             }
-          }, 1000);
+          }, 1000));
           return;
         }
 
@@ -116,7 +117,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
         // Check for intended destination (user tried to access a protected page before OAuth login)
         const intendedDestination = intendedDestinationUtils.consume();
 
-        setTimeout(() => {
+        timers.push(setTimeout(() => {
           // If there's an intended destination, use it (only for matching portal type)
           if (intendedDestination) {
             // Validate the intended destination matches the current portal context
@@ -145,7 +146,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
               navigate(`/${tenantSlug}/shop/dashboard`, { replace: true });
               break;
           }
-        }, 1000);
+        }, 1000));
       } catch (error) {
         logger.error("Auth callback error", error, { component: "AuthCallbackPage", portal });
         setStatus("error");
@@ -156,7 +157,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
         });
 
         // Redirect back to login after a delay
-        setTimeout(() => {
+        timers.push(setTimeout(() => {
           switch (portal) {
             case "tenant-admin":
               navigate(`/${tenantSlug}/admin/login`, { replace: true });
@@ -168,11 +169,12 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
               navigate(`/${tenantSlug}/customer/login`, { replace: true });
               break;
           }
-        }, 3000);
+        }, 3000));
       }
     };
 
     handleCallback();
+    return () => timers.forEach(t => clearTimeout(t));
   }, [navigate, portal, tenantSlug, searchParams]);
 
   const handleManualReset = async () => {

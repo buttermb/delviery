@@ -84,7 +84,8 @@ export function ProductTagInput({ productId, className }: ProductTagInputProps) 
   // Focus input when popover opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 0);
+      const timer = setTimeout(() => inputRef.current?.focus(), 0);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
