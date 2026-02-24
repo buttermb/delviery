@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 export function SaasAdminLayout() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export function SaasAdminLayout() {
       navigate('/super-admin/login');
     } catch (error) {
       logger.error('Sign out error:', error);
-      toast.error('Failed to sign out');
+      toast.error('Failed to sign out', { description: humanizeError(error) });
     }
   };
 

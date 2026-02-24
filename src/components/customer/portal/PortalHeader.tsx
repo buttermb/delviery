@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Copy, Check, Mail, Phone } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import type { PortalClient } from '@/types/portal';
 
 export interface PortalHeaderProps {
@@ -21,8 +22,8 @@ export function PortalHeader({ client }: PortalHeaderProps) {
       setCopied(true);
       toast.success('Portal link copied to clipboard');
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Failed to copy link');
+    } catch (error) {
+      toast.error('Failed to copy link', { description: humanizeError(error) });
     }
   }, [portalUrl]);
 

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Camera, CameraOff, Keyboard } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
@@ -43,7 +44,7 @@ export function BarcodeScanner({ onScan, continuous = true }: BarcodeScannerProp
       setIsScanning(true);
     } catch (err) {
       logger.error('Scanner start error:', err);
-      toast.error('Could not access camera. Please check permissions.');
+      toast.error('Could not access camera', { description: humanizeError(err) });
     }
   };
 

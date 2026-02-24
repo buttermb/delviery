@@ -19,6 +19,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageBubble, type Message } from './MessageBubble';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 import { Send, Loader2 } from 'lucide-react';
 
@@ -206,7 +207,7 @@ export function ChatDrawer({
         },
         onError: (error) => {
             logger.error('Failed to send message', error);
-            toast.error('Failed to send message — Please try again');
+            toast.error('Failed to send message', { description: humanizeError(error) });
         },
     });
 

@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { Loader2, Plus, Minus, Trash2, Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useWholesaleCouriers } from '@/hooks/useWholesaleData';
@@ -188,7 +189,7 @@ export function EditWholesaleOrderDialog({
       onSuccess?.();
     } catch (error) {
       logger.error('Failed to update order', error, { component: 'EditWholesaleOrderDialog' });
-      toast.error('Failed to update order');
+      toast.error('Failed to update order', { description: humanizeError(error) });
     } finally {
       setIsSubmitting(false);
     }

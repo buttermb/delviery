@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera as CameraIcon, RotateCcw, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface PhotoProofProps {
   orderId: string;
@@ -60,7 +61,7 @@ export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
       toast.success('Photo uploaded successfully!');
     } catch (error) {
       logger.error('Failed to upload photo', error, { component: 'PhotoProof', orderId });
-      toast.error('Failed to upload photo');
+      toast.error('Failed to upload photo', { description: humanizeError(error) });
     } finally {
       setUploading(false);
     }

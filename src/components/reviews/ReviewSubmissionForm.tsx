@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { StarRating } from './StarRating';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { Loader2 } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -71,7 +72,7 @@ export function ReviewSubmissionForm({
         },
         onError: (error) => {
             logger.error('Failed to submit review', error);
-            toast.error('Failed to submit review. Please try again later.');
+            toast.error('Failed to submit review', { description: humanizeError(error) });
         },
     });
 

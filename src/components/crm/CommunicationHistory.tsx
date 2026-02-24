@@ -32,6 +32,7 @@ import {
   CalendarIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
@@ -300,7 +301,7 @@ export function CommunicationHistory({
     },
     onError: (error: unknown) => {
       logger.error('Failed to send message', error, { component: 'CommunicationHistory' });
-      toast.error(error instanceof Error ? error.message : 'An error occurred');
+      toast.error('Failed to send message', { description: humanizeError(error) });
     },
   });
 

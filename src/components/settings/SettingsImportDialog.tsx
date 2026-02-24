@@ -22,6 +22,7 @@ import {
   X
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // Schema for settings validation
 const generalSettingsSchema = z.object({
@@ -241,7 +242,7 @@ export function SettingsImportDialog({
       resetState();
     } catch (error) {
       logger.error('Failed to import settings', error);
-      toast.error('Failed to import settings. Please try again.');
+      toast.error('Failed to import settings', { description: humanizeError(error) });
     } finally {
       setIsImporting(false);
     }

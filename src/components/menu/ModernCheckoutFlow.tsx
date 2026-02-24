@@ -28,6 +28,7 @@ import { formatWeight } from '@/utils/productHelpers';
 import { cn } from '@/lib/utils';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { useMenuPaymentSettings, type PaymentSettings } from '@/hooks/usePaymentSettings';
 import { publish } from '@/lib/eventBus';
 import { queryKeys } from '@/lib/queryKeys';
@@ -1508,8 +1509,8 @@ function OrderSuccess({
       });
       setSmsConfirmed(true);
       toast.success('You will receive SMS updates for your order');
-    } catch {
-      toast.error('Could not enable SMS notifications');
+    } catch (error) {
+      toast.error('Could not enable SMS notifications', { description: humanizeError(error) });
     } finally {
       setSmsLoading(false);
     }

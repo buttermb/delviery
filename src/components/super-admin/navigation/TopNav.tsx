@@ -74,6 +74,7 @@ import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface TopNavProps {
   onCommandPaletteOpen?: () => void;
@@ -277,7 +278,7 @@ export function TopNav({
                       toast.success('Tenant data exported to CSV');
                     } catch (error: unknown) {
                       logger.error('Export failed', error, { component: 'TopNav' });
-                      toast.error('Failed to export tenant data. Please try again.');
+                      toast.error('Failed to export tenant data', { description: humanizeError(error) });
                     }
                   }}
                 />

@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface QueuedAuthAttempt {
   email: string;
@@ -89,7 +90,7 @@ export function useAuthOffline(
         .catch((error: unknown) => {
           logger.error('Auth: Queued login retry failed', error);
           setQueuedAttempt(null);
-          toast.error(error instanceof Error ? error.message : 'Please try again.');
+          toast.error('Login retry failed', { description: humanizeError(error) });
         });
     }
   }, [isOnline, queuedAttempt]);

@@ -18,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { Search, Filter } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -97,7 +98,7 @@ export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQue
         },
         onError: (error) => {
             logger.error('Failed to update review status', error);
-            toast.error('Failed to update review status');
+            toast.error('Failed to update review status', { description: humanizeError(error) });
         },
     });
 
@@ -124,7 +125,7 @@ export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQue
         },
         onError: (error) => {
             logger.error('Failed to submit response', error);
-            toast.error('Failed to submit response');
+            toast.error('Failed to submit response', { description: humanizeError(error) });
         },
     });
 

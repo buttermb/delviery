@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface CourierData {
   id: string;
@@ -65,7 +66,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       },
       (error) => {
         logger.error('Location error', error, { component: 'CourierContext' });
-        toast.error('Unable to track your location. Please enable GPS.');
+        toast.error('Unable to track your location', { description: humanizeError(error) });
       },
       {
         enableHighAccuracy: true,
@@ -220,7 +221,7 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
       // Only show error if user is still authenticated
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        toast.error('Failed to update status');
+        toast.error('Failed to update status', { description: humanizeError(error) });
       }
     }
   };

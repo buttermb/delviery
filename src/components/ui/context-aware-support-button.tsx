@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface SupportContext {
   currentPage: string;
@@ -164,8 +165,8 @@ export function ContextAwareSupportButton({
       setDialogOpen(false);
       setSubject('');
       setDescription('');
-    } catch {
-      toast.error('Failed to submit ticket');
+    } catch (error) {
+      toast.error('Failed to submit ticket', { description: humanizeError(error) });
     } finally {
       setIsSubmitting(false);
     }

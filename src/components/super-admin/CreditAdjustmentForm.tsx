@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import {
 import { queryKeys } from '@/lib/queryKeys';
   adjustTenantCredits,
@@ -97,8 +98,8 @@ export function CreditAdjustmentForm({
         toast.error(result.error || 'Failed to adjust credits');
       }
     },
-    onError: (_error) => {
-      toast.error('Failed to adjust credits');
+    onError: (error) => {
+      toast.error('Failed to adjust credits', { description: humanizeError(error) });
     },
   });
 

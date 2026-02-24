@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Monitor, Smartphone, Tablet, LogOut, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { apiFetch } from '@/lib/utils/apiClient';
 // Helper function to format time ago
 const formatTimeAgo = (date: string): string => {
@@ -76,7 +77,7 @@ export function SessionManagement() {
       setSessions(sessionsWithCurrent);
     } catch (error: unknown) {
       logger.error('Failed to load sessions', error, { component: 'SessionManagement' });
-      toast.error('Failed to load active sessions');
+      toast.error('Failed to load active sessions', { description: humanizeError(error) });
     } finally {
       setLoading(false);
     }
@@ -102,7 +103,7 @@ export function SessionManagement() {
       loadSessions();
     } catch (error: unknown) {
       logger.error('Failed to revoke session', error, { component: 'SessionManagement' });
-      toast.error('Failed to revoke session');
+      toast.error('Failed to revoke session', { description: humanizeError(error) });
     } finally {
       setRevoking(null);
     }
@@ -131,7 +132,7 @@ export function SessionManagement() {
       loadSessions();
     } catch (error: unknown) {
       logger.error('Failed to revoke all sessions', error, { component: 'SessionManagement' });
-      toast.error('Failed to revoke sessions');
+      toast.error('Failed to revoke sessions', { description: humanizeError(error) });
     } finally {
       setRevoking(null);
     }

@@ -15,7 +15,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { 
+import { humanizeError } from '@/lib/humanizeError';
+import {
   Building2, 
   Upload, 
   FileText, 
@@ -190,7 +191,7 @@ export function BusinessVerificationCard() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to submit business profile', error, { component: 'BusinessVerificationCard' });
-      toast.error(error instanceof Error ? error.message : 'Failed to submit business profile. Please try again.');
+      toast.error('Failed to submit business profile', { description: humanizeError(error) });
     },
   });
 

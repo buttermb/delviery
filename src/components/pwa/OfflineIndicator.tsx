@@ -8,6 +8,7 @@ import { Wifi, WifiOff, Cloud, CloudOff, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface OfflineIndicatorProps {
   /** Position of the indicator */
@@ -86,8 +87,8 @@ export function OfflineIndicator({
       // Force refetch all queries
       window.dispatchEvent(new Event('online'));
       toast.success('Synced successfully');
-    } catch {
-      toast.error('Sync failed. Please try again.');
+    } catch (error) {
+      toast.error('Sync failed', { description: humanizeError(error) });
     } finally {
       setIsSyncing(false);
     }
