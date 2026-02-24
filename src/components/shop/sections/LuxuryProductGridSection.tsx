@@ -11,6 +11,7 @@ import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { ProductQuickViewModal } from './ProductQuickViewModal';
 import { CartPreviewPopup } from '../CartPreviewPopup';
@@ -152,8 +153,8 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
           return next;
         });
       }, 2000);
-    } catch {
-      toast.error('Failed to add', { description: 'Please try again' });
+    } catch (error) {
+      toast.error('Failed to add', { description: humanizeError(error) });
     }
   };
 

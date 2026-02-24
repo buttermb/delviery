@@ -8,11 +8,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Download, FileSpreadsheet, FileJson, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { 
-  exportToCSV, 
-  exportToJSON, 
-  ExportColumn, 
-  generateExportFilename 
+import { humanizeError } from '@/lib/humanizeError';
+import {
+  exportToCSV,
+  exportToJSON,
+  ExportColumn,
+  generateExportFilename
 } from "@/lib/utils/exportUtils";
 
 interface ExportButtonProps {
@@ -55,8 +56,8 @@ export function ExportButton({
       const exportFilename = generateExportFilename(filename, 'csv');
       exportToCSV(data, exportColumns, exportFilename);
       toast.success(`Exported ${data.length} rows to CSV`);
-    } catch {
-      toast.error("Failed to export CSV");
+    } catch (error) {
+      toast.error("Failed to export CSV", { description: humanizeError(error) });
     } finally {
       setIsExporting(false);
     }
@@ -68,8 +69,8 @@ export function ExportButton({
       const exportFilename = generateExportFilename(filename, 'json');
       exportToJSON(data, exportFilename);
       toast.success(`Exported ${data.length} rows to JSON`);
-    } catch {
-      toast.error("Failed to export JSON");
+    } catch (error) {
+      toast.error("Failed to export JSON", { description: humanizeError(error) });
     } finally {
       setIsExporting(false);
     }
@@ -102,8 +103,8 @@ export function ExportButton({
       XLSX.writeFile(wb, generateExportFilename(filename, 'xlsx'));
       
       toast.success(`Exported ${data.length} rows to Excel`);
-    } catch {
-      toast.error("Failed to export Excel");
+    } catch (error) {
+      toast.error("Failed to export Excel", { description: humanizeError(error) });
     } finally {
       setIsExporting(false);
     }

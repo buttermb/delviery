@@ -43,6 +43,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { VisualWorkflowEditor } from './VisualWorkflowEditor';
 import { NodePalette } from './NodePalette';
 import { WorkflowVersionHistory } from './WorkflowVersionHistory';
@@ -102,8 +103,7 @@ export function WorkflowCanvas() {
       if (error) throw error;
       setWorkflows((data as unknown as Workflow[]) || []);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Error loading workflows';
-      toast.error("Error loading workflows");
+      toast.error("Error loading workflows", { description: humanizeError(error) });
     } finally {
       setLoading(false);
     }
@@ -220,8 +220,7 @@ export function WorkflowCanvas() {
 
       loadWorkflows();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Error saving workflow';
-      toast.error("Error saving workflow");
+      toast.error("Error saving workflow", { description: humanizeError(error) });
     }
   };
 
@@ -305,8 +304,7 @@ export function WorkflowCanvas() {
 
       toast.success("Status: ${result?.status || ");
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Execution failed';
-      toast.error("Execution failed");
+      toast.error("Execution failed", { description: humanizeError(error) });
     }
   };
 
@@ -334,8 +332,7 @@ export function WorkflowCanvas() {
 
       toast.success("Click Save to persist changes to database");
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Update failed';
-      toast.error("Update failed");
+      toast.error("Update failed", { description: humanizeError(error) });
     }
   }, [selectedWorkflow]);
 

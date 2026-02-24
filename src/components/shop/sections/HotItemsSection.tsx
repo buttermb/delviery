@@ -31,6 +31,7 @@ import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { CartPreviewPopup } from '../CartPreviewPopup';
 import type { StorefrontHotItem } from '@/types/storefront-hot-items';
 import { formatSmartDate } from '@/lib/formatters';
@@ -123,9 +124,9 @@ export function HotItemsSection({
           return next;
         });
       }, 2000);
-    } catch {
+    } catch (error) {
       toast.error('Failed to add', {
-        description: 'Please try again',
+        description: humanizeError(error),
       });
     }
   };

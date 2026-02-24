@@ -16,6 +16,7 @@ import { sortProductWeights, getDefaultWeight, formatWeight } from "@/utils/prod
 import { cleanProductName } from "@/utils/productName";
 import ReactStars from 'react-rating-stars-component';
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { haptics } from "@/utils/haptics";
 import { useGuestCart } from "@/hooks/useGuestCart";
 import type { Product } from "@/types/product";
@@ -167,9 +168,9 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
         setAdded(false);
         setQuantity(1);
       }, 2000);
-    } catch {
+    } catch (error) {
       haptics.error();
-      toast.error("Failed to add to cart. Please try again.");
+      toast.error("Failed to add to cart. Please try again.", { description: humanizeError(error) });
     } finally {
       setLoading(false);
     }

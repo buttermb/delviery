@@ -281,8 +281,8 @@ export default function IntegrationsSettings() {
     try {
       new URL(newWebhookUrl); // Validate URL
       addWebhookMutation.mutate(newWebhookUrl);
-    } catch {
-      toast.error('Invalid URL');
+    } catch (error) {
+      toast.error('Invalid URL', { description: humanizeError(error) });
     }
   };
 

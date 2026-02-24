@@ -26,6 +26,7 @@ import {
 } from '@/lib/credits';
 import { showCreditDeductionToast } from '@/components/credits/CreditDeductionToast';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // ============================================================================
 // Types
@@ -516,9 +517,9 @@ export function useCreditGatedAction() {
 
       const result = await action();
       return result;
-    } catch {
+    } catch (error) {
       toast.error('Action Failed', {
-        description: 'An unexpected error occurred. Please try again.',
+        description: humanizeError(error),
       });
       return null;
     } finally {

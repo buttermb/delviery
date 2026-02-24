@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 
 type CopyButtonSize = "sm" | "md" | "lg" | "icon";
 type CopyButtonVariant = "default" | "secondary" | "outline" | "ghost";
@@ -31,8 +32,8 @@ export default function CopyButton({
       setCopied(true);
       toast.success(`${label} copied`);
       setTimeout(() => setCopied(false), 1500);
-    } catch {
-      toast.error("Failed to copy");
+    } catch (error) {
+      toast.error("Failed to copy", { description: humanizeError(error) });
     }
   };
 

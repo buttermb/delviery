@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from "@/lib/utils";
 
 interface CopyButtonProps {
@@ -37,8 +38,8 @@ export function CopyButton({
       }
       
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Failed to copy");
+    } catch (error) {
+      toast.error("Failed to copy", { description: humanizeError(error) });
     }
   };
 

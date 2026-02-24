@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 import { FilterDrawer, FilterTriggerButton, type FilterState } from '@/components/shop/FilterDrawer';
 import { useWishlist } from '@/hooks/useWishlist';
@@ -200,8 +201,8 @@ export function ProductCatalogPage() {
           return next;
         });
       }, 2000);
-    } catch {
-      toast.error('Failed to add', { description: 'Please try again' });
+    } catch (error) {
+      toast.error('Failed to add', { description: humanizeError(error) });
     }
   };
 

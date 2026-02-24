@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useIntegrationManager } from '@/hooks/useIntegrationManager';
 import { RefreshCw, CheckCircle2, XCircle, AlertCircle, Settings, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { useState } from 'react';
 import { IntegrationSetupDialog } from './IntegrationSetupDialog';
 import { CustomIntegrationForm } from './CustomIntegrationForm';
@@ -46,9 +47,9 @@ export function IntegrationManager() {
           },
         });
       }
-    } catch {
+    } catch (error) {
       toast.error(`Failed to check ${integrationName} connection`, {
-        description: 'Please try again or check your network connection',
+        description: humanizeError(error),
       });
     } finally {
       setRefreshingId(null);
