@@ -18,7 +18,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCreateDisposableMenu } from '@/hooks/useDisposableMenus';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
-import { useMediaQuery } from '@/hooks/use-media-query';
 import { TEMPLATES, type MenuTemplate } from './MenuTemplates';
 import {
   ChevronDown, ChevronUp, Loader2, Check, Package,
@@ -37,7 +36,6 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
   const { tenant } = useTenantAdminAuth();
   const createMenu = useCreateDisposableMenu();
   const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
-  const _isMobile = useMediaQuery('(max-width: 768px)');
 
   // Template state
   const [selectedTemplate, setSelectedTemplate] = useState<MenuTemplate | null>(null);

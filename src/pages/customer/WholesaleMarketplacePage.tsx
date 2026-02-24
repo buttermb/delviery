@@ -6,7 +6,6 @@ import { logger } from '@/lib/logger';
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,9 +37,7 @@ import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 type CustomerMode = 'retail' | 'wholesale';
 
 export default function WholesaleMarketplacePage() {
-  const { slug: _slug } = useParams<{ slug: string }>();
   const { customer, tenant } = useCustomerAuth();
-  const _navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
   const buyerTenantId = tenantId; // For B2B, the customer's tenant is the buyer

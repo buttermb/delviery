@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +37,6 @@ type CheckoutStep = "cart" | "delivery" | "payment" | "review";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const _location = useLocation();
   const queryClient = useQueryClient();
   const { tenant } = useCustomerAuth();
   const tenantId = tenant?.id;

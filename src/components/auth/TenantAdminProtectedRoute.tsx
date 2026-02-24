@@ -20,8 +20,6 @@ interface TenantAdminProtectedRouteProps {
 const VERIFICATION_TIMEOUT_MS = 5000;
 // Total wait timeout - 15 seconds before skip verification fallback
 const TOTAL_WAIT_TIMEOUT_MS = 15000;
-// Network timeout - 2 seconds (edge function is optimized)
-const _NETWORK_TIMEOUT_MS = 2000;
 // Cache verification results for 2 minutes
 const VERIFICATION_CACHE_DURATION = 2 * 60 * 1000;
 

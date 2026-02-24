@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useIntegrationManager } from '@/hooks/useIntegrationManager';
 import { RefreshCw, CheckCircle2, XCircle, AlertCircle, Settings, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { IntegrationSetupDialog } from './IntegrationSetupDialog';
@@ -17,7 +16,6 @@ import { CustomIntegrationForm } from './CustomIntegrationForm';
 
 export function IntegrationManager() {
   const { getIntegrationsWithStatus, toggleIntegration, refreshConnectionStatus } = useIntegrationManager();
-  const _navigate = useNavigate();
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [setupDialogOpen, setSetupDialogOpen] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<{ id: string; name: string } | null>(null);
@@ -55,13 +53,6 @@ export function IntegrationManager() {
     } finally {
       setRefreshingId(null);
     }
-  };
-
-  const _getStatusIcon = (connected: boolean) => {
-    if (connected) {
-      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-    }
-    return <XCircle className="h-4 w-4 text-muted-foreground" />;
   };
 
   const getStatusBadge = (integration: { id: string; enabled?: boolean; status?: string; connected?: boolean }) => {

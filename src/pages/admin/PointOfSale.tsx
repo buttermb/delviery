@@ -1,6 +1,5 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -56,7 +55,6 @@ interface Customer {
 }
 
 export default function PointOfSale() {
-  const _navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;

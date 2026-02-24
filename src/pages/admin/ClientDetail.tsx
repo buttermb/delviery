@@ -146,10 +146,6 @@ export default function ClientDetail() {
     ? orderData.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) / orderData.length
     : 0;
 
-  const _unpaidOrders = orderData.filter(o =>
-    o.status === "pending" || o.status === "assigned" || o.status === "in_transit"
-  );
-
   // Cast client to any to handle schema mismatches
   const clientData = client as any;
   const displayClient = {
