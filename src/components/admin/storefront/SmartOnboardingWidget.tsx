@@ -46,9 +46,9 @@ export function SmartOnboardingWidget({ productCount, className }: SmartOnboardi
                 image_url: "https://images.unsplash.com/photo-1595964267688-6cdd9c750e33?q=80&w=800&auto=format&fit=crop" // Generic flower image
             };
 
-            const { data, error } = await (supabase
+            const { data, error } = await ((supabase as any)
                 .from('products')
-                .insert(sampleProduct as unknown as Record<string, unknown>)
+                .insert(sampleProduct)
                 .select()
                 .maybeSingle());
 

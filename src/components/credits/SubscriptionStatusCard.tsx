@@ -128,7 +128,7 @@ export function SubscriptionStatusCard({ className }: SubscriptionStatusCardProp
       if (!tenantId) return null;
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('credit_subscriptions')
           .select('id, status, credits_per_period, period_type, credits_remaining_this_period, current_period_end, current_period_start, cancel_at_period_end, cancelled_at')
           .eq('tenant_id', tenantId)

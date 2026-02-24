@@ -140,7 +140,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_payments')
         .select(`
           *,
@@ -169,7 +169,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('purchase_orders')
         .select('id, po_number, total, payment_status, paid_amount')
         .eq('account_id', tenant.id)
@@ -241,7 +241,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
     mutationFn: async (values: PaymentFormValues) => {
       if (!tenant?.id) throw new Error('No tenant ID');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vendor_payments')
         .insert({
           tenant_id: tenant.id,

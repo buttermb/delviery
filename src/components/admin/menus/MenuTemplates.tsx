@@ -265,7 +265,7 @@ const useMenuTemplates = (tenantId?: string) => {
     queryFn: async (): Promise<MenuTemplate[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await (supabase as any)
         .from('menu_templates')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -281,7 +281,7 @@ const useMenuTemplates = (tenantId?: string) => {
         tenantId: template.tenant_id as string,
         name: template.name as string,
         description: (template.description ?? '') as string,
-        category: (template.category || 'custom') as string,
+        category: (template.category || 'custom') as MenuTemplate['category'],
         config: template.config as unknown as MenuTemplateConfig,
         isDefault: template.is_default as boolean,
         isShared: template.is_shared as boolean,

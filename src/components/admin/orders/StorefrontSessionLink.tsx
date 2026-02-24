@@ -127,7 +127,7 @@ function useSessionDetails(sessionId: string | null | undefined, tenantId: strin
       if (!sessionId || !tenantId) return null;
 
       // Try the RPC function first
-      const { data: rpcData, error: rpcError } = await supabase.rpc(
+      const { data: rpcData, error: rpcError } = await (supabase as any).rpc(
         'get_storefront_session_details',
         {
           p_session_id: sessionId,
@@ -148,7 +148,7 @@ function useSessionDetails(sessionId: string | null | undefined, tenantId: strin
       }
 
       // Fallback to direct query
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('storefront_sessions')
         .select('*')
         .eq('id', sessionId)
@@ -169,7 +169,7 @@ function useSessionDetails(sessionId: string | null | undefined, tenantId: strin
       // Fetch menu info if available
       let menuInfo: MenuInfo | undefined;
       if (data.menu_id) {
-        const { data: menu } = await supabase
+        const { data: menu } = await (supabase as any)
           .from('disposable_menus')
           .select('id, name, created_at, expires_at, status')
           .eq('id', data.menu_id)

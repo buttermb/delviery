@@ -71,7 +71,7 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
         if (!existing || new Date(m.timestamp) > new Date(existing.metadata?.timestamp as string || 0)) {
           metricsByType.set(m.metric_type, {
             value: Number(m.value),
-            metadata: { ...m.metadata, timestamp: m.timestamp },
+            metadata: { ...(m.metadata as Record<string, unknown>), timestamp: m.timestamp },
           });
         }
       });

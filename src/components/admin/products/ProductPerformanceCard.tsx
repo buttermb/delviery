@@ -136,7 +136,7 @@ function useProductPerformance(productId: string | undefined, productCategory?: 
       const date90dAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
 
       // Fetch order items for this product in the last 90 days
-      const { data: orderItems, error: orderItemsError } = await supabase
+      const { data: orderItems, error: orderItemsError } = await (supabase as any)
         .from('order_items')
         .select(`
           quantity,
@@ -311,7 +311,7 @@ function useProductPerformance(productId: string | undefined, productCategory?: 
           const categoryProductIds = categoryProducts.map(p => p.id);
 
           // Get order items for category products in last 30 days
-          const { data: categoryItems } = await supabase
+          const { data: categoryItems } = await (supabase as any)
             .from('order_items')
             .select(`
               quantity,
