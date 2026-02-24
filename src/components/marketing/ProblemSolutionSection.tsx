@@ -44,7 +44,7 @@ const solutions: Solution[] = [
   { icon: LayoutDashboard, text: 'Single unified dashboard' },
   { icon: Sparkles, text: 'Automation saves 15hrs/week' },
   { icon: RefreshCw, text: 'Real-time updates across devices' },
-  { icon: Target, text: 'Streamlined order processing' },
+  { icon: Target, text: 'Automated order processing' },
   { icon: ShieldCheck, text: 'Full regulatory compliance & data security' },
   { icon: BarChart3, text: 'Powerful analytics & insights' },
 ];

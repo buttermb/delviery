@@ -96,7 +96,7 @@ export function generateHotItems(context: BusinessContext): HotItem[] {
   if (context.lastAction === 'product_created') {
     hotItems.push({
       id: 'hot-add-to-menu',
-      name: '✨ Add to Menu',
+      name: '📋 Add to Menu',
       path: '/admin/disposable-menus',
       icon: Share2,
       priority: 'normal',

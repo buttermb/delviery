@@ -56,7 +56,7 @@ const features = [
     {
         icon: Database,
         title: "Multi-State Support",
-        description: "Operating in multiple states? FloraIQ handles different regulatory frameworks seamlessly—Metrc, BioTrack, and more."
+        description: "Operating in multiple states? FloraIQ automatically handles different regulatory frameworks—Metrc, BioTrack, and more."
     },
     {
         icon: Bell,

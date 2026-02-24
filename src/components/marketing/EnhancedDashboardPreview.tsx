@@ -20,9 +20,7 @@ export function EnhancedDashboardPreview() {
   }, []);
 
   return (
-    <div className="relative w-full max-w-[900px] mx-auto group">
-      {/* Screen Glow Effect */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-secondary))] rounded-xl blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-1000" />
+    <div className="relative w-full group">
 
       {/* Unified Dashboard Panel */}
       <div className="flex flex-col sm:flex-row w-full h-full bg-card/80 backdrop-blur-sm shadow-lg overflow-hidden relative z-10">

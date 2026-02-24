@@ -159,7 +159,7 @@ export default function InvitationAcceptPage() {
 
   if (error) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 p-4">
+      <div className="min-h-dvh flex items-center justify-center bg-slate-50 p-4">
         <SEOHead
           title="Invalid Invitation"
           description="This invitation is invalid or has expired"
@@ -185,7 +185,7 @@ export default function InvitationAcceptPage() {
   }
 
   return (
-    <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 p-4">
+    <div className="min-h-dvh flex items-center justify-center bg-slate-50 p-4">
       <SEOHead
         title={`Join ${invitation?.tenant.business_name}`}
         description="Accept your team invitation"

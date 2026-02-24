@@ -66,13 +66,13 @@ export default function Careers() {
     <div className="min-h-dvh bg-background">
       <SEOHead
         title="Careers - Join Our Team | FloraIQ"
-        description="Join FloraIQ and help revolutionize wholesale distribution management. Explore open positions and build your career with us."
+        description="Join FloraIQ and help improve wholesale distribution management. Explore open positions and build your career with us."
       />
 
       <MarketingNav />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-b from-primary/5 to-background">
+      <section className="pt-32 pb-20 bg-slate-50">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <Badge className="mb-4">We're Hiring</Badge>

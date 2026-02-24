@@ -332,7 +332,7 @@ export default function MarketingLanding() {
         <Card className="p-12 text-center bg-gradient-primary text-primary-foreground">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of operations running on CannabisCRM
+            Join thousands of operations running on FloraIQ
           </p>
           <Link to="/saas/signup">
             <Button size="lg" variant="secondary" className="text-lg px-8">
@@ -381,7 +381,7 @@ export default function MarketingLanding() {
             </div>
           </div>
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            © 2024 CannabisCRM. All rights reserved.
+            © 2025 FloraIQ. All rights reserved.
           </div>
         </div>
       </footer>

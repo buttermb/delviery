@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <AlertCircle className="h-4 w-4" />
-              Last updated: November 3, 2024
+              Last updated: November 3, 2025
             </div>
           </CardContent>
         </Card>

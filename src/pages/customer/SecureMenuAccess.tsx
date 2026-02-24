@@ -145,7 +145,7 @@ function CodeInput({
           disabled={disabled}
           className={cn(
             'w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-mono font-bold',
-            'border-2 rounded-lg bg-background/80 backdrop-blur-sm',
+            'border-2 rounded-lg bg-background/80 ',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary',
             'transition-colors duration-200',
             value[index] ? 'border-primary/50 bg-primary/5' : 'border-muted-foreground/30',
@@ -298,13 +298,13 @@ function ProductCard({
     <Card
       className={cn(
         'overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] group',
-        'bg-white/5 backdrop-blur-sm border-white/10',
+        'bg-white/5  border-white/10',
         cartQuantity > 0 && 'ring-2 ring-primary/50 border-primary/30'
       )}
     >
       {/* Product Image */}
       {showImages && imageUrl && (
-        <div className="relative h-48 overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900">
+        <div className="relative h-48 overflow-hidden bg-slate-50">
           <img
             src={imageUrl}
             alt={product.name}
@@ -411,7 +411,7 @@ function ProductCard({
               size="sm"
               onClick={handleAdd}
               className={cn(
-                'bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90',
+                'bg-slate-50 hover: hover:',
                 'transition-all duration-200',
                 isAdding && 'scale-110'
               )}
@@ -466,7 +466,7 @@ function CartSummary({
   if (totalItems === 0) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black/95 via-black/90 to-transparent backdrop-blur-lg">
+    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-slate-50 ">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between bg-white/10 rounded-xl p-4 border border-white/10 shadow-2xl">
           <div className="flex items-center gap-3">
@@ -494,7 +494,7 @@ function CartSummary({
             </Button>
             <Button
               onClick={onCheckout}
-              className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold px-6"
+              className="bg-slate-50 hover: hover: text-white font-semibold px-6"
             >
               Checkout
             </Button>
@@ -581,10 +581,10 @@ function OrderConfirmation({
   if (orderSuccess) {
     return (
       <div className="min-h-dvh flex items-center justify-center p-4">
-        <Card className="max-w-md w-full p-8 bg-white/10 backdrop-blur-xl border-white/20 text-center space-y-6">
+        <Card className="max-w-md w-full p-8 bg-white/10  border-white/20 text-center space-y-6">
           <div className="relative inline-block mx-auto">
             <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl animate-pulse" />
-            <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+            <div className="relative w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center">
               <CheckCircle className="h-10 w-10 text-white" />
             </div>
           </div>
@@ -630,7 +630,7 @@ function OrderConfirmation({
       <h2 className="text-2xl font-bold text-white">Complete Your Order</h2>
 
       {/* Order Summary */}
-      <Card className="bg-white/5 backdrop-blur-sm border-white/10 p-4 space-y-3">
+      <Card className="bg-white/5  border-white/10 p-4 space-y-3">
         <h3 className="font-semibold text-white flex items-center gap-2">
           <Package className="h-4 w-4" />
           Order Summary
@@ -654,7 +654,7 @@ function OrderConfirmation({
       </Card>
 
       {/* Contact Info */}
-      <Card className="bg-white/5 backdrop-blur-sm border-white/10 p-4 space-y-4">
+      <Card className="bg-white/5  border-white/10 p-4 space-y-4">
         <h3 className="font-semibold text-white">Contact Information</h3>
         <div className="space-y-3">
           <div>
@@ -692,7 +692,7 @@ function OrderConfirmation({
       <Button
         onClick={handleSubmitOrder}
         disabled={!contactPhone.trim() || submitting}
-        className="w-full h-14 text-lg bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
+        className="w-full h-14 text-lg bg-slate-50 hover: hover:"
       >
         {submitting ? (
           <>
@@ -790,7 +790,7 @@ function MenuBrowseView({
   return (
     <div className="pb-32">
       {/* Menu Header */}
-      <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/10">
+      <div className="sticky top-0 z-40 bg-black/80  border-b border-white/10">
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
@@ -882,7 +882,7 @@ function MenuUnavailablePage({
   return (
     <div className="min-h-dvh relative overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+      <div className="absolute inset-0 bg-slate-50" />
 
       {/* Content */}
       <div className="relative z-10 min-h-dvh flex items-center justify-center p-4">
@@ -896,8 +896,8 @@ function MenuUnavailablePage({
             <div className={cn(
               'relative w-24 h-24 mx-auto rounded-full flex items-center justify-center',
               isExpired
-                ? 'bg-gradient-to-br from-amber-500 to-orange-600'
-                : 'bg-gradient-to-br from-red-500 to-rose-600'
+                ? 'bg-slate-50'
+                : 'bg-slate-50'
             )}>
               <Icon className="h-12 w-12 text-white" />
             </div>
@@ -910,7 +910,7 @@ function MenuUnavailablePage({
           </div>
 
           {/* Contact CTA */}
-          <Card className="p-6 bg-white/5 backdrop-blur-xl border-white/10">
+          <Card className="p-6 bg-white/5  border-white/10">
             <p className="text-white/70 text-sm">
               Please contact the business for an updated link.
             </p>
@@ -1101,7 +1101,7 @@ export const SecureMenuAccess = () => {
   // Show inline menu browse when access granted
   if (menuData) {
     return (
-      <div className="min-h-dvh bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-dvh bg-slate-50">
         <MenuBrowseView menuData={menuData} token={token ?? ''} />
       </div>
     );
@@ -1110,7 +1110,7 @@ export const SecureMenuAccess = () => {
   return (
     <div className="min-h-dvh relative overflow-hidden">
       {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="absolute inset-0 bg-slate-50">
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-blob" />
           <div className="absolute top-0 -right-4 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000" />
@@ -1125,7 +1125,7 @@ export const SecureMenuAccess = () => {
           <div className="text-center space-y-4">
             <div className="relative inline-block">
               <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-              <div className="relative w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-2xl shadow-primary/30">
+              <div className="relative w-20 h-20 mx-auto rounded-full bg-slate-50 flex items-center justify-center shadow-2xl shadow-primary/30">
                 <Shield className="h-10 w-10 text-white" />
               </div>
             </div>
@@ -1143,7 +1143,7 @@ export const SecureMenuAccess = () => {
           {/* Main Card */}
           <Card
             className={cn(
-              'p-6 sm:p-8 bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl',
+              'p-6 sm:p-8 bg-white/10  border-white/20 shadow-2xl',
               shakeError && 'animate-shake'
             )}
           >
@@ -1216,7 +1216,7 @@ export const SecureMenuAccess = () => {
 
                 <Button
                   onClick={handleSubmit}
-                  className="w-full h-12 text-lg bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                  className="w-full h-12 text-lg bg-slate-50 hover: hover:"
                   disabled={accessCode.length !== 8 || loading}
                 >
                   {loading ? (
@@ -1284,7 +1284,7 @@ export const SecureMenuAccess = () => {
           <div className="flex flex-wrap justify-center gap-4 text-white/50 text-xs">
             <div className="flex items-center gap-1.5">
               <Shield className="h-3.5 w-3.5" />
-              <span>End-to-End Encrypted</span>
+              <span>End- Encrypted</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Fingerprint className="h-3.5 w-3.5" />

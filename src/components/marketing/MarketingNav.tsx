@@ -59,7 +59,7 @@ export function MarketingNav() {
           </Link>
           <Link to="/signup?plan=free">
             <Button className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white text-sm uppercase tracking-wide font-bold rounded-lg px-6 h-11 transition-all">
-              Book Demo
+              Sign Up
             </Button>
           </Link>
         </div>
@@ -67,7 +67,7 @@ export function MarketingNav() {
         <div className="flex md:hidden items-center gap-2">
           <Link to="/signup?plan=free">
             <Button size="sm" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white text-xs uppercase tracking-wide font-bold px-4 h-10 rounded-lg">
-              Book Demo
+              Sign Up
             </Button>
           </Link>
           <button
@@ -121,7 +121,7 @@ export function MarketingNav() {
               </Link>
               <Link to="/signup?plan=free" className="block" onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full rounded-lg bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-12 text-sm uppercase tracking-wide font-bold">
-                  Book Demo
+                  Sign Up
                 </Button>
               </Link>
             </div>

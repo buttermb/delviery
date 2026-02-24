@@ -171,7 +171,7 @@ export default function CustomerDashboardPage() {
         </div>
 
         {/* Wholesale Marketplace Quick Access */}
-        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 shadow-sm">
+        <Card className="bg-slate-50 border-primary/20 shadow-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-[hsl(var(--customer-text))] flex items-center gap-2">
@@ -222,7 +222,7 @@ export default function CustomerDashboardPage() {
         </Card>
 
         {/* Community Forum Banner */}
-        <Card className="bg-gradient-to-br from-[hsl(var(--customer-accent))]/10 to-[hsl(var(--customer-accent))]/5 border-[hsl(var(--customer-accent))]/20 shadow-sm">
+        <Card className="bg-slate-50(var(--customer-accent))]/10 (var(--customer-accent))]/5 border-[hsl(var(--customer-accent))]/20 shadow-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-[hsl(var(--customer-text))] flex items-center gap-2">
@@ -273,7 +273,7 @@ export default function CustomerDashboardPage() {
         </Card>
 
         {/* Retail Shopping Quick Access */}
-        <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20 shadow-sm">
+        <Card className="bg-slate-50 border-secondary/20 shadow-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-[hsl(var(--customer-text))] flex items-center gap-2">
@@ -383,7 +383,7 @@ export default function CustomerDashboardPage() {
                 <p className="text-sm text-[hsl(var(--customer-text-light))] mb-4">
                   Browse menus to place your first order
                 </p>
-                <Button className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white">
+                <Button className="bg-slate-50(var(--customer-primary))] (var(--customer-secondary))] hover:opacity-90 text-white">
                   Browse Menus <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>

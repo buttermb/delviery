@@ -101,7 +101,7 @@ export function StorefrontDemo() {
                             Wholesale <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[hsl(var(--marketing-primary))] to-purple-600">Marketplace</span>
                         </h2>
-                        <p className="text-slate-500 max-w-md">Access real-time inventory from top cultivators. Automated compliance and streamlined ordering.</p>
+                        <p className="text-slate-500 max-w-md">Access real-time inventory from top cultivators. Automated compliance and direct ordering.</p>
                     </div>
                     <div className="flex gap-3">
                         <Button variant="outline" className="rounded-full border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm gap-2">

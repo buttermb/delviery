@@ -125,28 +125,21 @@ export function ModernHero() {
           </div>
 
           {/* Centered Product Visual (Browser Mockup) */}
-          <div className="relative z-20 -mt-10 lg:-mt-24 w-full h-[350px] sm:h-[450px] md:h-[600px] lg:h-[700px]">
-            <div className="absolute left-1/2 top-0 origin-top transform -translate-x-1/2 scale-[0.35] sm:scale-[0.55] md:scale-[0.75] lg:scale-100 w-[1100px] transition-transform duration-300">
+          <div className="relative z-20 -mt-10 lg:-mt-24 w-full h-[280px] sm:h-[380px] md:h-[520px] lg:h-[680px]">
+            <div className="absolute left-1/2 top-0 origin-top transform -translate-x-1/2 scale-[0.40] sm:scale-[0.55] md:scale-[0.75] lg:scale-100 w-[1100px] transition-transform duration-300">
               <div className="relative rounded-xl border border-slate-200/60 bg-white shadow-[0_20px_60px_-15px_rgba(46,22,121,0.2)] overflow-hidden">
                 {/* Browser Header */}
-                <div className="h-10 bg-white/80 backdrop-blur border-b border-slate-200/60 flex items-center px-4 gap-2">
+                <div className="h-8 bg-white/80 backdrop-blur border-b border-slate-200/60 flex items-center px-4 gap-2">
                   <div className="flex gap-1.5 opacity-50">
                     <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
                     <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
                     <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
                   </div>
-                  <div className="flex-1 text-center">
-                    <div className="inline-block px-3 py-0.5 rounded-md bg-slate-100 border border-slate-200/60 text-[10px] text-slate-500 font-medium">
-                      app.floraiq.com
-                    </div>
-                  </div>
                 </div>
 
                 {/* Interactive Dashboard Preview */}
-                <div className="bg-slate-50 relative flex items-start justify-center p-0 w-full overflow-hidden">
-                  <div className="w-full min-h-[600px]">
-                    <EnhancedDashboardPreview />
-                  </div>
+                <div className="bg-slate-50 relative w-full overflow-hidden">
+                  <EnhancedDashboardPreview />
                 </div>
               </div>
             </div>
