@@ -5,8 +5,8 @@
 
 import { Button } from '@/components/ui/button';
 import { Package, FileText, Truck, Menu } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 
 interface QuickAction {
   label: string;
@@ -24,31 +24,31 @@ const defaultActions: QuickAction[] = [
   {
     label: 'New Order',
     icon: <FileText className="h-4 w-4" />,
-    href: '/admin/big-plug-order',
+    href: 'big-plug-order',
     variant: 'default',
   },
   {
     label: 'Create Menu',
     icon: <Menu className="h-4 w-4" />,
-    href: '/admin/disposable-menus',
+    href: 'disposable-menus',
     variant: 'default',
   },
   {
     label: 'Receive Inventory',
     icon: <Package className="h-4 w-4" />,
-    href: '/admin/operations/receiving',
+    href: 'operations/receiving',
     variant: 'outline',
   },
   {
     label: 'Create Transfer',
     icon: <Truck className="h-4 w-4" />,
-    href: '/admin/inventory/dispatch',
+    href: 'inventory/dispatch',
     variant: 'outline',
   },
 ];
 
 export function QuickActions({ actions = defaultActions, className }: QuickActionsProps) {
-  const navigate = useNavigate();
+  const { navigateToAdmin } = useTenantNavigation();
 
   return (
     <div className={cn('flex items-center gap-2 flex-wrap', className)}>
@@ -56,7 +56,7 @@ export function QuickActions({ actions = defaultActions, className }: QuickActio
         <Button
           key={index}
           variant={action.variant || 'default'}
-          onClick={() => navigate(action.href)}
+          onClick={() => navigateToAdmin(action.href)}
           className="gap-2"
         >
           {action.icon}
