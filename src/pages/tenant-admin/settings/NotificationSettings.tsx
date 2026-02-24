@@ -65,7 +65,7 @@ const CHANNELS = [
 ] as const;
 
 export default function NotificationSettings() {
-  useTenantAdminAuth();
+  const { admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -78,20 +78,20 @@ export default function NotificationSettings() {
   // - This is a simplification for persistence. Ideally we'd have a JSON column.
 
   const { data: preferences, isLoading } = useQuery({
-    queryKey: ['notification-preferences'],
+    queryKey: ['notification-preferences', admin?.id],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      if (!admin?.id) return null;
 
       const { data, error } = await supabase
         .from('notification_preferences')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', admin.id)
         .maybeSingle();
 
       if (error) throw error;
       return data;
     },
+    enabled: !!admin?.id,
   });
 
   // Sync state from DB when loaded
@@ -133,8 +133,7 @@ export default function NotificationSettings() {
 
   const updatePreferencesMutation = useMutation({
     mutationFn: async (newSettings: NotificationSettings) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      if (!admin?.id) throw new Error("No admin user found");
 
       setSaveStatus('saving');
 
@@ -149,7 +148,7 @@ export default function NotificationSettings() {
       const pushAll = newSettings.orders.push;
 
       const payload = {
-        user_id: user.id,
+        user_id: admin.id,
         email_enabled: emailEnabled,
         email_all_updates: emailAll,
         sms_enabled: smsEnabled,
@@ -169,7 +168,7 @@ export default function NotificationSettings() {
     onSuccess: () => {
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
-      queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
+      queryClient.invalidateQueries({ queryKey: ['notification-preferences', admin?.id] });
     },
     onError: (err) => {
       setSaveStatus('error');
