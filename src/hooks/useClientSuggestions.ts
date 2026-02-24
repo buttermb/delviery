@@ -95,10 +95,10 @@ export function useClientSuggestions() {
             ...client,
             last_order_date: orders?.[0]?.created_at,
             last_order_amount: orders?.[0]?.total_amount,
-            order_count: orders?.length || 0,
+            order_count: orders?.length ?? 0,
             order_frequency_days: orderFrequencyDays,
             days_since_last_order: daysSinceLastOrder,
-            total_order_value: orders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0,
+            total_order_value: orders?.reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0) ?? 0,
           };
         })
       );

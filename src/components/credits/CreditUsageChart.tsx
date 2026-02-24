@@ -132,7 +132,7 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
         totalUsed,
         prevTotal,
         changePercent,
-        transactionCount: transactions?.length || 0,
+        transactionCount: transactions?.length ?? 0,
       };
     },
     enabled: !!tenant?.id,

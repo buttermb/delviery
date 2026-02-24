@@ -242,7 +242,7 @@ export function CreditUsageStats({
           dailyUsage,
           avgDailyUsage: Math.round(avgDailyUsage),
           daysUntilDepletion,
-          transactionCount: transactions?.length || 0,
+          transactionCount: transactions?.length ?? 0,
         };
       } catch (error) {
         logger.error('Failed to fetch credit usage stats', { error });

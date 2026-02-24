@@ -356,16 +356,6 @@ export interface InviteFormValues {
 }
 
 /**
- * Dashboard metrics
- */
-export interface CRMDashboardMetrics {
-    total_open_balance: number;
-    active_clients_count: number;
-    pre_orders_count: number;
-    returns_refunds_count: number;
-}
-
-/**
  * Client portal authentication
  */
 export interface ClientPortalAuth {

@@ -87,7 +87,7 @@ export function ConversationList({
 
                     return {
                         ...conv,
-                        unread_count: unreadData?.length || 0,
+                        unread_count: unreadData?.length ?? 0,
                         last_message: lastMessageData?.content || 'No messages yet',
                     } as Conversation;
                 })

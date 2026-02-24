@@ -57,8 +57,8 @@ export const useCRMDashboard = () => {
                 throw invoicesError;
             }
 
-            const activeInvoicesCount = invoices?.length || 0;
-            const activeInvoicesValue = invoices?.reduce((sum, inv) => sum + inv.total, 0) || 0;
+            const activeInvoicesCount = invoices?.length ?? 0;
+            const activeInvoicesValue = invoices?.reduce((sum, inv) => sum + inv.total, 0) ?? 0;
 
             // 3. Pending Pre-Orders
             const { data: preOrders, error: preOrdersError } = await supabase
@@ -72,8 +72,8 @@ export const useCRMDashboard = () => {
                 throw preOrdersError;
             }
 
-            const pendingPreOrdersCount = preOrders?.length || 0;
-            const pendingPreOrdersValue = preOrders?.reduce((sum, po) => sum + po.total, 0) || 0;
+            const pendingPreOrdersCount = preOrders?.length ?? 0;
+            const pendingPreOrdersValue = preOrders?.reduce((sum, po) => sum + po.total, 0) ?? 0;
 
             // 4. Recent Activity (select only needed columns)
             const { data: activity, error: activityError } = await supabase

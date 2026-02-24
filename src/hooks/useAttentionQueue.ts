@@ -358,10 +358,10 @@ export function useAttentionQueue() {
 
   // Get counts for badges
   const counts: AttentionCounts = {
-    critical: data?.criticalCount || 0,
-    important: data?.items?.filter(i => i.priority === 'important').length || 0,
-    info: data?.items?.filter(i => i.priority === 'info').length || 0,
-    total: data?.totalCount || 0,
+    critical: data?.criticalCount ?? 0,
+    important: data?.items?.filter(i => i.priority === 'important').length ?? 0,
+    info: data?.items?.filter(i => i.priority === 'info').length ?? 0,
+    total: data?.totalCount ?? 0,
   };
 
   // Get top N items

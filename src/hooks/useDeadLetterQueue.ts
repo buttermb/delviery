@@ -147,11 +147,11 @@ export function useDeadLetterQueue() {
   });
 
   const stats = {
-    total: entries?.length || 0,
-    failed: entries?.filter(e => e.status === 'failed').length || 0,
-    retrying: entries?.filter(e => e.status === 'retrying').length || 0,
-    resolved: entries?.filter(e => e.status === 'resolved').length || 0,
-    ignored: entries?.filter(e => e.status === 'ignored').length || 0,
+    total: entries?.length ?? 0,
+    failed: entries?.filter(e => e.status === 'failed').length ?? 0,
+    retrying: entries?.filter(e => e.status === 'retrying').length ?? 0,
+    resolved: entries?.filter(e => e.status === 'resolved').length ?? 0,
+    ignored: entries?.filter(e => e.status === 'ignored').length ?? 0,
   };
 
   return {
