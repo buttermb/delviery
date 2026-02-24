@@ -47,7 +47,7 @@ export function SidebarFavorites() {
 
   // Find favorite items from all sections, maintaining order based on favorites array
   const favoriteItems = useMemo(() => {
-    const allItems = safeConfig.flatMap(section => section?.items || []);
+    const allItems = safeConfig.flatMap(section => section?.items ?? []);
 
     // Map favorites to items while preserving favorites order
     return safeFavorites

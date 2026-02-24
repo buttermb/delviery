@@ -313,7 +313,7 @@ export async function generateOrderInvoicePDF({
   doc.setTextColor(50, 50, 50);
   doc.setFont('helvetica', 'normal');
 
-  const lineItems = order.order_items || [];
+  const lineItems = order.order_items ?? [];
   let rowIndex = 0;
 
   for (const item of lineItems) {
@@ -831,7 +831,7 @@ export function useOrderInvoiceSave() {
       const total = order.total_amount;
 
       // Convert order items to invoice line items
-      const lineItems: InvoiceLineItem[] = (order.order_items || []).map((item) => ({
+      const lineItems: InvoiceLineItem[] = (order.order_items ?? []).map((item) => ({
         description: item.product_name || item.products?.name || 'Item',
         quantity: item.quantity,
         unit_price: item.price,

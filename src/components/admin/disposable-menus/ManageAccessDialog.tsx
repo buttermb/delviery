@@ -42,9 +42,9 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
   const { data: whitelist, refetch } = useMenuWhitelist(menu.id);
   const manageWhitelist = useManageWhitelist();
 
-  const activeCustomers = whitelist?.filter(w => w.status === 'active') || [];
-  const pendingCustomers = whitelist?.filter(w => w.status === 'pending') || [];
-  const blockedCustomers = whitelist?.filter(w => w.status === 'blocked' || w.status === 'revoked') || [];
+  const activeCustomers = whitelist?.filter(w => w.status === 'active') ?? [];
+  const pendingCustomers = whitelist?.filter(w => w.status === 'pending') ?? [];
+  const blockedCustomers = whitelist?.filter(w => w.status === 'blocked' || w.status === 'revoked') ?? [];
 
   const handleAddCustomer = async () => {
     if (!customerName || !customerPhone) return;

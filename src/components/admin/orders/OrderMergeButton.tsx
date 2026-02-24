@@ -98,7 +98,7 @@ export function OrderMergeDialog({
   const mergeableOrders = useMemo(() => {
     const groups = Object.values(ordersByCustomer);
     const largestSameCustomerGroup = groups.find(g => g.length >= 2);
-    return largestSameCustomerGroup || [];
+    return largestSameCustomerGroup ?? [];
   }, [ordersByCustomer]);
 
   // Can we merge? Need at least 2 orders from same customer
@@ -411,7 +411,7 @@ export function OrderMergeButton({
   const mergeableOrders = useMemo(() => {
     const groups = Object.values(ordersByCustomer);
     const largestSameCustomerGroup = groups.find(g => g.length >= 2);
-    return largestSameCustomerGroup || [];
+    return largestSameCustomerGroup ?? [];
   }, [ordersByCustomer]);
 
   // Can we merge? Need at least 2 orders from same customer

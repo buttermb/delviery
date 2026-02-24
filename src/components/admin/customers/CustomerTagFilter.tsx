@@ -40,7 +40,7 @@ export function CustomerTagFilter({
   const [open, setOpen] = useState(false);
   const { data: tags, isLoading } = useTags();
 
-  const selectedTags = tags?.filter((tag) => selectedTagIds.includes(tag.id)) || [];
+  const selectedTags = tags?.filter((tag) => selectedTagIds.includes(tag.id)) ?? [];
 
   const toggleTag = (tagId: string) => {
     if (selectedTagIds.includes(tagId)) {

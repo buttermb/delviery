@@ -52,7 +52,7 @@ export function ProductTagInput({ productId, className }: ProductTagInputProps) 
 
   // Get assigned tag IDs
   const assignedTagIds = useMemo(() => {
-    return new Set(assignments?.map((a) => a.tag_id) || []);
+    return new Set(assignments?.map((a) => a.tag_id) ?? []);
   }, [assignments]);
 
   // Get assigned tags with full data

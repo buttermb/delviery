@@ -77,7 +77,7 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
         throw error;
       }
 
-      return (data || []) as Product[];
+      return (data ?? []) as Product[];
     },
     enabled: !!tenant?.id && !!vendorName,
   });

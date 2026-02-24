@@ -71,7 +71,7 @@ export function AlertsWidget() {
         return [];
       }
 
-      return (data || []) as Alert[];
+      return (data ?? []) as Alert[];
     },
     enabled: !!tenant?.id,
     staleTime: 10000,

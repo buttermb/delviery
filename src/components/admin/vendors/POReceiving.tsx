@@ -133,7 +133,7 @@ export function POReceiving({
         return [];
       }
 
-      return (data || []) as (PurchaseOrderItem & {
+      return (data ?? []) as (PurchaseOrderItem & {
         product: { id: string; name: string; sku: string | null; barcode: string | null; stock_quantity: number } | null;
       })[];
     },

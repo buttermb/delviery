@@ -191,7 +191,7 @@ export function OrderRefundModal({
 
   if (!order) return null;
 
-  const orderItems = order.items || [];
+  const orderItems = order.items ?? [];
 
   return (
     <>

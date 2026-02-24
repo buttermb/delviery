@@ -126,7 +126,7 @@ export function DuplicateOrderButton({
       }
 
       const stockMap = new Map<string, number>();
-      (products || []).forEach(p => {
+      (products ?? []).forEach(p => {
         stockMap.set(p.id, p.stock_quantity ?? 0);
       });
 

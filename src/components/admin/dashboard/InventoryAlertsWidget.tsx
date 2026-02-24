@@ -49,7 +49,7 @@ export function InventoryAlertsWidget() {
       if (error) logger.error('Failed to fetch low stock products', error, { component: 'InventoryAlertsWidget' });
 
       // Map to AlertRow interface for compatibility
-      return (data || []).map(p => ({
+      return (data ?? []).map(p => ({
         product_name: p.name,
         quantity_lbs: p.stock_quantity,
         warehouse_location: p.category || 'Unknown'

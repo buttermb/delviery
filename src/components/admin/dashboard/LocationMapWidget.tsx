@@ -63,7 +63,7 @@ export function LocationMapWidget() {
 
       if (inventoryError) logger.error('Failed to fetch inventory for location map', inventoryError, { component: 'LocationMapWidget' });
 
-      const warehouses = (inventory || []).reduce((acc: Record<string, { lbs: number; count: number }>, item: InventoryItem) => {
+      const warehouses = (inventory ?? []).reduce((acc: Record<string, { lbs: number; count: number }>, item: InventoryItem) => {
         const wh = item.category || 'Uncategorized';
         if (!acc[wh]) {
           acc[wh] = { lbs: 0, count: 0 };
@@ -96,7 +96,7 @@ export function LocationMapWidget() {
           lng: BASE_LNG + getDeterministicOffset(name + '_lng'),
           isEstimated: true,
         })),
-        runners: (runners || []).map((runner: { id: string; full_name: string; status: string; current_lat: number | null; current_lng: number | null }) => ({
+        runners: (runners ?? []).map((runner: { id: string; full_name: string; status: string; current_lat: number | null; current_lng: number | null }) => ({
           id: runner.id,
           full_name: runner.full_name,
           status: runner.status,

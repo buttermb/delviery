@@ -126,7 +126,7 @@ export default function TeamManagement() {
         is_owner: true,
       };
 
-      const members = (tenantUsers || []).map((user): TeamMember => ({
+      const members = (tenantUsers ?? []).map((user): TeamMember => ({
         id: user.id,
         user_id: user.user_id || '',
         email: user.email,
@@ -165,7 +165,7 @@ export default function TeamManagement() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      return (data?.invitations || []) as Invitation[];
+      return (data?.invitations ?? []) as Invitation[];
     },
     enabled: !!tenant?.id,
   });

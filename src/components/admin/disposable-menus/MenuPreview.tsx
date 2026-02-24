@@ -97,7 +97,7 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
   );
 
   // Parse products from fetched data
-  const products = (menuProducts || []).map(mp => {
+  const products = (menuProducts ?? []).map(mp => {
     const productData = mp.product;
     if (!productData) return null;
     return {

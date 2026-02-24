@@ -70,7 +70,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
         return [];
       }
 
-      return (data || []) as PurchaseOrderItem[];
+      return (data ?? []) as PurchaseOrderItem[];
     },
     enabled: open && !!purchaseOrder.id,
   });
@@ -377,7 +377,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
         open={receiveDialogOpen}
         onOpenChange={setReceiveDialogOpen}
         purchaseOrder={purchaseOrder}
-        items={items || []}
+        items={items ?? []}
         onSuccess={() => {
           onOpenChange(false);
         }}

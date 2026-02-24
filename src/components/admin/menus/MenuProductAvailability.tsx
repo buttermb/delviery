@@ -695,7 +695,7 @@ export function MenuProductAvailability({
   const rulesByProduct = useMemo(() => {
     const map = new Map<string, AvailabilityRule[]>();
     for (const rule of allRules) {
-      const existing = map.get(rule.productId) || [];
+      const existing = map.get(rule.productId) ?? [];
       existing.push(rule);
       map.set(rule.productId, existing);
     }
@@ -721,7 +721,7 @@ export function MenuProductAvailability({
   const unavailableCount = useMemo(() => {
     let count = 0;
     for (const product of menuProducts) {
-      const rules = rulesByProduct.get(product.productId) || [];
+      const rules = rulesByProduct.get(product.productId) ?? [];
       const result = evaluateProductAvailability(rules);
       if (!result.isAvailable) count++;
     }
@@ -926,7 +926,7 @@ export function MenuProductAvailability({
               <ProductRuleCard
                 key={product.id}
                 product={product}
-                rules={rulesByProduct.get(product.productId) || []}
+                rules={rulesByProduct.get(product.productId) ?? []}
                 onAddRule={handleAddRule}
                 onEditRule={handleEditRule}
                 onDeleteRule={handleDeleteRule}

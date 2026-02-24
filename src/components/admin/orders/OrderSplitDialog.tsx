@@ -118,7 +118,7 @@ export function OrderSplitDialog({
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const orderItems = order.items || [];
+  const orderItems = order.items ?? [];
 
   // Calculate totals for split and remaining
   const { splitItems, remainingItems, splitTotal, remainingTotal } = useMemo(() => {
@@ -263,7 +263,7 @@ export function OrderSplitDialog({
           metadata: {
             ...(order.metadata || {}),
             split_orders: [
-              ...((order.metadata as Record<string, unknown>)?.split_orders as string[] || []),
+              ...((order.metadata as Record<string, unknown>)?.split_orders as string[] ?? []),
               newOrder.id,
             ],
             last_split_at: new Date().toISOString(),
@@ -576,7 +576,7 @@ export function OrderSplitButton({
 }: OrderSplitButtonProps) {
   const [open, setOpen] = useState(false);
 
-  const orderItems = order.items || [];
+  const orderItems = order.items ?? [];
   const canSplit = orderItems.length >= 2;
 
   return (

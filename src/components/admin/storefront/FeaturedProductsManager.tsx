@@ -207,7 +207,7 @@ export function FeaturedProductsManager({
         });
         throw error;
       }
-      return (data || []) as Product[];
+      return (data ?? []) as Product[];
     },
     enabled: !!tenant?.id,
   });

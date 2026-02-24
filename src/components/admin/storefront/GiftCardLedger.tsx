@@ -66,7 +66,7 @@ export function GiftCardLedger({ storeId, card, onBack }: GiftCardLedgerProps) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as unknown as LedgerEntry[];
+      return (data ?? []) as unknown as LedgerEntry[];
     },
     enabled: !!card.id && !!storeId,
   });

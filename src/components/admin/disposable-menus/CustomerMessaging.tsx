@@ -52,7 +52,7 @@ export const CustomerMessaging = () => {
   }
 
   // Get unique customers from orders using contact_phone
-  const typedOrders = (orders || []) as OrderData[];
+  const typedOrders = (orders ?? []) as OrderData[];
   const customers = typedOrders.reduce((acc: Customer[], order: OrderData) => {
     if (order.contact_phone && !acc.find(c => c.phone === order.contact_phone)) {
       acc.push({

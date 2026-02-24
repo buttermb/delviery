@@ -177,7 +177,7 @@ export function RevenuePredictionWidget() {
 
   // Combine historical and predictions for chart
   const chartData = [
-    ...(historicalData || []).map(d => ({
+    ...(historicalData ?? []).map(d => ({
       date: formatDateForDisplay(d.date),
       actual: d.revenue,
       predicted: null,

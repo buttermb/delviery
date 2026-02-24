@@ -160,7 +160,7 @@ function OrderCard({ order, onStatusChange, isUpdating }: { order: OrderData; on
   const menuName = order.menu?.name || 'Menu';
   const total = Number(order.total_amount || 0);
   const parsedData = order.order_data as Record<string, unknown> | null;
-  const orderItems = (parsedData?.items as unknown[]) || [];
+  const orderItems = (parsedData?.items as unknown[]) ?? [];
   const itemCount = Array.isArray(orderItems) ? orderItems.length : 0;
   const createdAt = order.created_at ? new Date(order.created_at) : new Date();
 

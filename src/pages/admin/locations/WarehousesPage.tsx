@@ -82,7 +82,7 @@ export default function WarehousesPage() {
 
         const warehouseMap = new Map<string, WarehouseLocation>();
 
-        (inventory || []).forEach((item: InventoryItem) => {
+        (inventory ?? []).forEach((item: InventoryItem) => {
           const loc = item.category || 'Uncategorized';
           if (!warehouseMap.has(loc)) {
             warehouseMap.set(loc, {
@@ -280,7 +280,7 @@ export default function WarehousesPage() {
         <Card className="p-6">
           <DataTable
             columns={columns}
-            data={warehouses || []}
+            data={warehouses ?? []}
             loading={isLoading}
             emptyMessage="No warehouses found. Add your first warehouse location!"
           />

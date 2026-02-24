@@ -95,7 +95,7 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
         throw error;
       }
 
-      return (data || []) as PurchaseOrderWithItems[];
+      return (data ?? []) as PurchaseOrderWithItems[];
     },
     enabled: !!tenant?.id && !!vendorId,
   });

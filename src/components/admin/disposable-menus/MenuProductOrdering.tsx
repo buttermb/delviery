@@ -419,7 +419,7 @@ export function MenuProductOrdering({
     const groups: Map<string, OrderedProduct[]> = new Map();
 
     for (const product of orderedProducts) {
-      const existing = groups.get(product.category) || [];
+      const existing = groups.get(product.category) ?? [];
       existing.push(product);
       groups.set(product.category, existing);
     }
@@ -429,7 +429,7 @@ export function MenuProductOrdering({
       .filter(cat => groups.has(cat))
       .map((category, index) => ({
         category,
-        products: (groups.get(category) || []).sort((a, b) => a.displayOrder - b.displayOrder),
+        products: (groups.get(category) ?? []).sort((a, b) => a.displayOrder - b.displayOrder),
         displayOrder: index,
       }));
   }, [orderedProducts, categoryOrder]);

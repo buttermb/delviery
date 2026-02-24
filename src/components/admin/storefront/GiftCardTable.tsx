@@ -97,7 +97,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as unknown as GiftCard[];
+      return (data ?? []) as unknown as GiftCard[];
     },
     enabled: !!storeId,
   });

@@ -87,7 +87,7 @@ export default function BatchesPage() {
         }
         if (error) throw error;
         setTableMissing(false);
-        return data || [];
+        return data ?? [];
       } catch (error: unknown) {
         if (error instanceof Error && 'code' in error && error.code === '42P01') {
           setTableMissing(true);
@@ -116,7 +116,7 @@ export default function BatchesPage() {
           return [];
         }
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error: unknown) {
         if (error instanceof Error && 'code' in error && error.code === '42P01') return [];
         throw error;

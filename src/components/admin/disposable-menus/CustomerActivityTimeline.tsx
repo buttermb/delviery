@@ -81,19 +81,19 @@ export const CustomerActivityTimeline = ({
       type: 'access',
       timestamp: log.accessed_at,
       data: log
-    })) || []),
+    })) ?? []),
     ...(orders?.map(order => ({
       id: `order-${order.id}`,
       type: 'order',
       timestamp: order.created_at,
       data: order
-    })) || []),
+    })) ?? []),
     ...(securityEvents?.map(event => ({
       id: `security-${event.id}`,
       type: 'security',
       timestamp: event.created_at,
       data: event
-    })) || [])
+    })) ?? [])
   ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   const isLoading = logsLoading || ordersLoading || eventsLoading;

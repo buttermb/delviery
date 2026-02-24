@@ -114,7 +114,7 @@ export const OrderDetailsDialog = ({
   
   // Extract items from order_data JSON
   const orderItems: OrderItem[] = order.order_data && typeof order.order_data === 'object' && 'items' in order.order_data 
-    ? (order.order_data as OrderData).items || []
+    ? (order.order_data as OrderData).items ?? []
     : [];
   
   const itemsTotal = orderItems.reduce((sum: number, item: OrderItem) => 

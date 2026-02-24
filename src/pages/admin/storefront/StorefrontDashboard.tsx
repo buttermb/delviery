@@ -202,8 +202,8 @@ export default function StorefrontDashboard() {
         .lt('created_at', startOfToday.toISOString())
         .not('status', 'eq', 'cancelled');
 
-      const todayRevenue = (todayOrders || []).reduce((sum, o) => sum + (o.total || 0), 0);
-      const yesterdayRevenue = (yesterdayOrders || []).reduce((sum, o) => sum + (o.total || 0), 0);
+      const todayRevenue = (todayOrders ?? []).reduce((sum, o) => sum + (o.total || 0), 0);
+      const yesterdayRevenue = (yesterdayOrders ?? []).reduce((sum, o) => sum + (o.total || 0), 0);
 
       let percentChange = 0;
       if (yesterdayRevenue > 0) {

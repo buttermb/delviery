@@ -66,7 +66,7 @@ export const AssignRouteDialog = ({
                     .order("is_online", { ascending: false });
 
                 if (error) throw error;
-                setCouriers(data || []);
+                setCouriers(data ?? []);
             } catch (error) {
                 logger.error("Failed to fetch couriers:", error);
                 toast.error('Failed to load available couriers', { description: humanizeError(error) });

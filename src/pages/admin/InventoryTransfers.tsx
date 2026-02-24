@@ -80,7 +80,7 @@ export default function InventoryTransfers() {
         .eq('in_stock', true)
         .order('name');
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId,
   });
@@ -104,7 +104,7 @@ export default function InventoryTransfers() {
           ];
         }
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') {
           return [
@@ -133,7 +133,7 @@ export default function InventoryTransfers() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;

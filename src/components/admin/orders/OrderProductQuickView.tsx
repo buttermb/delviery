@@ -153,7 +153,7 @@ export function OrderProductQuickView({
         return [];
       }
 
-      return (data || []) as PriceHistoryEntry[];
+      return (data ?? []) as PriceHistoryEntry[];
     },
     enabled: isOpen && !!tenant?.id && !!productId,
   });

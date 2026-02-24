@@ -141,7 +141,7 @@ export function OrderThreadedNotes({
         return [];
       }
 
-      return (data || []) as TeamMember[];
+      return (data ?? []) as TeamMember[];
     },
     enabled: !!tenantId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
@@ -189,7 +189,7 @@ export function OrderThreadedNotes({
         return [];
       }
 
-      return (data || []) as OrderNote[];
+      return (data ?? []) as OrderNote[];
     },
     enabled: !!tenantId && !!orderId,
   });

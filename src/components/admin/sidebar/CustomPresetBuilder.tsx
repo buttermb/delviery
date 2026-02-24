@@ -67,7 +67,7 @@ export function CustomPresetBuilder() {
     return grouped;
   }, [allFeatures]);
 
-  const customPresets: CustomPreset[] = preferences?.customPresets || [];
+  const customPresets: CustomPreset[] = preferences?.customPresets ?? [];
 
   const handleOpenBuilder = (preset?: CustomPreset) => {
     if (preset) {

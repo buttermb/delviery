@@ -60,7 +60,7 @@ export default function CustomReports() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         logger.error('Failed to fetch reports', error, { component: 'CustomReports' });
         const pgError = error as { code?: string };
@@ -256,7 +256,7 @@ export default function CustomReports() {
 
                         if (data) {
                           // Convert to CSV
-                          const items = data.data?.wholesale_orders || data.data?.wholesale_clients || [];
+                          const items = data.data?.wholesale_orders || data.data?.wholesale_clients ?? [];
                           if (items.length > 0) {
                             const headers = Object.keys(items[0]);
                             const csvContent = [

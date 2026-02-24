@@ -111,7 +111,7 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
         .order('name');
       if (error) throw error;
       // Map to consistent interface
-      return (data || []).map(p => ({
+      return (data ?? []).map(p => ({
         id: p.id,
         product_name: p.name,
         base_price: p.wholesale_price || p.price || 0,

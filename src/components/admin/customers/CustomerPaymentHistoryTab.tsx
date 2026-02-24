@@ -237,19 +237,19 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
 
   // Calculate stats
   const stats = useMemo(() => {
-    const totalPaid = (payments || [])
+    const totalPaid = (payments ?? [])
       .filter((p) => p.payment_status?.toLowerCase() === 'completed' || p.payment_status?.toLowerCase() === 'paid')
       .reduce((sum, p) => sum + (p.amount || 0), 0);
 
-    const totalOrdersAmount = (orders || []).reduce((sum, o) => sum + (o.total_amount || 0), 0);
+    const totalOrdersAmount = (orders ?? []).reduce((sum, o) => sum + (o.total_amount || 0), 0);
     const outstandingBalance = Math.max(0, totalOrdersAmount - totalPaid);
 
-    const pendingPayments = (payments || [])
+    const pendingPayments = (payments ?? [])
       .filter((p) => p.payment_status?.toLowerCase() === 'pending')
       .reduce((sum, p) => sum + (p.amount || 0), 0);
 
     // Calculate average payment amount
-    const completedPayments = (payments || []).filter(
+    const completedPayments = (payments ?? []).filter(
       (p) => p.payment_status?.toLowerCase() === 'completed' || p.payment_status?.toLowerCase() === 'paid'
     );
     const avgPaymentAmount = completedPayments.length > 0

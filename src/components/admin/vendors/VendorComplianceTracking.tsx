@@ -675,10 +675,10 @@ export function VendorComplianceTracking({
                                   checked={field.value?.includes(category)}
                                   onCheckedChange={(checked) => {
                                     const newValue = checked
-                                      ? [...(field.value || []), category]
+                                      ? [...(field.value ?? []), category]
                                       : field.value?.filter(
                                           (v) => v !== category
-                                        ) || [];
+                                        ) ?? [];
                                     field.onChange(newValue);
                                   }}
                                 />

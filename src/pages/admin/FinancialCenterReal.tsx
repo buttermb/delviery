@@ -96,7 +96,7 @@ export default function FinancialCenterReal() {
     // Build order lookup map to avoid O(n*m) nested loop
     const ordersByClient = new Map<string, typeof monthOrders>();
     monthOrders.forEach(o => {
-      const existing = ordersByClient.get(o.client_id) || [];
+      const existing = ordersByClient.get(o.client_id) ?? [];
       existing.push(o);
       ordersByClient.set(o.client_id, existing);
     });
@@ -104,7 +104,7 @@ export default function FinancialCenterReal() {
     // Top clients by profit — O(n) via lookup map instead of O(n*m)
     const clientProfits = clients
       .map(c => {
-        const clientOrders = ordersByClient.get(c.id) || [];
+        const clientOrders = ordersByClient.get(c.id) ?? [];
         const revenue = clientOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
         const cost = clientOrders.reduce((sum, o) => sum + Number(o.total_amount * 0.65), 0);
         const profit = revenue - cost;

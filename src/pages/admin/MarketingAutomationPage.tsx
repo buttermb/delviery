@@ -69,7 +69,7 @@ export default function MarketingAutomationPage() {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        return (data as MarketingCampaign[]) || [];
+        return (data as MarketingCampaign[]) ?? [];
       } catch (error) {
         logger.error('Failed to fetch campaigns', error, { component: 'MarketingAutomationPage' });
         return [];
@@ -321,7 +321,7 @@ export default function MarketingAutomationPage() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
-          <CampaignAnalytics campaigns={campaigns || []} />
+          <CampaignAnalytics campaigns={campaigns ?? []} />
         </TabsContent>
       </Tabs>
 

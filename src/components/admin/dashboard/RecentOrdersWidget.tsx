@@ -57,7 +57,7 @@ export function RecentOrdersWidget() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      return (data || []) as OrderRow[];
+      return (data ?? []) as OrderRow[];
     },
     enabled: !!account?.id,
     // Use real-time updates via useRealtimeSync instead of polling

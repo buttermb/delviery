@@ -67,7 +67,7 @@ export function ConvertToInvoiceDialog({
         .order('business_name', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: open && !!tenant?.id,
   });
@@ -88,7 +88,7 @@ export function ConvertToInvoiceDialog({
 
   // Calculate order totals
   const orderItems = useMemo(() => {
-    const items = order.order_data?.items || [];
+    const items = order.order_data?.items ?? [];
     return items.map((item) => ({
       product_name: item.name || item.product_name || 'Unknown Product',
       quantity: Number(item.quantity || 1),

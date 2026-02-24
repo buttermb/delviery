@@ -58,7 +58,7 @@ export default function CustomerInsights() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
@@ -79,7 +79,7 @@ export default function CustomerInsights() {
     );
   }
 
-  const orderRecords = (orders || []) as unknown as Record<string, unknown>[];
+  const orderRecords = (orders ?? []) as unknown as Record<string, unknown>[];
   const totalSpent = orderRecords.reduce((sum: number, o) => sum + parseFloat(String(o.total ?? 0)), 0) || 0;
   const orderCount = orderRecords.length;
   const avgOrderValue = orderCount > 0 ? totalSpent / orderCount : 0;

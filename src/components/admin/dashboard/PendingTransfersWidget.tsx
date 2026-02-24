@@ -61,7 +61,7 @@ export function PendingTransfersWidget() {
         .order('scheduled_pickup_time', { ascending: true })
         .limit(5);
 
-      return (data || []) as Transfer[];
+      return (data ?? []) as Transfer[];
     },
     enabled: !!account?.id,
     refetchInterval: 30000,

@@ -367,7 +367,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
         throw error;
       }
 
-      return (data || []) as DeliveryException[];
+      return (data ?? []) as DeliveryException[];
     },
     enabled: !!tenantId && !!dateRange?.from && !!dateRange?.to,
     staleTime: 30000,
@@ -391,7 +391,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
         return [];
       }
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId && isResolveDialogOpen,
   });

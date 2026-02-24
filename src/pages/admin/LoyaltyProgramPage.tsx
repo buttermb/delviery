@@ -268,7 +268,7 @@ export default function LoyaltyProgramPage() {
         logger.error("Failed to fetch loyalty tiers", error, { component: "LoyaltyProgramPage" });
       }
 
-      return (data as unknown as LoyaltyTier[]) || [];
+      return (data as unknown as LoyaltyTier[]) ?? [];
     },
     enabled: !!tenant?.id,
   });
@@ -287,7 +287,7 @@ export default function LoyaltyProgramPage() {
         logger.error("Failed to fetch loyalty rewards", error, { component: "LoyaltyProgramPage" });
       }
 
-      return (data as unknown as LoyaltyReward[]) || [];
+      return (data as unknown as LoyaltyReward[]) ?? [];
     },
     enabled: !!tenant?.id,
   });

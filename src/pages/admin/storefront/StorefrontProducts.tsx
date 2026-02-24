@@ -105,7 +105,7 @@ export default function StorefrontProducts() {
         .order('name');
 
       if (error) throw error;
-      return (data || []) as unknown as Product[];
+      return (data ?? []) as unknown as Product[];
     },
     enabled: !!tenantId,
   });
@@ -121,7 +121,7 @@ export default function StorefrontProducts() {
         .eq('store_id', store.id);
 
       if (error) throw error;
-      return (data || []) as unknown as ProductSetting[];
+      return (data ?? []) as unknown as ProductSetting[];
     },
     enabled: !!store?.id,
   });

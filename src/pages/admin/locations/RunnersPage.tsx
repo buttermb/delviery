@@ -54,7 +54,7 @@ export default function RunnersPage() {
 
       // Get active deliveries count for each runner
       const runnersWithDeliveries = await Promise.all(
-        (data || []).map(async (runner) => {
+        (data ?? []).map(async (runner) => {
           const { count } = await supabase
             .from('wholesale_deliveries')
             .select('id', { count: 'exact', head: true })
@@ -158,7 +158,7 @@ export default function RunnersPage() {
       <Card className="p-6">
         <DataTable
           columns={columns}
-          data={runners || []}
+          data={runners ?? []}
           loading={isLoading}
           emptyMessage="No runners found. Add your first delivery runner!"
         />

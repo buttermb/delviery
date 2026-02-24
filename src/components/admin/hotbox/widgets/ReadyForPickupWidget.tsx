@@ -118,7 +118,7 @@ export function ReadyForPickupWidget() {
         if (menuOrdersRes.error) throw menuOrdersRes.error;
 
         // Transform regular orders
-        const normOrders: PickupOrderItem[] = ((ordersRes.data as unknown as OrderRaw[]) || []).map(o => {
+        const normOrders: PickupOrderItem[] = ((ordersRes.data as unknown as OrderRaw[]) ?? []).map(o => {
           const customer = o.customers;
           const customerName = customer
             ? [customer.first_name, customer.last_name].filter(Boolean).join(' ')
@@ -138,7 +138,7 @@ export function ReadyForPickupWidget() {
         });
 
         // Transform menu orders
-        const normMenuOrders: PickupOrderItem[] = ((menuOrdersRes.data as unknown as MenuOrderRaw[]) || []).map((mo) => ({
+        const normMenuOrders: PickupOrderItem[] = ((menuOrdersRes.data as unknown as MenuOrderRaw[]) ?? []).map((mo) => ({
           id: mo.id,
           order_number: 'MENU-' + mo.id.slice(0, 5).toUpperCase(),
           created_at: mo.created_at,

@@ -94,7 +94,7 @@ export const ImportCustomersDialog = ({
     if (selectedCustomers.size === availableClients?.length) {
       setSelectedCustomers(new Set());
     } else {
-      setSelectedCustomers(new Set(availableClients?.map(c => c.id) || []));
+      setSelectedCustomers(new Set(availableClients?.map(c => c.id) ?? []));
     }
   };
 
@@ -106,7 +106,7 @@ export const ImportCustomersDialog = ({
 
     setIsImporting(true);
     try {
-      const selectedClientData = clients?.filter(c => selectedCustomers.has(c.id)) || [];
+      const selectedClientData = clients?.filter(c => selectedCustomers.has(c.id)) ?? [];
       
       const whitelistEntries = selectedClientData.map(client => ({
         menu_id: menuId,

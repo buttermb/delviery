@@ -128,7 +128,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
         throw fetchError;
       }
 
-      return (data || []) as Announcement[];
+      return (data ?? []) as Announcement[];
     },
     enabled: !!tenantId,
   });

@@ -72,7 +72,7 @@ export default function ImagesPage() {
           return [];
         }
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error: unknown) {
         if (error instanceof Error && 'code' in error && error.code === '42P01') return [];
         throw error;
@@ -93,7 +93,7 @@ export default function ImagesPage() {
         .order('name');
       
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId,
   });

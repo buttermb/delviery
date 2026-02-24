@@ -61,7 +61,7 @@ export function CourierStatusWidget() {
 
         if (couriersError) throw couriersError;
 
-        const couriers = (couriersData || []) as Courier[];
+        const couriers = (couriersData ?? []) as Courier[];
 
         // Get all couriers with active deliveries (assigned or in_transit)
         const { data: activeDeliveries, error: deliveriesError } = await supabase
@@ -74,7 +74,7 @@ export function CourierStatusWidget() {
 
         // Create a Set of busy courier IDs
         const busyCourierIds = new Set(
-          (activeDeliveries || [])
+          (activeDeliveries ?? [])
             .map(d => d.courier_id)
             .filter((id): id is string => id !== null)
         );

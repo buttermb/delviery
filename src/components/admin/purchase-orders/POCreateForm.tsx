@@ -82,7 +82,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
         throw error;
       }
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
   });
@@ -103,7 +103,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
         throw error;
       }
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id,
   });

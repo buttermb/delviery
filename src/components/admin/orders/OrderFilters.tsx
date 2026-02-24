@@ -111,7 +111,7 @@ function useCustomerOptions(tenantId: string | undefined) {
       }
 
       // Build unique customer names
-      const customerNames = (data || [])
+      const customerNames = (data ?? [])
         .map((p) => {
           const name = p.full_name || [p.first_name, p.last_name].filter(Boolean).join(' ');
           return name ? { value: name, label: name } : null;
@@ -149,7 +149,7 @@ function useProductOptions(tenantId: string | undefined) {
         return [];
       }
 
-      return (data || []).map((p) => ({
+      return (data ?? []).map((p) => ({
         value: p.name,
         label: p.name,
       }));
@@ -340,7 +340,7 @@ export async function applyOrderFilters(
         .select('order_id')
         .in('product_id', productIds);
 
-      orderIdsFromProduct = orderItemsData?.map((oi) => oi.order_id) || [];
+      orderIdsFromProduct = orderItemsData?.map((oi) => oi.order_id) ?? [];
     } else {
       // No products match, return empty
       orderIdsFromProduct = [];

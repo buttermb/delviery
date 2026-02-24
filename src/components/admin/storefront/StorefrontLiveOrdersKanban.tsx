@@ -340,7 +340,7 @@ export function StorefrontLiveOrdersKanban({
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {COLUMNS.map((column) => {
-                const columnOrders = ordersByColumn[column.id] || [];
+                const columnOrders = ordersByColumn[column.id] ?? [];
 
                 return (
                     <div

@@ -23,7 +23,7 @@ interface GeofenceSettingsProps {
 }
 
 export const GeofenceSettings = ({ rules, onChange }: GeofenceSettingsProps) => {
-  const [localRules, setLocalRules] = useState<GeofenceRule[]>(rules || []);
+  const [localRules, setLocalRules] = useState<GeofenceRule[]>(rules ?? []);
 
   const addRule = () => {
     const newRule: GeofenceRule = {

@@ -88,7 +88,7 @@ export default function QualityControlPage() {
           return [];
         }
 
-        return (data || []) as unknown as Batch[];
+        return (data ?? []) as unknown as Batch[];
       } catch {
         return [];
       }
@@ -110,7 +110,7 @@ export default function QualityControlPage() {
       (statusFilter === "pending" && batch.compliance_status === "pending");
 
     return matchesSearch && matchesStatus;
-  }) || [];
+  }) ?? [];
 
   const handleUploadCOA = (batch: Batch) => {
     setSelectedBatch(batch);

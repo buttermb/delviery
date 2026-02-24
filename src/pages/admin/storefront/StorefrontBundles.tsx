@@ -125,7 +125,7 @@ export default function StorefrontBundles() {
         .eq('store_id', store.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as Bundle[];
+      return (data ?? []) as Bundle[];
     },
     enabled: !!store?.id,
   });
@@ -141,7 +141,7 @@ export default function StorefrontBundles() {
         .eq('tenant_id', tenant.id)
         .order('name');
       if (error) throw error;
-      return (data || []) as Product[];
+      return (data ?? []) as Product[];
     },
     enabled: !!tenant?.id,
   });

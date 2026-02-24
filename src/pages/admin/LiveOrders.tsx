@@ -126,7 +126,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
         if (menuOrdersRes.error) throw menuOrdersRes.error;
 
         // Transform Regular Orders
-        const normOrders: LiveOrder[] = (ordersRes.data || []).map(o => ({
+        const normOrders: LiveOrder[] = (ordersRes.data ?? []).map(o => ({
           id: o.id,
           order_number: o.order_number || o.id.slice(0, 8).toUpperCase(),
           status: o.status,
@@ -137,7 +137,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
         }));
 
         // Transform Menu Orders
-        const normMenuOrders: LiveOrder[] = (menuOrdersRes.data as unknown as MenuOrderRaw[] || []).map((mo) => ({
+        const normMenuOrders: LiveOrder[] = (menuOrdersRes.data as unknown as MenuOrderRaw[] ?? []).map((mo) => ({
           id: mo.id,
           order_number: 'MENU-' + mo.id.slice(0, 5).toUpperCase(),
           status: mo.status === 'completed' ? 'delivered' : mo.status, // Map completed -> delivered

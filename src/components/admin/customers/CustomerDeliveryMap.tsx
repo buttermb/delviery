@@ -201,7 +201,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
       }
 
       // Transform the data for map display
-      return (data || [])
+      return (data ?? [])
         .filter((order) => order.locations?.coordinates)
         .map((order) => {
           const coords = order.locations?.coordinates as { lat?: number; lng?: number } | null;

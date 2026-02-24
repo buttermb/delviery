@@ -41,10 +41,10 @@ export const SecurityHeatmap = ({ securityEvents, accessLogs }: SecurityHeatmapP
     return acc;
   }, {});
 
-  const critical = eventsBySeverity.critical || [];
-  const high = eventsBySeverity.high || [];
-  const medium = eventsBySeverity.medium || [];
-  const low = eventsBySeverity.low || [];
+  const critical = eventsBySeverity.critical ?? [];
+  const high = eventsBySeverity.high ?? [];
+  const medium = eventsBySeverity.medium ?? [];
+  const low = eventsBySeverity.low ?? [];
 
   // Failed access attempts
   const failedAttempts = securityEvents.filter(e => 

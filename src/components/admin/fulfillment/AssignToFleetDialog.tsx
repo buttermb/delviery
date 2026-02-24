@@ -73,7 +73,7 @@ export function AssignToFleetDialog({
         .order('full_name');
 
       if (error) throw error;
-      return (data || []) as Courier[];
+      return (data ?? []) as Courier[];
     },
     enabled: open && !!tenant?.id,
   });

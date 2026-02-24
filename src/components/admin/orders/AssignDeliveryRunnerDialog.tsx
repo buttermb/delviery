@@ -136,7 +136,7 @@ export function AssignDeliveryRunnerDialog({
 
       // Count deliveries per runner
       const deliveryCountMap = new Map<string, number>();
-      (activeDeliveries || []).forEach((d) => {
+      (activeDeliveries ?? []).forEach((d) => {
         const count = deliveryCountMap.get(d.runner_id) || 0;
         deliveryCountMap.set(d.runner_id, count + 1);
       });

@@ -54,7 +54,7 @@ export default function SupportTicketsPage() {
           return [];
         }
 
-        return (data || []) as unknown as Ticket[];
+        return (data ?? []) as unknown as Ticket[];
       } catch {
         return [];
       }
@@ -73,7 +73,7 @@ export default function SupportTicketsPage() {
       ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesTab && matchesSearch;
-  }) || [];
+  }) ?? [];
 
   return (
     <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">

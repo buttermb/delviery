@@ -150,7 +150,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
           }
           return prev;
         });
-        const currentImages = formData.images || [];
+        const currentImages = formData.images ?? [];
         updateFormData({ images: [...currentImages, publicUrl] });
       }
 
@@ -210,7 +210,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
   };
 
   const removeImage = (index: number) => {
-    const currentImages = formData.images || [];
+    const currentImages = formData.images ?? [];
     updateFormData({ images: currentImages.filter((_, i: number) => i !== index) });
   };
 

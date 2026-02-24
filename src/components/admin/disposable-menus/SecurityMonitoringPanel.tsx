@@ -140,7 +140,7 @@ export const SecurityMonitoringPanel = () => {
 
   const criticalEvents = recentEvents?.filter(
     e => (e.severity === 'critical' || e.severity === 'high') && !e.acknowledged
-  ).slice(0, 5) || [];
+  ).slice(0, 5) ?? [];
 
   const getEventIcon = (eventType: string) => {
     if (eventType.includes('access')) return Eye;

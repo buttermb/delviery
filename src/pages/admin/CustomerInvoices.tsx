@@ -113,7 +113,7 @@ export default function CustomerInvoices() {
       }
 
       if (!error && data) {
-        const newData = data || [];
+        const newData = data ?? [];
 
         // Clear client-side cache when using direct query (server-side pagination)
         if (!append) {
@@ -239,7 +239,7 @@ export default function CustomerInvoices() {
         .eq('tenant_id', tenant.id);
 
       if (error) throw error;
-      setCustomers(data || []);
+      setCustomers(data ?? []);
     } catch (error) {
       logger.error('Error loading customers', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerInvoices' });
     }
