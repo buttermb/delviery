@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { DollarSign, Clock, TrendingUp, FileText, AlertTriangle, Receipt, RotateCcw } from 'lucide-react';
+import { DollarSign, Clock, TrendingUp, FileText, AlertTriangle, Receipt, RotateCcw, Loader2 } from 'lucide-react';
 import { humanizeError } from '@/lib/humanizeError';
 import { useRealtimeShifts, useRealtimeTransactions, useRealtimeCashDrawer } from '@/hooks/useRealtimePOS';
 import { queryKeys } from '@/lib/queryKeys';
@@ -599,6 +599,7 @@ export function ShiftManager() {
               onClick={() => startShiftMutation.mutate()}
               disabled={!cashierName || !isOpeningCashValid || startShiftMutation.isPending}
             >
+              {startShiftMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Clock className="h-4 w-4 mr-2" />}
               {startShiftMutation.isPending ? 'Starting...' : 'Start Shift'}
             </Button>
           </DialogFooter>
@@ -709,6 +710,7 @@ export function ShiftManager() {
               disabled={!isClosingCashValid || closingCash === '' || closeShiftMutation.isPending}
               variant="destructive"
             >
+              {closeShiftMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {closeShiftMutation.isPending ? 'Closing...' : 'Close Shift'}
             </Button>
           </DialogFooter>

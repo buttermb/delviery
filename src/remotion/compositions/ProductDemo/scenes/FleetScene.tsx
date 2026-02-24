@@ -10,7 +10,6 @@ export function FleetScene() {
   const { fps } = useVideoConfig();
 
   // Route drawing
-  const _pathLength = interpolate(frame, [30, 90], [0, 1], { extrapolateRight: 'clamp' });
   const rerouteLength = interpolate(frame, [120, 150], [0, 1], { extrapolateRight: 'clamp' });
 
   // Driver Pos

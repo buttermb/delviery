@@ -82,8 +82,6 @@ export function SystemHealthMonitor({ className }: SystemHealthMonitorProps) {
       const errorRate = metricsByType.get('error_rate')?.value || 0;
       const activeTenants = metricsByType.get('active_tenants')?.value || 0;
       const diskUsage = metricsByType.get('disk')?.value || 0;
-      const _memoryUsage = metricsByType.get('memory')?.value || 0;
-      const _cpuUsage = metricsByType.get('cpu')?.value || 0;
 
       // Determine status based on thresholds
       const getStatus = (value: number, thresholds: { warning: number; critical: number }) => {

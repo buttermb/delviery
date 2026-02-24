@@ -923,8 +923,11 @@ export function MenuScheduler({ menuId, className }: MenuSchedulerProps) {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleToggleActive(schedule)}
+                            disabled={updateSchedule.isPending}
                           >
-                            {schedule.isActive ? (
+                            {updateSchedule.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : schedule.isActive ? (
                               <X className="h-4 w-4" />
                             ) : (
                               <Check className="h-4 w-4" />

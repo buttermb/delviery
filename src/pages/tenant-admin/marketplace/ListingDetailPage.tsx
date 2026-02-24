@@ -11,7 +11,6 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 import {
   Package,
   Edit,
@@ -26,7 +25,6 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { MarketplaceListing } from '@/types/marketplace-extended';
-import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -37,9 +35,6 @@ export default function ListingDetailPage() {
   const { listingId } = useParams<{ listingId: string }>();
   const { tenant } = useTenantAdminAuth();
   const navigate = useNavigate();
-  const [_decryptedLabResults, _setDecryptedLabResults] = useState<string | null>(null);
-  const [_decrypting, setDecrypting] = useState(false);
-
   // Fetch listing details
   const { data: listing, isLoading } = useQuery<MarketplaceListing | null>({
     queryKey: queryKeys.marketplaceListings.detailPage(listingId),
@@ -61,29 +56,6 @@ export default function ListingDetailPage() {
     },
     enabled: !!listingId,
   });
-
-  // Decrypt lab results if needed
-  const _handleDecryptLabResults = async () => {
-    if (!listing?.lab_results || !listing.lab_results_encrypted) {
-      return;
-    }
-
-    setDecrypting(true);
-    try {
-      // Note: In real implementation, you'd need the actual encryption key
-      // that was used to encrypt the data. This is a placeholder.
-      toast.info('Decryption', { description: 'Lab results decryption requires the original encryption key. This feature is for demonstration.' });
-
-      // In production, you'd do:
-      // const decrypted = await decryptLabResults(listing.lab_results.encrypted, key);
-      // setDecryptedLabResults(decrypted);
-    } catch (error) {
-      logger.error('Failed to decrypt lab results', error, { component: 'ListingDetailPage' });
-      toast.error('Decryption Failed', { description: 'Failed to decrypt lab results' });
-    } finally {
-      setDecrypting(false);
-    }
-  };
 
   if (isLoading) {
     return (

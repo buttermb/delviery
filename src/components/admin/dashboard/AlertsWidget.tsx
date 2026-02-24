@@ -23,6 +23,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 
 interface Alert {
@@ -117,9 +118,11 @@ export function AlertsWidget() {
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.alerts() });
       toast.success('Alert dismissed');
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       logger.error('Failed to dismiss alert', { error });
-      toast.error('Failed to dismiss alert');
+      toast.error('Failed to dismiss alert', {
+        description: humanizeError(error),
+      });
     },
   });
 
@@ -144,9 +147,11 @@ export function AlertsWidget() {
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.alerts() });
       toast.success('All alerts dismissed');
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       logger.error('Failed to dismiss all alerts', { error });
-      toast.error('Failed to dismiss all alerts');
+      toast.error('Failed to dismiss all alerts', {
+        description: humanizeError(error),
+      });
     },
   });
 

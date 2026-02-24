@@ -217,6 +217,7 @@ export function GlobalProductCatalog() {
                                         src={product.images[0]}
                                         alt={product.name}
                                         className="w-full h-full object-cover"
+                                        loading="lazy"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
@@ -307,7 +308,12 @@ export function GlobalProductCatalog() {
                             onClick={() => importMutation.mutate()}
                             disabled={!importPrice || importMutation.isPending}
                         >
-                            {importMutation.isPending ? 'Importing...' : 'Import Product'}
+                            {importMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                                <Download className="h-4 w-4 mr-2" />
+                            )}
+                            Import Product
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -99,11 +99,6 @@ export function QuickQuestionsStep({
     ? Math.round((answers.defaultPricePerLb / 16) * (1 + (answers.retailMarkup || 30) / 100))
     : null;
   
-  // Example price conversion based on format
-  const _priceExamples = answers.priceFormat === 'abbreviated'
-    ? { input: '32', output: '$3,200/lb' }
-    : { input: '3200', output: '$3,200/lb' };
-
   const handleSubmit = () => {
     onConfirm(answers);
   };

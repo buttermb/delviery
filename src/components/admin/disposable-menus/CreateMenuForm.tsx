@@ -348,6 +348,7 @@ export function CreateMenuForm({
                         src={imageUrl}
                         alt={product.product_name}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     </div>
                   )}

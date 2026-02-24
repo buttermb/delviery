@@ -223,7 +223,6 @@ export default function CustomerLoginPage() {
   }
 
   const businessName = tenant.business_name || tenantSlug;
-  const _logo = tenant.white_label?.logo;
 
   return (
     <div data-dark-panel className="min-h-dvh flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">

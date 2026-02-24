@@ -187,12 +187,6 @@ export function ForgotPasswordPage() {
     setSubmitted(true);
   };
 
-  const _handleTryAgain = useCallback(() => {
-    setSubmitted(false);
-    setEmail("");
-    setEmailError("");
-  }, []);
-
   // Calculate remaining requests for display
   const remainingRequests = MAX_REQUESTS_PER_WINDOW - requestCount;
 

@@ -178,8 +178,6 @@ export function MultiChannelOrderList() {
 
                 if (stores && stores.length > 0) {
                     const storeIds = stores.map(s => s.id);
-                    const _storeNameMap = Object.fromEntries(stores.map(s => [s.id, s.store_name]));
-
                     const { data: sfOrders, error: sfError } = await supabase
                         .from('storefront_orders')
                         .select('id, total, status, created_at, order_number, customer_name, store_id')

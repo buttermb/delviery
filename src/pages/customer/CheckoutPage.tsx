@@ -141,7 +141,6 @@ export default function CheckoutPage() {
   }, [user, guestCart, guestProducts]);
 
   const cartItems = user ? dbCartItems : guestCartItems;
-  const _isLoading = (user && dbLoading) || (!user && false);
 
   // Get order notes from sessionStorage
   const orderNotes = typeof window !== "undefined" ? sessionStorage.getItem("orderNotes") || "" : "";

@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { ChevronDown, Loader2, RefreshCw } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -91,7 +92,9 @@ export function BulkStatusUpdate({
       }
     } catch (error) {
       logger.error('Bulk status update failed', error);
-      toast.error('Failed to update status');
+      toast.error('Failed to update status', {
+        description: humanizeError(error),
+      });
     } finally {
       setIsUpdating(false);
       setSelectedStatus(null);

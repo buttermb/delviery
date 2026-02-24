@@ -245,9 +245,6 @@ export function OrderThreadedNotes({
           // Don't notify yourself
           if (mentionedUserId === currentUserId) continue;
 
-          const mentionedMember = teamMembers.find((m) => m.user_id === mentionedUserId);
-          const _mentionedName = mentionedMember?.full_name || mentionedMember?.email || 'Someone';
-
           try {
             await dispatchNotification({
               userId: mentionedUserId,

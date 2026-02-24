@@ -135,7 +135,7 @@ export function ReferralDashboard({
       `Sign up using my link and we'll both get ${REFERRAL_REWARDS.refereeBonus.toLocaleString()} bonus credits:\n${link}`
     );
 
-    window.open(`mailto:?subject=${subject}&body=${body}`);
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank', 'noopener,noreferrer');
   };
 
   if (codeLoading) {

@@ -253,7 +253,6 @@ function StatsCard({ title, value, icon: Icon, trend, trendUp, color, bg, delay 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className=""
     >
       <Card className="border-none shadow-sm bg-gradient-to-br from-card to-muted/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

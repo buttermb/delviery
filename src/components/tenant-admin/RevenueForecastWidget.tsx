@@ -58,7 +58,6 @@ export function RevenueForecastWidget() {
 
             // Project next 30 days
             const projectedRevenue = totalRevenue * (1 + growthRate);
-            const _projectedDaily = dailyAverage * (1 + growthRate);
 
             return {
                 currentMonthly: totalRevenue,

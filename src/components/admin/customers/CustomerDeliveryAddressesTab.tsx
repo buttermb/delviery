@@ -54,6 +54,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 
 interface CustomerDeliveryAddressesTabProps {
@@ -256,11 +257,13 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
       toast.success(editingAddress ? 'Address updated' : 'Address added');
       handleCloseDialog();
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       logger.error('Failed to save address', error instanceof Error ? error : new Error(String(error)), {
         component: 'CustomerDeliveryAddressesTab',
       });
-      toast.error('Failed to save address');
+      toast.error('Failed to save address', {
+        description: humanizeError(error),
+      });
     },
   });
 
@@ -283,11 +286,13 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
       setDeleteDialogOpen(false);
       setDeletingAddressId(null);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       logger.error('Failed to delete address', error instanceof Error ? error : new Error(String(error)), {
         component: 'CustomerDeliveryAddressesTab',
       });
-      toast.error('Failed to delete address');
+      toast.error('Failed to delete address', {
+        description: humanizeError(error),
+      });
     },
   });
 
@@ -308,11 +313,13 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
       queryClient.invalidateQueries({ queryKey: queryKeys.customerDetail.deliveryAddresses(customerId) });
       toast.success('Primary address updated');
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       logger.error('Failed to set primary address', error instanceof Error ? error : new Error(String(error)), {
         component: 'CustomerDeliveryAddressesTab',
       });
-      toast.error('Failed to update primary address');
+      toast.error('Failed to update primary address', {
+        description: humanizeError(error),
+      });
     },
   });
 

@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, Package } from "lucide-react";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useShopCart } from "@/hooks/useShopCart";
 import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
@@ -71,7 +70,6 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
     } = styles || {};
 
     const [showAllCategories, setShowAllCategories] = useState(false);
-    const _isMobile = useIsMobile();
     const [searchQuery, setSearchQuery] = useState("");
     const [premiumFilter, setPremiumFilter] = useState(false);
 

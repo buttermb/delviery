@@ -227,6 +227,7 @@ export default function PublicMarketplacePage() {
                         src={listing.images[0]}
                         alt={listing.product_name}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     </div>
                   )}

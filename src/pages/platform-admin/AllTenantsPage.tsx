@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
@@ -37,8 +37,6 @@ export default function AllTenantsPage() {
         },
         enabled: isPlatformAdmin,
     });
-
-    const _queryClient = useQueryClient();
 
     const accessMutation = useMutation({
         mutationFn: async (tenantId: string) => {

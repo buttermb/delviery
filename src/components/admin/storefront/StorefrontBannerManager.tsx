@@ -436,7 +436,10 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
                             onClick={() => saveBannerMutation.mutate(formData)}
                             disabled={saveBannerMutation.isPending || !formData.image_url}
                         >
-                            {saveBannerMutation.isPending ? 'Saving...' : 'Save Banner'}
+                            {saveBannerMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : null}
+                            Save Banner
                         </Button>
                     </DialogFooter>
                 </DialogContent>

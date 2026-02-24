@@ -143,7 +143,7 @@ export function VerifyEmailPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-md w-full mx-4">
         <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-8 text-center">
           {/* Loading State */}

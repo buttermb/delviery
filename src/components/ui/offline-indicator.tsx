@@ -74,15 +74,6 @@ export function OfflineIndicator({
     }
   };
 
-  const _getStatusLabel = (status: QueuedItem['status']) => {
-    switch (status) {
-      case 'pending': return 'Waiting';
-      case 'syncing': return 'Syncing';
-      case 'failed': return 'Failed';
-      case 'completed': return 'Done';
-    }
-  };
-
   return (
     <Popover>
       <PopoverTrigger asChild>

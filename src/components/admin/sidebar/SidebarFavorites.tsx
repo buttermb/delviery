@@ -31,7 +31,7 @@ export function SidebarFavorites() {
     return name.toLowerCase().includes(query.toLowerCase());
   };
   // This provides database sync with optimistic updates via useMutation
-  const { toggleFavorite, trackFeatureAccess } = useSidebar();
+  const { trackFeatureAccess } = useSidebar();
 
   // Guard: Ensure favorites is an array
   const safeFavorites = useMemo(() =>
@@ -80,13 +80,6 @@ export function SidebarFavorites() {
   const handleLockedItemClick = useCallback((_featureId: FeatureId) => {
     // Upgrade modal is handled by parent AdaptiveSidebar
   }, []);
-
-  // Handle removing a favorite - uses database mutation with optimistic updates
-  const _handleRemoveFavorite = useCallback((itemId: string) => {
-    // toggleFavorite is backed by useMutation in useSidebarPreferences
-    // It performs optimistic updates and syncs to database
-    toggleFavorite(itemId);
-  }, [toggleFavorite]);
 
   // Early return if no favorites or no filtered results
   if (filteredFavoriteItems.length === 0) {

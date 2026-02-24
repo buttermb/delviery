@@ -23,22 +23,6 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
   const verificationCache = useRef(new Map<string, { result: boolean; timestamp: number }>());
   const VERIFICATION_CACHE_MS = 2 * 60 * 1000; // 2 minutes
 
-  const _isVerificationCacheValid = (email: string, tenantSlug: string): boolean => {
-    const cacheKey = `${email}:${tenantSlug}`;
-    const cached = verificationCache.current.get(cacheKey);
-
-    if (!cached) return false;
-
-    const age = Date.now() - cached.timestamp;
-    const isValid = age < VERIFICATION_CACHE_MS && cached.result;
-
-    if (!isValid && cached) {
-      verificationCache.current.delete(cacheKey);
-    }
-
-    return isValid;
-  };
-
   // Update auth ref when values change
   useEffect(() => {
     authRef.current = { token, customer, tenant };

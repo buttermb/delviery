@@ -5,7 +5,6 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +25,6 @@ import { handleError } from '@/utils/errorHandling/handlers';
 
 export default function SuperAdminSettings() {
   const navigate = useNavigate();
-  const _queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
   const [platformSettings, setPlatformSettings] = useState({

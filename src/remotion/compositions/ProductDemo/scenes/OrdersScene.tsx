@@ -25,7 +25,6 @@ export function OrdersScene() {
 
   // Simulated card movement logic
   // New -> Prep (Starts f=30)
-  const _card1X = moveCard(30, 0, 100);
   const card1Opacity = interpolate(frame, [30, 40], [1, 0], { extrapolateRight: 'clamp' }); // Fade out in col 1
   const card1Appear = interpolate(frame, [30, 40], [0, 1], { extrapolateRight: 'clamp' }); // Appear in col 2
 

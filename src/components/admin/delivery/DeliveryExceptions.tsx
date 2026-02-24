@@ -51,6 +51,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantContext } from '@/hooks/useTenantContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -486,11 +487,6 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
     };
   }, [exceptions]);
 
-  // Selected exception
-  const _selectedException = useMemo(() => {
-    return exceptions.find((e) => e.id === selectedExceptionId) || null;
-  }, [exceptions, selectedExceptionId]);
-
   // =============================================================================
   // Mutations
   // =============================================================================
@@ -580,9 +576,11 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
       setPhotoFile(null);
       setLogOrderId('');
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       logger.error('Failed to log delivery exception', error, { component: 'DeliveryExceptions' });
-      toast.error('Failed to log delivery exception');
+      toast.error('Failed to log delivery exception', {
+        description: humanizeError(error),
+      });
     },
   });
 
@@ -697,9 +695,11 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
       setSelectedExceptionId(null);
       resolutionForm.reset();
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       logger.error('Failed to resolve delivery exception', error, { component: 'DeliveryExceptions' });
-      toast.error('Failed to resolve exception');
+      toast.error('Failed to resolve exception', {
+        description: humanizeError(error),
+      });
     },
   });
 
@@ -747,9 +747,11 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
       setReturnConfirmOpen(false);
       setExceptionToReturn(null);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       logger.error('Failed to initiate return to store', error, { component: 'DeliveryExceptions' });
-      toast.error('Failed to initiate return');
+      toast.error('Failed to initiate return', {
+        description: humanizeError(error),
+      });
     },
   });
 

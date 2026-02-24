@@ -867,6 +867,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                               src={url}
                               alt={`Review photo ${index + 1}`}
                               className="w-full h-24 object-cover rounded-lg"
+                              loading="lazy"
                             />
                           ))}
                         </div>

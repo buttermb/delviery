@@ -204,6 +204,7 @@ export function ProductTableView({
                     src={product.image_url || "/placeholder.svg"}
                     alt={product.name}
                     className="h-12 w-12 rounded object-cover"
+                    loading="lazy"
                   />
                 </TableCell>
               )}

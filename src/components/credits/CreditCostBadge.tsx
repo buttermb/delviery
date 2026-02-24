@@ -73,22 +73,6 @@ export function CreditCostBadge({
     return 'bg-muted text-muted-foreground border-border';
   };
 
-  const _content = (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 transiton-all duration-300',
-        inline ? 'text-xs' : '',
-        hoverMode ? 'opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0' : '',
-        className
-      )}
-    >
-      {!canAfford && <AlertTriangle className="h-3 w-3" />}
-      {!compact && <Coins className="h-3 w-3" />}
-      <span>{cost.toLocaleString()}</span>
-      {!compact && !inline && <span className="hidden sm:inline">credits</span>}
-    </span>
-  );
-
   if (inline) {
     return (
       <span className={cn('text-xs', getColorClasses().split(' ').find(c => c.startsWith('text-')), className)}>
@@ -219,7 +203,6 @@ export function CreditCostIndicator({
 }: CreditCostIndicatorProps) {
   const { balance, isFreeTier } = useCredits();
   const cost = getCreditCost(actionKey);
-  const _costInfo = getCreditCostInfo(actionKey);
 
   if (!isFreeTier || cost === 0) {
     return null;

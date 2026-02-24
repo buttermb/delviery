@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Star, Trash2, Check } from "lucide-react";
+import { Plus, Star, Trash2, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -265,8 +265,9 @@ export function InvoiceTemplateEditor({ onClose }: InvoiceTemplateEditorProps) {
               variant="outline"
               size="sm"
               onClick={() => selectedId && setDefaultTemplate.mutate(selectedId)}
+              disabled={setDefaultTemplate.isPending}
             >
-              <Star className="h-4 w-4 mr-1" />
+              {setDefaultTemplate.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Star className="h-4 w-4 mr-1" />}
               Set Default
             </Button>
           )}
@@ -286,8 +287,8 @@ export function InvoiceTemplateEditor({ onClose }: InvoiceTemplateEditorProps) {
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>
-            <Check className="h-4 w-4 mr-1" />
+          <Button onClick={handleSave} disabled={updateTemplate.isPending}>
+            {updateTemplate.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
             Save Changes
           </Button>
         </div>

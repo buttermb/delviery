@@ -93,7 +93,7 @@ export default function VerifyEmailPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen flex w-full bg-background font-sans">
+      <div className="min-h-dvh flex w-full bg-background font-sans">
         {/* LEFT SIDE - FORM */}
         <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:flex-none lg:w-[45%] xl:w-[40%] bg-background relative z-10">
           <Button

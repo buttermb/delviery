@@ -68,9 +68,6 @@ export function EnhancedPriceSlider({
     }
   };
 
-  // Calculate percentage for visual feedback
-  const _rangePercent = ((value[1] - value[0]) / (max - min)) * 100;
-
   return (
     <div className={cn("space-y-4", className)}>
       {/* Slider */}

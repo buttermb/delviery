@@ -173,7 +173,7 @@ export function SignupSuccessPage() {
   if (!email) {
     return (
       <ForceLightMode>
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="min-h-dvh flex items-center justify-center bg-background p-4">
           <div className="max-w-sm w-full text-center space-y-6">
             <FloraIQLogo size="lg" className="mx-auto mb-6" />
             <h1 className="text-2xl font-bold text-foreground">Check Your Email</h1>
@@ -207,7 +207,7 @@ export function SignupSuccessPage() {
         title="Verify Your Email - FloraIQ"
         description="Check your email to verify your FloraIQ account and get started with your cannabis operations platform."
       />
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-dvh flex w-full bg-background">
         {/* LEFT SIDE - CONTENT */}
         <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:flex-none lg:w-[45%] xl:w-[40%] bg-background relative z-10">
           <Button

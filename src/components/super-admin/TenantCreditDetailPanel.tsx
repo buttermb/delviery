@@ -44,9 +44,6 @@ export function TenantCreditDetailPanel({
 
   // Calculate percentages
   const balancePercent = Math.min(100, (credits.balance / FREE_TIER_MONTHLY_CREDITS) * 100);
-  const _usedPercent = credits.lifetimeEarned > 0
-    ? Math.min(100, (credits.lifetimeSpent / credits.lifetimeEarned) * 100)
-    : 0;
 
   // Format date
   const formatDate = (dateStr: string | null) => {

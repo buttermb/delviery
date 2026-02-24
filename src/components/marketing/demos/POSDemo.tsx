@@ -140,10 +140,6 @@ export function POSDemo() {
         });
     };
 
-    const _removeFromCart = (id: string) => {
-        setCart(prev => prev.filter(p => p.id !== id));
-    };
-
     const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
     const handlePayment = () => {

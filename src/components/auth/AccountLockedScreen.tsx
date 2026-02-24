@@ -66,7 +66,7 @@ export function AccountLockedScreen({
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://aejugtmhwwknrowfyzie.supabase.co';
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-      const _response = await fetch(
+      await fetch(
         `${supabaseUrl}/functions/v1/request-account-unlock`,
         {
           method: 'POST',

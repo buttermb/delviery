@@ -39,7 +39,7 @@ export const MenuAccessDetails = ({
 
   const shareViaSMS = () => {
     const message = `Access your private catalog: ${menuName}\n\nURL: ${shareableUrl}\nAccess Code: ${accessCode}`;
-    window.open(`sms:?body=${encodeURIComponent(message)}`);
+    window.open(`sms:?body=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
   };
 
   return (

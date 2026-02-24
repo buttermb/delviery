@@ -241,6 +241,7 @@ function ProductCard({
             <img
               src={product.image_url}
               alt={product.name}
+              loading="lazy"
               className={cn(
                 'w-12 h-12 rounded object-cover shrink-0',
                 isOutOfStock && 'grayscale'

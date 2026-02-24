@@ -183,8 +183,6 @@ function ProductRuleCard({
     return evaluateProductAvailability(rules);
   }, [rules]);
 
-  const _activeRules = rules.filter((r) => r.isActive);
-
   return (
     <Card className={cn(!availability.isAvailable && 'border-amber-500/50 bg-amber-50/30')}>
       <CardHeader className="pb-3">
@@ -194,6 +192,7 @@ function ProductRuleCard({
               src={product.imageUrl}
               alt={product.name}
               className="w-12 h-12 rounded-lg object-cover shrink-0"
+              loading="lazy"
             />
           ) : (
             <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">

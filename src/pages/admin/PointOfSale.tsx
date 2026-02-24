@@ -221,10 +221,6 @@ export default function PointOfSale() {
     }));
   };
 
-  const _removeFromCart = (productId: string) => {
-    setCart(cart.filter(item => item.id !== productId));
-  };
-
   const clearCart = () => {
     setCart([]);
     setSelectedCustomer(null);

@@ -406,7 +406,6 @@ function OrderCard({
   onReorder: () => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const _navigate = useNavigate();
 
   return (
     <Card className="border-none shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-zinc-950">

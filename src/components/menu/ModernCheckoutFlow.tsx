@@ -1665,7 +1665,6 @@ export function ModernCheckoutFlow({
     return buildPaymentMethods(paymentSettings);
   }, [paymentSettings]);
 
-  const _totalItems = getItemCount();
   const totalAmount = getTotal();
   const serviceFee = totalAmount * 0.05;
   const finalTotal = totalAmount + serviceFee;

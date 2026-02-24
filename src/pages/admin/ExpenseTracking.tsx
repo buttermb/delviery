@@ -90,7 +90,6 @@ export default function ExpenseTracking() {
   // State
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState(DEFAULT_EXPENSE_FORM);
@@ -194,9 +193,7 @@ export default function ExpenseTracking() {
       showErrorToast('Missing fields', 'Please fill in description and amount');
       return;
     }
-    setIsSubmitting(true);
     await addExpenseMutation.mutateAsync(formData);
-    setIsSubmitting(false);
   };
 
   // Filter expenses
@@ -462,11 +459,11 @@ export default function ExpenseTracking() {
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => handleDialogOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => handleDialogOpenChange(false)} disabled={addExpenseMutation.isPending}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="gap-2">
-                {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              <Button type="submit" disabled={addExpenseMutation.isPending} className="gap-2">
+                {addExpenseMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
                 Add Expense
               </Button>
             </DialogFooter>

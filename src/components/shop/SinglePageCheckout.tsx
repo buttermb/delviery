@@ -521,6 +521,7 @@ export function SinglePageCheckout() {
                           src={item.imageUrl}
                           alt={item.name}
                           className="w-full h-full object-cover rounded"
+                          loading="lazy"
                         />
                       ) : (
                         <Package className="w-full h-full p-3 text-muted-foreground" />

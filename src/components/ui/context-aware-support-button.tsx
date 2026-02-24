@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Popover,
   PopoverContent,
@@ -120,7 +120,6 @@ export function ContextAwareSupportButton({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const _location = useLocation();
   const navigate = useNavigate();
 
   const context = gatherContext(userId, userEmail, userName);

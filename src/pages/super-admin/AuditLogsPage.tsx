@@ -87,7 +87,6 @@ export default function AuditLogsPage() {
 
   // Calculate stats
   const stats = useMemo(() => {
-    const _thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     

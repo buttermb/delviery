@@ -10,6 +10,7 @@ import { useAssignDelivery } from "@/hooks/useWholesaleData";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
+import { humanizeError } from "@/lib/humanizeError";
 import { formatPhoneNumber } from "@/lib/formatters";
 import { toast } from "sonner";
 
@@ -56,8 +57,11 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
 
       onOpenChange(false);
       setSelectedRunner("");
-    } catch {
-      toast.error('Failed to assign runner');
+    } catch (error) {
+      logger.error('Failed to assign runner', error instanceof Error ? error : new Error(String(error)), { component: 'AssignRunnerDialog' });
+      toast.error('Failed to assign runner', {
+        description: humanizeError(error),
+      });
     }
   };
 

@@ -167,7 +167,7 @@ export function AdminLayout({
   if (compact) {
     return (
       <AdminLayoutContext.Provider value={layoutContextValue}>
-        <div className={cn('min-h-screen bg-background', className)}>
+        <div className={cn('min-h-dvh bg-background', className)}>
           {!hideHeader && title && (
             <div className="p-4 border-b">
               <PageHeader
@@ -189,7 +189,7 @@ export function AdminLayout({
 
   return (
     <AdminLayoutContext.Provider value={layoutContextValue}>
-      <div className={cn('flex min-h-screen bg-background', className)}>
+      <div className={cn('flex min-h-dvh bg-background', className)}>
         {/* Desktop Sidebar */}
         <div className="hidden lg:block">
           <AdminSidebar

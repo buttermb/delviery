@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -25,9 +25,8 @@ interface WelcomeModalProps {
 
 export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
   const navigate = useNavigate();
-  const _location = useLocation();
   const [searchParams] = useSearchParams();
-  const { tenant, admin: _admin } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const { startTutorial } = useTutorialContext();
   const { balance, isFreeTier } = useCredits();
   const [hasSeenWelcome, setHasSeenWelcome] = useState(false);

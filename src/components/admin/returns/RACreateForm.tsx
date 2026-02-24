@@ -119,12 +119,6 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
     }
   }, [returnAuth, open]);
 
-  const _generateRANumber = () => {
-    const prefix = "RA";
-    const timestamp = Date.now().toString().slice(-6);
-    return `${prefix}-${timestamp}`;
-  };
-
   const addItem = () => {
     if (!newItem.product_name || newItem.quantity <= 0 || newItem.unit_price <= 0) {
       toast.error("Please fill in all item fields");

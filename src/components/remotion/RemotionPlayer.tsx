@@ -7,7 +7,7 @@
  */
 
 import { Suspense, type ComponentType, type ReactNode } from 'react';
-import { useShouldReduceAnimations, useIsMobile } from '@/hooks/useReducedMotion';
+import { useIsMobile } from '@/hooks/useReducedMotion';
 import { REMOTION_CONFIG, MOBILE_RESOLUTION } from '@/remotion/config';
 
 interface RemotionPlayerProps {
@@ -63,7 +63,6 @@ export function RemotionPlayer({
   className = '',
   clickToPlay: _clickToPlay = false,
 }: RemotionPlayerProps) {
-  const _reduceAnimations = useShouldReduceAnimations();
   const isMobile = useIsMobile();
 
   const width = isMobile ? MOBILE_RESOLUTION.width : compositionWidth;

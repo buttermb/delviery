@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUpdateDeliveryStatus } from "@/hooks/useWholesaleData";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
+import { humanizeError } from "@/lib/humanizeError";
 
 const STATUS_OPTIONS = [
   { value: "assigned", label: "Assigned", variant: "secondary" as const },
@@ -66,8 +68,11 @@ export function DeliveryStatusDialog({
 
       onOpenChange(false);
       setNotes("");
-    } catch {
-      toast.error('Failed to update delivery status');
+    } catch (error) {
+      logger.error('Failed to update delivery status', error instanceof Error ? error : new Error(String(error)), { component: 'DeliveryStatusDialog' });
+      toast.error('Failed to update delivery status', {
+        description: humanizeError(error),
+      });
     }
   };
 

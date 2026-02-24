@@ -616,6 +616,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                                 src={product.image_url}
                                 alt={product.name}
                                 className="w-12 h-12 object-cover rounded"
+                                loading="lazy"
                               />
                             )}
                             <div className="flex-1 min-w-0">

@@ -524,7 +524,7 @@ export default function SignUpPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-dvh flex w-full bg-background">
         {/* LEFT SIDE - FORM (45%) */}
         <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:flex-none lg:w-[45%] xl:w-[40%] bg-background relative z-10 overflow-y-auto">
           <Button

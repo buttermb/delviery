@@ -148,6 +148,7 @@ export default function PublicListingDetailPage() {
                           src={image}
                           alt={`${listing.product_name} ${idx + 2}`}
                           className="w-full h-full object-cover"
+                          loading="lazy"
                         />
                       </div>
                     ))}

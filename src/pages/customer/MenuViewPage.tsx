@@ -140,21 +140,6 @@ export default function CustomerMenuViewPage() {
     ? cartItems?.reduce((sum, item) => sum + (item.quantity * (item.products?.price || 0)), 0) || 0
     : 0;
 
-  // Memoize filtered products
-  const _filteredProducts = useMemo(() => {
-    if (!products) return [];
-    if (!searchTerm) return products;
-
-    const searchLower = searchTerm.toLowerCase();
-    return products.filter((item) => {
-      const product = item.products;
-      if (!product) return false;
-      return product.name.toLowerCase().includes(searchLower) ||
-        product.description?.toLowerCase().includes(searchLower) ||
-        product.category?.toLowerCase().includes(searchLower);
-    });
-  }, [products, searchTerm]);
-
   // Extract product IDs for realtime sync
   const productIds = useMemo(() => {
     return products?.map((item: unknown) => (item as { products?: { id?: string } }).products?.id).filter(Boolean) as string[] || [];
@@ -269,8 +254,6 @@ export default function CustomerMenuViewPage() {
       </div>
     );
   }
-
-  const _requiresAccessCode = !!menu.access_code;
 
   return (
     <div className="min-h-dvh bg-[hsl(var(--customer-bg))] pb-16 lg:pb-0">

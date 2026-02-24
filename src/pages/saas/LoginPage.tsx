@@ -279,7 +279,7 @@ export function LoginPage() {
 
   return (
     <ForceLightMode>
-      <div className="min-h-screen flex w-full bg-saas-bg">
+      <div className="min-h-dvh flex w-full bg-saas-bg">
 
         {/* LEFT SIDE - FORM */}
         <div className="w-full lg:w-[40%] flex flex-col relative z-10 bg-white/50 lg:bg-saas-bg backdrop-blur-sm lg:backdrop-blur-none transition-all duration-500">

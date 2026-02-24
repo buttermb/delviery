@@ -40,7 +40,6 @@ export default function SelectPlanPage() {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [skipTrial, setSkipTrial] = useState(false);
   const tenantId = searchParams.get("tenant_id");
-  const _preselectedPlan = searchParams.get("plan") as PlanKey | null;
 
   // Load plans from configuration (Static source of truth)
   useEffect(() => {
@@ -134,10 +133,6 @@ export default function SelectPlanPage() {
       // If active and not free tier, redirect to billing or show message
       // Note: 'free' plan is technically 'active' status usually, so we check plan too.
       // Assuming 'free' plan is named 'free' or similar.
-      const _isPaidPlan = tenant.subscription_plan !== 'free' && tenant.subscription_plan !== 'starter'; // Verify plan names?
-      // Actually 'starter' might be paid.
-      // Let's check if status is active.
-
       if (tenant.subscription_status === 'active' && tenant.subscription_plan !== 'free') {
         toast.info("You already have an active subscription. Redirecting to billing...");
         navigate(`/${tenant.slug}/admin/settings/billing`);

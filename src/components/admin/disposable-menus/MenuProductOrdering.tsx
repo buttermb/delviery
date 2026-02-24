@@ -143,6 +143,7 @@ function SortableProductItem({
           src={product.imageUrl}
           alt={product.name}
           className="w-10 h-10 rounded object-cover shrink-0"
+          loading="lazy"
         />
       ) : (
         <div className="w-10 h-10 rounded bg-muted flex items-center justify-center shrink-0">
