@@ -182,8 +182,8 @@ export function useRecurringOrders() {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringOrders.list(tenant?.id) });
       toast.success("Schedule updated");
     },
-    onError: () => {
-      toast.error("Failed to update schedule");
+    onError: (error: unknown) => {
+      toast.error("Failed to update schedule", { description: humanizeError(error) });
     },
   });
 
@@ -209,8 +209,8 @@ export function useRecurringOrders() {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringOrders.list(tenant?.id) });
       toast.success(is_active ? "Schedule activated" : "Schedule paused");
     },
-    onError: () => {
-      toast.error("Failed to update schedule");
+    onError: (error: unknown) => {
+      toast.error("Failed to update schedule", { description: humanizeError(error) });
     },
   });
 
@@ -236,8 +236,8 @@ export function useRecurringOrders() {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringOrders.list(tenant?.id) });
       toast.success("Schedule deleted");
     },
-    onError: () => {
-      toast.error("Failed to delete schedule");
+    onError: (error: unknown) => {
+      toast.error("Failed to delete schedule", { description: humanizeError(error) });
     },
   });
 

@@ -4,6 +4,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { humanizeError } from "@/lib/humanizeError";
 
 export interface RecurringLineItem {
   description: string;
@@ -93,7 +94,7 @@ export function useRecurringInvoices() {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringSchedules.byTenant(tenant?.id) });
       toast.success("Recurring invoice schedule created");
     },
-    onError: (e) => toast.error(`Failed to create schedule: ${e.message}`)
+    onError: (error: unknown) => toast.error("Failed to create schedule", { description: humanizeError(error) })
   });
 
   const updateSchedule = useMutation({
@@ -126,7 +127,7 @@ export function useRecurringInvoices() {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringSchedules.byTenant(tenant?.id) });
       toast.success("Schedule updated");
     },
-    onError: () => toast.error("Failed to update schedule")
+    onError: (error: unknown) => toast.error("Failed to update schedule", { description: humanizeError(error) })
   });
 
   const toggleActive = useMutation({
@@ -144,7 +145,7 @@ export function useRecurringInvoices() {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringSchedules.byTenant(tenant?.id) });
       toast.success(is_active ? "Schedule activated" : "Schedule paused");
     },
-    onError: () => toast.error("Failed to update schedule")
+    onError: (error: unknown) => toast.error("Failed to update schedule", { description: humanizeError(error) })
   });
 
   const deleteSchedule = useMutation({
@@ -162,7 +163,7 @@ export function useRecurringInvoices() {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringSchedules.byTenant(tenant?.id) });
       toast.success("Schedule deleted");
     },
-    onError: () => toast.error("Failed to delete schedule")
+    onError: (error: unknown) => toast.error("Failed to delete schedule", { description: humanizeError(error) })
   });
 
   const activeSchedules = schedules.filter(s => s.is_active);

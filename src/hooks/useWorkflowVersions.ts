@@ -8,6 +8,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface WorkflowAction {
   id?: string;
@@ -99,7 +100,7 @@ export function useWorkflowVersions(workflowId: string | null) {
       toast.success(`Successfully restored to version ${variables.versionNumber}`);
     },
     onError: (error: unknown) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to restore version');
+      toast.error('Failed to restore version', { description: humanizeError(error) });
     },
   });
 
@@ -126,7 +127,7 @@ export function useWorkflowVersions(workflowId: string | null) {
     },
     onError: (error: unknown) => {
       logger.error('Failed to compare workflow versions', { error });
-      toast.error(error instanceof Error ? error.message : 'Failed to compare versions');
+      toast.error('Failed to compare versions', { description: humanizeError(error) });
     },
   });
 

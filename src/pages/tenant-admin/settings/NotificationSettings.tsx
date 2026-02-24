@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface NotificationPreference {
   email: boolean;
@@ -171,10 +172,10 @@ export default function NotificationSettings() {
       setTimeout(() => setSaveStatus('idle'), 2000);
       queryClient.invalidateQueries({ queryKey: queryKeys.notificationPreferences.byUser(admin?.id) });
     },
-    onError: (err) => {
+    onError: (error: unknown) => {
       setSaveStatus('error');
-      logger.error("Failed to save notification preferences", err);
-      toast.error("Failed to save changes");
+      logger.error("Failed to save notification preferences", error);
+      toast.error("Failed to save changes", { description: humanizeError(error) });
     }
   });
 

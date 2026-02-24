@@ -20,6 +20,7 @@ import { UserPlus, Shield, UserX, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface AdminUser {
   id: string;
@@ -72,9 +73,8 @@ export default function AdminUsersPage() {
       toast.success('Admin status updated');
     },
     onError: (error: unknown) => {
-      const errorObj = error instanceof Error ? error : new Error(String(error));
-      logger.error('Failed to update admin status', errorObj, { component: 'AdminUsersPage' });
-      toast.error(errorObj.message || 'Failed to update admin status');
+      logger.error('Failed to update admin status', error instanceof Error ? error : new Error(String(error)), { component: 'AdminUsersPage' });
+      toast.error('Failed to update admin status', { description: humanizeError(error) });
     },
   });
 
@@ -94,9 +94,8 @@ export default function AdminUsersPage() {
       toast.success('Admin user added');
     },
     onError: (error: unknown) => {
-      const errorObj = error instanceof Error ? error : new Error(String(error));
-      logger.error('Failed to add admin', errorObj, { component: 'AdminUsersPage' });
-      toast.error(errorObj.message || 'Failed to add admin');
+      logger.error('Failed to add admin', error instanceof Error ? error : new Error(String(error)), { component: 'AdminUsersPage' });
+      toast.error('Failed to add admin', { description: humanizeError(error) });
     },
   });
 

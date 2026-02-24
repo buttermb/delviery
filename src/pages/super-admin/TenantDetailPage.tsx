@@ -30,6 +30,7 @@ import { SupportTicketsTab } from "@/components/super-admin/SupportTicketsTab";
 import { SUBSCRIPTION_PLANS } from "@/utils/subscriptionPlans";
 import { DetailPageSkeleton } from "@/components/admin/shared/LoadingSkeletons";
 import { queryKeys } from "@/lib/queryKeys";
+import { humanizeError } from "@/lib/humanizeError";
 
 type Invoice = Database['public']['Tables']['invoices']['Row'];
 type InvoiceLineItem = {
@@ -179,8 +180,7 @@ export default function TenantDetailPage() {
       toast.success(`Tenant ${suspendMutation.variables ? "suspended" : "activated"}`);
     },
     onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-      toast.error(errorMessage);
+      toast.error('Operation failed', { description: humanizeError(error) });
     },
   });
 
@@ -210,8 +210,7 @@ export default function TenantDetailPage() {
       toast.success('Subscription plan updated successfully');
     },
     onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-      toast.error(errorMessage);
+      toast.error('Failed to update subscription plan', { description: humanizeError(error) });
     },
   });
 

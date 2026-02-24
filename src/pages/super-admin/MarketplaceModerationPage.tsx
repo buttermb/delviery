@@ -37,6 +37,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useSuperAdminAuth } from '@/contexts/SuperAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 export default function MarketplaceModerationPage() {
   const { superAdmin } = useSuperAdminAuth();
@@ -152,7 +153,7 @@ export default function MarketplaceModerationPage() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to verify license', error, { component: 'MarketplaceModerationPage' });
-      toast.error(error instanceof Error ? error.message : 'Failed to verify license');
+      toast.error('Failed to verify license', { description: humanizeError(error) });
     },
   });
 

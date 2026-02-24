@@ -4,6 +4,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
 import { queryKeys } from "@/lib/queryKeys";
+import { humanizeError } from "@/lib/humanizeError";
 
 export interface InvoiceTemplateData {
   colors: {
@@ -131,7 +132,7 @@ export function useInvoiceTemplates() {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoiceTemplates.byTenant(tenant?.id) });
       toast.success("Template created");
     },
-    onError: () => toast.error("Failed to create template")
+    onError: (error: unknown) => toast.error("Failed to create template", { description: humanizeError(error) })
   });
 
   const updateTemplate = useMutation({
@@ -158,7 +159,7 @@ export function useInvoiceTemplates() {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoiceTemplates.byTenant(tenant?.id) });
       toast.success("Template updated");
     },
-    onError: () => toast.error("Failed to update template")
+    onError: (error: unknown) => toast.error("Failed to update template", { description: humanizeError(error) })
   });
 
   const setDefaultTemplate = useMutation({
@@ -184,7 +185,7 @@ export function useInvoiceTemplates() {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoiceTemplates.byTenant(tenant?.id) });
       toast.success("Default template updated");
     },
-    onError: () => toast.error("Failed to set default template")
+    onError: (error: unknown) => toast.error("Failed to set default template", { description: humanizeError(error) })
   });
 
   const deleteTemplate = useMutation({
@@ -202,7 +203,7 @@ export function useInvoiceTemplates() {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoiceTemplates.byTenant(tenant?.id) });
       toast.success("Template deleted");
     },
-    onError: () => toast.error("Failed to delete template")
+    onError: (error: unknown) => toast.error("Failed to delete template", { description: humanizeError(error) })
   });
 
   const defaultTemplate = templates.find(t => t.is_default) || templates[0];

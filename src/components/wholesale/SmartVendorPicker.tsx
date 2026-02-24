@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface SmartVendorPickerProps {
     selectedVendor: Vendor | null;
@@ -130,7 +131,7 @@ function CreateVendorDialog({ open, onOpenChange, onSuccess }: { open: boolean, 
                 setEmail('');
                 setPhone('');
             },
-            onError: () => toast.error("Failed to create vendor")
+            onError: (error: unknown) => toast.error("Failed to create vendor", { description: humanizeError(error) })
         });
     };
 

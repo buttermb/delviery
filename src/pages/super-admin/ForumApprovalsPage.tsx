@@ -18,6 +18,7 @@ import { CheckCircle, XCircle, Search, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
@@ -98,9 +99,8 @@ export default function ForumApprovalsPage() {
       toast.success('User approved successfully');
     },
     onError: (error: unknown) => {
-      const errorObj = error instanceof Error ? error : new Error(String(error));
-      logger.error('Failed to approve forum user', errorObj, { component: 'ForumApprovalsPage' });
-      toast.error(errorObj.message || 'Failed to approve user');
+      logger.error('Failed to approve forum user', error instanceof Error ? error : new Error(String(error)), { component: 'ForumApprovalsPage' });
+      toast.error('Failed to approve user', { description: humanizeError(error) });
     },
   });
 
@@ -132,9 +132,8 @@ export default function ForumApprovalsPage() {
       toast.success('User rejected');
     },
     onError: (error: unknown) => {
-      const errorObj = error instanceof Error ? error : new Error(String(error));
-      logger.error('Failed to reject forum user', errorObj, { component: 'ForumApprovalsPage' });
-      toast.error(errorObj.message || 'Failed to reject user');
+      logger.error('Failed to reject forum user', error instanceof Error ? error : new Error(String(error)), { component: 'ForumApprovalsPage' });
+      toast.error('Failed to reject user', { description: humanizeError(error) });
     },
   });
 
