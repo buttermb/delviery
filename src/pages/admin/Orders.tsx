@@ -908,7 +908,7 @@ export default function Orders() {
           <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
             {canEdit('orders') ? (
               <Select value={order.status} onValueChange={(value) => handleStatusChange(order.id, value)}>
-                <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
+                <SelectTrigger className="h-8 w-[130px] border-none bg-transparent hover:bg-muted/50 focus-visible:ring-0 p-0">
                   <SelectValue>{getStatusBadge(order.status)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>

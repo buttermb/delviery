@@ -69,7 +69,7 @@ export function SearchInput({
                         type="button"
                         aria-label="Clear search"
                         onClick={handleClear}
-                        className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                        className="text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                     >
                         <X className="h-4 w-4" />
                     </button>

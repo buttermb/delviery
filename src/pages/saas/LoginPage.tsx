@@ -353,7 +353,7 @@ export function LoginPage() {
                             <Input
                               {...field}
                               type="email"
-                              className="h-12 bg-white border-slate-200 focus:border-saas-primary focus:ring-1 focus:ring-saas-primary/20 rounded-xl pl-4 transition-all duration-200 shadow-sm group-hover:shadow-md"
+                              className="h-12 bg-white border-slate-200 focus-visible:border-saas-primary focus-visible:ring-1 focus-visible:ring-saas-primary/20 rounded-xl pl-4 transition-all duration-200 shadow-sm group-hover:shadow-md"
                               placeholder="you@company.com"
                               autoComplete="email"
                             />
@@ -376,7 +376,7 @@ export function LoginPage() {
                             <Input
                               {...field}
                               type={showPassword ? "text" : "password"}
-                              className="h-12 bg-white border-slate-200 focus:border-saas-primary focus:ring-1 focus:ring-saas-primary/20 rounded-xl pl-4 pr-10 transition-all duration-200 shadow-sm group-hover:shadow-md"
+                              className="h-12 bg-white border-slate-200 focus-visible:border-saas-primary focus-visible:ring-1 focus-visible:ring-saas-primary/20 rounded-xl pl-4 pr-10 transition-all duration-200 shadow-sm group-hover:shadow-md"
                               placeholder="••••••••"
                               autoComplete="current-password"
                             />

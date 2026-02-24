@@ -34,7 +34,7 @@ function StatItem({ icon, label, value, color = 'default', onClick }: StatItemPr
       className={cn(
         'flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg transition-all',
         'hover:bg-white/5 active:scale-95',
-        'focus:outline-none focus:ring-2 focus:ring-emerald-500/50',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
         'flex-shrink-0 min-w-fit'
       )}
     >
@@ -127,7 +127,7 @@ export function QuickStatsHeader({ onStatClick }: QuickStatsHeaderProps) {
           className={cn(
             'relative flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg transition-all',
             'hover:bg-white/5 active:scale-95',
-            'focus:outline-none focus:ring-2 focus:ring-emerald-500/50',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
             'flex-shrink-0'
           )}
         >

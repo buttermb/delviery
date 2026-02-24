@@ -108,7 +108,7 @@ export function StatusDropdown({
       <DropdownMenuTrigger
         disabled={disabled || isUpdating}
         className={cn(
-          'inline-flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md transition-colors',
+          'inline-flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md transition-colors',
           disabled && 'opacity-50 cursor-not-allowed',
           className
         )}

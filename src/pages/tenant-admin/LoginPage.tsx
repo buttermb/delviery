@@ -345,7 +345,7 @@ export default function TenantAdminLoginPage() {
                 autoComplete="email"
                 inputMode="email"
                 enterKeyHint="next"
-                className="min-h-[44px] sm:h-12 bg-white border-gray-200 transition-all text-sm sm:text-base touch-manipulation focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]"
+                className="min-h-[44px] sm:h-12 bg-white border-gray-200 transition-all text-sm sm:text-base touch-manipulation focus-visible:border-[hsl(var(--tenant-primary))] focus-visible:ring-[hsl(var(--tenant-primary))]"
               />
             </div>
 
@@ -364,7 +364,7 @@ export default function TenantAdminLoginPage() {
                   disabled={loading}
                   autoComplete="current-password"
                   enterKeyHint="done"
-                  className="min-h-[44px] sm:h-12 bg-white border-gray-200 transition-all text-sm sm:text-base touch-manipulation focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))] pr-10"
+                  className="min-h-[44px] sm:h-12 bg-white border-gray-200 transition-all text-sm sm:text-base touch-manipulation focus-visible:border-[hsl(var(--tenant-primary))] focus-visible:ring-[hsl(var(--tenant-primary))] pr-10"
                 />
                 <button
                   type="button"

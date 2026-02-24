@@ -135,7 +135,7 @@ export function StoreCard({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                className="text-destructive focus:text-destructive"
+                className="text-destructive focus-visible:text-destructive"
                 onClick={() => onDelete(store)}
               >
                 <Trash2 className="w-4 h-4 mr-2" />

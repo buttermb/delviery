@@ -114,12 +114,12 @@ export default function SuperAdminSettingsPage() {
                 <Input 
                   placeholder="First Name" 
                   defaultValue={superAdmin?.first_name || ""}
-                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
+                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus-visible:border-[hsl(var(--super-admin-primary))]"
                 />
                 <Input 
                   placeholder="Last Name" 
                   defaultValue={superAdmin?.last_name || ""}
-                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
+                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus-visible:border-[hsl(var(--super-admin-primary))]"
                 />
               </div>
             </div>
@@ -149,7 +149,7 @@ export default function SuperAdminSettingsPage() {
                   required
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
+                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus-visible:border-[hsl(var(--super-admin-primary))]"
                 />
               </div>
               <div className="space-y-2">
@@ -159,7 +159,7 @@ export default function SuperAdminSettingsPage() {
                   required
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
+                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus-visible:border-[hsl(var(--super-admin-primary))]"
                 />
               </div>
               <div className="space-y-2">
@@ -169,7 +169,7 @@ export default function SuperAdminSettingsPage() {
                   required
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]"
+                  className="bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus-visible:border-[hsl(var(--super-admin-primary))]"
                 />
               </div>
               <Button 

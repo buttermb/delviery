@@ -146,7 +146,7 @@ function CodeInput({
           className={cn(
             'w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-mono font-bold',
             'border-2 rounded-lg bg-background/80 backdrop-blur-sm',
-            'focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary',
             'transition-colors duration-200',
             value[index] ? 'border-primary/50 bg-primary/5' : 'border-muted-foreground/30',
             disabled && 'opacity-50 cursor-not-allowed'

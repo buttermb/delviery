@@ -425,7 +425,7 @@ export default function WholesaleClients() {
                             onValueChange={(value) => handleUpdateClient(client.id, { client_type: value })}
                             disabled={updateClientMutation.isPending}
                           >
-                            <SelectTrigger className="h-8 w-[100px] border-none bg-transparent hover:bg-muted/50 focus:ring-0 p-0">
+                            <SelectTrigger className="h-8 w-[100px] border-none bg-transparent hover:bg-muted/50 focus-visible:ring-0 p-0">
                               <SelectValue>
                                 <Badge variant="outline" className="text-xs pointer-events-none">
                                   {getClientTypeLabel(client.client_type)}

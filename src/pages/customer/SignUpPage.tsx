@@ -296,7 +296,7 @@ export default function CustomerSignUpPage() {
                   disabled={loading}
                   autoComplete="given-name"
                   aria-invalid={!!(touched.firstName && fieldErrors.firstName)}
-                  className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
+                  className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
                 />
                 {touched.firstName && fieldErrors.firstName && (
                   <p className="text-sm text-red-400" role="alert">{fieldErrors.firstName}</p>
@@ -318,7 +318,7 @@ export default function CustomerSignUpPage() {
                   disabled={loading}
                   autoComplete="family-name"
                   aria-invalid={!!(touched.lastName && fieldErrors.lastName)}
-                  className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
+                  className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
                 />
                 {touched.lastName && fieldErrors.lastName && (
                   <p className="text-sm text-red-400" role="alert">{fieldErrors.lastName}</p>
@@ -343,7 +343,7 @@ export default function CustomerSignUpPage() {
                 enterKeyHint="next"
                 autoComplete="email"
                 aria-invalid={!!(touched.email && fieldErrors.email)}
-                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
+                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
               {touched.email && fieldErrors.email && (
                 <p className="text-sm text-red-400" role="alert">{fieldErrors.email}</p>
@@ -364,7 +364,7 @@ export default function CustomerSignUpPage() {
                 inputMode="tel"
                 enterKeyHint="next"
                 autoComplete="tel"
-                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
+                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
             </div>
 
@@ -374,7 +374,7 @@ export default function CustomerSignUpPage() {
                 id="isBusinessBuyer"
                 checked={formData.isBusinessBuyer}
                 onChange={(e) => setFormData({ ...formData, isBusinessBuyer: e.target.checked })}
-                className="rounded border-slate-700 bg-slate-900/50 text-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20"
+                className="rounded border-slate-700 bg-slate-900/50 text-[hsl(var(--customer-primary))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--customer-primary))]/20"
               />
               <Label htmlFor="isBusinessBuyer" className="text-sm text-slate-300 cursor-pointer">
                 I'm a business buyer (wholesale)
@@ -408,7 +408,7 @@ export default function CustomerSignUpPage() {
                 autoComplete="new-password"
                 enterKeyHint="next"
                 aria-invalid={!!(touched.password && fieldErrors.password)}
-                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
+                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
               <PasswordStrengthIndicator password={formData.password} />
               {touched.password && fieldErrors.password && (
@@ -439,7 +439,7 @@ export default function CustomerSignUpPage() {
                 autoComplete="new-password"
                 enterKeyHint="done"
                 aria-invalid={!!(touched.confirmPassword && fieldErrors.confirmPassword)}
-                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
+                className="h-11 bg-slate-900/80 border-slate-600 text-white placeholder:text-slate-400 focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--customer-primary))]/20 rounded-lg [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!bg-slate-900"
               />
               {touched.confirmPassword && fieldErrors.confirmPassword && (
                 <p className="text-sm text-red-400" role="alert">{fieldErrors.confirmPassword}</p>

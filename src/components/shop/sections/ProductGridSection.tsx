@@ -240,7 +240,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                             placeholder="Search products..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full px-4 py-3 rounded-full border border-neutral-200 focus:outline-none focus:ring-2"
+                            className="w-full px-4 py-3 rounded-full border border-neutral-200 focus-visible:outline-none focus-visible:ring-2"
                             style={{ borderColor: `${text_color}20`, backgroundColor: `${text_color}05` }}
                         />
                     </div>

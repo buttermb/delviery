@@ -242,7 +242,7 @@ export default function CustomerSettingsPage() {
                 <Input 
                   placeholder="First Name" 
                   defaultValue={customer?.first_name || ""}
-                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-[hsl(var(--customer-primary))]/20"
                 />
               </div>
               <div className="space-y-2">
@@ -250,7 +250,7 @@ export default function CustomerSettingsPage() {
                 <Input 
                   placeholder="Last Name" 
                   defaultValue={customer?.last_name || ""}
-                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-[hsl(var(--customer-primary))]/20"
                 />
               </div>
             </div>
@@ -260,7 +260,7 @@ export default function CustomerSettingsPage() {
               <Input 
                 placeholder="Phone Number" 
                 type="tel"
-                className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-[hsl(var(--customer-primary))]/20"
               />
             </div>
 
@@ -289,7 +289,7 @@ export default function CustomerSettingsPage() {
                   required
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-[hsl(var(--customer-primary))]/20"
                 />
               </div>
               <div className="space-y-2">
@@ -299,7 +299,7 @@ export default function CustomerSettingsPage() {
                   required
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-[hsl(var(--customer-primary))]/20"
                 />
                 {passwordData.newPassword && (
                   <PasswordStrengthIndicator password={passwordData.newPassword} />
@@ -320,7 +320,7 @@ export default function CustomerSettingsPage() {
                   required
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20"
+                  className="border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-[hsl(var(--customer-primary))]/20"
                 />
               </div>
               <Button 

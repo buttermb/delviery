@@ -663,7 +663,7 @@ export function ProductsListPage() {
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
+              className="text-destructive focus-visible:text-destructive"
               onClick={() => handleDelete(product.id)}
             >
               <Trash2 className="mr-2 h-4 w-4" /> Delete

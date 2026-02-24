@@ -434,7 +434,7 @@ export function ProductVariants({
               disabled={!variant.is_active || variant.available_quantity <= 0}
               className={cn(
                 'w-full p-3 rounded-lg border text-left transition-colors',
-                'hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring',
+                'hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 !variant.is_active && 'opacity-50 cursor-not-allowed',
                 variant.available_quantity <= 0 && 'opacity-50 cursor-not-allowed'
               )}

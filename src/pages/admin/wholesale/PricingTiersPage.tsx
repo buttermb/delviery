@@ -216,7 +216,7 @@ export default function PricingTiersPage() {
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onClick={() => handleDeleteTier(tier)}
-                                            className="text-destructive focus:text-destructive"
+                                            className="text-destructive focus-visible:text-destructive"
                                         >
                                             <Trash2 className="h-4 w-4 mr-2" />
                                             Delete

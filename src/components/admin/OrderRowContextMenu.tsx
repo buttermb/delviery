@@ -197,7 +197,7 @@ export function OrderRowContextMenu({
         <ContextMenuItem
           onClick={() => onAction('cancel')}
           disabled={isDisabled('cancel') || currentStatus === 'cancelled'}
-          className="text-destructive focus:text-destructive"
+          className="text-destructive focus-visible:text-destructive"
         >
           <Ban className="mr-2 h-4 w-4" />
           Cancel Order

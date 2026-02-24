@@ -91,7 +91,7 @@ export function DeliveryETACell({ eta, orderStatus }: DeliveryETACellProps) {
         }}
         className={cn(
           'flex flex-col items-start gap-0.5 rounded-md px-2 py-1 text-left transition-colors',
-          'hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
+          'hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
           eta.isOverdue
             ? 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800'
             : 'bg-transparent'

@@ -485,7 +485,7 @@ export function OrdersListPage() {
             {original.status !== 'cancelled' && (
               <DropdownMenuItem
                 onClick={() => updateStatusMutation.mutate({ id: original.id, status: 'cancelled' })}
-                className="text-destructive focus:text-destructive"
+                className="text-destructive focus-visible:text-destructive"
               >
                 <XCircle className="mr-2 h-4 w-4" />
                 Cancel Order
@@ -496,7 +496,7 @@ export function OrdersListPage() {
                 setOrderToDelete(original.id);
                 setDeleteDialogOpen(true);
               }}
-              className="text-destructive focus:text-destructive"
+              className="text-destructive focus-visible:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Order

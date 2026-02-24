@@ -301,10 +301,10 @@ export function QuickActionsButton({ className }: QuickActionsButtonProps) {
           'h-14 w-14 rounded-full shadow-lg',
           'flex items-center justify-center',
           'text-white transition-colors',
-          'focus:outline-none focus:ring-2 focus:ring-offset-2',
-          isOpen 
-            ? 'bg-gray-700 hover:bg-gray-800 focus:ring-gray-500' 
-            : 'bg-primary hover:bg-primary/90 focus:ring-primary'
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          isOpen
+            ? 'bg-gray-700 hover:bg-gray-800 focus-visible:ring-gray-500'
+            : 'bg-primary hover:bg-primary/90 focus-visible:ring-primary'
         )}
         aria-label={isOpen ? 'Close quick actions' : 'Open quick actions'}
         aria-expanded={isOpen}

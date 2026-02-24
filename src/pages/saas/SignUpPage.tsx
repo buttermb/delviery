@@ -666,7 +666,7 @@ export default function SignUpPage() {
                                   placeholder="Big Mike's Wholesale"
                                   {...field}
                                   className={cn(
-                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus-visible:ring-4 focus-visible:ring-primary/20 transition-all pr-10",
                                     field.value && !form.formState.errors.business_name && "border-emerald-500/50"
                                   )}
                                 />
@@ -695,7 +695,7 @@ export default function SignUpPage() {
                                   placeholder="John Doe"
                                   {...field}
                                   className={cn(
-                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus-visible:ring-4 focus-visible:ring-primary/20 transition-all pr-10",
                                     field.value && !form.formState.errors.owner_name && "border-emerald-500/50"
                                   )}
                                 />
@@ -726,7 +726,7 @@ export default function SignUpPage() {
                                   autoComplete="email"
                                   {...field}
                                   className={cn(
-                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all pr-10",
+                                    "h-12 bg-card/50 backdrop-blur-sm border-2 focus-visible:ring-4 focus-visible:ring-primary/20 transition-all pr-10",
                                     field.value && !form.formState.errors.email && "border-emerald-500/50"
                                   )}
                                 />
@@ -756,7 +756,7 @@ export default function SignUpPage() {
                                   placeholder="••••••••"
                                   autoComplete="new-password"
                                   {...field}
-                                  className="h-12 pr-10 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
+                                  className="h-12 pr-10 bg-card/50 backdrop-blur-sm border-2 focus-visible:ring-4 focus-visible:ring-primary/20 transition-all"
                                 />
                                 <button
                                   type="button"
@@ -827,7 +827,7 @@ export default function SignUpPage() {
                                     type="tel"
                                     placeholder="555-123-4567"
                                     {...field}
-                                    className="h-12 bg-card/50 backdrop-blur-sm border-2 focus:ring-4 focus:ring-primary/20 transition-all"
+                                    className="h-12 bg-card/50 backdrop-blur-sm border-2 focus-visible:ring-4 focus-visible:ring-primary/20 transition-all"
                                   />
                                 </FormControl>
                                 <FormMessage />

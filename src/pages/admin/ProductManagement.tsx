@@ -1085,7 +1085,7 @@ export default function ProductManagement() {
             </DropdownMenuItem>
             {canDelete('products') && (
               <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
+                className="text-destructive focus-visible:text-destructive"
                 disabled={isDeleting}
                 onClick={() => handleDelete(product.id)}
               >

@@ -140,7 +140,7 @@ export function DeliveryRatingForm({
               onClick={() => setSelectedRating(star)}
               onMouseEnter={() => setHoveredRating(star)}
               onMouseLeave={() => setHoveredRating(0)}
-              className="transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+              className="transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
               aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
             >
               <Star

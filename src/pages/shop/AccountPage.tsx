@@ -336,7 +336,7 @@ export default function AccountPage() {
                     onChange={(e) => setMagicCode(e.target.value.replace(/\D/g, ''))}
                     placeholder="000000"
                     aria-label="Verification code"
-                    className="text-center text-3xl tracking-[1em] font-mono h-16 rounded-xl border-neutral-200 focus:border-neutral-900 focus:ring-neutral-900 bg-white dark:bg-zinc-950"
+                    className="text-center text-3xl tracking-[1em] font-mono h-16 rounded-xl border-neutral-200 focus-visible:border-neutral-900 focus-visible:ring-neutral-900 bg-white dark:bg-zinc-950"
                     onKeyDown={(e) => e.key === 'Enter' && handleVerifyMagicCode()}
                     autoFocus
                   />
@@ -387,7 +387,7 @@ export default function AccountPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@example.com"
-                    className="h-14 px-4 text-lg rounded-xl border-neutral-200 focus:border-neutral-900 focus:ring-neutral-900 bg-neutral-50 dark:bg-neutral-900 focus:bg-white dark:focus:bg-zinc-950 transition-all"
+                    className="h-14 px-4 text-lg rounded-xl border-neutral-200 focus-visible:border-neutral-900 focus-visible:ring-neutral-900 bg-neutral-50 dark:bg-neutral-900 focus-visible:bg-white dark:focus-visible:bg-zinc-950 transition-all"
                     onKeyDown={(e) => e.key === 'Enter' && handleEmailLookup()}
                   />
                 </div>
@@ -450,7 +450,7 @@ export default function AccountPage() {
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleTrackOrder()}
-                  className="h-12 rounded-lg bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 focus:bg-white dark:focus:bg-zinc-950"
+                  className="h-12 rounded-lg bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 focus-visible:bg-white dark:focus-visible:bg-zinc-950"
                   aria-label="Order number or tracking code"
                 />
                 <Button variant="secondary" onClick={handleTrackOrder} className="h-12 w-12 rounded-lg shrink-0">

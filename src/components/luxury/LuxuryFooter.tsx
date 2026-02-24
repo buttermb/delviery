@@ -29,7 +29,7 @@ export default function LuxuryFooter() {
                 <input
                   type="email"
                   placeholder="your@email.com"
-                  className="flex-1 px-4 py-3 bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-full text-white text-sm font-light placeholder:text-white/30 focus:outline-none focus:border-white/20 focus-visible:ring-2 focus-visible:ring-white/30 transition-colors"
+                  className="flex-1 px-4 py-3 bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-full text-white text-sm font-light placeholder:text-white/30 focus-visible:outline-none focus-visible:border-white/20 focus-visible:ring-2 focus-visible:ring-white/30 transition-colors"
                 />
                 <button className="px-6 py-3 bg-background text-foreground text-sm font-light rounded-full hover:bg-accent transition-colors whitespace-nowrap">
                   Subscribe

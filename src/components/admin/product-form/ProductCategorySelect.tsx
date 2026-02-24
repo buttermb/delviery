@@ -221,7 +221,7 @@ function CategoryItem({ category, isSelected, onSelect, label }: CategoryItemPro
       className={cn(
         'w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm',
         'hover:bg-accent hover:text-accent-foreground',
-        'focus:bg-accent focus:text-accent-foreground focus:outline-none',
+        'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
         isSelected && 'bg-accent'
       )}
       style={{

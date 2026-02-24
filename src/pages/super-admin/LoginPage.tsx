@@ -163,7 +163,7 @@ export default function SuperAdminLoginPage() {
                 autoComplete="email"
                 inputMode="email"
                 enterKeyHint="next"
-                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all"
+                className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:border-[hsl(var(--super-admin-primary))] focus-visible:ring-[hsl(var(--super-admin-primary))]/20 transition-all"
               />
             </div>
 
@@ -182,7 +182,7 @@ export default function SuperAdminLoginPage() {
                   disabled={loading}
                   autoComplete="current-password"
                   enterKeyHint="done"
-                  className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-[hsl(var(--super-admin-primary))] focus:ring-[hsl(var(--super-admin-primary))]/20 transition-all pr-10"
+                  className="bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:border-[hsl(var(--super-admin-primary))] focus-visible:ring-[hsl(var(--super-admin-primary))]/20 transition-all pr-10"
                 />
                 <button
                   type="button"

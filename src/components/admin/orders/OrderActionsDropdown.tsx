@@ -201,7 +201,7 @@ export function OrderActionsDropdown({
               disabled={disabled}
               className={cn(
                 'cursor-pointer',
-                'text-destructive focus:text-destructive focus:bg-destructive/10'
+                'text-destructive focus-visible:text-destructive focus-visible:bg-destructive/10'
               )}
             >
               {isCurrentLoading ? (

@@ -230,7 +230,7 @@ export function ProductCategorySelect({
           className={cn(
             'w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm group',
             'hover:bg-accent hover:text-accent-foreground',
-            'focus:bg-accent focus:text-accent-foreground focus:outline-none',
+            'focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-none',
             isSelected && 'bg-accent font-medium'
           )}
           style={{ paddingLeft: `${8 + level * 16}px` }}

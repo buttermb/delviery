@@ -373,7 +373,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
                                     <input
                                         type="checkbox"
                                         id="empty-null"
-                                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mr-2"
+                                        className="h-4 w-4 rounded border-gray-300 text-primary focus-visible:ring-primary mr-2"
                                         checked={treatEmptyAsNull}
                                         onChange={(e) => setTreatEmptyAsNull(e.target.checked)}
                                     />

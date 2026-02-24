@@ -161,7 +161,7 @@ export function PasswordResetPage() {
         text: "text-[hsl(var(--super-admin-text))]",
         textLight: "text-[hsl(var(--super-admin-text-light))]",
         border: "border-[hsl(var(--super-admin-border))]",
-        input: "bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus:border-[hsl(var(--super-admin-primary))]",
+        input: "bg-[hsl(var(--super-admin-surface))] border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] focus-visible:border-[hsl(var(--super-admin-primary))]",
         button: "bg-gradient-to-r from-[hsl(var(--super-admin-primary))] to-[hsl(var(--super-admin-secondary))] hover:opacity-90 text-white",
         buttonOutline: "border-[hsl(var(--super-admin-border))] text-[hsl(var(--super-admin-text))] hover:bg-[hsl(var(--super-admin-surface))]",
       };
@@ -172,7 +172,7 @@ export function PasswordResetPage() {
         text: "text-[hsl(var(--tenant-text))]",
         textLight: "text-[hsl(var(--tenant-text-light))]",
         border: "border-[hsl(var(--tenant-border))]",
-        input: "border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] focus:border-[hsl(var(--tenant-primary))] focus:ring-[hsl(var(--tenant-primary))]/20",
+        input: "border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] focus-visible:border-[hsl(var(--tenant-primary))] focus-visible:ring-[hsl(var(--tenant-primary))]/20",
         button: "bg-[hsl(var(--tenant-primary))] hover:bg-[hsl(var(--tenant-primary))]/90 text-white",
         buttonOutline: "border-[hsl(var(--tenant-border))] text-[hsl(var(--tenant-text))] hover:bg-[hsl(var(--tenant-surface))]",
       };
@@ -183,7 +183,7 @@ export function PasswordResetPage() {
         text: "text-[hsl(var(--customer-text))]",
         textLight: "text-[hsl(var(--customer-text-light))]",
         border: "border-[hsl(var(--customer-border))]",
-        input: "border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus:border-[hsl(var(--customer-primary))] focus:ring-[hsl(var(--customer-primary))]/20",
+        input: "border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-[hsl(var(--customer-primary))]/20",
         button: "bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white",
         buttonOutline: "border-[hsl(var(--customer-border))] text-[hsl(var(--customer-text))] hover:bg-[hsl(var(--customer-surface))]",
       };

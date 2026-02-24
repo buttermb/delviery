@@ -375,7 +375,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
                                     <input
                                         type="checkbox"
                                         id="empty-null"
-                                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                        className="h-4 w-4 rounded border-gray-300 text-primary focus-visible:ring-primary"
                                         checked={treatEmptyAsNull}
                                         onChange={(e) => setTreatEmptyAsNull(e.target.checked)}
                                     />

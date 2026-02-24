@@ -345,7 +345,7 @@ export function OrderRefundModal({
               id="restore-inventory"
               checked={restoreInventory}
               onChange={(e) => setRestoreInventory(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              className="h-4 w-4 rounded border-gray-300 text-primary focus-visible:ring-primary"
             />
             <Label htmlFor="restore-inventory" className="flex items-center gap-2">
               <Package className="h-4 w-4" />

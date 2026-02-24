@@ -126,9 +126,9 @@ export function LongPressMenu({
                             className={cn(
                                 'flex items-center gap-2 px-3 py-2.5 rounded-md cursor-pointer',
                                 'text-sm outline-none transition-colors',
-                                'focus:bg-accent focus:text-accent-foreground',
+                                'focus-visible:bg-accent focus-visible:text-accent-foreground',
                                 'data-[disabled]:opacity-50 data-[disabled]:pointer-events-none',
-                                item.destructive && 'text-destructive focus:bg-destructive/10 focus:text-destructive'
+                                item.destructive && 'text-destructive focus-visible:bg-destructive/10 focus-visible:text-destructive'
                             )}
                         >
                             {item.icon && <span className="w-4 h-4">{item.icon}</span>}

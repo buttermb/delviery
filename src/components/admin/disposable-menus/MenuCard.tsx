@@ -347,7 +347,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                           });
                           navigate(`/${tenantSlug}/admin/storefront/builder?${params.toString()}`);
                         }}
-                        className="text-violet-600 focus:text-violet-700 focus:bg-violet-50"
+                        className="text-violet-600 focus-visible:text-violet-700 focus-visible:bg-violet-50"
                       >
                         <Store className="h-4 w-4 mr-2" />
                         Turn Into Storefront
@@ -355,7 +355,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => setBurnDialogOpen(true)}
-                        className="text-destructive focus:text-destructive"
+                        className="text-destructive focus-visible:text-destructive"
                       >
                         <Flame className="h-4 w-4 mr-2" />
                         Burn Menu

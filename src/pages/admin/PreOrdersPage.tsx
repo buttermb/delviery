@@ -282,7 +282,7 @@ export default function PreOrdersPage() {
                                                                     e.stopPropagation();
                                                                     handleCancel(order.id, order.pre_order_number);
                                                                 }}
-                                                                className="text-destructive focus:text-destructive"
+                                                                className="text-destructive focus-visible:text-destructive"
                                                             >
                                                                 Cancel Order
                                                             </DropdownMenuItem>

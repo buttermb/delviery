@@ -526,7 +526,7 @@ export default function CheckoutPage() {
                         <Input
                           id="street"
                           placeholder="123 Main St"
-                          className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))]"
+                          className="border-[hsl(var(--customer-border))] focus-visible:border-[hsl(var(--customer-primary))]"
                         />
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -535,7 +535,7 @@ export default function CheckoutPage() {
                           <Input
                             id="city"
                             placeholder="Los Angeles"
-                            className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))]"
+                            className="border-[hsl(var(--customer-border))] focus-visible:border-[hsl(var(--customer-primary))]"
                           />
                         </div>
                         <div>
@@ -543,7 +543,7 @@ export default function CheckoutPage() {
                           <Input
                             id="state"
                             placeholder="CA"
-                            className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))]"
+                            className="border-[hsl(var(--customer-border))] focus-visible:border-[hsl(var(--customer-primary))]"
                           />
                         </div>
                       </div>
@@ -552,7 +552,7 @@ export default function CheckoutPage() {
                         <Input
                           id="zip"
                           placeholder="90001"
-                          className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))]"
+                          className="border-[hsl(var(--customer-border))] focus-visible:border-[hsl(var(--customer-primary))]"
                         />
                       </div>
                     </div>
@@ -570,7 +570,7 @@ export default function CheckoutPage() {
                       value={deliveryInfo.preferredDate}
                       onChange={(e) => setDeliveryInfo(prev => ({ ...prev, preferredDate: e.target.value }))}
                       min={new Date().toISOString().split('T')[0]}
-                      className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))]"
+                      className="border-[hsl(var(--customer-border))] focus-visible:border-[hsl(var(--customer-primary))]"
                     />
                   </div>
 
@@ -585,7 +585,7 @@ export default function CheckoutPage() {
                       placeholder="Back entrance, ring bell twice..."
                       value={deliveryInfo.instructions}
                       onChange={(e) => setDeliveryInfo(prev => ({ ...prev, instructions: e.target.value }))}
-                      className="border-[hsl(var(--customer-border))] focus:border-[hsl(var(--customer-primary))]"
+                      className="border-[hsl(var(--customer-border))] focus-visible:border-[hsl(var(--customer-primary))]"
                       rows={3}
                     />
                   </div>

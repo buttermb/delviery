@@ -26,7 +26,7 @@ export function MarketingNav() {
       {/* Skip to main content link */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-sticky focus:px-4 focus:py-2 focus:bg-[hsl(var(--marketing-primary))] focus:text-white focus:rounded-lg focus:shadow-lg"
+        className="sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-sticky focus-visible:px-4 focus-visible:py-2 focus-visible:bg-[hsl(var(--marketing-primary))] focus-visible:text-white focus-visible:rounded-lg focus-visible:shadow-lg"
       >
         Skip to main content
       </a>

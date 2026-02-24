@@ -84,7 +84,7 @@ export function InventoryGridDemo() {
                         placeholder="Search products..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-[hsl(var(--marketing-bg-subtle))] border border-[hsl(var(--marketing-border))] rounded-lg pl-9 pr-3 py-2 text-sm text-[hsl(var(--marketing-text))] placeholder:text-[hsl(var(--marketing-text-light))] focus:outline-none focus:border-primary/50"
+                        className="w-full bg-[hsl(var(--marketing-bg-subtle))] border border-[hsl(var(--marketing-border))] rounded-lg pl-9 pr-3 py-2 text-sm text-[hsl(var(--marketing-text))] placeholder:text-[hsl(var(--marketing-text-light))] focus-visible:outline-none focus-visible:border-primary/50"
                     />
                 </div>
             </div>

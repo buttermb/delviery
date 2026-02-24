@@ -1005,7 +1005,7 @@ export function InvoicesPage() {
                                                         <>
                                                             <DropdownMenuSeparator />
                                                             <DropdownMenuItem
-                                                                className="py-3 text-destructive focus:text-destructive"
+                                                                className="py-3 text-destructive focus-visible:text-destructive"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     setInvoiceToVoid({ id: invoice.id, number: invoice.invoice_number });
@@ -1204,7 +1204,7 @@ export function InvoicesPage() {
                                                         <>
                                                             <DropdownMenuSeparator />
                                                             <DropdownMenuItem
-                                                                className="text-destructive focus:text-destructive"
+                                                                className="text-destructive focus-visible:text-destructive"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     setInvoiceToVoid({ id: invoice.id, number: invoice.invoice_number });

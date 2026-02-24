@@ -130,7 +130,7 @@ export default function VerifyEmailPage() {
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                   placeholder="000000"
-                  className="h-14 text-center text-3xl tracking-[0.5em] font-mono font-medium border-slate-200 focus:border-primary focus:ring-primary rounded-xl"
+                  className="h-14 text-center text-3xl tracking-[0.5em] font-mono font-medium border-slate-200 focus-visible:border-primary focus-visible:ring-primary rounded-xl"
                   autoFocus
                 />
               </div>

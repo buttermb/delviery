@@ -271,7 +271,7 @@ export default function CustomerLoginPage() {
                 autoComplete="email"
                 inputMode="email"
                 enterKeyHint="next"
-                className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
+                className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--customer-primary))]/20 rounded-lg"
               />
             </div>
 
@@ -318,7 +318,7 @@ export default function CustomerLoginPage() {
                       required
                       autoComplete="current-password"
                       enterKeyHint="done"
-                      className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-[hsl(var(--customer-primary))] focus:ring-2 focus:ring-[hsl(var(--customer-primary))]/20 rounded-lg pr-10"
+                      className="h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus-visible:border-[hsl(var(--customer-primary))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--customer-primary))]/20 rounded-lg pr-10"
                     />
                     <button
                       type="button"

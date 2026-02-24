@@ -377,7 +377,7 @@ export function SelectField<TFieldValues extends FieldValues, TName extends Fiel
           >
             <SelectTrigger
               id={name}
-              className={cn(error && 'border-destructive focus:ring-destructive')}
+              className={cn(error && 'border-destructive focus-visible:ring-destructive')}
             >
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>
@@ -452,7 +452,7 @@ export function DateField<TFieldValues extends FieldValues, TName extends FieldP
                 className={cn(
                   'w-full justify-start text-left font-normal',
                   !field.value && 'text-muted-foreground',
-                  error && 'border-destructive focus:ring-destructive'
+                  error && 'border-destructive focus-visible:ring-destructive'
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -605,7 +605,7 @@ export function ComboboxField<TFieldValues extends FieldValues, TName extends Fi
                   className={cn(
                     'w-full justify-between font-normal',
                     !field.value && 'text-muted-foreground',
-                    error && 'border-destructive focus:ring-destructive'
+                    error && 'border-destructive focus-visible:ring-destructive'
                   )}
                 >
                   {selectedOption?.label ?? placeholder}

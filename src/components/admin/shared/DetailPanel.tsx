@@ -127,7 +127,7 @@ function RelatedEntityItem({ entity }: { entity: RelatedEntity }) {
       className={cn(
         'flex items-start gap-3 w-full p-3 rounded-lg text-left',
         'hover:bg-muted/50 transition-colors',
-        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         entity.onClick ? 'cursor-pointer' : 'cursor-default'
       )}
       disabled={!entity.onClick}
