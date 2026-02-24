@@ -29,7 +29,7 @@ interface OrderItem {
 }
 
 export function OrderConfirmationPage() {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

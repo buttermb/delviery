@@ -74,7 +74,7 @@ interface RecentOrder {
 
 export default function StorefrontDashboard() {
   const { tenant } = useTenantAdminAuth();
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

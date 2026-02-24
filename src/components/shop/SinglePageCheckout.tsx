@@ -52,7 +52,7 @@ interface CheckoutFormData {
 }
 
 export function SinglePageCheckout() {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
   const { isLuxuryTheme, accentColor } = useLuxuryTheme();

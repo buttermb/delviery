@@ -69,7 +69,7 @@ interface _SecurityEvent {
 
 const DisposableMenuAnalytics = () => {
   const { tenant } = useTenantAdminAuth();
-  const { menuId } = useParams();
+  const { menuId } = useParams<{ menuId: string }>();
   const { navigateToAdmin } = useTenantNavigation();
 
   const { data: menus, isLoading: menusLoading } = useDisposableMenus(tenant?.id);

@@ -33,7 +33,7 @@ export function RecentlyViewed({
   primaryColor,
   maxItems = 6,
 }: RecentlyViewedProps) {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
 
   // Get recently viewed product IDs from localStorage
   const recentIds = useMemo(() => {

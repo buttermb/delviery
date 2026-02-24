@@ -73,7 +73,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function OrderDetailPage() {
-  const { storeSlug, orderId } = useParams();
+  const { storeSlug, orderId } = useParams<{ storeSlug: string; orderId: string }>();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
   const queryClient = useQueryClient();

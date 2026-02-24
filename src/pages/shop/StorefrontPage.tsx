@@ -55,7 +55,7 @@ interface LayoutSection {
 }
 
 export function StorefrontPage() {
-    const { storeSlug } = useParams();
+    const { storeSlug } = useParams<{ storeSlug: string }>();
     const { store, isLoading } = useShop();
 
     /** Build Schema.org Store JSON-LD structured data */

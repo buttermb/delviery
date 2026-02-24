@@ -52,7 +52,7 @@ export function ProductQuickViewModal({
     isOpen,
     onClose,
 }: ProductQuickViewModalProps) {
-    const { storeSlug } = useParams();
+    const { storeSlug } = useParams<{ storeSlug: string }>();
     const { store, setCartItemCount } = useShop();
     const [quantity, setQuantity] = useState(1);
 

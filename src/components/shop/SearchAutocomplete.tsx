@@ -33,7 +33,7 @@ interface ProductResult {
 }
 
 export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAutocompleteProps) {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);

@@ -13,7 +13,7 @@ interface LuxuryNavProps {
 
 export function LuxuryNav({ cartItemCount = 0, onCartClick, accentColor: _accentColor }: LuxuryNavProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const { store, isPreviewMode } = useShop();

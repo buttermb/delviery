@@ -18,7 +18,7 @@ interface ScannedSale {
 
 export default function RecordFrontedSale() {
   const { navigateToAdmin, navigate } = useTenantNavigation();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { tenant } = useTenantAdminAuth();
   const [scannedItems, setScannedItems] = useState<ScannedSale[]>([]);
   const [loading, setLoading] = useState(false);

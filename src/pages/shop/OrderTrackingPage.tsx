@@ -59,7 +59,7 @@ const STATUS_STEPS = [
 ];
 
 export default function OrderTrackingPage() {
-  const { storeSlug, trackingToken } = useParams();
+  const { storeSlug, trackingToken } = useParams<{ storeSlug: string; trackingToken: string }>();
   const { store } = useShop();
   const queryClient = useQueryClient();
 

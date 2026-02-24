@@ -37,7 +37,7 @@ interface FrontedWithRelations extends FrontedInventoryRow {
 }
 
 export default function FrontedInventoryDetails() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();
   const [loading, setLoading] = useState(true);

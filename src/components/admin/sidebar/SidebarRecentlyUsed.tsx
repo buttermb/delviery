@@ -18,7 +18,7 @@ import { Clock } from 'lucide-react';
 import { useMemo } from 'react';
 
 export function SidebarRecentlyUsed() {
-    const { tenantSlug } = useParams();
+    const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const location = useLocation();
     const { preferences, trackFeatureClick: _trackFeatureClick, searchQuery } = useSidebar();
     const { sidebarConfig } = useSidebarConfig();

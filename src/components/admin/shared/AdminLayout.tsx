@@ -119,7 +119,7 @@ export function AdminLayout({
   contentClassName,
   className,
 }: AdminLayoutProps) {
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant } = useTenantAdminAuth();
   const { toggle: toggleCommandPalette } = useCommandPaletteStore();
 

@@ -24,7 +24,7 @@ interface RecentlyViewedSectionProps {
 // ProductData replaced by MarketplaceProduct import
 
 export function RecentlyViewedSection({ currentProductId, className = '' }: RecentlyViewedSectionProps) {
-    const { storeSlug } = useParams();
+    const { storeSlug } = useParams<{ storeSlug: string }>();
     const { store } = useShop();
     const { recentlyViewed } = useRecentlyViewed();
     const scrollContainerRef = useRef<HTMLDivElement>(null);

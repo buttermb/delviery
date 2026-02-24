@@ -12,7 +12,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 
 const MenuAnalytics = () => {
-  const { menuId } = useParams();
+  const { menuId } = useParams<{ menuId: string }>();
   const { data: accessLogs, isLoading: logsLoading } = useMenuAccessLogs(menuId!);
   const { data: orders, isLoading: ordersLoading } = useMenuOrders(menuId);
   const { data: securityEvents, isLoading: eventsLoading } = useMenuSecurityEvents(menuId);

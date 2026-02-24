@@ -65,7 +65,7 @@ interface Customer {
 
 export default function StorefrontCustomers() {
   const { tenant } = useTenantAdminAuth();
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const tenantId = tenant?.id;
 
   // Table preferences persistence

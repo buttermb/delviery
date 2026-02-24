@@ -387,7 +387,7 @@ function ProductCard({
 
 
 const SecureMenuView = () => {
-  const { token } = useParams();
+  const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
 
   const [menuData, setMenuData] = useState<MenuData | null>(null);

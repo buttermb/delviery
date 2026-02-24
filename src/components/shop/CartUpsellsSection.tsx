@@ -31,7 +31,7 @@ export function CartUpsellsSection({
     excludeProductIds = [],
     maxItems = 8
 }: CartUpsellsSectionProps) {
-    const { storeSlug } = useParams();
+    const { storeSlug } = useParams<{ storeSlug: string }>();
     const { setCartItemCount } = useShop();
     const scrollRef = useRef<HTMLDivElement>(null);
     const {

@@ -136,7 +136,7 @@ function transformProduct(rpc: RpcProduct): ProductWithSettings {
 }
 
 export function ProductCatalogPage() {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { store } = useShop();
 

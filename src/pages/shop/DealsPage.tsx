@@ -36,7 +36,7 @@ interface Deal {
 }
 
 export default function DealsPage() {
-    const { storeSlug } = useParams();
+    const { storeSlug } = useParams<{ storeSlug: string }>();
     const { store } = useShop();
     const { isLuxuryTheme, cardBg, cardBorder, textPrimary, textMuted } = useLuxuryTheme();
 

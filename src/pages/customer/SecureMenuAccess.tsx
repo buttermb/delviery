@@ -933,7 +933,7 @@ function MenuUnavailablePage({
 // ============================================
 
 export const SecureMenuAccess = () => {
-  const { token } = useParams();
+  const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
   const uniqueToken = searchParams.get('u');
 

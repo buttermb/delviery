@@ -63,7 +63,7 @@ interface Customer {
 }
 
 export default function CustomerDetails() {
-  const { id: rawId } = useParams();
+  const { id: rawId } = useParams<{ id: string }>();
   const id = rawId && isValidUUID(rawId) ? rawId : undefined;
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant } = useTenantAdminAuth();

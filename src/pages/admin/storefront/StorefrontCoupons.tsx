@@ -97,7 +97,7 @@ const initialFormData: CouponFormData = {
 
 export default function StorefrontCoupons() {
   const { tenant } = useTenantAdminAuth();
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;
   const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();

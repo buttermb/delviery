@@ -16,7 +16,7 @@ interface MobileBottomNavProps {
 }
 
 export function MobileBottomNav({ cartItemCount, primaryColor, onCartClick }: MobileBottomNavProps) {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const location = useLocation();
   const [hidden, setHidden] = useState(false);
   const lastScrollY = useRef(0);

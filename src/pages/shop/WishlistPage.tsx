@@ -12,7 +12,7 @@ import { Heart, ShoppingCart, Trash2, Package } from 'lucide-react';
 import { WishlistButton } from '@/components/shop/WishlistButton';
 
 export default function WishlistPage() {
-    const { storeSlug } = useParams();
+    const { storeSlug } = useParams<{ storeSlug: string }>();
     const { store } = useShop();
     const { items, removeItem, clearWishlist } = useWishlist({ storeId: store?.id });
 

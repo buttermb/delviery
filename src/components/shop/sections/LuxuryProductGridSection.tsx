@@ -34,7 +34,7 @@ export interface LuxuryProductGridSectionProps {
 // MarketplaceProduct imported from ../StorefrontProductCard
 
 export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryProductGridSectionProps) {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const { isPreviewMode } = useShop();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');

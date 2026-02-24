@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export default function UnifiedActiveDeliveryPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { role } = useCourier();
   const [data, setData] = useState<Record<string, unknown> | null>(null);

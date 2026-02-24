@@ -105,7 +105,7 @@ const STEPS = [
 ];
 
 export function CheckoutPage() {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { store, setCartItemCount } = useShop();

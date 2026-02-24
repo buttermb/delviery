@@ -44,7 +44,7 @@ interface FrontedInventory {
 }
 
 export default function RecordFrontedReturn() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
   const [front, setFront] = useState<FrontedInventory | null>(null);

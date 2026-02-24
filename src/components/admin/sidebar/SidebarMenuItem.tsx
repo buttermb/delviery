@@ -32,7 +32,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
   onItemClick,
   onLockedItemClick,
 }: SidebarMenuItemProps) {
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { favorites, toggleFavorite, trackFeatureClick } = useSidebar();
   const liveBadgeContext = useLiveBadge();
   const { prefetchRoute } = useRoutePrefetch();

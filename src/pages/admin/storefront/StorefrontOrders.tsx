@@ -86,7 +86,7 @@ const STATUS_OPTIONS = [
 
 export default function StorefrontOrders() {
   const { tenant } = useTenantAdminAuth();
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;

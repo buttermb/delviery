@@ -55,7 +55,7 @@ const customerFormSchema = z.object({
 type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
 export default function CustomerForm() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { navigateToAdmin } = useTenantNavigation();
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { isReady: encryptionIsReady } = useEncryption();

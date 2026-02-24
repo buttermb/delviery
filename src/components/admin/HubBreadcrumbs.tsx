@@ -46,7 +46,7 @@ export function HubBreadcrumbs({
     currentTab,
     className,
 }: HubBreadcrumbsProps) {
-    const { tenantSlug } = useParams();
+    const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const { tenant } = useTenantAdminAuth();
 
     // Tenant display name

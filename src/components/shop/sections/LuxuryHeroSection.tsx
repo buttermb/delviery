@@ -25,7 +25,7 @@ export interface LuxuryHeroSectionProps {
 
 export function LuxuryHeroSection({ content, styles, storeId: _storeId }: LuxuryHeroSectionProps) {
   const heroRef = useRef<HTMLDivElement>(null);
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
 
   const accentColor = styles?.accent_color || 'hsl(174 87% 42%)';
 

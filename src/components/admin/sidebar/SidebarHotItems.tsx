@@ -16,7 +16,7 @@ import type { FeatureId } from '@/lib/featureConfig';
 import { isRouteActive } from '@/lib/sidebar/isRouteActive';
 
 export function SidebarHotItems() {
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
   const { hotItems } = useSidebarConfig();
   const { canAccess } = useFeatureAccess();

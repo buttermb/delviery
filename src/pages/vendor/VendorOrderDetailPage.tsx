@@ -29,7 +29,7 @@ type MarketplaceOrder = Tables<'marketplace_orders'> & {
 };
 
 export function VendorOrderDetailPage() {
-    const { orderId } = useParams();
+    const { orderId } = useParams<{ orderId: string }>();
     const navigate = useNavigate();
     const { vendor } = useVendorAuth();
     const queryClient = useQueryClient();

@@ -36,7 +36,7 @@ import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CartUpsellsSection } from '@/components/shop/CartUpsellsSection';
 
 export default function CartPage() {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
   const {

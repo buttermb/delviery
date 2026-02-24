@@ -7,7 +7,7 @@ interface LuxuryFooterProps {
 }
 
 export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const { store, isPreviewMode } = useShop();
 
   const previewParam = isPreviewMode ? '?preview=true' : '';

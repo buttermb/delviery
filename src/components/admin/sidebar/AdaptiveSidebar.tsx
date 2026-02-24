@@ -62,7 +62,7 @@ interface AdaptiveSidebarInnerProps {
  * Inner sidebar component that uses context
  */
 export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSidebarInnerProps) {
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const { tenant, logout } = useTenantAdminAuth();

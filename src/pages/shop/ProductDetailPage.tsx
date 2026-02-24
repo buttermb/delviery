@@ -156,7 +156,7 @@ interface ProductReview {
 }
 
 export function ProductDetailPage() {
-  const { storeSlug, productId, productSlug } = useParams();
+  const { storeSlug, productId, productSlug } = useParams<{ storeSlug: string; productId: string; productSlug: string }>();
   const { store, setCartItemCount } = useShop();
 
   // Determine if using slug-based or UUID-based URL

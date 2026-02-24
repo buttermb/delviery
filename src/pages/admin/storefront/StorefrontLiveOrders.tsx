@@ -121,7 +121,7 @@ function showBrowserNotification(title: string, body: string): void {
 
 export function StorefrontLiveOrders() {
   const { tenant } = useTenantAdminAuth();
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;

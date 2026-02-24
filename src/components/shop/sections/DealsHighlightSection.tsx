@@ -31,7 +31,7 @@ export interface DealsHighlightSectionProps {
 }
 
 export function DealsHighlightSection({ content, styles, storeId }: DealsHighlightSectionProps) {
-    const { storeSlug } = useParams();
+    const { storeSlug } = useParams<{ storeSlug: string }>();
     const { data: deals = [], isLoading } = useStorefrontDeals(storeId);
 
     const {

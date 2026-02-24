@@ -140,7 +140,7 @@ const PAYMENT_METHOD_OPTIONS = [
 
 export default function StorefrontSettings() {
   const { tenant } = useTenantAdminAuth();
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const tenantId = tenant?.id;

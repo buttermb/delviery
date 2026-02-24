@@ -26,7 +26,7 @@ import { formatCurrency } from '@/lib/formatters';
 export default function RecordFrontedPayment() {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { tenant } = useTenantAdminAuth();
   const { recordFrontedPayment, isRecordingFrontedPayment } = useRecordPayment();
   

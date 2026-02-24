@@ -153,7 +153,7 @@ interface QuickActionsButtonProps {
 export function QuickActionsButton({ className }: QuickActionsButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
   const [actions, setActions] = useState<QuickAction[]>([]);
   

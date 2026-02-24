@@ -12,7 +12,7 @@ import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { queryKeys } from '@/lib/queryKeys';
 
 export default function CustomerInsights() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 

@@ -70,7 +70,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function OrdersHubPage() {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const navigate = useNavigate();
   const { store, setCartItemCount } = useShop();
 

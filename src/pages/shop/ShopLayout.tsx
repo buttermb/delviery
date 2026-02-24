@@ -92,7 +92,7 @@ const ShopContext = createContext<ShopContextType>({
 export const useShop = () => useContext(ShopContext);
 
 export default function ShopLayout() {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();

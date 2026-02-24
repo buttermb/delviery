@@ -20,7 +20,7 @@ import type { FeatureId } from '@/lib/featureConfig';
 import { isRouteActive } from '@/lib/sidebar/isRouteActive';
 
 export function SidebarFavorites() {
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
   const { sidebarConfig, favorites } = useSidebarConfig();
   const { canAccess } = useFeatureAccess();

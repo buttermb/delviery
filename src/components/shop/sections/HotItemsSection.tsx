@@ -61,7 +61,7 @@ export function HotItemsSection({
   styles,
   storeId,
 }: HotItemsSectionProps) {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const { isPreviewMode } = useShop();
   const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
   const [lastAddedItem, setLastAddedItem] = useState<{

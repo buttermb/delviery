@@ -39,7 +39,7 @@ interface CustomerQuickViewCardProps {
 
 export function CustomerQuickViewCard({ children, customer }: CustomerQuickViewCardProps) {
     const navigate = useNavigate();
-    const { tenantSlug } = useParams();
+    const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
     const initials = customer.business_name
         .split(' ')

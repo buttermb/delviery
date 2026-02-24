@@ -14,7 +14,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
 
 export default function DeliveryTracking() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
 

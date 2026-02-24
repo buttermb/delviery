@@ -40,7 +40,7 @@ interface Order {
 }
 
 export default function CourierActiveOrderPage() {
-  const { orderId } = useParams();
+  const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);

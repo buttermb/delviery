@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 
 export default function VerifyEmailPage() {
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
   const { admin } = useTenantAdminAuth();
   const [resending, setResending] = useState(false);

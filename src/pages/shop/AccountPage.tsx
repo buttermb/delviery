@@ -67,7 +67,7 @@ interface CustomerOrder {
 }
 
 export default function AccountPage() {
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const navigate = useNavigate();
   const { store } = useShop();
   const { accentColor } = useLuxuryTheme();
@@ -1074,7 +1074,7 @@ function QuickReorderButton({
 }) {
   const navigate = useNavigate();
   const { setCartItemCount } = useShop();
-  const { storeSlug } = useParams();
+  const { storeSlug } = useParams<{ storeSlug: string }>();
   const [isReordering, setIsReordering] = useState(false);
 
   const handleReorder = async (e: React.MouseEvent) => {

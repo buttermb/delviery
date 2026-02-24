@@ -227,7 +227,7 @@ export interface AdminSidebarProps {
  * - Tenant-aware navigation
  */
 export function AdminSidebar({ badgeCounts = {}, className }: AdminSidebarProps) {
-  const { tenantSlug } = useParams();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant } = useTenantAdminAuth();
   const location = useLocation();
   const { prefetchRoute } = useRoutePrefetch();
