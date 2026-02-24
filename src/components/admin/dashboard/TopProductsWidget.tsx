@@ -46,7 +46,7 @@ export function TopProductsWidget() {
       const last30Days = subDays(new Date(), 30);
 
       // Get order items from completed orders
-      const { data: orders, error: ordersError } = await supabase
+      const { data: orders, error: ordersError } = await (supabase as any)
         .from('wholesale_orders')
         .select('id, created_at, status')
         .eq('account_id', account.id)

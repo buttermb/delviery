@@ -188,7 +188,7 @@ export function OrderDeliveryStatusSync({
         throw fetchError;
       }
 
-      return data as DeliveryRecord | null;
+      return data as unknown as DeliveryRecord | null;
     },
     enabled: !!tenant?.id && !!orderId,
     staleTime: 30_000,

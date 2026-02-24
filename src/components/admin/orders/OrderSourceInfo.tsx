@@ -76,7 +76,7 @@ function useSourceMenu(menuId: string | null | undefined, tenantId: string | und
         return null;
       }
 
-      return data as MenuInfo | null;
+      return data as unknown as MenuInfo | null;
     },
     enabled: !!menuId && !!tenantId,
     staleTime: 60000,
@@ -93,7 +93,7 @@ function useSourceSession(sessionId: string | null | undefined, tenantId: string
       if (!sessionId || !tenantId) return null;
 
       // Try to fetch from storefront_sessions if it exists
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('storefront_sessions')
         .select('started_at, browsing_duration_seconds, items_viewed')
         .eq('id', sessionId)

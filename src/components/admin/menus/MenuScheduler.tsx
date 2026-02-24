@@ -163,7 +163,7 @@ const useMenuSchedules = (tenantId?: string) => {
         return [];
       }
 
-      return (data ?? []).map((schedule: Record<string, unknown>) => ({
+      return (data ?? []).map((schedule: any) => ({
         id: schedule.id as string,
         menuId: schedule.menu_id as string,
         menuName: (schedule.disposable_menus as Record<string, unknown> | null)?.name as string || 'Unknown Menu',
@@ -283,7 +283,7 @@ const useUpdateSchedule = () => {
       if (scheduleData.recurrenceRule !== undefined) updateData.recurrence_rule = scheduleData.recurrenceRule;
       if (scheduleData.isActive !== undefined) updateData.is_active = scheduleData.isActive;
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await (supabase as any)
         .from('menu_schedules')
         .update(updateData)
         .eq('id', scheduleData.id)

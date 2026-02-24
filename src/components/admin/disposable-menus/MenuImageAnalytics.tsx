@@ -64,7 +64,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
 
   // Fetch real trend data from menu_access_logs
   const { data: trendData = [] } = useQuery({
-    queryKey: queryKeys.menuImageTrend.byMenu(menuId, dateRange),
+    queryKey: queryKeys.menuImageTrend.byMenu(menuId, JSON.stringify(dateRange)),
     queryFn: async () => {
       const days = 7;
       const trends = [];
@@ -76,7 +76,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
         const endOfDay = new Date(date);
         endOfDay.setHours(23, 59, 59, 999);
 
-        const { count: views } = await supabase
+        const { count: views } = await (supabase as any)
           .from('menu_access_logs')
           .select('id', { count: 'exact', head: true })
           .eq('menu_id', menuId)
@@ -84,7 +84,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
           .gte('accessed_at', startOfDay.toISOString())
           .lte('accessed_at', endOfDay.toISOString());
 
-        const { count: zooms } = await supabase
+        const { count: zooms } = await (supabase as any)
           .from('menu_access_logs')
           .select('id', { count: 'exact', head: true })
           .eq('menu_id', menuId)
