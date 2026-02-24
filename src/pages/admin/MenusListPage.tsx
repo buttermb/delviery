@@ -53,7 +53,7 @@ export function MenusListPage() {
         const matchesStatus = statusFilter === 'all' ? true : menu.status === statusFilter;
 
         return matchesSearch && matchesStatus;
-    }) || [];
+    }) ?? [];
 
     // Pagination
     const {

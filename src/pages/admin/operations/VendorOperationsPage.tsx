@@ -282,7 +282,7 @@ export default function VendorOperationsPage() {
             (filter === 'inactive' && vendor.status === 'inactive');
 
         return matchesSearch && matchesFilter;
-    }) || [];
+    }) ?? [];
 
     const handleView = (vendor: VendorWithStats) => {
         setSelectedVendor(vendor);

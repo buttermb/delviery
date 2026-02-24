@@ -105,7 +105,7 @@ export default function ReceivingPage() {
         }
         if (error) throw error;
         setTableMissing(false);
-        return data || [];
+        return data ?? [];
       } catch (error: unknown) {
         const errorObj = error instanceof Error ? error : new Error(String(error));
         // Check for PostgreSQL table missing error (42P01)

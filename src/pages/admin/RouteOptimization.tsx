@@ -19,7 +19,7 @@ export default function RouteOptimization() {
     deliveries: typeof deliveries extends (infer T)[] | undefined ? T[] : unknown[];
   }
   // Group deliveries by runner to create "routes"
-  const routes = (deliveries || []).reduce((acc: RouteGroup[], delivery) => {
+  const routes = (deliveries ?? []).reduce((acc: RouteGroup[], delivery) => {
     const runnerId = delivery.runner_id || 'unassigned';
     const existingRoute = acc.find(r => r.runnerId === runnerId);
 

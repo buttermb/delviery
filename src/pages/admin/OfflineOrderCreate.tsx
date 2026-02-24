@@ -105,7 +105,7 @@ export default function OfflineOrderCreate() {
           return loadProductsFromIDB();
         }
 
-        const products: ProductForOrder[] = (data || []).map((p) => ({
+        const products: ProductForOrder[] = (data ?? []).map((p) => ({
           id: p.id,
           name: p.name,
           price: p.price || 0,

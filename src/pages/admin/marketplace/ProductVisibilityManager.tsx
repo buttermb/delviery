@@ -104,7 +104,7 @@ export default function ProductVisibilityManager() {
 
     const filteredListings = listings?.filter(listing =>
         listing.product_name.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [];
+    ) ?? [];
 
     if (isLoading) {
         return <EnhancedLoadingState variant="table" message="Loading products..." />;

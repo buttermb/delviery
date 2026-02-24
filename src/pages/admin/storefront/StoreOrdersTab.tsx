@@ -160,7 +160,7 @@ export function StoreOrdersTab({
         logger.error('Failed to fetch store orders', error, { component: 'StoreOrdersTab' });
         throw error;
       }
-      return (data || []) as unknown as StoreOrder[];
+      return (data ?? []) as unknown as StoreOrder[];
     },
     enabled: !!effectiveStoreId,
   });

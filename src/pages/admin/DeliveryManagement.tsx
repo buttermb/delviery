@@ -98,7 +98,7 @@ export default function DeliveryManagement() {
 
       if (response.error) throw response.error;
 
-      return (response.data || []).map((d) => ({
+      return (response.data ?? []).map((d) => ({
         id: d.id,
         order_id: d.id,
         courier_id: d.courier_id,

@@ -229,7 +229,7 @@ function CashRegisterContent() {
         .eq('tenant_id', tenantId);
 
       if (error) throw error;
-      return (data || []) as Product[];
+      return (data ?? []) as Product[];
     },
     enabled: !!tenantId,
   });
@@ -252,7 +252,7 @@ function CashRegisterContent() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return ((data || []) as Array<{ id: string; first_name: string | null; last_name: string | null; email: string | null; phone: string | null; customer_type: string | null; loyalty_points: number | null }>).map(c => ({
+        return ((data ?? []) as Array<{ id: string; first_name: string | null; last_name: string | null; email: string | null; phone: string | null; customer_type: string | null; loyalty_points: number | null }>).map(c => ({
           id: c.id,
           first_name: c.first_name || '',
           last_name: c.last_name || '',
@@ -285,7 +285,7 @@ function CashRegisterContent() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error: unknown) {
         if (error !== null && typeof error === 'object' && 'code' in error && (error as Record<string, unknown>).code === '42P01') return [];
         throw error;

@@ -109,7 +109,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
 
   const handleExport = async () => {
     try {
-      const data = exportData || [];
+      const data = exportData ?? [];
       if (data.length === 0) {
         toast.error("No data to export");
         return;

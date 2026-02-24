@@ -113,7 +113,7 @@ export default function InventoryAudit() {
         throw error;
       }
 
-      return (data || []) as Product[];
+      return (data ?? []) as Product[];
     },
     enabled: !!tenant?.id,
   });
@@ -140,7 +140,7 @@ export default function InventoryAudit() {
 
       // Group by date to show audit sessions
       const auditSessions = new Map<string, AuditHistoryRecord>();
-      for (const entry of (data || [])) {
+      for (const entry of (data ?? [])) {
         const dateKey = format(new Date(entry.created_at), 'yyyy-MM-dd HH:mm');
         if (!auditSessions.has(dateKey)) {
           auditSessions.set(dateKey, {

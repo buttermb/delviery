@@ -112,7 +112,7 @@ export default function FrontedInventoryDetails() {
         .eq("account_id", tenant.id)
         .order("scanned_at", { ascending: false });
 
-      setScans(scansData || []);
+      setScans(scansData ?? []);
 
       // Load payments
       const { data: paymentsData } = await supabase
@@ -122,7 +122,7 @@ export default function FrontedInventoryDetails() {
         // Assuming fronted_payments also has account_id, if not we rely on fronted_inventory_id linkage which is now secured
         .order("received_at", { ascending: false });
 
-      setPayments(paymentsData || []);
+      setPayments(paymentsData ?? []);
     } catch (error) {
       handleError(error, {
         component: 'FrontedInventoryDetails.loadFrontDetails',

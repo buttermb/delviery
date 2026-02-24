@@ -101,8 +101,8 @@ export default function FrontedInventory() {
         return;
       }
 
-      setFrontedItems(data || []);
-      setFrontedItems(data || []);
+      setFrontedItems(data ?? []);
+      setFrontedItems(data ?? []);
     } catch (error) {
       handleError(error, { component: 'FrontedInventory', toastTitle: 'Error loading fronted inventory' });
     } finally {

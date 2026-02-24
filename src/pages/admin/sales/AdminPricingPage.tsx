@@ -44,7 +44,7 @@ export default function AdminPricingPage() {
         .order('name');
       
       if (error) throw error;
-      return (data || []) as Product[];
+      return (data ?? []) as Product[];
     },
     enabled: !!tenantId,
   });

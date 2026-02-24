@@ -80,7 +80,7 @@ export default function FleetManagement() {
 
       if (error) throw error;
 
-      return (data || []).map((delivery) => {
+      return (data ?? []).map((delivery) => {
         // Calculate ETA based on status and timestamps
         let etaMinutes = 0;
         if (delivery.status === 'in_transit') {
@@ -122,7 +122,7 @@ export default function FleetManagement() {
 
       if (error) throw error;
 
-      return (data || []).map(runner => ({
+      return (data ?? []).map(runner => ({
         ...runner,
         // Calculate success rate based on rating (5 stars = 100%, 1 star = 20%)
         // Fallback to 100% if no rating

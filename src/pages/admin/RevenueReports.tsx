@@ -88,7 +88,7 @@ export default function RevenueReports() {
       try {
         const { data, error } = await query;
         if (error) throw error;
-        return (data || []) as unknown as OrderWithItems[];
+        return (data ?? []) as unknown as OrderWithItems[];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [] as OrderWithItems[];
         logger.error("Failed to fetch orders", error);

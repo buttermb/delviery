@@ -127,7 +127,7 @@ export default function DeliveryDashboard() {
         throw error;
       }
 
-      return (data || []) as unknown as DeliveryOrder[];
+      return (data ?? []) as unknown as DeliveryOrder[];
     },
     enabled: !!tenant?.id,
     staleTime: 30000,

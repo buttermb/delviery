@@ -127,7 +127,7 @@ export default function NewWholesaleOrder() {
         .maybeSingle();
       const settings = (data?.integration_settings as Record<string, unknown>) || {};
       const pricingConfig = settings?.wholesale_pricing_tiers as { tiers?: PricingTier[] } | undefined;
-      return pricingConfig?.tiers || [];
+      return pricingConfig?.tiers ?? [];
     },
     enabled: !!tenant?.id,
   });

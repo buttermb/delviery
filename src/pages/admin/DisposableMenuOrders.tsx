@@ -68,7 +68,7 @@ const DisposableMenuOrders = () => {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
 
     return matchesSearch && matchesStatus;
-  }) || [];
+  }) ?? [];
 
   // Pagination
   const {

@@ -72,7 +72,7 @@ export default function LocationsManagement() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setLocations(data || []);
+      setLocations(data ?? []);
     } catch (error) {
       handleError(error, { component: 'LocationsManagement', toastTitle: 'Failed to load locations' });
     } finally {

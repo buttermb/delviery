@@ -134,7 +134,7 @@ export default function StorefrontCoupons() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as unknown as Coupon[];
+      return (data ?? []) as unknown as Coupon[];
     },
     enabled: !!store?.id,
   });

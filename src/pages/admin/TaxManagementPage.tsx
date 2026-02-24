@@ -79,7 +79,7 @@ export default function TaxManagementPage() {
         .maybeSingle();
 
       const taxRate = settings?.tax_rate || 8.875;
-      const totalSales = (orders || []).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+      const totalSales = (orders ?? []).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
       // Calculate tax based on rate since tax_amount column may not exist
       const taxCollected = totalSales * (taxRate / 100);
 

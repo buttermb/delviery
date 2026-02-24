@@ -86,7 +86,7 @@ export default function GenerateBarcodes() {
         .from('products')
         .select('id, name, sku, wholesale_price')
         .order('name');
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenant?.id && !tenantLoading && mode === 'product',
   });

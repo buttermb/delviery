@@ -74,7 +74,7 @@ export default function SupplierManagementPage() {
         throw error;
       }
 
-      return (data || []) as Supplier[];
+      return (data ?? []) as Supplier[];
     },
     enabled: !!tenant?.id,
   });
@@ -126,7 +126,7 @@ export default function SupplierManagementPage() {
       supplier.phone?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSearch;
-  }) || [];
+  }) ?? [];
 
   const handleCreate = () => {
     setEditingSupplier(null);
