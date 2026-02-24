@@ -19,6 +19,7 @@ import ReactFlow, {
   ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { logger } from '@/lib/logger';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -235,7 +236,13 @@ export function VisualWorkflowEditor({ workflow, onSave, readOnly = false }: Vis
       const type = event.dataTransfer.getData('application/reactflow');
       if (!type) return;
 
-      const actionData = JSON.parse(type);
+      let actionData: { label: string; type: string };
+      try {
+        actionData = JSON.parse(type);
+      } catch (error) {
+        logger.warn('Failed to parse JSON', error);
+        return;
+      }
       const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,

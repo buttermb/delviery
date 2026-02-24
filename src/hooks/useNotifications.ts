@@ -322,10 +322,17 @@ export const useSendNotification = () => {
         logger.warn('Notification settings not configured, using defaults');
       }
 
-      const settings = settingsStr ? JSON.parse(settingsStr) : {
+      let settings = {
         channels: { sms: true, email: false },
-        templates: []
+        templates: [] as Array<{ event: string; enabled: boolean; template?: string }>
       };
+      if (settingsStr) {
+        try {
+          settings = JSON.parse(settingsStr);
+        } catch (error) {
+          logger.warn('Failed to parse JSON', error);
+        }
+      }
       
       const template = settings.templates?.find((t: { event: string; enabled: boolean }) => t.event === event);
 

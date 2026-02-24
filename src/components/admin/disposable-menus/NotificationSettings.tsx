@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Bell, Mail, MessageSquare, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { logger } from '@/lib/logger';
 interface NotificationTemplate {
   event: string;
   enabled: boolean;
@@ -54,12 +55,16 @@ export const NotificationSettings = () => {
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.NOTIFICATION_SETTINGS);
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.templates) {
-        setTemplates(parsed.templates);
-      }
-      if (parsed.channels) {
-        setNotificationChannels(parsed.channels);
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.templates) {
+          setTemplates(parsed.templates);
+        }
+        if (parsed.channels) {
+          setNotificationChannels(parsed.channels);
+        }
+      } catch (error) {
+        logger.warn('Failed to parse JSON', error);
       }
     }
   }, []);

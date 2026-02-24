@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 import { getSuggestionsSync, isPopularItem, type SuggestionType } from "@/lib/getSuggestions";
 import { Check, Clock, TrendingUp } from "lucide-react";
 
@@ -84,7 +85,14 @@ export function AutocompleteInput({
     // Save to recent selections
     const key = `autocomplete_recent_${type}`;
     const stored = localStorage.getItem(key);
-    const recent = stored ? JSON.parse(stored) : [];
+    let recent: string[] = [];
+    if (stored) {
+      try {
+        recent = JSON.parse(stored);
+      } catch (error) {
+        logger.warn('Failed to parse JSON', error);
+      }
+    }
     const updated = [suggestion, ...recent.filter((s: string) => s !== suggestion)].slice(0, 5);
     localStorage.setItem(key, JSON.stringify(updated));
     setRecentSelections(updated);

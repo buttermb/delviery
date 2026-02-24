@@ -427,7 +427,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
                   />
                 </div>
               </div>
-              <Button onClick={addItem} variant="outline" className="w-full">
+              <Button type="button" onClick={addItem} variant="outline" className="w-full">
                 <Package className="h-4 w-4 mr-2" />
                 Add Item
               </Button>
@@ -448,6 +448,7 @@ export function POCreateForm({ open, onOpenChange, purchaseOrder, onSuccess }: P
                           </div>
                         </div>
                         <Button
+                          type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => removeItem(index)}

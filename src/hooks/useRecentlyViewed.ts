@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { logger } from '@/lib/logger';
 const MAX_ITEMS = 6;
 
 export const useRecentlyViewed = () => {
@@ -8,7 +9,11 @@ export const useRecentlyViewed = () => {
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEYS.RECENTLY_VIEWED);
     if (stored) {
-      setRecentlyViewed(JSON.parse(stored));
+      try {
+        setRecentlyViewed(JSON.parse(stored));
+      } catch (error) {
+        logger.warn('Failed to parse JSON', error);
+      }
     }
   }, []);
 

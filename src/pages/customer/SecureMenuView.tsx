@@ -461,7 +461,14 @@ const SecureMenuView = () => {
     // Check session storage for validated menu access
     const storedMenu = sessionStorage.getItem(`menu_${token}`);
     if (storedMenu) {
-      const parsed = JSON.parse(storedMenu);
+      let parsed: MenuData;
+      try {
+        parsed = JSON.parse(storedMenu) as MenuData;
+      } catch (error) {
+        logger.warn('Failed to parse JSON', error);
+        navigate(`/m/${token}`);
+        return;
+      }
 
       // Check if this is a forum menu and redirect
       if (parsed.security_settings?.menu_type === 'forum') {
