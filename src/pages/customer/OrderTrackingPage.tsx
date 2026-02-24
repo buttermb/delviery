@@ -303,7 +303,7 @@ export default function OrderTrackingPage() {
                     <h3 className="font-bold text-gray-900">{order.courier.full_name}</h3>
                     <p className="text-sm text-gray-500">{order.courier.vehicle_type || 'Delivery Partner'}</p>
                   </div>
-                  <Button variant="outline" size="icon" className="rounded-full">
+                  <Button variant="outline" size="icon" className="rounded-full" aria-label="Call delivery driver">
                     <Phone className="h-4 w-4" />
                   </Button>
                 </CardContent>

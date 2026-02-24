@@ -5,7 +5,7 @@ import {
   Plus, Settings, LayoutGrid, ShoppingBag, Users, DollarSign,
   RefreshCw, Filter, TrendingUp, Flame, Clock, Shield, ChevronRight,
   Zap, Target, AlertCircle, CheckCircle, BarChart3,
-  Download, Activity, Link
+  Download, Activity, Link, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -155,7 +155,7 @@ interface OrderData {
 }
 
 // Enhanced Order Card with more details
-function OrderCard({ order, onStatusChange }: { order: OrderData; onStatusChange?: (id: string, status: string) => void }) {
+function OrderCard({ order, onStatusChange, isUpdating }: { order: OrderData; onStatusChange?: (id: string, status: string) => void; isUpdating?: boolean }) {
   const customerName = order.whitelist?.customer_name || order.contact_phone || 'Unknown';
   const menuName = order.menu?.name || 'Menu';
   const total = Number(order.total_amount || 0);
@@ -211,18 +211,20 @@ function OrderCard({ order, onStatusChange }: { order: OrderData; onStatusChange
               size="sm"
               variant="outline"
               className="flex-1 h-8 text-xs"
+              disabled={isUpdating}
               onClick={(e) => {
                 e.stopPropagation();
                 onStatusChange(order.id, 'confirmed');
               }}
             >
-              <CheckCircle className="h-3 w-3 mr-1" />
+              {isUpdating ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <CheckCircle className="h-3 w-3 mr-1" />}
               Confirm
             </Button>
             <Button
               size="sm"
               variant="ghost"
               className="h-8 text-xs text-destructive hover:text-destructive"
+              disabled={isUpdating}
               onClick={(e) => {
                 e.stopPropagation();
                 onStatusChange(order.id, 'rejected');
@@ -399,6 +401,7 @@ function OrdersTab() {
                   <OrderCard
                     key={order.id}
                     order={order}
+                    isUpdating={updateOrderStatus.isPending}
                     onStatusChange={(id, status) => {
                       updateOrderStatus.mutate({ orderId: id, status });
                     }}

@@ -168,12 +168,12 @@ export function ReferralDashboard({
                 readOnly
                 className="font-mono text-center bg-white dark:bg-background"
               />
-              <Button size="icon" variant="outline" onClick={handleCopy}>
+              <Button size="icon" variant="outline" onClick={handleCopy} aria-label="Copy referral code">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
           )}
-          
+
           {stats && stats.totalReferrals > 0 && (
             <div className="text-xs text-muted-foreground">
               {stats.totalReferrals} referral{stats.totalReferrals !== 1 ? 's' : ''} • {stats.totalCreditsEarned.toLocaleString()} credits earned
@@ -238,7 +238,7 @@ export function ReferralDashboard({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button size="icon" variant="outline" onClick={handleCopy}>
+                      <Button size="icon" variant="outline" onClick={handleCopy} aria-label="Copy referral link">
                         {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
                       </Button>
                     </TooltipTrigger>

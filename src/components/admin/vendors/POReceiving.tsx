@@ -126,7 +126,7 @@ export function POReceiving({
           product:products(id, name, sku, barcode, stock_quantity)
         `)
         .eq('purchase_order_id', purchaseOrder.id)
-        .order('created_at', { ascending: true }) as any;
+        .order('created_at', { ascending: true }) as unknown as { data: unknown[] | null; error: { message: string } | null };
 
       if (error) {
         logger.error('Failed to fetch PO items', error, { component: 'POReceiving' });
@@ -257,7 +257,7 @@ export function POReceiving({
         const productId = item.product_id;
 
         // Update PO item with received quantity
-        const { error: updateItemError } = await (supabase as any)
+        const { error: updateItemError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
           .from('purchase_order_items')
           .update({
             quantity_received: receivedQty,
@@ -334,7 +334,7 @@ export function POReceiving({
             };
 
             // Use type assertion for dynamic table access
-            const { error: historyError } = await (supabase as any)
+            const { error: historyError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
               .from('inventory_history')
               .insert(historyEntry);
 
@@ -350,7 +350,7 @@ export function POReceiving({
       }
 
       // Update PO status to received
-      const { error: updatePOError } = await (supabase as any)
+      const { error: updatePOError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('purchase_orders')
         .update({
           status: 'received',

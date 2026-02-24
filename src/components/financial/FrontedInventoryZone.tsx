@@ -8,7 +8,7 @@
  */
 
 import { useState } from 'react';
-import { Package, Clock, AlertTriangle, RefreshCw, DollarSign, Eye, ArrowRight, Plus } from 'lucide-react';
+import { Package, Clock, AlertTriangle, RefreshCw, DollarSign, Eye, ArrowRight, Plus, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,9 +27,10 @@ interface ConsignmentCardProps {
   onConvertToSale: () => void;
   onRecall: () => void;
   onExtend?: () => void;
+  isMutating?: boolean;
 }
 
-function ConsignmentCard({ item, onCheckStatus, onConvertToSale, onRecall, onExtend }: ConsignmentCardProps) {
+function ConsignmentCard({ item, onCheckStatus, onConvertToSale, onRecall, onExtend, isMutating }: ConsignmentCardProps) {
   const statusColors = {
     healthy: 'bg-emerald-500/10 border-emerald-500/30',
     warning: 'bg-amber-500/10 border-amber-500/30',
@@ -100,9 +101,10 @@ function ConsignmentCard({ item, onCheckStatus, onConvertToSale, onRecall, onExt
           size="sm"
           variant="ghost"
           className="h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs hover:bg-emerald-500/20 hover:text-emerald-400"
+          disabled={isMutating}
           onClick={onConvertToSale}
         >
-          <DollarSign className="h-3 w-3 mr-0.5 sm:mr-1" />
+          {isMutating ? <Loader2 className="h-3 w-3 mr-0.5 sm:mr-1 animate-spin" /> : <DollarSign className="h-3 w-3 mr-0.5 sm:mr-1" />}
           Convert
         </Button>
         {item.status !== 'healthy' && (
@@ -110,9 +112,10 @@ function ConsignmentCard({ item, onCheckStatus, onConvertToSale, onRecall, onExt
             size="sm"
             variant="ghost"
             className="h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs hover:bg-red-500/20 hover:text-red-400"
+            disabled={isMutating}
             onClick={onRecall}
           >
-            <RefreshCw className="h-3 w-3 mr-0.5 sm:mr-1" />
+            {isMutating ? <Loader2 className="h-3 w-3 mr-0.5 sm:mr-1 animate-spin" /> : <RefreshCw className="h-3 w-3 mr-0.5 sm:mr-1" />}
             Recall
           </Button>
         )}
@@ -315,6 +318,7 @@ export function FrontedInventoryZone() {
                 onCheckStatus={() => navigateToAdmin(`inventory/fronted/${item.id}`)}
                 onConvertToSale={() => convertToSale.mutate(item.id)}
                 onRecall={() => recallInventory.mutate(item.id)}
+                isMutating={convertToSale.isPending || recallInventory.isPending}
               />
             ))}
 

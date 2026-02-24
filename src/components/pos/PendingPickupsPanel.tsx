@@ -36,7 +36,7 @@ export function PendingPickupsPanel({ tenantId, onLoadOrder, onCancelOrder }: Pe
                         className="pl-8"
                     />
                 </div>
-                <Button variant="ghost" size="icon" onClick={refresh} disabled={loading}>
+                <Button variant="ghost" size="icon" onClick={refresh} disabled={loading} aria-label="Refresh pending pickups">
                     <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                 </Button>
             </div>

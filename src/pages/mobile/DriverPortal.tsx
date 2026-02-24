@@ -125,7 +125,7 @@ export default function DriverPortal() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b p-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")} aria-label="Back to home">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>

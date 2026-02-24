@@ -437,7 +437,7 @@ export function ProductForm({
                                         readOnly={isEditMode}
                                         className={isEditMode ? "bg-muted text-muted-foreground" : ""}
                                     />
-                                    <Button type="button" variant="outline" size="icon" disabled>
+                                    <Button type="button" variant="outline" size="icon" disabled aria-label="Scan barcode">
                                         <Barcode className="h-4 w-4" />
                                     </Button>
                                 </div>

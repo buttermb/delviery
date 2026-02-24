@@ -102,7 +102,7 @@ export function SettingsSidebar({
             </Button>
           )}
           {isMobile && onMobileClose && (
-            <Button variant="ghost" size="icon" onClick={onMobileClose}>
+            <Button variant="ghost" size="icon" onClick={onMobileClose} aria-label="Close settings sidebar">
               <X className="h-5 w-5" />
             </Button>
           )}

@@ -93,7 +93,7 @@ export function VendorOrderDetailPage() {
         <div className="min-h-dvh bg-background container mx-auto px-4 py-8 space-y-6">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => navigate('/vendor/dashboard')}>
+                <Button variant="ghost" size="icon" onClick={() => navigate('/vendor/dashboard')} aria-label="Back to vendor dashboard">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div>

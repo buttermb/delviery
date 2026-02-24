@@ -62,7 +62,7 @@ export function CommunityLayout() {
               )}
               <NotificationDropdown />
               {profile ? (
-                <Button variant="ghost" size="icon" asChild>
+                <Button variant="ghost" size="icon" asChild aria-label="My profile">
                   <Link to={`/community/u/${profile.username}`}>
                     <User className="h-5 w-5" />
                   </Link>

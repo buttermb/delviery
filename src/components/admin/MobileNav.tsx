@@ -4,11 +4,11 @@ import { logger } from '@/lib/logger';
  * Fixed bottom navigation bar for mobile devices (hidden on desktop)
  */
 
-import { NavLink, useLocation, Link } from 'react-router-dom';
-import { 
-  Home, 
-  Package, 
-  Users, 
+import { NavLink, useLocation, useParams, Link } from 'react-router-dom';
+import {
+  Home,
+  Package,
+  Users,
   Menu,
   RefreshCw
 } from 'lucide-react';
@@ -34,6 +34,7 @@ const mainNavItems: NavItem[] = [
 
 export function MobileNav() {
   const location = useLocation();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [open, setOpen] = useState(false);
   const { sidebarConfig, hotItems } = useSidebarConfig();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -46,9 +47,18 @@ export function MobileNav() {
     hotItemsLength: hotItems?.length || 0,
     isSheetOpen: open
   });
-  
+
+  const getFullPath = (href: string) => {
+    if (!tenantSlug) return href;
+    if (href.startsWith('/admin')) {
+      return `/${tenantSlug}${href}`;
+    }
+    return href;
+  };
+
   const isActive = (href: string) => {
-    return location.pathname === href || location.pathname.startsWith(href + '/');
+    const fullPath = getFullPath(href);
+    return location.pathname === fullPath || location.pathname.startsWith(fullPath + '/');
   };
 
   const handleRefreshAuth = async () => {
@@ -80,7 +90,7 @@ export function MobileNav() {
             return (
               <NavLink
                 key={item.href}
-                to={item.href}
+                to={getFullPath(item.href)}
                 className={cn(
                   'flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-colors touch-manipulation active:scale-95',
                   active
@@ -132,7 +142,7 @@ export function MobileNav() {
                       return (
                         <Link
                           key={item.id}
-                          to={item.url}
+                          to={getFullPath(item.url)}
                           onClick={() => setOpen(false)}
                           className={cn(
                             "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent/50",
@@ -168,7 +178,7 @@ export function MobileNav() {
                       return (
                         <Link
                           key={item.id}
-                          to={item.path}
+                          to={getFullPath(item.path)}
                           onClick={() => setOpen(false)}
                           className={cn(
                             "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent/50",

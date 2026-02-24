@@ -164,8 +164,8 @@ export default function VendorDashboard() {
       }
 
       // Get active POs (draft, submitted, approved statuses)
-      const { data: activePOs, error: poError } = await (supabase as any)
-        .from('purchase_orders')
+      const { data: activePOs, error: poError } = await supabase
+        .from('purchase_orders' as 'tenants')
         .select('id, status, total, expected_delivery_date, received_at')
         .eq('tenant_id', tenantId)
         .in('status', ['draft', 'submitted', 'approved']);
@@ -176,8 +176,8 @@ export default function VendorDashboard() {
       }
 
       // Get all POs for payables and delivery rate calculation
-      const { data: allPOs, error: allPoError } = await (supabase as any)
-        .from('purchase_orders')
+      const { data: allPOs, error: allPoError } = await supabase
+        .from('purchase_orders' as 'tenants')
         .select('id, status, total, expected_delivery_date, received_at')
         .eq('tenant_id', tenantId);
 
@@ -237,8 +237,8 @@ export default function VendorDashboard() {
       if (!vendors || vendors.length === 0) return [];
 
       // Get PO data for each vendor
-      const { data: purchaseOrders, error: poError } = await (supabase as any)
-        .from('purchase_orders')
+      const { data: purchaseOrders, error: poError } = await supabase
+        .from('purchase_orders' as 'tenants')
         .select('vendor_id, total, status')
         .eq('tenant_id', tenantId)
         .in('status', ['approved', 'received']);
@@ -249,8 +249,8 @@ export default function VendorDashboard() {
       }
 
       // Get vendor ratings
-      const { data: ratings, error: ratingsError } = await (supabase as any)
-        .from('vendor_ratings')
+      const { data: ratings, error: ratingsError } = await supabase
+        .from('vendor_ratings' as 'tenants')
         .select('vendor_id, overall_score')
         .eq('tenant_id', tenantId);
 
@@ -312,8 +312,8 @@ export default function VendorDashboard() {
     queryFn: async (): Promise<POActivity[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as any)
-        .from('purchase_orders')
+      const { data, error } = await supabase
+        .from('purchase_orders' as 'tenants')
         .select(`
           id,
           po_number,
@@ -350,8 +350,8 @@ export default function VendorDashboard() {
     queryFn: async (): Promise<VendorCategory[]> => {
       if (!tenantId) return [];
 
-      const { data: vendors, error } = await (supabase as any)
-        .from('vendors')
+      const { data: vendors, error } = await supabase
+        .from('vendors' as 'tenants')
         .select('id, category')
         .eq('account_id', tenantId);
 

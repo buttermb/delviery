@@ -1,10 +1,19 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export function StreetTierTips() {
+    const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const [dismissedTips, setDismissedTips] = useState<string[]>([]);
+
+    const getFullPath = (path: string) => {
+        if (!tenantSlug) return path;
+        if (path.startsWith('/admin')) {
+            return `/${tenantSlug}${path}`;
+        }
+        return path;
+    };
 
     const tips = [
         {
@@ -59,7 +68,7 @@ export function StreetTierTips() {
                         </div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" asChild>
-                                <Link to={tip.action}>{tip.actionLabel}</Link>
+                                <Link to={getFullPath(tip.action)}>{tip.actionLabel}</Link>
                             </Button>
                             <Button
                                 variant="ghost"

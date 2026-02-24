@@ -182,7 +182,7 @@ ${invoice.companyName}
       {/* Header */}
       <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('crm/invoices')}>
+          <Button variant="ghost" size="icon" onClick={() => navigateToAdmin('crm/invoices')} aria-label="Back to invoices">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>

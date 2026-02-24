@@ -374,7 +374,7 @@ export function MultiChannelOrderList() {
                                                 {order.status}
                                             </Badge>
                                         </div>
-                                        <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity" aria-label="View order details">
                                             <ArrowUpRight className="h-4 w-4" />
                                         </Button>
                                     </div>

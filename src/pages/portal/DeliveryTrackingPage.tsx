@@ -542,7 +542,7 @@ export default function DeliveryTrackingPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {!isDirectMode && (
-              <Button variant="ghost" size="icon" onClick={handleReset}>
+              <Button variant="ghost" size="icon" onClick={handleReset} aria-label="Back to delivery list">
                 <ChevronRight className="h-5 w-5 rotate-180" />
               </Button>
             )}
@@ -701,7 +701,7 @@ export default function DeliveryTrackingPage() {
                   </p>
                 </div>
                 {delivery.courier_phone && (
-                  <Button variant="outline" size="icon" asChild>
+                  <Button variant="outline" size="icon" asChild aria-label="Call courier">
                     <a href={`tel:${delivery.courier_phone}`}>
                       <Phone className="h-4 w-4" />
                     </a>

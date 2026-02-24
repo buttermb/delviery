@@ -127,7 +127,7 @@ export function useMenuOrderNotifications(
   options: UseMenuOrderNotificationsOptions = {}
 ): UseMenuOrderNotificationsResult {
   const { enabled = true } = options;
-  const { tenantId, isReady: contextReady } = useTenantContext();
+  const { tenantId, tenantSlug, isReady: contextReady } = useTenantContext();
   const mountedRef = useRef(true);
   const settingsRef = useRef<MenuOrderNotificationSettings>(
     getMenuOrderNotificationSettings()
@@ -230,10 +230,13 @@ export function useMenuOrderNotifications(
             logger.debug('[MenuOrderNotifications] Service worker notification sent');
           } catch {
             // Fallback to regular browser notification
+            const orderPath = tenantSlug
+              ? `/${tenantSlug}/admin/orders/${payload.orderId}`
+              : `/admin/orders/${payload.orderId}`;
             sendBrowserNotification(
               'New Menu Order! 🛒',
               shortMessage,
-              `/admin/orders/${payload.orderId}`
+              orderPath
             );
             logger.debug('[MenuOrderNotifications] Browser notification sent (fallback)');
           }

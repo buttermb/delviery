@@ -39,6 +39,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import type { Json } from '@/integrations/supabase/types';
+import type { DisposableMenu } from '@/types/admin';
 
 // Extended Menu type with computed/joined fields from queries
 // Simplified interface that accepts what the database actually returns
@@ -398,26 +399,26 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       )}
 
       <BurnMenuDialog
-        menu={menu as any}
+        menu={menu as unknown as DisposableMenu}
         open={burnDialogOpen}
         onOpenChange={setBurnDialogOpen}
       />
 
       <ManageAccessDialog
-        menu={menu as any}
+        menu={menu as unknown as DisposableMenu}
         open={manageAccessOpen}
         onOpenChange={setManageAccessOpen}
       />
 
       <MenuShareDialogEnhanced
-        menu={menu as any}
+        menu={menu}
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
         whitelistEntry={undefined}
       />
 
       <MenuAnalyticsDialog
-        menu={menu as any}
+        menu={menu}
         open={analyticsOpen}
         onOpenChange={setAnalyticsOpen}
       />
@@ -433,7 +434,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       <CloneMenuDialog
         open={cloneDialogOpen}
         onClose={() => setCloneDialogOpen(false)}
-        menu={menu as any}
+        menu={menu as unknown as DisposableMenu}
         onComplete={() => window.location.reload()}
       />
 
@@ -448,7 +449,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       <MenuPaymentSettingsDialog
         open={paymentSettingsOpen}
         onOpenChange={setPaymentSettingsOpen}
-        menu={menu as any}
+        menu={menu as unknown as DisposableMenu}
       />
 
       {!isForumMenu && (

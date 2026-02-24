@@ -49,7 +49,7 @@ export function CategoryPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" asChild aria-label="Back to community">
           <Link to="/community">
             <ArrowLeft className="h-4 w-4" />
           </Link>

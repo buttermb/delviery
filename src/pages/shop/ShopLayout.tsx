@@ -544,7 +544,7 @@ export default function ShopLayout() {
 
               {/* Actions */}
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className={`hidden md:flex ${isLuxuryTheme ? 'text-white/70 hover:text-white hover:bg-white/10' : ''}`}>
+                <Button variant="ghost" size="icon" className={`hidden md:flex ${isLuxuryTheme ? 'text-white/70 hover:text-white hover:bg-white/10' : ''}`} aria-label="Search products">
                   <Search className="w-5 h-5" />
                 </Button>
                 {!isPreviewMode && (
@@ -555,6 +555,7 @@ export default function ShopLayout() {
                       className="relative"
                       data-testid="cart-button"
                       onClick={openCartDrawer}
+                      aria-label="Shopping cart"
                     >
                       <ShoppingCart className="w-5 h-5" />
                       {cartItemCount > 0 && (
@@ -568,7 +569,7 @@ export default function ShopLayout() {
                       )}
                     </Button>
                     <Link to={`/shop/${storeSlug}/account`}>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" aria-label="My account">
                         <User className="w-5 h-5" />
                       </Button>
                     </Link>

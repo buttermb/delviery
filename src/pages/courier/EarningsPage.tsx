@@ -32,7 +32,7 @@ export default function CourierEarningsPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container flex h-16 items-center gap-4 px-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/courier/dashboard')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/courier/dashboard')} aria-label="Back to courier dashboard">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">

@@ -726,7 +726,7 @@ export function VideoShowcase() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-slate-400">
-                  <Button size="icon" variant="ghost" onClick={() => setIsPlaying(!isPlaying)} className="hover:text-slate-700">
+                  <Button size="icon" variant="ghost" onClick={() => setIsPlaying(!isPlaying)} className="hover:text-slate-700" aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}>
                     {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                   </Button>
                   <span className="text-[10px] font-mono font-bold text-slate-500">0{activeSlide + 1} / 0{slides.length}</span>

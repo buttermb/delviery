@@ -20,7 +20,8 @@ import {
     Copy,
     Check,
     Filter,
-    X
+    X,
+    Loader2
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -60,9 +61,10 @@ interface ColumnProps {
     icon: React.ElementType;
     color: string;
     onMove: (orderId: string, newStatus: OrderStatus) => void;
+    isMutating?: boolean;
 }
 
-function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: ColumnProps) {
+function PipelineColumn({ title, status, orders, icon: Icon, color, onMove, isMutating }: ColumnProps) {
     const navigate = useTenantNavigate();
     const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -114,7 +116,7 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: Co
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Order actions">
                                                 <MoreVertical className="h-3 w-3" />
                                             </Button>
                                         </DropdownMenuTrigger>
@@ -159,11 +161,13 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: Co
                                             size="sm"
                                             variant="ghost"
                                             className="h-6 px-2 text-[10px] hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/30"
+                                            disabled={isMutating}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onMove(order.id, 'confirmed');
                                             }}
                                         >
+                                            {isMutating ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
                                             Confirm <ArrowRight className="h-3 w-3 ml-1" />
                                         </Button>
                                     )}
@@ -172,11 +176,13 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove }: Co
                                             size="sm"
                                             variant="ghost"
                                             className="h-6 px-2 text-[10px] hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/30"
+                                            disabled={isMutating}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onMove(order.id, 'ready');
                                             }}
                                         >
+                                            {isMutating ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
                                             Ready <ArrowRight className="h-3 w-3 ml-1" />
                                         </Button>
                                     )}

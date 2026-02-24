@@ -233,7 +233,7 @@ export function OrganizationDetail({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">
-          <Button variant="ghost" size="icon" onClick={onBack}>
+          <Button variant="ghost" size="icon" onClick={onBack} aria-label="Back to organizations">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-4">

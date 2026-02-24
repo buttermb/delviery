@@ -296,7 +296,7 @@ function RecurringOrdersListComponent({ clientId, compact = false }: RecurringOr
                     {/* Actions */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="shrink-0">
+                        <Button variant="ghost" size="icon" className="shrink-0" aria-label="Recurring order actions">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

@@ -112,7 +112,7 @@ export function GiftCardLedger({ storeId, card, onBack }: GiftCardLedgerProps) {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onBack}>
+          <Button variant="ghost" size="icon" onClick={onBack} aria-label="Back to gift cards">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>

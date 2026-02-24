@@ -992,7 +992,7 @@ function OrderCard({
         {isExpanded && order.items && order.items.length > 0 && (
           <div className="mt-4 pt-4 border-t space-y-3">
             <p className="text-sm font-medium text-muted-foreground">Order Items</p>
-            {order.items.map((item: any, idx: number) => (
+            {order.items.map((item: OrderItem, idx: number) => (
               <div key={idx} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
                 {/* Item Image */}
                 <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
@@ -1082,14 +1082,14 @@ function QuickReorderButton({
 
     try {
       // Get current cart
-      const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]');
+      const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]') as Array<Record<string, unknown>>;
 
       // Add order items to cart
-      (order.items || []).forEach((item: any) => {
-        const existingIndex = cart.findIndex((c: any) => c.productId === item.product_id);
+      (order.items || []).forEach((item: OrderItem) => {
+        const existingIndex = cart.findIndex((c) => c.productId === item.product_id);
 
         if (existingIndex >= 0) {
-          cart[existingIndex].quantity += item.quantity;
+          cart[existingIndex].quantity = (cart[existingIndex].quantity as number) + item.quantity;
         } else {
           cart.push({
             productId: item.product_id,
@@ -1103,7 +1103,7 @@ function QuickReorderButton({
 
       // Save cart
       localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
-      setCartItemCount(cart.reduce((sum: number, c: any) => sum + c.quantity, 0));
+      setCartItemCount(cart.reduce((sum: number, c) => sum + (c.quantity as number), 0));
 
       toast.success('Items added to cart', {
         description: `${(order.items?.length || 0) === 1 ? '1 item' : `${order.items?.length || 0} items`} from order ${order.order_number}`,

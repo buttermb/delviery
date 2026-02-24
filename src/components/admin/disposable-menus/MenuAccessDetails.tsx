@@ -62,7 +62,7 @@ export const MenuAccessDetails = ({
                   {accessCode}
                 </div>
               </div>
-              <Button size="icon" variant="outline" onClick={copyAccessCode}>
+              <Button size="icon" variant="outline" onClick={copyAccessCode} aria-label="Copy access code">
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
@@ -75,7 +75,7 @@ export const MenuAccessDetails = ({
               <div className="flex-1 bg-muted p-3 rounded-lg text-sm break-all">
                 {shareableUrl}
               </div>
-              <Button size="icon" variant="outline" onClick={copyUrl}>
+              <Button size="icon" variant="outline" onClick={copyUrl} aria-label="Copy shareable URL">
                 <Copy className="h-4 w-4" />
               </Button>
             </div>

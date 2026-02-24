@@ -16,6 +16,7 @@ import { formatMenuUrl, generateWhatsAppMessage } from '@/utils/menuHelpers';
 import { Badge } from '@/components/ui/badge';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 import { formatSmartDate } from '@/lib/formatters';
+import type { Json } from '@/integrations/supabase/types';
 
 interface Menu {
   encrypted_url_token: string;
@@ -142,23 +143,23 @@ export const MenuShareDialog = ({
           <div className="bg-muted/50 p-4 rounded-lg space-y-2 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Status:</span>
-              <Badge variant={jsonToString(menu.status as any) === 'active' ? 'default' : 'destructive'}>
-                {jsonToString(menu.status as any)}
+              <Badge variant={jsonToString(menu.status as Json) === 'active' ? 'default' : 'destructive'}>
+                {jsonToString(menu.status as Json)}
               </Badge>
             </div>
             {menu.expiration_date && (
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Expires:</span>
                 <span className="font-medium">
-                  {formatSmartDate(String(jsonToStringOrNumber(menu.expiration_date as any)))}
+                  {formatSmartDate(String(jsonToStringOrNumber(menu.expiration_date as Json)))}
                 </span>
               </div>
             )}
-            {(menu.security_settings as any)?.max_views && (
+            {(menu.security_settings as Record<string, unknown> | null)?.max_views && (
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">View Limit:</span>
                 <span className="font-medium">
-                  {(menu.security_settings as any).max_views} views
+                  {String((menu.security_settings as Record<string, unknown>).max_views)} views
                 </span>
               </div>
             )}

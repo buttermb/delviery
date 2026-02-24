@@ -193,7 +193,7 @@ export function EnhancedDashboardPreview() {
                   <Bell className="w-4 h-4" />
                   <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-white" />
                 </div>
-                <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-900" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}>
+                <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-900" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} aria-label="Toggle sidebar">
                   <Menu className="w-4 h-4" />
                 </Button>
               </div>

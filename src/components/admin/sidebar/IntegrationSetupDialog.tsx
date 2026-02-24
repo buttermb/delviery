@@ -177,16 +177,16 @@ export function IntegrationSetupDialog({
           const { data: newAccount, error: createError } = await supabase
             .from('accounts')
             .insert({
-              company_name: (tenant as any).business_name || (tenant as any).slug || 'Primary Account',
-              slug: (tenant as any).slug,
-              tenant_id: (tenant as any).id,
+              company_name: tenant.business_name || tenant.slug || 'Primary Account',
+              slug: tenant.slug,
+              tenant_id: tenant.id,
             })
             .select('id')
             .maybeSingle();
 
           if (createError || !newAccount) {
             logger.error('Failed to create account', createError instanceof Error ? createError : new Error(String(createError)), { component: 'IntegrationSetupDialog' });
-            const code = (createError as any)?.code;
+            const code = createError?.code;
             const hint =
               code === '42501'
                 ? 'Permission denied – your user may not have rights to create billing accounts.'
@@ -212,7 +212,7 @@ export function IntegrationSetupDialog({
           .maybeSingle();
 
         // Merge existing integration settings with new mapbox token
-        const currentSettings = (existingSettings?.integration_settings as Record<string, any>) || {};
+        const currentSettings = (existingSettings?.integration_settings as Record<string, unknown>) || {};
         const updatedSettings = {
           ...currentSettings,
           mapbox_token: formData['VITE_MAPBOX_TOKEN']
@@ -258,7 +258,7 @@ export function IntegrationSetupDialog({
           .eq('account_id', account.id)
           .maybeSingle();
 
-        const currentSettings = (existingSettings?.integration_settings as Record<string, any>) || {};
+        const currentSettings = (existingSettings?.integration_settings as Record<string, unknown>) || {};
         const updatedSettings = {
           ...currentSettings,
           stripe_secret_key: formData['TENANT_STRIPE_SECRET_KEY'],

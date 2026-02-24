@@ -78,7 +78,7 @@ export function InvoiceTemplateSelector({ value, onChange }: InvoiceTemplateSele
 
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" aria-label="Manage invoice templates">
             <Settings2 className="h-4 w-4" />
           </Button>
         </DialogTrigger>

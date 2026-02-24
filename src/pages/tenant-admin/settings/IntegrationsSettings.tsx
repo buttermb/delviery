@@ -459,10 +459,11 @@ export default function IntegrationsSettings() {
                 variant="outline"
                 size="icon"
                 onClick={() => setShowApiKey(!showApiKey)}
+                aria-label={showApiKey ? "Hide API key" : "Show API key"}
               >
                 {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
-              <Button variant="outline" size="icon" onClick={handleCopyApiKey}>
+              <Button variant="outline" size="icon" onClick={handleCopyApiKey} aria-label="Copy API key">
                 <Copy className="h-4 w-4" />
               </Button>
             </div>

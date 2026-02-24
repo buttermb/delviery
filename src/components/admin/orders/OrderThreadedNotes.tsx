@@ -133,7 +133,7 @@ export function OrderThreadedNotes({
     queryFn: async (): Promise<TeamMember[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('tenant_users')
         .select('id, user_id, email, full_name, first_name, last_name, avatar_url, role')
         .eq('tenant_id', tenantId)
@@ -159,7 +159,7 @@ export function OrderThreadedNotes({
       if (!tenantId || !orderId) return [];
 
       // Query order_notes with user info joined
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('order_notes')
         .select(`
           id,
@@ -218,7 +218,7 @@ export function OrderThreadedNotes({
       // Convert display mentions to plain @names for storage
       const plainContent = content.replace(mentionPattern, '@$1');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('order_notes')
         .insert({
           tenant_id: tenantId,
@@ -299,7 +299,7 @@ export function OrderThreadedNotes({
         throw new Error('Missing required data');
       }
 
-      const { error: updateError } = await (supabase as any)
+      const { error: updateError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('order_notes')
         .update({
           is_pinned: true,
@@ -332,7 +332,7 @@ export function OrderThreadedNotes({
         throw new Error('Missing tenant ID');
       }
 
-      const { error: updateError } = await (supabase as any)
+      const { error: updateError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('order_notes')
         .update({
           is_pinned: false,

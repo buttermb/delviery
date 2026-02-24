@@ -290,7 +290,7 @@ export default function TeamSettings() {
           <div className="flex justify-end">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-11 w-11" disabled={isUpdating}>
+                <Button variant="ghost" size="icon" className="h-11 w-11" disabled={isUpdating} aria-label="Team member actions">
                   {isUpdating ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (

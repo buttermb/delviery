@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,13 +34,22 @@ interface PageTest {
 
 const ButtonTester = () => {
   const navigate = useNavigate();
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [testing, setTesting] = useState(false);
   const [results, setResults] = useState<ButtonTest[]>([]);
   const [pageResults, setPageResults] = useState<PageTest[]>([]);
   const [currentPage, setCurrentPage] = useState("");
   const [progress, setProgress] = useState(0);
   const [totalBugs, setTotalBugs] = useState(0);
-  
+
+  const getFullPath = (path: string) => {
+    if (!tenantSlug) return path;
+    if (path.startsWith('/admin')) {
+      return `/${tenantSlug}${path}`;
+    }
+    return path;
+  };
+
   // All routes to test
   const allRoutes = [
     // Main public pages
@@ -432,7 +441,7 @@ const ButtonTester = () => {
         
         // Navigate to the page with error handling
         try {
-          navigate(route);
+          navigate(getFullPath(route));
         } catch (navError) {
           logger.error(`Navigation error to ${route}:`, navError);
           allPageResults.push({

@@ -399,7 +399,7 @@ export function StorefrontLiveOrders() {
               Auto
             </Label>
           </div>
-          <Button variant="outline" size="icon" onClick={() => refetch()}>
+          <Button variant="outline" size="icon" onClick={() => refetch()} aria-label="Refresh live orders">
             <RefreshCw className="w-4 h-4" />
           </Button>
         </div>
