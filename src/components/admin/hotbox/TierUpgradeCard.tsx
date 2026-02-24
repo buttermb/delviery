@@ -201,7 +201,7 @@ export function TierUpgradeCard({ compact = false }: TierUpgradeCardProps) {
                   <label className="text-sm font-medium">Select Tier</label>
                   <Select value={selectedTier} onValueChange={(v) => setSelectedTier(v as BusinessTier)}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a tier" />
                     </SelectTrigger>
                     <SelectContent>
                       {TIER_ORDER.map((t) => {

@@ -202,7 +202,7 @@ export function InvoiceTemplateEditor({ onClose }: InvoiceTemplateEditorProps) {
                   onValueChange={(v) => updateTemplateData("layout.logoPosition", v)}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Choose position" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="left">Left</SelectItem>

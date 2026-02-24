@@ -168,7 +168,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select recipients" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -231,7 +231,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -293,7 +293,7 @@ export function NotificationDialog({ trigger }: NotificationDialogProps) {
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select priority" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>

@@ -175,7 +175,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
                 onValueChange={(v) => setValue("frequency", v as FormData["frequency"])}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select frequency" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="weekly">Weekly</SelectItem>

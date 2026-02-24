@@ -231,7 +231,7 @@ ${invoice.companyName}
                     onValueChange={(value: string) => setInvoice({ ...invoice, status: value as 'draft' | 'sent' | 'paid' | 'overdue' })}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="draft">Draft</SelectItem>

@@ -606,7 +606,7 @@ function TemplateEditor({ template, tenantId, adminId, onSave, onCancel, isSavin
           <Label>Category</Label>
           <Select value={category} onValueChange={(val) => setCategory(val as MenuTemplate['category'])}>
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="daily">Daily Special</SelectItem>
@@ -726,7 +726,7 @@ function TemplateEditor({ template, tenantId, adminId, onSave, onCancel, isSavin
               }
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Choose font" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="modern">Modern</SelectItem>

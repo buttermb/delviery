@@ -178,7 +178,7 @@ export function CampaignBuilder({ onClose }: CampaignBuilderProps) {
               }
             >
               <SelectTrigger className="min-h-[44px] touch-manipulation">
-                <SelectValue />
+                <SelectValue placeholder="Select audience" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Customers</SelectItem>

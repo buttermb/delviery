@@ -490,7 +490,7 @@ function RuleFormDialog({
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Start time" />
                     </SelectTrigger>
                     <SelectContent>
                       {HOURS.map((hour) => (
@@ -511,7 +511,7 @@ function RuleFormDialog({
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="End time" />
                     </SelectTrigger>
                     <SelectContent>
                       {HOURS.map((hour) => (
@@ -906,7 +906,7 @@ export function MenuProductAvailability({
           <Label className="text-sm text-muted-foreground shrink-0">Filter by category:</Label>
           <Select value={filterCategory} onValueChange={setFilterCategory}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue />
+              <SelectValue placeholder="All categories" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>

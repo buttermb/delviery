@@ -417,7 +417,7 @@ function ScheduleForm({ menuId, schedule, menus, tenantId, onSave, onCancel, isS
         <Label>Timezone</Label>
         <Select value={timezone} onValueChange={setTimezone}>
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue placeholder="Select timezone" />
           </SelectTrigger>
           <SelectContent>
             {COMMON_TIMEZONES.map((tz) => (
