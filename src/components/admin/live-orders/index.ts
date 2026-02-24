@@ -4,10 +4,3 @@
 
 export { LiveOrdersKanban } from './LiveOrdersKanban';
 export type { LiveOrder } from './LiveOrdersKanban';
-
-export {
-  LiveOrdersCounter,
-  LiveOrdersCounterCompact,
-  LiveOrdersCounterCard,
-} from './LiveOrdersCounter';
-export type { LiveOrdersCounterProps } from './LiveOrdersCounter';

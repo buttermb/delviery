@@ -74,7 +74,7 @@ export function LocationMapWidget() {
       }, {});
 
       // Get active runners with location data
-      const { data: runners, error: runnersError } = await supabase
+      const { data: runners, error: runnersError } = await (supabase as any)
         .from('wholesale_runners')
         .select('id, full_name, status, current_lat, current_lng')
         .eq('account_id', account.id)

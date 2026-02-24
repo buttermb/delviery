@@ -423,7 +423,7 @@ export function MenuBuilderProductSelector({
         throw error;
       }
 
-      return (data ?? []).map((item) => ({
+      return (data ?? []).map((item: any) => ({
         id: item.id,
         name: item.product_name,
         price: item.base_price ?? 0,

@@ -74,10 +74,10 @@ export const OrderDetailsDialog = ({
   const handleUpdateStatus = async () => {
     setUpdating(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('menu_orders')
         .update({ 
-          status: newStatus as string,
+          status: newStatus,
           updated_at: new Date().toISOString()
         })
         .eq('id', order.id);

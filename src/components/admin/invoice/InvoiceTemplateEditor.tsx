@@ -86,7 +86,7 @@ export function InvoiceTemplateEditor({ onClose }: InvoiceTemplateEditorProps) {
     let obj: Record<string, unknown> = newData as Record<string, unknown>;
     
     for (let i = 0; i < keys.length - 1; i++) {
-      obj = obj[keys[i]];
+      obj = obj[keys[i]] as Record<string, unknown>;
     }
     obj[keys[keys.length - 1]] = value;
     

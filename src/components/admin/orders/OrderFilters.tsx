@@ -136,7 +136,7 @@ function useProductOptions(tenantId: string | undefined) {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('products')
         .select('id, name')
         .eq('account_id', tenantId)
@@ -325,7 +325,7 @@ export async function applyOrderFilters(
 
   // If filtering by product name, first get order IDs that contain that product
   if (filters.productName) {
-    const { data: productData } = await supabase
+    const { data: productData } = await (supabase as any)
       .from('products')
       .select('id')
       .eq('account_id', tenantId)

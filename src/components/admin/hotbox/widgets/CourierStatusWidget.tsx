@@ -64,7 +64,7 @@ export function CourierStatusWidget() {
         const couriers = (couriersData ?? []) as Courier[];
 
         // Get all couriers with active deliveries (assigned or in_transit)
-        const { data: activeDeliveries, error: deliveriesError } = await supabase
+        const { data: activeDeliveries, error: deliveriesError } = await (supabase as any)
           .from('deliveries')
           .select('courier_id')
           .eq('tenant_id', tenant.id)
