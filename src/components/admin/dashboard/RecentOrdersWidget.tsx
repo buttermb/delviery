@@ -124,7 +124,7 @@ export function RecentOrdersWidget() {
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(getFullPath(`/admin/orders`)); } }}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full ${getStatusColor(order.status)}`} />
+                <div className={`w-2 h-2 rounded-full ${getStatusColor(order.status)}`} aria-label={`Order status: ${order.status}`} title={order.status} />
                 <div>
                   <div className="font-medium">
                     <OrderLink

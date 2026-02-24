@@ -516,7 +516,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
           <div className="flex items-center gap-3">
             <h3 className="font-semibold text-lg">Live Order Map</h3>
             <Badge variant="outline" className="bg-blue-500/10">
-              <span className="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse" aria-hidden="true"></span>
               {orders.length} Active
             </Badge>
           </div>
@@ -572,23 +572,23 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
         </div>
         <div className="flex gap-2 mt-3 flex-wrap">
           <Badge variant="outline" className="bg-muted">
-            <span className="w-2 h-2 rounded-full bg-muted-foreground mr-2"></span>
+            <span className="w-2 h-2 rounded-full bg-muted-foreground mr-2" aria-hidden="true"></span>
             Pending
           </Badge>
           <Badge variant="outline" className="bg-purple-500/10">
-            <span className="w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
+            <span className="w-2 h-2 rounded-full bg-purple-500 mr-2" aria-hidden="true"></span>
             Confirmed
           </Badge>
           <Badge variant="outline" className="bg-yellow-500/10">
-            <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>
+            <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2" aria-hidden="true"></span>
             Preparing
           </Badge>
           <Badge variant="outline" className="bg-blue-500/10">
-            <span className="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
+            <span className="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse" aria-hidden="true"></span>
             En Route
           </Badge>
           <Badge variant="outline" className="bg-green-500/10">
-            <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+            <span className="w-2 h-2 rounded-full bg-green-500 mr-2" aria-hidden="true"></span>
             Delivered
           </Badge>
         </div>

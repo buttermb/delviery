@@ -371,15 +371,15 @@ export function DeliveryZoneMapPreview({
             {/* Legend */}
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                <div className="w-3 h-3 rounded-full bg-emerald-500" aria-hidden="true" />
                 <span>Low fee</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-amber-500" />
+                <div className="w-3 h-3 rounded-full bg-amber-500" aria-hidden="true" />
                 <span>Medium</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <div className="w-3 h-3 rounded-full bg-red-500" aria-hidden="true" />
                 <span>High fee</span>
               </div>
             </div>

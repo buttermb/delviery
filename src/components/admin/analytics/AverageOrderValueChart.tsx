@@ -131,7 +131,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
                     </CardDescription>
                 </div>
                 <Select value={timeRange} onValueChange={(v) => setTimeRange(v as '7' | '30' | '90')}>
-                    <SelectTrigger className="w-24">
+                    <SelectTrigger className="w-24" aria-label="Select time range">
                         <SelectValue placeholder="Time range" />
                     </SelectTrigger>
                     <SelectContent>

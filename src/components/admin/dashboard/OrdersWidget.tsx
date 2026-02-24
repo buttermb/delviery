@@ -193,7 +193,7 @@ export function OrdersWidget() {
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`orders?order=${order.id}`); } }}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusDotColor(order.status)}`} />
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusDotColor(order.status)}`} aria-label={`Order status: ${order.status.replace('_', ' ')}`} title={order.status.replace('_', ' ')} />
                 <div className="min-w-0">
                   <div className="font-medium truncate">
                     #{order.order_number || order.id.slice(0, 8)}

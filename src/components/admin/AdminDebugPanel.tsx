@@ -131,7 +131,7 @@ function SimplifiedDebugPanel() {
             </h3>
             <div className="flex gap-2 items-center">
               <Select value={filter} onValueChange={(v) => setFilter(v as LogCategory | 'all')}>
-                <SelectTrigger className="w-[140px] h-8 bg-gray-800 border-gray-700 text-xs">
+                <SelectTrigger className="w-[140px] h-8 bg-gray-800 border-gray-700 text-xs" aria-label="Filter log category">
                   <SelectValue placeholder="Filter" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-900 border-gray-700">
@@ -282,7 +282,7 @@ function FullAdminDebugPanel() {
             </h3>
             <div className="flex gap-2 items-center">
               <Select value={filter} onValueChange={(v) => setFilter(v as LogCategory | 'all')}>
-                <SelectTrigger className="w-[140px] h-8 bg-gray-800 border-gray-700 text-xs">
+                <SelectTrigger className="w-[140px] h-8 bg-gray-800 border-gray-700 text-xs" aria-label="Filter log category">
                   <SelectValue placeholder="Filter" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-900 border-gray-700">

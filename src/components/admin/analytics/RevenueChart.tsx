@@ -139,7 +139,7 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
           </CardDescription>
         </div>
         <Select value={granularity} onValueChange={(v) => setGranularity(v as Granularity)}>
-          <SelectTrigger className="w-28">
+          <SelectTrigger className="w-28" aria-label="Select granularity">
             <SelectValue placeholder="Granularity" />
           </SelectTrigger>
           <SelectContent>

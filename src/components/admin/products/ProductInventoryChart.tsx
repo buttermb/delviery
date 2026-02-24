@@ -211,14 +211,14 @@ export function ProductInventoryChart({ productId }: ProductInventoryChartProps)
                             </div>
                             <div className="text-center">
                                 <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                                    <span className="w-2 h-2 rounded-full bg-green-500" />
+                                    <span className="w-2 h-2 rounded-full bg-green-500" aria-hidden="true" />
                                     Restocks
                                 </p>
                                 <p className="text-lg font-bold text-green-600">{restockCount}</p>
                             </div>
                             <div className="text-center">
                                 <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                                    <span className="w-2 h-2 rounded-full bg-red-500" />
+                                    <span className="w-2 h-2 rounded-full bg-red-500" aria-hidden="true" />
                                     Orders
                                 </p>
                                 <p className="text-lg font-bold text-red-600">{deductionCount}</p>
@@ -284,11 +284,11 @@ export function ProductInventoryChart({ productId }: ProductInventoryChartProps)
                         {/* Legend */}
                         <div className="flex items-center justify-center gap-6 mt-4">
                             <div className="flex items-center gap-2 text-sm">
-                                <div className="w-3 h-3 rounded-full bg-green-500" />
+                                <div className="w-3 h-3 rounded-full bg-green-500" aria-hidden="true" />
                                 <span className="text-muted-foreground">Restock Events</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                                <div className="w-3 h-3 rounded-full bg-red-500" />
+                                <div className="w-3 h-3 rounded-full bg-red-500" aria-hidden="true" />
                                 <span className="text-muted-foreground">Order Deductions</span>
                             </div>
                         </div>

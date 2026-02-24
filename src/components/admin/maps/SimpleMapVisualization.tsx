@@ -94,15 +94,15 @@ export function SimpleMapVisualization({
         </div>
         <div className="mt-4 flex gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
+            <div className="w-3 h-3 rounded-full bg-green-500" aria-hidden="true" />
             <span>Warehouse</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
+            <div className="w-3 h-3 rounded-full bg-blue-500" aria-hidden="true" />
             <span>Delivery</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="w-3 h-3 rounded-full bg-red-500" aria-hidden="true" />
             <span>Customer</span>
           </div>
         </div>

@@ -644,15 +644,15 @@ export function MenuBuilderProductSelector({
       {/* Stock legend */}
       <div className="flex items-center gap-4 text-[10px] text-muted-foreground pt-2 border-t">
         <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-green-500" />
+          <div className="w-2 h-2 rounded-full bg-green-500" aria-hidden="true" />
           In Stock
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-amber-500" />
+          <div className="w-2 h-2 rounded-full bg-amber-500" aria-hidden="true" />
           Low Stock (&le;{LOW_STOCK_THRESHOLD})
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-red-500" />
+          <div className="w-2 h-2 rounded-full bg-red-500" aria-hidden="true" />
           Out of Stock
         </div>
       </div>
