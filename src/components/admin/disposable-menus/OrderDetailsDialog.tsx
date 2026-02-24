@@ -233,7 +233,7 @@ export const OrderDetailsDialog = ({
                   </div>
                 ) : (
                   orderItems.map((item: OrderItem, idx: number) => (
-                    <div key={idx} className="border rounded-lg p-3">
+                    <div key={`${String(item.product_name || (item as Record<string, unknown>).name || idx)}-${idx}`} className="border rounded-lg p-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="font-medium">{String((item as Record<string, unknown>).name || (item as Record<string, unknown>).product_name || '')}</div>

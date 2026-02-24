@@ -64,8 +64,8 @@ export function HealthScoreTooltip({ score, reasons = [], children }: HealthScor
                         <div className="space-y-2">
                             <h5 className="text-xs font-semibold text-muted-foreground uppercase">Key Factors</h5>
                             {reasons.length > 0 ? (
-                                reasons.map((reason, idx) => (
-                                    <div key={idx} className="flex items-start gap-2 text-sm">
+                                reasons.map((reason) => (
+                                    <div key={reason.factor} className="flex items-start gap-2 text-sm">
                                         {reason.impact === 'positive' ? (
                                             <CheckCircle className="h-4 w-4 text-success mt-0.5 shrink-0" />
                                         ) : reason.impact === 'negative' ? (

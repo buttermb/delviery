@@ -454,8 +454,8 @@ function OrderCard({
             {order.items && order.items.length > 0 && (
               <div className="space-y-3 mb-4">
                 <p className="text-sm font-semibold text-neutral-600">Order Items</p>
-                {order.items.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-zinc-950 border border-neutral-100 dark:border-neutral-800">
+                {order.items.map((item) => (
+                  <div key={item.product_id} className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-zinc-950 border border-neutral-100 dark:border-neutral-800">
                     <div className="w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
                       {item.image_url ? (
                         <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" loading="lazy" />

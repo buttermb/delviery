@@ -200,7 +200,7 @@ export default function DataExplorerPage() {
                   </TableHeader>
                   <TableBody>
                     {results.map((row, idx) => (
-                      <TableRow key={idx} className="border-white/10">
+                      <TableRow key={row.id ?? idx} className="border-white/10">
                         {Object.entries(row).map(([key, value]) => (
                           <TableCell key={key} className="text-[hsl(var(--super-admin-text))]">
                             {value === null || value === undefined
@@ -231,9 +231,9 @@ export default function DataExplorerPage() {
             {recentQueries.length === 0 ? (
               <div className="text-center py-4 text-muted-foreground text-sm">No recent queries</div>
             ) : (
-              recentQueries.map((item, index) => (
-                <div 
-                  key={index} 
+              recentQueries.map((item) => (
+                <div
+                  key={`${item.timestamp}-${item.query}`}
                   className="p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 cursor-pointer transition-colors"
                   onClick={() => setQuery(item.query)}
                 >

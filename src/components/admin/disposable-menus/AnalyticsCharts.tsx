@@ -287,7 +287,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
                   dataKey="revenue"
                 >
                   {productData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip formatter={(value: number | undefined) => formatCurrency(value ?? 0)} />
@@ -302,7 +302,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
             <h3 className="font-semibold mb-4">Top Customers by Activity</h3>
             <div className="space-y-3">
               {customerData.map((customer, idx: number) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div key={customer.name} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <Users className="h-5 w-5 text-primary" />

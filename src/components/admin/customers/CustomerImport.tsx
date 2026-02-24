@@ -903,8 +903,8 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {duplicates.slice(0, 10).map((dup, i) => (
-                    <TableRow key={i}>
+                  {duplicates.slice(0, 10).map((dup) => (
+                    <TableRow key={`dup-${dup.parsed.rowIndex}-${dup.existing.id}`}>
                       <TableCell className="font-mono text-xs">{dup.parsed.rowIndex}</TableCell>
                       <TableCell>
                         <div className="text-sm">
@@ -977,8 +977,8 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
                   {parsedCustomers
                     .filter((c) => !c.isValid)
                     .slice(0, 10)
-                    .map((customer, i) => (
-                      <TableRow key={i}>
+                    .map((customer) => (
+                      <TableRow key={`invalid-${customer.rowIndex}`}>
                         <TableCell className="font-mono text-xs">{customer.rowIndex}</TableCell>
                         <TableCell>
                           {customer.first_name || '(empty)'} {customer.last_name || '(empty)'}

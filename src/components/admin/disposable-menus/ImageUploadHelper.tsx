@@ -53,9 +53,9 @@ export const ImageUploadHelper = ({ productsWithoutImages = [] }: ImageUploadHel
           <div className="space-y-2">
             <div className="text-sm font-medium">Products without images:</div>
             <div className="space-y-1">
-              {productsWithoutImages.map((productName, index) => (
+              {productsWithoutImages.map((productName) => (
                 <div
-                  key={index}
+                  key={productName}
                   className="text-sm text-muted-foreground flex items-center gap-2 p-2 rounded bg-muted/50"
                 >
                   <Image className="h-4 w-4" />

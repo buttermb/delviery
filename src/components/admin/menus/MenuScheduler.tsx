@@ -588,8 +588,8 @@ function ConflictsPanel({ conflicts }: ConflictsPanelProps) {
         </span>
       </div>
 
-      {conflicts.map((conflict, index) => (
-        <Alert key={index} variant="destructive" className="border-amber-500/50 bg-amber-50">
+      {conflicts.map((conflict) => (
+        <Alert key={`${conflict.schedule1.id}-${conflict.schedule2.id}`} variant="destructive" className="border-amber-500/50 bg-amber-50">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle className="text-amber-800">
             Overlapping Products
@@ -601,8 +601,8 @@ function ConflictsPanel({ conflicts }: ConflictsPanelProps) {
               {conflict.overlappingProductIds.length} product(s) during overlapping time periods.
             </p>
             <div className="flex flex-wrap gap-1">
-              {conflict.overlappingProductNames.slice(0, 5).map((name, i) => (
-                <Badge key={i} variant="outline" className="text-xs">
+              {conflict.overlappingProductNames.slice(0, 5).map((name) => (
+                <Badge key={name} variant="outline" className="text-xs">
                   {name}
                 </Badge>
               ))}

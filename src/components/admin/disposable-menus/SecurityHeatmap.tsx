@@ -223,8 +223,8 @@ export const SecurityHeatmap = ({ securityEvents, accessLogs }: SecurityHeatmapP
         <Card className="p-6">
           <h3 className="font-semibold mb-4">Suspicious IP Addresses</h3>
           <div className="space-y-2">
-            {suspiciousIPList.map((item: SuspiciousIP, idx: number) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+            {suspiciousIPList.map((item: SuspiciousIP) => (
+              <div key={item.ip} className="flex items-center justify-between p-3 bg-destructive/10 rounded-lg border border-destructive/20">
                 <div className="flex items-center gap-3">
                   <AlertTriangle className="h-5 w-5 text-destructive" />
                   <div>

@@ -236,8 +236,8 @@ export const CustomerMessaging = () => {
                   No customers match the selected filter
                 </div>
               ) : (
-                filteredCustomers.map((customer: Customer, idx: number) => (
-                  <div key={idx} className="border rounded-lg p-3">
+                filteredCustomers.map((customer: Customer) => (
+                  <div key={customer.phone} className="border rounded-lg p-3">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <div className="font-medium">{customer.name}</div>

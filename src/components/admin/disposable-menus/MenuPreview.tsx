@@ -301,8 +301,8 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
                         {/* Security Features */}
                         {securityFeatures.length > 0 && (
                           <div className="flex flex-wrap gap-2">
-                            {securityFeatures.map((feature, i) => (
-                              <Badge key={i} variant="outline" className="text-xs gap-1">
+                            {securityFeatures.map((feature) => (
+                              <Badge key={feature.label} variant="outline" className="text-xs gap-1">
                                 <feature.icon className="h-3 w-3" />
                                 {feature.label}
                               </Badge>

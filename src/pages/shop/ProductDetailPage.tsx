@@ -634,7 +634,7 @@ export function ProductDetailPage() {
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                   {allImages.map((img, idx) => (
                     <button
-                      key={idx}
+                      key={img}
                       onClick={() => setSelectedImage(idx)}
                       className={`relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden transition-all duration-300 ${selectedImage === idx
                         ? 'ring-2 ring-primary ring-offset-2 ring-offset-black scale-105 opacity-100'
@@ -815,7 +815,7 @@ export function ProductDetailPage() {
                   {product.effects && product.effects.length > 0 && (
                     <div className="mt-8 pt-6 border-t border-white/10">
                       <div className="flex flex-wrap gap-4">
-                        {product.effects.map((effect, idx) => {
+                        {product.effects.map((effect) => {
                           const iconName = effect.toLowerCase();
                           let IconComponent = Activity;
 
@@ -827,7 +827,7 @@ export function ProductDetailPage() {
                           else if (iconName.includes('creat')) IconComponent = Lightbulb;
 
                           return (
-                            <div key={idx} className="flex flex-col items-center gap-2 group">
+                            <div key={effect} className="flex flex-col items-center gap-2 group">
                               <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
                                 <IconComponent className="w-5 h-5 text-emerald-400" />
                               </div>
@@ -1090,9 +1090,9 @@ export function ProductDetailPage() {
             )}
             {allImages.length > 1 && (
               <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
-                {allImages.map((_, index) => (
+                {allImages.map((img, index) => (
                   <button
-                    key={index}
+                    key={img}
                     aria-label={`View image ${index + 1}`}
                     className={cn(
                       'w-2.5 h-2.5 rounded-full transition-all duration-300',

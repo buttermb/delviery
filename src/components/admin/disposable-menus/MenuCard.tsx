@@ -220,8 +220,8 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
           {/* Security Features */}
           {securityFeatures.length > 0 && !compact && (
             <div className="flex flex-wrap gap-1.5">
-              {securityFeatures.map((feature, i) => (
-                <Badge key={i} variant="outline" className="text-xs gap-1 py-0">
+              {securityFeatures.map((feature) => (
+                <Badge key={feature.label} variant="outline" className="text-xs gap-1 py-0">
                   <feature.icon className="h-3 w-3" />
                   {feature.label}
                 </Badge>

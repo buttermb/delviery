@@ -65,7 +65,7 @@ export const ComparisonMetricsCard = ({
             
             return (
               <motion.div
-                key={index}
+                key={metric.label}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}

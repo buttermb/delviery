@@ -243,8 +243,8 @@ export function MenuComplianceBadge({
               </p>
               {!isCompliant && (
                 <ul className="text-xs mt-1">
-                  {requiredFailures.map((check, i) => (
-                    <li key={i} className="flex items-center gap-1">
+                  {requiredFailures.map((check) => (
+                    <li key={check.name} className="flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3 text-warning" />
                       {check.message}
                     </li>
@@ -350,8 +350,8 @@ export function MenuComplianceBadge({
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-xs">
               <ul className="text-xs space-y-1">
-                {requiredFailures.map((check, i) => (
-                  <li key={i}>{check.message}</li>
+                {requiredFailures.map((check) => (
+                  <li key={check.name}>{check.message}</li>
                 ))}
               </ul>
             </TooltipContent>

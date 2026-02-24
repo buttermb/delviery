@@ -77,16 +77,19 @@ export const CustomerActivityTimeline = ({
   // Combine and sort all activities
   const activities = [
     ...(accessLogs?.map(log => ({
+      id: `access-${log.id}`,
       type: 'access',
       timestamp: log.accessed_at,
       data: log
     })) || []),
     ...(orders?.map(order => ({
+      id: `order-${order.id}`,
       type: 'order',
       timestamp: order.created_at,
       data: order
     })) || []),
     ...(securityEvents?.map(event => ({
+      id: `security-${event.id}`,
       type: 'security',
       timestamp: event.created_at,
       data: event
@@ -204,9 +207,9 @@ export const CustomerActivityTimeline = ({
             </div>
           ) : activities.length > 0 ? (
             <div className="space-y-3">
-              {activities.map((activity, idx) => (
+              {activities.map((activity) => (
                 <div
-                  key={idx}
+                  key={activity.id}
                   className={`flex items-start gap-3 p-4 border rounded-lg ${getActivityColor(activity.type, activity.data)}`}
                 >
                   <div className="mt-0.5">

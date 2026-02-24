@@ -1263,9 +1263,9 @@ export default function TenantAdminDashboardPage() {
           <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
             {recentActivity && recentActivity.length > 0 ? (
               <div className="space-y-2 sm:space-y-3">
-                {recentActivity.map((activity, index) => (
+                {recentActivity.map((activity) => (
                   <div
-                    key={index}
+                    key={`${activity.timestamp}-${activity.type}`}
                     className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 border border-[hsl(var(--tenant-border))] rounded-lg hover:bg-[hsl(var(--tenant-surface))] transition-colors"
                   >
                     <div className="mt-0.5">
@@ -1311,8 +1311,8 @@ export default function TenantAdminDashboardPage() {
             </CardHeader>
             <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
               <div className="space-y-2 sm:space-y-3">
-                {todayMetrics.lowStock.map((item: LowStockItem, index: number) => (
-                  <div key={index} className="flex items-center justify-between p-2 sm:p-3 md:p-4 border border-orange-200 dark:border-orange-800 rounded-lg bg-orange-50/50 dark:bg-orange-950/20 gap-2">
+                {todayMetrics.lowStock.map((item: LowStockItem) => (
+                  <div key={item.id} className="flex items-center justify-between p-2 sm:p-3 md:p-4 border border-orange-200 dark:border-orange-800 rounded-lg bg-orange-50/50 dark:bg-orange-950/20 gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-xs sm:text-sm text-[hsl(var(--tenant-text))] truncate">{item.strain || item.product_name || 'Unknown'}</p>
                       <p className="text-xs text-[hsl(var(--tenant-text-light))]">
