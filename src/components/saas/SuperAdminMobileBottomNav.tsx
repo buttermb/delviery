@@ -63,8 +63,7 @@ export function SuperAdminMobileBottomNav() {
       <OfflineIndicator />
       <MobileErrorBoundary>
         <nav 
-          className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--super-admin-surface))]/95 backdrop-blur border-t border-white/10 lg:hidden min-h-[64px] safe-area-bottom shadow-lg"
-          style={{ zIndex: 100 }}
+          className="fixed bottom-0 left-0 right-0 bg-[hsl(var(--super-admin-surface))]/95 backdrop-blur border-t border-white/10 lg:hidden min-h-[64px] safe-area-bottom shadow-lg z-sticky"
           role="navigation"
           aria-label="Super admin mobile navigation"
         >
@@ -113,9 +112,8 @@ export function SuperAdminMobileBottomNav() {
           </SheetTrigger>
           <SheetContent 
             side="right" 
-            className="p-0 w-[85vw] max-w-sm flex flex-col bg-[hsl(var(--super-admin-surface))] border-white/10"
+            className="p-0 w-[85vw] max-w-sm flex flex-col bg-[hsl(var(--super-admin-surface))] border-white/10 z-modal"
             style={{
-              zIndex: 200,
               height: '100dvh',
               maxHeight: '100dvh',
               top: 0,
