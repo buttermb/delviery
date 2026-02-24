@@ -129,7 +129,7 @@ export function useCustomerPortalOrders({
     completedOrders: orders.filter((o) => COMPLETED_STATUSES.includes(o.status)).length,
     totalSpent: orders
       .filter((o) => !CANCELLED_STATUSES.includes(o.status))
-      .reduce((sum, o) => sum + (o.total_amount || 0), 0),
+      .reduce((sum, o) => sum + (o.total_amount ?? 0), 0),
   };
 
   // Helper to get order by ID

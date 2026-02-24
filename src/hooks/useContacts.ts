@@ -710,8 +710,8 @@ export function useContactStats(contactType?: ContactType) {
         active: data.filter(c => c.status === 'active').length,
         inactive: data.filter(c => c.status === 'inactive').length,
         suspended: data.filter(c => c.status === 'suspended').length,
-        totalOutstanding: data.reduce((sum, c) => sum + (c.outstanding_balance || 0), 0),
-        totalLifetimeValue: data.reduce((sum, c) => sum + (c.lifetime_value || 0), 0),
+        totalOutstanding: data.reduce((sum, c) => sum + (c.outstanding_balance ?? 0), 0),
+        totalLifetimeValue: data.reduce((sum, c) => sum + (c.lifetime_value ?? 0), 0),
         byType: {
           retail: data.filter(c => c.contact_type?.includes('retail')).length,
           wholesale: data.filter(c => c.contact_type?.includes('wholesale')).length,

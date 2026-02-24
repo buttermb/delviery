@@ -201,7 +201,7 @@ function calculateVipThreshold(spendValues: number[]): number {
   const vipIndex = Math.floor(sorted.length * (SEGMENT_THRESHOLDS.VIP_PERCENTILE / 100));
 
   // Return the spend value at that position
-  return sorted[Math.min(vipIndex, sorted.length - 1)] || 0;
+  return sorted[Math.min(vipIndex, sorted.length - 1)] ?? 0;
 }
 
 /**

@@ -197,7 +197,7 @@ export function useTopProducts() {
       const quantityByProduct = new Map<string, number>();
       (items ?? []).forEach((item) => {
         const name = item.product_name || 'Unknown';
-        quantityByProduct.set(name, (quantityByProduct.get(name) ?? 0) + (item.quantity || 0));
+        quantityByProduct.set(name, (quantityByProduct.get(name) ?? 0) + (item.quantity ?? 0));
       });
 
       // Sort and take top 5

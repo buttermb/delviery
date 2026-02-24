@@ -123,7 +123,7 @@ export function useConvertPreOrderToInvoice() {
             const { data: preOrder, error: fetchError } = await supabase.from('crm_pre_orders').select('*').eq('id', preOrderId).eq('account_id', accountId).maybeSingle();
             if (fetchError) throw fetchError;
             const subtotal = preOrder.subtotal;
-            const tax_rate = invoiceData.tax_rate || 0;
+            const tax_rate = invoiceData.tax_rate ?? 0;
             const tax_amount = subtotal * (tax_rate / 100);
             const total = subtotal + tax_amount;
             const { data: invoice, error: invoiceError } = await supabase.from('crm_invoices').insert({ ...invoiceData, account_id: accountId, client_id: preOrder.client_id, line_items: preOrder.line_items, subtotal, tax_rate, tax_amount, total, status: 'draft', created_from_pre_order_id: preOrderId }).select('*').maybeSingle();

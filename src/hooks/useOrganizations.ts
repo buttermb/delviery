@@ -164,7 +164,7 @@ async function fetchOrganizations(
       .in('status', ['completed', 'delivered', 'paid']);
 
     const validOrders = orderStats ?? [];
-    const totalLtv = validOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+    const totalLtv = validOrders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0);
     const totalOrders = validOrders.length;
     const avgOrderValue = totalOrders > 0 ? totalLtv / totalOrders : 0;
 
@@ -179,7 +179,7 @@ async function fetchOrganizations(
 
     orgsWithStats.push({
       ...org,
-      member_count: memberCount || 0,
+      member_count: memberCount ?? 0,
       total_ltv: Math.round(totalLtv * 100) / 100,
       total_orders: totalOrders,
       avg_order_value: Math.round(avgOrderValue * 100) / 100,
@@ -228,7 +228,7 @@ async function fetchOrganizationDetail(
     .in('status', ['completed', 'delivered', 'paid']);
 
   const validOrders = orderStats ?? [];
-  const totalLtv = validOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+  const totalLtv = validOrders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0);
   const totalOrders = validOrders.length;
   const avgOrderValue = totalOrders > 0 ? totalLtv / totalOrders : 0;
 
@@ -242,7 +242,7 @@ async function fetchOrganizationDetail(
 
   return {
     ...(org as Record<string, unknown>),
-    member_count: memberCount || 0,
+    member_count: memberCount ?? 0,
     total_ltv: Math.round(totalLtv * 100) / 100,
     total_orders: totalOrders,
     avg_order_value: Math.round(avgOrderValue * 100) / 100,

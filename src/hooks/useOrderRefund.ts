@@ -277,7 +277,7 @@ export function useOrderRefund(): UseOrderRefundResult {
               continue;
             }
 
-            const previousQuantity = product.stock_quantity || 0;
+            const previousQuantity = product.stock_quantity ?? 0;
             const newQuantity = previousQuantity + quantityToRestore;
 
             // Update product stock - increment by refunded quantity

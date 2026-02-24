@@ -101,10 +101,10 @@ export function useOrderDuplicate(options: UseOrderDuplicateOptions = {}) {
           delivery_notes: order.delivery_notes
             ? `[Duplicated from #${order.order_number || order.id.slice(0, 8)}] ${order.delivery_notes}`
             : `[Duplicated from #${order.order_number || order.id.slice(0, 8)}]`,
-          delivery_fee: order.delivery_fee || 0,
+          delivery_fee: order.delivery_fee ?? 0,
           payment_method: order.payment_method || 'cash',
-          subtotal: order.subtotal || 0,
-          total_amount: order.total_amount || 0,
+          subtotal: order.subtotal ?? 0,
+          total_amount: order.total_amount ?? 0,
           tip_amount: order.tip_amount || null,
           discount_amount: order.discount_amount || null,
           discount_reason: order.discount_reason || null,

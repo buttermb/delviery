@@ -163,7 +163,7 @@ export function useAdminOrdersRealtime({
               orderNumber: (newOrder.order_number as string) || (newOrder.id as string).slice(0, 8),
               source: (newOrder.order_source as OrderSource) || 'admin',
               customerName: 'Customer',
-              totalAmount: (newOrder.total_amount as number) || 0,
+              totalAmount: (newOrder.total_amount as number) ?? 0,
               timestamp: (newOrder.created_at as string) || new Date().toISOString(),
             });
           }
@@ -197,7 +197,7 @@ export function useAdminOrdersRealtime({
               orderNumber: (newOrder.order_number as string) || (newOrder.id as string).slice(0, 8),
               source: 'pos',
               customerName: 'POS Sale',
-              totalAmount: (newOrder.total_amount as number) || 0,
+              totalAmount: (newOrder.total_amount as number) ?? 0,
               timestamp: (newOrder.created_at as string) || new Date().toISOString(),
             });
 
@@ -231,7 +231,7 @@ export function useAdminOrdersRealtime({
               orderNumber: (order.order_number as string) || (order.id as string).slice(0, 8),
               source: 'storefront',
               customerName: (order.customer_name as string) || (order.customer_email as string) || 'Storefront Customer',
-              totalAmount: (order.total as number) || (order.total_amount as number) || 0,
+              totalAmount: (order.total as number) ?? (order.total_amount as number) ?? 0,
               timestamp: (order.created_at as string) || new Date().toISOString(),
             });
 
@@ -280,7 +280,7 @@ export function useAdminOrdersRealtime({
                 orderNumber: (order.order_number as string) || (order.id as string).slice(0, 8),
                 source: 'storefront',
                 customerName: (order.customer_name as string) || storeName,
-                totalAmount: (order.total_amount as number) || (order.total as number) || 0,
+                totalAmount: (order.total_amount as number) ?? (order.total as number) ?? 0,
                 timestamp: (order.created_at as string) || new Date().toISOString(),
               });
 

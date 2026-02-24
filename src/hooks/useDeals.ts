@@ -72,7 +72,7 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
                     .eq('customer_email', customerEmail);
 
                 return {
-                    orderCount: count || 0,
+                    orderCount: count ?? 0,
                     dealUsage: {} as Record<string, number>
                 };
             } catch (err) {
@@ -122,7 +122,7 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
                 // Enforce minimum price compliance
                 // Calculate the total minimum allowed for all discountable items
                 const minimumAllowedTotal = discountableItems.reduce((sum, item) => {
-                    const minPrice = item.minimumPrice || 0;
+                    const minPrice = item.minimumPrice ?? 0;
                     return sum + (minPrice * item.quantity);
                 }, 0);
 

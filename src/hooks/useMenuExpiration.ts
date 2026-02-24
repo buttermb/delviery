@@ -135,7 +135,7 @@ export const useArchiveMenu = () => {
 
       // Calculate analytics snapshot
       const orders = (menu as unknown as { menu_orders?: Array<{ id: string; total_amount?: number }> }).menu_orders ?? [];
-      const totalViews = (menu as unknown as { view_count?: number }).view_count || 0;
+      const totalViews = (menu as unknown as { view_count?: number }).view_count ?? 0;
       const totalOrders = orders.length;
       const totalRevenue = orders.reduce((sum: number, o: { total_amount?: number }) =>
         sum + Number(o.total_amount || 0), 0);

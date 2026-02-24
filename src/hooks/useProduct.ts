@@ -189,7 +189,7 @@ export function useProductInventoryChart(productId: string | undefined, timeRang
 
             if (priorHistory) {
                 runningQuantity = priorHistory.reduce(
-                    (sum, item) => sum + ((item as { quantity_change: number }).quantity_change || 0),
+                    (sum, item) => sum + ((item as { quantity_change: number }).quantity_change ?? 0),
                     0
                 );
             }
@@ -204,7 +204,7 @@ export function useProductInventoryChart(productId: string | undefined, timeRang
                     notes: string | null;
                 };
 
-                runningQuantity += typedItem.quantity_change || 0;
+                runningQuantity += typedItem.quantity_change ?? 0;
 
                 // Determine event type
                 let eventType: 'restock' | 'deduction' | 'adjustment' = 'adjustment';

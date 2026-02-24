@@ -88,12 +88,12 @@ export function useCouponUsageStats() {
         const totalCoupons = couponList.length;
         const activeCoupons = couponList.filter(c => c.status === 'active').length;
         const totalRedemptions = usageData.length;
-        const totalDiscountGiven = usageData.reduce((sum, u) => sum + (u.discount_amount || 0), 0);
+        const totalDiscountGiven = usageData.reduce((sum, u) => sum + (u.discount_amount ?? 0), 0);
         const averageDiscountPerRedemption = totalRedemptions > 0 ? totalDiscountGiven / totalRedemptions : 0;
 
         // Calculate overall redemption rate (redeemed / total possible)
         const totalPossibleRedemptions = couponList.reduce(
-          (sum, c) => sum + (c.total_usage_limit || 0),
+          (sum, c) => sum + (c.total_usage_limit ?? 0),
           0
         );
         const redemptionRate = totalPossibleRedemptions > 0
@@ -104,7 +104,7 @@ export function useCouponUsageStats() {
         const couponPerformance = couponList.map(coupon => {
           const couponUsage = usageData.filter(u => u.coupon_id === coupon.id);
           const redemptions = couponUsage.length;
-          const totalDiscount = couponUsage.reduce((sum, u) => sum + (u.discount_amount || 0), 0);
+          const totalDiscount = couponUsage.reduce((sum, u) => sum + (u.discount_amount ?? 0), 0);
           const couponRedemptionRate = coupon.total_usage_limit && coupon.total_usage_limit > 0
             ? (redemptions / coupon.total_usage_limit) * 100
             : null;
@@ -157,7 +157,7 @@ export function useCouponUsageStats() {
               const existing = dailyMap.get(dateStr) || { count: 0, totalDiscount: 0 };
               dailyMap.set(dateStr, {
                 count: existing.count + 1,
-                totalDiscount: existing.totalDiscount + (usage.discount_amount || 0),
+                totalDiscount: existing.totalDiscount + (usage.discount_amount ?? 0),
               });
             }
           }

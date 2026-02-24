@@ -148,13 +148,13 @@ export function usePopularProductTags(limit = 10) {
       // Count assignments per tag
       const countMap = new Map<string, number>();
       (assignments ?? []).forEach((a) => {
-        countMap.set(a.tag_id, (countMap.get(a.tag_id) || 0) + 1);
+        countMap.set(a.tag_id, (countMap.get(a.tag_id) ?? 0) + 1);
       });
 
       // Add usage count and sort
       const tagsWithCount: PopularTag[] = tags.map(tag => ({
         ...tag,
-        usage_count: countMap.get(tag.id) || 0,
+        usage_count: countMap.get(tag.id) ?? 0,
       }));
 
       return tagsWithCount

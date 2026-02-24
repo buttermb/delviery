@@ -197,7 +197,7 @@ async function fetchCustomerComplianceData(
     .gte('created_at', thirtyDaysAgo.toISOString());
 
   const monthlySpent = (recentOrders ?? []).reduce(
-    (sum: number, order: OrderTotalResult) => sum + (order.total_amount || 0),
+    (sum: number, order: OrderTotalResult) => sum + (order.total_amount ?? 0),
     0
   );
 

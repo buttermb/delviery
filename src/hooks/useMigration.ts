@@ -595,7 +595,7 @@ export function useMigration() {
 
         const productItems = batch.map((product, idx) => {
           // Calculate quantity based on quality tier and pack meaning
-          const quantity = product.quantityLbs ? Math.round(product.quantityLbs * 16) : (product.quantityUnits || 0);
+          const quantity = product.quantityLbs ? Math.round(product.quantityLbs * 16) : (product.quantityUnits ?? 0);
           
           return {
             tenant_id: tenantUser.tenant_id,
@@ -608,7 +608,7 @@ export function useMigration() {
             wholesale_price: product.prices?.lb || product.prices?.oz || 0,
             retail_price: product.prices?.lb ? Math.round(product.prices.lb * 1.3) : null, // 30% markup
             price: product.prices?.lb || product.prices?.oz || 0,
-            thca_percentage: product.thcPercentage || 0,
+            thca_percentage: product.thcPercentage ?? 0,
             available_quantity: quantity,
             total_quantity: quantity,
             description: product.notes || (product.qualityTier ? `Quality: ${product.qualityTier}` : null),

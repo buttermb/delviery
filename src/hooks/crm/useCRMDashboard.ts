@@ -89,7 +89,7 @@ export const useCRMDashboard = () => {
             }
 
             return {
-                totalClients: totalClients || 0,
+                totalClients: totalClients ?? 0,
                 activeInvoicesCount,
                 activeInvoicesValue,
                 pendingPreOrdersCount,

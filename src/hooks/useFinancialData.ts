@@ -381,7 +381,7 @@ export const useExpenseSummary = () => {
       const categoryTotals: Record<string, number> = {};
       expenseList.forEach(e => {
         const category = e.category || 'Uncategorized';
-        categoryTotals[category] = (categoryTotals[category] || 0) + Number(e.amount || 0);
+        categoryTotals[category] = (categoryTotals[category] ?? 0) + Number(e.amount || 0);
       });
 
       const categoryBreakdown = Object.entries(categoryTotals)

@@ -201,18 +201,18 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
     burnedMenus.forEach(m => {
       const reason = m.burn_reason || 'Manual';
       const formatted = reason.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      burnReasons[formatted] = (burnReasons[formatted] || 0) + 1;
+      burnReasons[formatted] = (burnReasons[formatted] ?? 0) + 1;
     });
 
     // Views by hour
     const hourCounts: Record<number, number> = {};
     accessLogs.forEach(log => {
       const hour = new Date(log.accessed_at).getHours();
-      hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+      hourCounts[hour] = (hourCounts[hour] ?? 0) + 1;
     });
     const viewsByHour = Array.from({ length: 24 }, (_, i) => ({
       hour: i,
-      views: hourCounts[i] || 0,
+      views: hourCounts[i] ?? 0,
     }));
 
     // Top products from order data
@@ -226,7 +226,7 @@ export function useMenuDashboardAnalytics(tenantId: string | undefined) {
           productMap[key] = { id: key, name: item.product_name, orders: 0, revenue: 0 };
         }
         productMap[key].orders += item.quantity || 1;
-        productMap[key].revenue += (item.price_per_unit || 0) * (item.quantity || 1);
+        productMap[key].revenue += (item.price_per_unit ?? 0) * (item.quantity || 1);
       });
     });
     const topProducts = Object.values(productMap)

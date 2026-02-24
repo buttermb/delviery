@@ -40,7 +40,7 @@ export function useCustomerStats(customerId: string | undefined) {
       }
 
       const orders = data ?? [];
-      const total_spent = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+      const total_spent = orders.reduce((sum, order) => sum + (order.total_amount ?? 0), 0);
       const order_count = orders.length;
       const avg_order_value = order_count > 0 ? total_spent / order_count : 0;
 

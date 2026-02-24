@@ -137,7 +137,7 @@ export function useFeatureTracking() {
 
       // Update average session length
       setPatterns(prev => {
-        const currentAvg = prev?.avgSessionLengthMinutes || 0;
+        const currentAvg = prev?.avgSessionLengthMinutes ?? 0;
         const newAvg = currentAvg === 0
           ? sessionLengthMinutes
           : Math.round((currentAvg + sessionLengthMinutes) / 2);

@@ -171,7 +171,7 @@ export function useDeliveryETA(orderIds: string[]) {
       // Count active deliveries per runner
       const counts: Record<string, number> = {};
       for (const d of data ?? []) {
-        counts[d.runner_id] = (counts[d.runner_id] || 0) + 1;
+        counts[d.runner_id] = (counts[d.runner_id] ?? 0) + 1;
       }
       return counts;
     },
@@ -235,7 +235,7 @@ export function useDeliveryETA(orderIds: string[]) {
       const elapsedMinutes = (now - startTime) / 60_000;
 
       // Calculate stops ahead for this runner
-      const totalRunnerStops = runnerStopCounts[delivery.runner_id] || 1;
+      const totalRunnerStops = runnerStopCounts[delivery.runner_id] ?? 1;
       // Rough estimate: this order's position based on assignment order
       // Simplification: assume equal distribution, so stops before = (total - 1) / 2
       const stopsBefore = Math.max(0, Math.floor((totalRunnerStops - 1) / 2));

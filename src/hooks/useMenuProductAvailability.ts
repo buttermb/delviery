@@ -93,7 +93,7 @@ const transformRow = (row: Record<string, unknown>): AvailabilityRule => ({
   endHour: row.end_hour as number | null,
   allowedDays: row.allowed_days as number[] | null,
   maxQuantity: row.max_quantity as number | null,
-  currentQuantityUsed: (row.current_quantity_used as number) || 0,
+  currentQuantityUsed: (row.current_quantity_used as number) ?? 0,
   bundleProductIds: row.bundle_product_ids as string[] | null,
   hideWhenUnavailable: row.hide_when_unavailable as boolean,
   unavailableMessage: (row.unavailable_message as string) || 'Currently unavailable',
@@ -321,7 +321,7 @@ export const useIncrementRuleQuantity = () => {
 
       if (fetchError) throw fetchError;
 
-      const currentUsed = (current?.current_quantity_used as number) || 0;
+      const currentUsed = (current?.current_quantity_used as number) ?? 0;
 
       // Update with incremented quantity
       const { data, error } = await supabase

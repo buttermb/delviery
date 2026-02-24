@@ -60,7 +60,7 @@ export function usePurchaseOrders() {
             po_number: data.purchase_order.po_number,
             vendor_id: data.purchase_order.vendor_id,
             total: data.purchase_order.total,
-            items_count: data.purchase_order.items?.length || 0,
+            items_count: data.purchase_order.items?.length ?? 0,
           }
         );
       }

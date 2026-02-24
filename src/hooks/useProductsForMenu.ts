@@ -33,7 +33,7 @@ export const useProductsForMenu = (tenantId?: string) => {
       return (data ?? []).map((item) => ({
         id: item.id,
         name: item.product_name,
-        price: item.base_price || 0,
+        price: item.base_price ?? 0,
         description: item.description,
         image_url: item.image_url,
         category: item.category,

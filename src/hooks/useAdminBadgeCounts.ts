@@ -118,15 +118,15 @@ export function useAdminBadgeCounts() {
           .or('snoozed_until.is.null,snoozed_until.lt.now()'),
       ]);
 
-      const wholesaleCount = ordersResult.count || 0;
-      const menuCount = menuOrdersResult.count || 0;
-      const alertsCount = alertsResult.count || 0;
+      const wholesaleCount = ordersResult.count ?? 0;
+      const menuCount = menuOrdersResult.count ?? 0;
+      const alertsCount = alertsResult.count ?? 0;
 
       setCounts({
         pendingOrders: wholesaleCount + menuCount,
-        lowStockItems: stockResult.count || 0,
-        unreadMessages: messagesResult.count || 0,
-        pendingShipments: shipmentsResult.count || 0,
+        lowStockItems: stockResult.count ?? 0,
+        unreadMessages: messagesResult.count ?? 0,
+        pendingShipments: shipmentsResult.count ?? 0,
         overduePayments: 0,
         inventoryAlerts: alertsCount,
       });

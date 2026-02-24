@@ -130,11 +130,11 @@ export function useCustomerInvoices() {
 
         const totalRevenue = invoicesList
           .filter((i) => i.status === 'paid')
-          .reduce((sum, i) => sum + (i.total || 0), 0);
+          .reduce((sum, i) => sum + (i.total ?? 0), 0);
 
         const paidThisMonth = invoicesList
           .filter((i) => i.status === 'paid' && i.paid_at && new Date(i.paid_at) >= monthStart)
-          .reduce((sum, i) => sum + (i.total || 0), 0);
+          .reduce((sum, i) => sum + (i.total ?? 0), 0);
 
         const paidThisMonthCount = invoicesList.filter(
           (i) => i.status === 'paid' && i.paid_at && new Date(i.paid_at) >= monthStart
@@ -142,7 +142,7 @@ export function useCustomerInvoices() {
 
         const outstandingAmount = invoicesList
           .filter((i) => i.status === 'unpaid' || i.status === 'overdue')
-          .reduce((sum, i) => sum + ((i.total || 0)), 0);
+          .reduce((sum, i) => sum + ((i.total ?? 0)), 0);
 
         const overdueCount = invoicesList.filter((i) => i.status === 'overdue').length;
         const unpaidCount = invoicesList.filter((i) => i.status === 'unpaid').length;
@@ -275,8 +275,8 @@ export function useCustomerInvoices() {
           notes?: string | null;
         };
 
-        const newAmountPaid = (invoice.amount_paid || 0) + amount;
-        const newAmountDue = (invoice.total || 0) - newAmountPaid;
+        const newAmountPaid = (invoice.amount_paid ?? 0) + amount;
+        const newAmountDue = (invoice.total ?? 0) - newAmountPaid;
         const isPaidInFull = newAmountDue <= 0;
 
         const result = await db.from('customer_invoices').update({

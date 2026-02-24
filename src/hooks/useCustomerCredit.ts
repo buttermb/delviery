@@ -127,7 +127,7 @@ async function fetchCustomerCreditBalance(
   let totalRefunded = 0;
 
   for (const tx of transactions) {
-    const amount = tx.amount || 0;
+    const amount = tx.amount ?? 0;
     switch (tx.transaction_type) {
       case 'issued':
       case 'adjustment':
@@ -273,7 +273,7 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
       if (!tenantId) throw new Error('No tenant context');
 
       // First check if customer has sufficient balance
-      const currentBalance = creditData?.balance || 0;
+      const currentBalance = creditData?.balance ?? 0;
       if (currentBalance < params.amount) {
         throw new Error(`Insufficient credit balance. Available: ${formatCurrency(currentBalance)}, Required: ${formatCurrency(params.amount)}`);
       }
@@ -327,11 +327,11 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
 
   // Helper functions
   const getBalance = useCallback((): number => {
-    return creditData?.balance || 0;
+    return creditData?.balance ?? 0;
   }, [creditData]);
 
   const hasCredit = useCallback((amount: number): boolean => {
-    return (creditData?.balance || 0) >= amount;
+    return (creditData?.balance ?? 0) >= amount;
   }, [creditData]);
 
   // Wrapped mutation functions that return Promise
@@ -353,7 +353,7 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
 
   return {
     // Balance data
-    balance: creditData?.balance || 0,
+    balance: creditData?.balance ?? 0,
     creditData: creditData || null,
     transactions: transactions ?? [],
 

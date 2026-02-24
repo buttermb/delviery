@@ -211,7 +211,7 @@ export function useAttentionQueue() {
       // Pending menu orders - use oldest order's created_at for urgency
       if (pendingMenuOrders.data && pendingMenuOrders.data.length > 0) {
         const totalValue = pendingMenuOrders.data.reduce(
-          (sum, o) => sum + Number(o.total_amount || 0), 0
+          (sum, o) => sum + Number(o.total_amount ?? 0), 0
         );
         const oldestTimestamp = getOldestTimestamp(pendingMenuOrders.data);
         items.push({
@@ -256,7 +256,7 @@ export function useAttentionQueue() {
       // Pending orders - use oldest order's created_at
       if (pendingOrders.data && pendingOrders.data.length > 0) {
         const totalValue = pendingOrders.data.reduce(
-          (sum, o) => sum + Number(o.total_amount || 0), 0
+          (sum, o) => sum + Number(o.total_amount ?? 0), 0
         );
         const oldestTimestamp = getOldestTimestamp(pendingOrders.data);
         items.push({
@@ -274,7 +274,7 @@ export function useAttentionQueue() {
       // Wholesale pending - use oldest order's created_at
       if (wholesalePending.data && wholesalePending.data.length > 0) {
         const totalValue = wholesalePending.data.reduce(
-          (sum, o) => sum + Number(o.total_amount || 0), 0
+          (sum, o) => sum + Number(o.total_amount ?? 0), 0
         );
         const oldestTimestamp = getOldestTimestamp(wholesalePending.data);
         items.push({
@@ -305,7 +305,7 @@ export function useAttentionQueue() {
       // Customer tabs - use now (we don't have balance history timestamps)
       if (customerTabs.data && customerTabs.data.length > 0) {
         const totalOwed = customerTabs.data.reduce(
-          (sum, c) => sum + Number(c.balance || 0), 0
+          (sum, c) => sum + Number(c.balance ?? 0), 0
         );
         if (totalOwed > 100) {
           items.push({

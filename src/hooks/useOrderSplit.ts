@@ -100,8 +100,8 @@ export function useOrderSplit({ tenantId, onSuccess }: UseOrderSplitOptions) {
       // Calculate fee distribution (split evenly or proportionally)
       const totalShipments = allocations.filter(a => a.items.length > 0).length;
       const deliveryFeePerShipment = originalOrder.delivery_fee / totalShipments;
-      const discountPerShipment = (originalOrder.discount_amount || 0) / totalShipments;
-      const tipPerShipment = (originalOrder.tip_amount || 0) / totalShipments;
+      const discountPerShipment = (originalOrder.discount_amount ?? 0) / totalShipments;
+      const tipPerShipment = (originalOrder.tip_amount ?? 0) / totalShipments;
 
       // Create new orders for each allocation (skip empty allocations)
       for (let i = 0; i < allocations.length; i++) {

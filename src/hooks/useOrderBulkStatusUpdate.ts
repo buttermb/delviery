@@ -166,7 +166,7 @@ async function restoreInventoryForCancelledOrders(
           continue;
         }
 
-        const previousQuantity = product.stock_quantity || 0;
+        const previousQuantity = product.stock_quantity ?? 0;
         const newQuantity = previousQuantity + item.quantity;
 
         // Update product stock
@@ -315,7 +315,7 @@ async function decrementInventoryForDeliveredOrders(
           continue;
         }
 
-        const previousQuantity = product.stock_quantity || 0;
+        const previousQuantity = product.stock_quantity ?? 0;
         const newQuantity = Math.max(0, previousQuantity - item.quantity);
 
         // Update product stock

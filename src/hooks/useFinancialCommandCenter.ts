@@ -431,10 +431,10 @@ export const useFrontedInventory = () => {
           clientName: item.fronted_to_customer_name || 'Unknown',
           products: [{
             name: (item.product as { name?: string })?.name || 'Unknown Product',
-            quantity: item.quantity_fronted || 0,
-            unitPrice: (item.expected_revenue || 0) / (item.quantity_fronted || 1)
+            quantity: item.quantity_fronted ?? 0,
+            unitPrice: (item.expected_revenue ?? 0) / (item.quantity_fronted || 1)
           }],
-          totalValue: item.expected_revenue || 0,
+          totalValue: item.expected_revenue ?? 0,
           daysOut,
           expectedReturn: new Date(item.payment_due_date),
           status
@@ -574,7 +574,7 @@ export const usePerformancePulse = () => {
       thisMonthResult.data?.forEach(order => {
         const clientId = order.client_id;
         if (clientId) {
-          clientRevenue[clientId] = (clientRevenue[clientId] || 0) + Number(order.total_amount || 0);
+          clientRevenue[clientId] = (clientRevenue[clientId] ?? 0) + Number(order.total_amount || 0);
         }
       });
       

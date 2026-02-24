@@ -196,10 +196,10 @@ export function useAutoReorder(): AutoReorderSummary {
 
       (salesData ?? []).forEach((item) => {
         const existing = velocityMap.get(item.product_id) || { weeklyTotal: 0, monthlyTotal: 0 };
-        existing.monthlyTotal += item.quantity || 0;
+        existing.monthlyTotal += item.quantity ?? 0;
 
         if (new Date(item.created_at) >= sevenDaysAgo) {
-          existing.weeklyTotal += item.quantity || 0;
+          existing.weeklyTotal += item.quantity ?? 0;
         }
 
         velocityMap.set(item.product_id, existing);
@@ -230,7 +230,7 @@ export function useAutoReorder(): AutoReorderSummary {
           const suggestedQuantity = calculateSuggestedQuantity(dailyAverage, currentStock, threshold);
           const priority = calculatePriority(currentStock, threshold, daysRemaining);
           const reason = generateReason(currentStock, threshold, daysRemaining);
-          const estimatedCost = suggestedQuantity * (product.cost_per_unit || 0);
+          const estimatedCost = suggestedQuantity * (product.cost_per_unit ?? 0);
 
           return {
             id: `reorder-${product.id}`,
@@ -345,9 +345,9 @@ export function useProductReorder(productId: string | undefined): ProductReorder
       let monthlyTotal = 0;
 
       (salesData ?? []).forEach((item) => {
-        monthlyTotal += item.quantity || 0;
+        monthlyTotal += item.quantity ?? 0;
         if (new Date(item.created_at) >= sevenDaysAgo) {
-          weeklyTotal += item.quantity || 0;
+          weeklyTotal += item.quantity ?? 0;
         }
       });
 
@@ -364,7 +364,7 @@ export function useProductReorder(productId: string | undefined): ProductReorder
       const suggestedQuantity = calculateSuggestedQuantity(dailyAverage, currentStock, threshold);
       const priority = calculatePriority(currentStock, threshold, daysRemaining);
       const reason = generateReason(currentStock, threshold, daysRemaining);
-      const estimatedCost = suggestedQuantity * (product.cost_per_unit || 0);
+      const estimatedCost = suggestedQuantity * (product.cost_per_unit ?? 0);
 
       return {
         id: `reorder-${product.id}`,

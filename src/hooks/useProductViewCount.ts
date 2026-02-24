@@ -24,13 +24,13 @@ export const useProductViewCount = (productId: string) => {
 
     if (!hasViewed) {
       const counts = parseViewCounts();
-      counts[productId] = (counts[productId] || 0) + 1;
+      counts[productId] = (counts[productId] ?? 0) + 1;
       localStorage.setItem(STORAGE_KEYS.PRODUCT_VIEWS, JSON.stringify(counts));
       sessionStorage.setItem(sessionKey, 'true');
       setViewCount(counts[productId]);
     } else {
       const counts = parseViewCounts();
-      setViewCount(counts[productId] || 0);
+      setViewCount(counts[productId] ?? 0);
     }
   }, [productId]);
 
@@ -39,5 +39,5 @@ export const useProductViewCount = (productId: string) => {
 
 export const getProductViewCount = (productId: string): number => {
   const counts = parseViewCounts();
-  return counts[productId] || 0;
+  return counts[productId] ?? 0;
 };

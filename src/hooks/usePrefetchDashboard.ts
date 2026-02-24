@@ -40,7 +40,7 @@ export function usePrefetchDashboard() {
               .eq('tenant_id', tenantId)
               .gte('created_at', new Date().toISOString().split('T')[0]);
 
-            const sales = salesData?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
+            const sales = salesData?.reduce((sum, order) => sum + (order.total_amount ?? 0), 0) ?? 0;
 
             const { count: orderCount } = await supabase
               .from('wholesale_orders')
@@ -69,7 +69,7 @@ export function usePrefetchDashboard() {
 
             return {
               sales,
-              orderCount: orderCount || 0,
+              orderCount: orderCount ?? 0,
               lowStock,
             };
           },

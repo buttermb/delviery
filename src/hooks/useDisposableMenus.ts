@@ -35,11 +35,11 @@ export const useDisposableMenus = (tenantId?: string) => {
       // Add computed stats for each menu
       return (data ?? []).map((menu: Record<string, unknown>) => ({
         ...menu,
-        view_count: (menu.menu_access_logs as Array<{ count: number }> | undefined)?.[0]?.count || 0,
-        customer_count: (menu.menu_access_whitelist as Array<{ count: number }> | undefined)?.[0]?.count || 0,
+        view_count: (menu.menu_access_logs as Array<{ count: number }> | undefined)?.[0]?.count ?? 0,
+        customer_count: (menu.menu_access_whitelist as Array<{ count: number }> | undefined)?.[0]?.count ?? 0,
         order_count: Array.isArray(menu.menu_orders) ? menu.menu_orders.length : 0,
         total_revenue: Array.isArray(menu.menu_orders)
-          ? menu.menu_orders.reduce((sum: number, o: { total_amount?: number }) => sum + Number(o.total_amount || 0), 0)
+          ? menu.menu_orders.reduce((sum: number, o: { total_amount?: number }) => sum + Number(o.total_amount ?? 0), 0)
           : 0,
       }));
     },

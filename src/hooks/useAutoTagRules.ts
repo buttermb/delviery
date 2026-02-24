@@ -181,7 +181,7 @@ export function useApplyAutoTags() {
 
         switch (rule.condition) {
           case 'ltv_threshold':
-            shouldApply = customer.total_spent >= (rule.threshold || 0);
+            shouldApply = customer.total_spent >= (rule.threshold ?? 0);
             break;
 
           case 'customer_type':
@@ -198,7 +198,7 @@ export function useApplyAutoTags() {
                 (Date.now() - new Date(customer.last_purchase_at).getTime()) /
                   (1000 * 60 * 60 * 24)
               );
-              shouldApply = daysSince >= (rule.threshold || 0);
+              shouldApply = daysSince >= (rule.threshold ?? 0);
             }
             break;
 
@@ -273,7 +273,7 @@ export function useCustomersByTags(tagIds: string[]) {
 
       // Count occurrences to find customers with ALL tags
       const customerCounts = (data ?? []).reduce((acc: Record<string, number>, item) => {
-        acc[item.contact_id] = (acc[item.contact_id] || 0) + 1;
+        acc[item.contact_id] = (acc[item.contact_id] ?? 0) + 1;
         return acc;
       }, {} as Record<string, number>);
 
@@ -311,7 +311,7 @@ export function useTagCounts() {
 
       // Count customers per tag
       const counts = (data ?? []).reduce((acc: Record<string, number>, item) => {
-        acc[item.tag_id] = (acc[item.tag_id] || 0) + 1;
+        acc[item.tag_id] = (acc[item.tag_id] ?? 0) + 1;
         return acc;
       }, {} as Record<string, number>);
 

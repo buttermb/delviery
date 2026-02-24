@@ -87,8 +87,8 @@ export function useBusinessTier() {
 
       const metrics: TenantMetrics = {
         tenantId: tenant.id,
-        monthlyRevenue: Number(tenantData?.monthly_revenue || 0),
-        revenue: Number(tenantData?.monthly_revenue || 0),
+        monthlyRevenue: Number(tenantData?.monthly_revenue ?? 0),
+        revenue: Number(tenantData?.monthly_revenue ?? 0),
         locations: Number((tenantData?.usage as Record<string, unknown>)?.locations || 1),
         locationCount: Number((tenantData?.usage as Record<string, unknown>)?.locations || 1),
         teamSize: teamCount || 1,
