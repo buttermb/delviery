@@ -63,7 +63,7 @@ export function useCreateVendor() {
                     account_id: tenant.id
                 }])
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
             return data;

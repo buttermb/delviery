@@ -337,9 +337,9 @@ export function useProductPriceTrend(vendorId: string, productId: string) {
         throw error;
       }
 
-      return (data || []).map((item: any) => ({
+      return (data || []).map((item: { created_at: string; cost_per_unit_new: number }) => ({
         date: item.created_at,
-        cost: item.cost_per_unit_new as number,
+        cost: item.cost_per_unit_new,
       }));
     },
     enabled: !!tenant?.id && !!vendorId && !!productId,

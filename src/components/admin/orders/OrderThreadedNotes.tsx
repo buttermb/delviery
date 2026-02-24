@@ -236,7 +236,7 @@ export function OrderThreadedNotes({
           mentioned_user_ids,
           created_at
         `)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

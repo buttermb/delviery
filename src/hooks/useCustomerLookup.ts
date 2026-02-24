@@ -186,7 +186,7 @@ export function useCustomerLookup(options: UseCustomerLookupOptions = {}): UseCu
           delivery_address: data.delivery_address || null,
         })
         .select('id, first_name, last_name, email, phone, created_at')
-        .single();
+        .maybeSingle();
 
       if (createError) {
         logger.error('Failed to create customer', createError, {

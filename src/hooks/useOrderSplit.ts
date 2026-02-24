@@ -141,7 +141,7 @@ export function useOrderSplit({ tenantId, onSuccess }: UseOrderSplitOptions) {
             status: 'pending',
           })
           .select('id')
-          .single();
+          .maybeSingle();
 
         if (orderError || !newOrder) {
           throw new Error(`Failed to create shipment ${i + 1}: ${orderError?.message}`);

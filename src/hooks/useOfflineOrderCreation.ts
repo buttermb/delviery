@@ -164,7 +164,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
           created_at: order.createdAt,
         })
         .select('id, order_number')
-        .single();
+        .maybeSingle();
 
       if (orderError) {
         throw new Error(orderError.message);

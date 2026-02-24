@@ -263,7 +263,7 @@ class PaymentService {
           order_id: orderId || null
         })
         .select('id')
-        .single();
+        .maybeSingle();
 
       if (paymentError) {
         // If table doesn't exist or insert fails, continue with balance update

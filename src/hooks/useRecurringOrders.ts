@@ -118,7 +118,7 @@ export function useRecurringOrders() {
           notes: input.notes,
         }])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error("Failed to create recurring order schedule", error, {
@@ -166,7 +166,7 @@ export function useRecurringOrders() {
         .eq("id", id)
         .eq("tenant_id", tenant.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error("Failed to update recurring order schedule", error, {

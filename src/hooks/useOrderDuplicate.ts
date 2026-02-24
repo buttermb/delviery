@@ -114,7 +114,7 @@ export function useOrderDuplicate(options: UseOrderDuplicateOptions = {}) {
           status: 'pending',
         })
         .select('id, order_number')
-        .single();
+        .maybeSingle();
 
       if (orderError) {
         logger.error('Failed to create duplicated order', orderError, {

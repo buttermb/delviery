@@ -197,7 +197,7 @@ export const useLocations = (filters?: { status?: string }) => {
           status: input.status || 'active',
         }])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to create location', { error, input });

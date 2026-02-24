@@ -83,7 +83,7 @@ export function useRecurringInvoices() {
           notes: input.notes
         }])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -116,7 +116,7 @@ export function useRecurringInvoices() {
         .eq("id", id)
         .eq("tenant_id", tenant.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

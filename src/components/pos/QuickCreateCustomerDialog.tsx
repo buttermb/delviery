@@ -148,7 +148,7 @@ export function QuickCreateCustomerDialog({
         .from('customers')
         .insert(encryptedData)
         .select('id, first_name, last_name, customer_type, loyalty_points, email, phone')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

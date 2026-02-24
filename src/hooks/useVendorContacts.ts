@@ -137,7 +137,7 @@ export function useVendorContacts(vendorId: string) {
           notes: input.notes ?? null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to create vendor contact', error, {
@@ -183,7 +183,7 @@ export function useVendorContacts(vendorId: string) {
         .eq('id', input.id)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to update vendor contact', error, {
@@ -253,7 +253,7 @@ export function useVendorContacts(vendorId: string) {
         .eq('id', contactId)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to set primary vendor contact', error, {
@@ -294,7 +294,7 @@ export function useVendorContacts(vendorId: string) {
           created_by: user?.id ?? null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to log contact interaction', error, {

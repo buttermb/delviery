@@ -92,7 +92,7 @@ export function useDeliveryZones() {
           created_by: userId,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to create delivery zone', error);
@@ -253,7 +253,7 @@ export function useZoneValidation() {
       return { inZone: false, zone: null };
     }
 
-    if (data && (data as any[]).length > 0) {
+    if (data && Array.isArray(data) && data.length > 0) {
       return {
         inZone: true,
         zone: data[0] as unknown as DeliveryZone,
@@ -282,7 +282,7 @@ export function useZoneValidation() {
       return { inZone: false, zone: null };
     }
 
-    if (data && (data as any[]).length > 0) {
+    if (data && Array.isArray(data) && data.length > 0) {
       return {
         inZone: true,
         zone: data[0] as unknown as DeliveryZone,

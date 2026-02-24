@@ -187,7 +187,7 @@ export function DuplicateOrderButton({
           source: 'admin',
         })
         .select('id, order_number')
-        .single();
+        .maybeSingle();
 
       if (orderError) {
         logger.error('Failed to create duplicated order', orderError, {

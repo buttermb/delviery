@@ -101,8 +101,8 @@ export default function ReportsPage() {
           client: o.client?.business_name || 'N/A',
           amount: Number(o.total_amount),
           status: o.status
-        })) as any,
-        [] as any,
+        })),
+        [],
         `business-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
       );
     } else if (reportType === 'financial') {
@@ -112,28 +112,29 @@ export default function ReportsPage() {
           client: p.client?.business_name || 'N/A',
           amount: Number(p.amount),
           method: p.payment_method
-        })) as any,
-        [] as any,
+        })),
+        [],
         `financial-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
       );
     } else if (reportType === 'inventory') {
+      const inventoryRecord = inventory as unknown as Array<Record<string, unknown>>;
       exportCSV(
-        inventory.map(i => ({
-          product: i.product_name,
+        inventoryRecord.map(i => ({
+          product: (i.product_name as string) || '',
           quantity_lbs: Number(i.quantity_lbs || 0),
-          quantity_units: i.quantity_units || 0,
-          category: i.category || 'N/A',
-          warehouse: (i as any).warehouse_location || 'N/A',
-          updated: (i as any).updated_at ? format(new Date((i as any).updated_at), 'yyyy-MM-dd') : 'N/A'
-        })) as any,
-        [] as any,
+          quantity_units: (i.quantity_units as number) || 0,
+          category: (i.category as string) || 'N/A',
+          warehouse: (i.warehouse_location as string) || 'N/A',
+          updated: i.updated_at ? format(new Date(i.updated_at as string), 'yyyy-MM-dd') : 'N/A'
+        })),
+        [],
         `inventory-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
       );
     }
   };
 
   // Define Columns
-  const businessColumns = useMemo<ResponsiveColumn<any>[]>(() => [
+  const businessColumns = useMemo<ResponsiveColumn<Record<string, unknown>>[]>(() => [
     { header: 'Order #', accessorKey: 'order_number', className: 'font-mono' },
     { header: 'Date', cell: (item) => format(new Date(item.created_at), 'MMM d, yyyy') },
     { header: 'Client', cell: (item) => item.client?.business_name || 'N/A' },
@@ -141,14 +142,14 @@ export default function ReportsPage() {
     { header: 'Status', cell: (item) => <Badge variant="outline">{item.status}</Badge> }
   ], []);
 
-  const inventoryColumns = useMemo<ResponsiveColumn<any>[]>(() => [
+  const inventoryColumns = useMemo<ResponsiveColumn<Record<string, unknown>>[]>(() => [
     { header: 'Product', accessorKey: 'product_name', className: 'font-medium' },
     { header: 'Quantity (lbs)', accessorKey: 'quantity_lbs' },
     { header: 'Warehouse', cell: (item) => item.warehouse_location || 'Unassigned' },
     { header: 'Category', accessorKey: 'category' }
   ], []);
 
-  const financialColumns = useMemo<ResponsiveColumn<any>[]>(() => [
+  const financialColumns = useMemo<ResponsiveColumn<Record<string, unknown>>[]>(() => [
     { header: 'Date', cell: (item) => format(new Date(item.created_at), 'MMM d, yyyy') },
     { header: 'Client', cell: (item) => item.client?.business_name || 'N/A' },
     { header: 'Amount', cell: (item) => formatCurrency(item.amount), className: 'text-right' },
@@ -187,7 +188,7 @@ export default function ReportsPage() {
               defaultValue={searchQuery}
             />
           </div>
-          <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)} data-tutorial="date-range">
+          <Select value={timeRange} onValueChange={(v) => setTimeRange(v as typeof timeRange)} data-tutorial="date-range">
             <SelectTrigger className="w-full sm:w-[180px] min-h-[44px] touch-manipulation text-sm sm:text-base">
               <SelectValue placeholder="Select time range" />
             </SelectTrigger>

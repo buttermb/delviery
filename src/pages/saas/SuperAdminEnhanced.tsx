@@ -51,7 +51,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
-import { calculateHealthScore } from '@/lib/tenant';
+import { calculateHealthScore, type Tenant } from '@/lib/tenant';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { CreateTenantDialog } from '@/components/admin/CreateTenantDialog';
@@ -81,12 +81,15 @@ interface PlatformStats {
 interface TenantSummary {
   id: string;
   business_name: string;
+  slug: string;
   subscription_plan: string;
   subscription_status: string;
   mrr: number;
   health_score: number;
   created_at: string;
   last_activity_at: string;
+  health_reasons?: string[];
+  full_tenant?: Tenant | null;
 }
 
 import {
@@ -193,7 +196,7 @@ export default function SuperAdminEnhanced() {
             .eq('id', tenant.id)
             .maybeSingle();
 
-          const health = fullTenant ? calculateHealthScore(fullTenant as any) : { score: 50, reasons: [] };
+          const health = fullTenant ? calculateHealthScore(fullTenant as unknown as Tenant) : { score: 50, reasons: [] };
 
           return {
             ...tenant,
@@ -256,7 +259,7 @@ export default function SuperAdminEnhanced() {
       const atRisk = allTenants
         .map((tenant) => ({
           tenant,
-          health: calculateHealthScore(tenant as any),
+          health: calculateHealthScore(tenant as unknown as Tenant),
         }))
         .filter(({ health }) => health.score < 50)
         .sort((a, b) => a.health.score - b.health.score)
@@ -666,14 +669,14 @@ export default function SuperAdminEnhanced() {
                         <TenantHoverCard tenant={{
                           id: tenant.id,
                           business_name: tenant.business_name,
-                          slug: (tenant as any).slug || tenant.id,
+                          slug: tenant.slug || tenant.id,
                           subscription_plan: tenant.subscription_plan,
                           subscription_status: tenant.subscription_status,
                           created_at: tenant.created_at,
                           mrr: tenant.mrr,
                           health_score: tenant.health_score,
-                          owner_name: (tenant as any).full_tenant?.owner_name || 'Unknown',
-                          owner_email: (tenant as any).full_tenant?.owner_email || 'Unknown',
+                          owner_name: tenant.full_tenant?.owner_name || 'Unknown',
+                          owner_email: tenant.full_tenant?.owner_email || 'Unknown',
                           last_activity_at: tenant.last_activity_at
                         }}>
                           <div className="font-medium hover:underline">{tenant.business_name}</div>
@@ -685,7 +688,7 @@ export default function SuperAdminEnhanced() {
                       <td className="p-3">{getStatusBadge(tenant.subscription_status)}</td>
                       <td className="p-3">{formatCurrency(tenant.mrr || 0)}</td>
                       <td className="p-3">
-                        <HealthScoreTooltip score={tenant.health_score} reasons={(tenant as any).health_reasons}>
+                        <HealthScoreTooltip score={tenant.health_score} reasons={tenant.health_reasons}>
                           <div className="flex items-center gap-2">
                             {getHealthBadge(tenant.health_score)}
                             <span className="text-sm text-muted-foreground">
@@ -698,10 +701,10 @@ export default function SuperAdminEnhanced() {
                         {(Date.now() - new Date(tenant.created_at).getTime()) / (1000 * 60 * 60 * 24) < 14 ? (
                           <OnboardingTracker tenant={{
                             created_at: tenant.created_at,
-                            onboarded: (tenant as any).full_tenant?.onboarded,
-                            usage: (tenant as any).full_tenant?.usage,
-                            email_verified: (tenant as any).full_tenant?.email_verified,
-                            payment_method_attached: !!(tenant as any).full_tenant?.stripe_customer_id
+                            onboarded: tenant.full_tenant?.onboarded,
+                            usage: tenant.full_tenant?.usage,
+                            email_verified: tenant.full_tenant?.owner_email ? true : undefined,
+                            payment_method_attached: !!tenant.full_tenant?.stripe_customer_id
                           }} />
                         ) : (
                           formatSmartDate(tenant.created_at)
@@ -712,7 +715,7 @@ export default function SuperAdminEnhanced() {
                           tenant={{
                             id: tenant.id,
                             business_name: tenant.business_name,
-                            slug: (tenant as any).slug || tenant.id,
+                            slug: tenant.slug || tenant.id,
                             subscription_status: tenant.subscription_status,
                           }}
                           onViewDetails={() => {
@@ -800,7 +803,7 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
     return <EnhancedLoadingState variant="card" message="Loading tenant details..." />;
   }
 
-  const health = calculateHealthScore(tenant as any);
+  const health = calculateHealthScore(tenant as unknown as Tenant);
 
   return (
     <Tabs defaultValue="overview" className="mt-4">
@@ -841,7 +844,7 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {((tenant.usage as any)?.customers || 0)} / {((tenant.limits as any)?.customers === -1 ? '∞' : (tenant.limits as any)?.customers || 0)}
+                {((tenant.usage as Record<string, unknown>)?.customers as number || 0)} / {((tenant.limits as Record<string, unknown>)?.customers === -1 ? '∞' : (tenant.limits as Record<string, unknown>)?.customers as number || 0)}
               </div>
               <p className="text-xs text-muted-foreground">Usage</p>
             </CardContent>
@@ -880,8 +883,8 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
 }
 
 // Feature Management Component
-function FeatureManagement({ tenant }: { tenant: any }) {
-  const [features, setFeatures] = useState(tenant?.features || {});
+function FeatureManagement({ tenant }: { tenant: Record<string, unknown> }) {
+  const [features, setFeatures] = useState<Record<string, boolean>>((tenant?.features as Record<string, boolean>) || {});
 
   const handleToggleFeature = async (featureKey: string, enabled: boolean) => {
     try {
@@ -890,7 +893,7 @@ function FeatureManagement({ tenant }: { tenant: any }) {
       const { error } = await supabase
         .from('tenants')
         .update({ features: updatedFeatures })
-        .eq('id', tenant.id);
+        .eq('id', tenant.id as string);
 
       if (error) throw error;
 
@@ -949,7 +952,7 @@ function FeatureManagement({ tenant }: { tenant: any }) {
         <h3 className="text-lg font-semibold mb-4">Advanced Features</h3>
         <div className="space-y-2">
           {advancedFeatures.map((feature) => {
-            const plan = tenant.subscription_plan as SubscriptionPlan;
+            const plan = (tenant.subscription_plan as string) as SubscriptionPlan;
             const isPlanEligible = plan === feature.plan || plan === 'enterprise';
             const isEnabled = features[feature.key];
 
@@ -994,21 +997,21 @@ function FeatureManagement({ tenant }: { tenant: any }) {
 }
 
 // Usage Monitoring Component
-function UsageMonitoring({ tenant }: { tenant: any }) {
+function UsageMonitoring({ tenant }: { tenant: Record<string, unknown> }) {
   const { data: usage } = useQuery({
     queryKey: ['tenant-usage', tenant.id],
     queryFn: async () => {
       const { data } = await supabase
         .from('tenants')
         .select('usage, limits')
-        .eq('id', tenant.id)
+        .eq('id', tenant.id as string)
         .maybeSingle();
       return data || { usage: {}, limits: {} };
     },
   });
 
-  const usageData = usage?.usage || tenant?.usage || {};
-  const limitsData = usage?.limits || tenant?.limits || {};
+  const usageData = (usage?.usage || tenant?.usage || {}) as Record<string, number>;
+  const limitsData = (usage?.limits || tenant?.limits || {}) as Record<string, number>;
 
   const resources = [
     { key: 'customers', label: 'Customers', icon: Users },
@@ -1018,7 +1021,7 @@ function UsageMonitoring({ tenant }: { tenant: any }) {
     { key: 'users', label: 'Team Members', icon: Users },
   ];
 
-  const getUsagePercentage = (key: string, usage: Record<string, any>, limits: Record<string, any>) => {
+  const getUsagePercentage = (key: string, usage: Record<string, number>, limits: Record<string, number>) => {
     const current = usage[key] || 0;
     const limit = limits[key];
     if (limit === -1) return null;
@@ -1072,8 +1075,8 @@ function UsageMonitoring({ tenant }: { tenant: any }) {
 }
 
 // Billing Management Component
-function BillingManagement({ tenant }: { tenant: any }) {
-  const [_selectedPlan, setSelectedPlan] = useState<string>(tenant?.subscription_plan || SUBSCRIPTION_PLANS.STARTER);
+function BillingManagement({ tenant }: { tenant: Record<string, unknown> }) {
+  const [_selectedPlan, setSelectedPlan] = useState<string>((tenant?.subscription_plan as string) || SUBSCRIPTION_PLANS.STARTER);
 
   const plans = [
     { id: 'starter', name: 'Starter', price: 99 },
@@ -1089,7 +1092,7 @@ function BillingManagement({ tenant }: { tenant: any }) {
           subscription_plan: newPlan,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', tenant.id);
+        .eq('id', tenant.id as string);
 
       if (error) throw error;
 
@@ -1108,12 +1111,12 @@ function BillingManagement({ tenant }: { tenant: any }) {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <p className="text-2xl font-bold">{tenant.subscription_plan?.toUpperCase()} PLAN</p>
-            const mrr = Number(tenant.mrr) || planPrices[tenant.subscription_plan?.toLowerCase() || SUBSCRIPTION_PLANS.STARTER] || 0;          <p className="text-muted-foreground">
-              ${plans.find((p) => p.id === tenant.subscription_plan)?.price || 0}/month
+            <p className="text-2xl font-bold">{(tenant.subscription_plan as string)?.toUpperCase()} PLAN</p>
+            <p className="text-muted-foreground">
+              ${plans.find((p) => p.id === (tenant.subscription_plan as string))?.price || 0}/month
             </p>
             <p className="text-sm text-muted-foreground">
-              Next billing: {formatSmartDate(tenant.subscription_current_period_end || tenant.created_at)}
+              Next billing: {formatSmartDate((tenant.subscription_current_period_end as string) || (tenant.created_at as string))}
             </p>
           </div>
         </CardContent>
@@ -1128,7 +1131,7 @@ function BillingManagement({ tenant }: { tenant: any }) {
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                className={`p-4 border rounded-lg cursor-pointer ${tenant?.subscription_plan === plan.id ? 'border-primary bg-primary/5' : ''
+                className={`p-4 border rounded-lg cursor-pointer ${(tenant?.subscription_plan as string) === plan.id ? 'border-primary bg-primary/5' : ''
                   }`}
                 onClick={() => handleChangePlan(plan.id as 'starter' | 'professional' | 'enterprise')}
               >
@@ -1137,7 +1140,7 @@ function BillingManagement({ tenant }: { tenant: any }) {
                     <p className="font-medium">{plan.name}</p>
                     <p className="text-sm text-muted-foreground">${plan.price}/month</p>
                   </div>
-                  {tenant?.subscription_plan === plan.id && (
+                  {(tenant?.subscription_plan as string) === plan.id && (
                     <Badge>Current</Badge>
                   )}
                 </div>

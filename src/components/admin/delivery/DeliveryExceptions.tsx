@@ -539,7 +539,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
         .from('delivery_exceptions')
         .insert(exceptionData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

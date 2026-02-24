@@ -254,7 +254,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
           created_by: admin?.id,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

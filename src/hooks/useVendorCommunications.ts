@@ -219,7 +219,7 @@ export function useVendorCommunications(vendorId: string) {
           *,
           purchase_order:purchase_orders(id, po_number)
         `)
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to create vendor communication', error, {
@@ -269,7 +269,7 @@ export function useVendorCommunications(vendorId: string) {
           *,
           purchase_order:purchase_orders(id, po_number)
         `)
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to update vendor communication', error, {

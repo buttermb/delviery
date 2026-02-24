@@ -422,7 +422,7 @@ export function useCreditSubscription(): UseCreditSubscriptionReturn {
           metadata: { billing_cycle: params.billingCycle ?? 'monthly' },
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw new Error(error.message);
 

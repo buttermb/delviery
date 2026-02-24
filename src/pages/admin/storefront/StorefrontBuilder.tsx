@@ -457,7 +457,7 @@ export function StorefrontBuilder({
                     is_public: false,
                 })
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
             return newStore;

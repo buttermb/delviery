@@ -388,7 +388,12 @@ export function useRelatedEntities(
 
   // Create queries based on entity type
   const queries = useQueries({
-    queries: getQueriesForEntityType(entityType, entityId, tenantId) as any[],
+    queries: getQueriesForEntityType(entityType, entityId, tenantId) as Array<{
+      queryKey: readonly unknown[];
+      queryFn: () => Promise<unknown>;
+      enabled: boolean;
+      staleTime: number;
+    }>,
   });
 
   // Check loading/error states
@@ -458,11 +463,12 @@ function getOrderQueries(
           throw error;
         }
 
-        if (!data || !(data as any).customer_id) return null;
+        const orderData = data as { customer_id: string | null; customer_name: string | null } | null;
+        if (!orderData || !orderData.customer_id) return null;
 
         return {
-          id: (data as any).customer_id,
-          name: (data as any).customer_name ?? 'Unknown',
+          id: orderData.customer_id,
+          name: orderData.customer_name ?? 'Unknown',
           email: null,
           phone: null,
         } as RelatedCustomer;
@@ -497,8 +503,16 @@ function getOrderQueries(
           throw error;
         }
 
-        return (data ?? []).map((item: any) => {
-          const product = item.products as { id: string; name: string; sku: string | null; price: number | null; image_url: string | null } | null;
+        interface OrderItemRow {
+          id: string;
+          quantity: number | null;
+          price_at_order_time: number | null;
+          product_id: string;
+          products: { id: string; name: string; sku: string | null; price: number | null; image_url: string | null } | null;
+        }
+
+        return (data ?? []).map((item: OrderItemRow) => {
+          const product = item.products;
           return {
             id: product?.id ?? item.product_id,
             name: product?.name ?? 'Unknown Product',
@@ -539,16 +553,25 @@ function getOrderQueries(
 
         if (!data) return null;
 
-        const courier = (data as any).couriers as { full_name: string | null; phone: string | null } | null;
+        interface DeliveryRow {
+          id: string;
+          status: string | null;
+          tracking_url: string | null;
+          courier_id: string | null;
+          couriers: { full_name: string | null; phone: string | null } | null;
+        }
+
+        const deliveryData = data as DeliveryRow;
+        const courier = deliveryData.couriers;
 
         return {
-          id: (data as any).id,
-          status: (data as any).status ?? 'pending',
+          id: deliveryData.id,
+          status: deliveryData.status ?? 'pending',
           courier_name: courier?.full_name ?? null,
           courier_phone: courier?.phone ?? null,
           scheduled_at: null,
           delivered_at: null,
-          tracking_url: (data as any).tracking_url ?? null,
+          tracking_url: deliveryData.tracking_url ?? null,
         } as RelatedDelivery;
       },
       enabled,
@@ -573,13 +596,22 @@ function getOrderQueries(
 
         if (!data) return null;
 
+        const paymentData = data as {
+          id: string;
+          amount: number | null;
+          status: string | null;
+          payment_method: string | null;
+          paid_at: string | null;
+          transaction_id: string | null;
+        };
+
         return {
-          id: (data as any).id,
-          amount: (data as any).amount ?? 0,
-          status: (data as any).status ?? 'pending',
-          method: (data as any).payment_method ?? null,
-          paid_at: (data as any).paid_at ?? null,
-          transaction_id: (data as any).transaction_id ?? null,
+          id: paymentData.id,
+          amount: paymentData.amount ?? 0,
+          status: paymentData.status ?? 'pending',
+          method: paymentData.payment_method ?? null,
+          paid_at: paymentData.paid_at ?? null,
+          transaction_id: paymentData.transaction_id ?? null,
         } as RelatedPayment;
       },
       enabled,
@@ -673,28 +705,37 @@ function getProductQueries(
           throw productError;
         }
 
-        if (!(product as any)?.vendor_id) return null;
+        const productData = product as { vendor_id: string | null } | null;
+        if (!productData?.vendor_id) return null;
 
         // Fetch vendor details using suppliers table
         const { data: vendor, error: vendorError } = await (supabase as any)
           .from('suppliers')
           .select('id, company_name, email, phone, contact_name')
-          .eq('id', (product as any).vendor_id)
+          .eq('id', productData.vendor_id)
           .maybeSingle();
 
         if (vendorError) {
-          logger.error('Failed to fetch vendor', vendorError, { vendorId: (product as any).vendor_id });
+          logger.error('Failed to fetch vendor', vendorError, { vendorId: productData.vendor_id });
           throw vendorError;
         }
 
         if (!vendor) return null;
 
+        const vendorData = vendor as {
+          id: string;
+          company_name: string | null;
+          email: string | null;
+          phone: string | null;
+          contact_name: string | null;
+        };
+
         return {
-          id: (vendor as any).id,
-          name: (vendor as any).company_name ?? 'Unknown Vendor',
-          email: (vendor as any).email ?? null,
-          phone: (vendor as any).phone ?? null,
-          contact_name: (vendor as any).contact_name ?? null,
+          id: vendorData.id,
+          name: vendorData.company_name ?? 'Unknown Vendor',
+          email: vendorData.email ?? null,
+          phone: vendorData.phone ?? null,
+          contact_name: vendorData.contact_name ?? null,
         } as RelatedVendor;
       },
       enabled,
@@ -784,9 +825,18 @@ function getProductQueries(
           throw error;
         }
 
+        interface InventoryRow {
+          id: string;
+          quantity: number | null;
+          reserved_quantity: number | null;
+          location_id: string | null;
+          low_stock_threshold: number | null;
+          locations: { id: string; name: string } | null;
+        }
+
         let totalStock = 0;
-        const stock = (data ?? []).map((item: any) => {
-          const location = item.locations as { id: string; name: string } | null;
+        const stock = (data ?? []).map((item: InventoryRow) => {
+          const location = item.locations;
           const quantity = item.quantity ?? 0;
           const reserved = item.reserved_quantity ?? 0;
           const available = quantity - reserved;

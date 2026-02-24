@@ -18,7 +18,7 @@ export default function CompliancePage() {
 
       try {
         const { data, error } = await supabase
-          .from('compliance_settings' as any)
+          .from('compliance_settings' as 'tenants')
           .select('*')
           .eq('tenant_id', tenantId)
           .maybeSingle();
@@ -26,9 +26,10 @@ export default function CompliancePage() {
         if (error && error.code === '42P01') return null;
         if (error && error.code === 'PGRST116') return null;
         if (error) throw error;
-        return data;
+        return data as Record<string, unknown> | null;
       } catch (error) {
-        if ((error as any)?.code === '42P01' || (error as any)?.code === 'PGRST116') return null;
+        const pgError = error as { code?: string };
+        if (pgError?.code === '42P01' || pgError?.code === 'PGRST116') return null;
         handleError(error, { component: 'Compliance', toastTitle: 'Failed to load compliance status' });
         throw error;
       }
@@ -39,27 +40,27 @@ export default function CompliancePage() {
   const complianceChecks = [
     {
       name: 'Data Encryption',
-      status: (compliance as any)?.data_encryption === true ? 'compliant' : 'pending',
+      status: compliance?.data_encryption === true ? 'compliant' : 'pending',
       description: 'Ensure all data is encrypted at rest and in transit',
     },
     {
       name: 'GDPR Compliance',
-      status: (compliance as any)?.gdpr_compliant === true ? 'compliant' : 'pending',
+      status: compliance?.gdpr_compliant === true ? 'compliant' : 'pending',
       description: 'Meet GDPR data protection requirements',
     },
     {
       name: 'PCI DSS',
-      status: (compliance as any)?.pci_compliant === true ? 'compliant' : 'pending',
+      status: compliance?.pci_compliant === true ? 'compliant' : 'pending',
       description: 'Payment Card Industry Data Security Standards',
     },
     {
       name: 'Access Controls',
-      status: (compliance as any)?.access_controls_enabled === true ? 'compliant' : 'pending',
+      status: compliance?.access_controls_enabled === true ? 'compliant' : 'pending',
       description: 'Role-based access control implemented',
     },
     {
       name: 'Audit Logging',
-      status: (compliance as any)?.audit_logging_enabled === true ? 'compliant' : 'pending',
+      status: compliance?.audit_logging_enabled === true ? 'compliant' : 'pending',
       description: 'Comprehensive audit trail maintained',
     },
   ];

@@ -171,9 +171,9 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
       // Apply priority filter
        if (priority) {
         if (Array.isArray(priority)) {
-          (query as any) = query.in('priority', priority);
+          query = query.in('priority', priority);
         } else {
-          (query as any) = query.eq('priority', priority);
+          query = query.eq('priority', priority);
         }
       }
 
@@ -470,7 +470,7 @@ export function useUpdateOrderStatus() {
         .eq('id', orderId)
         .eq('tenant_id', tenant.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to update order status', { orderId, status, error });
@@ -788,7 +788,7 @@ export function useCancelOrder() {
         .eq('id', orderId)
         .eq('tenant_id', tenant.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to cancel order', { orderId, error });

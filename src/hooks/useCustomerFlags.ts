@@ -263,7 +263,7 @@ export function useCustomerFlags(customerId: string | undefined): UseCustomerFla
           created_by: admin?.id || null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to add customer flag', error, {

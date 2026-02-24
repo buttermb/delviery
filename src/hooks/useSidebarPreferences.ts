@@ -120,26 +120,44 @@ export function useSidebarPreferences() {
       }
 
       // Parse JSONB fields with safe defaults
-      const dbCollapsedSections = ((data as any).collapsed_sections as string[]) || [];
+      interface SidebarPreferencesRow {
+        collapsed_sections: string[] | null;
+        operation_size: SidebarPreferences['operationSize'];
+        custom_layout: boolean | null;
+        favorites: string[] | null;
+        pinned_items: string[] | null;
+        last_accessed_features: SidebarPreferences['lastAccessedFeatures'] | null;
+        hidden_features: string[] | null;
+        section_order: string[] | null;
+        custom_sections: SidebarPreferences['customSections'] | null;
+        enabled_integrations: string[] | null;
+        custom_menu_items: SidebarPreferences['customMenuItems'] | null;
+        layout_preset: string | null;
+        sidebar_behavior: SidebarPreferences['sidebarBehavior'] | null;
+        custom_presets: SidebarPreferences['customPresets'] | null;
+      }
+
+      const row = data as SidebarPreferencesRow;
+      const dbCollapsedSections = row.collapsed_sections || [];
 
       // Sync database collapsed sections to localStorage for future fast loads
       saveCollapsedSectionsToStorage(dbCollapsedSections);
 
       return {
-        operationSize: (data as any).operation_size as SidebarPreferences['operationSize'],
-        customLayout: (data as any).custom_layout || false,
-        favorites: ((data as any).favorites as string[]) || [],
+        operationSize: row.operation_size,
+        customLayout: row.custom_layout || false,
+        favorites: row.favorites || [],
         collapsedSections: dbCollapsedSections,
-        pinnedItems: ((data as any).pinned_items as string[]) || [],
-        lastAccessedFeatures: ((data as any).last_accessed_features as SidebarPreferences['lastAccessedFeatures']) || [],
-        hiddenFeatures: ((data as any).hidden_features as string[]) || [],
-        sectionOrder: ((data as any).section_order as string[]) || [],
-        customSections: ((data as any).custom_sections as any[]) || [],
-        enabledIntegrations: ((data as any).enabled_integrations as string[]) || ['mapbox', 'stripe'],
-        customMenuItems: ((data as any).custom_menu_items as any[]) || [],
-        layoutPreset: (data as any).layout_preset || 'default',
-        sidebarBehavior: ((data as any).sidebar_behavior as any) || DEFAULT_PREFERENCES.sidebarBehavior,
-        customPresets: ((data as any).custom_presets as any[]) || [],
+        pinnedItems: row.pinned_items || [],
+        lastAccessedFeatures: row.last_accessed_features || [],
+        hiddenFeatures: row.hidden_features || [],
+        sectionOrder: row.section_order || [],
+        customSections: row.custom_sections || [],
+        enabledIntegrations: row.enabled_integrations || ['mapbox', 'stripe'],
+        customMenuItems: row.custom_menu_items || [],
+        layoutPreset: row.layout_preset || 'default',
+        sidebarBehavior: row.sidebar_behavior || DEFAULT_PREFERENCES.sidebarBehavior,
+        customPresets: row.custom_presets || [],
       };
     },
     enabled: !!tenant?.id,

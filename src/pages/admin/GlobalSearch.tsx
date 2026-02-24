@@ -85,32 +85,30 @@ const GlobalSearch = () => {
         .select("*, user_roles(role)")
         .eq("account_id", tenant.id)
         .or(`full_name.ilike.%${escapedSearch}%,email.ilike.%${escapedSearch}%,phone.ilike.%${escapedSearch}%`)
-        .limit(10) as any;
+        .limit(10);
 
-      const ordersPromise = (supabase as any)
+      const ordersPromise = supabase
         .from("orders")
         .select("*, profiles(full_name)")
         .eq("tenant_id", tenant.id)
         .or(`order_number.ilike.%${escapedSearch}%,tracking_code.ilike.%${escapedSearch}%,customer_name.ilike.%${escapedSearch}%`)
         .limit(10);
 
-      const productsPromise = (supabase as any)
+      const productsPromise = supabase
         .from("products")
         .select("*")
         .eq("tenant_id", tenant.id)
         .or(`name.ilike.%${escapedSearch}%,description.ilike.%${escapedSearch}%,category.ilike.%${escapedSearch}%`)
         .limit(10);
 
-      // Break type inference for complex query
-      const addressesQuery: any = (supabase as any)
+      const addressesPromise = supabase
         .from("addresses")
         .select("*, profiles(full_name)")
-        .eq("tenant_id", tenant.id);
-      const addressesPromise = addressesQuery
+        .eq("tenant_id", tenant.id)
         .or(`street.ilike.%${escapedSearch}%,neighborhood.ilike.%${escapedSearch}%,borough.ilike.%${escapedSearch}%`)
         .limit(10);
 
-      const results: any = await Promise.all([
+      const results = await Promise.all([
         usersPromise,
         ordersPromise,
         productsPromise,
@@ -120,10 +118,10 @@ const GlobalSearch = () => {
       const [users, orders, products, addresses] = results;
 
       return {
-        users: (users.data || []) as any as UserSearchResult[],
-        orders: (orders.data || []) as any as OrderSearchResult[],
-        products: (products.data || []) as any as ProductSearchResult[],
-        addresses: (addresses.data || []) as any as AddressSearchResult[],
+        users: (users.data || []) as unknown as UserSearchResult[],
+        orders: (orders.data || []) as unknown as OrderSearchResult[],
+        products: (products.data || []) as unknown as ProductSearchResult[],
+        addresses: (addresses.data || []) as unknown as AddressSearchResult[],
         totalResults:
           (users.data?.length || 0) +
           (orders.data?.length || 0) +

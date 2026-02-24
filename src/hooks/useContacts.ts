@@ -277,7 +277,7 @@ export function useCreateContact() {
           ...input,
           contact_type: input.contact_type || ['retail'],
           metadata: input.metadata ? JSON.parse(JSON.stringify(input.metadata)) : null,
-        } as any)
+        } as Record<string, unknown>)
         .select()
         .maybeSingle();
 
@@ -390,7 +390,7 @@ export function useUpdateContact() {
 
       const { data, error } = await (supabase as any)
         .from('contacts')
-        .update(updateData as any)
+        .update(updateData as Record<string, unknown>)
         .eq('id', contactId)
         .eq('tenant_id', tenant.id)
         .select()

@@ -271,7 +271,7 @@ export function useVendorDocuments(vendorId: string) {
           .eq('user_id', user.id)
           .eq('tenant_id', tenantId)
           .maybeSingle();
-        uploadedByName = (profile as any)?.full_name ?? user.email ?? null;
+        uploadedByName = (profile as { full_name: string | null } | null)?.full_name ?? user.email ?? null;
       }
 
       const { data, error } = await (supabase as any)
@@ -290,7 +290,7 @@ export function useVendorDocuments(vendorId: string) {
           uploaded_by_name: uploadedByName,
         })
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to create vendor document', error, {
@@ -333,7 +333,7 @@ export function useVendorDocuments(vendorId: string) {
         .eq('id', input.id)
         .eq('tenant_id', tenantId)
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to update vendor document', error, {
@@ -398,10 +398,11 @@ export function useVendorDocuments(vendorId: string) {
       }
 
       // Try to delete from storage (don't fail if this fails)
-      if ((doc as any)?.file_url) {
+      const docData = doc as { file_url: string | null } | null;
+      if (docData?.file_url) {
         try {
           // Extract path from URL
-          const url = new URL((doc as any).file_url);
+          const url = new URL(docData.file_url);
           const pathMatch = url.pathname.match(/\/storage\/v1\/object\/public\/documents\/(.+)/);
           if (pathMatch?.[1]) {
             await supabase.storage.from(STORAGE_BUCKET).remove([pathMatch[1]]);

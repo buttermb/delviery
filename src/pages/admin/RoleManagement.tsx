@@ -144,7 +144,7 @@ export function RoleManagement() {
           is_system: false,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (roleError) {
         if (roleError.code === '42P01') {

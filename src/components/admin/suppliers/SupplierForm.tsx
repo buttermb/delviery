@@ -71,7 +71,7 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
         .from("wholesale_suppliers")
         .insert([data])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return newSupplier;
@@ -112,7 +112,7 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
         .update(data)
         .eq("id", supplier.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return updatedSupplier;

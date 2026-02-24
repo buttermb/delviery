@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { useManageWhitelist } from '@/hooks/useDisposableMenus';
+import type { Json } from '@/integrations/supabase/types';
 import { formatMenuUrl } from '@/utils/menuHelpers';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -222,14 +223,14 @@ export const MenuWhitelistTab = ({
               <Card key={entry.id} className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <div className="font-semibold mb-1">{jsonToString(entry.customer_name as any)}</div>
+                    <div className="font-semibold mb-1">{jsonToString(entry.customer_name as Json)}</div>
                     <div className="text-sm text-muted-foreground space-y-1">
-                      <div>{jsonToString(entry.customer_phone as any)}</div>
-                      {entry.customer_email && <div>{jsonToString(entry.customer_email as any)}</div>}
+                      <div>{jsonToString(entry.customer_phone as Json)}</div>
+                      {entry.customer_email && <div>{jsonToString(entry.customer_email as Json)}</div>}
                     </div>
                   </div>
-                  <Badge variant={jsonToString(entry.status as any) === 'active' ? 'default' : 'outline'}>
-                    {jsonToString(entry.status as any)}
+                  <Badge variant={jsonToString(entry.status as Json) === 'active' ? 'default' : 'outline'}>
+                    {jsonToString(entry.status as Json)}
                   </Badge>
                 </div>
 
@@ -238,16 +239,16 @@ export const MenuWhitelistTab = ({
                     <span className="font-medium">Views:</span> {String(entry.view_count || 0)}
                   </div>
                   <div>
-                    <span className="font-medium">Invited:</span> {format(new Date(String(jsonToStringOrNumber(entry.invited_at as any))), 'MMM dd')}
+                    <span className="font-medium">Invited:</span> {format(new Date(String(jsonToStringOrNumber(entry.invited_at as Json))), 'MMM dd')}
                   </div>
                   {entry.first_access_at && (
                     <div>
-                      <span className="font-medium">First Access:</span> {format(new Date(String(jsonToStringOrNumber(entry.first_access_at as any))), 'MMM dd')}
+                      <span className="font-medium">First Access:</span> {format(new Date(String(jsonToStringOrNumber(entry.first_access_at as Json))), 'MMM dd')}
                     </div>
                   )}
                   {entry.last_access_at && (
                     <div>
-                      <span className="font-medium">Last Access:</span> {format(new Date(String(jsonToStringOrNumber(entry.last_access_at as any))), 'MMM dd')}
+                      <span className="font-medium">Last Access:</span> {format(new Date(String(jsonToStringOrNumber(entry.last_access_at as Json))), 'MMM dd')}
                     </div>
                   )}
                 </div>
@@ -272,7 +273,7 @@ export const MenuWhitelistTab = ({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleRegenerateToken(entry.id, jsonToString(entry.customer_name as any))}
+                    onClick={() => handleRegenerateToken(entry.id, jsonToString(entry.customer_name as Json))}
                   >
                     <RotateCw className="h-3 w-3 mr-1" />
                     Regenerate
@@ -280,7 +281,7 @@ export const MenuWhitelistTab = ({
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => handleRevoke(entry.id, jsonToString(entry.customer_name as any))}
+                    onClick={() => handleRevoke(entry.id, jsonToString(entry.customer_name as Json))}
                   >
                     <XCircle className="h-3 w-3 mr-1" />
                     Revoke

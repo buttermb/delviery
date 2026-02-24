@@ -582,7 +582,7 @@ export default function ProductManagement() {
           category: productData.category || undefined,
         });
       } else {
-        const { data: newProduct, error } = await supabase.from('products').insert(productData).select().single();
+        const { data: newProduct, error } = await supabase.from('products').insert(productData).select().maybeSingle();
         if (error) throw error;
         toast.success("Product created");
         // Manually update state

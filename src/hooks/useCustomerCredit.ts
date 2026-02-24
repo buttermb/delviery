@@ -232,7 +232,7 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
           created_by: admin?.id || null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to add customer credit', error, {
@@ -290,7 +290,7 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
           created_by: admin?.id || null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to deduct customer credit', error, {

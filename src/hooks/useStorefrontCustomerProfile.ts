@@ -156,7 +156,16 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         .eq('tenant_id', tenantId)
         .maybeSingle();
 
-      const prefs = preferencesData as any;
+      interface PreferencesRow {
+        email_notifications?: boolean;
+        sms_notifications?: boolean;
+        marketing_emails?: boolean;
+        preferred_delivery_time?: string | null;
+        dietary_preferences?: string[];
+        favorite_categories?: string[];
+      }
+
+      const prefs = preferencesData as PreferencesRow | null;
       const preferences: CustomerPreferences = prefs ? {
         email_notifications: prefs.email_notifications ?? true,
         sms_notifications: prefs.sms_notifications ?? false,
@@ -232,13 +241,20 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         return [];
       }
 
-      return (data ?? []).map((item: any) => ({
-        id: item.id as string,
-        product_id: item.product_id as string,
+      interface BrowsingRow {
+        id: string;
+        product_id: string;
+        viewed_at: string;
+        products: { name: string; image_url: string | null; price: number | null } | null;
+      }
+
+      return (data ?? []).map((item: BrowsingRow) => ({
+        id: item.id,
+        product_id: item.product_id,
         product_name: item.products?.name ?? 'Unknown Product',
         product_image: item.products?.image_url ?? null,
         product_price: Number(item.products?.price) || 0,
-        viewed_at: item.viewed_at as string,
+        viewed_at: item.viewed_at,
       }));
     },
     enabled: enabled && !!profile?.id && !!tenantId,
@@ -280,13 +296,20 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         return [];
       }
 
-      return (data ?? []).map((item: any) => ({
-        id: item.id as string,
-        product_id: item.product_id as string,
+      interface WishlistRow {
+        id: string;
+        product_id: string;
+        created_at: string;
+        products: { name: string; image_url: string | null; price: number | null; stock_quantity: number | null } | null;
+      }
+
+      return (data ?? []).map((item: WishlistRow) => ({
+        id: item.id,
+        product_id: item.product_id,
         product_name: item.products?.name ?? 'Unknown Product',
         product_image: item.products?.image_url ?? null,
         product_price: Number(item.products?.price) || 0,
-        added_at: item.created_at as string,
+        added_at: item.created_at,
         in_stock: Number(item.products?.stock_quantity) > 0,
       }));
     },

@@ -99,7 +99,7 @@ export function ChatDrawer({
                         status: 'active',
                     })
                     .select()
-                    .single();
+                    .maybeSingle();
 
                 if (createError) throw createError;
                 setActiveConversationId(newConv.id);

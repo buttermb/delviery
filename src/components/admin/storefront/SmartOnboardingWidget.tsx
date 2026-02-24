@@ -49,7 +49,7 @@ export function SmartOnboardingWidget({ productCount, className }: SmartOnboardi
                 .from('products')
                 .insert(sampleProduct as any)
                 .select()
-                .single());
+                .maybeSingle());
 
             if (error) throw error;
             return data;

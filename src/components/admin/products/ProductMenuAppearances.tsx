@@ -217,7 +217,7 @@ function useAddToMenu() {
           display_order: 0,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to add product to menu', error, {

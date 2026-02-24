@@ -35,7 +35,8 @@ function detectOperationSize(tenant: {
   }
 
   // 2. If tenant has detected_operation_size (legacy), use it
-  const detectedSize = (tenant as any).detected_operation_size;
+  const tenantRecord = tenant as Record<string, unknown>;
+  const detectedSize = tenantRecord.detected_operation_size as string | undefined;
   if (detectedSize &&
     ['street', 'small', 'medium', 'enterprise'].includes(detectedSize)) {
     return detectedSize as OperationSize;
@@ -43,8 +44,8 @@ function detectOperationSize(tenant: {
 
   // 3. Fallback to metrics-based detection
   const usage = tenant.usage || {};
-  const monthlyOrders = (tenant as any).monthly_orders || usage.customers || 0;
-  const teamSize = (tenant as any).team_size || usage.users || 1;
+  const monthlyOrders = (tenantRecord.monthly_orders as number) || usage.customers || 0;
+  const teamSize = (tenantRecord.team_size as number) || usage.users || 1;
   const locationCount = usage.locations || 1;
 
   // Classification logic
@@ -90,7 +91,7 @@ export function useOperationSize() {
         return null;
       }
 
-      return data as any;
+      return data as { operation_size: string | null } | null;
     },
     enabled: !!tenant?.id && !!admin?.userId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
@@ -107,7 +108,7 @@ export function useOperationSize() {
 
   // Use manual override if exists, otherwise use detected
   const operationSize: OperationSize = useMemo(() => {
-    const manualSize = (preferences as any)?.operation_size;
+    const manualSize = preferences?.operation_size;
     const result = manualSize && ['street', 'small', 'medium', 'enterprise'].includes(manualSize)
       ? manualSize as OperationSize
       : detectedSize;
@@ -126,7 +127,7 @@ export function useOperationSize() {
     return result;
   }, [preferences, detectedSize, preferencesLoading, businessTier]);
 
-  const isAutoDetected = !(preferences as any)?.operation_size;
+  const isAutoDetected = !preferences?.operation_size;
 
   // Mutation to set manual operation size
   const setOperationSizeMutation = useMutation({

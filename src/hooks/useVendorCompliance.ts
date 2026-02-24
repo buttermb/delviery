@@ -232,7 +232,7 @@ export function useVendorCompliance(vendorId: string) {
           notes: input.notes ?? null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to create vendor compliance', error, {
@@ -244,7 +244,7 @@ export function useVendorCompliance(vendorId: string) {
       }
 
       // Log audit entry
-      await logAuditEntry(tenantId, (data as any).id, 'created', {
+      await logAuditEntry(tenantId, (data as VendorCompliance).id, 'created', {
         license_number: input.license_number,
         license_type: input.license_type,
       });
@@ -341,7 +341,7 @@ export function useVendorCompliance(vendorId: string) {
         .eq('id', input.id)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to update vendor compliance', error, {
@@ -516,7 +516,7 @@ export function useVendorComplianceDocuments(complianceId: string) {
           uploaded_by: user?.id ?? null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to upload compliance document', error, {

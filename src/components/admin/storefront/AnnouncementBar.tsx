@@ -107,7 +107,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      let query = (supabase as any)
+      let query = (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('storefront_announcements')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -177,7 +177,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
       };
 
       if (editingAnnouncement) {
-        const { error: updateError } = await (supabase as any)
+        const { error: updateError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
           .from('storefront_announcements')
           .update({ ...payload, updated_at: new Date().toISOString() })
           .eq('id', editingAnnouncement.id)
@@ -190,7 +190,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
           ? Math.max(...announcements.map(a => a.display_order))
           : -1;
 
-        const { error: insertError } = await (supabase as any)
+        const { error: insertError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
           .from('storefront_announcements')
           .insert({
             ...payload,
@@ -221,7 +221,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
     mutationFn: async (id: string) => {
       if (!tenantId) throw new Error('No tenant ID');
 
-      const { error: deleteError } = await (supabase as any)
+      const { error: deleteError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('storefront_announcements')
         .delete()
         .eq('id', id)
@@ -248,7 +248,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
     mutationFn: async ({ id, newOrder }: { id: string; newOrder: number }) => {
       if (!tenantId) throw new Error('No tenant ID');
 
-      const { error: updateError } = await (supabase as any)
+      const { error: updateError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('storefront_announcements')
         .update({ display_order: newOrder })
         .eq('id', id)
@@ -267,7 +267,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
   const toggleActive = async (announcement: Announcement) => {
     if (!tenantId) return;
 
-    const { error: updateError } = await (supabase as any)
+    const { error: updateError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
       .from('storefront_announcements')
       .update({ is_active: !announcement.is_active })
       .eq('id', announcement.id)

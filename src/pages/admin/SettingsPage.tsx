@@ -126,14 +126,15 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
   // Initialize forms with data
   useEffect(() => {
     if (account) {
+      const metadata = (account as unknown as Record<string, unknown>).metadata as Record<string, unknown> | undefined;
       generalForm.reset({
         companyName: account.company_name,
         email: account.billing_email || '',
-        phone: ((account as any).metadata as any)?.phone || '',
-        address: ((account as any).metadata as any)?.address || '',
+        phone: (metadata?.phone as string) || '',
+        address: (metadata?.address as string) || '',
       });
 
-      const secSettings = ((account as any).metadata as any)?.security || {};
+      const secSettings = (metadata?.security as Record<string, unknown>) || {};
       securityForm.reset({
         twoFactorEnabled: secSettings.twoFactorEnabled || false,
         requirePasswordChange: secSettings.requirePasswordChange || false,
@@ -146,7 +147,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
     }
 
     if (accountSettings) {
-      const notifSettings = (accountSettings.notification_settings as any) || {};
+      const notifSettings = (accountSettings.notification_settings as Record<string, unknown>) || {};
       notificationForm.reset({
         emailNotifications: notifSettings.emailNotifications ?? true,
         smsNotifications: notifSettings.smsNotifications ?? false,
@@ -188,13 +189,14 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
     if (!account) return;
     setLoading(true);
     try {
+      const existingMetadata = ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>) || {};
       const { error } = await supabase
         .from('accounts')
         .update({
           company_name: data.companyName,
           billing_email: data.email || null,
           metadata: {
-            ...(((account as any).metadata as object) || {}),
+            ...existingMetadata,
             phone: data.phone,
             address: data.address,
           }
@@ -218,11 +220,12 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
     setLoading(true);
     try {
       // Saving security settings to account metadata as user profile preferences are separate
+      const existingMetadataSec = ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>) || {};
       const { error } = await supabase
         .from('accounts')
         .update({
           metadata: {
-            ...(((account as any).metadata as object) || {}),
+            ...existingMetadataSec,
             security: data,
           }
         })
@@ -248,7 +251,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
         const { error } = await supabase
           .from('account_settings')
           .update({
-            notification_settings: data as any
+            notification_settings: data as Record<string, unknown>
           })
           .eq('id', accountSettings.id);
         if (error) throw error;
@@ -258,7 +261,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
           .from('account_settings')
           .insert({
             account_id: account.id,
-            notification_settings: data as any
+            notification_settings: data as Record<string, unknown>
           });
         if (error) throw error;
       }

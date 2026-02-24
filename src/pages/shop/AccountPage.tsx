@@ -45,13 +45,21 @@ import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
 import { formatPhoneNumber } from '@/lib/formatters';
 
+interface OrderItem {
+  product_id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  image_url?: string;
+}
+
 interface CustomerOrder {
   id: string;
   order_number: string;
   status: string;
   total_amount?: number;
   total?: number;
-  items?: any[];
+  items?: OrderItem[];
   created_at: string;
   tracking_token?: string;
 }
@@ -121,10 +129,10 @@ export default function AccountPage() {
     if (!email || !store?.id) return;
 
     const { data, error } = await supabase
-      .rpc('get_marketplace_customer_by_email' as any, {
+      .rpc('get_marketplace_customer_by_email' as 'get_secret', {
         p_store_id: store.id,
         p_email: email.trim()
-      });
+      } as Record<string, unknown>);
 
     if (error || !data || (Array.isArray(data) && data.length === 0)) {
       toast.error('Account not found', {
@@ -155,7 +163,7 @@ export default function AccountPage() {
       .or(`tracking_token.eq.${trackingNumber.trim()},order_number.eq.${trackingNumber.trim().toUpperCase()}`)
       .maybeSingle();
 
-    const orderData = data as any;
+    const orderData = data as { tracking_token?: string } | null;
 
     if (orderData?.tracking_token) {
       navigate(`/shop/${storeSlug}/track/${orderData.tracking_token}`);
@@ -186,10 +194,10 @@ export default function AccountPage() {
     setIsSendingCode(true);
     try {
       // Call RPC to generate and store code
-      const { data: code, error } = await (supabase.rpc as any)('request_magic_code', {
+      const { data: code, error } = await supabase.rpc('request_magic_code' as 'get_secret', {
         p_store_id: store.id,
         p_email: email.trim()
-      });
+      } as Record<string, unknown>);
 
       if (error) throw error;
 
@@ -217,11 +225,11 @@ export default function AccountPage() {
 
     setIsVerifyingCode(true);
     try {
-      const { data: customerData, error } = await (supabase.rpc as any)('verify_magic_code', {
+      const { data: customerData, error } = await supabase.rpc('verify_magic_code' as 'get_secret', {
         p_store_id: store.id,
         p_email: codeSentTo.trim(),
         p_code: magicCode.trim()
-      });
+      } as Record<string, unknown>);
       const customer = customerData as { id: string; email: string; first_name?: string } | null;
 
       if (error) throw error;
@@ -744,11 +752,11 @@ function WishlistSection({
       if (wishlistIds.length === 0) return [];
 
       const { data, error } = await supabase
-        .rpc('get_marketplace_products' as any, { p_store_id: storeId });
+        .rpc('get_marketplace_products' as 'get_secret', { p_store_id: storeId } as Record<string, unknown>);
 
       if (error) throw error;
-      const productsData = data as any[] || [];
-      return productsData.filter((p: any) => wishlistIds.includes(p.product_id));
+      const productsData = (data as unknown as Array<Record<string, unknown>>) || [];
+      return productsData.filter((p) => wishlistIds.includes(p.product_id as string));
     },
     enabled: wishlistIds.length > 0,
   });
@@ -767,13 +775,13 @@ function WishlistSection({
   };
 
   // Add to cart with error handling
-  const addToCart = (product: any) => {
+  const addToCart = (product: Record<string, unknown>) => {
     try {
-      const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]');
-      const existingIndex = cart.findIndex((item: any) => item.productId === product.product_id);
+      const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]') as Array<Record<string, unknown>>;
+      const existingIndex = cart.findIndex((item) => item.productId === product.product_id);
 
       if (existingIndex >= 0) {
-        cart[existingIndex].quantity += 1;
+        cart[existingIndex].quantity = (cart[existingIndex].quantity as number) + 1;
       } else {
         cart.push({
           productId: product.product_id,
@@ -785,7 +793,7 @@ function WishlistSection({
       }
 
       localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
-      setCartItemCount(cart.reduce((sum: number, item: any) => sum + item.quantity, 0));
+      setCartItemCount(cart.reduce((sum: number, item) => sum + (item.quantity as number), 0));
       toast.success('Added to cart');
     } catch (error) {
       logger.error('Failed to add to cart from wishlist', error);
@@ -840,17 +848,17 @@ function WishlistSection({
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {products.map((product: any) => (
+            {products.map((product) => (
               <div
-                key={product.product_id}
+                key={product.product_id as string}
                 className="flex items-center gap-6 p-6 border border-neutral-100 dark:border-neutral-800 rounded-2xl bg-white dark:bg-zinc-950 hover:shadow-md transition-shadow group"
               >
-                <Link to={`/shop/${storeSlug}/products/${product.product_id}`}>
+                <Link to={`/shop/${storeSlug}/products/${product.product_id as string}`}>
                   <div className="w-24 h-24 bg-neutral-100 rounded-xl overflow-hidden flex-shrink-0 relative">
                     {product.image_url ? (
                       <img
-                        src={product.image_url}
-                        alt={product.name}
+                        src={product.image_url as string}
+                        alt={product.name as string}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
@@ -861,11 +869,11 @@ function WishlistSection({
                   </div>
                 </Link>
                 <div className="flex-1 min-w-0 space-y-1">
-                  <Link to={`/shop/${storeSlug}/products/${product.product_id}`}>
-                    <h4 className="font-bold text-lg text-neutral-900 hover:text-neutral-700 transition-colors">{product.name}</h4>
+                  <Link to={`/shop/${storeSlug}/products/${product.product_id as string}`}>
+                    <h4 className="font-bold text-lg text-neutral-900 hover:text-neutral-700 transition-colors">{product.name as string}</h4>
                   </Link>
                   <p className="text-xl font-bold" style={{ color: primaryColor }}>
-                    {formatCurrency(product.display_price)}
+                    {formatCurrency(product.display_price as number)}
                   </p>
                   {!product.in_stock && (
                     <Badge variant="secondary" className="bg-neutral-100 text-neutral-500">Out of Stock</Badge>
@@ -886,7 +894,7 @@ function WishlistSection({
                     size="lg"
                     variant="ghost"
                     className="text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-full"
-                    onClick={() => removeFromWishlist(product.product_id)}
+                    onClick={() => removeFromWishlist(product.product_id as string)}
                   >
                     <Trash2 className="w-5 h-5" />
                   </Button>
@@ -920,13 +928,13 @@ function OrderCard({
   const { setCartItemCount } = useShop();
 
   // Add individual item to cart
-  const addItemToCart = (item: any) => {
+  const addItemToCart = (item: OrderItem) => {
     try {
-      const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]');
-      const existingIndex = cart.findIndex((c: any) => c.productId === item.product_id);
+      const cart = JSON.parse(localStorage.getItem(`shop_cart_${storeId}`) || '[]') as Array<Record<string, unknown>>;
+      const existingIndex = cart.findIndex((c) => c.productId === item.product_id);
 
       if (existingIndex >= 0) {
-        cart[existingIndex].quantity += 1;
+        cart[existingIndex].quantity = (cart[existingIndex].quantity as number) + 1;
       } else {
         cart.push({
           productId: item.product_id,
@@ -938,7 +946,7 @@ function OrderCard({
       }
 
       localStorage.setItem(`shop_cart_${storeId}`, JSON.stringify(cart));
-      setCartItemCount(cart.reduce((sum: number, c: any) => sum + c.quantity, 0));
+      setCartItemCount(cart.reduce((sum: number, c) => sum + (c.quantity as number), 0));
 
       toast.success('Added to bag!', { description: item.name });
     } catch (error) {

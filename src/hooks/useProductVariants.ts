@@ -115,7 +115,7 @@ export function useCreateVariant() {
           tenant_id: tenant.id,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to create variant', { error, input });
@@ -154,7 +154,7 @@ export function useUpdateVariant() {
         .eq('id', id)
         .eq('tenant_id', tenant.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to update variant', { error, input });

@@ -248,7 +248,7 @@ const useCreateSchedule = () => {
           is_active: true,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -292,7 +292,7 @@ const useUpdateSchedule = () => {
         .eq('id', scheduleData.id)
         .eq('tenant_id', scheduleData.tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

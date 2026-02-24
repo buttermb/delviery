@@ -122,7 +122,7 @@ export function useInvoiceTemplates() {
           is_system: false
         }])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return { ...data, template_data: data.template_data as unknown as InvoiceTemplateData } as InvoiceTemplate;

@@ -77,7 +77,7 @@ export const OrderDetailsDialog = ({
       const { error } = await supabase
         .from('menu_orders')
         .update({ 
-          status: newStatus as any,
+          status: newStatus as string,
           updated_at: new Date().toISOString()
         })
         .eq('id', order.id);
@@ -86,7 +86,7 @@ export const OrderDetailsDialog = ({
 
       // Send notification if status changed
       if (newStatus !== order.status) {
-        const eventMap: Record<string, any> = {
+        const eventMap: Record<string, 'order_placed' | 'order_processing' | 'order_completed' | 'order_cancelled'> = {
           'pending': 'order_placed',
           'processing': 'order_processing',
           'completed': 'order_completed',
@@ -95,7 +95,7 @@ export const OrderDetailsDialog = ({
 
         const event = eventMap[newStatus];
         if (event) {
-          sendNotification.mutate({ orderId: order.id, event: event as any });
+          sendNotification.mutate({ orderId: order.id, event });
         }
       }
 
@@ -202,17 +202,17 @@ export const OrderDetailsDialog = ({
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">
-                    {String((order.whitelist as any)?.customer_name || 'Not provided')}
+                    {String((order.whitelist as Record<string, unknown> | null)?.customer_name || 'Not provided')}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{String((order.whitelist as any)?.customer_phone || order.contact_phone || 'Not provided')}</span>
+                  <span>{String((order.whitelist as Record<string, unknown> | null)?.customer_phone || order.contact_phone || 'Not provided')}</span>
                 </div>
-                {(order.whitelist as any)?.customer_email && (
+                {(order.whitelist as Record<string, unknown> | null)?.customer_email && (
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>{String((order.whitelist as any).customer_email)}</span>
+                    <span>{String((order.whitelist as Record<string, unknown> | null).customer_email)}</span>
                   </div>
                 )}
               </div>
@@ -236,19 +236,19 @@ export const OrderDetailsDialog = ({
                     <div key={idx} className="border rounded-lg p-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="font-medium">{String((item as any).name || (item as any).product_name || '')}</div>
-                          {(item as any).weight && (
+                          <div className="font-medium">{String((item as Record<string, unknown>).name || (item as Record<string, unknown>).product_name || '')}</div>
+                          {(item as Record<string, unknown>).weight && (
                             <div className="text-sm text-muted-foreground">
-                              Weight: {String((item as any).weight)}
+                              Weight: {String((item as Record<string, unknown>).weight)}
                             </div>
                           )}
                         </div>
                         <div className="text-right">
                           <div className="font-semibold">
-                            ${((parseFloat(String((item as any).price || (item as any).price_per_unit || 0))) * (Number((item as any).quantity) || 0)).toFixed(2)}
+                            ${((parseFloat(String((item as Record<string, unknown>).price || (item as Record<string, unknown>).price_per_unit || 0))) * (Number((item as Record<string, unknown>).quantity) || 0)).toFixed(2)}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {Number((item as any).quantity) || 0} x ${parseFloat(String((item as any).price || (item as any).price_per_unit || 0)).toFixed(2)}
+                            {Number((item as Record<string, unknown>).quantity) || 0} x ${parseFloat(String((item as Record<string, unknown>).price || (item as Record<string, unknown>).price_per_unit || 0)).toFixed(2)}
                           </div>
                         </div>
                       </div>
@@ -314,7 +314,7 @@ export const OrderDetailsDialog = ({
               <div className="text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Menu:</span>
-                  <span className="font-medium">{String((order.menu as any)?.name || 'Unknown')}</span>
+                  <span className="font-medium">{String((order.menu as Record<string, unknown> | null)?.name || 'Unknown')}</span>
                 </div>
               </div>
             </div>

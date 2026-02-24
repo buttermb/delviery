@@ -144,20 +144,22 @@ async function fetchOrganizations(
   // Fetch stats for each organization
   const orgsWithStats: OrganizationWithStats[] = [];
 
-  for (const org of data || []) {
+  interface OrgRow { id: string; [key: string]: unknown }
+
+  for (const org of (data || []) as OrgRow[]) {
     // Get member count
     const { count: memberCount } = await (supabase as any)
       .from('organization_members')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
-      .eq('organization_id', (org as any).id);
+      .eq('organization_id', org.id);
 
     // Get orders and LTV data
     const { data: orderStats } = await (supabase as any)
       .from('unified_orders')
       .select('total_amount, created_at')
       .eq('tenant_id', tenantId)
-      .eq('organization_id', (org as any).id)
+      .eq('organization_id', org.id)
       .in('status', ['completed', 'delivered', 'paid']);
 
     const validOrders = orderStats || [];
@@ -214,14 +216,14 @@ async function fetchOrganizationDetail(
     .from('organization_members')
     .select('*', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
-    .eq('organization_id', (org as any).id);
+    .eq('organization_id', (org as Record<string, unknown>).id);
 
   // Get orders and LTV data
   const { data: orderStats } = await (supabase as any)
     .from('unified_orders')
     .select('total_amount, created_at')
     .eq('tenant_id', tenantId)
-    .eq('organization_id', (org as any).id)
+    .eq('organization_id', (org as Record<string, unknown>).id)
     .in('status', ['completed', 'delivered', 'paid']);
 
   const validOrders = orderStats || [];
@@ -361,7 +363,7 @@ export function useOrganizations({
           created_by: admin?.id || null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to create organization', error, {
@@ -410,7 +412,7 @@ export function useOrganizations({
         .eq('id', id)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to update organization', error, {
@@ -648,7 +650,7 @@ export function useOrganizationDetail({
           joined_at: new Date().toISOString(),
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to add organization member', error, {
@@ -743,7 +745,7 @@ export function useOrganizationDetail({
         .eq('id', memberId)
         .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to update organization member', error, {
@@ -911,10 +913,15 @@ export function useCustomerOrganizations(customerId: string | undefined) {
     enabled: !!tenantId && !!customerId,
   });
 
+  interface MemberWithOrg {
+    organization?: Record<string, unknown> | null;
+    [key: string]: unknown;
+  }
+
   const organizations = useMemo(() => {
     return (data || [])
-      .filter((m: any) => m.organization)
-      .map((m: any) => ({
+      .filter((m: MemberWithOrg) => m.organization)
+      .map((m: MemberWithOrg) => ({
         membership: m,
         organization: m.organization,
       }));

@@ -197,7 +197,7 @@ export function useOrderBulkRunnerAssign({ tenantId, userId, onSuccess }: UseOrd
               updated_at: now,
             })
             .select('id')
-            .single();
+            .maybeSingle();
 
           if (deliveryError) {
             throw new Error(deliveryError.message);

@@ -112,7 +112,7 @@ export function useProductDuplicate(options?: UseProductDuplicateOptions) {
         .from('products')
         .insert(duplicateData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Failed to duplicate product', { error: error.message, productId: product.id });

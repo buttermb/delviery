@@ -781,7 +781,7 @@ export async function createPromoCode(
         is_active: true,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       if (error.code === '23505') {

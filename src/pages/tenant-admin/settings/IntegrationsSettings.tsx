@@ -176,7 +176,7 @@ export default function IntegrationsSettings() {
           status: 'active',
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

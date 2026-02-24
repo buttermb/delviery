@@ -222,7 +222,7 @@ export function OrderSplitDialog({
         .from('unified_orders')
         .insert(newOrderData)
         .select('id, order_number')
-        .single();
+        .maybeSingle();
 
       if (createError) {
         logger.error('Failed to create split order', createError, {

@@ -141,7 +141,7 @@ export default function BusinessSettings() {
 
       // Delete demo clients
       const { error: clientsError } = await supabase
-        .from('clients' as any) // Type assertion until types.ts is updated
+        .from('clients' as 'tenants') // Type assertion until types.ts is updated
         .delete()
         .eq('tenant_id', tenant.id)
         .or('business_name.ilike.%demo%,business_name.ilike.%sample%,business_name.ilike.%test%');
@@ -232,8 +232,9 @@ export default function BusinessSettings() {
         .eq('id', tenant.id)
         .maybeSingle();
 
-      if (data && (data as any).operating_settings) {
-        const settings = (data as any).operating_settings as { business_hours: BusinessHours };
+      const record = data as Record<string, unknown> | null;
+      if (record?.operating_settings) {
+        const settings = record.operating_settings as { business_hours?: BusinessHours };
         if (settings.business_hours) {
           setBusinessHours(settings.business_hours);
         }
@@ -253,19 +254,21 @@ export default function BusinessSettings() {
         .eq('id', tenant.id)
         .maybeSingle();
 
-      const currentSettings = ((current as any)?.operating_settings as any) || {};
+      const currentRecord = current as Record<string, unknown> | null;
+      const currentSettings = (currentRecord?.operating_settings as Record<string, unknown>) || {};
+      const currentMetadata = (currentRecord?.metadata as Record<string, unknown>) || {};
 
       const { error } = await supabase
         .from('tenants')
         .update({
           metadata: {
-            ...((current as any)?.metadata || {}),
+            ...currentMetadata,
             operating_settings: {
               ...currentSettings,
               business_hours: hours
             }
           }
-        } as any)
+        } as Record<string, unknown>)
         .eq('id', tenant.id);
 
       if (error) throw error;
