@@ -87,7 +87,6 @@ export const GeofenceSettings = ({ rules, onChange }: GeofenceSettingsProps) => 
         ) : (
           <div className="space-y-4">
             {localRules.map((rule, index) => (
-              {/* Index key is intentional: rules lack stable IDs and are managed by index-based operations (updateRule/removeRule) */}
               <Card key={`rule-${index}-${rule.center.latitude}-${rule.center.longitude}`} className="p-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">

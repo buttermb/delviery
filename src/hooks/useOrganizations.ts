@@ -20,8 +20,8 @@ import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 
-import type {
 import { queryKeys } from '@/lib/queryKeys';
+import type {
   Organization,
   OrganizationWithStats,
   OrganizationMember,

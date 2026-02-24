@@ -41,7 +41,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { queryKeys } from '@/lib/queryKeys';
 
-type Product = Database['public']['Tables']queryKeys.products.all['Row'];
+type Product = Database['public']['Tables']['products']['Row'];
 
 interface MarketplaceStore {
   id: string;

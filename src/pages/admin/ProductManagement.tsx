@@ -79,7 +79,7 @@ import { ProductMarginBadge } from "@/components/admin/products/ProductMarginBad
 import { ColumnVisibilityControl } from "@/components/admin/ColumnVisibilityControl";
 import Columns from "lucide-react/dist/esm/icons/columns";
 
-type Product = Database['public']['Tables']queryKeys.products.all['Row'] & {
+type Product = Database['public']['Tables']['products']['Row'] & {
   // Add fields that might be missing from generated types or are dynamic
   metrc_retail_id?: string | null;
   exclude_from_discounts?: boolean;

@@ -13,9 +13,9 @@ import { useCreditGatedAction } from '@/hooks/useCreditGatedAction';
 import { logger } from '@/lib/logger';
 import { MarketplaceStore } from '@/types/marketplace-extended';
 import { type ThemePreset } from '@/lib/storefrontThemes';
-import {
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
+import {
     type SectionConfig,
     type ThemeConfig,
     type TemplateKey,

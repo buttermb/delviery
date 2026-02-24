@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Volume2, VolumeX } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
-import { STORAGE_KEYS.SOUND_ALERTS_TOGGLES } from '@/constants/storageKeys';
+import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 /**
  * Check if sound alerts are enabled

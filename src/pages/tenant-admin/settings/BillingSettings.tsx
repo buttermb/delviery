@@ -72,7 +72,7 @@ interface ExtendedInvoice extends Invoice {
   items?: Array<{ description?: string; name?: string; quantity?: number; amount?: number; unit_price?: number; total?: number }>; // Fallback for differing structures
 }
 
-type ExtendedTenant = Partial<Database['public']['Tables']queryKeys.tenants.all['Row']> & {
+type ExtendedTenant = Partial<Database['public']['Tables']['tenants']['Row']> & {
   id?: string;
   name?: string;
   slug?: string;
