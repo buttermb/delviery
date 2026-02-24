@@ -6,7 +6,6 @@ import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Search, Package } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cleanProductName as _cleanProductName } from '@/utils/productName';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useWishlist } from '@/hooks/useWishlist';

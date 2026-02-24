@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
-import { logActivityAuto, ActivityActions } from '@/lib/activityLogger';
+import { logActivityAuto } from '@/lib/activityLogger';
 import { eventBus } from '@/lib/eventBus';
 
 /**

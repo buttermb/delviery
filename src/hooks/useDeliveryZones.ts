@@ -6,7 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import type { DeliveryZone, DeliveryZoneFormData, DEFAULT_DELIVERY_HOURS } from '@/types/delivery-zone';
+import type { DeliveryZone, DeliveryZoneFormData } from '@/types/delivery-zone';
 
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';

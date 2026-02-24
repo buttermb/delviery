@@ -41,7 +41,7 @@ import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
 import { useStoreStatus } from '@/hooks/useStoreStatus';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Clock, Ban, Tag } from 'lucide-react';
+import { Clock, Tag } from 'lucide-react';
 import { isCustomerBlockedByEmail, FLAG_REASON_LABELS } from '@/hooks/useCustomerFlags';
 import { humanizeError } from '@/lib/humanizeError';
 import { STORAGE_KEYS } from '@/constants/storageKeys';

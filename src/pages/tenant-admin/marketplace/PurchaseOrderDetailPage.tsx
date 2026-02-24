@@ -16,7 +16,6 @@ import {
     Package,
     Clock,
     XCircle,
-    Loader2,
     MessageSquare,
     Send
 } from 'lucide-react';

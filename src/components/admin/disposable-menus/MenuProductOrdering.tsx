@@ -51,7 +51,6 @@ import Save from 'lucide-react/dist/esm/icons/save';
 import Undo from 'lucide-react/dist/esm/icons/undo-2';
 import Eye from 'lucide-react/dist/esm/icons/eye';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
-import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
 import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
 import { queryKeys } from '@/lib/queryKeys';
 

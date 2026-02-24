@@ -10,8 +10,8 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
-import {
 import { queryKeys } from '@/lib/queryKeys';
+import {
   DollarSign, TrendingUp, ShoppingCart, Clock,
   CreditCard, Award, Activity
 } from 'lucide-react';
