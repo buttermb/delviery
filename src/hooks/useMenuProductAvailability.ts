@@ -122,7 +122,7 @@ export const useMenuProductAvailabilityRules = (menuId?: string, tenantId?: stri
         return [];
       }
 
-      return (data || []).map(transformRow);
+      return (data ?? []).map(transformRow);
     },
     enabled: !!menuId && !!tenantId,
     staleTime: 30 * 1000,
@@ -159,7 +159,7 @@ export const useProductAvailabilityRules = (
         return [];
       }
 
-      return (data || []).map(transformRow);
+      return (data ?? []).map(transformRow);
     },
     enabled: !!menuId && !!productId && !!tenantId,
     staleTime: 30 * 1000,

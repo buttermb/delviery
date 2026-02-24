@@ -59,7 +59,7 @@ export function useRecurringInvoices() {
 
       return data.map(d => ({
         ...d,
-        line_items: (d.line_items || []) as unknown as RecurringLineItem[]
+        line_items: (d.line_items ?? []) as unknown as RecurringLineItem[]
       })) as RecurringSchedule[];
     },
     enabled: !!tenant?.id

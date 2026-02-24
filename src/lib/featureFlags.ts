@@ -108,7 +108,7 @@ export async function getFeatureFlags(tenantId?: string): Promise<Array<{ flag_k
       }));
     }
 
-    return (data || []).map(f => ({
+    return (data ?? []).map(f => ({
       flag_key: f.flag_name,
       enabled: f.enabled,
       rollout_percentage: f.enabled ? 100 : 0,

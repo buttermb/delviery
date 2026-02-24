@@ -38,7 +38,7 @@ export function useBanners(storeId: string | undefined) {
                     return [];
                 }
 
-                return (data || []) as Banner[];
+                return (data ?? []) as Banner[];
             } catch (err) {
                 logger.warn('Banners not available', err);
                 return [];

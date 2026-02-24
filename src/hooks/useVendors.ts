@@ -31,7 +31,7 @@ export function useVendors() {
 
             if (error) throw error;
 
-            return (data || []).map(v => ({
+            return (data ?? []).map(v => ({
                 id: v.id,
                 name: v.name,
                 contact_name: v.contact_name || undefined,

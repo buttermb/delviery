@@ -219,7 +219,7 @@ export function useOrderRefund(): UseOrderRefundResult {
         throw new Error('Cannot refund an unpaid order');
       }
 
-      const items = (orderData.unified_order_items || []) as OrderItem[];
+      const items = (orderData.unified_order_items ?? []) as OrderItem[];
       const restoreResults: RestoreResult[] = [];
 
       // Determine which items to refund

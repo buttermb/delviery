@@ -134,7 +134,7 @@ export function CustomerManagement() {
       if (error) throw error;
 
       // Decrypt customer data if encryption is ready and encrypted fields exist
-      let decryptedCustomers: Record<string, unknown>[] = data || [];
+      let decryptedCustomers: Record<string, unknown>[] = data ?? [];
       const firstRecord = data?.[0] as Record<string, unknown> | undefined;
       if (encryptionIsReady && data && data.length > 0 && (firstRecord?.phone_encrypted || firstRecord?.email_encrypted)) {
         try {
@@ -169,7 +169,7 @@ export function CustomerManagement() {
           });
         } catch (decryptionError) {
           logger.warn('Failed to decrypt customers, using plaintext', decryptionError instanceof Error ? decryptionError : new Error(String(decryptionError)), { component: 'CustomerManagement' });
-          decryptedCustomers = data || [];
+          decryptedCustomers = data ?? [];
         }
       } else if (data && data.length > 0) {
         // Encryption not ready but data may have encrypted fields - check for ciphertext

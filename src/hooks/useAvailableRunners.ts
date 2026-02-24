@@ -60,7 +60,7 @@ export function useAvailableRunners(options: UseAvailableRunnersOptions = {}) {
 
       if (error) throw error;
 
-      return (data || []) as AvailableRunner[];
+      return (data ?? []) as AvailableRunner[];
     },
     enabled: enabled && !!tenant?.id,
     staleTime: 1000 * 30, // 30 seconds - runners status changes frequently

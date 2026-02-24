@@ -107,13 +107,13 @@ export function useSidebarConfig() {
 
   // 2. Apply Layout Preset & Integration Filters
   const visibilityFilteredConfig = useMemo(() => {
-    const hiddenFeatures = safePreferences.hiddenFeatures || [];
+    const hiddenFeatures = safePreferences.hiddenFeatures ?? [];
     const enabledIntegrations = safePreferences.enabledIntegrations || ['mapbox', 'stripe'];
     const currentLayoutPreset = preferences?.layoutPreset || 'default';
     const layoutPreset = getLayoutPreset(currentLayoutPreset);
 
     // Check if it's a custom preset
-    const customPresets = preferences?.customPresets || [];
+    const customPresets = preferences?.customPresets ?? [];
     const customPreset = customPresets.find(p => p.id === currentLayoutPreset);
 
     // Get features hidden by disabled integrations (using single source of truth)
@@ -180,7 +180,7 @@ export function useSidebarConfig() {
       return [...visibilityFilteredConfig].sort((a, b) => {
         const getSectionIndex = (title: string) => {
           const index = preferredOrder.findIndex(prefId => {
-            const mappedTitles = SECTION_MAPPING[prefId] || [];
+            const mappedTitles = SECTION_MAPPING[prefId] ?? [];
             return mappedTitles.includes(title);
           });
           return index === -1 ? 999 : index;

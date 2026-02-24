@@ -86,7 +86,7 @@ export const exportOrders = (orders: Array<Record<string, unknown> & { whitelist
     delivery_method: order.delivery_method || 'N/A',
     special_instructions: order.special_instructions || '',
     created_at: format(new Date(order.created_at), 'yyyy-MM-dd HH:mm:ss'),
-    order_items: JSON.stringify(order.order_items || [])
+    order_items: JSON.stringify(order.order_items ?? [])
   }));
 
   const headers = [

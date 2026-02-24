@@ -132,7 +132,7 @@ export function useActivityFeed(initialFilters?: Partial<ActivityFeedFilters>) {
         }
 
         return {
-          entries: (entries || []) as unknown as ActivityLogEntry[],
+          entries: (entries ?? []) as unknown as ActivityLogEntry[],
           totalCount: count ?? 0,
         };
       } catch (err) {

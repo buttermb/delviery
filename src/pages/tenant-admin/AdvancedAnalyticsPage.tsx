@@ -35,7 +35,7 @@ export default function AdvancedAnalyticsPage() {
 
       if (error && error.code === '42P01') return [];
       if (error) throw error;
-      return (data || []) as unknown as AnalyticsOrder[];
+      return (data ?? []) as unknown as AnalyticsOrder[];
     },
     enabled: !!tenant?.id,
   });
@@ -52,7 +52,7 @@ export default function AdvancedAnalyticsPage() {
   const revenueData = Object.values(revenueByMonth).slice(-12);
 
   // Product performance
-  const productPerformance = orders.flatMap((order) => order.order_items || [])
+  const productPerformance = orders.flatMap((order) => order.order_items ?? [])
     .reduce((acc: Record<string, { name: string; quantity: number; revenue: number }>, item) => {
       const name = item.product_name || 'Unknown';
       if (!acc[name]) acc[name] = { name, quantity: 0, revenue: 0 };

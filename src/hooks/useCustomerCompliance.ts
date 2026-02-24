@@ -196,7 +196,7 @@ async function fetchCustomerComplianceData(
     .eq('customer_id', customerId)
     .gte('created_at', thirtyDaysAgo.toISOString());
 
-  const monthlySpent = (recentOrders || []).reduce(
+  const monthlySpent = (recentOrders ?? []).reduce(
     (sum: number, order: OrderTotalResult) => sum + (order.total_amount || 0),
     0
   );
@@ -495,7 +495,7 @@ function buildDeliveryZoneCheck(
   const customerZip = customer.zip_code;
   if (customerZip) {
     const zoneZips = deliveryZones.flatMap((zone: { zip_codes?: string[] }) =>
-      zone.zip_codes || []
+      zone.zip_codes ?? []
     );
 
     if (zoneZips.length > 0 && !zoneZips.includes(customerZip)) {

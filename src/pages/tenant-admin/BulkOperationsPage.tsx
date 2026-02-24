@@ -127,7 +127,7 @@ export default function BulkOperationsPage() {
           return [];
         }
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error: unknown) {
         if (error instanceof Error && 'code' in error && error.code === '42P01') return [];
         throw error;
@@ -242,7 +242,7 @@ export default function BulkOperationsPage() {
     if (selectedProducts.size === products?.length) {
       setSelectedProducts(new Set());
     } else {
-      setSelectedProducts(new Set(products?.map(p => p.id) || []));
+      setSelectedProducts(new Set(products?.map(p => p.id) ?? []));
     }
   };
 

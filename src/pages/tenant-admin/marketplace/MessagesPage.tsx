@@ -119,7 +119,7 @@ export default function MessagesPage() {
       }
 
       // Decrypt messages
-      const decryptedData = await Promise.all((data || []).map(async (msg: Record<string, unknown>) => {
+      const decryptedData = await Promise.all((data ?? []).map(async (msg: Record<string, unknown>) => {
         if (msg.message_encrypted && msg.message_text) {
           try {
             const decrypted = await decryptMessage(msg.message_text);
@@ -197,7 +197,7 @@ export default function MessagesPage() {
   const selectedConv = conversations.find(c => c.buyerTenantId === selectedConversation);
   const selectedMessages = selectedConv?.messages.sort((a, b) =>
     new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  ) || [];
+  ) ?? [];
 
   // Mark messages as read mutation
   const markAsReadMutation = useMutation({
@@ -270,7 +270,7 @@ export default function MessagesPage() {
     const conv = conversations.find(c => c.buyerTenantId === buyerTenantId);
     const unreadIds = conv?.messages
       .filter(m => m.receiver_tenant_id === tenantId && !m.read)
-      .map(m => m.id) || [];
+      .map(m => m.id) ?? [];
 
     if (unreadIds.length > 0) {
       markAsReadMutation.mutate(unreadIds);

@@ -94,7 +94,7 @@ export const useCRMDashboard = () => {
                 activeInvoicesValue,
                 pendingPreOrdersCount,
                 pendingPreOrdersValue,
-                recentActivity: (activity || []) as unknown as ActivityLogEntry[],
+                recentActivity: (activity ?? []) as unknown as ActivityLogEntry[],
             } as CRMDashboardMetrics;
         },
         enabled: !!accountId,

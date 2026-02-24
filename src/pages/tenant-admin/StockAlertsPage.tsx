@@ -42,7 +42,7 @@ export default function StockAlertsPage() {
       }
 
       if (alertError) throw alertError;
-      return (alertData || []) as StockAlertRow[];
+      return (alertData ?? []) as StockAlertRow[];
     },
     enabled: !!tenant?.id,
   });
@@ -58,7 +58,7 @@ export default function StockAlertsPage() {
     if (prodError) throw prodError;
 
     const DEFAULT_THRESHOLD = 10;
-    return (products || [])
+    return (products ?? [])
       .filter((item) => {
         const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
         const threshold = item.low_stock_alert ?? DEFAULT_THRESHOLD;

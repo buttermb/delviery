@@ -78,12 +78,12 @@ export const useMenuAnalytics = (menuId: string) => {
       // Filter logs that are actual page views (where actions_taken is null or not an event)
       const pageViewLogs = menu.menu_access_logs?.filter((log: MenuAccessLogRow) =>
         !log.actions_taken || !log.actions_taken.action
-      ) || [];
+      ) ?? [];
 
       // Filter logs that are events
       const eventLogs = menu.menu_access_logs?.filter((log: MenuAccessLogRow) =>
         log.actions_taken && log.actions_taken.action
-      ) || [];
+      ) ?? [];
 
       const productsWithImages = menu.disposable_menu_products?.filter(
         (mp: DisposableMenuProductRow) => mp.product?.image_url || (mp.product?.images?.length ?? 0) > 0
@@ -153,7 +153,7 @@ export const useProductImageAnalytics = (menuId: string) => {
 
         const productLogs = logs?.filter((log: MenuAccessLogRow) =>
           log.actions_taken?.product_id === mp.product_id
-        ) || [];
+        ) ?? [];
 
         const viewCount = productLogs.filter((log: MenuAccessLogRow) => log.actions_taken?.action === 'image_viewed').length;
         const zoomCount = productLogs.filter((log: MenuAccessLogRow) => log.actions_taken?.action === 'image_zoomed').length;

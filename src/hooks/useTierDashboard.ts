@@ -6,7 +6,7 @@ export function useTierDashboard() {
 
     const widgets = useMemo(() => {
         if (!preset) return [];
-        return preset.dashboardWidgets || [];
+        return preset.dashboardWidgets ?? [];
     }, [preset]);
 
     // Return true during loading to prevent widgets from disappearing
@@ -22,7 +22,7 @@ export function useTierDashboard() {
         widgets,
         hasWidget,
         isLoading,
-        pulseMetrics: preset?.pulseMetrics || [],
-        quickActions: preset?.quickActions || [],
+        pulseMetrics: preset?.pulseMetrics ?? [],
+        quickActions: preset?.quickActions ?? [],
     };
 }

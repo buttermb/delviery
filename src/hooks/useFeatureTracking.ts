@@ -37,7 +37,7 @@ export function useFeatureTracking() {
       if (stored) {
         const parsed = JSON.parse(stored);
         setPatterns(parsed.patterns || null);
-        setFeatureUsage(parsed.featureUsage || []);
+        setFeatureUsage(parsed.featureUsage ?? []);
       }
     } catch {
       logger.warn('Failed to load feature patterns from localStorage', { component: 'useFeatureTracking' });

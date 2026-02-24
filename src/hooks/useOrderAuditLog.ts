@@ -116,7 +116,7 @@ export function useOrderAuditLog(options: UseOrderAuditLogOptions = {}) {
           throw queryError;
         }
 
-        return (entries || []) as unknown as OrderAuditLogEntry[];
+        return (entries ?? []) as unknown as OrderAuditLogEntry[];
       } catch (err) {
         // Handle table not existing gracefully
         if ((err as { code?: string })?.code === '42P01') {

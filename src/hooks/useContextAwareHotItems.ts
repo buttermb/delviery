@@ -425,7 +425,7 @@ export function useContextAwareHotItems({
           logger.error('Failed to fetch products for hot items', fetchError);
           return [];
         }
-        return (data as unknown as MarketplaceProduct[]) || [];
+        return (data as unknown as MarketplaceProduct[]) ?? [];
       } catch (err) {
         logger.error('Error fetching products for hot items', err);
         return [];

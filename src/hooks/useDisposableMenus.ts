@@ -33,7 +33,7 @@ export const useDisposableMenus = (tenantId?: string) => {
       }
       
       // Add computed stats for each menu
-      return (data || []).map((menu: Record<string, unknown>) => ({
+      return (data ?? []).map((menu: Record<string, unknown>) => ({
         ...menu,
         view_count: (menu.menu_access_logs as Array<{ count: number }> | undefined)?.[0]?.count || 0,
         customer_count: (menu.menu_access_whitelist as Array<{ count: number }> | undefined)?.[0]?.count || 0,
@@ -207,7 +207,7 @@ export const useMenuWhitelist = (menuId: string) => {
         .order('invited_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     enabled: !!menuId,
     staleTime: 30 * 1000,

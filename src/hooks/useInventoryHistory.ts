@@ -228,7 +228,7 @@ export function useInventoryHistory(filters: InventoryHistoryFilters = {}) {
         throw error;
       }
 
-      return (data || []) as unknown as InventoryHistoryEntry[];
+      return (data ?? []) as unknown as InventoryHistoryEntry[];
     },
     enabled: !!tenant?.id,
   });

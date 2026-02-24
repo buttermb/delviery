@@ -54,7 +54,7 @@ export function useLocationInventory(locationId?: string) {
         return [];
       }
 
-      return (data || []) as LocationInventoryItem[];
+      return (data ?? []) as LocationInventoryItem[];
     },
     enabled: !!tenant?.id && !!locationId,
     staleTime: 5 * 60 * 1000,

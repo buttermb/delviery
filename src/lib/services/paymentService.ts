@@ -589,7 +589,7 @@ class PaymentService {
         .limit(limit);
 
       if (error) throw error;
-      return { success: true, payments: data || [] };
+      return { success: true, payments: data ?? [] };
     } catch (error) {
       logger.error('Failed to fetch payment history', error, { clientId });
       return { success: false, payments: [], error: (error as Error).message };

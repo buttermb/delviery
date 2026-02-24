@@ -109,7 +109,7 @@ export function useStorefrontOrders({
         throw fetchError;
       }
 
-      let result = ((data as unknown) as StorefrontOrder[]) || [];
+      let result = ((data as unknown) as StorefrontOrder[]) ?? [];
 
       // Apply status filter
       if (filters?.status && filters.status !== 'all') {

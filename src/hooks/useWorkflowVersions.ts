@@ -61,7 +61,7 @@ export function useWorkflowVersions(workflowId: string | null) {
         .order('version_number', { ascending: false });
 
       if (error) throw error;
-      return (data as WorkflowVersion[]) || [];
+      return (data as WorkflowVersion[]) ?? [];
     },
     enabled: !!workflowId && !!tenant?.id,
   });
@@ -132,7 +132,7 @@ export function useWorkflowVersions(workflowId: string | null) {
   });
 
   return {
-    versions: versions || [],
+    versions: versions ?? [],
     isLoading,
     restoreVersion,
     compareVersions,
@@ -155,7 +155,7 @@ export function useWorkflowVersionStats(workflowId: string | null) {
         .order('version_number', { ascending: false });
 
       if (error) throw error;
-      return (data as WorkflowVersion[]) || [];
+      return (data as WorkflowVersion[]) ?? [];
     },
     enabled: !!workflowId && !!tenant?.id,
   });

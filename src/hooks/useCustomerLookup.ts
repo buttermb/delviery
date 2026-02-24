@@ -148,7 +148,7 @@ export function useCustomerLookup(options: UseCustomerLookupOptions = {}): UseCu
           throw queryError;
         }
 
-        return (data || []).map((customer) => ({
+        return (data ?? []).map((customer) => ({
           id: customer.id,
           first_name: customer.first_name,
           last_name: customer.last_name,

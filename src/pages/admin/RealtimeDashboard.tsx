@@ -46,8 +46,8 @@ export default function RealtimeDashboard() {
             .limit(1),
         ]);
 
-        const orders = ordersResult.error && ordersResult.error.code === '42P01' ? [] : ordersResult.data || [];
-        const customers = customersResult.error && customersResult.error.code === '42P01' ? [] : customersResult.data || [];
+        const orders = ordersResult.error && ordersResult.error.code === '42P01' ? [] : ordersResult.data ?? [];
+        const customers = customersResult.error && customersResult.error.code === '42P01' ? [] : customersResult.data ?? [];
 
         const totalRevenue = orders.reduce((sum: number, o) => sum + parseFloat(String(o.total || 0)), 0);
 

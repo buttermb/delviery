@@ -50,7 +50,7 @@ export default function ComplianceVaultPage() {
           return [];
         }
 
-        return (data || []) as ComplianceDocument[];
+        return (data ?? []) as ComplianceDocument[];
       } catch {
         return [];
       }
@@ -62,7 +62,7 @@ export default function ComplianceVaultPage() {
     if (activeTab === "all") return true;
     if (activeTab === "expiring") return doc.status === "expiring_soon" || doc.status === "expired";
     return doc.document_type === activeTab;
-  }) || [];
+  }) ?? [];
 
   return (
     <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">

@@ -952,7 +952,7 @@ export function getFeaturesByCategoryOrdered(tier?: SubscriptionTier): Array<{ c
     .filter(cat => grouped[cat]?.length > 0)
     .map(cat => ({
       category: cat,
-      features: grouped[cat] || [],
+      features: grouped[cat] ?? [],
     }));
 }
 

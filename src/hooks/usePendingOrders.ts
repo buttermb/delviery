@@ -76,7 +76,7 @@ export function usePendingOrders(tenantId?: string) {
 
             if (error) throw error;
 
-            setOrders((data || []) as unknown as PendingOrder[]);
+            setOrders((data ?? []) as unknown as PendingOrder[]);
         } catch (error) {
             logger.error('Error loading pending orders', error);
         } finally {

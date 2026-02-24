@@ -742,8 +742,8 @@ export default function ProductManagement() {
             .select('product_name')
             .in('product_name', names);
 
-          const usedProductIds = new Set(orderItems?.map(i => i.product_id) || []);
-          const usedProductNames = new Set(wholesaleItems?.map(i => i.product_name) || []);
+          const usedProductIds = new Set(orderItems?.map(i => i.product_id) ?? []);
+          const usedProductNames = new Set(wholesaleItems?.map(i => i.product_name) ?? []);
 
           // Filter out products that are used in orders
           const deletableIds = ids.filter(id => {

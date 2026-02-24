@@ -65,7 +65,7 @@ export default function CommissionTracking() {
           if (orderError) throw orderError;
 
           // Calculate commissions from orders (2% default)
-          return (orders || []).map((order: OrderRecord) => ({
+          return (orders ?? []).map((order: OrderRecord) => ({
             id: order.id,
             amount: parseFloat(String(order.total || 0)) * 0.02,
             order_id: order.id,
@@ -74,7 +74,7 @@ export default function CommissionTracking() {
           }));
         }
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         handleError(error, { component: 'CommissionTracking', toastTitle: 'Failed to load commissions' });

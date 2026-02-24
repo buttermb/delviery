@@ -65,7 +65,7 @@ export function useCouponUsageStats() {
           throw couponsError;
         }
 
-        const couponList = (coupons || []) as Coupon[];
+        const couponList = (coupons ?? []) as Coupon[];
         const couponIds = couponList.map(c => c.id);
 
         // Fetch usage data for these coupons
@@ -80,7 +80,7 @@ export function useCouponUsageStats() {
           if (usageError) {
             logger.error('Failed to fetch coupon usage', usageError, { component: 'useCouponUsageStats' });
           } else {
-            usageData = (usage || []) as CouponUsage[];
+            usageData = (usage ?? []) as CouponUsage[];
           }
         }
 

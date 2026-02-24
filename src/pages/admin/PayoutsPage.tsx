@@ -89,7 +89,7 @@ export default function PayoutsPage() {
           if (error.code === '42P01') return [];
           throw error;
         }
-        return (data || []) as PayoutHistoryItem[];
+        return (data ?? []) as PayoutHistoryItem[];
       } catch (error) {
         logger.error('Failed to fetch payout history', error, { component: 'PayoutsPage' });
         return [];
@@ -118,7 +118,7 @@ export default function PayoutsPage() {
           if (error.code === '42P01') return [];
           throw error;
         }
-        return data || [];
+        return data ?? [];
       } catch (error) {
         logger.error('Failed to fetch pending orders', error, { component: 'PayoutsPage' });
         return [];

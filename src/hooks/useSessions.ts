@@ -147,7 +147,7 @@ export function useSessions(): UseSessionsReturn {
         throw new Error(fnError.message || 'Failed to fetch sessions');
       }
 
-      const rawSessions: RawSession[] = data?.sessions || [];
+      const rawSessions: RawSession[] = data?.sessions ?? [];
       return rawSessions.map((s) => formatSessionInfo(s, token));
     },
     enabled: !!customer?.id,

@@ -137,7 +137,7 @@ export function useCategories() {
         throw error;
       }
 
-      return (data || []) as Category[];
+      return (data ?? []) as Category[];
     },
     enabled: !!tenant?.id,
     ...STATIC_QUERY_CONFIG,

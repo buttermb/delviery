@@ -34,9 +34,9 @@ function parseDataSource(raw: RawDataSource): ReportDataSource {
     source_type: raw.source_type as 'table' | 'view' | 'rpc',
     source_table: raw.source_table,
     source_rpc: raw.source_rpc,
-    available_fields: (raw.available_fields as DataSourceField[]) || [],
-    available_metrics: (raw.available_metrics as DataSourceMetric[]) || [],
-    available_dimensions: (raw.available_dimensions as DataSourceDimension[]) || [],
+    available_fields: (raw.available_fields as DataSourceField[]) ?? [],
+    available_metrics: (raw.available_metrics as DataSourceMetric[]) ?? [],
+    available_dimensions: (raw.available_dimensions as DataSourceDimension[]) ?? [],
     requires_tenant_filter: raw.requires_tenant_filter,
     is_active: raw.is_active,
   };

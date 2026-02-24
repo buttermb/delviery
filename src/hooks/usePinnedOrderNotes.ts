@@ -108,7 +108,7 @@ export function usePinnedOrderNotes() {
         return [];
       }
 
-      return (data || []) as PinnedOrderNote[];
+      return (data ?? []) as PinnedOrderNote[];
     },
     enabled: !!tenantId,
     staleTime: 30000, // 30 seconds

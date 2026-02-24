@@ -27,7 +27,7 @@ export default function DeliveryAnalytics() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         throw error;
@@ -41,7 +41,7 @@ export default function DeliveryAnalytics() {
   }
 
   interface DayStat { date: string; count: number; completed: number }
-  const deliveryStats = (deliveries || []).reduce((acc: DayStat[], delivery) => {
+  const deliveryStats = (deliveries ?? []).reduce((acc: DayStat[], delivery) => {
     const date = new Date(delivery.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const existing = acc.find((item) => item.date === date);
     if (existing) {

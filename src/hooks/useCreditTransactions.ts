@@ -144,7 +144,7 @@ export function useCreditTransactions(
           return [];
         }
 
-        return (data || []).map(row => ({
+        return (data ?? []).map(row => ({
           id: row.id,
           tenantId: row.tenant_id,
           amount: row.amount,

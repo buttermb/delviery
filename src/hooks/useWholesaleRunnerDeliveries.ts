@@ -72,7 +72,7 @@ export function useWholesaleRunnerDeliveries(runnerId?: string) {
         throw error;
       }
 
-      return (data || []) as WholesaleDelivery[];
+      return (data ?? []) as WholesaleDelivery[];
     },
     enabled: !!runnerId,
     refetchInterval: 30000, // Refetch every 30 seconds

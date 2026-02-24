@@ -50,7 +50,7 @@ export default function AdvancedReportingPage() {
           return [];
         }
 
-        return (data || []) as CustomReport[];
+        return (data ?? []) as CustomReport[];
       } catch {
         return [];
       }
@@ -113,7 +113,7 @@ export default function AdvancedReportingPage() {
 
         <TabsContent value="reports" className="space-y-4">
           <ReportList
-            reports={reports || []}
+            reports={reports ?? []}
             isLoading={isLoading}
           />
         </TabsContent>

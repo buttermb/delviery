@@ -194,7 +194,7 @@ export function useAutoReorder(): AutoReorderSummary {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-      (salesData || []).forEach((item) => {
+      (salesData ?? []).forEach((item) => {
         const existing = velocityMap.get(item.product_id) || { weeklyTotal: 0, monthlyTotal: 0 };
         existing.monthlyTotal += item.quantity || 0;
 
@@ -344,7 +344,7 @@ export function useProductReorder(productId: string | undefined): ProductReorder
       let weeklyTotal = 0;
       let monthlyTotal = 0;
 
-      (salesData || []).forEach((item) => {
+      (salesData ?? []).forEach((item) => {
         monthlyTotal += item.quantity || 0;
         if (new Date(item.created_at) >= sevenDaysAgo) {
           weeklyTotal += item.quantity || 0;

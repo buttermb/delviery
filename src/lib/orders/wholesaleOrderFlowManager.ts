@@ -241,7 +241,7 @@ export const wholesaleOrderFlowManager = {
         .select('id, name')
         .in('name', productNames);
 
-      const productMap = new Map(products?.map(p => [p.name, p.id]) || []);
+      const productMap = new Map(products?.map(p => [p.name, p.id]) ?? []);
 
       // Reserve stock when confirmed
       if (newStatus === 'confirmed' && oldStatus === 'pending') {

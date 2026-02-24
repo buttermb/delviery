@@ -30,7 +30,7 @@ export const useProductsForMenu = (tenantId?: string) => {
 
       if (error) throw error;
       // Map wholesale_inventory fields to ProductForMenu interface
-      return (data || []).map((item) => ({
+      return (data ?? []).map((item) => ({
         id: item.id,
         name: item.product_name,
         price: item.base_price || 0,

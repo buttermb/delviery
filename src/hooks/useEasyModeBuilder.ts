@@ -79,7 +79,7 @@ export function useEasyModeBuilder({
     );
 
     const [customModifications, setCustomModifications] = useState<string[]>(
-        existingEasyMode?.custom_modifications || []
+        existingEasyMode?.custom_modifications ?? []
     );
 
     const [isDirty, setIsDirty] = useState(false);

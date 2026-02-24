@@ -109,7 +109,7 @@ export default function PointOfSale() {
           throw error;
         }
 
-        return (data || []).map((c): Customer => ({
+        return (data ?? []).map((c): Customer => ({
           id: c.id,
           first_name: c.first_name || '',
           last_name: c.last_name || '',
@@ -158,7 +158,7 @@ export default function PointOfSale() {
       if (error) throw error;
 
       // Map to our Product interface with proper type checking
-      const mappedProducts: Product[] = (data || []).map((p) => ({
+      const mappedProducts: Product[] = (data ?? []).map((p) => ({
         id: p.id,
         name: p.name || '',
         price: typeof p.price === 'number' ? p.price : 0,

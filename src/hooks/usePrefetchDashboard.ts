@@ -54,7 +54,7 @@ export function usePrefetchDashboard() {
               .eq('tenant_id', tenantId)
               .limit(100);
 
-            const lowStock = (inventory || []).filter(
+            const lowStock = (inventory ?? []).filter(
               (item) => {
                 const currentStock = item.available_quantity ?? item.stock_quantity ?? 0;
                 const reorderPoint = item.low_stock_alert ?? 10;
@@ -87,7 +87,7 @@ export function usePrefetchDashboard() {
               .order('created_at', { ascending: false })
               .limit(5);
 
-            return data || [];
+            return data ?? [];
           },
           staleTime: 1 * 60 * 1000, // 1 minute
         }),

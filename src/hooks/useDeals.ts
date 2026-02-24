@@ -47,7 +47,7 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
                     return [];
                 }
 
-                return (data || []) as unknown as Deal[];
+                return (data ?? []) as unknown as Deal[];
             } catch (err) {
                 logger.warn('Failed to fetch deals', err);
                 return [];

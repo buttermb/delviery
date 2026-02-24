@@ -130,7 +130,7 @@ export default function TenantAdminBillingPage() {
         .order("issue_date", { ascending: false })
         .limit(10);
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId,
   });
@@ -156,7 +156,7 @@ export default function TenantAdminBillingPage() {
       logger.info('[BillingPage] Subscription plans loaded:', { count: data?.length || 0, component: 'BillingPage' });
       logger.debug('[BillingPage] Plans:', { plans: data?.map(p => ({ id: p.id, name: p.name, price: p.price_monthly })), component: 'BillingPage' });
 
-      return data || [];
+      return data ?? [];
     },
     retry: 3,
     staleTime: 5 * 60 * 1000, // 5 minutes

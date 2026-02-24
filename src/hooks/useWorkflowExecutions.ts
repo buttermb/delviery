@@ -75,7 +75,7 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
         .limit(limit);
 
       if (error) throw error;
-      return (data || []) as unknown as WorkflowExecution[];
+      return (data ?? []) as unknown as WorkflowExecution[];
     },
     enabled: !!tenant?.id,
     refetchInterval: autoRefresh ? 5000 : false,
@@ -156,7 +156,7 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
   }, [tenant?.id, refetch]);
 
   return {
-    executions: (executions as WorkflowExecution[]) || [],
+    executions: (executions as WorkflowExecution[]) ?? [],
     metrics,
     isLoading,
     refetch,

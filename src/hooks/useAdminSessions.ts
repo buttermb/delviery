@@ -214,7 +214,7 @@ export function useAdminSessions(): UseAdminSessionsReturn {
         throw new Error(queryError.message || 'Failed to fetch sessions');
       }
 
-      const rawSessions: RawAdminSession[] = (data || []).map((session) => ({
+      const rawSessions: RawAdminSession[] = (data ?? []).map((session) => ({
         id: session.id,
         session_token: session.session_token,
         ip_address: session.ip_address,

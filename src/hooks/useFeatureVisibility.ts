@@ -12,7 +12,7 @@ import { ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 export function useFeatureVisibility() {
   const { preferences, updatePreferences } = useSidebarPreferences();
 
-  const hiddenFeatures = preferences?.hiddenFeatures || [];
+  const hiddenFeatures = preferences?.hiddenFeatures ?? [];
   const enabledIntegrations = preferences?.enabledIntegrations || ['mapbox', 'stripe'];
   const layoutPreset = preferences?.layoutPreset || 'default';
 

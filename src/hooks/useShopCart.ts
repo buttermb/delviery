@@ -156,7 +156,7 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
     useEffect(() => {
         const handleCartUpdate = (event: CustomEvent) => {
             if (event.detail?.storeId === storeId) {
-                setCartItems(event.detail.cart || []);
+                setCartItems(event.detail.cart ?? []);
             }
         };
 

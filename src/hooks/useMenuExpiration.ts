@@ -64,7 +64,7 @@ export const useExpiringSoonMenus = (tenantId: string | undefined, hoursAhead: n
         return [];
       }
 
-      return (data || []) as ExpiringMenu[];
+      return (data ?? []) as ExpiringMenu[];
     },
     enabled: !!tenantId,
     staleTime: 60 * 1000, // 1 minute
@@ -97,7 +97,7 @@ export const useArchivedMenus = (tenantId: string | undefined) => {
         return [];
       }
 
-      return (data || []) as ArchivedMenu[];
+      return (data ?? []) as ArchivedMenu[];
     },
     enabled: !!tenantId,
     staleTime: 2 * 60 * 1000,
@@ -134,7 +134,7 @@ export const useArchiveMenu = () => {
       }
 
       // Calculate analytics snapshot
-      const orders = (menu as unknown as { menu_orders?: Array<{ id: string; total_amount?: number }> }).menu_orders || [];
+      const orders = (menu as unknown as { menu_orders?: Array<{ id: string; total_amount?: number }> }).menu_orders ?? [];
       const totalViews = (menu as unknown as { view_count?: number }).view_count || 0;
       const totalOrders = orders.length;
       const totalRevenue = orders.reduce((sum: number, o: { total_amount?: number }) =>
@@ -306,7 +306,7 @@ export const useProcessExpiredMenus = (tenantId: string | undefined) => {
       return { processed: 0, error };
     }
 
-    const expiredList = expiredMenus || [];
+    const expiredList = expiredMenus ?? [];
     let processedCount = 0;
 
     for (const menu of expiredList) {

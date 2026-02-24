@@ -84,7 +84,7 @@ export function useOrderDuplicate(options: UseOrderDuplicateOptions = {}) {
           });
         }
 
-        orderItems = fetchedItems || [];
+        orderItems = fetchedItems ?? [];
       }
 
       // Create the duplicated order with fresh timestamps and pending status

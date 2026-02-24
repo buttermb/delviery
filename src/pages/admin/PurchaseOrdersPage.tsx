@@ -100,7 +100,7 @@ export default function PurchaseOrdersPage() {
         throw error;
       }
 
-      return (data || []) as PurchaseOrder[];
+      return (data ?? []) as PurchaseOrder[];
     },
     enabled: !!tenant?.id,
   });
@@ -114,7 +114,7 @@ export default function PurchaseOrdersPage() {
       po.notes?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSearch;
-  }) || [];
+  }) ?? [];
 
   const handleCreate = () => {
     setEditingPO(null);

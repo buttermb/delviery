@@ -122,7 +122,7 @@ export default function ReturnsManagementPage() {
         return [];
       }
 
-      return (data || []) as unknown as ReturnAuthorization[];
+      return (data ?? []) as unknown as ReturnAuthorization[];
     },
   });
 
@@ -170,7 +170,7 @@ export default function ReturnsManagementPage() {
       ra.notes?.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesSearch;
-  }) || [], [returns, searchTerm]);
+  }) ?? [], [returns, searchTerm]);
 
   const handleCreate = () => {
     setEditingRA(null);

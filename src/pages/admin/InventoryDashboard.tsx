@@ -145,7 +145,7 @@ export default function InventoryDashboard() {
         throw error;
       }
 
-      const productsList = products || [];
+      const productsList = products ?? [];
       const totalProducts = productsList.length;
       const totalQuantity = productsList.reduce((sum, p) => sum + (p.stock_quantity || 0), 0);
       const totalStockValue = productsList.reduce(
@@ -279,7 +279,7 @@ export default function InventoryDashboard() {
         throw error;
       }
 
-      return (data || []).map((p) => ({
+      return (data ?? []).map((p) => ({
         ...p,
         min_stock_level: p.min_stock_level || 10,
       })) as LowStockProduct[];

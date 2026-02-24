@@ -82,7 +82,7 @@ export function useDeliveryCostAnalytics(dateFrom?: string, dateTo?: string) {
           throw error;
         }
 
-        return (data || []) as unknown as DeliveryCost[];
+        return (data ?? []) as unknown as DeliveryCost[];
       } catch (err) {
         if (isPostgrestError(err) && err.code === '42P01') return [];
         logger.error('Error fetching delivery cost analytics', err as Error);

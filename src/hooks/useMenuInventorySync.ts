@@ -317,7 +317,7 @@ export function useMenuInventorySync(
       if (!mountedRef.current) return;
 
       const newStatusMap = new Map<string, MenuProductStockStatus>();
-      (data || []).forEach((item) => {
+      (data ?? []).forEach((item) => {
         newStatusMap.set(
           item.id,
           getStockStatus(item.quantity_units, lowStockThreshold)

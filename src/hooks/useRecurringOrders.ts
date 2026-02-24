@@ -84,9 +84,9 @@ export function useRecurringOrders() {
         throw error;
       }
 
-      return (data || []).map((schedule) => ({
+      return (data ?? []).map((schedule) => ({
         ...schedule,
-        order_items: (schedule.order_items || []) as unknown as RecurringOrderItem[],
+        order_items: (schedule.order_items ?? []) as unknown as RecurringOrderItem[],
         frequency: schedule.frequency as RecurringOrderFrequency,
       })) as RecurringOrderSchedule[];
     },

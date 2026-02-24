@@ -38,7 +38,7 @@ export default function ApiAccess() {
         return [];
       }
       
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId,
   });
@@ -50,7 +50,7 @@ export default function ApiAccess() {
       const { data, error } = await createAdminRecord('api_keys', {
         name: keyData.name,
         key: `sk_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`,
-        permissions: keyData.permissions || [],
+        permissions: keyData.permissions ?? [],
       });
 
       if (error) throw error;

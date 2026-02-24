@@ -49,7 +49,7 @@ export function useStorefrontDeals(storeId: string | undefined) {
                 const currentDay = new Date().getDay();
                 const now = new Date();
 
-                const activeDeals = (data || []).filter((deal) => {
+                const activeDeals = (data ?? []).filter((deal) => {
                     // Check if deal is active on current day
                     if (deal.active_days && deal.active_days.length > 0 && !deal.active_days.includes(currentDay)) {
                         return false;

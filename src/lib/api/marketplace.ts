@@ -58,7 +58,7 @@ export async function getActiveMarketplaceListings(limit = 50): Promise<Marketpl
       throw error;
     }
 
-    return (data || []) as unknown as MarketplaceListing[];
+    return (data ?? []) as unknown as MarketplaceListing[];
   } catch (error) {
     logger.error('Error in getActiveMarketplaceListings', error, { component: 'marketplaceApi' });
     throw error;

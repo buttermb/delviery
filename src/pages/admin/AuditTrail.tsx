@@ -32,7 +32,7 @@ export default function AuditTrail() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       } catch (error) {
         if (isPostgrestError(error) && error.code === '42P01') return [];
         handleError(error, { component: 'AuditTrail', toastTitle: 'Failed to load audit trail' });
@@ -54,7 +54,7 @@ export default function AuditTrail() {
     );
   }
 
-  const filteredLogs = (auditLogs || []).filter((log) => {
+  const filteredLogs = (auditLogs ?? []).filter((log) => {
     if (!searchTerm) return true;
     const search = searchTerm.toLowerCase();
     return (

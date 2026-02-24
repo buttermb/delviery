@@ -212,7 +212,7 @@ export default function BillingSettings() {
         .order('issue_date', { ascending: false })
         .limit(10);
 
-      return data || [];
+      return data ?? [];
     },
     enabled: !!tenantId,
   });
@@ -228,7 +228,7 @@ export default function BillingSettings() {
         .order('price_monthly');
 
       if (error) throw error;
-      return data || [];
+      return data ?? [];
     },
     staleTime: 5 * 60 * 1000,
   });

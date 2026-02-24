@@ -21,7 +21,7 @@ export const useInventoryBatch = (productIds: string[]) => {
       if (error) throw error;
 
       // Convert array to object keyed by product id
-      return (data || []).reduce((acc, item) => {
+      return (data ?? []).reduce((acc, item) => {
         acc[item.id] = item.stock_quantity ?? 0;
         return acc;
       }, {} as Record<string, number>);

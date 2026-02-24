@@ -122,7 +122,7 @@ export function useNotifications(): UseNotificationsResult {
           throw queryError;
         }
 
-        return (data || []) as Notification[];
+        return (data ?? []) as Notification[];
       } catch (err) {
         // Handle case where table doesn't exist
         if ((err as { code?: string })?.code === '42P01') {

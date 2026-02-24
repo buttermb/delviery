@@ -77,7 +77,7 @@ export function useInvoices() {
                 .order(sortCol, { ascending: sort?.ascending ?? false })
                 .limit(500);
             if (error) throw error;
-            return (data || []).map((row: Record<string, unknown>) => normalizeInvoice(row));
+            return (data ?? []).map((row: Record<string, unknown>) => normalizeInvoice(row));
         },
         enabled: !!accountId,
         staleTime: 30_000,
@@ -252,7 +252,7 @@ export function useClientInvoices(clientId: string | undefined) {
                 .eq('account_id', accountId)
                 .order('created_at', { ascending: false });
             if (error) throw error;
-            return (data || []).map((row: unknown) => normalizeInvoice(row));
+            return (data ?? []).map((row: unknown) => normalizeInvoice(row));
         },
         enabled: !!clientId && !!accountId,
         staleTime: 30_000,

@@ -35,7 +35,7 @@ export const useProducts = () => {
             if (result.error) throw result.error;
 
             interface ProductRow { id: string; name: string; price: number; sku?: string; description?: string; stock_quantity?: number; available_quantity?: number; low_stock_alert?: number }
-            return ((result.data as ProductRow[]) || []).map((item) => {
+            return ((result.data as ProductRow[]) ?? []).map((item) => {
                 const available = item.available_quantity ?? item.stock_quantity ?? 0;
                 const threshold = item.low_stock_alert ?? 10;
                 return {

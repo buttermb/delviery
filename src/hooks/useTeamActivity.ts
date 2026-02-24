@@ -108,7 +108,7 @@ export function useTeamActivity(options: UseTeamActivityOptions = {}) {
 
         // Create a lookup map for team members
         const memberMap = new Map(
-          (teamMembers || []).map((m) => [m.user_id, m])
+          (teamMembers ?? []).map((m) => [m.user_id, m])
         );
 
         // Enrich activities with team member info

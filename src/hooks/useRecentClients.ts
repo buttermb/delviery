@@ -76,7 +76,7 @@ export function useRecentClients() {
 
       // Fetch last order for each client
       const clientsWithOrders = await Promise.all(
-        (clients || []).map(async (client) => {
+        (clients ?? []).map(async (client) => {
           const { data: lastOrder } = await supabase
             .from('wholesale_orders')
             .select('created_at, total_amount')

@@ -90,7 +90,7 @@ export function useDeliveryETA(orderIds: string[]) {
         throw error;
       }
 
-      return (data || []) as unknown as DeliveryRow[];
+      return (data ?? []) as unknown as DeliveryRow[];
     },
     enabled: !!tenant?.id && hasOrderIds,
     staleTime: 10_000,
@@ -170,7 +170,7 @@ export function useDeliveryETA(orderIds: string[]) {
 
       // Count active deliveries per runner
       const counts: Record<string, number> = {};
-      for (const d of data || []) {
+      for (const d of data ?? []) {
         counts[d.runner_id] = (counts[d.runner_id] || 0) + 1;
       }
       return counts;
