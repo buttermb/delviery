@@ -81,7 +81,7 @@ export default function CustomerReports() {
       // Get top customers
       const topCustomers = customers
         ?.sort((a, b) => (b.total_spent || 0) - (a.total_spent || 0))
-        .slice(0, 10) || [];
+        .slice(0, 10) ?? [];
 
       setStats({
         totalCustomers,

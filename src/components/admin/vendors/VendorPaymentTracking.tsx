@@ -158,7 +158,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
         throw error;
       }
 
-      return (data || []) as VendorPayment[];
+      return (data ?? []) as VendorPayment[];
     },
     enabled: !!tenant?.id && !!vendorId,
   });
@@ -182,7 +182,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
         return [];
       }
 
-      return (data || []) as PurchaseOrderOption[];
+      return (data ?? []) as PurchaseOrderOption[];
     },
     enabled: !!tenant?.id && !!vendorId,
   });
@@ -232,7 +232,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
     previousPage: prevPage,
     nextPage,
     changePageSize,
-  } = usePagination(payments || [], {
+  } = usePagination(payments ?? [], {
     defaultPageSize: 10,
   });
 

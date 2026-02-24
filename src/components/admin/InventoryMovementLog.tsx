@@ -55,7 +55,7 @@ export function InventoryMovementLog() {
       }
 
       // Map to our interface
-      return (data || []).map((m) => ({
+      return (data ?? []).map((m) => ({
         id: m.id,
         product_name: m.wholesale_inventory?.strain_name || 'Unknown Product',
         movement_type: m.movement_type || 'adjustment',

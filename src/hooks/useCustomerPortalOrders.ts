@@ -117,7 +117,7 @@ export function useCustomerPortalOrders({
         throw fetchError;
       }
 
-      return (data as unknown as CustomerPortalOrder[]) || [];
+      return (data as unknown as CustomerPortalOrder[]) ?? [];
     },
     enabled: enabled && !!customerEmail && !!tenantId,
   });

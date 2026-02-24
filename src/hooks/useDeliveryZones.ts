@@ -44,7 +44,7 @@ export function useDeliveryZones() {
         throw error;
       }
 
-      return (data || []) as DeliveryZone[];
+      return (data ?? []) as DeliveryZone[];
     },
     enabled: !!tenantId,
   });

@@ -81,7 +81,7 @@ export function VendorManagement() {
         .order('name');
 
       if (error) throw error;
-      setVendors((data || []) as unknown as Vendor[]);
+      setVendors((data ?? []) as unknown as Vendor[]);
     } catch (error) {
       handleError(error, {
         component: 'VendorManagement.loadVendors',

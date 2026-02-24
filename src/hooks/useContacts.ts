@@ -641,7 +641,7 @@ export function useAddContactType() {
         { queryKey: contactsKeys.lists() },
         (old) => old?.map(contact =>
           contact.id === contactId
-            ? { ...contact, contact_type: [...(contact.contact_type || []), contactType] }
+            ? { ...contact, contact_type: [...(contact.contact_type ?? []), contactType] }
             : contact
         )
       );
@@ -649,7 +649,7 @@ export function useAddContactType() {
       if (previousDetail) {
         queryClient.setQueryData<Contact>(
           contactsKeys.detail(contactId),
-          { ...previousDetail, contact_type: [...(previousDetail.contact_type || []), contactType] }
+          { ...previousDetail, contact_type: [...(previousDetail.contact_type ?? []), contactType] }
         );
       }
 

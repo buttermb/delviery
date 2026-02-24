@@ -127,7 +127,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       }
 
       // Filter and map results - include products where available quantity is at or below threshold
-      return ((products || []) as ProductRow[])
+      return ((products ?? []) as ProductRow[])
         .filter((p) => {
           const available = p.available_quantity ?? p.stock_quantity ?? 0;
           const threshold = p.low_stock_alert ?? 10;

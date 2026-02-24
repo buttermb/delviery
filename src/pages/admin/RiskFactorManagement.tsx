@@ -37,7 +37,7 @@ export default function RiskFactorManagement() {
         .order("risk_level", { ascending: false });
 
       if (error) throw error;
-      setRiskFactors(data || []);
+      setRiskFactors(data ?? []);
     } catch (error) {
       handleError(error, {
         component: 'RiskFactorManagement.fetchRiskFactors',

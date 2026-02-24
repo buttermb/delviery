@@ -47,7 +47,7 @@ export function TopSellingProducts({ storeId, dateRange, className }: TopSelling
       const productMap = new Map<string, { quantity: number; revenue: number }>();
 
       orders.forEach((order) => {
-        const items = (order.items as Array<{ name?: string; quantity?: number; price?: number }>) || [];
+        const items = (order.items as Array<{ name?: string; quantity?: number; price?: number }>) ?? [];
         items.forEach((item) => {
           const name = item.name || 'Unknown Product';
           const existing = productMap.get(name) || { quantity: 0, revenue: 0 };

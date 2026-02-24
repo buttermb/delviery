@@ -140,7 +140,7 @@ export default function ClientsPage() {
         client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (client.phone && client.phone.includes(searchTerm))
-    ) || [];
+    ) ?? [];
 
     const columns: ResponsiveColumn<Client>[] = [
         {

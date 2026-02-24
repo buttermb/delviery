@@ -80,7 +80,7 @@ export default function CreditAuditLogPage() {
       tx.actionType?.toLowerCase().includes(searchLower) ||
       tx.description?.toLowerCase().includes(searchLower)
     );
-  }) || [];
+  }) ?? [];
 
   // Transaction type icon
   const getTypeIcon = (type: string) => {

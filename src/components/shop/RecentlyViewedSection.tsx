@@ -54,7 +54,7 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
                     return [];
                 }
 
-                const allProducts = data || [];
+                const allProducts = data ?? [];
 
                 // Map to MarketplaceProduct
                 const mappedProducts = allProducts.map(p => ({

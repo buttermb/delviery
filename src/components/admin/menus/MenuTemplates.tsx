@@ -276,7 +276,7 @@ const useMenuTemplates = (tenantId?: string) => {
         return [];
       }
 
-      return (data || []).map((template: Record<string, unknown>) => ({
+      return (data ?? []).map((template: Record<string, unknown>) => ({
         id: template.id,
         tenantId: template.tenant_id,
         name: template.name,
@@ -315,7 +315,7 @@ const useTemplateVersions = (templateId?: string, tenantId?: string) => {
         return [];
       }
 
-      return (data || []).map((version: Record<string, unknown>) => ({
+      return (data ?? []).map((version: Record<string, unknown>) => ({
         id: version.id,
         templateId: version.template_id,
         version: version.version,

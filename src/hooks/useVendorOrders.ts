@@ -121,7 +121,7 @@ export function useVendorOrders(vendorId: string | null) {
                 throw error;
             }
 
-            return (data || []) as VendorOrder[];
+            return (data ?? []) as VendorOrder[];
         },
         enabled: !!tenant?.id && !!vendorId,
     });

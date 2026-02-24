@@ -63,7 +63,7 @@ export default function CustomIntegrations() {
 
         if (error && error.code === '42P01') return [];
         if (error) throw error;
-        return (data || []) as Integration[];
+        return (data ?? []) as Integration[];
       } catch (error: unknown) {
         if (error && typeof error === 'object' && 'code' in error && error.code === '42P01') return [];
         throw error;

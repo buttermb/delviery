@@ -93,7 +93,7 @@ export default function PromoCodeManagementPage() {
   const filteredCodes = promoCodes?.filter(code =>
     code.code.toLowerCase().includes(search.toLowerCase()) ||
     code.description?.toLowerCase().includes(search.toLowerCase())
-  ) || [];
+  ) ?? [];
 
   // Toggle active status
   const toggleMutation = useMutation({

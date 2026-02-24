@@ -138,7 +138,7 @@ export default function CustomerDetails() {
       const { data: ordersData, error: ordersError } = await ordersQuery;
 
       if (ordersError) throw ordersError;
-      setOrders(ordersData || []);
+      setOrders(ordersData ?? []);
 
       // Compute first order date (orders are sorted desc, so last element is earliest)
       if (ordersData && ordersData.length > 0) {
@@ -156,7 +156,7 @@ export default function CustomerDetails() {
         .order('created_at', { ascending: false });
 
       if (paymentsError) throw paymentsError;
-      setPayments(paymentsData || []);
+      setPayments(paymentsData ?? []);
 
       // Load notes (customer_notes not in generated types)
       const notesResult = await (supabase
@@ -169,15 +169,15 @@ export default function CustomerDetails() {
         };
 
       if (notesResult.error) throw notesResult.error;
-      setNotes((notesResult.data || []).map((n) => ({
+      setNotes((notesResult.data ?? []).map((n) => ({
         id: n.id,
         created_at: n.created_at,
         note: n.note,
       })));
 
       // Calculate outstanding balance (total orders - total payments)
-      const ordersTotal = (ordersData || []).reduce((sum, order) => sum + (order.total_amount || 0), 0);
-      const paymentsTotal = (paymentsData || []).reduce((sum, payment) => sum + (payment.amount || 0), 0);
+      const ordersTotal = (ordersData ?? []).reduce((sum, order) => sum + (order.total_amount || 0), 0);
+      const paymentsTotal = (paymentsData ?? []).reduce((sum, payment) => sum + (payment.amount || 0), 0);
       setOutstandingBalance(Math.max(0, ordersTotal - paymentsTotal));
     } catch (error) {
       logger.error('Error loading customer data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });

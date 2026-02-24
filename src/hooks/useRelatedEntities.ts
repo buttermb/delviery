@@ -172,7 +172,7 @@ export function useRelatedClientInvoices(clientId: string | undefined) {
 
       if (error) throw error;
 
-      return (invoices || []).map((inv) => ({
+      return (invoices ?? []).map((inv) => ({
         id: inv.id,
         title: `Invoice #${inv.invoice_number}`,
         subtitle: format(new Date(inv.invoice_date), 'MMM d, yyyy'),
@@ -208,7 +208,7 @@ export function useRelatedClientPreOrders(clientId: string | undefined) {
 
       if (error) throw error;
 
-      return (preOrders || []).map((po) => ({
+      return (preOrders ?? []).map((po) => ({
         id: po.id,
         title: `Pre-Order #${po.pre_order_number}`,
         subtitle: format(new Date(po.created_at), 'MMM d, yyyy'),
@@ -243,7 +243,7 @@ export function useRelatedCustomerOrders(customerId: string | undefined) {
 
       if (error) throw error;
 
-      return (orders || []).map((order) => ({
+      return (orders ?? []).map((order) => ({
         id: order.id,
         title: `Order #${order.id.slice(0, 8)}`,
         subtitle: format(new Date(order.created_at), 'MMM d, yyyy'),
@@ -279,7 +279,7 @@ export function useRelatedPreOrderInvoices(clientId: string | undefined, exclude
 
       if (error) throw error;
 
-      return (invoices || []).map((inv) => ({
+      return (invoices ?? []).map((inv) => ({
         id: inv.id,
         title: `Invoice #${inv.invoice_number}`,
         subtitle: format(new Date(inv.invoice_date), 'MMM d, yyyy'),
@@ -315,7 +315,7 @@ export function useRelatedInvoicePreOrders(clientId: string | undefined, exclude
 
       if (error) throw error;
 
-      return (preOrders || []).map((po) => ({
+      return (preOrders ?? []).map((po) => ({
         id: po.id,
         title: `Pre-Order #${po.pre_order_number}`,
         subtitle: format(new Date(po.created_at), 'MMM d, yyyy'),
@@ -350,7 +350,7 @@ export function useRelatedClientPayments(clientId: string | undefined) {
 
       if (error) throw error;
 
-      return (payments || []).map((payment) => ({
+      return (payments ?? []).map((payment) => ({
         id: payment.id,
         title: formatCurrency(payment.amount || 0),
         subtitle: `${payment.payment_method || 'Unknown'} - ${format(new Date(payment.created_at), 'MMM d, yyyy')}`,

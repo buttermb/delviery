@@ -318,7 +318,7 @@ export function HotboxDashboard() {
   });
 
   // Get attention items from the centralized hook
-  const attentionItems = attentionQueue?.items || [];
+  const attentionItems = attentionQueue?.items ?? [];
 
   // Build quick actions from tier preset + personalized suggestions
   const presetActions: QuickAction[] = useMemo(() =>

@@ -65,7 +65,7 @@ export function MenuProductOrderingDialog({
       }
 
       // Transform the data to match expected format
-      return (data || []).map((item) => ({
+      return (data ?? []).map((item) => ({
         id: item.id,
         product_id: item.product_id,
         custom_price: item.custom_price,

@@ -110,7 +110,7 @@ export default function OrdersPage() {
                 throw error;
             }
 
-            return data || [];
+            return data ?? [];
         },
         enabled: !!tenantId && !!profile?.id,
     });

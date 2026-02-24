@@ -89,7 +89,7 @@ export function DeliveryProfitabilityTab({ costs, isLoading }: DeliveryProfitabi
     const zoneMap = new Map<string, DeliveryCost[]>();
     costs.forEach((cost) => {
       const zone = cost.delivery_zone || cost.delivery_borough || 'Unknown';
-      const existing = zoneMap.get(zone) || [];
+      const existing = zoneMap.get(zone) ?? [];
       zoneMap.set(zone, [...existing, cost]);
     });
 
