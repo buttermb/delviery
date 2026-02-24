@@ -420,7 +420,7 @@ export function OrderDetailsPage() {
                 .eq('id', item.product_id)
                 .eq('tenant_id', tenant?.id ?? '');
               // Log to inventory_history for audit trail
-              await (supabase as unknown as { from: (table: string) => { insert: (data: Record<string, unknown>) => Promise<{ error: unknown }> } })
+              await (supabase as any)
                 .from('inventory_history')
                 .insert({
                   tenant_id: tenant?.id,

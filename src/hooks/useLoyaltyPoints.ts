@@ -39,7 +39,7 @@ export function useLoyaltyConfig(storeId: string | undefined) {
     queryFn: async () => {
       if (!storeId) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('marketplace_loyalty_config')
         .select('*')
         .eq('store_id', storeId)

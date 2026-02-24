@@ -523,7 +523,7 @@ export function StorefrontBuilder({
         themeCfg: ExtendedThemeConfig,
     ) => {
         try {
-            const { error } = await (supabase as unknown as { from: (t: string) => { update: (d: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: unknown }> } } })
+            const { error } = await (supabase as any)
                 .from('marketplace_profiles')
                 .update({
                     layout_config: JSON.parse(JSON.stringify(layoutCfg)),
@@ -555,7 +555,7 @@ export function StorefrontBuilder({
             if (colors?.secondary) updatePayload.secondary_color = colors.secondary;
             if (colors?.accent) updatePayload.accent_color = colors.accent;
 
-            const { error } = await (supabase as unknown as { from: (t: string) => { update: (d: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: unknown }> } } })
+            const { error } = await (supabase as any)
                 .from('marketplace_stores')
                 .update(updatePayload)
                 .eq('tenant_id', tenant?.id ?? '');
@@ -595,7 +595,7 @@ export function StorefrontBuilder({
             if (colors?.secondary) updatePayload.secondary_color = colors.secondary;
             if (colors?.accent) updatePayload.accent_color = colors.accent;
 
-            const { error } = await (supabase as unknown as { from: (t: string) => { update: (d: Record<string, unknown>) => { eq: (c: string, v: string) => Promise<{ error: unknown }> } } })
+            const { error } = await (supabase as any)
                 .from('marketplace_stores')
                 .update(updatePayload)
                 .eq('tenant_id', tenant?.id ?? '');

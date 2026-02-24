@@ -294,9 +294,9 @@ export const useUpdateOrderStatus = (tenantId?: string) => {
 
   return useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('menu_orders')
-        .update({ status })
+        .update({ status: status as any })
         .eq('id', orderId)
         .select()
         .maybeSingle();
@@ -329,7 +329,7 @@ export const useMenuSecurityEvents = (menuId?: string, tenantId?: string) => {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      let query = supabase
+      let query = (supabase as any)
         .from('menu_security_events')
         .select(`
           *,

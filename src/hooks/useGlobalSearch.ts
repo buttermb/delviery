@@ -150,7 +150,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
         // Run all searches in parallel
         const [ordersResult, productsResult, customersResult, vendorsResult] = await Promise.all([
           // Search orders
-          supabase
+          (supabase as any)
             .from('orders')
             .select('id, order_number, status, total_amount, customer_name')
             .eq('tenant_id', tenant.id)
@@ -158,7 +158,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
             .limit(limitPerCategory),
 
           // Search products
-          supabase
+          (supabase as any)
             .from('products')
             .select('id, name, sku, category, is_active')
             .eq('tenant_id', tenant.id)
@@ -166,7 +166,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
             .limit(limitPerCategory),
 
           // Search customers (profiles)
-          supabase
+          (supabase as any)
             .from('profiles')
             .select('id, user_id, full_name, phone, email')
             .eq('account_id', tenant.id)
@@ -174,7 +174,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
             .limit(limitPerCategory),
 
           // Search vendors
-          supabase
+          (supabase as any)
             .from('vendors')
             .select('id, name, contact_name, contact_email, status')
             .eq('account_id', tenant.id)

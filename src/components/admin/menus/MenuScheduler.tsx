@@ -233,7 +233,7 @@ const useCreateSchedule = () => {
       isRecurring: boolean;
       recurrenceRule: string | null;
     }) => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await (supabase as any)
         .from('menu_schedules')
         .insert({
           menu_id: scheduleData.menuId,

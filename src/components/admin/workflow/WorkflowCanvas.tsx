@@ -205,7 +205,7 @@ export function WorkflowCanvas() {
 
       // If trigger is database_event, create trigger record
       if (selectedWorkflow.trigger_type === 'database_event' && selectedWorkflow.id) {
-        await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        await (supabase as any)
           .from('workflow_triggers')
           .upsert({
             workflow_id: selectedWorkflow.id,
