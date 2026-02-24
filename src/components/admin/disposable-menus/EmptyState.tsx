@@ -25,7 +25,7 @@ export const EmptyState = ({ onCreateMenu }: EmptyStateProps) => {
             Create Your First Menu
           </Button>
           <Button variant="outline" size="lg" asChild>
-            <a href="/DISPOSABLE_MENUS_README.md" target="_blank">
+            <a href="/DISPOSABLE_MENUS_README.md" target="_blank" rel="noopener noreferrer">
               <FileText className="h-4 w-4 mr-2" />
               View Documentation
             </a>
