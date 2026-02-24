@@ -218,6 +218,7 @@ export function BusinessProfileStep({ onComplete }: BusinessProfileStepProps) {
                   src={logoPreview}
                   alt="Logo preview"
                   className="w-24 h-24 object-cover rounded-lg border"
+                  loading="lazy"
                 />
                 <Button
                   type="button"

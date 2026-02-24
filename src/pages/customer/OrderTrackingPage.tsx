@@ -350,7 +350,7 @@ export default function OrderTrackingPage() {
                     <div key={item.id} className="flex gap-3">
                       <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
                         {item.products?.image_url ? (
-                          <img src={item.products.image_url} alt={item.products.name} className="h-full w-full object-cover" />
+                          <img src={item.products.image_url} alt={item.products.name} className="h-full w-full object-cover" loading="lazy" />
                         ) : (
                           <ShoppingBag className="h-5 w-5 text-gray-400" />
                         )}

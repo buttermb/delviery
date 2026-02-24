@@ -97,6 +97,7 @@ export function PostCard({ post }: PostCardProps) {
                       src={post.linked_listing.images[0]}
                       alt={post.linked_listing.product_name}
                       className="h-20 w-20 rounded object-cover"
+                      loading="lazy"
                     />
                   )}
                   <div className="flex-1">

@@ -245,6 +245,7 @@ export function ProductQRGenerator({
                 src={product.image_url}
                 alt={product.name}
                 className="w-12 h-12 rounded object-cover"
+                loading="lazy"
               />
             ) : (
               <div className="w-12 h-12 rounded bg-muted-foreground/20 flex items-center justify-center">

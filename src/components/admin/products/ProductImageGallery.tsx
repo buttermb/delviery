@@ -506,6 +506,7 @@ export function ProductImageGallery({
                 src={currentImage}
                 alt={`${product.name} - Full size`}
                 className="max-w-full max-h-full object-contain"
+                loading="lazy"
               />
             )}
 

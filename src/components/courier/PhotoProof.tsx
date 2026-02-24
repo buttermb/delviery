@@ -107,6 +107,7 @@ export function PhotoProof({ orderId, onPhotoUploaded }: PhotoProofProps) {
                 src={image}
                 alt="Delivery proof"
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             </div>
             <div className="flex gap-3">

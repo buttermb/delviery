@@ -487,6 +487,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
                       alt="Product Barcode"
                       className="max-w-full h-auto"
                       style={{ maxHeight: '60px' }}
+                      loading="lazy"
                     />
                   </div>
                 ) : product.barcode_image_url ? (
@@ -494,6 +495,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
                     src={product.barcode_image_url as string}
                     alt="Barcode"
                     className="h-16 max-w-[300px] object-contain"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="h-16 flex items-center justify-center border border-muted rounded px-4 bg-white dark:bg-zinc-950 max-w-[300px]">

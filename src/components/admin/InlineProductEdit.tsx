@@ -90,6 +90,7 @@ export function InlineProductEdit({
         src={product.image_url || "/placeholder.svg"}
         alt={product.name}
         className="h-20 w-20 rounded object-cover"
+        loading="lazy"
       />
 
       {/* Product Info */}

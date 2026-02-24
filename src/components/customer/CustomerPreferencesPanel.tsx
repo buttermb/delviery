@@ -189,6 +189,7 @@ const WishlistTab = memo(function WishlistTab({
                 src={item.product_image}
                 alt={item.product_name}
                 className="h-full w-full object-cover"
+                loading="lazy"
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-gray-400">
@@ -293,6 +294,7 @@ const BrowsingHistoryTab = memo(function BrowsingHistoryTab({
                 src={item.product_image}
                 alt={item.product_name}
                 className="h-full w-full object-cover"
+                loading="lazy"
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-gray-400">

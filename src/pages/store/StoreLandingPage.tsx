@@ -464,6 +464,7 @@ export default function StoreLandingPage() {
                   src={store.logo_url}
                   alt={store.store_name}
                   className="h-6 object-contain"
+                  loading="lazy"
                 />
               ) : (
                 <Leaf className="w-5 h-5" style={{ color: primaryColor }} />

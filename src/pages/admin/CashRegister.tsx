@@ -1106,6 +1106,7 @@ function CashRegisterContent() {
                               src={product.image_url}
                               alt={product.name}
                               className="h-10 w-10 object-cover rounded"
+                              loading="lazy"
                             />
                           ) : (
                             <div className="h-10 w-10 bg-muted rounded flex items-center justify-center">
@@ -1484,7 +1485,7 @@ function CashRegisterContent() {
                     <CardContent className="p-3">
                       <div className="aspect-square bg-muted rounded mb-2 flex items-center justify-center overflow-hidden relative">
                         {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
                         ) : (
                           <ShoppingCart className="w-8 h-8 text-muted-foreground" />
                         )}

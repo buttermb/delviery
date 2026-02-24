@@ -401,7 +401,7 @@ export function OrderDetailPage() {
                   <div key={index} className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
                     <div className="w-14 h-14 rounded-md overflow-hidden bg-muted flex-shrink-0">
                       {item.image_url ? (
-                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Package className="w-6 h-6 text-muted-foreground" />

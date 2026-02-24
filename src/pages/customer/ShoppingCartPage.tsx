@@ -260,6 +260,7 @@ export default function ShoppingCartPage() {
                               src={product.image_url}
                               alt={product.name}
                               className="w-full h-full object-cover"
+                              loading="lazy"
                             />
                           </div>
                         ) : (

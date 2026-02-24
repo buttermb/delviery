@@ -226,10 +226,11 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
                     <div className="flex gap-3 p-2">
                       <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
                         {item.products?.image_url ? (
-                          <img 
-                            src={item.products.image_url} 
+                          <img
+                            src={item.products.image_url}
                             alt={item.products.name}
                             className="w-full h-full object-cover rounded-lg"
+                            loading="lazy"
                           />
                         ) : (
                           <span className="text-3xl">🌿</span>

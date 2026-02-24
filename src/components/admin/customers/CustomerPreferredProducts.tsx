@@ -304,6 +304,7 @@ export function CustomerPreferredProducts({
                     src={product.imageUrl}
                     alt={product.productName}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

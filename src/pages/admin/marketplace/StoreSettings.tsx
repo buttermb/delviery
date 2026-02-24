@@ -196,7 +196,7 @@ export default function StoreSettings() {
                                 <div className="flex items-center gap-4">
                                     <div className="h-20 w-20 rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
                                         {currentProfile?.logo_url ? (
-                                            <img src={currentProfile.logo_url} alt="Logo" className="h-full w-full object-cover" />
+                                            <img src={currentProfile.logo_url} alt="Logo" className="h-full w-full object-cover" loading="lazy" />
                                         ) : (
                                             <Store className="h-8 w-8 text-muted-foreground" />
                                         )}
@@ -216,7 +216,7 @@ export default function StoreSettings() {
                                 <Label>Cover Image</Label>
                                 <div className="h-40 w-full rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
                                     {currentProfile?.cover_image_url ? (
-                                        <img src={currentProfile.cover_image_url} alt="Cover" className="h-full w-full object-cover" />
+                                        <img src={currentProfile.cover_image_url} alt="Cover" className="h-full w-full object-cover" loading="lazy" />
                                     ) : (
                                         <p className="text-muted-foreground">No cover image set</p>
                                     )}

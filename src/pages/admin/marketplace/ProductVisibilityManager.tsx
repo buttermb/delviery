@@ -173,7 +173,7 @@ export default function ProductVisibilityManager() {
                                         <TableCell>
                                             <div className="h-10 w-10 rounded bg-muted overflow-hidden flex items-center justify-center">
                                                 {listing.images && listing.images[0] ? (
-                                                    <img src={listing.images[0]} alt={listing.product_name} className="h-full w-full object-cover" />
+                                                    <img src={listing.images[0]} alt={listing.product_name} className="h-full w-full object-cover" loading="lazy" />
                                                 ) : (
                                                     <span className="text-xs text-muted-foreground">No Img</span>
                                                 )}

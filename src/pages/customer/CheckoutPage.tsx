@@ -682,6 +682,7 @@ export default function CheckoutPage() {
                                   src={product.image_url}
                                   alt={product.name}
                                   className="w-12 h-12 rounded object-cover"
+                                  loading="lazy"
                                 />
                               ) : null}
                               <div>

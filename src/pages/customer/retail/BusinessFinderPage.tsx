@@ -230,6 +230,7 @@ export default function BusinessFinderPage() {
                         src={business.white_label.logo}
                         alt={business.business_name}
                         className="h-12 w-12 object-contain rounded"
+                        loading="lazy"
                       />
                     )}
                   </div>

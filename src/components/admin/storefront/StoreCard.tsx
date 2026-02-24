@@ -65,10 +65,11 @@ export function StoreCard({
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             {store.logo_url ? (
-              <img 
-                src={store.logo_url} 
+              <img
+                src={store.logo_url}
                 alt={store.store_name}
                 className="w-12 h-12 rounded-lg object-cover"
+                loading="lazy"
               />
             ) : (
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">

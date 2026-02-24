@@ -304,7 +304,7 @@ export default function ProductSyncPage() {
                                                     <div className="flex items-center gap-3">
                                                         {product.image_url && (
                                                             <div className="h-10 w-10 rounded-md overflow-hidden bg-muted">
-                                                                <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+                                                                <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
                                                             </div>
                                                         )}
                                                         <span>{product.name}</span>

@@ -362,6 +362,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
               src={selectedImage}
               alt="Product zoom"
               className="w-full h-auto"
+              loading="lazy"
             />
           )}
         </DialogContent>
@@ -380,6 +381,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
                   src={getProductImage(selectedProduct)!}
                   alt={selectedProduct.name}
                   className="w-full h-64 object-cover rounded-lg"
+                  loading="lazy"
                 />
               )}
               <div className="space-y-2">

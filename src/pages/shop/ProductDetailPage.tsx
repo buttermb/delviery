@@ -640,7 +640,7 @@ export function ProductDetailPage() {
                         : 'opacity-50 hover:opacity-80 hover:scale-105'
                         }`}
                     >
-                      <img src={img} alt={`${product.name} view ${idx + 1}`} className="w-full h-full object-cover" />
+                      <img src={img} alt={`${product.name} view ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
                     </button>
                   ))}
                 </div>
@@ -1004,6 +1004,7 @@ export function ProductDetailPage() {
                               src={relatedProduct.image_url}
                               alt={relatedProduct.name}
                               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[0.2] group-hover:grayscale-0"
+                              loading="lazy"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-white/5">
@@ -1083,6 +1084,7 @@ export function ProductDetailPage() {
                 src={allImages[selectedImage]}
                 alt={product.name}
                 className="max-h-[85vh] w-auto object-contain rounded-lg"
+                loading="lazy"
               />
             )}
             {allImages.length > 1 && (

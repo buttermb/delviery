@@ -980,6 +980,7 @@ export default function ProductManagement() {
           src={product.image_url || "/placeholder.svg"}
           alt={product.name}
           className="h-10 w-10 rounded-md object-cover border"
+          loading="lazy"
         />
       )
     },

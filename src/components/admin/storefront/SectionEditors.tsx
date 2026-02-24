@@ -735,6 +735,7 @@ function GalleryEditor({ section, onUpdateContent, onUpdateStyles }: SectionEdit
                                         alt={image.alt}
                                         className="w-full h-16 object-cover rounded"
                                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                        loading="lazy"
                                     />
                                 )}
                             </div>

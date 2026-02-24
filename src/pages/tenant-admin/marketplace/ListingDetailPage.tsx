@@ -196,6 +196,7 @@ export default function ListingDetailPage() {
                         src={image}
                         alt={`${listing.product_name} ${index + 1}`}
                         className="w-full h-full object-cover rounded-lg border"
+                        loading="lazy"
                       />
                     </div>
                   ))}

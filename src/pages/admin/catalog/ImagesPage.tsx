@@ -340,6 +340,7 @@ export default function ImagesPage() {
                       src={image.image_url}
                       alt={image.name}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   </div>
                   <div className="flex-1">
@@ -417,6 +418,7 @@ export default function ImagesPage() {
                 src={selectedImage?.image_url}
                 alt={selectedImage?.name}
                 className="w-full h-auto"
+                loading="lazy"
               />
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">

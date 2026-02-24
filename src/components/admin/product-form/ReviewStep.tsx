@@ -87,6 +87,7 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
             src={(formData.image_url as string) || "/placeholder.svg"}
             alt={(formData.name as string) || "Product"}
             className="w-full h-48 object-cover"
+            loading="lazy"
           />
           <div className="p-4 space-y-2">
             <h3 className="font-semibold text-lg">{(formData.name as string) || "Product Name"}</h3>

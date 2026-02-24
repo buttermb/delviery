@@ -145,6 +145,7 @@ export function ProductQuickViewModal({
                                     src={product.image_url}
                                     alt={product.product_name}
                                     className="w-full h-full object-cover"
+                                    loading="lazy"
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center">

@@ -237,6 +237,7 @@ export default function WholesaleCartPage() {
                               src={listing.images[0]}
                               alt={listing.product_name}
                               className="w-20 h-20 object-cover rounded"
+                              loading="lazy"
                             />
                           ) : (
                             <div className="w-20 h-20 bg-muted rounded flex items-center justify-center">

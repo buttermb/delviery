@@ -1200,6 +1200,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
                                             src={exception.photo_url}
                                             alt="Exception photo"
                                             className="w-32 h-24 object-cover rounded-lg border"
+                                            loading="lazy"
                                           />
                                         )}
                                         {exception.courier && (
@@ -1503,6 +1504,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
                     src={photoPreview}
                     alt="Exception photo"
                     className="w-full h-32 object-cover rounded-lg"
+                    loading="lazy"
                   />
                   <Button
                     type="button"

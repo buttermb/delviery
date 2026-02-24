@@ -174,6 +174,7 @@ export function PostDetailPage() {
                         src={post.linked_listing.images[0]}
                         alt={post.linked_listing.product_name}
                         className="h-32 w-32 rounded object-cover"
+                        loading="lazy"
                       />
                     )}
                     <div className="flex-1">

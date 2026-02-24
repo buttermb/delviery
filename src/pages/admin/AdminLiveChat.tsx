@@ -867,6 +867,7 @@ const AdminLiveChat = function AdminLiveChat() {
                           src={attachmentPreview.preview}
                           alt="Attachment preview"
                           className="h-16 w-16 object-cover rounded"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="h-16 w-16 bg-background rounded flex items-center justify-center">
@@ -1152,6 +1153,7 @@ function MessageBubble({ message, formatTime }: MessageBubbleProps) {
                     src={message.attachment_url}
                     alt={message.attachment_name || 'Attachment'}
                     className="max-w-full rounded cursor-pointer hover:opacity-90"
+                    loading="lazy"
                   />
                 </a>
               ) : (

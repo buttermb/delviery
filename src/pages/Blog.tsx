@@ -129,6 +129,7 @@ export default function Blog() {
                   src={blogPosts[0].image}
                   alt={blogPosts[0].title}
                   className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
               <CardContent className="p-8 flex flex-col justify-center">
@@ -172,6 +173,7 @@ export default function Blog() {
                     src={post.image}
                     alt={post.title}
                     className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
                 <CardContent className="p-6 flex flex-col flex-1">

@@ -528,6 +528,7 @@ export function ProductForm({
                                         src={imagePreview || formData.image_url}
                                         alt="Product preview"
                                         className="w-full h-64 object-cover"
+                                        loading="lazy"
                                     />
                                     {imageUploading && (
                                         <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3">

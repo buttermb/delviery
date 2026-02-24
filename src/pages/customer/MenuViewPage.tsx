@@ -281,6 +281,7 @@ export default function CustomerMenuViewPage() {
               src={menu.image_url}
               alt={menu.name}
               className="w-full h-full object-cover opacity-60"
+              loading="lazy"
             />
           ) : (
             <div className="w-full h-full opacity-30 bg-[url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center" />

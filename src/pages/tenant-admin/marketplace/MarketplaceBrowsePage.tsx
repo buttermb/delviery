@@ -144,7 +144,7 @@ export default function MarketplaceBrowsePage() {
                             onClick={() => navigate(`/${tenant?.slug}/admin/marketplace/product/${listing.id}`)}>
                             <div className="aspect-square bg-muted relative">
                                 {listing.images && listing.images.length > 0 ? (
-                                    <img src={listing.images[0]} alt={listing.product_name} className="object-cover w-full h-full" />
+                                    <img src={listing.images[0]} alt={listing.product_name} className="object-cover w-full h-full" loading="lazy" />
                                 ) : (
                                     <div className="flex items-center justify-center w-full h-full text-muted-foreground bg-muted/50">
                                         <Tag className="h-12 w-12 opacity-20" />

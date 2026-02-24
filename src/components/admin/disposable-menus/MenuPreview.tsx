@@ -485,6 +485,7 @@ export function MenuPreview({ menu, open, onOpenChange }: MenuPreviewProps) {
               src={selectedImage}
               alt="Product zoom"
               className="w-full h-auto"
+              loading="lazy"
             />
           )}
         </DialogContent>

@@ -1315,6 +1315,7 @@ export function CheckoutPage() {
                           src={item.imageUrl}
                           alt={item.name}
                           className="w-full h-full object-cover"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">

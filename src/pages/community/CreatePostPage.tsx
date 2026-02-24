@@ -194,6 +194,7 @@ export function CreatePostPage() {
                             src={listing.images[0]}
                             alt={listing.product_name}
                             className="h-16 w-16 rounded object-cover"
+                            loading="lazy"
                           />
                         )}
                         <div className="flex-1 min-w-0">

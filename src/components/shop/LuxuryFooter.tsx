@@ -25,6 +25,7 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
                   src={store.logo_url}
                   alt={store?.store_name}
                   className="h-10 object-contain"
+                  loading="lazy"
                 />
               ) : (
                 <div className="flex items-center gap-2">

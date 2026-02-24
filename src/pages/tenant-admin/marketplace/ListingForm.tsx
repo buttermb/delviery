@@ -566,6 +566,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
                     src={url}
                     alt={`Product ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg border"
+                    loading="lazy"
                   />
                   <Button
                     type="button"

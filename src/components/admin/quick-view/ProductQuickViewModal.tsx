@@ -79,6 +79,7 @@ export function ProductQuickViewModal({
             src={product.image_url}
             alt={product.name}
             className="h-20 w-20 rounded-lg object-cover border bg-muted flex-shrink-0"
+            loading="lazy"
           />
         ) : (
           <div className="h-20 w-20 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">

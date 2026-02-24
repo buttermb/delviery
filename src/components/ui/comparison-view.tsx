@@ -187,6 +187,7 @@ export function ComparisonView({
                               src={item.image}
                               alt={item.name}
                               className="w-12 h-12 rounded-md object-cover"
+                              loading="lazy"
                             />
                           )}
                           <span className="font-medium text-sm">{item.name}</span>

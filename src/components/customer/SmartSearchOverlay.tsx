@@ -112,7 +112,7 @@ export function SmartSearchOverlay({ isOpen, onClose, products, onProductSelect 
                                         >
                                             <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
                                                 {product.image_url ? (
-                                                    <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+                                                    <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
                                                 ) : (
                                                     <Package className="h-6 w-6 text-gray-400" />
                                                 )}

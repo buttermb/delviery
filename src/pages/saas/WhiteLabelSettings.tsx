@@ -331,7 +331,7 @@ export default function WhiteLabelSettings() {
                   <Label>Logo</Label>
                   <div className="mt-2 flex items-center gap-4">
                     {logo && (
-                      <img src={logo} alt="Logo" className="h-16 w-auto border rounded" />
+                      <img src={logo} alt="Logo" className="h-16 w-auto border rounded" loading="lazy" />
                     )}
                     <div>
                       <Input

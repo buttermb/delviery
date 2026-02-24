@@ -140,6 +140,7 @@ export default function PublicListingDetailPage() {
                         src={listing.images[0]}
                         alt={listing.product_name}
                         className="w-full h-full object-cover rounded-t-lg"
+                        loading="lazy"
                       />
                     </div>
                     {listing.images.slice(1, 5).map((image: string, idx: number) => (

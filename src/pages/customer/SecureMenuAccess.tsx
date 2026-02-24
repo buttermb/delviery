@@ -313,6 +313,7 @@ function ProductCard({
               imageLoaded ? 'opacity-100' : 'opacity-0'
             )}
             onLoad={() => setImageLoaded(true)}
+            loading="lazy"
           />
           {!imageLoaded && (
             <div className="absolute inset-0 flex items-center justify-center">

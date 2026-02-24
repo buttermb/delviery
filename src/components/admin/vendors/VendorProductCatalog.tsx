@@ -363,6 +363,7 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
                                 src={product.image_url}
                                 alt={product.name}
                                 className="h-8 w-8 rounded object-cover"
+                                loading="lazy"
                               />
                             ) : (
                               <div className="h-8 w-8 rounded bg-muted flex items-center justify-center">

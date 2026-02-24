@@ -239,7 +239,7 @@ export default function SellerProfilePage() {
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Logo</label>
                 <div className="mt-2">
-                  <img src={profile.logo_url} alt="Business logo" className="h-20 w-20 object-contain rounded-lg border" />
+                  <img src={profile.logo_url} alt="Business logo" className="h-20 w-20 object-contain rounded-lg border" loading="lazy" />
                 </div>
               </div>
             )}

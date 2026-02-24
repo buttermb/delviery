@@ -1085,6 +1085,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).style.display = 'none';
                                   }}
+                                  loading="lazy"
                                 />
                               </div>
                             )}

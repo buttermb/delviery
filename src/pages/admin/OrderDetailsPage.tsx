@@ -1202,6 +1202,7 @@ export function OrderDetailsPage() {
                                   src={item.image_url}
                                   alt={item.product_name}
                                   className="w-10 h-10 rounded object-cover"
+                                  loading="lazy"
                                 />
                               ) : (
                                 <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">

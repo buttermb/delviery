@@ -729,6 +729,7 @@ export default function StorefrontSettings() {
                             src={formData.logo_url}
                             alt="Logo preview"
                             className="w-full h-full object-contain"
+                            loading="lazy"
                           />
                         </div>
                       )}
@@ -748,6 +749,7 @@ export default function StorefrontSettings() {
                             src={formData.banner_url}
                             alt="Banner preview"
                             className="w-full h-full object-cover"
+                            loading="lazy"
                           />
                         </div>
                       )}
@@ -769,6 +771,7 @@ export default function StorefrontSettings() {
                             src={formData.favicon_url}
                             alt="Favicon preview"
                             className="w-full h-full object-contain"
+                            loading="lazy"
                           />
                         </div>
                         <span className="text-xs text-muted-foreground">32x32px preview</span>

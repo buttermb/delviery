@@ -571,6 +571,7 @@ export default function StorefrontProducts() {
                               src={product.image_url}
                               alt={product.name}
                               className="w-10 h-10 rounded object-cover"
+                              loading="lazy"
                             />
                           ) : (
                             <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">

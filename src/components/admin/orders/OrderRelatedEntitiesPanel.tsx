@@ -173,6 +173,7 @@ function ProductsSection({
                 src={product.image_url}
                 alt={product.name}
                 className="w-12 h-12 mx-auto rounded object-cover mb-1"
+                loading="lazy"
               />
             ) : (
               <div className="w-12 h-12 mx-auto rounded bg-muted flex items-center justify-center mb-1">

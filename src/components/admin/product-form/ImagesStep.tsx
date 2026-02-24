@@ -244,6 +244,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
                 src={mainDisplayUrl}
                 alt="Product"
                 className="w-full h-64 object-cover rounded-lg"
+                loading="lazy"
               />
               {uploading && mainPreview && (
                 <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3 rounded-lg">
@@ -317,6 +318,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
                 src={img}
                 alt={`Product ${index + 1}`}
                 className="w-full h-full object-cover rounded-lg"
+                loading="lazy"
               />
               <button
                 type="button"
@@ -335,6 +337,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
                 src={previewUrl}
                 alt={`Uploading ${index + 1}`}
                 className="w-full h-full object-cover rounded-lg opacity-60"
+                loading="lazy"
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-lg">
                 <Loader2 className="h-5 w-5 text-primary animate-spin" />

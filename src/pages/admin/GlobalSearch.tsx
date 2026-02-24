@@ -260,7 +260,7 @@ const GlobalSearch = () => {
                     <CardContent className="pt-6">
                       <div className="flex items-start gap-4">
                         {product.image_url && (
-                          <img src={product.image_url} alt={product.name} className="w-16 h-16 object-cover rounded" />
+                          <img src={product.image_url} alt={product.name} className="w-16 h-16 object-cover rounded" loading="lazy" />
                         )}
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center gap-2">

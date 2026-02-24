@@ -282,6 +282,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
                                             src={banner.image_url}
                                             alt={banner.heading || 'Banner'}
                                             className="object-cover w-full h-full"
+                                            loading="lazy"
                                         />
                                         {!banner.is_active && (
                                             <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
@@ -380,6 +381,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
                                     onError={(e) => (e.currentTarget.style.display = 'none')}
                                     className="w-full h-full object-cover"
                                     alt="Preview"
+                                    loading="lazy"
                                 />
                             </div>
                         )}

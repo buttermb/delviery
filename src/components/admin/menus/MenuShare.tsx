@@ -225,6 +225,7 @@ function QRCodeDisplay({
         alt={`QR Code for ${menuName}`}
         className="border rounded-lg"
         style={{ width: size, height: size }}
+        loading="lazy"
       />
       <Button variant="outline" size="sm" onClick={handleDownload} className="w-full">
         <Download className="h-4 w-4 mr-2" />

@@ -373,7 +373,7 @@ export default function BusinessSettings() {
               )}
             >
               {logoUrl ? (
-                <img src={logoUrl} alt="Logo" className="h-full w-full object-contain rounded-xl" />
+                <img src={logoUrl} alt="Logo" className="h-full w-full object-contain rounded-xl" loading="lazy" />
               ) : (
                 <div className="text-center">
                   <Upload className="h-6 w-6 mx-auto text-muted-foreground" />

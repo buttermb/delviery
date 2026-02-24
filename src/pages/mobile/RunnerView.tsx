@@ -876,6 +876,7 @@ export default function RunnerView() {
                     src={proofPhotoPreview}
                     alt="Proof of delivery"
                     className="w-full h-48 object-cover rounded-lg"
+                    loading="lazy"
                   />
                   <Button
                     variant="destructive"

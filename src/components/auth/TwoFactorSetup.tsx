@@ -467,7 +467,7 @@ export function TwoFactorSetup() {
                         Use an authenticator app like Google Authenticator or Authy to scan this QR code.
                     </p>
                     <div className="flex justify-center p-4 bg-white rounded-lg w-fit mx-auto">
-                        <img src={qrCodeUrl} alt="2FA QR Code" className="w-48 h-48" />
+                        <img src={qrCodeUrl} alt="2FA QR Code" className="w-48 h-48" loading="lazy" />
                     </div>
                     {secret && (
                         <div className="text-center">

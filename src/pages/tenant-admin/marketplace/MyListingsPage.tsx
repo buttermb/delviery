@@ -358,6 +358,7 @@ export default function MyListingsPage() {
                               src={listing.images[0]}
                               alt={listing.product_name}
                               className="h-10 w-10 object-cover rounded"
+                              loading="lazy"
                             />
                           ) : (
                             <div className="h-10 w-10 bg-muted rounded flex items-center justify-center">

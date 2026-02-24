@@ -154,6 +154,7 @@ export default function ProductDetailsPage() {
                                     src={product.image_url}
                                     alt={product.name}
                                     className="h-16 w-16 rounded-lg object-cover border"
+                                    loading="lazy"
                                 />
                             ) : (
                                 <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center">

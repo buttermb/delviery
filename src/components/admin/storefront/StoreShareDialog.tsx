@@ -294,6 +294,7 @@ export function StoreShareDialog({
                     src={qrCodeDataUrl}
                     alt="Store QR Code"
                     className="w-full h-full p-2"
+                    loading="lazy"
                   />
                 ) : (
                   <QrCode className="w-16 h-16 text-muted-foreground" />

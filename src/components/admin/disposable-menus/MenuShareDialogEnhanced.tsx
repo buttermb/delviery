@@ -379,6 +379,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
                     src={qrCodeDataUrl}
                     alt="Menu QR Code"
                     className="w-64 h-64 border rounded"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="w-64 h-64 flex items-center justify-center text-muted-foreground">

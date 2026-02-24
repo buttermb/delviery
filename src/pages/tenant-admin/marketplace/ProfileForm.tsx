@@ -463,7 +463,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
                         {uploading === 'logo' ? (
                           <Loader2 className="h-5 w-5 animate-spin" />
                         ) : field.value ? (
-                          <img src={field.value} alt="Logo" className="h-20 w-20 object-contain" />
+                          <img src={field.value} alt="Logo" className="h-20 w-20 object-contain" loading="lazy" />
                         ) : (
                           <>
                             <ImageIcon className="h-8 w-8 text-muted-foreground" />
@@ -512,7 +512,7 @@ export function ProfileForm({ onSuccess, initialData }: ProfileFormProps) {
                         {uploading === 'cover' ? (
                           <Loader2 className="h-5 w-5 animate-spin" />
                         ) : field.value ? (
-                          <img src={field.value} alt="Cover" className="h-20 w-20 object-contain" />
+                          <img src={field.value} alt="Cover" className="h-20 w-20 object-contain" loading="lazy" />
                         ) : (
                           <>
                             <ImageIcon className="h-8 w-8 text-muted-foreground" />

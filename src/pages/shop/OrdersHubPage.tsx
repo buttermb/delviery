@@ -456,7 +456,7 @@ function OrderCard({
                   <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-zinc-950 border border-neutral-100 dark:border-neutral-800">
                     <div className="w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
                       {item.image_url ? (
-                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Package className="w-6 h-6 text-neutral-300" />

@@ -341,10 +341,11 @@ function SwipeableCartItem({
             {/* Product Image */}
             {product?.image_url ? (
               <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted shrink-0">
-                <img 
-                  src={product.image_url} 
+                <img
+                  src={product.image_url}
                   alt={item.productName}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
             ) : (

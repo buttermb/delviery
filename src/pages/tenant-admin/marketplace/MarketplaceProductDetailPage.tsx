@@ -214,7 +214,7 @@ export default function MarketplaceProductDetailPage() {
                 <div className="space-y-4">
                     <div className="aspect-square bg-muted rounded-lg overflow-hidden border">
                         {product.images && product.images.length > 0 ? (
-                            <img src={product.images[0]} alt={product.product_name} className="w-full h-full object-cover" />
+                            <img src={product.images[0]} alt={product.product_name} className="w-full h-full object-cover" loading="lazy" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted/50">
                                 <Package className="h-24 w-24 opacity-20" />

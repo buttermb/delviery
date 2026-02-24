@@ -800,6 +800,7 @@ function ProductListItem({
               src={product.image_url}
               alt={product.name}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">

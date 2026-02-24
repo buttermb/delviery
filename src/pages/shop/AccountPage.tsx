@@ -862,6 +862,7 @@ function WishlistSection({
                         src={product.image_url as string}
                         alt={product.name as string}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -1003,6 +1004,7 @@ function OrderCard({
                       src={item.image_url}
                       alt={item.name}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

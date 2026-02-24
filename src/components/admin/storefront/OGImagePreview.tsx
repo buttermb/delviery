@@ -72,6 +72,7 @@ export function OGImagePreview({
                         parent.appendChild(placeholder);
                       }
                     }}
+                    loading="lazy"
                   />
                 ) : (
                   <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center gap-2 text-muted-foreground">
@@ -116,6 +117,7 @@ export function OGImagePreview({
                         parent.classList.add('bg-muted', 'flex', 'items-center', 'justify-center');
                       }
                     }}
+                    loading="lazy"
                   />
                 ) : (
                   <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center gap-2 text-muted-foreground">
@@ -163,6 +165,7 @@ export function OGImagePreview({
                         parent.classList.add('bg-muted', 'flex', 'items-center', 'justify-center');
                       }
                     }}
+                    loading="lazy"
                   />
                 ) : (
                   <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center gap-2 text-muted-foreground">

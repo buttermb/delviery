@@ -530,6 +530,7 @@ function FileList({ files, onRemove, showPreview = true, compact = false }: File
                   "object-cover rounded",
                   compact ? "h-8 w-8" : "h-12 w-12"
                 )}
+                loading="lazy"
               />
             ) : (
               <div

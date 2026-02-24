@@ -144,10 +144,11 @@ export function SearchBar({ variant = 'full' }: SearchBarProps) {
                   onSelect={() => handleSelect(product.id)}
                   className="flex items-center gap-3 p-3 cursor-pointer rounded-lg hover:bg-muted transition-colors"
                 >
-                  <img 
-                    src={product.image_url} 
+                  <img
+                    src={product.image_url}
                     alt={product.name}
                     className="w-12 h-12 rounded object-cover flex-shrink-0"
+                    loading="lazy"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold truncate">{cleanProductName(product.name)}</div>
