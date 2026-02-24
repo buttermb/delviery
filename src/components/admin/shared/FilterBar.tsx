@@ -368,6 +368,7 @@ export function FilterBar({
         return (
           <Input
             placeholder={config.placeholder ?? `Filter by ${config.label.toLowerCase()}...`}
+            aria-label={`Filter by ${config.label.toLowerCase()}`}
             value={(activeFilters[config.key] as string) ?? ''}
             onChange={(e) => handleFilterValueChange(config.key, e.target.value || null)}
             className="w-[180px]"
@@ -420,6 +421,7 @@ export function FilterBar({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={searchPlaceholder}
+              aria-label="Search"
               value={searchValue}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9 w-[220px]"

@@ -69,6 +69,7 @@ export function SidebarSearch({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
+        aria-label="Search sidebar"
         className={cn(
           'h-9 pl-8 pr-8 text-sm min-h-0',
           'bg-muted/50 border-transparent',

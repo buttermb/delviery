@@ -381,6 +381,7 @@ export function ProductAdvancedFilters({
                 <Input
                   type="number"
                   placeholder="Min"
+                  aria-label="Minimum price"
                   value={filters.priceMin ?? ''}
                   onChange={(e) =>
                     handleFilterChange(
@@ -395,6 +396,7 @@ export function ProductAdvancedFilters({
                 <Input
                   type="number"
                   placeholder="Max"
+                  aria-label="Maximum price"
                   value={filters.priceMax ?? ''}
                   onChange={(e) =>
                     handleFilterChange(

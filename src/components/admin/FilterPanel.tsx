@@ -163,6 +163,7 @@ export function FilterPanel({
                           id={`${filter.id}-min`}
                           type="number"
                           placeholder="Min"
+                          aria-label={`${filter.label} minimum`}
                           value={rangeValue.min || ''}
                           onChange={(e) => handleRangeChange(filter.id, 'min', e.target.value)}
                           className="flex-1"
@@ -172,6 +173,7 @@ export function FilterPanel({
                           id={`${filter.id}-max`}
                           type="number"
                           placeholder="Max"
+                          aria-label={`${filter.label} maximum`}
                           value={rangeValue.max || ''}
                           onChange={(e) => handleRangeChange(filter.id, 'max', e.target.value)}
                           className="flex-1"
