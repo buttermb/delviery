@@ -270,14 +270,14 @@ export function useCreateContact() {
     mutationFn: async (input: CreateContactInput) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('contacts')
         .insert({
           tenant_id: tenant.id,
           ...input,
           contact_type: input.contact_type || ['retail'],
           metadata: input.metadata ? JSON.parse(JSON.stringify(input.metadata)) : null,
-        } as Record<string, unknown>)
+        })
         .select()
         .maybeSingle();
 

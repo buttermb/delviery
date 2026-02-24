@@ -582,7 +582,7 @@ async function fetchInventoryHistory(
   startDate: string,
   endDate: string
 ): Promise<Array<{ change_type: string; created_at: string }>> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('inventory_history')
     .select('change_type, created_at')
     .eq('tenant_id', tenantId)
@@ -595,7 +595,7 @@ async function fetchInventoryHistory(
     return [];
   }
 
-  return data ?? [];
+  return (data as any[]) ?? [];
 }
 
 function processInventoryMovements(

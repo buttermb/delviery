@@ -63,7 +63,7 @@ export interface RecordPaymentInput {
 // Helper to cast Supabase client — customer_invoices schema in DB has columns
 // (tenant_id, amount_paid, amount_due, line_items, etc.) not yet reflected in
 // generated types (which use account_id and lack those columns).
-const db = supabase as unknown as typeof supabase;
+const db = supabase as any;
 
 export function useCustomerInvoices() {
   const { tenant } = useTenantAdminAuth();

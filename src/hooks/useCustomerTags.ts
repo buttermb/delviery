@@ -58,7 +58,7 @@ export function useTags() {
     queryFn: async () => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tags')
         .select('*')
         .eq('tenant_id', tenant.id)
@@ -87,7 +87,7 @@ export function useContactTags(contactId: string | undefined) {
     queryFn: async () => {
       if (!tenant?.id || !contactId) throw new Error('No tenant or contact');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_tags')
         .select('*, tag:tags(*)')
         .eq('tenant_id', tenant.id)
@@ -116,7 +116,7 @@ export function useCreateTag() {
     mutationFn: async (input: CreateTagInput) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tags')
         .insert({
           tenant_id: tenant.id,
@@ -157,7 +157,7 @@ export function useUpdateTag() {
       if (input.color !== undefined) updateData.color = input.color;
       if (input.description !== undefined) updateData.description = input.description;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tags')
         .update(updateData)
         .eq('id', input.id)
@@ -191,7 +191,7 @@ export function useDeleteTag() {
     mutationFn: async (tagId: string) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('tags')
         .delete()
         .eq('id', tagId)
@@ -221,7 +221,7 @@ export function useAssignTag() {
     mutationFn: async ({ contactId, tagId }: { contactId: string; tagId: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('customer_tags')
         .insert({
           tenant_id: tenant.id,
@@ -258,7 +258,7 @@ export function useRemoveTag() {
     mutationFn: async ({ contactId, tagId }: { contactId: string; tagId: string }) => {
       if (!tenant?.id) throw new Error('No tenant');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_tags')
         .delete()
         .eq('tenant_id', tenant.id)
@@ -304,7 +304,7 @@ export function useBatchAssignTags() {
         }))
       );
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('customer_tags')
         .upsert(insertData, { onConflict: 'contact_id,tag_id', ignoreDuplicates: true });
 

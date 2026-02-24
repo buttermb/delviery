@@ -192,7 +192,7 @@ export function useCustomerLTV({
       });
 
       // Fetch customer details from contacts table
-      const { data: customer, error: customerError } = await supabase
+      const { data: customer, error: customerError } = await (supabase as any)
         .from('contacts')
         .select('id, full_name, created_at')
         .eq('id', customerId)
@@ -331,7 +331,7 @@ export function useBulkCustomerLTV({
       });
 
       // Fetch customers
-      let customersQuery = supabase
+      let customersQuery = (supabase as any)
         .from('contacts')
         .select('id, full_name, created_at')
         .eq('tenant_id', tenantId);

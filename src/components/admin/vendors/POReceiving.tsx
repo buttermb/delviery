@@ -257,7 +257,7 @@ export function POReceiving({
         const productId = item.product_id;
 
         // Update PO item with received quantity
-        const { error: updateItemError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        const { error: updateItemError } = await (supabase as any)
           .from('purchase_order_items')
           .update({
             quantity_received: receivedQty,
@@ -341,7 +341,7 @@ export function POReceiving({
             };
 
             // Use type assertion for dynamic table access
-            const { error: historyError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+            const { error: historyError } = await (supabase as any)
               .from('inventory_history')
               .insert(historyEntry);
 
@@ -357,7 +357,7 @@ export function POReceiving({
       }
 
       // Update PO status to received
-      const { error: updatePOError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { error: updatePOError } = await (supabase as any)
         .from('purchase_orders')
         .update({
           status: 'received',
