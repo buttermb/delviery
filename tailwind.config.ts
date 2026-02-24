@@ -16,35 +16,6 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
-        serif: ['Playfair Display', 'serif'],
-      },
-      fontSize: {
-        'xs': ['var(--font-size-xs)', { lineHeight: 'var(--line-height-normal)' }],
-        'sm': ['var(--font-size-sm)', { lineHeight: 'var(--line-height-normal)' }],
-        'base': ['var(--font-size-base)', { lineHeight: 'var(--line-height-normal)' }],
-        'lg': ['var(--font-size-lg)', { lineHeight: 'var(--line-height-relaxed)' }],
-        'xl': ['var(--font-size-xl)', { lineHeight: 'var(--line-height-relaxed)' }],
-        '2xl': ['var(--font-size-2xl)', { lineHeight: 'var(--line-height-tight)' }],
-        '3xl': ['var(--font-size-3xl)', { lineHeight: 'var(--line-height-tight)' }],
-        '4xl': ['var(--font-size-4xl)', { lineHeight: 'var(--line-height-tight)' }],
-        '5xl': ['var(--font-size-5xl)', { lineHeight: 'var(--line-height-none)' }],
-        '6xl': ['var(--font-size-6xl)', { lineHeight: 'var(--line-height-none)' }],
-      },
-      lineHeight: {
-        'none': 'var(--line-height-none)',
-        'tight': 'var(--line-height-tight)',
-        'snug': 'var(--line-height-snug)',
-        'normal': 'var(--line-height-normal)',
-        'relaxed': 'var(--line-height-relaxed)',
-        'loose': 'var(--line-height-loose)',
-      },
-      letterSpacing: {
-        'tighter': 'var(--letter-spacing-tighter)',
-        'tight': 'var(--letter-spacing-tight)',
-        'normal': 'var(--letter-spacing-normal)',
-        'wide': 'var(--letter-spacing-wide)',
-        'wider': 'var(--letter-spacing-wider)',
-        'widest': 'var(--letter-spacing-widest)',
       },
       zIndex: {
         'base': 'var(--z-base)',
@@ -108,9 +79,6 @@ export default {
       boxShadow: {
         'elegant': 'var(--shadow-elegant)',
         'strong': '0 10px 40px -10px hsl(173 80% 40% / 0.4)',
-      },
-      transitionProperty: {
-        'smooth': 'var(--transition-smooth)',
       },
       borderRadius: {
         lg: "var(--radius)",
