@@ -38,6 +38,7 @@ export function useAutoSave<T extends Record<string, unknown>>({
 }: UseAutoSaveOptions<T>) {
   const [status, setStatus] = useState<SaveStatus>('idle');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingValue = useRef<T | null>(null);
   const previousValue = useRef<T | null>(null);
   const queryClient = useQueryClient();
@@ -87,7 +88,8 @@ export function useAutoSave<T extends Record<string, unknown>>({
       setStatus('saved');
       onSuccess?.();
       // Reset to idle after 2 seconds
-      setTimeout(() => setStatus('idle'), 2000);
+      if (statusResetRef.current) clearTimeout(statusResetRef.current);
+      statusResetRef.current = setTimeout(() => setStatus('idle'), 2000);
     },
     onError: (error: Error) => {
       setStatus('error');
@@ -132,6 +134,9 @@ export function useAutoSave<T extends Record<string, unknown>>({
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+      }
+      if (statusResetRef.current) {
+        clearTimeout(statusResetRef.current);
       }
     };
   }, []);

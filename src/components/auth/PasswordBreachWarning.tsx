@@ -3,7 +3,7 @@
  * Displays breach check status and allows generating a strong password.
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { AlertTriangle, ShieldCheck, ShieldX, Loader2, Copy, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,13 @@ export function PasswordBreachWarning({
 }: PasswordBreachWarningProps) {
   const [suggestedPassword, setSuggestedPassword] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
 
   const handleGenerate = () => {
     const password = suggestPassword();
@@ -52,7 +59,8 @@ export function PasswordBreachWarning({
       await navigator.clipboard.writeText(suggestedPassword);
       setCopied(true);
       showCopyToast('Password');
-      setTimeout(() => setCopied(false), 2000);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
     }
   };
 

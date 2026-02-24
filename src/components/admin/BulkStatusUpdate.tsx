@@ -71,15 +71,17 @@ export function BulkStatusUpdate({
     setProgress(0);
     setShowConfirm(false);
 
+    let progressInterval: ReturnType<typeof setInterval> | null = null;
     try {
       // Simulate progress for better UX
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setProgress(prev => Math.min(prev + 10, 90));
       }, 100);
 
       const result = await onBulkUpdate(selectedIds, selectedStatus);
-      
+
       clearInterval(progressInterval);
+      progressInterval = null;
       setProgress(100);
 
       if (result.failed === 0) {
@@ -96,6 +98,7 @@ export function BulkStatusUpdate({
         description: humanizeError(error),
       });
     } finally {
+      if (progressInterval) clearInterval(progressInterval);
       setIsUpdating(false);
       setSelectedStatus(null);
       setProgress(0);
