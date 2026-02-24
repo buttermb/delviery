@@ -19,35 +19,7 @@ export {
   transformMappedDataToProducts,
 } from './excel-parser';
 
-// Normalizers
-export {
-  parseWeight,
-  convertWeight,
-  formatWeight,
-  parseQuantityString,
-} from './normalizers/weight';
-export type { WeightResult } from './normalizers/weight';
-
-export {
-  parsePrice,
-  parseTieredPricing,
-  parsePricingFromColumns,
-  calculatePerUnitPrice,
-  calculatePricePerPound,
-  validatePricing,
-  formatPrice,
-  formatTieredPricing,
-} from './normalizers/price';
-export type { PriceResult, TieredPricing } from './normalizers/price';
-
-export {
-  detectCategory,
-  detectCategoryFromName,
-  getCategoryDisplayName,
-  getStandardCategories,
-  isWholesaleCategory,
-} from './normalizers/category';
-
+// Strain normalizer
 export {
   lookupStrain,
   detectStrainType,
@@ -58,38 +30,6 @@ export {
   getTypicalTerpenes,
 } from './normalizers/strain';
 
-// AI Prompts
-export {
-  CANNABIS_PARSING_SYSTEM_PROMPT,
-  CANNABIS_PARSING_USER_PROMPT,
-  OCR_PARSING_PROMPT,
-  generateParsingPrompt,
-  generateValidationPrompt,
-  generateStrainNormalizationPrompt,
-  generatePricingExtractionPrompt,
-} from './prompts';
-
-// Validation
-export {
-  ParsedProductSchema,
-  PricesSchema,
-  validateProduct,
-  validateProducts,
-  autoFixProduct,
-  calculateConfidenceScore,
-} from './validators';
-export type { ValidatedProduct } from './validators';
-
-// Deduplication
-export {
-  findDuplicates,
-  findDuplicatesFuzzy,
-  mergeProducts,
-  deduplicateProducts,
-  findExistingProduct,
-} from './deduplication';
-export type { DuplicateMatch, DeduplicationResult } from './deduplication';
-
 // Text Parser (informal menu format)
 export {
   parseTextMenu,
@@ -98,15 +38,6 @@ export {
   DEFAULT_QUICK_ANSWERS,
 } from './text-parser';
 export type { QuickAnswers, TextParseResult } from './text-parser';
-
-// Import service
-export {
-  importProducts,
-  rollbackImport,
-  getImportHistory,
-  getImportDetails,
-} from './import-service';
-export type { ImportOptions, BatchImportResult } from './import-service';
 
 // Re-export types
 export type {
@@ -131,4 +62,3 @@ export type {
   StockStatus,
   WeightUnit,
 } from '@/types/migration';
-
