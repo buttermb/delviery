@@ -46,6 +46,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 import { useRecordPayment } from '@/hooks/useRecordPayment';
@@ -279,7 +280,7 @@ function useCollectionActions() {
     },
     onError: (error) => {
       logger.error('Failed to record payment', error);
-      toast.error('Failed to record payment');
+      toast.error('Failed to record payment', { description: humanizeError(error) });
     }
   });
 

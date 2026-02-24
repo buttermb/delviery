@@ -34,6 +34,7 @@ import { CustomerRiskBadge } from "@/components/admin/CustomerRiskBadge";
 import { ClientStatusBadge } from "@/components/admin/ClientStatusBadge";
 import { CreateClientDialog } from "@/components/admin/CreateClientDialog";
 import { toast } from "sonner";
+import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from "@/lib/queryKeys";
 import {
   Select,
@@ -490,7 +491,7 @@ export default function WholesaleClients() {
                                             },
                                             onError: (error) => {
                                               logger.error('Error updating credit limit:', error);
-                                              toast.error('Failed to update credit limit');
+                                              toast.error('Failed to update credit limit', { description: humanizeError(error) });
                                             },
                                           }
                                         );
@@ -508,7 +509,7 @@ export default function WholesaleClients() {
                                             },
                                             onError: (error) => {
                                               logger.error('Error updating credit limit:', error);
-                                              toast.error('Failed to update credit limit');
+                                              toast.error('Failed to update credit limit', { description: humanizeError(error) });
                                             },
                                           }
                                         );
@@ -915,7 +916,7 @@ export default function WholesaleClients() {
                       setImportFile(null);
                     } catch (error) {
                       logger.error('Import failed', error);
-                      toast.error('Failed to import clients');
+                      toast.error('Failed to import clients', { description: humanizeError(error) });
                     } finally {
                       setImporting(false);
                     }

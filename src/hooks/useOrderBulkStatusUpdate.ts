@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { triggerHaptic } from '@/lib/utils/mobile';
 import { invalidateOnEvent } from '@/lib/invalidation';
 import { queryKeys } from '@/lib/queryKeys';
@@ -554,7 +555,7 @@ export function useOrderBulkStatusUpdate({ tenantId, userId, onSuccess }: UseOrd
             component: 'useOrderBulkStatusUpdate',
             tenantId,
           });
-          toast.error('Failed to restore inventory for cancelled orders');
+          toast.error('Failed to restore inventory for cancelled orders', { description: humanizeError(err) });
         });
       }
 
@@ -575,7 +576,7 @@ export function useOrderBulkStatusUpdate({ tenantId, userId, onSuccess }: UseOrd
             component: 'useOrderBulkStatusUpdate',
             tenantId,
           });
-          toast.error('Failed to update inventory for delivered orders');
+          toast.error('Failed to update inventory for delivered orders', { description: humanizeError(err) });
         });
       }
 

@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // UI Components
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -219,7 +220,7 @@ export function ProductsListPage() {
     },
     onError: (error) => {
       logger.error('Failed to delete product', { error });
-      toast.error('Failed to delete product');
+      toast.error('Failed to delete product', { description: humanizeError(error) });
     },
   });
 

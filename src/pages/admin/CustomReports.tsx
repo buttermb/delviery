@@ -283,7 +283,7 @@ export default function CustomReports() {
                         }
                       } catch (error) {
                         logger.error('Download failed:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomReports' });
-                        toast.error('Failed to generate report. Please try again.');
+                        toast.error('Failed to generate report', { description: humanizeError(error) });
                       }
                     }}>
                       <Download className="h-4 w-4" />

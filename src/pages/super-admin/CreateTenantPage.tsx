@@ -22,6 +22,7 @@ import {
 import { ArrowLeft, Building2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 export default function CreateTenantPage() {
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ export default function CreateTenantPage() {
     },
     onError: (error) => {
       logger.error('Failed to create tenant', error);
-      toast.error('Failed to create tenant. Please try again.');
+      toast.error('Failed to create tenant', { description: humanizeError(error) });
     },
   });
 

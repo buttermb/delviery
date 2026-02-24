@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Database, Play, Download, History, AlertCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -114,7 +115,7 @@ export default function DataExplorerPage() {
       toast.success('Results exported successfully');
     } catch (error) {
       logger.error('Export failed', error);
-      toast.error('Failed to export results');
+      toast.error('Failed to export results', { description: humanizeError(error) });
     }
   };
 

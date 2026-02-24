@@ -15,6 +15,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 /** Pinned order note from the database */
 export interface PinnedOrderNote {
@@ -142,7 +143,7 @@ export function usePinnedOrderNotes() {
       logger.error('Failed to pin order note', err, {
         component: 'usePinnedOrderNotes',
       });
-      toast.error('Failed to pin note');
+      toast.error('Failed to pin note', { description: humanizeError(err) });
     },
   });
 
@@ -174,7 +175,7 @@ export function usePinnedOrderNotes() {
       logger.error('Failed to unpin order note', err, {
         component: 'usePinnedOrderNotes',
       });
-      toast.error('Failed to unpin note');
+      toast.error('Failed to unpin note', { description: humanizeError(err) });
     },
   });
 

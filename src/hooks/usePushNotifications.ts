@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
@@ -63,7 +64,7 @@ export function usePushNotifications() {
       return true;
     } catch (error) {
       logger.error('Error requesting permission:', error);
-      toast.error('Failed to enable notifications');
+      toast.error('Failed to enable notifications', { description: humanizeError(error) });
       return false;
     }
   };
@@ -81,7 +82,7 @@ export function usePushNotifications() {
       toast.info("You won't receive push notifications");
     } catch (error) {
       logger.error('Error unsubscribing:', error);
-      toast.error('Failed to disable notifications');
+      toast.error('Failed to disable notifications', { description: humanizeError(error) });
     }
   };
 

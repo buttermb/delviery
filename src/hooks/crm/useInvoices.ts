@@ -130,7 +130,7 @@ export function useInvoices() {
                     });
                 }
             },
-            onError: (error: Error) => { logger.error('Failed to mark invoice as paid', { error }); toast.error('Failed to mark invoice as paid'); },
+            onError: (error: Error) => { logger.error('Failed to mark invoice as paid', { error }); toast.error('Failed to mark invoice as paid', { description: humanizeError(error) }); },
         });
     };
 
@@ -143,7 +143,7 @@ export function useInvoices() {
                 if (error) throw error;
             },
             onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() }); toast.success('Invoice deleted'); },
-            onError: (error: Error) => { logger.error('Failed to delete invoice', { error }); toast.error('Failed to delete invoice'); },
+            onError: (error: Error) => { logger.error('Failed to delete invoice', { error }); toast.error('Failed to delete invoice', { description: humanizeError(error) }); },
         });
     };
 

@@ -13,6 +13,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { triggerHaptic } from '@/lib/utils/mobile';
 
 interface RushOrderParams {
@@ -166,7 +167,7 @@ export function useOrderBulkRush() {
         tenantId: tenant?.id,
       });
 
-      toast.error('Failed to update rush status');
+      toast.error('Failed to update rush status', { description: humanizeError(error) });
       triggerHaptic('heavy');
     },
   });

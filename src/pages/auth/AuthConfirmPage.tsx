@@ -170,7 +170,7 @@ export default function AuthConfirmPage() {
             }
         } catch (err) {
             logger.error('[AuthConfirm] Resend error', { error: err });
-            toast.error('Failed to resend email. Please try again.');
+            toast.error('Failed to resend email', { description: humanizeError(err) });
         } finally {
             setIsResending(false);
         }
@@ -200,7 +200,7 @@ export default function AuthConfirmPage() {
             }
         } catch (err) {
             logger.error('[AuthConfirm] Password reset request error', { error: err });
-            toast.error('Failed to send password reset email. Please try again.');
+            toast.error('Failed to send password reset email', { description: humanizeError(err) });
         } finally {
             setIsResending(false);
         }

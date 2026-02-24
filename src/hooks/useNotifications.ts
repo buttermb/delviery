@@ -14,6 +14,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 /**
  * Notification type matching the database schema
@@ -190,7 +191,7 @@ export function useNotifications(): UseNotificationsResult {
       logger.error('Failed to mark notification as read', err as Error, {
         component: 'useNotifications',
       });
-      toast.error('Failed to mark notification as read');
+      toast.error('Failed to mark notification as read', { description: humanizeError(err) });
     },
   });
 
@@ -225,7 +226,7 @@ export function useNotifications(): UseNotificationsResult {
       logger.error('Failed to mark all notifications as read', err as Error, {
         component: 'useNotifications',
       });
-      toast.error('Failed to mark notifications as read');
+      toast.error('Failed to mark notifications as read', { description: humanizeError(err) });
     },
   });
 
@@ -251,7 +252,7 @@ export function useNotifications(): UseNotificationsResult {
       logger.error('Failed to delete notification', err as Error, {
         component: 'useNotifications',
       });
-      toast.error('Failed to delete notification');
+      toast.error('Failed to delete notification', { description: humanizeError(err) });
     },
   });
 
@@ -428,7 +429,7 @@ export const useSendNotification = () => {
     },
     onError: (error: Error) => {
       logger.error('Notification mutation error', { error });
-      toast.error('Failed to send notification');
+      toast.error('Failed to send notification', { description: humanizeError(error) });
     }
   });
 };
@@ -508,7 +509,7 @@ export const useSendBulkNotification = () => {
     },
     onError: (error: Error) => {
       logger.error('Bulk notification error', { error });
-      toast.error('Failed to send bulk notifications');
+      toast.error('Failed to send bulk notifications', { description: humanizeError(error) });
     }
   });
 };

@@ -4,6 +4,7 @@ import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface RawSession {
   id: string;
@@ -169,7 +170,7 @@ export function useSessions(): UseSessionsReturn {
     },
     onError: (err: Error) => {
       logger.error('Failed to revoke session', err, { component: 'useSessions' });
-      toast.error('Failed to revoke session');
+      toast.error('Failed to revoke session', { description: humanizeError(err) });
     },
   });
 
@@ -195,7 +196,7 @@ export function useSessions(): UseSessionsReturn {
     },
     onError: (err: Error) => {
       logger.error('Failed to revoke all other sessions', err, { component: 'useSessions' });
-      toast.error('Failed to revoke other sessions');
+      toast.error('Failed to revoke other sessions', { description: humanizeError(err) });
     },
   });
 

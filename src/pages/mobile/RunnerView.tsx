@@ -44,6 +44,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { useOnlineStatus } from '@/hooks/useOfflineQueue';
 import { cn } from '@/lib/utils';
@@ -270,7 +271,7 @@ export default function RunnerView() {
     },
     onError: (error) => {
       logger.error('Failed to update status', error);
-      toast.error('Failed to update status');
+      toast.error('Failed to update status', { description: humanizeError(error) });
     },
   });
 
@@ -325,7 +326,7 @@ export default function RunnerView() {
     },
     onError: (error) => {
       logger.error('Failed to upload proof', error);
-      toast.error('Failed to upload proof');
+      toast.error('Failed to upload proof', { description: humanizeError(error) });
     },
   });
 

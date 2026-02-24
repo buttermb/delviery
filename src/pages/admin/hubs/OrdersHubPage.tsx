@@ -34,6 +34,7 @@ import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
 import { useUnifiedOrders, type UnifiedOrder } from '@/hooks/useUnifiedOrders';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 // Lazy load tab content for performance
@@ -150,8 +151,8 @@ export default function OrdersHubPage() {
             if (data) {
                 exportToCSV(data, 'orders-export');
             }
-        } catch {
-            toast.error('Failed to export orders');
+        } catch (error) {
+            toast.error('Failed to export orders', { description: humanizeError(error) });
         } finally {
             setIsExporting(false);
         }

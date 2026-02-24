@@ -65,7 +65,7 @@ export function BuyCreditsPage() {
       }
     } catch (err) {
       logger.error('Promo code validation failed', err);
-      toast.error('Failed to validate promo code');
+      toast.error('Failed to validate promo code', { description: humanizeError(err) });
     } finally {
       setIsApplyingPromo(false);
     }

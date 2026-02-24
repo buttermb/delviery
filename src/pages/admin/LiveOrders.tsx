@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -255,7 +256,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
       });
     } catch (error) {
       logger.error('Failed to update status', error);
-      toast.error('Failed to update status');
+      toast.error('Failed to update status', { description: humanizeError(error) });
     }
   };
 

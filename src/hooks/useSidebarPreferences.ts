@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import type { SidebarPreferences } from '@/types/sidebar';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { STORAGE_KEYS, safeStorage, safeJsonParse, safeJsonStringify } from '@/constants/storageKeys';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -256,7 +257,7 @@ export function useSidebarPreferences() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to update sidebar preferences', error, { component: 'useSidebarPreferences' });
-      toast.error('Failed to save preferences');
+      toast.error('Failed to save preferences', { description: humanizeError(error) });
 
       // Refetch to get correct state
       queryClient.invalidateQueries({ queryKey: queryKeys.sidebarPreferences.byUser(tenant?.id, admin?.userId) });

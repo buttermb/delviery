@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface RawAdminSession {
   id: string;
@@ -252,7 +253,7 @@ export function useAdminSessions(): UseAdminSessionsReturn {
     },
     onError: (err: Error) => {
       logger.error('Failed to revoke session', err, { component: 'useAdminSessions' });
-      toast.error('Failed to revoke session');
+      toast.error('Failed to revoke session', { description: humanizeError(err) });
     },
   });
 
@@ -280,7 +281,7 @@ export function useAdminSessions(): UseAdminSessionsReturn {
     },
     onError: (err: Error) => {
       logger.error('Failed to revoke all other sessions', err, { component: 'useAdminSessions' });
-      toast.error('Failed to revoke other sessions');
+      toast.error('Failed to revoke other sessions', { description: humanizeError(err) });
     },
   });
 

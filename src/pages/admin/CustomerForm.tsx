@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
@@ -127,7 +128,7 @@ export default function CustomerForm() {
       }
     } catch (error) {
       logger.error('Error loading customer', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerForm' });
-      toast.error('Failed to load customer data');
+      toast.error('Failed to load customer data', { description: humanizeError(error) });
     } finally {
       setPageLoading(false);
     }

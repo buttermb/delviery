@@ -119,7 +119,7 @@ export default function MarketingAutomationPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.marketing.campaigns() });
     } catch (error) {
       logger.error('Failed to duplicate campaign', error, { component: 'MarketingAutomationPage' });
-      toast.error('Failed to duplicate campaign');
+      toast.error('Failed to duplicate campaign', { description: humanizeError(error) });
     }
   };
 

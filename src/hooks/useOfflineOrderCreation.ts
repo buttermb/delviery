@@ -11,6 +11,7 @@ import { db as idb } from '@/lib/idb';
 import { queueAction, getOnlineStatus } from '@/lib/offlineQueue';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -291,7 +292,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
       toast.success('Offline order removed');
     } catch (error) {
       logger.error('Failed to remove offline order', error instanceof Error ? error : new Error(String(error)), { component: 'useOfflineOrderCreation' });
-      toast.error('Failed to remove order');
+      toast.error('Failed to remove order', { description: humanizeError(error) });
     }
   }, [offlineOrders]);
 

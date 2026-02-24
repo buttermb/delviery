@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -135,7 +136,7 @@ export default function PricingTiersPage() {
         },
         onError: (error) => {
             logger.error('Failed to save tiers', error);
-            toast.error('Failed to save pricing tiers');
+            toast.error('Failed to save pricing tiers', { description: humanizeError(error) });
         }
     });
 

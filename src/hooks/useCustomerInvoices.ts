@@ -250,7 +250,7 @@ export function useCustomerInvoices() {
       },
       onError: (error: Error) => {
         logger.error('Failed to mark invoice as paid', error, { component: 'useCustomerInvoices' });
-        toast.error('Failed to mark invoice as paid');
+        toast.error('Failed to mark invoice as paid', { description: humanizeError(error) });
       },
     });
 
@@ -302,7 +302,7 @@ export function useCustomerInvoices() {
       },
       onError: (error: Error) => {
         logger.error('Failed to record payment', error, { component: 'useCustomerInvoices' });
-        toast.error('Failed to record payment');
+        toast.error('Failed to record payment', { description: humanizeError(error) });
       },
     });
 
@@ -322,7 +322,7 @@ export function useCustomerInvoices() {
       },
       onError: (error: Error) => {
         logger.error('Failed to mark invoice as sent', error, { component: 'useCustomerInvoices' });
-        toast.error('Failed to mark invoice as sent');
+        toast.error('Failed to mark invoice as sent', { description: humanizeError(error) });
       },
     });
 
@@ -342,7 +342,7 @@ export function useCustomerInvoices() {
       },
       onError: (error: Error) => {
         logger.error('Failed to void invoice', error, { component: 'useCustomerInvoices' });
-        toast.error('Failed to void invoice');
+        toast.error('Failed to void invoice', { description: humanizeError(error) });
       },
     });
 
@@ -361,7 +361,7 @@ export function useCustomerInvoices() {
       },
       onError: (error: Error) => {
         logger.error('Failed to delete invoice', error, { component: 'useCustomerInvoices' });
-        toast.error('Failed to delete invoice');
+        toast.error('Failed to delete invoice', { description: humanizeError(error) });
       },
     });
 

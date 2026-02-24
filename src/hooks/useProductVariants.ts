@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 export type VariantType = 'size' | 'weight' | 'strain';
 
@@ -130,7 +131,7 @@ export function useCreateVariant() {
     },
     onError: (error) => {
       logger.error('Variant creation failed', { error });
-      toast.error('Failed to create variant');
+      toast.error('Failed to create variant', { description: humanizeError(error) });
     },
   });
 }
@@ -170,7 +171,7 @@ export function useUpdateVariant() {
     },
     onError: (error) => {
       logger.error('Variant update failed', { error });
-      toast.error('Failed to update variant');
+      toast.error('Failed to update variant', { description: humanizeError(error) });
     },
   });
 }
@@ -205,7 +206,7 @@ export function useDeleteVariant() {
     },
     onError: (error) => {
       logger.error('Variant deletion failed', { error });
-      toast.error('Failed to delete variant');
+      toast.error('Failed to delete variant', { description: humanizeError(error) });
     },
   });
 }
@@ -251,7 +252,7 @@ export function useReorderVariants() {
     },
     onError: (error) => {
       logger.error('Variant reordering failed', { error });
-      toast.error('Failed to reorder variants');
+      toast.error('Failed to reorder variants', { description: humanizeError(error) });
     },
   });
 }
@@ -298,7 +299,7 @@ export function useBulkCreateVariants() {
     },
     onError: (error) => {
       logger.error('Bulk variant creation failed', { error });
-      toast.error('Failed to create variants');
+      toast.error('Failed to create variants', { description: humanizeError(error) });
     },
   });
 }

@@ -21,6 +21,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { User, Mail, Key, MonitorSmartphone, Trash2 } from 'lucide-react';
 import { formatSmartDate } from '@/lib/formatters';
 
@@ -123,7 +124,7 @@ function ProfileTab({ adminEmail }: { adminEmail?: string }) {
         }
       } catch (err) {
         logger.error('Failed to load profile', err instanceof Error ? err : new Error(String(err)));
-        toast.error('Failed to load profile');
+        toast.error('Failed to load profile', { description: humanizeError(err) });
       } finally {
         setLoading(false);
       }
@@ -154,7 +155,7 @@ function ProfileTab({ adminEmail }: { adminEmail?: string }) {
       toast.success('Profile updated successfully');
     } catch (err) {
       logger.error('Failed to save profile', err instanceof Error ? err : new Error(String(err)));
-      toast.error('Failed to save profile');
+      toast.error('Failed to save profile', { description: humanizeError(err) });
     } finally {
       setSaving(false);
     }
@@ -254,7 +255,7 @@ function EmailTab({ currentEmail }: { currentEmail: string }) {
       setNewEmail('');
     } catch (err) {
       logger.error('Failed to update email', err instanceof Error ? err : new Error(String(err)));
-      toast.error('Failed to send verification email. Please try again.');
+      toast.error('Failed to send verification email', { description: humanizeError(err) });
     } finally {
       setSending(false);
     }
@@ -334,7 +335,7 @@ function PasswordTab() {
       setConfirmPassword('');
     } catch (err) {
       logger.error('Failed to update password', err instanceof Error ? err : new Error(String(err)));
-      toast.error('Failed to update password. Please try again.');
+      toast.error('Failed to update password', { description: humanizeError(err) });
     } finally {
       setSaving(false);
     }
@@ -412,7 +413,7 @@ function SessionsTab() {
       setSessions([currentSessionInfo]);
     } catch (err) {
       logger.error('Failed to load sessions', err instanceof Error ? err : new Error(String(err)));
-      toast.error('Failed to load sessions');
+      toast.error('Failed to load sessions', { description: humanizeError(err) });
     } finally {
       setLoading(false);
     }
@@ -433,7 +434,7 @@ function SessionsTab() {
       await loadSessions();
     } catch (err) {
       logger.error('Failed to revoke session', err instanceof Error ? err : new Error(String(err)));
-      toast.error('Failed to revoke session');
+      toast.error('Failed to revoke session', { description: humanizeError(err) });
     } finally {
       setRevokingId(null);
     }
@@ -449,7 +450,7 @@ function SessionsTab() {
       await loadSessions();
     } catch (err) {
       logger.error('Failed to revoke sessions', err instanceof Error ? err : new Error(String(err)));
-      toast.error('Failed to revoke sessions');
+      toast.error('Failed to revoke sessions', { description: humanizeError(err) });
     } finally {
       setRevokingId(null);
     }
@@ -562,7 +563,7 @@ function DangerZoneTab({ tenantName }: { tenantName?: string }) {
       await logout();
     } catch (err) {
       logger.error('Failed to delete account', err instanceof Error ? err : new Error(String(err)));
-      toast.error('Failed to delete account. Please contact support.');
+      toast.error('Failed to delete account', { description: humanizeError(err) });
     } finally {
       setDeleting(false);
     }

@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Package,
   Search,
@@ -170,7 +171,7 @@ export function OrdersHubPage() {
       navigate(`/shop/${storeSlug}/cart`);
     } catch (error) {
       logger.error('Failed to reorder', error);
-      toast.error('Failed to reorder');
+      toast.error('Failed to reorder', { description: humanizeError(error) });
     }
   };
 

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Play, ExternalLink, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { safeFetch } from '@/utils/safeFetch';
 
 interface LinkCheck {
@@ -70,7 +71,7 @@ export default function LinkChecker() {
         `Link check complete: ${validCount} valid, ${brokenCount} broken, ${externalCount} external`
       );
     } catch (error) {
-      toast.error('Failed to check links');
+      toast.error('Failed to check links', { description: humanizeError(error) });
       logger.error(error);
     } finally {
       setChecking(false);

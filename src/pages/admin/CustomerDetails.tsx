@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   ArrowLeft, User, Mail, Phone, Calendar,
   DollarSign, Star, ShoppingBag, CreditCard, MessageSquare
@@ -180,7 +181,7 @@ export default function CustomerDetails() {
       setOutstandingBalance(Math.max(0, ordersTotal - paymentsTotal));
     } catch (error) {
       logger.error('Error loading customer data', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });
-      toast.error('Failed to load customer data');
+      toast.error('Failed to load customer data', { description: humanizeError(error) });
     } finally {
       setLoading(false);
     }
@@ -204,7 +205,7 @@ export default function CustomerDetails() {
       loadCustomerData();
     } catch (error) {
       logger.error('Error adding note', error instanceof Error ? error : new Error(String(error)), { component: 'CustomerDetails' });
-      toast.error('Failed to add note');
+      toast.error('Failed to add note', { description: humanizeError(error) });
     }
   };
 

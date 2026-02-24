@@ -78,6 +78,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { motion } from 'framer-motion';
 import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left";
 import Package from "lucide-react/dist/esm/icons/package";
@@ -485,7 +486,7 @@ export function OrderDetailsPage() {
     },
     onError: (error) => {
       logger.error('Failed to update order status', error, { component: 'OrderDetailsPage' });
-      toast.error('Failed to update order status');
+      toast.error('Failed to update order status', { description: humanizeError(error) });
     },
   });
 
@@ -510,8 +511,8 @@ export function OrderDetailsPage() {
     try {
       await navigator.clipboard.writeText(trackingUrl);
       toast.success('Tracking link copied!');
-    } catch {
-      toast.error('Failed to copy');
+    } catch (error) {
+      toast.error('Failed to copy', { description: humanizeError(error) });
     }
   };
 
@@ -553,7 +554,7 @@ export function OrderDetailsPage() {
     },
     onError: (error) => {
       logger.error('Failed to save delivery notes', error, { component: 'OrderDetailsPage' });
-      toast.error('Failed to save delivery notes');
+      toast.error('Failed to save delivery notes', { description: humanizeError(error) });
     },
   });
 

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   MapPin, Truck, Search,
   Phone, Navigation, Clock, Users, Activity,
@@ -142,7 +143,7 @@ export default function LiveMap() {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load courier locations';
       setError(errorMessage);
       logger.error('Error loading courier locations', err, { component: 'LiveMap' });
-      toast.error('Failed to load courier locations');
+      toast.error('Failed to load courier locations', { description: humanizeError(err) });
     } finally {
       setLoading(false);
     }

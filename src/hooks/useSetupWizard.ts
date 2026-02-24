@@ -6,6 +6,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 import type { SetupWizardStepId } from '@/types/setup-wizard';
 import { SETUP_WIZARD_STEPS } from '@/types/setup-wizard';
@@ -76,7 +77,7 @@ export function useSetupWizard() {
       logger.info('Onboarding completed', { tenantId: tenant.id }, { component: 'useSetupWizard' });
     } catch (error) {
       logger.error('Failed to complete onboarding', error instanceof Error ? error : new Error(String(error)), { component: 'useSetupWizard' });
-      toast.error('Failed to save progress. Please try again.');
+      toast.error('Failed to save progress', { description: humanizeError(error) });
     } finally {
       setIsCompleting(false);
     }
@@ -105,7 +106,7 @@ export function useSetupWizard() {
       logger.info('Onboarding skipped', { tenantId: tenant.id }, { component: 'useSetupWizard' });
     } catch (error) {
       logger.error('Failed to skip onboarding', error instanceof Error ? error : new Error(String(error)), { component: 'useSetupWizard' });
-      toast.error('Failed to save. Please try again.');
+      toast.error('Failed to save', { description: humanizeError(error) });
     } finally {
       setIsCompleting(false);
     }

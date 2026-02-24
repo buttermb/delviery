@@ -83,6 +83,7 @@ import { Label } from '@/components/ui/label';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 import { showInfoToast } from '@/utils/toastHelpers';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
@@ -652,7 +653,7 @@ export default function TenantsListPage() {
                 showInfoToast("Success", `${selectedTenants.length} tenants updated to ${selectedPlan}`);
               } catch (error: unknown) {
                 logger.error('Failed to update tenant plans', error);
-                toast.error('Failed to update some tenants. Please try again.');
+                toast.error('Failed to update some tenants', { description: humanizeError(error) });
               }
             }}>
               Update Plan
@@ -686,7 +687,7 @@ export default function TenantsListPage() {
                   showInfoToast("Success", `${selectedTenants.length} tenants suspended`);
                 } catch (error: unknown) {
                   logger.error('Failed to suspend tenants', error);
-                  toast.error('Failed to suspend some tenants. Please try again.');
+                  toast.error('Failed to suspend some tenants', { description: humanizeError(error) });
                 }
               }}
             >

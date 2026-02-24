@@ -59,6 +59,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import {
 import { queryKeys } from '@/lib/queryKeys';
   getAllPromoCodes as getAdminPromoCodes,
@@ -102,8 +103,8 @@ export default function PromoCodeManagementPage() {
       toast.success('Promo code updated');
       queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.promoCodes() });
     },
-    onError: () => {
-      toast.error('Failed to update promo code');
+    onError: (error) => {
+      toast.error('Failed to update promo code', { description: humanizeError(error) });
     },
   });
 

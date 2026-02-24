@@ -43,6 +43,7 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { logger } from '@/lib/logger';
+import { humanizeError } from '@/lib/humanizeError';
 import { formatPhoneNumber } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -798,7 +799,7 @@ function WishlistSection({
       toast.success('Added to cart');
     } catch (error) {
       logger.error('Failed to add to cart from wishlist', error);
-      toast.error('Failed to add to cart');
+      toast.error('Failed to add to cart', { description: humanizeError(error) });
     }
   };
 
@@ -952,7 +953,7 @@ function OrderCard({
       toast.success('Added to bag!', { description: item.name });
     } catch (error) {
       logger.error('Failed to add item to cart', error);
-      toast.error('Failed to add item');
+      toast.error('Failed to add item', { description: humanizeError(error) });
     }
   };
 

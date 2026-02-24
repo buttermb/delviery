@@ -4,6 +4,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 export interface Location {
   id: string;
@@ -217,7 +218,7 @@ export const useLocations = (filters?: { status?: string }) => {
     },
     onError: (error) => {
       logger.error('Create location error', { error });
-      toast.error('Failed to create location');
+      toast.error('Failed to create location', { description: humanizeError(error) });
     },
   });
 
@@ -252,7 +253,7 @@ export const useLocations = (filters?: { status?: string }) => {
     },
     onError: (error) => {
       logger.error('Update location error', { error });
-      toast.error('Failed to update location');
+      toast.error('Failed to update location', { description: humanizeError(error) });
     },
   });
 
@@ -278,7 +279,7 @@ export const useLocations = (filters?: { status?: string }) => {
     },
     onError: (error) => {
       logger.error('Delete location error', { error });
-      toast.error('Failed to delete location');
+      toast.error('Failed to delete location', { description: humanizeError(error) });
     },
   });
 

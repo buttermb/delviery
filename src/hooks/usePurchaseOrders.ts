@@ -103,7 +103,7 @@ export function usePurchaseOrders() {
     },
     onError: (error: Error) => {
       logger.error('Failed to update purchase order status', error, { component: 'usePurchaseOrders' });
-      toast.error('Failed to update status');
+      toast.error('Failed to update status', { description: humanizeError(error) });
     },
   });
 
@@ -140,7 +140,7 @@ export function usePurchaseOrders() {
     },
     onError: (error: Error) => {
       logger.error('Failed to delete purchase order', error, { component: 'usePurchaseOrders' });
-      toast.error('Failed to delete purchase order');
+      toast.error('Failed to delete purchase order', { description: humanizeError(error) });
     },
   });
 

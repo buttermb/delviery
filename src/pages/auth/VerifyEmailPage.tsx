@@ -136,7 +136,7 @@ export function VerifyEmailPage() {
       }
     } catch (err) {
       logger.error('[VerifyEmail] Resend error', { error: err });
-      toast.error('Failed to resend verification email. Please try again.');
+      toast.error('Failed to resend verification email', { description: humanizeError(err) });
     } finally {
       setIsResending(false);
     }

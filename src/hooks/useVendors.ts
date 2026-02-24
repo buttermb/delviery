@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -74,7 +75,7 @@ export function useCreateVendor() {
         },
         onError: (error: Error) => {
             logger.error('Failed to create vendor', { error });
-            toast.error('Failed to create vendor');
+            toast.error('Failed to create vendor', { description: humanizeError(error) });
         },
     });
 }

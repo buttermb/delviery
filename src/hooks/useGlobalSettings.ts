@@ -21,6 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAccount } from '@/contexts/AccountContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 // Types
 export interface SecuritySettings {
@@ -154,7 +155,7 @@ export function useGlobalSettings() {
     },
     onError: (error) => {
       logger.error('Failed to update general settings', error, { component: 'useGlobalSettings' });
-      toast.error('Failed to update settings');
+      toast.error('Failed to update settings', { description: humanizeError(error) });
     },
   });
 
@@ -187,7 +188,7 @@ export function useGlobalSettings() {
     },
     onError: (error) => {
       logger.error('Failed to update security settings', error, { component: 'useGlobalSettings' });
-      toast.error('Failed to update security settings');
+      toast.error('Failed to update security settings', { description: humanizeError(error) });
     },
   });
 
@@ -231,7 +232,7 @@ export function useGlobalSettings() {
     },
     onError: (error) => {
       logger.error('Failed to update notification settings', error, { component: 'useGlobalSettings' });
-      toast.error('Failed to update notification settings');
+      toast.error('Failed to update notification settings', { description: humanizeError(error) });
     },
   });
 

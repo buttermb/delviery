@@ -39,6 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InventoryHistoryTimeline } from '@/components/admin/inventory/InventoryHistoryTimeline';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { TruncatedText } from '@/components/shared/TruncatedText';
 
 interface InventoryStats {
@@ -294,7 +295,7 @@ export default function InventoryDashboard() {
     },
     onError: (error: Error) => {
       logger.error('Failed to initiate reorder', { error, component: 'InventoryDashboard' });
-      toast.error('Failed to initiate reorder');
+      toast.error('Failed to initiate reorder', { description: humanizeError(error) });
     },
   });
 

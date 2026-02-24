@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -258,7 +259,7 @@ export default function OfflineOrderCreate() {
       }
     } catch (error) {
       logger.error('Failed to create offline order', error instanceof Error ? error : new Error(String(error)), { component: 'OfflineOrderCreate' });
-      toast.error('Failed to create order');
+      toast.error('Failed to create order', { description: humanizeError(error) });
     } finally {
       setIsSubmitting(false);
     }

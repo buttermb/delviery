@@ -327,7 +327,7 @@ export default function BusinessSettings() {
       });
     } catch (error) {
       logger.error('Failed to restore settings version', { error });
-      toast.error('Failed to restore settings');
+      toast.error('Failed to restore settings', { description: humanizeError(error) });
     } finally {
       setIsRestoring(false);
     }

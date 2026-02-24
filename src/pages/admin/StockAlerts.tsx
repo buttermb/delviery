@@ -18,6 +18,7 @@ import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { LowStockToPODialog } from '@/components/admin/inventory/LowStockToPODialog';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { TruncatedText } from '@/components/shared/TruncatedText';
 import { queryKeys } from '@/lib/queryKeys';
@@ -143,7 +144,7 @@ export function StockAlerts() {
       queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
     },
     onError: (error) => {
-      toast.error('Failed to acknowledge alert');
+      toast.error('Failed to acknowledge alert', { description: humanizeError(error) });
       logger.error('Acknowledge error', error);
     },
   });
@@ -186,7 +187,7 @@ export function StockAlerts() {
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
     },
     onError: (error) => {
-      toast.error('Failed to update stock');
+      toast.error('Failed to update stock', { description: humanizeError(error) });
       logger.error('Restock error', error);
     }
   });

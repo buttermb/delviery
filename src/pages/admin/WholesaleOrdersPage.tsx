@@ -18,6 +18,7 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Package,
   Clock,
@@ -507,7 +508,7 @@ export default function WholesaleOrdersPage() {
       setSelectedOrders([]);
     } catch (error) {
       logger.error('Failed to bulk update orders', error, { component: 'WholesaleOrdersPage' });
-      toast.error('Failed to update orders');
+      toast.error('Failed to update orders', { description: humanizeError(error) });
     }
   };
 

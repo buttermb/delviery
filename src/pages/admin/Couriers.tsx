@@ -16,6 +16,7 @@ import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { AddCourierDialog } from '@/components/admin/AddCourierDialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -87,7 +88,7 @@ export default function Couriers() {
     },
     onError: (error) => {
       logger.error('Failed to delete courier', error instanceof Error ? error : new Error(String(error)));
-      toast.error('Failed to delete courier');
+      toast.error('Failed to delete courier', { description: humanizeError(error) });
     },
   });
 

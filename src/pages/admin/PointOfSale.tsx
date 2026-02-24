@@ -463,7 +463,7 @@ export default function PointOfSale() {
       toast.success('Order loaded', { description: 'Pending order loaded into register' });
     } catch (error) {
       logger.error('Error loading order', error);
-      toast.error('Failed to load order');
+      toast.error('Failed to load order', { description: humanizeError(error) });
     } finally {
       setPendingLoadOrder(null);
       closeDialog();
@@ -483,7 +483,7 @@ export default function PointOfSale() {
           toast.success('Order cancelled');
         } catch (error) {
           logger.error('Error cancelling order', error);
-          toast.error('Failed to cancel order');
+          toast.error('Failed to cancel order', { description: humanizeError(error) });
         } finally {
           setDialogLoading(false);
           closeDialog();

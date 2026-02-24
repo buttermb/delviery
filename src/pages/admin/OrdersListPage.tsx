@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
 import { DataTable, type SortState } from '@/components/shared/DataTable';
@@ -360,7 +361,7 @@ export function OrdersListPage() {
     },
     onError: (error) => {
       logger.error('Failed to update order status', { error });
-      toast.error('Failed to update status');
+      toast.error('Failed to update status', { description: humanizeError(error) });
     },
   });
 
@@ -381,7 +382,7 @@ export function OrdersListPage() {
     },
     onError: (error) => {
       logger.error('Failed to delete order(s)', { error });
-      toast.error('Failed to delete order(s)');
+      toast.error('Failed to delete order(s)', { description: humanizeError(error) });
     },
   });
 

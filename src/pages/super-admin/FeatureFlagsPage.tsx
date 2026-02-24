@@ -10,6 +10,7 @@ import { Flag, Plus, Search } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 
 export default function FeatureFlagsPage() {
@@ -82,7 +83,7 @@ export default function FeatureFlagsPage() {
         queryClient.setQueryData(queryKeys.superAdminTools.featureFlags(), context.previousFlags);
       }
       logger.error('Failed to toggle feature flag', error);
-      toast.error('Failed to update feature flag. Please try again.');
+      toast.error('Failed to update feature flag', { description: humanizeError(error) });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.superAdminTools.featureFlags() });

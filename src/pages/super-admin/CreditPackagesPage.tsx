@@ -47,6 +47,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import {
 import { queryKeys } from '@/lib/queryKeys';
@@ -365,7 +366,7 @@ function EditPackageDialog({
     },
     onError: (error: Error) => {
       logger.error('Failed to save credit package', { error });
-      toast.error('Failed to save package');
+      toast.error('Failed to save package', { description: humanizeError(error) });
     },
   });
 
