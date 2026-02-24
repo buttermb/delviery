@@ -174,7 +174,6 @@ export function invalidateOnEvent(
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.stockAlerts.all });
 
       // Finance
       queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
