@@ -25,7 +25,7 @@ export default function ApiAccess() {
     permissions: [] as string[],
   });
 
-  const { data: apiKeys, isLoading } = useQuery({
+  const { data: apiKeys, isLoading, error, refetch } = useQuery({
     queryKey: ['api-keys', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
@@ -79,6 +79,15 @@ export default function ApiAccess() {
           <p className="text-muted-foreground">Manage API keys and access tokens</p>
         </div>
         <EnhancedLoadingState variant="card" count={3} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-destructive">Failed to load data. Please try again.</p>
+        <Button variant="outline" onClick={() => refetch()} className="mt-4">Retry</Button>
       </div>
     );
   }

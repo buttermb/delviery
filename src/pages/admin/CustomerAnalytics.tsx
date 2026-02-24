@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Users, TrendingUp, DollarSign } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
@@ -25,7 +26,7 @@ export default function CustomerAnalytics() {
   const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
-  const { data: customers, isLoading: customersLoading } = useQuery({
+  const { data: customers, isLoading: customersLoading, error: customersError, refetch: refetchCustomers } = useQuery({
     queryKey: ['customers', tenantId],
     queryFn: async (): Promise<Customer[]> => {
       if (!tenantId) return [];
@@ -47,7 +48,7 @@ export default function CustomerAnalytics() {
     enabled: !!tenantId,
   });
 
-  const { data: orders, isLoading: ordersLoading } = useQuery({
+  const { data: orders, isLoading: ordersLoading, error: ordersError, refetch: refetchOrders } = useQuery({
     queryKey: ['customer-orders', tenantId],
     queryFn: async (): Promise<Order[]> => {
       if (!tenantId) return [];
@@ -77,6 +78,16 @@ export default function CustomerAnalytics() {
           <p className="text-muted-foreground">Understand your customer base</p>
         </div>
         <EnhancedLoadingState variant="dashboard" />
+      </div>
+    );
+  }
+
+  const hasError = customersError || ordersError;
+  if (hasError) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-destructive">Failed to load data. Please try again.</p>
+        <Button variant="outline" onClick={() => { refetchCustomers(); refetchOrders(); }} className="mt-4">Retry</Button>
       </div>
     );
   }

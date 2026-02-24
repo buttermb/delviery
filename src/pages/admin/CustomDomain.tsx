@@ -20,7 +20,7 @@ export default function CustomDomain() {
   const queryClient = useQueryClient();
   const [domain, setDomain] = useState('');
 
-  const { data: domains, isLoading } = useQuery({
+  const { data: domains, isLoading, error, refetch } = useQuery({
     queryKey: ['custom-domains', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
@@ -96,6 +96,15 @@ export default function CustomDomain() {
           <p className="text-muted-foreground">Configure custom domains for your platform</p>
         </div>
         <EnhancedLoadingState variant="card" count={2} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-destructive">Failed to load data. Please try again.</p>
+        <Button variant="outline" onClick={() => refetch()} className="mt-4">Retry</Button>
       </div>
     );
   }

@@ -78,7 +78,7 @@ export default function CouponManagementPage() {
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
 
-  const { data: coupons, isLoading } = useQuery({
+  const { data: coupons, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.coupons.list({ status: statusFilter, tenantId: tenant?.id }),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -214,6 +214,15 @@ export default function CouponManagementPage() {
     if (coupon.start_date && new Date(coupon.start_date) > new Date()) return false;
     return true;
   };
+
+  if (error) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-destructive">Failed to load data. Please try again.</p>
+        <Button variant="outline" onClick={() => refetch()} className="mt-4">Retry</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">
