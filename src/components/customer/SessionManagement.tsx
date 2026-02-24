@@ -90,8 +90,8 @@ export function SessionManagement() {
 
     setRevoking(sessionId);
     try {
-      const { error } = await supabase
-        .from('customer_sessions' as any)
+      const { error } = await (supabase as any)
+        .from('customer_sessions')
         .update({ expires_at: new Date().toISOString() })
         .eq('id', sessionId);
 

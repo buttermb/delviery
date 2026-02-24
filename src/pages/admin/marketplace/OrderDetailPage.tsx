@@ -156,8 +156,8 @@ export default function OrderDetailPage() {
                 throw new Error("Cannot message guest customers directly via platform messaging yet.");
             }
 
-            const { error } = await supabase
-                .from('marketplace_messages' as any)
+            const { error } = await (supabase as any)
+                .from('marketplace_messages')
                 .insert({
                     sender_tenant_id: tenant.id,
                     receiver_tenant_id: order.buyer_tenant_id,

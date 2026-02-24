@@ -59,8 +59,8 @@ export default function InventoryTransfers() {
     queryFn: async () => {
       if (!tenantId) return [];
       try {
-        const { data, error } = await supabase
-          .from('inventory_locations' as any)
+        const { data, error } = await (supabase as any)
+          .from('inventory_locations')
           .select('id, name')
           .eq('tenant_id', tenantId)
           .order('name');
@@ -92,8 +92,8 @@ export default function InventoryTransfers() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('inventory_transfers' as any)
+        const { data, error } = await (supabase as any)
+          .from('inventory_transfers')
           .select('*, product:products(*)')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
@@ -114,8 +114,8 @@ export default function InventoryTransfers() {
     mutationFn: async (transfer: any) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
-        .from('inventory_transfers' as any)
+      const { data, error } = await (supabase as any)
+        .from('inventory_transfers')
         .insert({
           product_id: transfer.product_id,
           from_location_id: transfer.from_warehouse,

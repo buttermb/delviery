@@ -68,15 +68,15 @@ export default function MarketplaceCategoryManager() {
             };
 
             if (category.id) {
-                const { error } = await supabase
-                    .from('marketplace_categories' as any)
+                const { error } = await (supabase as any)
+                    .from('marketplace_categories')
                     .update(payload)
                     .eq('id', category.id)
                     .eq('tenant_id', tenant.id);
                 if (error) throw error;
             } else {
-                const { error } = await supabase
-                    .from('marketplace_categories' as any)
+                const { error } = await (supabase as any)
+                    .from('marketplace_categories')
                     .insert([payload]);
                 if (error) throw error;
             }
@@ -94,8 +94,8 @@ export default function MarketplaceCategoryManager() {
     const deleteCategory = useMutation({
         mutationFn: async (id: string) => {
             if (!tenant?.id) throw new Error("No tenant");
-            const { error } = await supabase
-                .from('marketplace_categories' as any)
+            const { error } = await (supabase as any)
+                .from('marketplace_categories')
                 .delete()
                 .eq('id', id)
                 .eq('tenant_id', tenant.id);

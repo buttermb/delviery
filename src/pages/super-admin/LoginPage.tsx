@@ -30,10 +30,7 @@ export default function SuperAdminLoginPage() {
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
     async (qEmail, qPassword) => {
       await login(qEmail, qPassword);
-      toast({
-        title: "Welcome, Super Admin!",
-        description: "Logged in successfully",
-      });
+      toast.success("Welcome, Super Admin!");
       const intendedDestination = intendedDestinationUtils.consume();
       const redirectTo = intendedDestination || "/super-admin/dashboard";
       logger.debug('[SuperAdminLogin] Redirecting after queued login', { intendedDestination, redirectTo });

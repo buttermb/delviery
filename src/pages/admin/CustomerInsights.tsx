@@ -21,8 +21,8 @@ export default function CustomerInsights() {
       if (!id || !tenantId) return null;
 
       try {
-        const { data, error } = await supabase
-          .from('customers' as any)
+        const { data, error } = await (supabase as any)
+          .from('customers')
           .select('*')
           .eq('id', id)
           .eq('tenant_id', tenantId)
@@ -48,8 +48,8 @@ export default function CustomerInsights() {
       if (!id || !tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('orders' as any)
+        const { data, error } = await (supabase as any)
+          .from('orders')
           .select('*, order_items(*)')
           .eq('customer_id', id)
           .eq('tenant_id', tenantId)

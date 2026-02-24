@@ -100,8 +100,8 @@ export default function PurchaseOrderDetailPage() {
         mutationFn: async () => {
             if (!tenant?.id || !order?.marketplace_profiles?.tenant_id) throw new Error("Missing tenant info");
 
-            const { error } = await supabase
-                .from('marketplace_messages' as any)
+            const { error } = await (supabase as any)
+                .from('marketplace_messages')
                 .insert({
                     sender_tenant_id: tenant.id,
                     receiver_tenant_id: order.marketplace_profiles.tenant_id,

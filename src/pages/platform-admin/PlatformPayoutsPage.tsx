@@ -42,8 +42,8 @@ export default function PlatformPayoutsPage() {
         queryFn: async () => {
             // Need to join with tenants to see WHO is asking
             // Supabase join syntax: tenant:tenants!marketplace_payouts_seller_tenant_id_fkey (*)
-            const { data, error } = await supabase
-                .from('marketplace_payouts' as any)
+            const { data, error } = await (supabase as any)
+                .from('marketplace_payouts')
                 .select(`
             *,
             tenant:tenants!marketplace_payouts_seller_tenant_id_fkey (
@@ -63,8 +63,8 @@ export default function PlatformPayoutsPage() {
     // Approve Mutation
     const approveMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { error } = await supabase
-                .from('marketplace_payouts' as any)
+            const { error } = await (supabase as any)
+                .from('marketplace_payouts')
                 .update({
                     status: 'completed',
                     processed_at: new Date().toISOString()
@@ -85,8 +85,8 @@ export default function PlatformPayoutsPage() {
     const rejectMutation = useMutation({
         mutationFn: async () => {
             if (!rejectDialog.id) return;
-            const { error } = await supabase
-                .from('marketplace_payouts' as any)
+            const { error } = await (supabase as any)
+                .from('marketplace_payouts')
                 .update({
                     status: 'failed', // or rejected
                     notes: rejectReason,

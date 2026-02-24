@@ -111,8 +111,8 @@ export default function ExpenseTracking() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('expenses' as any)
+        const { data, error } = await (supabase as any)
+          .from('expenses')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
@@ -134,8 +134,8 @@ export default function ExpenseTracking() {
     mutationFn: async (data: typeof formData) => {
       if (!tenantId) throw new Error('No tenant');
 
-      const { error } = await supabase
-        .from('expenses' as any)
+      const { error } = await (supabase as any)
+        .from('expenses')
         .insert({
           tenant_id: tenantId,
           description: data.description,
@@ -162,8 +162,8 @@ export default function ExpenseTracking() {
   const deleteExpenseMutation = useMutation({
     mutationFn: async (expenseId: string) => {
       if (!tenantId) throw new Error('No tenant');
-      const { error } = await supabase
-        .from('expenses' as any)
+      const { error } = await (supabase as any)
+        .from('expenses')
         .delete()
         .eq('id', expenseId)
         .eq('tenant_id', tenantId);
@@ -222,7 +222,7 @@ export default function ExpenseTracking() {
     .sort((a, b) => b.value - a.value);
 
   // Get unique categories from data
-  const uniqueCategories = [...new Set((expenses || []).map((e: Expense) => e.category).filter(Boolean))];
+  const uniqueCategories = [...new Set((expenses || []).map((e: Expense) => e.category).filter(Boolean))] as string[];
 
   if (isLoading) {
     return <EnhancedLoadingState variant="dashboard" message="Loading expenses..." />;
@@ -368,7 +368,7 @@ export default function ExpenseTracking() {
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       <div className="text-lg font-bold text-red-600">
-                        -{formatCurrency(parseFloat(expense.amount || 0))}
+                        -{formatCurrency(parseFloat(String(expense.amount || 0)))}
                       </div>
                       <Button
                         variant="ghost"

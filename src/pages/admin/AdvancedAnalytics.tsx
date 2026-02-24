@@ -27,8 +27,8 @@ export default function AdvancedAnalytics() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('orders' as any)
+        const { data, error } = await (supabase as any)
+          .from('orders')
           .select('*, order_items(*), customers(*)')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
@@ -52,8 +52,8 @@ export default function AdvancedAnalytics() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('customers' as any)
+        const { data, error } = await (supabase as any)
+          .from('customers')
           .select('*')
           .eq('tenant_id', tenantId);
 

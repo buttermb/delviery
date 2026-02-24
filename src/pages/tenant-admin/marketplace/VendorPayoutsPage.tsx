@@ -35,7 +35,7 @@ export default function VendorPayoutsPage() {
         queryKey: queryKeys.marketplace.payouts.list(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
-            const { data, error } = await (supabase as unknown as Record<string, unknown> & { from: (table: string) => unknown })
+            const { data, error } = await (supabase as any)
                 .from('marketplace_payouts')
                 .select('*')
                 .eq('seller_tenant_id', tenant.id)
@@ -54,7 +54,7 @@ export default function VendorPayoutsPage() {
             if (!tenant?.id) return { pending: 0, available: 0 };
 
             // Orders that are complete but not paid out
-            const { data: orders, error } = await (supabase as unknown as Record<string, unknown> & { from: (table: string) => unknown })
+            const { data: orders, error } = await (supabase as any)
                 .from('marketplace_orders')
                 .select('total_amount, platform_fee, status, payout_id')
                 .eq('seller_tenant_id', tenant.id)

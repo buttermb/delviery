@@ -14,8 +14,8 @@ export default function AdvancedAnalyticsPage() {
     queryFn: async () => {
       if (!tenant?.id) return [];
       
-      const { data, error } = await supabase
-        .from('orders' as any)
+      const { data, error } = await (supabase as any)
+        .from('orders')
         .select('*, order_items(*)')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });

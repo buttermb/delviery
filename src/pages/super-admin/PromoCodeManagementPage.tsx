@@ -275,7 +275,7 @@ export default function PromoCodeManagementPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => viewRedemptions(code)}>
+                          <DropdownMenuItem onClick={() => viewRedemptions(code as unknown as PromoCodeAdmin)}>
                             <Eye className="h-4 w-4 mr-2" />
                             View Redemptions
                           </DropdownMenuItem>
@@ -391,7 +391,7 @@ function CreatePromoCodeDialog({
       code: code || generateCode(),
       creditsAmount: credits,
       maxUses,
-      validUntil: validUntil?.toISOString(),
+      validUntil: validUntil?.toISOString() as any,
       description: description || undefined,
     }),
     onSuccess: (result) => {

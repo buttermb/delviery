@@ -89,8 +89,8 @@ export default function MessagesPage() {
     queryFn: async (): Promise<Message[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
-        .from('marketplace_messages' as any) // Cast table name to any if types are missing
+      const { data, error } = await (supabase as any)
+        .from('marketplace_messages')
         .select(`
           *,
           sender_tenant:tenants!marketplace_messages_sender_tenant_id_fkey (
@@ -202,8 +202,8 @@ export default function MessagesPage() {
   // Mark messages as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (messageIds: string[]) => {
-      const { error } = await supabase
-        .from('marketplace_messages' as any)
+      const { error } = await (supabase as any)
+        .from('marketplace_messages')
         .update({
           read: true,
           read_at: new Date().toISOString()
@@ -233,8 +233,8 @@ export default function MessagesPage() {
 
       const encryptedText = await encryptMessage(text);
 
-      const { data, error } = await supabase
-        .from('marketplace_messages' as any)
+      const { data, error } = await (supabase as any)
+        .from('marketplace_messages')
         .insert({
           sender_tenant_id: tenantId,
           receiver_tenant_id: buyerTenantId,

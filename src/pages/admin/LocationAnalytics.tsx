@@ -17,8 +17,8 @@ export default function LocationAnalytics() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('locations' as any)
+        const { data, error } = await (supabase as any)
+          .from('locations')
           .select('*, orders(*)')
           .eq('tenant_id', tenantId);
 

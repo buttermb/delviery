@@ -50,8 +50,8 @@ export default function CustomReports() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('custom_reports' as any)
+        const { data, error } = await (supabase as any)
+          .from('custom_reports')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -72,8 +72,8 @@ export default function CustomReports() {
     mutationFn: async (report: Partial<CustomReport>) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
-        .from('custom_reports' as any)
+      const { data, error } = await (supabase as any)
+        .from('custom_reports')
         .insert({
           tenant_id: tenantId,
           name: report.name,
@@ -108,8 +108,8 @@ export default function CustomReports() {
     mutationFn: async ({ id, ...report }: CustomReport) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
-        .from('custom_reports' as any)
+      const { data, error } = await (supabase as any)
+        .from('custom_reports')
         .update({
           name: report.name,
           description: report.description || null,
@@ -144,8 +144,8 @@ export default function CustomReports() {
   const deleteReportMutation = useMutation({
     mutationFn: async (reportId: string) => {
       if (!tenantId) throw new Error('Tenant ID required');
-      const { error } = await supabase
-        .from('custom_reports' as any)
+      const { error } = await (supabase as any)
+        .from('custom_reports')
         .delete()
         .eq('id', reportId)
         .eq('tenant_id', tenantId);

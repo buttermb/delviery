@@ -41,8 +41,8 @@ export default function MarketplaceDashboard() {
         queryKey: ['marketplace-profile', tenant?.id],
         queryFn: async () => {
             if (!tenant?.id) return null;
-            const { data, error } = await supabase
-                .from('marketplace_profiles' as any)
+            const { data, error } = await (supabase as any)
+                .from('marketplace_profiles')
                 .select('*')
                 .eq('tenant_id', tenant.id)
                 .maybeSingle();

@@ -147,8 +147,8 @@ export async function registerTokenWithBackend(
         const { supabase } = await import('@/integrations/supabase/client');
 
         // Upsert the device token
-        const { error } = await supabase
-            .from('push_tokens' as any)
+        const { error } = await (supabase as any)
+            .from('push_tokens')
             .upsert({
                 user_id: userId,
                 tenant_id: tenantId,
