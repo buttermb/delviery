@@ -62,7 +62,7 @@ export const AddCourierDialog = ({
 }) => {
   const [internalOpen, setInternalOpen] = useState(false);
 
-  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const open = controlledOpen ?? internalOpen;
   const setOpen = (newOpen: boolean) => {
     if (onOpenChange) {
       onOpenChange(newOpen);

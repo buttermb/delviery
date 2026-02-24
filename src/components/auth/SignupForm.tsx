@@ -127,7 +127,7 @@ export function SignupForm({
       case 'password':
         return validatePassword(value ?? password);
       case 'confirmPassword':
-        return validateConfirmPassword(value ?? password, value !== undefined ? value : confirmPassword);
+        return validateConfirmPassword(value ?? password, value ?? confirmPassword);
       case 'fullName':
         return validateFullName(value ?? fullName);
       case 'phone':

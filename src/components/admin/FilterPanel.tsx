@@ -53,7 +53,7 @@ export function FilterPanel({
   const [localValues, setLocalValues] = useState<FilterValue>(values);
 
   const activeFilterCount = Object.values(localValues).filter(
-    (v) => v !== null && v !== undefined && v !== ''
+    (v) => v != null && v !== ''
   ).length;
 
   const handleFilterChange = (filterId: string, value: string | number | null) => {

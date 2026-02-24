@@ -58,7 +58,7 @@ function calculateRowHeight<T>(
       cellContent = (row as Record<string, unknown>)[column.accessorKey as string];
     }
 
-    if (cellContent !== null && cellContent !== undefined) {
+    if (cellContent != null) {
       const textContent = typeof cellContent === 'object'
         ? JSON.stringify(cellContent)
         : String(cellContent);

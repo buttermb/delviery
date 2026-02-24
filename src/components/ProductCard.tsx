@@ -46,7 +46,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
   const { prefetchQuery } = usePrefetch();
 
   // Use provided stockLevel instead of making individual API call
-  const actualStockLevel = stockLevel !== undefined ? stockLevel : 0;
+  const actualStockLevel = stockLevel ?? 0;
   const isLowStock = actualStockLevel > 0 && actualStockLevel <= 5;
 
   // Prefetch product reviews on hover

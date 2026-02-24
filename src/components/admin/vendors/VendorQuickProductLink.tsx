@@ -63,7 +63,7 @@ export function VendorQuickProductLink({
       params.set('paymentTerms', paymentTerms);
     }
 
-    if (leadTimeDays !== null && leadTimeDays !== undefined) {
+    if (leadTimeDays != null) {
       params.set('leadTimeDays', String(leadTimeDays));
     }
 
@@ -130,7 +130,7 @@ export function VendorQuickProductIcon({
       params.set('paymentTerms', paymentTerms);
     }
 
-    if (leadTimeDays !== null && leadTimeDays !== undefined) {
+    if (leadTimeDays != null) {
       params.set('leadTimeDays', String(leadTimeDays));
     }
 

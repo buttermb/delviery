@@ -83,7 +83,7 @@ const VirtualizedRow = memo(function VirtualizedRow({
             )}
             style={{ width: column.width || 'auto', minWidth: column.width || 150 }}
           >
-            {cellContent !== null && cellContent !== undefined
+            {cellContent != null
               ? (typeof cellContent === 'object' ? JSON.stringify(cellContent) : String(cellContent))
               : '-'}
           </div>

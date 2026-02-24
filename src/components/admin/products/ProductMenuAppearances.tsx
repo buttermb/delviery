@@ -363,7 +363,7 @@ function MenuAppearanceItem({
             )}
           </div>
           <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
-            {displayPrice !== null && displayPrice !== undefined && (
+            {displayPrice != null && (
               <span className="flex items-center gap-1">
                 <DollarSign className="h-3 w-3" />
                 {formatCurrency(displayPrice)}
@@ -459,7 +459,7 @@ function StoreAppearanceItem({
             )}
           </div>
           <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
-            {displayPrice !== null && displayPrice !== undefined && (
+            {displayPrice != null && (
               <span className="flex items-center gap-1">
                 <DollarSign className="h-3 w-3" />
                 {formatCurrency(displayPrice)}

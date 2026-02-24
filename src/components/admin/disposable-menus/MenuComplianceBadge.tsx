@@ -147,7 +147,7 @@ export function MenuComplianceBadge({
     // THC content check
     if (jurisdiction.requireThcDisplay) {
       const thcValue = product.thc_content ?? product.thc_percent;
-      const hasThc = thcValue !== null && thcValue !== undefined;
+      const hasThc = thcValue != null;
       const exceedsMax = jurisdiction.maxThcPercent !== undefined &&
         hasThc &&
         thcValue > jurisdiction.maxThcPercent;
@@ -167,7 +167,7 @@ export function MenuComplianceBadge({
     // CBD content check (optional in most jurisdictions)
     if (jurisdiction.requireCbdDisplay) {
       const cbdValue = product.cbd_content ?? product.cbd_percent;
-      const hasCbd = cbdValue !== null && cbdValue !== undefined;
+      const hasCbd = cbdValue != null;
       checks.push({
         name: 'CBD Displayed',
         passed: hasCbd,

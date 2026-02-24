@@ -53,7 +53,6 @@ body {
 /* Performance optimizations for animations */
 .animate-fade-in,
 .animate-scale-in,
-.animate-slide-in-right,
 [class*="animate-"] {
   will-change: transform, opacity;
 }
@@ -1253,7 +1252,6 @@ body.keyboard-open [data-radix-dialog-content] {
     /* Disable expensive animations on touch devices */
     :root .animate-fade-in,
     :root .animate-scale-in,
-    :root .animate-slide-in-right,
     :root [class*="animate-"] {
       animation: none;
     }

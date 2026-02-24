@@ -279,7 +279,7 @@ export function PricingStep({ formData, updateFormData, showErrors = false }: Pr
         </p>
         <div className="space-y-2">
           {Object.entries(formData.prices || {})
-            .filter(([_, price]) => price !== null && price !== undefined)
+            .filter(([_, price]) => price != null)
             .map(([weight, price]) => (
               <div key={weight} className="flex gap-2 items-center">
                 <Input value={weight} disabled className="w-24" />

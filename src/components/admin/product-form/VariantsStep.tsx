@@ -155,7 +155,7 @@ export function VariantsStep({ formData, updateFormData }: VariantsStepProps) {
         <div className="space-y-3">
           <Label className="text-sm font-medium">Price Variants</Label>
           {Object.entries(currentPrices)
-            .filter(([, price]) => price !== null && price !== undefined)
+            .filter(([, price]) => price != null)
             .map(([key, price]) => {
               const pricePerGram = calculatePricePerGram(key, price);
               return (
