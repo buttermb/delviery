@@ -8,7 +8,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 
 import { DataTable, type SortState } from '@/components/shared/DataTable';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -450,7 +450,7 @@ export function OrdersListPage() {
       sortable: true,
       cell: ({ original }: { original: Order }) => (
         <span className="text-muted-foreground">
-          {original.created_at ? format(new Date(original.created_at), 'MMM d, yyyy h:mm a') : 'N/A'}
+          {formatSmartDate(original.created_at, { includeTime: true })}
         </span>
       ),
     },
@@ -526,7 +526,7 @@ export function OrdersListPage() {
             <div class="info"><span class="label">Status:</span> ${order.status}</div>
             <div class="info"><span class="label">Customer:</span> ${order.user?.full_name || 'Unknown'}</div>
             <div class="info"><span class="label">Total:</span> ${formatCurrency(order.total_amount)}</div>
-            <div class="info"><span class="label">Date:</span> ${order.created_at ? format(new Date(order.created_at), 'PPpp') : 'N/A'}</div>
+            <div class="info"><span class="label">Date:</span> ${order.created_at ? formatSmartDate(order.created_at, { includeTime: true }) : 'N/A'}</div>
             <div class="info"><span class="label">Delivery Method:</span> ${order.delivery_method || 'N/A'}</div>
           </body>
         </html>

@@ -701,7 +701,7 @@ export default function Orders() {
             <div class="info"><span class="label">Status:</span> ${order.status}</div>
             <div class="info"><span class="label">Customer:</span> ${order.user?.full_name || order.user?.email || 'Unknown'}</div>
             <div class="info"><span class="label">Total:</span> ${formatCurrency(order.total_amount)}</div>
-            <div class="info"><span class="label">Date:</span> ${order.created_at ? format(new Date(order.created_at), 'PPpp') : 'N/A'}</div>
+            <div class="info"><span class="label">Date:</span> ${order.created_at ? formatSmartDate(order.created_at, { includeTime: true }) : 'N/A'}</div>
             <div class="info"><span class="label">Delivery Method:</span> ${order.delivery_method || 'N/A'}</div>
           </body>
         </html>
@@ -1549,7 +1549,7 @@ export default function Orders() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">Date</span>
-                  <span className="text-sm">{selectedOrder.created_at ? format(new Date(selectedOrder.created_at), 'PPp') : 'N/A'}</span>
+                  <span className="text-sm">{formatSmartDate(selectedOrder.created_at, { includeTime: true })}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">Method</span>
