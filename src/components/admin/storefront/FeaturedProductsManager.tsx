@@ -34,8 +34,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import {
 import { queryKeys } from '@/lib/queryKeys';
+import {
   Search,
   Star,
   GripVertical,

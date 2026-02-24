@@ -24,8 +24,8 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 
 // Financial Components
-import {
 import { queryKeys } from '@/lib/queryKeys';
+import {
   QuickStatsHeader,
   CashFlowPulse,
   ARCommand,

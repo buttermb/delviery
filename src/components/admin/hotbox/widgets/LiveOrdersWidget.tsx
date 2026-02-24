@@ -19,8 +19,8 @@ import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import {
 import { queryKeys } from '@/lib/queryKeys';
+import {
   Activity,
   Clock,
   Package,
