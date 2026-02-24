@@ -45,6 +45,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { getAllTransactions } from '@/lib/credits';
 import { queryKeys } from '@/lib/queryKeys';
+import { formatSmartDate } from '@/lib/formatters';
 
 type TransactionType = 'all' | 'usage' | 'purchase' | 'free_grant' | 'bonus' | 'adjustment' | 'refund';
 
@@ -120,12 +121,7 @@ export default function CreditAuditLogPage() {
 
   // Format date/time
   const formatDateTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
+    return formatSmartDate(dateStr, { includeTime: true });
   };
 
   // Export to CSV

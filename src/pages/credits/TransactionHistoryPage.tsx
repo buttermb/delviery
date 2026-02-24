@@ -50,6 +50,7 @@ import {
   useCreditTransactions,
   type TransactionTypeFilter,
 } from '@/hooks/useCreditTransactions';
+import { formatSmartDate } from '@/lib/formatters';
 
 // ============================================================================
 // Types
@@ -104,20 +105,11 @@ function formatTransactionType(type: string): string {
 }
 
 function formatDateTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  return formatSmartDate(dateStr, { includeTime: true });
 }
 
 function formatDateShort(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
+  return formatSmartDate(dateStr, { relative: false });
 }
 
 // ============================================================================
