@@ -362,7 +362,7 @@ export function WholesaleInvoicePDF({ invoice }: { invoice: WholesaleInvoiceData
             <Text style={styles.totalLabel}>Subtotal:</Text>
             <Text style={styles.totalValue}>{formatCurrency(invoice.subtotal)}</Text>
           </View>
-          {invoice.tax !== undefined && invoice.tax > 0 && (
+          {invoice.tax != null && invoice.tax > 0 && (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Tax:</Text>
               <Text style={styles.totalValue}>{formatCurrency(invoice.tax)}</Text>
@@ -384,7 +384,7 @@ export function WholesaleInvoicePDF({ invoice }: { invoice: WholesaleInvoiceData
         </View>
 
         {/* Outstanding Balance Warning */}
-        {invoice.outstandingBalance !== undefined && invoice.outstandingBalance > 0 && (
+        {invoice.outstandingBalance != null && invoice.outstandingBalance > 0 && (
           <View style={styles.warningBox}>
             <Text style={styles.warningTitle}>Outstanding Balance</Text>
             <Text style={styles.warningText}>

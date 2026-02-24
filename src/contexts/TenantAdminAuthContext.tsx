@@ -397,7 +397,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
 
                 if (hasVerifiedTotp) {
                   const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-                  if (aalData && aalData.currentLevel === 'aal1' && aalData.nextLevel === 'aal2') {
+                  if (aalData?.currentLevel === 'aal1' && aalData?.nextLevel === 'aal2') {
                     logger.info("MFA required on session initialization");
                     setMfaRequired(true);
                     setLoading(false);

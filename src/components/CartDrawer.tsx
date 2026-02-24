@@ -108,7 +108,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
     
     const selectedWeight = item.selected_weight ?? "unit";
     
-    const value = (product.prices && product.prices[selectedWeight]) ?? product.price;
+    const value = product.prices?.[selectedWeight] ?? product.price;
     const asNumber = typeof value === "string" ? parseFloat(value) : value ?? 0;
     return Number.isFinite(asNumber) ? Number(asNumber) : 0;
   }, []);

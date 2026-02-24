@@ -72,7 +72,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
 
       if (profileError) throw profileError;
 
-      if (profile && profile.account_id) {
+      if (profile?.account_id) {
         // Fallback to user_roles table for role
         const { data: roleData } = await supabase
           .from('user_roles')

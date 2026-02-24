@@ -60,12 +60,12 @@ export default function VendorDashboardPage() {
 
   // Calculate stats
   const activeStatuses = ['pending', 'accepted', 'processing', 'shipped'];
-  const activeOrders = orders?.filter(o => o.status && activeStatuses.includes(o.status)).length || 0;
+  const activeOrders = orders?.filter(o => o.status && activeStatuses.includes(o.status)).length ?? 0;
 
   // Pending payment: delivered but not paid
-  const pendingPayment = orders?.filter(o => o.payment_status !== 'paid' && o.status !== 'cancelled').reduce((sum, o) => sum + Number(o.total_amount), 0) || 0;
+  const pendingPayment = orders?.filter(o => o.payment_status !== 'paid' && o.status !== 'cancelled').reduce((sum, o) => sum + Number(o.total_amount), 0) ?? 0;
 
-  const totalRevenue = orders?.filter(o => o.payment_status === 'paid').reduce((sum, o) => sum + Number(o.total_amount), 0) || 0;
+  const totalRevenue = orders?.filter(o => o.payment_status === 'paid').reduce((sum, o) => sum + Number(o.total_amount), 0) ?? 0;
 
   return (
     <div className="min-h-dvh bg-background">

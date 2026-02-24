@@ -112,7 +112,7 @@ export function InlineEditableCell({
         );
     }
 
-    const display = displayValue ?? (value !== null && value !== undefined ? String(value) : placeholder);
+    const display = displayValue ?? (value != null ? String(value) : placeholder);
 
     return (
         <div

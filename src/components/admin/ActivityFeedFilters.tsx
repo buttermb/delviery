@@ -52,9 +52,9 @@ export function ActivityFeedFilters({
   totalCount,
 }: ActivityFeedFiltersProps) {
   const hasActiveFilters =
-    (filters.category && filters.category !== 'all') ||
-    (filters.severity && filters.severity !== 'all') ||
-    (filters.searchTerm && filters.searchTerm.length > 0) ||
+    filters.category !== 'all' ||
+    filters.severity !== 'all' ||
+    (filters.searchTerm?.length ?? 0) > 0 ||
     filters.startDate ||
     filters.endDate;
 

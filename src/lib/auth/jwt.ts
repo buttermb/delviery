@@ -69,7 +69,7 @@ export function verifyJWT(token: string, _secret: string): JWTPayload | null {
     const payload = JSON.parse(base64UrlDecode(parts[1]));
     
     // Check expiration
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+    if (payload.exp != null && payload.exp < Math.floor(Date.now() / 1000)) {
       return null;
     }
 
