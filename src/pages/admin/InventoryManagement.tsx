@@ -175,22 +175,23 @@ export function InventoryManagement() {
     }, {} as Record<string, Product[]>);
   }, [products]);
 
-  const totalStock = products.reduce((sum, item) => sum + Number(item.available_quantity || 0), 0);
-
-  // Calculate total value from actual product costs (cost_per_unit, wholesale_price, or price_per_lb)
-  const totalValue = products.reduce((sum, item) => {
-    const cost = item.cost_per_unit ?? item.wholesale_price ?? item.price_per_lb ?? 0;
-    const quantity = Number(item.available_quantity || 0);
-    return sum + (quantity * cost);
-  }, 0);
-
-  // Calculate average cost per lb for display (only from products that have costs)
-  const productsWithCosts = products.filter(item =>
-    (item.cost_per_unit ?? item.wholesale_price ?? item.price_per_lb ?? 0) > 0
-  );
-  const avgCostPerLb = productsWithCosts.length > 0 && totalStock > 0
-    ? totalValue / totalStock
-    : 0;
+  const { totalStock, totalValue, avgCostPerLb } = useMemo(() => {
+    let stock = 0;
+    let value = 0;
+    let costItemCount = 0;
+    for (const item of products) {
+      const qty = Number(item.available_quantity || 0);
+      const cost = item.cost_per_unit ?? item.wholesale_price ?? item.price_per_lb ?? 0;
+      stock += qty;
+      value += qty * cost;
+      if (cost > 0) costItemCount++;
+    }
+    return {
+      totalStock: stock,
+      totalValue: value,
+      avgCostPerLb: costItemCount > 0 && stock > 0 ? value / stock : 0,
+    };
+  }, [products]);
 
   const getStockStatus = (qty: number, reorderPoint: number = 20) => {
     if (qty <= 10) return { status: "critical", color: "destructive", label: "CRITICAL" };

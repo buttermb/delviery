@@ -419,6 +419,12 @@ export function CustomerManagement() {
     );
   }
 
+  const atRiskCount = useMemo(() => customers.filter(c => {
+    if (!c.last_purchase_at) return false;
+    const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
+    return days > 60;
+  }).length, [customers]);
+
   const stats = [
     {
       title: "Total Customers",
@@ -454,11 +460,7 @@ export function CustomerManagement() {
     },
     {
       title: "At Risk",
-      value: customers.filter(c => {
-        if (!c.last_purchase_at) return false;
-        const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
-        return days > 60;
-      }).length,
+      value: atRiskCount,
       sub: "60+ days inactive",
       icon: Award,
       color: "text-red-500",
