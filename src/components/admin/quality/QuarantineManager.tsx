@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
+import { humanizeError } from '@/lib/humanizeError';
 
 interface Batch {
   id: string;
@@ -53,7 +54,7 @@ export function QuarantineManager({
     },
     onError: (error: unknown) => {
       logger.error('Failed to quarantine batch', error, { component: 'QuarantineManager' });
-      toast.error("Failed to quarantine batch");
+      toast.error("Failed to quarantine batch", { description: humanizeError(error) });
     },
   });
 

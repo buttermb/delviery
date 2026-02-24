@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/select';
 import { StorefrontLiveOrdersKanban } from '@/components/admin/storefront/StorefrontLiveOrdersKanban';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 /** Status progression order */
 const STATUS_PROGRESSION = [
@@ -276,7 +277,7 @@ export function StorefrontLiveOrders() {
     },
     onError: (error) => {
       logger.error('Failed to update order status', error, { component: 'StorefrontLiveOrders' });
-      toast.error("Failed to update order status");
+      toast.error("Failed to update order status", { description: humanizeError(error) });
     },
     onSettled: () => {
       setUpdatingOrderId(null);

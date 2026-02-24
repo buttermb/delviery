@@ -53,6 +53,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { invalidateOnEvent } from '@/lib/invalidation';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface Product {
   id: string;
@@ -319,9 +320,7 @@ export default function InventoryAudit() {
     },
     onError: (error: unknown) => {
       logger.error('Audit submission failed', { error, tenantId: tenant?.id });
-      toast.error('Audit Failed', {
-        description: error instanceof Error ? error.message : 'Failed to submit audit',
-      });
+      toast.error('Audit Failed', { description: humanizeError(error) });
     },
   });
 

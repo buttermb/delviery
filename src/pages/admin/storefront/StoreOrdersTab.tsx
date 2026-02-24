@@ -51,6 +51,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface StoreOrder {
   id: string;
@@ -203,7 +204,7 @@ export function StoreOrdersTab({
     },
     onError: (error) => {
       logger.error('Failed to update order status', error, { component: 'StoreOrdersTab' });
-      toast.error("Error");
+      toast.error("Error", { description: humanizeError(error) });
     },
   });
 

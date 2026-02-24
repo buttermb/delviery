@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Store,
   ShoppingCart,
@@ -271,7 +272,7 @@ export default function StorefrontDashboard() {
     },
     onError: (error) => {
       logger.error('Failed to delete store', error, { component: 'StorefrontDashboard' });
-      toast.error("Failed to delete store. Please try again.");
+      toast.error("Failed to delete store. Please try again.", { description: humanizeError(error) });
     },
   });
 
@@ -305,10 +306,7 @@ export default function StorefrontDashboard() {
     },
     onError: (error: Error) => {
       logger.error('Failed to create store', error, { component: 'StorefrontDashboard' });
-      const message = error.message?.includes('duplicate')
-        ? 'A store with this URL already exists.'
-        : 'Failed to create store. Please try again.';
-      toast.error(message);
+      toast.error('Failed to create store', { description: humanizeError(error) });
     },
   });
 

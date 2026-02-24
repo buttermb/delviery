@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
+import { humanizeError } from '@/lib/humanizeError';
 
 interface AppointmentFormProps {
   open: boolean;
@@ -92,7 +93,7 @@ export function AppointmentForm({
     },
     onError: (error: unknown) => {
       logger.error('Failed to create appointment', error, { component: 'AppointmentForm' });
-      toast.error("Failed to create appointment");
+      toast.error("Failed to create appointment", { description: humanizeError(error) });
     },
   });
 

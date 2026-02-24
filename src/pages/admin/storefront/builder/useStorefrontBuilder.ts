@@ -15,6 +15,7 @@ import { MarketplaceStore } from '@/types/marketplace-extended';
 import { type ThemePreset } from '@/lib/storefrontThemes';
 import {
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
     type SectionConfig,
     type ThemeConfig,
     type TemplateKey,
@@ -266,9 +267,7 @@ export function useStorefrontBuilder() {
             setNewStoreSlug('');
         },
         onError: (err) => {
-            toast.error('Creation failed', {
-                description: 'Could not create storefront. Please try again.',
-            });
+            toast.error('Creation failed', { description: humanizeError(err) });
             logger.error('Failed to create storefront', err);
         }
     });
@@ -319,9 +318,7 @@ export function useStorefrontBuilder() {
             queryClient.invalidateQueries({ queryKey: queryKeys.shopStore.all });
         },
         onError: (err) => {
-            toast.error('Save failed', {
-                description: 'Could not save changes. Please try again.',
-            });
+            toast.error('Save failed', { description: humanizeError(err) });
             logger.error('Failed to save draft', err);
         }
     });
@@ -351,9 +348,7 @@ export function useStorefrontBuilder() {
             queryClient.invalidateQueries({ queryKey: queryKeys.shopStore.all });
         },
         onError: (err) => {
-            toast.error('Publish failed', {
-                description: 'Could not publish storefront. Please try again.',
-            });
+            toast.error('Publish failed', { description: humanizeError(err) });
             logger.error('Failed to publish storefront', err);
         }
     });
@@ -377,9 +372,7 @@ export function useStorefrontBuilder() {
             queryClient.invalidateQueries({ queryKey: queryKeys.shopStore.all });
         },
         onError: (err) => {
-            toast.error('Unpublish failed', {
-                description: 'Could not unpublish storefront. Please try again.',
-            });
+            toast.error('Unpublish failed', { description: humanizeError(err) });
             logger.error('Failed to unpublish storefront', err);
         }
     });

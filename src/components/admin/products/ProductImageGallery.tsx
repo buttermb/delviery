@@ -22,6 +22,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
+import { humanizeError } from '@/lib/humanizeError';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -165,7 +166,7 @@ export function ProductImageGallery({
       logger.error('Failed to update product images', error as Error, {
         component: 'ProductImageGallery',
       });
-      toast.error("Failed to update images");
+      toast.error("Failed to update images", { description: humanizeError(error) });
     },
   });
 

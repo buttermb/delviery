@@ -255,7 +255,7 @@ export default function WholesaleClients() {
     },
     onError: (error) => {
       logger.error('Error updating client:', error);
-      toast.error("Failed to update client");
+      toast.error("Failed to update client", { description: humanizeError(error) });
     },
   });
 

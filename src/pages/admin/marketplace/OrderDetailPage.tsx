@@ -176,7 +176,7 @@ export default function OrderDetailPage() {
             setMessageText('');
         },
         onError: (error) => {
-            toast.error("Error sending message");
+            toast.error("Error sending message", { description: humanizeError(error) });
         }
     });
 

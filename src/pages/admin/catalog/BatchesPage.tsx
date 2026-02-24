@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 import { Loader2 } from 'lucide-react';
 import { useCreditGatedAction } from '@/hooks/useCredits';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
@@ -155,7 +156,7 @@ export default function BatchesPage() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to create batch', error, { component: 'BatchesPage' });
-      toast.error("Failed to create batch");
+      toast.error("Failed to create batch", { description: humanizeError(error) });
     }
   });
 

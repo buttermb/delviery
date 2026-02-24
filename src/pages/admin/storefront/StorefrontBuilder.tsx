@@ -52,6 +52,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 // Define available section types (8 total)
 const SECTION_TYPES = {
@@ -474,9 +475,7 @@ export function StorefrontBuilder({
             setNewStoreSlug('');
         },
         onError: (err) => {
-            toast.error('Creation failed', {
-                description: 'Could not create storefront. Please try again.',
-            });
+            toast.error('Creation failed', { description: humanizeError(err) });
             logger.error('Failed to create storefront', err);
         }
     });
@@ -570,9 +569,7 @@ export function StorefrontBuilder({
             easyModeBuilder.markClean();
         },
         onError: (err) => {
-            toast.error('Save failed', {
-                description: 'Could not save changes. Please try again.',
-            });
+            toast.error('Save failed', { description: humanizeError(err) });
             logger.error('Failed to save draft', err);
         }
     });
@@ -612,9 +609,7 @@ export function StorefrontBuilder({
             easyModeBuilder.markClean();
         },
         onError: (err) => {
-            toast.error('Publish failed', {
-                description: 'Could not publish storefront. Please try again.',
-            });
+            toast.error('Publish failed', { description: humanizeError(err) });
             logger.error('Failed to publish storefront', err);
         }
     });

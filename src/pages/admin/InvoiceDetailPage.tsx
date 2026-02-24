@@ -52,6 +52,7 @@ import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { SwipeBackWrapper } from "@/components/mobile/SwipeBackWrapper";
 import { useBreadcrumbLabel } from "@/contexts/BreadcrumbContext";
 import { formatPaymentMethod } from "@/lib/constants/paymentMethods";
+import { humanizeError } from '@/lib/humanizeError';
 
 interface PaymentHistoryEntry {
     amount: number;
@@ -116,8 +117,7 @@ export default function InvoiceDetailPage() {
                 toast.success("Invoice marked as sent");
             },
             onError: (error: unknown) => {
-                const message = error instanceof Error ? error.message : "Failed to update invoice";
-                toast.error("Update failed", { description: message });
+                toast.error("Update failed", { description: humanizeError(error) });
                 logger.error('Failed to mark invoice as sent', error, { component: 'InvoiceDetailPage', invoiceId: invoice.id });
             },
         });
@@ -129,8 +129,7 @@ export default function InvoiceDetailPage() {
                 toast.success("Invoice voided");
             },
             onError: (error: unknown) => {
-                const message = error instanceof Error ? error.message : "Failed to void invoice";
-                toast.error("Void failed", { description: message });
+                toast.error("Void failed", { description: humanizeError(error) });
                 logger.error('Failed to void invoice', error, { component: 'InvoiceDetailPage', invoiceId: invoice.id });
             },
         });
@@ -143,8 +142,7 @@ export default function InvoiceDetailPage() {
                 navigateToAdmin(`crm/invoices/${newInvoice.id}`);
             },
             onError: (error: unknown) => {
-                const message = error instanceof Error ? error.message : "Failed to duplicate invoice";
-                toast.error("Duplicate failed", { description: message });
+                toast.error("Duplicate failed", { description: humanizeError(error) });
                 logger.error('Failed to duplicate invoice', error, { component: 'InvoiceDetailPage', invoiceId: invoice.id });
             },
         });

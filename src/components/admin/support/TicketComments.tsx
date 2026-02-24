@@ -11,6 +11,7 @@ import { Loader2, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface TicketCommentsProps {
   ticketId: string;
@@ -59,7 +60,7 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
     },
     onError: (error) => {
       logger.error('Failed to add comment', error, { component: 'TicketComments' });
-      toast.error("Failed to add comment");
+      toast.error("Failed to add comment", { description: humanizeError(error) });
     },
   });
 

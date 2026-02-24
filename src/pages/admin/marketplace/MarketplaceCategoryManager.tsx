@@ -16,6 +16,7 @@ import { Loader2, Plus, FolderTree, Edit2, Trash2 } from "lucide-react";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 type MarketplaceCategory = {
     id: string;
@@ -108,7 +109,7 @@ export default function MarketplaceCategoryManager() {
         },
         onError: (error: Error) => {
             logger.error('Failed to delete category', { error });
-            toast.error("Failed to delete category");
+            toast.error("Failed to delete category", { description: humanizeError(error) });
         },
     });
     

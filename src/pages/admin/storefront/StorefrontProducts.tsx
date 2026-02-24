@@ -196,7 +196,7 @@ export default function StorefrontProducts() {
     },
     onError: (error) => {
       logger.error('Failed to toggle visibility', error, { component: 'StorefrontProducts' });
-      toast.error("Failed to update product visibility.");
+      toast.error("Failed to update product visibility.", { description: humanizeError(error) });
     },
   });
 
@@ -234,7 +234,7 @@ export default function StorefrontProducts() {
     },
     onError: (error) => {
       logger.error('Failed to update price', error, { component: 'StorefrontProducts' });
-      toast.error("Failed to update price.");
+      toast.error("Failed to update price.", { description: humanizeError(error) });
     },
   });
 
@@ -283,7 +283,7 @@ export default function StorefrontProducts() {
     },
     onError: (error: Error) => {
       logger.error('Failed to update product visibility', { error });
-      toast.error("Failed to update visibility");
+      toast.error("Failed to update visibility", { description: humanizeError(error) });
     },
   });
 
@@ -360,7 +360,7 @@ export default function StorefrontProducts() {
     },
     onError: (error) => {
       logger.error('Failed to update order', error, { component: 'StorefrontProducts' });
-      toast.error("Failed to update display order.");
+      toast.error("Failed to update display order.", { description: humanizeError(error) });
     },
   });
 

@@ -25,6 +25,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 type ColumnDef<T> = {
   accessorKey?: keyof T | string;
@@ -197,7 +198,7 @@ export default function WarehousesPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.lists() });
     },
     onError: (error: unknown) => {
-      toast.error("Failed to add warehouse");
+      toast.error("Failed to add warehouse", { description: humanizeError(error) });
     }
   });
 

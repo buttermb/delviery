@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
+import { humanizeError } from '@/lib/humanizeError';
 
 interface ReturnItem {
   product_name: string;
@@ -199,7 +200,7 @@ export function RACreateForm({ open, onOpenChange, returnAuth, onSuccess }: RACr
     },
     onError: (error: unknown) => {
       logger.error('Failed to create return authorization', error, { component: 'RACreateForm' });
-      toast.error("Failed to create return authorization");
+      toast.error("Failed to create return authorization", { description: humanizeError(error) });
     },
   });
 

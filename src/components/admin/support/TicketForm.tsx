@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Dialog,
   DialogContent,
@@ -113,7 +114,7 @@ export function TicketForm({
     },
     onError: (error: unknown) => {
       logger.error('Failed to save ticket', error, { component: 'TicketForm' });
-      toast.error(ticket ? "Failed to update ticket" : "Failed to create ticket");
+      toast.error(ticket ? "Failed to update ticket" : "Failed to create ticket", { description: humanizeError(error) });
     },
   });
 

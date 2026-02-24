@@ -49,6 +49,7 @@ import {
 } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface MarketplaceOrder {
   id: string;
@@ -186,7 +187,7 @@ export default function StorefrontOrders() {
     },
     onError: (error) => {
       logger.error('Failed to update order status', error, { component: 'StorefrontOrders' });
-      toast.error("Error");
+      toast.error("Error", { description: humanizeError(error) });
     },
   });
 

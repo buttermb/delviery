@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
+import { humanizeError } from '@/lib/humanizeError';
 import type { Database } from "@/integrations/supabase/types";
 
 type Supplier = Database['public']['Tables']['wholesale_suppliers']['Row'];
@@ -99,7 +100,7 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
     },
     onError: (error: unknown) => {
       logger.error('Failed to create supplier', error, { component: 'SupplierForm' });
-      toast.error("Failed to create supplier");
+      toast.error("Failed to create supplier", { description: humanizeError(error) });
     },
   });
 
@@ -143,7 +144,7 @@ export function SupplierForm({ open, onOpenChange, supplier, onSuccess }: Suppli
     },
     onError: (error: unknown) => {
       logger.error('Failed to update supplier', error, { component: 'SupplierForm' });
-      toast.error("Failed to update supplier");
+      toast.error("Failed to update supplier", { description: humanizeError(error) });
     },
   });
 

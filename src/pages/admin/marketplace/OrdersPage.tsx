@@ -47,6 +47,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 
 export default function OrdersPage() {
     const { tenant } = useTenantAdminAuth();
@@ -152,7 +153,7 @@ export default function OrdersPage() {
         },
         onError: (error: unknown) => {
             logger.error('Failed to update order status', error, { component: 'OrdersPage' });
-            toast.error("Failed to update order status. Please try again.");
+            toast.error("Failed to update order status. Please try again.", { description: humanizeError(error) });
         },
     });
 

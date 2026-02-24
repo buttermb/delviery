@@ -18,6 +18,7 @@ import { Loader2, Upload, FileText, AlertCircle } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
 import { useCreditGatedAction } from "@/hooks/useCredits";
 import { validateFile, generateSecureStoragePath, FILE_SIZE_LIMITS, formatFileSize } from "@/lib/fileValidation";
+import { humanizeError } from '@/lib/humanizeError';
 
 interface Batch {
   id: string;
@@ -85,7 +86,7 @@ export function COAUpload({ open, onOpenChange, batch, onSuccess }: COAUploadPro
     },
     onError: (error: unknown) => {
       logger.error('Failed to upload COA', error, { component: 'COAUpload' });
-      toast.error("Failed to upload COA");
+      toast.error("Failed to upload COA", { description: humanizeError(error) });
     },
   });
 

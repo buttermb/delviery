@@ -27,6 +27,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import {
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
     Search,
     Loader2,
     Download,
@@ -135,7 +136,7 @@ export function GlobalProductCatalog() {
             setAutoSync(false);
         },
         onError: (err) => {
-            toast.error("Import failed");
+            toast.error("Import failed", { description: humanizeError(err) });
         },
     });
 

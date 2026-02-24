@@ -31,6 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { queryKeys } from '@/lib/queryKeys';
 import { Loader2 } from 'lucide-react';
 import { formatSmartDate } from '@/lib/formatters';
+import { humanizeError } from '@/lib/humanizeError';
 
 export default function ImagesPage() {
   const { navigateToAdmin } = useTenantNavigation();
@@ -138,7 +139,7 @@ export default function ImagesPage() {
     },
     onError: (error: unknown) => {
       logger.error('Image upload failed', error, { component: 'ImagesPage' });
-      toast.error("Upload failed");
+      toast.error("Upload failed", { description: humanizeError(error) });
     }
   });
 
@@ -164,7 +165,7 @@ export default function ImagesPage() {
     },
     onError: (error: unknown) => {
       logger.error('Image deletion failed', error, { component: 'ImagesPage' });
-      toast.error("Delete failed");
+      toast.error("Delete failed", { description: humanizeError(error) });
     }
   });
 

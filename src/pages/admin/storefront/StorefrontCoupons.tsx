@@ -178,8 +178,7 @@ export default function StorefrontCoupons() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to save coupon', error, { component: 'StorefrontCoupons' });
-      const rawMessage = error instanceof Error ? error.message : '';
-      toast.error("Error");
+      toast.error("Error", { description: humanizeError(error) });
     },
   });
 

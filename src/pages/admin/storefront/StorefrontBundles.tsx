@@ -174,7 +174,7 @@ export default function StorefrontBundles() {
     },
     onError: (error) => {
       logger.error('Failed to create bundle', error, { component: 'StorefrontBundles' });
-      toast.error("Failed to create bundle");
+      toast.error("Failed to create bundle", { description: humanizeError(error) });
     },
   });
 
@@ -206,7 +206,7 @@ export default function StorefrontBundles() {
     },
     onError: (error) => {
       logger.error('Failed to update bundle', error, { component: 'StorefrontBundles' });
-      toast.error("Failed to update bundle");
+      toast.error("Failed to update bundle", { description: humanizeError(error) });
     },
   });
 
@@ -226,7 +226,7 @@ export default function StorefrontBundles() {
     },
     onError: (error: Error) => {
       logger.error('Failed to toggle bundle status', { error });
-      toast.error("Failed to update bundle");
+      toast.error("Failed to update bundle", { description: humanizeError(error) });
     },
   });
 
@@ -247,7 +247,7 @@ export default function StorefrontBundles() {
     },
     onError: (error: Error) => {
       logger.error('Failed to delete bundle', { error });
-      toast.error("Failed to delete bundle");
+      toast.error("Failed to delete bundle", { description: humanizeError(error) });
     },
   });
 

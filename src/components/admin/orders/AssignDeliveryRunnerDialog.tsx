@@ -26,6 +26,7 @@ import { useDeliveryOrderSync } from '@/hooks/useDeliveryOrderSync';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 import Star from 'lucide-react/dist/esm/icons/star';
 import Truck from 'lucide-react/dist/esm/icons/truck';
 import MapPin from 'lucide-react/dist/esm/icons/map-pin';
@@ -285,9 +286,7 @@ export function AssignDeliveryRunnerDialog({
     },
     onError: (error) => {
       logger.error('Failed to assign runner', error, { component: 'AssignDeliveryRunnerDialog' });
-      toast.error('Assignment Failed', {
-        description: error instanceof Error ? error.message : 'Failed to assign runner',
-      });
+      toast.error('Assignment Failed', { description: humanizeError(error) });
     },
   });
 

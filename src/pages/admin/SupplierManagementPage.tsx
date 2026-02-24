@@ -30,6 +30,7 @@ import { SupplierForm } from "@/components/admin/suppliers/SupplierForm";
 import { SupplierDetail } from "@/components/admin/suppliers/SupplierDetail";
 import { queryKeys } from "@/lib/queryKeys";
 import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
+import { humanizeError } from '@/lib/humanizeError';
 import type { Database } from "@/integrations/supabase/types";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -113,7 +114,7 @@ export default function SupplierManagementPage() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to delete supplier', error, { component: 'SupplierManagementPage' });
-      toast.error("Failed to delete supplier");
+      toast.error("Failed to delete supplier", { description: humanizeError(error) });
     },
   });
 

@@ -48,6 +48,7 @@ import { StorefrontSettingsLivePreview } from '@/components/admin/storefront/Sto
 import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedProductsManager';
 import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 // Skeleton already imported above
 
 interface DeliveryZone {
@@ -311,7 +312,7 @@ export default function StorefrontSettings() {
     },
     onError: (error) => {
       logger.error('Failed to save settings', error, { component: 'StorefrontSettings' });
-      toast.error("Failed to save settings. Please try again.");
+      toast.error("Failed to save settings. Please try again.", { description: humanizeError(error) });
     },
   });
 
@@ -335,7 +336,7 @@ export default function StorefrontSettings() {
     },
     onError: (error) => {
       logger.error('Failed to regenerate token', error, { component: 'StorefrontSettings' });
-      toast.error("Failed to generate new link.");
+      toast.error("Failed to generate new link.", { description: humanizeError(error) });
     },
   });
 

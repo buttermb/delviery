@@ -43,6 +43,7 @@ import Package from 'lucide-react/dist/esm/icons/package';
 import { sanitizeTextareaInput } from '@/lib/utils/sanitize';
 import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
 import { formatSmartDate, formatCurrency } from '@/lib/formatters';
+import { humanizeError } from '@/lib/humanizeError';
 
 const REFUND_METHODS = [
   { value: 'cash', label: 'Cash' },
@@ -350,9 +351,7 @@ export function POSRefundDialog({
     },
     onError: (err) => {
       logger.error('POS refund failed', err, { component: 'POSRefundDialog' });
-      toast.error('Refund failed', {
-        description: 'Unable to process refund. Please try again.',
-      });
+      toast.error('Refund failed', { description: humanizeError(err) });
     },
   });
 

@@ -70,7 +70,7 @@ export default function AdminPricingPage() {
       setEditData({});
     },
     onError: (error: Error) => {
-      toast.error("Update failed");
+      toast.error("Update failed", { description: humanizeError(error) });
     }
   });
 

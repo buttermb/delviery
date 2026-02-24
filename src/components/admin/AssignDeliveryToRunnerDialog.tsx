@@ -17,6 +17,7 @@ import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { logger } from "@/lib/logger";
 import { formatSmartDate } from "@/lib/formatters";
+import { humanizeError } from '@/lib/humanizeError';
 
 interface AssignDeliveryToRunnerDialogProps {
   open: boolean;
@@ -94,9 +95,7 @@ export const AssignDeliveryToRunnerDialog = ({
     },
     onError: (error: unknown) => {
       logger.error("Assignment error", error instanceof Error ? error : new Error(String(error)), { component: 'AssignDeliveryToRunnerDialog', runnerId, orderId: selectedOrderId });
-      toast.error("Assignment Failed", {
-        description: error instanceof Error ? error.message : "Unable to assign delivery to runner",
-      });
+      toast.error("Assignment Failed", { description: humanizeError(error) });
     },
   });
 

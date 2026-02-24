@@ -41,6 +41,7 @@ import { RADetail } from "@/components/admin/returns/RADetail";
 import { queryKeys } from "@/lib/queryKeys";
 import { formatSmartDate } from '@/lib/formatters';
 import { logActivityAuto, ActivityActions } from "@/lib/activityLogger";
+import { humanizeError } from '@/lib/humanizeError';
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { EnhancedLoadingState } from "@/components/EnhancedLoadingState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
@@ -157,7 +158,7 @@ export default function ReturnsManagementPage() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to delete return authorization', error, { component: 'ReturnsManagementPage' });
-      toast.error("Failed to delete return authorization");
+      toast.error("Failed to delete return authorization", { description: humanizeError(error) });
     },
   });
 

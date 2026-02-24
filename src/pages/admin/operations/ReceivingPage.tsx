@@ -40,6 +40,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
+import { humanizeError } from '@/lib/humanizeError';
 import { useLocationOptions } from '@/hooks/useLocations';
 
 export default function ReceivingPage() {
@@ -154,9 +155,8 @@ export default function ReceivingPage() {
       });
     },
     onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to create receiving record', { error: errorMessage });
-      toast.error(`Failed to create receiving record: ${errorMessage}`);
+      logger.error('Failed to create receiving record', { error });
+      toast.error('Failed to create receiving record', { description: humanizeError(error) });
     }
   });
 
@@ -189,9 +189,8 @@ export default function ReceivingPage() {
       setSelectedReceipt(null);
     },
     onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to update receiving record', { error: errorMessage });
-      toast.error(`Failed to update receiving record: ${errorMessage}`);
+      logger.error('Failed to update receiving record', { error });
+      toast.error('Failed to update receiving record', { description: humanizeError(error) });
     }
   });
 

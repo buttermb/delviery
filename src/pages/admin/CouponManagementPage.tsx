@@ -47,6 +47,7 @@ import { CouponUsageStats } from "@/components/admin/coupons/CouponUsageStats";
 import { CouponRedemptionTable } from "@/components/admin/coupons/CouponRedemptionTable";
 import { queryKeys } from "@/lib/queryKeys";
 import { formatSmartDate } from "@/lib/formatters";
+import { humanizeError } from '@/lib/humanizeError';
 import type { Database } from "@/integrations/supabase/types";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -122,7 +123,7 @@ export default function CouponManagementPage() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to delete coupon', error, { component: 'CouponManagementPage' });
-      toast.error("Failed to delete coupon");
+      toast.error("Failed to delete coupon", { description: humanizeError(error) });
     },
   });
 
@@ -143,7 +144,7 @@ export default function CouponManagementPage() {
     },
     onError: (error: unknown) => {
       logger.error('Failed to update coupon status', error, { component: 'CouponManagementPage' });
-      toast.error("Failed to update status");
+      toast.error("Failed to update status", { description: humanizeError(error) });
     },
   });
 

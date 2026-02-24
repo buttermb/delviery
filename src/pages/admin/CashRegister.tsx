@@ -56,6 +56,7 @@ import type { POSCustomer } from '@/components/pos/POSCustomerSelector';
 import { useCategories } from '@/hooks/useCategories';
 import { POS_PAYMENT_METHODS } from '@/lib/constants/paymentMethods';
 import { formatCurrency, formatSmartDate, displayName } from '@/lib/formatters';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface Product {
   id: string;
@@ -526,9 +527,7 @@ function CashRegisterContent() {
     onError: (error: unknown) => {
       triggerError();
       logger.error('Payment processing failed', error, { component: 'CashRegister' });
-      toast.error('Payment failed', {
-        description: error instanceof Error ? error.message : 'An error occurred'
-      });
+      toast.error('Payment failed', { description: humanizeError(error) });
     }
   });
 

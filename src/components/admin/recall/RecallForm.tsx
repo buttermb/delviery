@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
+import { humanizeError } from '@/lib/humanizeError';
 import {
   Dialog,
   DialogContent,
@@ -121,7 +122,7 @@ export function RecallForm({
     },
     onError: (error: unknown) => {
       logger.error('Failed to save recall', error, { component: 'RecallForm' });
-      toast.error(recall ? "Failed to update recall" : "Failed to create recall");
+      toast.error(recall ? "Failed to update recall" : "Failed to create recall", { description: humanizeError(error) });
     },
   });
 
