@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { X, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
+import { X, ToggleLeft, ToggleRight, Trash2, Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from 'sonner';
@@ -114,11 +114,11 @@ export function BulkActions({
 
         <div className="flex gap-2">
           <Button onClick={handleSetActive} variant="outline" size="sm" disabled={bulkUpdate.isPending}>
-            <ToggleRight className="mr-2 h-4 w-4" />
+            {bulkUpdate.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ToggleRight className="mr-2 h-4 w-4" />}
             Set Active
           </Button>
           <Button onClick={handleSetInactive} variant="outline" size="sm" disabled={bulkUpdate.isPending}>
-            <ToggleLeft className="mr-2 h-4 w-4" />
+            {bulkUpdate.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ToggleLeft className="mr-2 h-4 w-4" />}
             Set Inactive
           </Button>
           <Button
@@ -127,7 +127,7 @@ export function BulkActions({
             size="sm"
             disabled={bulkDelete.isPending}
           >
-            <Trash2 className="mr-2 h-4 w-4" />
+            {bulkDelete.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
             Delete
           </Button>
         </div>
