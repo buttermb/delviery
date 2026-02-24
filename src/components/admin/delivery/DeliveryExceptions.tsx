@@ -1627,7 +1627,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
               <div className="space-y-2">
                 <Label>Assign New Courier *</Label>
                 <Select
-                  value={resolutionForm.watch('new_courier_id') || ''}
+                  value={resolutionForm.watch('new_courier_id') ?? ''}
                   onValueChange={(v) => resolutionForm.setValue('new_courier_id', v)}
                 >
                   <SelectTrigger>

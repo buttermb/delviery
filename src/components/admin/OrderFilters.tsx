@@ -88,7 +88,7 @@ export function OrderFilters({
           <Input
             placeholder="Search customers..."
             aria-label="Search customers"
-            value={filters.customerSearch || ''}
+            value={filters.customerSearch ?? ''}
             onChange={(e) => onFilterChange({ customerSearch: e.target.value })}
             className="pl-9"
           />
@@ -100,7 +100,7 @@ export function OrderFilters({
           <Input
             placeholder="Search products..."
             aria-label="Search products"
-            value={filters.productSearch || ''}
+            value={filters.productSearch ?? ''}
             onChange={(e) => onFilterChange({ productSearch: e.target.value })}
             className="pl-9"
           />

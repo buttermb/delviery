@@ -447,7 +447,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
 
     try {
       const result = await createMenu.mutateAsync({
-        tenant_id: tenant?.id || '',
+        tenant_id: tenant?.id ?? '',
         name: sanitizeFormInput(name, 200),
         description: sanitizeTextareaInput(description, 500),
         product_ids: selectedProducts,
@@ -1579,9 +1579,9 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
         onOpenChange={(isOpen) => {
           if (!isOpen) setCreatedMenuDetails(null);
         }}
-        accessCode={createdMenuDetails?.accessCode || ''}
-        shareableUrl={createdMenuDetails?.shareableUrl || ''}
-        menuName={createdMenuDetails?.menuName || ''}
+        accessCode={createdMenuDetails?.accessCode ?? ''}
+        shareableUrl={createdMenuDetails?.shareableUrl ?? ''}
+        menuName={createdMenuDetails?.menuName ?? ''}
       />
     </Dialog>
   );

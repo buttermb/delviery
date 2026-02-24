@@ -130,10 +130,10 @@ export function CouponRedemptionTable({ className, maxRows }: CouponRedemptionTa
 
         // Map usage data to redemption records
         const redemptions: RedemptionRecord[] = usageData.map(u => {
-          const coupon = couponMap.get(u.coupon_id || '');
+          const coupon = couponMap.get(u.coupon_id ?? '');
           return {
             id: u.id,
-            couponId: u.coupon_id || '',
+            couponId: u.coupon_id ?? '',
             couponCode: coupon?.code || 'Unknown',
             discountType: coupon?.discount_type || null,
             discountValue: coupon?.discount_value || null,

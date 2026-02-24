@@ -209,7 +209,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
             id: order.id,
             delivery_date: order.created_at,
             status: order.status,
-            delivery_address: order.delivery_address || '',
+            delivery_address: order.delivery_address ?? '',
             hub_name: order.locations?.name || 'Unknown Hub',
             hub_lat: coords?.lat || 0,
             hub_lng: coords?.lng || 0,
@@ -236,7 +236,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
           lat: coords.lat,
           lng: coords.lng,
           distance: 0,
-          address: `${loc.address || ''}${loc.city ? `, ${loc.city}` : ''}${loc.state ? `, ${loc.state}` : ''}`,
+          address: `${loc.address ?? ''}${loc.city ? `, ${loc.city}` : ''}${loc.state ? `, ${loc.state}` : ''}`,
         };
       });
   }, [locations]);

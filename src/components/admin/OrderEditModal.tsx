@@ -120,15 +120,15 @@ export function OrderEditModal({
         price: item.price || 0,
       }));
       setItems(editableItems);
-      setDeliveryAddress(order.delivery_address || '');
-      setDeliveryNotes(order.delivery_notes || '');
-      setCustomerNotes(order.customer_notes || '');
+      setDeliveryAddress(order.delivery_address ?? '');
+      setDeliveryNotes(order.delivery_notes ?? '');
+      setCustomerNotes(order.customer_notes ?? '');
       // Capture initial snapshot for dirty detection
       initialSnapshot.current = JSON.stringify({
         items: editableItems,
-        deliveryAddress: order.delivery_address || '',
-        deliveryNotes: order.delivery_notes || '',
-        customerNotes: order.customer_notes || '',
+        deliveryAddress: order.delivery_address ?? '',
+        deliveryNotes: order.delivery_notes ?? '',
+        customerNotes: order.customer_notes ?? '',
       });
     }
     if (!open) {

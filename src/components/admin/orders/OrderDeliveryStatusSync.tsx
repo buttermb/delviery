@@ -220,7 +220,7 @@ export function OrderDeliveryStatusSync({
 
           // Invalidate queries to refetch
           queryClient.invalidateQueries({ queryKey: deliveryQueryKey });
-          queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId) });
           queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
 
           // Notify parent of status change
@@ -287,7 +287,7 @@ export function OrderDeliveryStatusSync({
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
       toast.success('Order marked as delivered');
     },

@@ -280,7 +280,7 @@ const useMenuTemplates = (tenantId?: string) => {
         id: template.id,
         tenantId: template.tenant_id,
         name: template.name,
-        description: template.description || '',
+        description: template.description ?? '',
         category: template.category || 'custom',
         config: template.config as unknown as MenuTemplateConfig,
         isDefault: template.is_default,
@@ -320,7 +320,7 @@ const useTemplateVersions = (templateId?: string, tenantId?: string) => {
         templateId: version.template_id,
         version: version.version,
         config: version.config as unknown as MenuTemplateConfig,
-        changelog: version.changelog || '',
+        changelog: version.changelog ?? '',
         createdAt: version.created_at,
         createdBy: version.created_by,
       }));
@@ -531,8 +531,8 @@ interface TemplateEditorProps {
 }
 
 function TemplateEditor({ template, tenantId: _tenantId, adminId: _adminId, onSave, onCancel, isSaving }: TemplateEditorProps) {
-  const [name, setName] = useState(template?.name || '');
-  const [description, setDescription] = useState(template?.description || '');
+  const [name, setName] = useState(template?.name ?? '');
+  const [description, setDescription] = useState(template?.description ?? '');
   const [category, setCategory] = useState<MenuTemplate['category']>(template?.category || 'custom');
   const [isShared, setIsShared] = useState(template?.isShared || false);
   const [changelog, setChangelog] = useState('');
@@ -1344,8 +1344,8 @@ export function MenuTemplates({ onCreateMenuFromTemplate, className }: MenuTempl
             </DialogDescription>
           </DialogHeader>
           <TemplateEditor
-            tenantId={tenantId || ''}
-            adminId={adminId || ''}
+            tenantId={tenantId ?? ''}
+            adminId={adminId ?? ''}
             onSave={handleCreateTemplate}
             onCancel={() => setIsCreateDialogOpen(false)}
             isSaving={createTemplate.isPending}
@@ -1365,8 +1365,8 @@ export function MenuTemplates({ onCreateMenuFromTemplate, className }: MenuTempl
           {editingTemplate && (
             <TemplateEditor
               template={editingTemplate}
-              tenantId={tenantId || ''}
-              adminId={adminId || ''}
+              tenantId={tenantId ?? ''}
+              adminId={adminId ?? ''}
               onSave={handleUpdateTemplate}
               onCancel={() => setEditingTemplate(null)}
               isSaving={updateTemplate.isPending}
@@ -1392,7 +1392,7 @@ export function MenuTemplates({ onCreateMenuFromTemplate, className }: MenuTempl
         <VersionHistoryDialog
           templateId={viewingVersions.id}
           templateName={viewingVersions.name}
-          tenantId={tenantId || ''}
+          tenantId={tenantId ?? ''}
           open={!!viewingVersions}
           onOpenChange={() => setViewingVersions(null)}
           onRestore={handleRestoreVersion}

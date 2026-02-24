@@ -121,7 +121,7 @@ export function EditMenuDialog({ menuId, open, onOpenChange, onSuccess }: EditMe
       ) ?? [];
 
       form.reset({
-        name: menuData.name || '',
+        name: menuData.name ?? '',
         expirationDate: menuData.expiration_date
           ? menuData.expiration_date.slice(0, 16) // format for datetime-local input
           : '',

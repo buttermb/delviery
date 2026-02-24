@@ -392,7 +392,7 @@ export function OrderThreadedNotes({
     if (!mentionSearch) return teamMembers;
 
     return teamMembers.filter((member) => {
-      const name = (member.full_name || member.email || '').toLowerCase();
+      const name = (member.full_name || member.email ?? '').toLowerCase();
       const email = member.email.toLowerCase();
       return name.includes(mentionSearch) || email.includes(mentionSearch);
     });

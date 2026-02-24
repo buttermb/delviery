@@ -200,7 +200,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
         const price = parseFloat(priceStr);
         if (isNaN(price) || price < 0) {
           const product = getProductById(productId);
-          toast.error(`Invalid price for ${product?.name || 'product'}`);
+          toast.error(`Invalid price for ${product?.name ?? 'product'}`);
           return false;
         }
       }
@@ -427,10 +427,10 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
 
     await executeWithCredits('menu_create', async () => {
       await createMenu.mutateAsync({
-        tenant_id: tenant?.id || '',
+        tenant_id: tenant?.id ?? '',
         name,
         description: isForumMenu
-          ? (description || 'Community Forum Access Menu')
+          ? (description ?? 'Community Forum Access Menu')
           : description,
         product_ids: isForumMenu ? [] : selectedProducts,
         min_order_quantity: isForumMenu ? undefined : parseFloat(minOrder),
@@ -798,7 +798,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                                     min="0"
                                     step="0.01"
                                     placeholder={effectivePrice.toFixed(2)}
-                                    value={customPrices[productId] || ''}
+                                    value={customPrices[productId] ?? ''}
                                     onChange={(e) => setCustomPrices(prev => ({
                                       ...prev,
                                       [productId]: e.target.value,
@@ -1091,7 +1091,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                             )}
                             {showBranding && (
                               <p className="text-sm font-semibold">
-                                {tenant?.business_name || 'Your Business'}
+                                {tenant?.business_name ?? 'Your Business'}
                               </p>
                             )}
                             {customMessage && (

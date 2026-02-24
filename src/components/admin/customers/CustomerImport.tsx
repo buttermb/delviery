@@ -283,8 +283,8 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
 
       return {
         rowIndex: index + 2, // +2 for header row and 1-based index
-        first_name: first_name || '',
-        last_name: last_name || '',
+        first_name: first_name ?? '',
+        last_name: last_name ?? '',
         email,
         phone,
         address,

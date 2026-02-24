@@ -231,14 +231,14 @@ export function OrderExportButton({
   const getOrderItems = useCallback((order: OrderData) => {
     if (order.order_items && order.order_items.length > 0) {
       return order.order_items.map(item => ({
-        product_name: item.product_name || '',
+        product_name: item.product_name ?? '',
         quantity: item.quantity || 0,
         price: item.unit_price ?? item.price ?? 0,
       }));
     }
     if (order.items && order.items.length > 0) {
       return order.items.map(item => ({
-        product_name: item.name || '',
+        product_name: item.name ?? '',
         quantity: item.quantity || 0,
         price: item.price || 0,
       }));
@@ -295,7 +295,7 @@ export function OrderExportButton({
           order_number: order.order_number || order.id.slice(0, 8),
           status: order.status,
           total_amount: getTotalAmount(order),
-          delivery_method: order.delivery_method || '',
+          delivery_method: order.delivery_method ?? '',
           created_at: order.created_at,
           ...(includeCustomerName && { customer_name: getCustomerName(order) }),
           ...(includeCustomerEmail && { customer_email: getCustomerEmail(order) }),
@@ -328,7 +328,7 @@ export function OrderExportButton({
         order_number: order.order_number || order.id.slice(0, 8),
         status: order.status,
         total_amount: getTotalAmount(order),
-        delivery_method: order.delivery_method || '',
+        delivery_method: order.delivery_method ?? '',
         created_at: order.created_at,
         ...(includeCustomerName && { customer_name: getCustomerName(order) }),
         ...(includeCustomerEmail && { customer_email: getCustomerEmail(order) }),

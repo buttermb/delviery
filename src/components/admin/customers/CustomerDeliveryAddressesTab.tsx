@@ -329,13 +329,13 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
       form.reset({
         label: address.label,
         street_address: address.street_address,
-        apartment: address.apartment || '',
+        apartment: address.apartment ?? '',
         city: address.city,
         state: address.state,
         zip_code: address.zip_code,
         country: address.country,
         is_primary: address.is_primary,
-        delivery_instructions: address.delivery_instructions || '',
+        delivery_instructions: address.delivery_instructions ?? '',
       });
     } else {
       setEditingAddress(null);

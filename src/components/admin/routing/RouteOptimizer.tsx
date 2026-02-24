@@ -467,7 +467,7 @@ function StopItem({ stop, index, onRemove, onUpdate }: {
               placeholder="Notes / Name"
               aria-label="Stop notes"
               className="h-8 text-xs flex-1"
-              value={stop.notes || ''}
+              value={stop.notes ?? ''}
               onChange={(e) => onUpdate({ notes: e.target.value })}
             />
           </div>

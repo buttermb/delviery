@@ -350,7 +350,7 @@ interface ScheduleFormProps {
 }
 
 function ScheduleForm({ menuId, schedule, menus, tenantId: _tenantId, onSave, onCancel, isSaving }: ScheduleFormProps) {
-  const [selectedMenuId, setSelectedMenuId] = useState(schedule?.menuId || menuId || '');
+  const [selectedMenuId, setSelectedMenuId] = useState(schedule?.menuId ?? menuId ?? '');
   const [startTime, setStartTime] = useState(schedule?.startTime ? formatDateTimeLocal(schedule.startTime) : '');
   const [endTime, setEndTime] = useState(schedule?.endTime ? formatDateTimeLocal(schedule.endTime) : '');
   const [isRecurring, setIsRecurring] = useState(schedule?.isRecurring || false);
@@ -993,7 +993,7 @@ export function MenuScheduler({ menuId, className }: MenuSchedulerProps) {
           <ScheduleForm
             menuId={menuId}
             menus={menus}
-            tenantId={tenantId || ''}
+            tenantId={tenantId ?? ''}
             onSave={handleCreateSchedule}
             onCancel={() => setIsCreateDialogOpen(false)}
             isSaving={createSchedule.isPending}
@@ -1015,7 +1015,7 @@ export function MenuScheduler({ menuId, className }: MenuSchedulerProps) {
               menuId={editingSchedule.menuId}
               schedule={editingSchedule}
               menus={menus}
-              tenantId={tenantId || ''}
+              tenantId={tenantId ?? ''}
               onSave={handleUpdateSchedule}
               onCancel={() => setEditingSchedule(null)}
               isSaving={updateSchedule.isPending}

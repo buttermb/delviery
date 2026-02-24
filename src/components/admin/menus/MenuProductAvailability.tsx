@@ -394,7 +394,7 @@ function RuleFormDialog({
     allowedDays: existingRule?.allowedDays || [1, 2, 3, 4, 5], // Weekdays by default
     maxQuantity: existingRule?.maxQuantity ?? 10,
     hideWhenUnavailable: existingRule?.hideWhenUnavailable ?? false,
-    unavailableMessage: existingRule?.unavailableMessage || '',
+    unavailableMessage: existingRule?.unavailableMessage ?? '',
   }));
 
   const handleSave = () => {

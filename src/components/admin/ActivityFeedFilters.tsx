@@ -77,7 +77,7 @@ export function ActivityFeedFilters({
           <Input
             placeholder="Search activity..."
             aria-label="Search activity"
-            value={filters.searchTerm || ''}
+            value={filters.searchTerm ?? ''}
             onChange={(e) => onFilterChange({ searchTerm: e.target.value })}
             className="pl-9"
           />
@@ -120,7 +120,7 @@ export function ActivityFeedFilters({
         {/* Date Range */}
         <Input
           type="date"
-          value={filters.startDate || ''}
+          value={filters.startDate ?? ''}
           onChange={(e) => onFilterChange({ startDate: e.target.value || undefined })}
           className="w-[140px]"
           placeholder="From"
@@ -128,7 +128,7 @@ export function ActivityFeedFilters({
         />
         <Input
           type="date"
-          value={filters.endDate || ''}
+          value={filters.endDate ?? ''}
           onChange={(e) => onFilterChange({ endDate: e.target.value || undefined })}
           className="w-[140px]"
           placeholder="To"

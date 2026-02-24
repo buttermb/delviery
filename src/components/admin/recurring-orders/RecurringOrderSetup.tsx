@@ -153,7 +153,7 @@ function RecurringOrderSetupComponent({
     const client = clients.find((c) => c.id === id);
     // Use email as fallback since address may not exist on wholesale_clients
     if (!watch("delivery_address") && client) {
-      setValue("delivery_address", client.email || '');
+      setValue("delivery_address", client.email ?? '');
     }
   };
 
@@ -397,7 +397,7 @@ function RecurringOrderSetupComponent({
             <Label>End Date (Optional)</Label>
             <Input
               type="date"
-              value={watch("end_date") || ""}
+              value={watch("end_date") ?? ""}
               onChange={(e) => setValue("end_date", e.target.value || null)}
             />
             <p className="text-xs text-muted-foreground">
@@ -588,7 +588,7 @@ function RecurringOrderSetupComponent({
                 variant="link"
                 size="sm"
                 className="h-auto p-0 text-xs"
-                onClick={() => setValue("delivery_address", selectedClient.email || '')}
+                onClick={() => setValue("delivery_address", selectedClient.email ?? '')}
               >
                 Use client's email: {selectedClient.email}
               </Button>
@@ -635,7 +635,7 @@ function RecurringOrderSetupComponent({
               <div className="space-y-2 pl-4 border-l-2 border-muted">
                 <Label>Preferred Runner</Label>
                 <Select
-                  value={watch("preferred_runner_id") || ""}
+                  value={watch("preferred_runner_id") ?? ""}
                   onValueChange={(v) => setValue("preferred_runner_id", v || null)}
                   disabled={couriersLoading}
                 >
@@ -711,13 +711,13 @@ function RecurringOrderSetupComponent({
                   )}
                   , starting from{" "}
                   <span className="font-medium">
-                    {formatSmartDate(watch("next_order_date") || "")}
+                    {formatSmartDate(watch("next_order_date") ?? "")}
                   </span>
                   {watch("end_date") && (
                     <>
                       {" "}until{" "}
                       <span className="font-medium">
-                        {formatSmartDate(watch("end_date") || "")}
+                        {formatSmartDate(watch("end_date") ?? "")}
                       </span>
                     </>
                   )}

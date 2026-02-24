@@ -205,7 +205,7 @@ export function OrderSplitDialog({
         menu_id: order.menu_id,
         shift_id: null, // New order, no POS shift
         delivery_address: order.delivery_address,
-        delivery_notes: `[SPLIT FROM #${order.order_number}] ${order.delivery_notes || ''}`.trim(),
+        delivery_notes: `[SPLIT FROM #${order.order_number}] ${order.delivery_notes ?? ''}`.trim(),
         courier_id: null, // Courier needs to be reassigned
         contact_name: order.contact_name,
         contact_phone: order.contact_phone,
@@ -259,7 +259,7 @@ export function OrderSplitDialog({
         .update({
           subtotal: remainingTotal,
           total_amount: remainingTotal,
-          delivery_notes: `[SPLIT - See also #${newOrder.order_number}] ${order.delivery_notes || ''}`.trim(),
+          delivery_notes: `[SPLIT - See also #${newOrder.order_number}] ${order.delivery_notes ?? ''}`.trim(),
           metadata: {
             ...(order.metadata || {}),
             split_orders: [

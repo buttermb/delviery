@@ -69,8 +69,8 @@ export function OrderNotesSection({
   const [activeTab, setActiveTab] = useState<'internal' | 'customer'>('internal');
   const [isEditingInternal, setIsEditingInternal] = useState(false);
   const [isEditingCustomer, setIsEditingCustomer] = useState(false);
-  const [editedInternalNotes, setEditedInternalNotes] = useState(internalNotes || '');
-  const [editedCustomerNotes, setEditedCustomerNotes] = useState(customerNotes || '');
+  const [editedInternalNotes, setEditedInternalNotes] = useState(internalNotes ?? '');
+  const [editedCustomerNotes, setEditedCustomerNotes] = useState(customerNotes ?? '');
 
   // Mutation for updating notes
   const updateNotesMutation = useMutation({
@@ -136,22 +136,22 @@ export function OrderNotesSection({
   };
 
   const handleCancelInternalEdit = () => {
-    setEditedInternalNotes(internalNotes || '');
+    setEditedInternalNotes(internalNotes ?? '');
     setIsEditingInternal(false);
   };
 
   const handleCancelCustomerEdit = () => {
-    setEditedCustomerNotes(customerNotes || '');
+    setEditedCustomerNotes(customerNotes ?? '');
     setIsEditingCustomer(false);
   };
 
   const handleStartInternalEdit = () => {
-    setEditedInternalNotes(internalNotes || '');
+    setEditedInternalNotes(internalNotes ?? '');
     setIsEditingInternal(true);
   };
 
   const handleStartCustomerEdit = () => {
-    setEditedCustomerNotes(customerNotes || '');
+    setEditedCustomerNotes(customerNotes ?? '');
     setIsEditingCustomer(true);
   };
 

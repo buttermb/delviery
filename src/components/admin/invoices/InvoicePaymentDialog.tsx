@@ -253,7 +253,7 @@ export function InvoicePaymentDialog({
               control={control}
               render={({ field }) => (
                 <Select
-                  value={field.value || ''}
+                  value={field.value ?? ''}
                   onValueChange={field.onChange}
                 >
                   <SelectTrigger className={errors.payment_method ? 'border-destructive' : ''}>

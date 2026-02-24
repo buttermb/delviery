@@ -218,7 +218,7 @@ export function OrderPaymentStatusSync({
 
           // Invalidate queries to refetch
           queryClient.invalidateQueries({ queryKey: paymentQueryKey });
-          queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId) });
+          queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId) });
           queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
 
           // Notify parent of status change
@@ -282,7 +282,7 @@ export function OrderPaymentStatusSync({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: paymentQueryKey });
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id || '', orderId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.detail(tenant?.id ?? '', orderId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
       toast.success('Payment recorded successfully');
       setShowPaymentDialog(false);

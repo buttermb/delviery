@@ -520,7 +520,7 @@ export function POSRefundDialog({
                 render={({ field }) => (
                   <CurrencyInput
                     id="pos-refund-amount"
-                    value={field.value?.toString() || ''}
+                    value={field.value?.toString() ?? ''}
                     onValueChange={(val) => field.onChange(val ?? 0)}
                     placeholder="0.00"
                     className={errors.refundAmount ? 'border-destructive' : ''}

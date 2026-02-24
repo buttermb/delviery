@@ -156,8 +156,8 @@ interface OrderData {
 
 // Enhanced Order Card with more details
 function OrderCard({ order, onStatusChange, isUpdating }: { order: OrderData; onStatusChange?: (id: string, status: string) => void; isUpdating?: boolean }) {
-  const customerName = order.whitelist?.customer_name || order.contact_phone || 'Unknown';
-  const menuName = order.menu?.name || 'Menu';
+  const customerName = order.whitelist?.customer_name ?? order.contact_phone ?? 'Unknown';
+  const menuName = order.menu?.name ?? 'Menu';
   const total = Number(order.total_amount || 0);
   const parsedData = order.order_data as Record<string, unknown> | null;
   const orderItems = (parsedData?.items as unknown[]) ?? [];
@@ -189,7 +189,7 @@ function OrderCard({ order, onStatusChange, isUpdating }: { order: OrderData; on
           </div>
           <div className={cn(
             "w-2 h-2 rounded-full shrink-0 mt-2",
-            statusColors[order.status] || 'bg-gray-400'
+            statusColors[order.status] ?? 'bg-gray-400'
           )} />
         </div>
 
@@ -261,7 +261,7 @@ function OrdersTab() {
       ? orders.reduce((sum: number, o: OrderData) => sum + Number(o.total_amount || 0), 0) / orders.length
       : 0,
     todayOrders: orders.filter((o: OrderData) => {
-      const orderDate = new Date(o.created_at || '');
+      const orderDate = new Date(o.created_at ?? '');
       const today = new Date();
       return orderDate.toDateString() === today.toDateString();
     }).length,
@@ -497,7 +497,7 @@ function OrdersTab() {
                           )} />
                           <div>
                             <div className="font-medium">
-                              {order.whitelist?.customer_name || order.contact_phone || 'Unknown'}
+                              {order.whitelist?.customer_name ?? order.contact_phone ?? 'Unknown'}
                             </div>
                             <div className="text-sm text-muted-foreground">
                               {order.menu?.name} • {Array.isArray((order.order_data as Record<string, unknown> | null)?.items) ? ((order.order_data as Record<string, unknown>).items as unknown[]).length : 0} items
@@ -607,7 +607,7 @@ function SetupTab() {
         <EncryptionMigrationTool
           open={migrationOpen}
           onOpenChange={setMigrationOpen}
-          tenantId={tenant?.id || ''}
+          tenantId={tenant?.id ?? ''}
         />
       </Suspense>
     </div>

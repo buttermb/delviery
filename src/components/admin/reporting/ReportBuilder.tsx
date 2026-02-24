@@ -229,7 +229,7 @@ export function ReportBuilder({
           field: firstField.id,
           operator: defaultOperator,
           value: '',
-          data_source: formData.data_sources[0] || '',
+          data_source: formData.data_sources[0] ?? '',
         },
       ],
     }));

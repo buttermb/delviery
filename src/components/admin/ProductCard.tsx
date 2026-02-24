@@ -99,7 +99,7 @@ export function ProductCard({
           />
           {product.category && (
             <Badge className="absolute top-3 right-3 bg-[hsl(var(--tenant-bg))]/95 text-[hsl(var(--tenant-primary))] border-0 shadow-md backdrop-blur-sm max-w-[140px]">
-              <TruncatedText text={product.category || ''} maxWidthClass="max-w-[120px]" />
+              <TruncatedText text={product.category ?? ''} maxWidthClass="max-w-[120px]" />
             </Badge>
           )}
           {!isInStock && (

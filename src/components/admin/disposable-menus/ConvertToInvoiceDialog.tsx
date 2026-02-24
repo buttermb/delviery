@@ -50,7 +50,7 @@ export function ConvertToInvoiceDialog({
 }: ConvertToInvoiceDialogProps) {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const [selectedClientId, setSelectedClientId] = useState<string>(order.client_id || '');
+  const [selectedClientId, setSelectedClientId] = useState<string>(order.client_id ?? '');
   const [clientSearchQuery, setClientSearchQuery] = useState('');
   const [isConverting, setIsConverting] = useState(false);
 

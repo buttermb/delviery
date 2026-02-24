@@ -83,8 +83,8 @@ export function QuickMessageButton({
   const replaceVariables = (text: string) => {
     return text
       .replace(/\{\{name\}\}/g, recipientName || 'Customer')
-      .replace(/\{\{phone\}\}/g, recipientPhone || '')
-      .replace(/\{\{email\}\}/g, recipientEmail || '');
+      .replace(/\{\{phone\}\}/g, recipientPhone ?? '')
+      .replace(/\{\{email\}\}/g, recipientEmail ?? '');
   };
 
   const handleTemplateChange = (templateId: string) => {

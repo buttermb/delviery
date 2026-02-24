@@ -327,7 +327,7 @@ export function ProductQRGenerator({ product, open, onOpenChange }: ProductQRGen
               </div>
             ) : (
               <Select
-                value={selectedStore?.id || ''}
+                value={selectedStore?.id ?? ''}
                 onValueChange={(value) => setSelectedStoreId(value)}
               >
                 <SelectTrigger>

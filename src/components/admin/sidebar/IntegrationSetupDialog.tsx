@@ -370,7 +370,7 @@ export function IntegrationSetupDialog({
                 id={field.key}
                 type={field.type}
                 placeholder={field.placeholder}
-                value={formData[field.key] || ''}
+                value={formData[field.key] ?? ''}
                 onChange={(e) =>
                   setFormData({ ...formData, [field.key]: e.target.value })
                 }

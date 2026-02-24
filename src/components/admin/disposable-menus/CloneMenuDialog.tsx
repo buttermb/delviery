@@ -54,7 +54,7 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
           title: newTitle.trim(),
           description: menu.description,
           encrypted_url_token: crypto.randomUUID().replace(/-/g, '').substring(0, 24),
-          access_code_hash: menu.access_code_hash || '',
+          access_code_hash: menu.access_code_hash ?? '',
           expiration_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
           status: 'active',
           screenshot_protection_enabled: cloneSettings.security ? (menu.screenshot_protection_enabled ?? false) : false,

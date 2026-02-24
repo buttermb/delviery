@@ -132,7 +132,7 @@ function useCustomerOptions(tenantId: string | undefined) {
  */
 function useProductOptions(tenantId: string | undefined) {
   return useQuery({
-    queryKey: [...queryKeys.products.byTenant(tenantId || ''), 'filter-options'],
+    queryKey: [...queryKeys.products.byTenant(tenantId ?? ''), 'filter-options'],
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -264,7 +264,7 @@ export function OrderFilters({
           type="number"
           placeholder="Min"
           aria-label="Minimum order total"
-          value={(filters.minTotal as string) || ''}
+          value={(filters.minTotal as string) ?? ''}
           onChange={(e) => handleMinTotalChange(e.target.value)}
           className="w-[80px] h-9"
           min={0}
@@ -275,7 +275,7 @@ export function OrderFilters({
           type="number"
           placeholder="Max"
           aria-label="Maximum order total"
-          value={(filters.maxTotal as string) || ''}
+          value={(filters.maxTotal as string) ?? ''}
           onChange={(e) => handleMaxTotalChange(e.target.value)}
           className="w-[80px] h-9"
           min={0}

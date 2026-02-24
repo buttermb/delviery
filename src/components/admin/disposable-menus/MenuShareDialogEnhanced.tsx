@@ -92,7 +92,7 @@ export const MenuShareDialogEnhanced = ({
     whitelistEntry?.unique_access_token
   );
 
-  const accessCode = menu?.access_code || 'N/A';
+  const accessCode = menu?.access_code ?? 'N/A';
 
   // Generate QR code when dialog opens
   useEffect(() => {
@@ -142,7 +142,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
   const handleDownloadQR = async () => {
     if (!menuUrl) return;
     try {
-      await downloadQRCodePNG(menuUrl, `menu-qr-${menu?.id || 'code'}.png`, { size: 512 });
+      await downloadQRCodePNG(menuUrl, `menu-qr-${menu?.id ?? 'code'}.png`, { size: 512 });
       showSuccessToast('QR Code Downloaded', 'QR code saved to your downloads');
     } catch {
       showErrorToast('Download Failed', 'Failed to download QR code');
@@ -242,13 +242,13 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
 
   const handleWhatsApp = () => {
     const message = isForumMenu
-      ? `Hi ${whitelistEntry?.customer_name || 'there'}!\n\n` +
+      ? `Hi ${whitelistEntry?.customer_name ?? 'there'}!\n\n` +
       `You've been granted access to our community forum.\n\n` +
       `Access URL: ${menuUrl}\n` +
       `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
       `Join the discussion, share reviews, and connect with other customers!\n\n` +
       `This link expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.`
-      : `Hi ${whitelistEntry?.customer_name || 'there'}!\n\n` +
+      : `Hi ${whitelistEntry?.customer_name ?? 'there'}!\n\n` +
       `You've been granted access to our wholesale catalog.\n\n` +
       `Access URL: ${menuUrl}\n` +
       `Access Code: ${accessCode}\n\n` +
@@ -259,14 +259,14 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
   const handleEmail = () => {
     const subject = encodeURIComponent(`Access to ${menu?.name}`);
     const body = isForumMenu
-      ? `Hi ${whitelistEntry?.customer_name || 'there'},\n\n` +
+      ? `Hi ${whitelistEntry?.customer_name ?? 'there'},\n\n` +
       `You've been granted access to our community forum.\n\n` +
       `Access URL: ${menuUrl}\n` +
       `${accessCode !== 'N/A' ? `Access Code: ${accessCode}\n\n` : '\n'}` +
       `Join the discussion, share reviews, and connect with other customers!\n\n` +
       `This link expires ${menu?.expiration_date ? `on ${formatSmartDate(menu.expiration_date)}` : 'after use'}.\n\n` +
       `Best regards`
-      : `Hi ${whitelistEntry?.customer_name || 'there'},\n\n` +
+      : `Hi ${whitelistEntry?.customer_name ?? 'there'},\n\n` +
       `You've been granted access to our wholesale catalog.\n\n` +
       `Access URL: ${menuUrl}\n` +
       `Access Code: ${accessCode}\n\n` +
@@ -427,7 +427,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Status:</span>
                 <Badge variant={menu?.status === 'active' ? 'default' : 'destructive'}>
-                  {menu?.status || 'unknown'}
+                  {menu?.status ?? 'unknown'}
                 </Badge>
               </div>
               {menu?.expiration_date && (
@@ -568,7 +568,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
                       <div key={String(entry.id)} className="p-3 flex items-center justify-between">
                         <div>
                           <div className="font-medium">
-                            {entry.customer_name || entry.customer?.business_name || 'Unknown Customer'}
+                            {entry.customer_name ?? entry.customer?.business_name ?? 'Unknown Customer'}
                           </div>
                           {entry.customer_phone && (
                             <div className="text-sm text-muted-foreground">
@@ -582,7 +582,7 @@ This link is confidential and expires ${menu?.expiration_date ? `on ${formatSmar
                           )}
                         </div>
                         <Badge variant={jsonToString(entry.status) === 'active' ? 'default' : 'secondary'}>
-                          {jsonToString(entry.status) || 'active'}
+                          {jsonToString(entry.status) ?? 'active'}
                         </Badge>
                       </div>
                     ))}

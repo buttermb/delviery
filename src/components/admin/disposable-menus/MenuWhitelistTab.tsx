@@ -128,7 +128,7 @@ export const MenuWhitelistTab = ({
 
   const shareViaWhatsApp = (entry: WhitelistEntry) => {
     const url = formatMenuUrl(encryptedToken, entry.unique_access_token);
-    const accessCode = menu?.access_code || 'N/A';
+    const accessCode = menu?.access_code ?? 'N/A';
     const message = encodeURIComponent(
       `Hi ${entry.customer_name}!\n\n` +
       `You've been granted access to our private catalog.\n\n` +

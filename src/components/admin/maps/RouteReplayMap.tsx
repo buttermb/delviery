@@ -10,7 +10,7 @@ import { RouteReplayControls } from './RouteReplayControls';
 import { formatSmartDate } from '@/lib/formatters';
 import { escapeHtml } from '@/lib/utils/sanitize';
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN ?? '';
 
 interface RouteReplayMapProps {
   locations: LocationPoint[];

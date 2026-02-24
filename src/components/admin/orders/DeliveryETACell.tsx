@@ -58,7 +58,7 @@ function getDeliveryStatusColor(status: string): string {
     in_transit: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
     delivered: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
   };
-  return colors[status] || '';
+  return colors[status] ?? '';
 }
 
 export function DeliveryETACell({ eta, orderStatus }: DeliveryETACellProps) {

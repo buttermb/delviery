@@ -60,9 +60,9 @@ export function InventoryMovementLog() {
         product_name: m.wholesale_inventory?.strain_name || 'Unknown Product',
         movement_type: m.movement_type || 'adjustment',
         quantity_change: m.quantity_lbs || (m.new_quantity_lbs - m.previous_quantity_lbs) || 0,
-        from_location: m.wholesale_inventory?.location || '',
+        from_location: m.wholesale_inventory?.location ?? '',
         to_location: '',
-        notes: m.notes || '',
+        notes: m.notes ?? '',
         created_at: m.created_at,
       })) as InventoryMovement[];
     },

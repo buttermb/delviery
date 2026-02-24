@@ -123,7 +123,7 @@ export function RouteReplayControls({
             Point {currentIndex + 1} of {locations.length}
           </span>
           <Badge variant="outline">
-            {formatSmartDate(currentLocation?.recorded_at || '', { includeTime: true })}
+            {formatSmartDate(currentLocation?.recorded_at ?? '', { includeTime: true })}
           </Badge>
         </div>
         <Slider

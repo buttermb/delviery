@@ -58,8 +58,8 @@ export function CreateMenuForm({
   const { canCreate, getCurrent, getLimit } = useTenantLimits();
   const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
 
-  const [name, setName] = useState(initialData?.name || '');
-  const [description, setDescription] = useState(initialData?.description || '');
+  const [name, setName] = useState(initialData?.name ?? '');
+  const [description, setDescription] = useState(initialData?.description ?? '');
   const [selectedProducts, setSelectedProducts] = useState<string[]>(
     initialData?.selectedProducts ?? []
   );
@@ -150,7 +150,7 @@ export function CreateMenuForm({
 
     try {
       const result = await createMenu.mutateAsync({
-        tenant_id: tenant?.id || '',
+        tenant_id: tenant?.id ?? '',
         name: sanitizeFormInput(name, 200),
         description: sanitizeTextareaInput(description, 500),
         product_ids: selectedProducts,

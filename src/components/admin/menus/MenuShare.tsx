@@ -315,7 +315,7 @@ export function MenuShare({ menuId: propMenuId, className }: MenuShareProps) {
 
   // Fetch click/conversion stats per channel
   const { data: channelStats = [], isLoading: statsLoading, refetch: refetchStats } = useQuery({
-    queryKey: [...queryKeys.menus.analytics(tenantId || '', currentMenuId || ''), 'distribution'],
+    queryKey: [...queryKeys.menus.analytics(tenantId ?? '', currentMenuId ?? ''), 'distribution'],
     queryFn: async (): Promise<LinkClickStats[]> => {
       if (!tenantId || !currentMenuId) return [];
 

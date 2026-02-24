@@ -122,7 +122,7 @@ function useLazyQuery<T>(
 
 function useRelatedOrders(customerId: string | undefined, tenantId: string | undefined) {
   return useLazyQuery(
-    [...queryKeys.customers.related(tenantId || '', customerId || ''), 'orders'],
+    [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'orders'],
     async (): Promise<RelatedEntityItem[]> => {
       const { data, error } = await supabase
         .from('orders')
@@ -152,7 +152,7 @@ function useRelatedOrders(customerId: string | undefined, tenantId: string | und
 
 function useRelatedDeliveries(customerId: string | undefined, tenantId: string | undefined) {
   return useLazyQuery(
-    [...queryKeys.customers.related(tenantId || '', customerId || ''), 'deliveries'],
+    [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'deliveries'],
     async (): Promise<RelatedEntityItem[]> => {
       // Get orders for this customer first, then get deliveries
       const { data: orders, error: ordersError } = await supabase
@@ -200,7 +200,7 @@ function useRelatedDeliveries(customerId: string | undefined, tenantId: string |
 
 function useRelatedPayments(customerId: string | undefined, tenantId: string | undefined) {
   return useLazyQuery(
-    [...queryKeys.customers.related(tenantId || '', customerId || ''), 'payments'],
+    [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'payments'],
     async (): Promise<RelatedEntityItem[]> => {
       const { data, error } = await supabase
         .from('customer_payments')
@@ -229,7 +229,7 @@ function useRelatedPayments(customerId: string | undefined, tenantId: string | u
 
 function useRelatedSpecialPricing(customerId: string | undefined, tenantId: string | undefined) {
   return useLazyQuery(
-    [...queryKeys.customers.related(tenantId || '', customerId || ''), 'special-pricing'],
+    [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'special-pricing'],
     async (): Promise<RelatedEntityItem[]> => {
       const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
         .from('customer_pricing')
@@ -291,7 +291,7 @@ interface LoyaltyInfo {
 
 function useRelatedLoyalty(customerId: string | undefined, tenantId: string | undefined) {
   return useLazyQuery<LoyaltyInfo | null>(
-    [...queryKeys.customers.related(tenantId || '', customerId || ''), 'loyalty'],
+    [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'loyalty'],
     async (): Promise<LoyaltyInfo | null> => {
       // Get loyalty points
       const { data: pointsData, error: pointsError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
@@ -384,7 +384,7 @@ interface CommunicationPrefs {
 
 function useRelatedCommunicationPrefs(customerId: string | undefined, tenantId: string | undefined) {
   return useLazyQuery<CommunicationPrefs | null>(
-    [...queryKeys.customers.related(tenantId || '', customerId || ''), 'comm-prefs'],
+    [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'comm-prefs'],
     async (): Promise<CommunicationPrefs | null> => {
       try {
         const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
@@ -419,7 +419,7 @@ interface OrganizationInfo {
 
 function useRelatedOrganization(customerId: string | undefined, tenantId: string | undefined) {
   return useLazyQuery<OrganizationInfo | null>(
-    [...queryKeys.customers.related(tenantId || '', customerId || ''), 'organization'],
+    [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'organization'],
     async (): Promise<OrganizationInfo | null> => {
       try {
         // Get customer's organization_id (column might not exist)
@@ -464,7 +464,7 @@ function useRelatedOrganization(customerId: string | undefined, tenantId: string
 
 function useRelatedMenus(customerId: string | undefined, tenantId: string | undefined) {
   return useLazyQuery(
-    [...queryKeys.customers.related(tenantId || '', customerId || ''), 'saved-menus'],
+    [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'saved-menus'],
     async (): Promise<RelatedEntityItem[]> => {
       // Get menus that the customer has ordered from
       const { data: orders, error: ordersError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
