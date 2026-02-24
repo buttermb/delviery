@@ -280,18 +280,24 @@ class PaymentService {
       if (!balanceResult.success) {
         // Try to rollback payment record if balance update failed
         if (payment?.id) {
-          await supabase.from('wholesale_payments').delete().eq('id', payment.id);
+          const { error: rollbackError } = await supabase.from('wholesale_payments').delete().eq('id', payment.id);
+          if (rollbackError) {
+            logger.error('Failed to rollback payment record', rollbackError, { paymentId: payment.id });
+          }
         }
         throw new Error(balanceResult.error || 'Failed to update balance');
       }
 
       // Update last_payment_date on client
-      await supabase
+      const { error: dateError } = await supabase
         .from('wholesale_clients')
-        .update({ 
+        .update({
           last_payment_date: new Date().toISOString()
         })
         .eq('id', clientId);
+      if (dateError) {
+        logger.warn('Failed to update last_payment_date', dateError, { clientId });
+      }
 
       logger.info('Payment recorded successfully', {
         clientId,

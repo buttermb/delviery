@@ -195,6 +195,7 @@ export function MobileNav() {
 
                 {/* Refresh Auth Button */}
                 <button
+                  type="button"
                   onClick={handleRefreshAuth}
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-accent/50 w-full mt-4 border-t pt-4"
                   disabled={isRefreshing}

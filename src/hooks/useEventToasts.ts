@@ -101,7 +101,7 @@ export function useEventToasts({ enabled = true }: UseEventToastsOptions = {}) {
         .channel(`event-toast-${table}-${tenantId}`)
         .on(
           'postgres_changes',
-          { event: 'INSERT', schema: 'public', table },
+          { event: 'INSERT', schema: 'public', table, filter: `tenant_id=eq.${tenantId}` },
           (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
             if (!payload.new) return;
             const orderNum = getField(payload.new, 'order_number') ||
@@ -139,7 +139,7 @@ export function useEventToasts({ enabled = true }: UseEventToastsOptions = {}) {
       .channel(`event-toast-products-${tenantId}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'products' },
+        { event: 'UPDATE', schema: 'public', table: 'products', filter: `tenant_id=eq.${tenantId}` },
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           if (!payload.new || !payload.old) return;
           const name = getField(payload.new, 'name', 'Unknown Product');
@@ -180,7 +180,7 @@ export function useEventToasts({ enabled = true }: UseEventToastsOptions = {}) {
       .channel(`event-toast-payments-${tenantId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'payments' },
+        { event: 'INSERT', schema: 'public', table: 'wholesale_payments', filter: `tenant_id=eq.${tenantId}` },
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           if (!payload.new) return;
           const amount = getNumField(payload.new, 'amount');
@@ -214,7 +214,7 @@ export function useEventToasts({ enabled = true }: UseEventToastsOptions = {}) {
       .channel(`event-toast-customers-${tenantId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'customers' },
+        { event: 'INSERT', schema: 'public', table: 'customers', filter: `tenant_id=eq.${tenantId}` },
         (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           if (!payload.new) return;
           const name = getField(payload.new, 'name') ||

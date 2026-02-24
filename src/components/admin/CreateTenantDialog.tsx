@@ -220,7 +220,7 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
         logger.warn('Failed to create user:', userError);
       } else if (userData.user && tenant) {
         // Add user to tenant_users table
-        await supabase.from('tenant_users').insert({
+        const { error: tenantUserError } = await supabase.from('tenant_users').insert({
           tenant_id: tenant.id,
           email: sanitizedOwnerEmail,
           name: sanitizedOwnerName,
@@ -229,6 +229,9 @@ export function CreateTenantDialog({ trigger }: CreateTenantDialogProps) {
           email_verified: true,
           accepted_at: new Date().toISOString(),
         });
+        if (tenantUserError) {
+          logger.error('Failed to add owner to tenant_users', tenantUserError);
+        }
       }
 
       toast.success("${data.business_name} has been created successfully");

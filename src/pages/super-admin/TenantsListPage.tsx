@@ -82,6 +82,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 import { showInfoToast } from '@/utils/toastHelpers';
+import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -640,12 +642,18 @@ export default function TenantsListPage() {
               Cancel
             </Button>
             <Button onClick={async () => {
-              for (const tid of selectedTenants) {
-                await supabase.from('tenants').update({ subscription_plan: selectedPlan }).eq('id', tid);
+              try {
+                for (const tid of selectedTenants) {
+                  const { error } = await supabase.from('tenants').update({ subscription_plan: selectedPlan }).eq('id', tid);
+                  if (error) throw error;
+                }
+                clearSelection();
+                setChangePlanDialogOpen(false);
+                showInfoToast("Success", `${selectedTenants.length} tenants updated to ${selectedPlan}`);
+              } catch (error: unknown) {
+                logger.error('Failed to update tenant plans', error);
+                toast.error('Failed to update some tenants. Please try again.');
               }
-              clearSelection();
-              setChangePlanDialogOpen(false);
-              showInfoToast("Success", `${selectedTenants.length} tenants updated to ${selectedPlan}`);
             }}>
               Update Plan
             </Button>
@@ -668,12 +676,18 @@ export default function TenantsListPage() {
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={async () => {
-                for (const tid of selectedTenants) {
-                  await supabase.from('tenants').update({ status: 'suspended' }).eq('id', tid);
+                try {
+                  for (const tid of selectedTenants) {
+                    const { error } = await supabase.from('tenants').update({ status: 'suspended' }).eq('id', tid);
+                    if (error) throw error;
+                  }
+                  clearSelection();
+                  setSuspendDialogOpen(false);
+                  showInfoToast("Success", `${selectedTenants.length} tenants suspended`);
+                } catch (error: unknown) {
+                  logger.error('Failed to suspend tenants', error);
+                  toast.error('Failed to suspend some tenants. Please try again.');
                 }
-                clearSelection();
-                setSuspendDialogOpen(false);
-                showInfoToast("Success", `${selectedTenants.length} tenants suspended`);
               }}
             >
               Suspend {selectedTenants.length} Tenant{selectedTenants.length > 1 ? 's' : ''}
