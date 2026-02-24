@@ -95,8 +95,8 @@ export interface TenantUser {
  * Get tenant from slug or domain
  */
 export async function getTenantFromSlug(slug: string): Promise<Tenant | null> {
-  const { data, error } = await supabase
-    .from('tenants' as any)
+  const { data, error } = await (supabase as any)
+    .from('tenants')
     .select('*')
     .eq('slug', slug)
     .maybeSingle();
@@ -109,8 +109,8 @@ export async function getTenantFromSlug(slug: string): Promise<Tenant | null> {
  * Get tenant by ID
  */
 export async function getTenantById(tenantId: string): Promise<Tenant | null> {
-  const { data, error } = await supabase
-    .from('tenants' as any)
+  const { data, error } = await (supabase as any)
+    .from('tenants')
     .select('*')
     .eq('id', tenantId)
     .maybeSingle();

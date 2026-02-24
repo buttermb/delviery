@@ -46,16 +46,16 @@ export default function CommissionTracking() {
 
       try {
         // Try to get from commission_transactions table first
-        const { data, error } = await supabase
-          .from('commission_transactions' as any)
+        const { data, error } = await (supabase as any)
+          .from('commission_transactions')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 
         if (error && error.code === '42P01') {
           // Table doesn't exist, calculate from orders
-          const { data: orders, error: orderError } = await supabase
-            .from('orders' as any)
+          const { data: orders, error: orderError } = await (supabase as any)
+            .from('orders')
             .select('*')
             .eq('tenant_id', tenantId);
 
@@ -85,8 +85,8 @@ export default function CommissionTracking() {
   // Toggle commission status
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, newStatus }: { id: string; newStatus: string }) => {
-      const { error } = await supabase
-        .from('commission_transactions' as any)
+      const { error } = await (supabase as any)
+        .from('commission_transactions')
         .update({ status: newStatus })
         .eq('id', id)
         .eq('tenant_id', tenantId);

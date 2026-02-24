@@ -59,8 +59,8 @@ export default function CouponManager() {
         queryKey: ['marketplace-coupons', tenant?.id],
         queryFn: async () => {
             if (!tenant?.id) return [];
-            const { data, error } = await supabase
-                .from('marketplace_coupons' as any)
+            const { data, error } = await (supabase as any)
+                .from('marketplace_coupons')
                 .select('*')
                 .eq('tenant_id', tenant.id)
                 .order('created_at', { ascending: false });
@@ -90,8 +90,8 @@ export default function CouponManager() {
                 is_active: true
             };
 
-            const { error } = await supabase
-                .from('marketplace_coupons' as any)
+            const { error } = await (supabase as any)
+                .from('marketplace_coupons')
                 .insert([payload]);
 
             if (error) throw error;
@@ -108,8 +108,8 @@ export default function CouponManager() {
     const deleteCoupon = useMutation({
         mutationFn: async (id: string) => {
             if (!tenant?.id) throw new Error("No tenant");
-            const { error } = await supabase
-                .from('marketplace_coupons' as any)
+            const { error } = await (supabase as any)
+                .from('marketplace_coupons')
                 .delete()
                 .eq('id', id)
                 .eq('tenant_id', tenant.id);

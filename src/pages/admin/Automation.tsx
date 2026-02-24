@@ -50,8 +50,8 @@ export default function Automation() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('automation_rules' as any)
+        const { data, error } = await (supabase as any)
+          .from('automation_rules')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -73,8 +73,8 @@ export default function Automation() {
     mutationFn: async (rule: Partial<AutomationRule>) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
-        .from('automation_rules' as any)
+      const { data, error } = await (supabase as any)
+        .from('automation_rules')
         .insert({
           tenant_id: tenantId,
           name: rule.name,
@@ -110,8 +110,8 @@ export default function Automation() {
     mutationFn: async ({ id, ...rule }: AutomationRule) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
-        .from('automation_rules' as any)
+      const { data, error } = await (supabase as any)
+        .from('automation_rules')
         .update({
           name: rule.name,
           description: rule.description || null,

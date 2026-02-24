@@ -17,8 +17,8 @@ export default function CompliancePage() {
       if (!tenantId) return null;
 
       try {
-        const { data, error } = await supabase
-          .from('compliance_settings' as any)
+        const { data, error } = await (supabase as any)
+          .from('compliance_settings')
           .select('*')
           .eq('tenant_id', tenantId)
           .maybeSingle();

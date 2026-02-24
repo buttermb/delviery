@@ -138,10 +138,7 @@ export default function SuperAdminSupport() {
     } catch (error) {
       // If table doesn't exist, just show success (mock behavior for dev)
       if ((error as any)?.code === '42P01') {
-        toast({
-          title: 'Ticket resolved',
-          description: 'Ticket has been marked as resolved',
-        });
+        toast.success('Ticket resolved');
         queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
         return;
       }

@@ -26,8 +26,8 @@ export default function CustomDomain() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('custom_domains' as any)
+        const { data, error } = await (supabase as any)
+          .from('custom_domains')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -47,8 +47,8 @@ export default function CustomDomain() {
     mutationFn: async (domainName: string) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
-        .from('custom_domains' as any)
+      const { data, error } = await (supabase as any)
+        .from('custom_domains')
         .insert({
           tenant_id: tenantId,
           domain: domainName,

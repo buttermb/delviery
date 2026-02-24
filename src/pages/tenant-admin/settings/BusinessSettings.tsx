@@ -140,8 +140,8 @@ export default function BusinessSettings() {
       }
 
       // Delete demo clients
-      const { error: clientsError } = await supabase
-        .from('clients' as any) // Type assertion until types.ts is updated
+      const { error: clientsError } = await (supabase as any)
+        .from('clients')
         .delete()
         .eq('tenant_id', tenant.id)
         .or('business_name.ilike.%demo%,business_name.ilike.%sample%,business_name.ilike.%test%');

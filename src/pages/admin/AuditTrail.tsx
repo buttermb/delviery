@@ -22,8 +22,8 @@ export default function AuditTrail() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('audit_trail' as any)
+        const { data, error } = await (supabase as any)
+          .from('audit_trail')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })

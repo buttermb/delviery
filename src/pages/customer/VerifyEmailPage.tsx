@@ -105,8 +105,8 @@ export default function CustomerVerifyEmailPage() {
       // Auto-login after verification
       try {
         // Get customer user to find tenant
-        const { data: customerUser } = await supabase
-          .from('customer_users' as any)
+        const { data: customerUser } = await (supabase as any)
+          .from('customer_users')
           .select('tenant_id')
           .eq('email', email.toLowerCase())
           .maybeSingle();
@@ -160,8 +160,8 @@ export default function CustomerVerifyEmailPage() {
 
     try {
       // Get customer user ID
-      const { data: customerUser } = await supabase
-        .from('customer_users' as any)
+      const { data: customerUser } = await (supabase as any)
+        .from('customer_users')
         .select('id, tenant_id')
         .eq('email', email.toLowerCase())
         .maybeSingle();
