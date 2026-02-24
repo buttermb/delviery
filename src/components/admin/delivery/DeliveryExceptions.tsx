@@ -1594,7 +1594,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
                 onValueChange={(v: string) => resolutionForm.setValue('resolution', v as Exclude<ExceptionResolution, 'pending'>)}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select resolution action" />
                 </SelectTrigger>
                 <SelectContent>
                   {RESOLUTION_OPTIONS.map((option) => (

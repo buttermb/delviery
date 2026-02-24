@@ -1080,7 +1080,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                         <Label>Radius (miles)</Label>
                         <Select value={geofenceRadius} onValueChange={setGeofenceRadius}>
                           <SelectTrigger>
-                            <SelectValue />
+                            <SelectValue placeholder="Select radius" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="10">10 miles</SelectItem>
@@ -1110,7 +1110,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                       <Label>Start Hour</Label>
                       <Select value={allowedHoursStart} onValueChange={setAllowedHoursStart}>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select start hour" />
                         </SelectTrigger>
                         <SelectContent>
                           {Array.from({ length: 24 }, (_, i) => (
@@ -1125,7 +1125,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                       <Label>End Hour</Label>
                       <Select value={allowedHoursEnd} onValueChange={setAllowedHoursEnd}>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select end hour" />
                         </SelectTrigger>
                         <SelectContent>
                           {Array.from({ length: 24 }, (_, i) => (
@@ -1183,7 +1183,7 @@ export const CreateMenuDialog = ({ open, onOpenChange }: CreateMenuDialogProps) 
                 <Label>Auto-Burn After</Label>
                 <Select value={autoBurnHours} onValueChange={setAutoBurnHours}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select duration" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="never">Never</SelectItem>

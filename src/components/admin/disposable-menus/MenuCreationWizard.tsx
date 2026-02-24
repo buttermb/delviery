@@ -1200,7 +1200,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                 <Label htmlFor="expiration">Expiration (days)</Label>
                 <Select value={expirationDays} onValueChange={setExpirationDays}>
                   <SelectTrigger id="expiration">
-                    <SelectValue />
+                    <SelectValue placeholder="Select expiration" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="1">1 day</SelectItem>
@@ -1229,7 +1229,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                 <Label htmlFor="maxViews">Max Views</Label>
                 <Select value={maxViews} onValueChange={setMaxViews}>
                   <SelectTrigger id="maxViews">
-                    <SelectValue />
+                    <SelectValue placeholder="Select view limit" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="1">1 view</SelectItem>

@@ -134,7 +134,7 @@ export const CustomerMessaging = () => {
             <Label>Notification Channel</Label>
             <Select value={channel} onValueChange={(value: string) => setChannel(value as 'email' | 'sms')}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select channel" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="email">
@@ -158,7 +158,7 @@ export const CustomerMessaging = () => {
             <Label>Filter Recipients by Order Status</Label>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Filter recipients" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Customers</SelectItem>

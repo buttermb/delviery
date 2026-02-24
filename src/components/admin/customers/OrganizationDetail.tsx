@@ -603,7 +603,7 @@ export function OrganizationDetail({
                 onValueChange={(v) => setSelectedRole(v as OrganizationMemberRole)}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(ORGANIZATION_MEMBER_ROLE_LABELS).map(([value, label]) => (

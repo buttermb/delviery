@@ -99,7 +99,7 @@ export const AutoBurnSettings = ({ settings, onChange }: AutoBurnSettingsProps) 
                   onValueChange={(value) => updateConfig({ burn_type: value as 'soft' | 'hard' })}
                 >
                   <SelectTrigger className="mt-2">
-                    <SelectValue />
+                    <SelectValue placeholder="Select burn type" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="soft">

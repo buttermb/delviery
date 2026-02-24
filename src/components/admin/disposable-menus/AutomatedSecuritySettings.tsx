@@ -246,7 +246,7 @@ export const AutomatedSecuritySettings = () => {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select action" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="log">Log Only</SelectItem>
@@ -268,7 +268,7 @@ export const AutomatedSecuritySettings = () => {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select action" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="log">Log Only</SelectItem>

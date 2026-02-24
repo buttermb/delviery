@@ -58,7 +58,7 @@ export const ViewLimitSettings = ({ settings, onChange }: ViewLimitSettingsProps
               onValueChange={(value) => updateSetting('tracking_period', value)}
             >
               <SelectTrigger className="mt-2">
-                <SelectValue />
+                <SelectValue placeholder="Select period" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="day">Per Day</SelectItem>

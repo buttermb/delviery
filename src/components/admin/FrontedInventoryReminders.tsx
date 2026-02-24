@@ -138,7 +138,7 @@ export default function FrontedInventoryReminders() {
             <Label>Send Reminders When Due In:</Label>
             <Select value={reminderDays} onValueChange={setReminderDays}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select days" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">1 day</SelectItem>
