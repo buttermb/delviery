@@ -27,6 +27,54 @@ interface Plan {
   popular?: boolean;
 }
 
+const STATIC_PLANS: Plan[] = [
+  {
+    id: 'starter',
+    name: 'Starter',
+    priceMonthly: 79,
+    priceYearly: 790,
+    description: 'Unlimited usage for small businesses',
+    features: [
+      "Unlimited Products",
+      "3 Staff Members",
+      "Basic Reporting",
+      "Standard Support",
+      "Mobile App Access",
+    ],
+  },
+  {
+    id: 'professional',
+    name: 'Professional',
+    priceMonthly: 150,
+    priceYearly: 1500,
+    description: 'Ideal for growing businesses',
+    features: [
+      "Everything in Starter",
+      "10 Staff Members",
+      "Advanced Analytics",
+      "API Access",
+      "Priority Email Support",
+      "Custom Branding",
+    ],
+    popular: true,
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    priceMonthly: 499,
+    priceYearly: 4990,
+    description: 'Complete solution for large operations',
+    features: [
+      "Everything in Professional",
+      "Unlimited Staff",
+      "Dedicated Account Manager",
+      "White-Label Options",
+      "Custom Integrations",
+      "SLA Guarantees",
+    ],
+  },
+];
+
 export default function SelectPlanPage() {
   const navigate = useNavigate();
   const { tenant } = useTenantAdminAuth();
@@ -38,8 +86,7 @@ export default function SelectPlanPage() {
     hasActiveSubscription
   } = useSubscriptionStatus();
   const [loading, setLoading] = useState<string | null>(null);
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loadingPlans, setLoadingPlans] = useState(true);
+  const plans = STATIC_PLANS;
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryPlanId, setRetryPlanId] = useState<string | null>(null);
@@ -81,73 +128,6 @@ export default function SelectPlanPage() {
     checkPaymentStatus();
   }, [tenant?.id, tenant?.slug, navigate]);
 
-  // Load plans from configuration (Static source of truth)
-  useEffect(() => {
-    const PLAN_CONFIG: Record<string, {
-      name: string;
-      priceMonthly: number;
-      priceYearly: number;
-      description: string;
-    }> = {
-      starter: {
-        name: 'Starter',
-        priceMonthly: 79,
-        priceYearly: 790,
-        description: 'Unlimited usage for small businesses',
-      },
-      professional: {
-        name: 'Professional',
-        priceMonthly: 150,
-        priceYearly: 1500,
-        description: 'Ideal for growing businesses',
-      },
-      enterprise: {
-        name: 'Enterprise',
-        priceMonthly: 499,
-        priceYearly: 4990,
-        description: 'Complete solution for large operations',
-      },
-    };
-
-    const PLAN_FEATURES_LIST: Record<string, string[]> = {
-      starter: [
-        "Unlimited Products",
-        "3 Staff Members",
-        "Basic Reporting",
-        "Standard Support",
-        "Mobile App Access"
-      ],
-      professional: [
-        "Everything in Starter",
-        "10 Staff Members",
-        "Advanced Analytics",
-        "API Access",
-        "Priority Email Support",
-        "Custom Branding"
-      ],
-      enterprise: [
-        "Everything in Professional",
-        "Unlimited Staff",
-        "Dedicated Account Manager",
-        "White-Label Options",
-        "Custom Integrations",
-        "SLA Guarantees"
-      ]
-    };
-
-    const plansList: Plan[] = Object.entries(PLAN_CONFIG).map(([key, config]) => ({
-      id: key,
-      name: config.name,
-      priceMonthly: config.priceMonthly,
-      priceYearly: config.priceYearly,
-      description: config.description,
-      features: PLAN_FEATURES_LIST[key] || [],
-      popular: key === 'professional',
-    }));
-
-    setPlans(plansList);
-    setLoadingPlans(false);
-  }, []);
 
   // Calculate savings
   const getSavings = (plan: Plan) => {
@@ -288,17 +268,6 @@ export default function SelectPlanPage() {
       setLoading(null);
     }
   };
-
-  if (loadingPlans) {
-    return (
-      <div className="min-h-dvh bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading plans...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (plans.length === 0) {
     return (

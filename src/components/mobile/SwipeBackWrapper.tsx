@@ -3,7 +3,7 @@
  * Enables swipe-to-go-back navigation on detail pages
  */
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
@@ -182,27 +182,16 @@ export function SwipeBackWrapper({
  * Hook to detect if device supports touch gestures
  */
 export function useTouchDevice() {
-  const [isTouch, setIsTouch] = useState(false);
-
-  useEffect(() => {
-    setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
-  }, []);
-
-  return isTouch;
+  return useMemo(() => 'ontouchstart' in window || navigator.maxTouchPoints > 0, []);
 }
 
 /**
  * Hook to detect if running as PWA
  */
 export function useIsPWA() {
-  const [isPWA, setIsPWA] = useState(false);
-
-  useEffect(() => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+  return useMemo(() => {
+    return window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
-    setIsPWA(isStandalone);
   }, []);
-
-  return isPWA;
 }
 

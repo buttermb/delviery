@@ -3,7 +3,7 @@
  * Supports inline calculations: 20%, cost + 30%, 100 * 1.08
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Calculator, Percent, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -47,7 +47,6 @@ export function ExpressionInput({
   label,
 }: ExpressionInputProps) {
   const [inputValue, setInputValue] = useState(value.toString());
-  const [parsedResult, setParsedResult] = useState<ParsedExpression | null>(null);
   const [isFocused, setIsFocused] = useState(false);
 
   // Parse expression and calculate result
@@ -127,11 +126,8 @@ export function ExpressionInput({
     return null;
   }, [baseValue, costValue]);
 
-  // Update parsed result when input changes
-  useEffect(() => {
-    const result = parseExpression(inputValue);
-    setParsedResult(result);
-  }, [inputValue, parseExpression]);
+  // Derive parsed result from input
+  const parsedResult = useMemo(() => parseExpression(inputValue), [inputValue, parseExpression]);
 
   // Sync external value changes
   useEffect(() => {

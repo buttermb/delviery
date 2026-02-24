@@ -10,7 +10,7 @@
  * - Context-aware (shows different actions per page)
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -155,12 +155,7 @@ export function QuickActionsButton({ className }: QuickActionsButtonProps) {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const location = useLocation();
-  const [actions, setActions] = useState<QuickAction[]>([]);
-  
-  // Update actions when location changes
-  useEffect(() => {
-    setActions(getRelevantActions(location.pathname));
-  }, [location.pathname]);
+  const actions = useMemo(() => getRelevantActions(location.pathname), [location.pathname]);
   
   const handleActionClick = useCallback((action: QuickAction) => {
     setIsOpen(false);

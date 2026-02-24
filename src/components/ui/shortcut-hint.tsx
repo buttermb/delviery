@@ -66,13 +66,9 @@ export function ShortcutHint({
  * ⌘ for macOS, Ctrl for others.
  */
 export function useModifierKey(): string {
-  const [modifier, setModifier] = React.useState('⌘');
-
-  React.useEffect(() => {
+  return React.useMemo(() => {
     const isMac = navigator.platform.toUpperCase().includes('MAC') ||
       navigator.userAgent.toUpperCase().includes('MAC');
-    setModifier(isMac ? '⌘' : 'Ctrl');
+    return isMac ? '⌘' : 'Ctrl';
   }, []);
-
-  return modifier;
 }

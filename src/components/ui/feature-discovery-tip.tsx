@@ -74,24 +74,20 @@ export function FeatureDiscoveryTip({
   onNeverShowAgain,
   className,
 }: FeatureDiscoveryTipProps) {
-  const [isVisible, setIsVisible] = useState(show);
-
-  useEffect(() => {
-    setIsVisible(show);
-  }, [show]);
+  const [dismissed, setDismissed] = useState(false);
 
   const handleDismiss = () => {
-    setIsVisible(false);
+    setDismissed(true);
     onDismiss?.();
   };
 
   const handleNeverShowAgain = () => {
     dismissTip(tip.id);
-    setIsVisible(false);
+    setDismissed(true);
     onNeverShowAgain?.();
   };
 
-  if (!isVisible) return null;
+  if (!show || dismissed) return null;
 
   const positionClasses = {
     'top-right': 'top-4 right-4',

@@ -77,14 +77,8 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
   const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { account, accountSettings, refreshAccount, loading: accountLoading } = useAccount();
-  const [searchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab') || 'general';
-  const [activeTab, setActiveTab] = useState(tabParam);
-
-  // Sync active tab with URL search param changes
-  useEffect(() => {
-    setActiveTab(tabParam);
-  }, [tabParam]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'general';
   const [loading, setLoading] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [formsInitialized, setFormsInitialized] = useState(false);
@@ -507,7 +501,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
         onImport={handleImportSettings}
       />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={(tab) => setSearchParams({ tab })} className="space-y-6">
         <TabsList className="flex flex-col lg:flex-row w-full lg:w-auto h-auto lg:h-10 items-stretch lg:items-center gap-1 bg-muted p-1">
           <TabsTrigger value="general" className="justify-start lg:justify-center w-full lg:w-auto">
             <Settings className="h-4 w-4 mr-2" />

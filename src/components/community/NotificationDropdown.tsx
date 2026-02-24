@@ -4,7 +4,7 @@
  * Real-time forum notifications
  */
 
-import { useState, useEffect } from 'react';
+import { useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
@@ -27,7 +27,6 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 export function NotificationDropdown() {
-  const [unreadCount, setUnreadCount] = useState(0);
   const queryClient = useQueryClient();
 
   const { data: notifications = [] } = useQuery({
@@ -56,10 +55,7 @@ export function NotificationDropdown() {
     },
   });
 
-  useEffect(() => {
-    const unread = notifications.filter(n => !n.read).length;
-    setUnreadCount(unread);
-  }, [notifications]);
+  const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
 
   // Subscribe to new notifications
   useEffect(() => {
