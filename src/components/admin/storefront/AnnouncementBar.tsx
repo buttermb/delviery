@@ -305,8 +305,8 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
     setEditingAnnouncement(announcement);
     setFormData({
       text: announcement.text,
-      link_url: announcement.link_url || '',
-      link_text: announcement.link_text || '',
+      link_url: announcement.link_url ?? '',
+      link_text: announcement.link_text ?? '',
       background_color: announcement.background_color,
       text_color: announcement.text_color,
       is_active: announcement.is_active,

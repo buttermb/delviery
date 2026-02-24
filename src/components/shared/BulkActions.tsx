@@ -69,7 +69,7 @@ export function BulkActions({
   const allActions = actions || defaultActions;
 
   return (
-    <div className={`flex items-center gap-2 ${className || ''}`}>
+    <div className={`flex items-center gap-2 ${className ?? ''}`}>
       <Badge variant="secondary" className="mr-2">
         {selectedCount} selected
       </Badge>

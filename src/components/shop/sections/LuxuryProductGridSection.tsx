@@ -306,7 +306,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
         item={lastAddedItem}
         cartCount={cartCount}
         cartTotal={subtotal}
-        storeSlug={storeSlug || ''}
+        storeSlug={storeSlug ?? ''}
         onClose={() => setLastAddedItem(null)}
       />
 

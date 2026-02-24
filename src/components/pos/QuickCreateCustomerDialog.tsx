@@ -80,7 +80,7 @@ export function QuickCreateCustomerDialog({
       };
     }
     return {
-      first_name: parts[0] || '',
+      first_name: parts[0] ?? '',
       last_name: '',
     };
   };
@@ -170,9 +170,9 @@ export function QuickCreateCustomerDialog({
       // Call success callback with the new customer
       onSuccess({
         id: data.id,
-        first_name: data.first_name || '',
-        last_name: data.last_name || '',
-        customer_type: data.customer_type || 'recreational',
+        first_name: data.first_name ?? '',
+        last_name: data.last_name ?? '',
+        customer_type: data.customer_type ?? 'recreational',
         loyalty_points: data.loyalty_points || 0,
         email: data.email,
         phone: data.phone,

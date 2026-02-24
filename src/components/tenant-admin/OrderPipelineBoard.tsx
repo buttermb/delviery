@@ -211,8 +211,8 @@ export function OrderPipelineBoard() {
     const [searchParams, setSearchParams] = useSearchParams();
     
     // URL-based filter state
-    const searchQuery = searchParams.get('search') || '';
-    const minAmount = searchParams.get('minAmount') || '';
+    const searchQuery = searchParams.get('search') ?? '';
+    const minAmount = searchParams.get('minAmount') ?? '';
     const showFilters = searchParams.get('filters') === 'true';
 
     const updateUrlFilter = (key: string, value: string) => {

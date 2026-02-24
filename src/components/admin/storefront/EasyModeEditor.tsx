@@ -143,7 +143,7 @@ export function EasyModeEditor({
                                         <Input
                                             id="announcement"
                                             placeholder="Free delivery on orders over $75!"
-                                            value={simpleContent.announcementBanner || ''}
+                                            value={simpleContent.announcementBanner ?? ''}
                                             onChange={(e) => onUpdateContent('announcementBanner', e.target.value)}
                                         />
                                         <p className="text-xs text-muted-foreground">

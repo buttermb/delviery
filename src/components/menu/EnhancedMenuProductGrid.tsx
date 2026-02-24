@@ -84,7 +84,7 @@ export function EnhancedMenuProductGrid({ products, onQuickReserve }: EnhancedMe
       productId: product.id,
       productName: product.name,
       price: price,
-      weight: selectedWeight || '',
+      weight: selectedWeight ?? '',
     });
 
     // Trigger confetti effect

@@ -29,7 +29,7 @@ export function FeatureLocked({
   const { tier: _tier } = useBusinessTier();
 
   // Find which tier unlocks this feature if not specified
-  const unlockTier = requiredTier || findUnlockTier(featureId || '');
+  const unlockTier = requiredTier || findUnlockTier(featureId ?? '');
   const unlockPreset = unlockTier ? getTierPreset(unlockTier) : null;
 
   return (

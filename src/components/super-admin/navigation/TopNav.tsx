@@ -239,11 +239,11 @@ export function TopNav({
                       const headers = ['ID', 'Business Name', 'Status', 'Plan', 'MRR', 'Created At'];
                       const rows = tenants?.map((t) => [
                         t.id,
-                        t.business_name || '',
-                        t.subscription_status || '',
-                        t.subscription_plan || '',
+                        t.business_name ?? '',
+                        t.subscription_status ?? '',
+                        t.subscription_plan ?? '',
                         (t.mrr as number) || 0,
-                        t.created_at || '',
+                        t.created_at ?? '',
                       ]) ?? [];
 
                       const csv = [

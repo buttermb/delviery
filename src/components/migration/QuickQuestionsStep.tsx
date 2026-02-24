@@ -77,11 +77,11 @@ export function QuickQuestionsStep({
   onBack,
 }: QuickQuestionsStepProps) {
   const [answers, setAnswers] = useState<QuickAnswers>({
-    category: suggestedDefaults?.category || 'flower',
-    packMeaning: suggestedDefaults?.packMeaning || 'lb',
-    qualityTier: suggestedDefaults?.qualityTier || 'indoor',
-    priceType: suggestedDefaults?.priceType || 'wholesale',
-    priceFormat: suggestedDefaults?.priceFormat || 'abbreviated',
+    category: suggestedDefaults?.category ?? 'flower',
+    packMeaning: suggestedDefaults?.packMeaning ?? 'lb',
+    qualityTier: suggestedDefaults?.qualityTier ?? 'indoor',
+    priceType: suggestedDefaults?.priceType ?? 'wholesale',
+    priceFormat: suggestedDefaults?.priceFormat ?? 'abbreviated',
     retailMarkup: suggestedDefaults?.retailMarkup || 30,
     defaultPricePerLb: suggestedDefaults?.defaultPricePerLb,
     defaultRetailPricePerOz: suggestedDefaults?.defaultRetailPricePerOz,
@@ -507,7 +507,7 @@ export function QuickQuestionsStep({
                 <Input
                   type="text"
                   placeholder="e.g., Green Valley Farms"
-                  value={answers.supplierName || ''}
+                  value={answers.supplierName ?? ''}
                   onChange={(e) => setAnswers(prev => ({ 
                     ...prev, 
                     supplierName: e.target.value || undefined 
@@ -539,7 +539,7 @@ export function QuickQuestionsStep({
                 <Label>Import notes (optional)</Label>
                 <Textarea
                   placeholder="Any notes about this batch..."
-                  value={answers.notes || ''}
+                  value={answers.notes ?? ''}
                   onChange={(e) => setAnswers(prev => ({ 
                     ...prev, 
                     notes: e.target.value || undefined 

@@ -51,8 +51,8 @@ export function ReviewForm({
   const [hoverRating, setHoverRating] = useState(0);
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
-  const [customerName, setCustomerName] = useState(defaultName || '');
-  const [customerEmail, setCustomerEmail] = useState(defaultEmail || '');
+  const [customerName, setCustomerName] = useState(defaultName ?? '');
+  const [customerEmail, setCustomerEmail] = useState(defaultEmail ?? '');
 
   // Submit review mutation
   const submitReviewMutation = useMutation({

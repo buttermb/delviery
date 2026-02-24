@@ -76,7 +76,7 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
 
   // Fetch purchase orders for this vendor
   const { data: purchaseOrders, isLoading, error } = useQuery({
-    queryKey: queryKeys.vendors.orders(tenant?.id || '', vendorId),
+    queryKey: queryKeys.vendors.orders(tenant?.id ?? '', vendorId),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

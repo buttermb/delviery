@@ -150,7 +150,7 @@ export const TenantCard = memo(function TenantCard({
         {/* Plan & Status */}
         <div className="flex items-center gap-2 mb-4">
           <Badge variant="outline" className="border-[hsl(var(--super-admin-primary))]/30 text-[hsl(var(--super-admin-primary))]">
-            💼 {((tenant.subscription_plan as string) || '').charAt(0).toUpperCase() + ((tenant.subscription_plan as string) || '').slice(1)}
+            💼 {((tenant.subscription_plan as string) ?? '').charAt(0).toUpperCase() + ((tenant.subscription_plan as string) ?? '').slice(1)}
           </Badge>
           {getStatusBadge((tenant.subscription_status as string) || 'unknown')}
         </div>

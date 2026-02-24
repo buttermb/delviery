@@ -429,7 +429,7 @@ export function TenantAdminCommandPalette() {
               {customerResults.map((customer) => (
                 <CommandItem
                   key={`customer-${customer.id}`}
-                  value={`customer-${customer.id}-${customer.business_name || ''}`}
+                  value={`customer-${customer.id}-${customer.business_name ?? ''}`}
                   onSelect={() =>
                     handleSelect(
                       buildUrl(`big-plug-clients/${customer.id}`),

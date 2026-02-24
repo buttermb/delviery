@@ -84,7 +84,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
 
         addItem({
             productId: product.id,
-            name: product.name || '',
+            name: product.name ?? '',
             price: product.price || 0,
             quantity: 1,
             imageUrl: product.images?.[0],
@@ -148,7 +148,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                             images: (p.images as string[]) ?? [],
                             category: p.category as string | undefined,
                             in_stock: ((p.quantity_available as number) || 0) > 0,
-                            strain_type: (p.strain_type as string) || '',
+                            strain_type: (p.strain_type as string) ?? '',
                         };
                     }) as LocalProduct[];
                 } catch (err) {
@@ -172,7 +172,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                     images: p.images,
                     category: p.category,
                     in_stock: p.in_stock,
-                    strain_type: p.strain_type || '',
+                    strain_type: p.strain_type ?? '',
                 })) as LocalProduct[];
             }
         },
@@ -207,8 +207,8 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         ? allProducts.filter((p) => {
             const query = searchQuery.toLowerCase();
             return (
-                (p.name || '').toLowerCase().includes(query) ||
-                (p.description || '').toLowerCase().includes(query)
+                (p.name ?? '').toLowerCase().includes(query) ||
+                (p.description ?? '').toLowerCase().includes(query)
             );
         })
         : allProducts;
@@ -310,12 +310,12 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                     <div key={product.id || index}>
                                                         <StorefrontProductCard
                                                             product={{
-                                                                product_id: product.id || '',
-                                                                product_name: product.name || '',
-                                                                category: product.category || '',
-                                                                strain_type: product.strain_type || '',
+                                                                product_id: product.id ?? '',
+                                                                product_name: product.name ?? '',
+                                                                category: product.category ?? '',
+                                                                strain_type: product.strain_type ?? '',
                                                                 price: Number(product.price) || 0,
-                                                                description: product.description || '',
+                                                                description: product.description ?? '',
                                                                 image_url: product.images?.[0] || null,
                                                                 images: product.images ?? [],
                                                                 thc_content: null,

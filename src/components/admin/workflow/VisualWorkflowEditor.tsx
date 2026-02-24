@@ -306,7 +306,7 @@ export function VisualWorkflowEditor({ workflow, onSave, readOnly = false }: Vis
                   ...n.data,
                   label: name,
                   config,
-                  description: config.description || '',
+                  description: config.description ?? '',
                 },
               }
             : n
@@ -439,7 +439,7 @@ function convertWorkflowToNodes(workflow: Workflow): Node[] {
           label: action.name || `Action ${index + 1}`,
           actionType: action.type,
           config: action.config || {},
-          description: action.config?.description || '',
+          description: action.config?.description ?? '',
           status: 'ready',
         },
       });

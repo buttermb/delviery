@@ -64,8 +64,8 @@ export function POSCustomerSelector({
     const query = sanitizeSearchInput(searchQuery).toLowerCase();
     return customers.filter((customer) => {
       const fullName = displayName(customer.first_name, customer.last_name).toLowerCase();
-      const phone = (customer.phone || '').toLowerCase();
-      const email = (customer.email || '').toLowerCase();
+      const phone = (customer.phone ?? '').toLowerCase();
+      const email = (customer.email ?? '').toLowerCase();
 
       return (
         fullName.includes(query) ||

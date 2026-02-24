@@ -114,7 +114,7 @@ export function InventoryForecastWidget() {
                 const reorderPoint = item.low_stock_alert ?? DEFAULT_LOW_STOCK_THRESHOLD;
 
                 // Look up velocity by product name (case-insensitive)
-                const productNameKey = item.name?.toLowerCase().trim() || '';
+                const productNameKey = item.name?.toLowerCase().trim() ?? '';
                 const dailyVelocity = velocityMap.get(productNameKey) || 0;
                 const hasSalesData = dailyVelocity > 0;
 

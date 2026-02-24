@@ -51,8 +51,8 @@ export function BusinessProfileStep({ onComplete }: BusinessProfileStepProps) {
   const form = useForm<BusinessProfileFormData>({
     resolver: zodResolver(businessProfileSchema),
     defaultValues: {
-      business_name: tenant?.business_name || '',
-      slug: tenant?.slug || '',
+      business_name: tenant?.business_name ?? '',
+      slug: tenant?.slug ?? '',
     },
   });
 

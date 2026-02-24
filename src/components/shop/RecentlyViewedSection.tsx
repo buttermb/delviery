@@ -60,10 +60,10 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
                 const mappedProducts = allProducts.map(p => ({
                     product_id: p.product_id,
                     product_name: p.product_name,
-                    category: p.category || '',
-                    strain_type: p.strain_type || '',
+                    category: p.category ?? '',
+                    strain_type: p.strain_type ?? '',
                     price: p.price,
-                    description: p.description || '',
+                    description: p.description ?? '',
                     image_url: p.image_url,
                     images: p.images ?? [],
                     thc_content: p.thc_content,

@@ -70,10 +70,10 @@ export function UploadStep({ onFileUpload, onTextPaste }: UploadStepProps) {
 
   const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();
-    if (['xlsx', 'xls', 'csv'].includes(ext || '')) {
+    if (['xlsx', 'xls', 'csv'].includes(ext ?? '')) {
       return <FileSpreadsheet className="h-8 w-8 text-emerald-500" />;
     }
-    if (['jpg', 'jpeg', 'png', 'pdf'].includes(ext || '')) {
+    if (['jpg', 'jpeg', 'png', 'pdf'].includes(ext ?? '')) {
       return <Image className="h-8 w-8 text-blue-500" />;
     }
     return <FileText className="h-8 w-8 text-gray-500" />;

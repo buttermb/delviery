@@ -117,7 +117,7 @@ export function SmartNotificationsCenter() {
             message: `Only ${currentQty.toFixed(1)} units left. Restock now to avoid stockouts.`,
             action: {
               label: 'Restock Now',
-              href: `/${tenantSlug}/admin/inventory/products?search=${encodeURIComponent(item.name || '')}`
+              href: `/${tenantSlug}/admin/inventory/products?search=${encodeURIComponent(item.name ?? '')}`
             },
             read: false,
             created_at: new Date().toISOString()

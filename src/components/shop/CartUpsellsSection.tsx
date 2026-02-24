@@ -70,10 +70,10 @@ export function CartUpsellsSection({
                     .map((p) => ({
                         product_id: p.product_id as string,
                         product_name: p.product_name as string,
-                        category: (p.category as string) || '',
-                        strain_type: (p.strain_type as string) || '',
+                        category: (p.category as string) ?? '',
+                        strain_type: (p.strain_type as string) ?? '',
                         price: p.price as number,
-                        description: (p.description as string) || '',
+                        description: (p.description as string) ?? '',
                         image_url: p.image_url as string | null,
                         images: (p.images as string[]) ?? [],
                         thc_content: p.thc_content as number | null,

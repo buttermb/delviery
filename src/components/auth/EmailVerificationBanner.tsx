@@ -22,7 +22,7 @@ export function EmailVerificationBanner() {
   // Check if banner was dismissed
   useEffect(() => {
     try {
-      const dismissedKey = `${STORAGE_KEYS.EMAIL_VERIFICATION_BANNER_DISMISSED}_${admin?.id || ''}`;
+      const dismissedKey = `${STORAGE_KEYS.EMAIL_VERIFICATION_BANNER_DISMISSED}_${admin?.id ?? ''}`;
       const isDismissed = localStorage.getItem(dismissedKey) === 'true';
       setDismissed(isDismissed);
     } catch (error) {
@@ -60,7 +60,7 @@ export function EmailVerificationBanner() {
 
   const handleDismiss = () => {
     try {
-      const dismissedKey = `${STORAGE_KEYS.EMAIL_VERIFICATION_BANNER_DISMISSED}_${admin?.id || ''}`;
+      const dismissedKey = `${STORAGE_KEYS.EMAIL_VERIFICATION_BANNER_DISMISSED}_${admin?.id ?? ''}`;
       localStorage.setItem(dismissedKey, 'true');
       setDismissed(true);
     } catch (error) {

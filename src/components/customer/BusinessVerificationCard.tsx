@@ -97,13 +97,13 @@ export function BusinessVerificationCard() {
   useEffect(() => {
     if (profile) {
       setFormData({
-        business_name: profile.business_name || '',
-        license_number: profile.license_number || '',
-        license_type: profile.license_type || '',
-        license_state: profile.license_state || '',
+        business_name: profile.business_name ?? '',
+        license_number: profile.license_number ?? '',
+        license_type: profile.license_type ?? '',
+        license_state: profile.license_state ?? '',
         license_expiry_date: profile.license_expiry_date ? new Date(profile.license_expiry_date).toISOString().split('T')[0] : '',
         tax_id: '', // Not stored in marketplace_profiles, would need separate field
-        business_description: profile.business_description || '',
+        business_description: profile.business_description ?? '',
       });
     }
   }, [profile]);

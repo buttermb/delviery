@@ -57,8 +57,8 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: client.name,
-            email: client.email || '',
-            phone: client.phone || '',
+            email: client.email ?? '',
+            phone: client.phone ?? '',
             status: client.status,
         },
     });
@@ -68,8 +68,8 @@ export function EditClientDialog({ client }: EditClientDialogProps) {
         if (client) {
             form.reset({
                 name: client.name,
-                email: client.email || '',
-                phone: client.phone || '',
+                email: client.email ?? '',
+                phone: client.phone ?? '',
                 status: client.status,
             });
         }

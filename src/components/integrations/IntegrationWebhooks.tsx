@@ -200,7 +200,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
       name: webhook.name,
       url: webhook.url,
       events: webhook.events ?? [],
-      secret: webhook.secret || '',
+      secret: webhook.secret ?? '',
     });
     setIsDialogOpen(true);
   };

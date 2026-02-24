@@ -267,7 +267,7 @@ export function HotItemsSection({
         item={lastAddedItem}
         cartCount={cartCount}
         cartTotal={subtotal}
-        storeSlug={storeSlug || ''}
+        storeSlug={storeSlug ?? ''}
         onClose={() => setLastAddedItem(null)}
       />
     </section>

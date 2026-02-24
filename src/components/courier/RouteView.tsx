@@ -38,7 +38,7 @@ interface MapboxRoute {
 
 export function RouteView({ deliveries, currentLat, currentLng }: RouteViewProps) {
   const [route, setRoute] = useState<MapboxRoute | null>(null);
-  const [mapboxToken] = useState(import.meta.env.VITE_MAPBOX_TOKEN || '');
+  const [mapboxToken] = useState(import.meta.env.VITE_MAPBOX_TOKEN ?? '');
 
   useEffect(() => {
     if (deliveries.length === 0 || !mapboxToken) return;

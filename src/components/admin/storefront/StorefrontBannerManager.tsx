@@ -198,10 +198,10 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
     const openEdit = (banner: Banner) => {
         setEditingBanner(banner);
         setFormData({
-            heading: banner.heading || '',
-            subheading: banner.subheading || '',
-            button_text: banner.button_text || '',
-            button_link: banner.button_link || '',
+            heading: banner.heading ?? '',
+            subheading: banner.subheading ?? '',
+            button_text: banner.button_text ?? '',
+            button_link: banner.button_link ?? '',
             image_url: banner.image_url,
             display_order: banner.display_order,
             is_active: banner.is_active,

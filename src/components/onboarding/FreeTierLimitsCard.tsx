@@ -173,7 +173,7 @@ export function FreeTierLimitsCard({
                             : 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
                     )}
                 >
-                    {item.limit}{item.suffix || ''}
+                    {item.limit}{item.suffix ?? ''}
                 </Badge>
             </motion.div>
         </motion.div>

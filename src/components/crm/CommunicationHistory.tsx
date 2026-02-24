@@ -130,7 +130,7 @@ export function CommunicationHistory({
         channel: item.communication_type as 'email' | 'sms',
         direction: 'outbound',
         subject: item.subject,
-        body: item.body || '',
+        body: item.body ?? '',
         status: (item.status as CommunicationItem['status']) || 'sent',
         sentAt: new Date(item.sent_at || item.created_at || new Date()),
         createdByName: (item.profiles as { full_name?: string } | null)?.full_name,

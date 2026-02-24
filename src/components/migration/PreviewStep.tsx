@@ -214,7 +214,7 @@ export function PreviewStep({
                     
                     <td className="px-4 py-3">
                       <Select
-                        value={product.category || ''}
+                        value={product.category ?? ''}
                         onValueChange={(value) => 
                           onUpdateProduct(originalIndex, { category: value as ParsedProduct['category'] })
                         }
@@ -234,7 +234,7 @@ export function PreviewStep({
                     
                     <td className="px-4 py-3">
                       <Select
-                        value={product.strainType || ''}
+                        value={product.strainType ?? ''}
                         onValueChange={(value) => 
                           onUpdateProduct(originalIndex, { strainType: value as ParsedProduct['strainType'] })
                         }
@@ -254,7 +254,7 @@ export function PreviewStep({
                     
                     <td className="px-4 py-3">
                       <EditableCell
-                        value={product.thcPercentage?.toString() || ''}
+                        value={product.thcPercentage?.toString() ?? ''}
                         isEditing={editingCell?.index === originalIndex && editingCell?.field === 'thc'}
                         onEdit={() => setEditingCell({ index: originalIndex, field: 'thc' })}
                         onSave={(value) => {
@@ -269,7 +269,7 @@ export function PreviewStep({
                     
                     <td className="px-4 py-3">
                       <Select
-                        value={product.qualityTier || ''}
+                        value={product.qualityTier ?? ''}
                         onValueChange={(value) => 
                           onUpdateProduct(originalIndex, { qualityTier: value as ParsedProduct['qualityTier'] })
                         }

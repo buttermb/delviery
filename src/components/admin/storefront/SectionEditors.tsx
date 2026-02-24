@@ -44,7 +44,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
                 />
                 <Input
                     className="flex-1 h-8 text-xs"
-                    value={value || ''}
+                    value={value ?? ''}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder="#000000"
                 />
@@ -68,7 +68,7 @@ function HeroEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorP
                         <div className="space-y-1.5">
                             <Label className="text-xs">Line 1</Label>
                             <Input
-                                value={(content.heading_line_1 as string) || ''}
+                                value={(content.heading_line_1 as string) ?? ''}
                                 onChange={(e) => onUpdateContent('heading_line_1', e.target.value)}
                                 placeholder="Premium"
                             />
@@ -76,7 +76,7 @@ function HeroEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorP
                         <div className="space-y-1.5">
                             <Label className="text-xs">Line 2 (Gradient)</Label>
                             <Input
-                                value={(content.heading_line_2 as string) || ''}
+                                value={(content.heading_line_2 as string) ?? ''}
                                 onChange={(e) => onUpdateContent('heading_line_2', e.target.value)}
                                 placeholder="Flower"
                             />
@@ -84,7 +84,7 @@ function HeroEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorP
                         <div className="space-y-1.5">
                             <Label className="text-xs">Line 3</Label>
                             <Input
-                                value={(content.heading_line_3 as string) || ''}
+                                value={(content.heading_line_3 as string) ?? ''}
                                 onChange={(e) => onUpdateContent('heading_line_3', e.target.value)}
                                 placeholder="Delivered"
                             />
@@ -92,7 +92,7 @@ function HeroEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorP
                         <div className="space-y-1.5">
                             <Label className="text-xs">Subheading</Label>
                             <Textarea
-                                value={(content.subheading as string) || ''}
+                                value={(content.subheading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('subheading', e.target.value)}
                                 placeholder="Curated strains. Same-day delivery."
                                 rows={2}
@@ -114,7 +114,7 @@ function HeroEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorP
                         <div className="space-y-1.5">
                             <Label className="text-xs">Primary Button Text</Label>
                             <Input
-                                value={(content.cta_primary_text as string) || ''}
+                                value={(content.cta_primary_text as string) ?? ''}
                                 onChange={(e) => onUpdateContent('cta_primary_text', e.target.value)}
                                 placeholder="Explore Collection"
                             />
@@ -122,7 +122,7 @@ function HeroEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorP
                         <div className="space-y-1.5">
                             <Label className="text-xs">Primary Button Link</Label>
                             <Input
-                                value={(content.cta_primary_link as string) || ''}
+                                value={(content.cta_primary_link as string) ?? ''}
                                 onChange={(e) => onUpdateContent('cta_primary_link', e.target.value)}
                                 placeholder="/shop"
                             />
@@ -131,7 +131,7 @@ function HeroEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorP
                         <div className="space-y-1.5">
                             <Label className="text-xs">Secondary Button Text</Label>
                             <Input
-                                value={(content.cta_secondary_text as string) || ''}
+                                value={(content.cta_secondary_text as string) ?? ''}
                                 onChange={(e) => onUpdateContent('cta_secondary_text', e.target.value)}
                                 placeholder="View Menu"
                             />
@@ -139,7 +139,7 @@ function HeroEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorP
                         <div className="space-y-1.5">
                             <Label className="text-xs">Secondary Button Link</Label>
                             <Input
-                                value={(content.cta_secondary_link as string) || ''}
+                                value={(content.cta_secondary_link as string) ?? ''}
                                 onChange={(e) => onUpdateContent('cta_secondary_link', e.target.value)}
                                 placeholder="/menu"
                             />
@@ -213,7 +213,7 @@ function FeaturesEditor({ section, onUpdateContent, onUpdateStyles }: SectionEdi
                         <div className="space-y-1.5">
                             <Label className="text-xs">Small Heading</Label>
                             <Input
-                                value={(content.heading_small as string) || ''}
+                                value={(content.heading_small as string) ?? ''}
                                 onChange={(e) => onUpdateContent('heading_small', e.target.value)}
                                 placeholder="The Difference"
                             />
@@ -221,7 +221,7 @@ function FeaturesEditor({ section, onUpdateContent, onUpdateStyles }: SectionEdi
                         <div className="space-y-1.5">
                             <Label className="text-xs">Large Heading</Label>
                             <Input
-                                value={(content.heading_large as string) || ''}
+                                value={(content.heading_large as string) ?? ''}
                                 onChange={(e) => onUpdateContent('heading_large', e.target.value)}
                                 placeholder="Excellence in Every Detail"
                             />
@@ -321,7 +321,7 @@ function ProductGridEditor({ section, onUpdateContent, onUpdateStyles }: Section
                         <div className="space-y-1.5">
                             <Label className="text-xs">Heading</Label>
                             <Input
-                                value={(content.heading as string) || ''}
+                                value={(content.heading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('heading', e.target.value)}
                                 placeholder="Shop Collection"
                             />
@@ -329,7 +329,7 @@ function ProductGridEditor({ section, onUpdateContent, onUpdateStyles }: Section
                         <div className="space-y-1.5">
                             <Label className="text-xs">Subheading</Label>
                             <Input
-                                value={(content.subheading as string) || ''}
+                                value={(content.subheading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('subheading', e.target.value)}
                                 placeholder="Curated selection."
                             />
@@ -447,7 +447,7 @@ function TestimonialsEditor({ section, onUpdateContent, onUpdateStyles }: Sectio
                         <div className="space-y-1.5">
                             <Label className="text-xs">Heading</Label>
                             <Input
-                                value={(content.heading as string) || ''}
+                                value={(content.heading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('heading', e.target.value)}
                                 placeholder="What Our Customers Say"
                             />
@@ -455,7 +455,7 @@ function TestimonialsEditor({ section, onUpdateContent, onUpdateStyles }: Sectio
                         <div className="space-y-1.5">
                             <Label className="text-xs">Subheading</Label>
                             <Input
-                                value={(content.subheading as string) || ''}
+                                value={(content.subheading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('subheading', e.target.value)}
                                 placeholder="Join thousands of satisfied customers"
                             />
@@ -571,7 +571,7 @@ function NewsletterEditor({ section, onUpdateContent, onUpdateStyles }: SectionE
                         <div className="space-y-1.5">
                             <Label className="text-xs">Heading</Label>
                             <Input
-                                value={(content.heading as string) || ''}
+                                value={(content.heading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('heading', e.target.value)}
                                 placeholder="Stay in the Loop"
                             />
@@ -579,7 +579,7 @@ function NewsletterEditor({ section, onUpdateContent, onUpdateStyles }: SectionE
                         <div className="space-y-1.5">
                             <Label className="text-xs">Subheading</Label>
                             <Input
-                                value={(content.subheading as string) || ''}
+                                value={(content.subheading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('subheading', e.target.value)}
                                 placeholder="Subscribe for exclusive drops."
                             />
@@ -587,7 +587,7 @@ function NewsletterEditor({ section, onUpdateContent, onUpdateStyles }: SectionE
                         <div className="space-y-1.5">
                             <Label className="text-xs">Button Text</Label>
                             <Input
-                                value={(content.button_text as string) || ''}
+                                value={(content.button_text as string) ?? ''}
                                 onChange={(e) => onUpdateContent('button_text', e.target.value)}
                                 placeholder="Subscribe"
                             />
@@ -595,7 +595,7 @@ function NewsletterEditor({ section, onUpdateContent, onUpdateStyles }: SectionE
                         <div className="space-y-1.5">
                             <Label className="text-xs">Input Placeholder</Label>
                             <Input
-                                value={(content.placeholder_text as string) || ''}
+                                value={(content.placeholder_text as string) ?? ''}
                                 onChange={(e) => onUpdateContent('placeholder_text', e.target.value)}
                                 placeholder="Enter your email"
                             />
@@ -603,7 +603,7 @@ function NewsletterEditor({ section, onUpdateContent, onUpdateStyles }: SectionE
                         <div className="space-y-1.5">
                             <Label className="text-xs">Success Message</Label>
                             <Input
-                                value={(content.success_message as string) || ''}
+                                value={(content.success_message as string) ?? ''}
                                 onChange={(e) => onUpdateContent('success_message', e.target.value)}
                                 placeholder="Thanks for subscribing!"
                             />
@@ -681,7 +681,7 @@ function GalleryEditor({ section, onUpdateContent, onUpdateStyles }: SectionEdit
                         <div className="space-y-1.5">
                             <Label className="text-xs">Heading</Label>
                             <Input
-                                value={(content.heading as string) || ''}
+                                value={(content.heading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('heading', e.target.value)}
                                 placeholder="Gallery"
                             />
@@ -689,7 +689,7 @@ function GalleryEditor({ section, onUpdateContent, onUpdateStyles }: SectionEdit
                         <div className="space-y-1.5">
                             <Label className="text-xs">Subheading</Label>
                             <Input
-                                value={(content.subheading as string) || ''}
+                                value={(content.subheading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('subheading', e.target.value)}
                                 placeholder="A curated visual experience"
                             />
@@ -809,7 +809,7 @@ function FAQEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorPr
                         <div className="space-y-1.5">
                             <Label className="text-xs">Heading</Label>
                             <Input
-                                value={(content.heading as string) || ''}
+                                value={(content.heading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('heading', e.target.value)}
                                 placeholder="Frequently Asked Questions"
                             />
@@ -817,7 +817,7 @@ function FAQEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorPr
                         <div className="space-y-1.5">
                             <Label className="text-xs">Subheading</Label>
                             <Input
-                                value={(content.subheading as string) || ''}
+                                value={(content.subheading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('subheading', e.target.value)}
                                 placeholder="Got questions? We've got answers."
                             />
@@ -915,7 +915,7 @@ function CustomHTMLEditor({ section, onUpdateContent, onUpdateStyles }: SectionE
                         <div className="space-y-1.5">
                             <Label className="text-xs">Section Title (optional)</Label>
                             <Input
-                                value={(content.section_title as string) || ''}
+                                value={(content.section_title as string) ?? ''}
                                 onChange={(e) => onUpdateContent('section_title', e.target.value)}
                                 placeholder="Optional title above HTML"
                             />
@@ -935,11 +935,11 @@ function CustomHTMLEditor({ section, onUpdateContent, onUpdateStyles }: SectionE
                             {showPreview ? (
                                 <div
                                     className="p-3 border rounded-lg min-h-[120px] prose prose-sm max-w-none"
-                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml((content.html_content as string) || '') }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml((content.html_content as string) ?? '') }}
                                 />
                             ) : (
                                 <Textarea
-                                    value={(content.html_content as string) || ''}
+                                    value={(content.html_content as string) ?? ''}
                                     onChange={(e) => onUpdateContent('html_content', e.target.value)}
                                     placeholder="<p>Your HTML content here</p>"
                                     rows={8}

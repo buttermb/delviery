@@ -115,7 +115,7 @@ export function POReceiving({
 
   // Fetch PO items with product details
   const { data: items, isLoading: itemsLoading } = useQuery({
-    queryKey: queryKeys.purchaseOrders.items(purchaseOrder?.id || ''),
+    queryKey: queryKeys.purchaseOrders.items(purchaseOrder?.id ?? ''),
     queryFn: async () => {
       if (!purchaseOrder?.id) return [];
 
@@ -362,7 +362,7 @@ export function POReceiving({
         .update({
           status: 'received',
           received_date: receivedDate || new Date().toISOString().split('T')[0],
-          notes: notes ? `${purchaseOrder.notes || ''}\n\nReceiving Notes: ${notes}` : purchaseOrder.notes,
+          notes: notes ? `${purchaseOrder.notes ?? ''}\n\nReceiving Notes: ${notes}` : purchaseOrder.notes,
           updated_at: new Date().toISOString(),
         })
         .eq('id', purchaseOrder.id)
@@ -395,7 +395,7 @@ export function POReceiving({
     onSuccess: () => {
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.lists() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.detail(purchaseOrder?.id || '') });
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.detail(purchaseOrder?.id ?? '') });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.inventory.all });
 

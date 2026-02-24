@@ -175,7 +175,7 @@ export function PromotionBuilder({ initialData, onChange, onSave }: PromotionBui
                             <Input
                                 id="promo-name"
                                 placeholder="Summer Sale 2024"
-                                value={formData.name || ''}
+                                value={formData.name ?? ''}
                                 onChange={(e) => updateField('name', e.target.value)}
                             />
                         </div>
@@ -184,7 +184,7 @@ export function PromotionBuilder({ initialData, onChange, onSave }: PromotionBui
                             <Input
                                 id="promo-code"
                                 placeholder="SUMMER20"
-                                value={formData.code || ''}
+                                value={formData.code ?? ''}
                                 onChange={(e) => updateField('code', e.target.value.toUpperCase())}
                             />
                         </div>
@@ -403,7 +403,7 @@ export function PromotionBuilder({ initialData, onChange, onSave }: PromotionBui
                             <Input
                                 id="valid-from"
                                 type="datetime-local"
-                                value={formData.valid_from || ''}
+                                value={formData.valid_from ?? ''}
                                 onChange={(e) => updateField('valid_from', e.target.value)}
                             />
                         </div>
@@ -412,7 +412,7 @@ export function PromotionBuilder({ initialData, onChange, onSave }: PromotionBui
                             <Input
                                 id="valid-until"
                                 type="datetime-local"
-                                value={formData.valid_until || ''}
+                                value={formData.valid_until ?? ''}
                                 onChange={(e) => updateField('valid_until', e.target.value)}
                             />
                         </div>

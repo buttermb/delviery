@@ -136,7 +136,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
 
   // Fetch vendor payments
   const { data: payments, isLoading: paymentsLoading, error: paymentsError } = useQuery({
-    queryKey: queryKeys.vendors.payments(tenant?.id || '', vendorId),
+    queryKey: queryKeys.vendors.payments(tenant?.id ?? '', vendorId),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -165,7 +165,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
 
   // Fetch unpaid/partially paid purchase orders for dropdown
   const { data: purchaseOrders } = useQuery({
-    queryKey: [...queryKeys.vendors.orders(tenant?.id || '', vendorId), 'unpaid'],
+    queryKey: [...queryKeys.vendors.orders(tenant?.id ?? '', vendorId), 'unpaid'],
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -261,8 +261,8 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.payments(tenant?.id || '', vendorId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.orders(tenant?.id || '', vendorId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.payments(tenant?.id ?? '', vendorId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.orders(tenant?.id ?? '', vendorId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrders.all });
       toast.success('Payment recorded successfully');
       setIsDialogOpen(false);

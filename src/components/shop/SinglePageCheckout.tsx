@@ -516,7 +516,7 @@ export function SinglePageCheckout() {
               {/* Items */}
               <div className="space-y-3 max-h-60 overflow-y-auto">
                 {cartItems.map((item) => (
-                  <div key={`${item.productId}-${item.variant || ''}`} className="flex gap-3">
+                  <div key={`${item.productId}-${item.variant ?? ''}`} className="flex gap-3">
                     <div className="w-14 h-14 bg-muted rounded flex-shrink-0">
                       {item.imageUrl ? (
                         <img

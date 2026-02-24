@@ -168,7 +168,7 @@ export function WorkflowBuilder() {
           <div className="p-4 border rounded-lg space-y-2">
             <Label>Event Type</Label>
             <Select
-              value={(workflow.triggerConfig.eventType as string) || ''}
+              value={(workflow.triggerConfig.eventType as string) ?? ''}
               onValueChange={(value) =>
                 setWorkflow({
                   ...workflow,
@@ -194,7 +194,7 @@ export function WorkflowBuilder() {
             <Label>Cron Expression</Label>
             <Input
               placeholder="0 0 * * * (daily at midnight)"
-              value={(workflow.triggerConfig.cron as string) || ''}
+              value={(workflow.triggerConfig.cron as string) ?? ''}
               onChange={(e) =>
                 setWorkflow({
                   ...workflow,

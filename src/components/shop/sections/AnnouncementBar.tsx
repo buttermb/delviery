@@ -41,7 +41,7 @@ export function AnnouncementBar({
             .filter(b => b.heading || b.subheading)
             .map(b => ({
                 id: `banner-${b.id}`,
-                text: b.heading || b.subheading || '',
+                text: b.heading ?? b.subheading ?? '',
                 link: b.button_link,
                 type: 'banner' as const,
             })),

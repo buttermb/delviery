@@ -61,7 +61,7 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
 
   // Fetch products for this vendor
   const { data: products, isLoading, error } = useQuery({
-    queryKey: queryKeys.vendors.products(tenant?.id || '', vendorId),
+    queryKey: queryKeys.vendors.products(tenant?.id ?? '', vendorId),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

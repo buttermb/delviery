@@ -215,7 +215,7 @@ export function ShiftManager() {
         .insert([{
           tenant_id: tenantId,
           terminal_id: terminalId,
-          cashier_id: (await supabase.auth.getUser()).data.user?.id || '',
+          cashier_id: (await supabase.auth.getUser()).data.user?.id ?? '',
           cashier_name: cashierName,
           opening_cash: openingAmount,
           status: 'open',

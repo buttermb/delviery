@@ -27,7 +27,7 @@ export function ActionConfigForm({
   onSave, 
   onCancel 
 }: ActionConfigFormProps) {
-  const [name, setName] = useState(actionName || '');
+  const [name, setName] = useState(actionName ?? '');
   const [formData, setFormData] = useState(config);
 
   const handleSubmit = () => {
@@ -44,7 +44,7 @@ export function ActionConfigForm({
               <Input 
                 id="to"
                 placeholder="user@example.com or {{trigger.customer_email}}"
-                value={(formData.to as string) || ''} 
+                value={(formData.to as string) ?? ''}
                 onChange={(e) => setFormData({...formData, to: e.target.value})}
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -53,19 +53,19 @@ export function ActionConfigForm({
             </div>
             <div>
               <Label htmlFor="subject">Subject <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-              <Input 
+              <Input
                 id="subject"
                 placeholder="Order Confirmation #{{trigger.order_id}}"
-                value={(formData.subject as string) || ''}
+                value={(formData.subject as string) ?? ''}
                 onChange={(e) => setFormData({...formData, subject: e.target.value})}
               />
             </div>
             <div>
               <Label htmlFor="body">Email Body <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-              <Textarea 
+              <Textarea
                 id="body"
                 placeholder="Your order has been received..."
-                value={(formData.body as string) || ''}
+                value={(formData.body as string) ?? ''}
                 onChange={(e) => setFormData({...formData, body: e.target.value})}
                 rows={6}
               />
@@ -93,22 +93,22 @@ export function ActionConfigForm({
                 id="to"
                 type="tel"
                 placeholder="+1234567890 or {{trigger.customer_phone}}"
-                value={(formData.to as string) || ''}
+                value={(formData.to as string) ?? ''}
                 onChange={(e) => setFormData({...formData, to: e.target.value})}
               />
             </div>
             <div>
               <Label htmlFor="message">Message <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-              <Textarea 
+              <Textarea
                 id="message"
                 placeholder="Your order #{{trigger.order_id}} is confirmed!"
-                value={(formData.message as string) || ''}
+                value={(formData.message as string) ?? ''}
                 onChange={(e) => setFormData({...formData, message: e.target.value})}
                 rows={4}
                 maxLength={160}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                {((formData.message as string) || '').length}/160 characters
+                {((formData.message as string) ?? '').length}/160 characters
               </p>
             </div>
           </div>
@@ -123,7 +123,7 @@ export function ActionConfigForm({
                 id="url"
                 type="url"
                 placeholder="https://api.example.com/webhook"
-                value={(formData.url as string) || ''}
+                value={(formData.url as string) ?? ''}
                 onChange={(e) => setFormData({...formData, url: e.target.value})}
               />
             </div>
@@ -207,7 +207,7 @@ export function ActionConfigForm({
               <Input 
                 id="table"
                 placeholder="orders"
-                value={(formData.table as string) || ''}
+                value={(formData.table as string) ?? ''}
                 onChange={(e) => setFormData({...formData, table: e.target.value})}
               />
             </div>
@@ -258,7 +258,7 @@ export function ActionConfigForm({
               <Input 
                 id="order_id"
                 placeholder="{{trigger.order_id}}"
-                value={(formData.order_id_source as string) || ''}
+                value={(formData.order_id_source as string) ?? ''}
                 onChange={(e) => setFormData({...formData, order_id_source: e.target.value})}
               />
             </div>
@@ -305,7 +305,7 @@ export function ActionConfigForm({
               <Input 
                 id="product_id"
                 placeholder="{{trigger.product_id}}"
-                value={(formData.product_id_source as string) || ''}
+                value={(formData.product_id_source as string) ?? ''}
                 onChange={(e) => setFormData({...formData, product_id_source: e.target.value})}
               />
             </div>
@@ -327,7 +327,7 @@ export function ActionConfigForm({
               <Input 
                 id="warehouse"
                 placeholder="main_warehouse or {{trigger.warehouse_id}}"
-                value={(formData.warehouse_id as string) || ''}
+                value={(formData.warehouse_id as string) ?? ''}
                 onChange={(e) => setFormData({...formData, warehouse_id: e.target.value})}
               />
             </div>
