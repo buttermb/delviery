@@ -177,8 +177,8 @@ export function BulkAssignRunnerDialog({
                     runners.map((runner) => (
                       <SelectItem key={runner.id} value={runner.id}>
                         <div className="flex items-center gap-2 w-full">
-                          <span className="font-medium">{runner.full_name}</span>
-                          <div className="flex items-center gap-1 text-muted-foreground">
+                          <span className="font-medium min-w-0 truncate">{runner.full_name}</span>
+                          <div className="flex items-center gap-1 text-muted-foreground shrink-0">
                             <Star className="h-3 w-3 fill-warning text-warning" />
                             <span className="text-xs">{runner.rating?.toFixed(1) || 'N/A'}</span>
                           </div>
@@ -198,9 +198,9 @@ export function BulkAssignRunnerDialog({
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <User className="h-5 w-5 text-primary" />
                   </div>
-                  <div>
-                    <p className="font-medium">{selectedRunner.full_name}</p>
-                    <p className="text-xs text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{selectedRunner.full_name}</p>
+                    <p className="text-xs text-muted-foreground break-all">
                       {selectedRunner.vehicle_type}
                       {selectedRunner.vehicle_plate && ` - ${selectedRunner.vehicle_plate}`}
                     </p>

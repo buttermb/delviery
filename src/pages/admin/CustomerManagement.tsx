@@ -661,11 +661,11 @@ export function CustomerManagement() {
                       />
                     </td>
                     <td className="px-4 py-2.5">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                      <div className="flex items-center min-w-0">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
                           {customer.first_name?.[0] || ''}{customer.last_name?.[0] || '?'}
                         </div>
-                        <div className="ml-4">
+                        <div className="ml-4 min-w-0">
                           <TruncatedText
                             text={displayName(customer.first_name, customer.last_name)}
                             className="text-sm font-medium"

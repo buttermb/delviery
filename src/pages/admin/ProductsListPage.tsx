@@ -576,7 +576,7 @@ export function ProductsListPage() {
       accessorKey: 'category',
       className: 'max-w-[150px] hidden lg:table-cell',
       cell: (product) => (
-        <Badge variant="outline" className="capitalize max-w-[140px] inline-flex">
+        <Badge variant="outline" className="capitalize max-w-[140px] inline-flex overflow-hidden">
           <TruncatedText
             text={product.category || 'Uncategorized'}
             maxWidthClass="max-w-[120px]"
