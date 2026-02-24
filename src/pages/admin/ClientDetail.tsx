@@ -257,7 +257,7 @@ export default function ClientDetail() {
 
       {/* Contacts */}
       <Card className="p-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <div className="text-xs text-muted-foreground mb-1">Primary Contact</div>
             <div className="text-sm font-medium">{displayClient.contact_name}</div>

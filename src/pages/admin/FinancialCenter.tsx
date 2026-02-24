@@ -148,7 +148,7 @@ export default function FinancialCenter() {
           <DollarSign className="h-5 w-5" />
           Cash Flow
         </h2>
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* Incoming */}
           <div>
             <h3 className="font-semibold mb-3 flex items-center gap-2 text-emerald-500">
@@ -285,7 +285,7 @@ export default function FinancialCenter() {
           </Badge>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Revenue:</span>

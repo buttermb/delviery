@@ -928,7 +928,7 @@ export function CustomerManagement() {
                 </DrawerDescription>
               </DrawerHeader>
               <div className="p-4 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-muted/30 p-3 rounded-lg text-center">
                     <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Spent</div>
                     <div className="text-xl font-bold">{formatCurrency(selectedCustomerForDrawer.total_spent)}</div>
@@ -988,7 +988,7 @@ export function CustomerManagement() {
                       )}
                     </Tooltip>
                   </TooltipProvider>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <Button variant="secondary" onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${selectedCustomerForDrawer.id}`)}>
                       View Profile
                     </Button>

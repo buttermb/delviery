@@ -1665,7 +1665,7 @@ function CashRegisterContent() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               <div className="flex items-center gap-2">
                 <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono">F2</kbd>
                 <span>New Sale</span>

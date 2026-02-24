@@ -401,7 +401,7 @@ export default function DeliveryManagement() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
           <Package className="h-3 w-3" /> {formatCurrency(d.orders.total_amount)}
         </div>
