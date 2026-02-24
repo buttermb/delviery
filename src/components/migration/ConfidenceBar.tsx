@@ -16,13 +16,6 @@ export function ConfidenceBar({ score, showLabel = true, className }: Confidence
     return 'bg-red-500';
   };
 
-  const _getLabel = () => {
-    if (percentage >= 80) return 'High';
-    if (percentage >= 60) return 'Medium';
-    if (percentage >= 40) return 'Low';
-    return 'Very Low';
-  };
-
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden min-w-[60px]">

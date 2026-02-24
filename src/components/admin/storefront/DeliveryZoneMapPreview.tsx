@@ -334,7 +334,6 @@ export function DeliveryZoneMapPreview({
   }, [updateMarkers]);
 
   const hasZones = zones.length > 0;
-  const _hasMappableZones = zoneLocations.length > 0;
 
   return (
     <Card className={className}>

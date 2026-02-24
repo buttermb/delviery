@@ -225,7 +225,6 @@ export function CustomPresetBuilder() {
                   <div className="space-y-6">
                     {Object.entries(featuresBySection).map(([section, features]) => {
                       const allSelected = features.every(f => selectedFeatures.includes(f.id));
-                      const _someSelected = features.some(f => selectedFeatures.includes(f.id));
 
                       return (
                         <div key={section}>

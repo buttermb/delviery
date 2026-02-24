@@ -62,29 +62,6 @@ const getDeviceIcon = (userAgent: string) => {
   return <Monitor className="h-5 w-5" />;
 };
 
-const _getBrowserName = (userAgent: string): string => {
-  const ua = userAgent.toLowerCase();
-  if (ua.includes('edg')) return 'Microsoft Edge';
-  if (ua.includes('chrome') && !ua.includes('edg')) return 'Google Chrome';
-  if (ua.includes('firefox')) return 'Firefox';
-  if (ua.includes('safari') && !ua.includes('chrome')) return 'Safari';
-  if (ua.includes('opera') || ua.includes('opr')) return 'Opera';
-  if (ua.includes('mobile')) return 'Mobile Browser';
-  return 'Unknown Browser';
-};
-
-const _getDeviceType = (userAgent: string): string => {
-  const ua = userAgent.toLowerCase();
-  if (ua.includes('iphone')) return 'iPhone';
-  if (ua.includes('ipad')) return 'iPad';
-  if (ua.includes('android') && ua.includes('mobile')) return 'Android Phone';
-  if (ua.includes('android')) return 'Android Tablet';
-  if (ua.includes('macintosh') || ua.includes('mac os')) return 'Mac';
-  if (ua.includes('windows')) return 'Windows PC';
-  if (ua.includes('linux')) return 'Linux';
-  return 'Unknown Device';
-};
-
 export function SessionsPage() {
   const navigate = useNavigate();
   const [revokeTarget, setRevokeTarget] = useState<RevokeTarget>(null);

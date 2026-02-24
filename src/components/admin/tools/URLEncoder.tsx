@@ -55,19 +55,6 @@ export function URLEncoder() {
     }
   };
 
-  const _handleConvert = () => {
-    if (!input.trim()) {
-      setOutput('');
-      return;
-    }
-
-    if (mode === 'encode') {
-      setOutput(encode(input, encodingType));
-    } else {
-      setOutput(decode(input, encodingType));
-    }
-  };
-
   const copyToClipboard = async () => {
     if (!output) return;
     

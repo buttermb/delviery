@@ -126,7 +126,6 @@ export function CustomerMobileBottomNav() {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
-              const _isCart = item.path.includes("/cart");
 
               return (
                 <button

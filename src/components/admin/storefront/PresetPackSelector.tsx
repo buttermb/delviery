@@ -44,8 +44,6 @@ export function PresetPackSelector({
     onSelectPreset,
     showCategoryTabs: _showCategoryTabs = false,
 }: PresetPackSelectorProps) {
-    const _categories = ['quick-start', 'professional', 'premium'] as const;
-
     return (
         <div className="space-y-8">
             {/* Header */}

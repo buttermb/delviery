@@ -203,7 +203,6 @@ export function ThemePresetStrip({
     return (
         <div className="flex gap-2 overflow-x-auto pb-2">
             {THEME_PRESETS.map((theme) => {
-                const _Icon = THEME_ICONS[theme.id] || Palette;
                 const isSelected = selectedThemeId === theme.id;
 
                 return (
