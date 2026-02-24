@@ -24,7 +24,6 @@ export const STORAGE_KEYS = {
   
   // User preferences
   THEME: 'theme',
-  LANGUAGE: 'language',
   SIDEBAR_COLLAPSED: 'sidebar_collapsed',
   
   // Age verification
@@ -37,40 +36,18 @@ export const STORAGE_KEYS = {
   GUEST_CHECKOUT_DATA: 'guestCheckoutData',
   
   // Product catalog
-  PRODUCT_CATALOG_SEARCH: 'product_catalog_search',
   PRODUCT_FILTER: 'productFilter',
-  
-  // Autocomplete recent selections
-  AUTOCOMPLETE_RECENT_BRAND: 'autocomplete_recent_brand',
-  AUTOCOMPLETE_RECENT_STRAIN: 'autocomplete_recent_strain',
   
   // Onboarding
   ONBOARDING_COMPLETED: 'onboarding_completed',
   ONBOARDING_STEP: 'onboarding_step',
   ONBOARDING_DISMISSED: 'onboarding_dismissed',
   
-  // Tutorials
-  TUTORIAL_COMPLETED: 'tutorial_completed_',
-  TUTORIAL_STATE: 'tutorial_state',
-  
   // Device tracking
-  DEVICE_ID: 'device_id',
   DEVICE_FINGERPRINT: 'device_fingerprint',
-  
-  // Notifications
-  NOTIFICATION_PERMISSION: 'notification_permission',
-  PUSH_NOTIFICATION_TOKEN: 'push_notification_token',
-  
-  // Location
-  USER_LOCATION: 'user_location',
-  DELIVERY_ADDRESS: 'delivery_address',
-  
+
   // Settings
   NOTIFICATION_SETTINGS: 'notification_settings',
-  PRIVACY_SETTINGS: 'privacy_settings',
-  
-  // Beta banner
-  BETA_BANNER_DISMISSED: 'beta_banner_dismissed',
   
   // Email verification
   EMAIL_VERIFICATION_BANNER_DISMISSED: 'email_verification_banner_dismissed',
@@ -80,17 +57,11 @@ export const STORAGE_KEYS = {
   
   // Sidebar Preferences (legacy - now stored in database)
   SIDEBAR_OPERATION_SIZE: 'sidebar_operation_size',
-  SIDEBAR_CUSTOM_LAYOUT: 'sidebar_custom_layout',
   SIDEBAR_FAVORITES: 'sidebar_favorites',
   SIDEBAR_COLLAPSED_SECTIONS: 'sidebar_collapsed_sections',
   
   // PWA
   PWA_DISMISS_DATE: 'pwa_dismiss_date',
-  PWA_INSTALLED: 'pwa_installed',
-  
-  // Feature tracking (Hotbox)
-  FEATURE_USAGE: 'feature_usage',
-  BUSINESS_TIER_OVERRIDE: 'business_tier_override',
   
   // Command Palette
   COMMAND_PALETTE_RECENT_SEARCHES: 'command_palette_recent_searches',
@@ -101,27 +72,11 @@ export const STORAGE_KEYS = {
   // Dashboard
   DASHBOARD_WIDGETS: 'dashboard_widgets',
 
-  // Performance
-  NETWORK_QUALITY: 'network_quality',
-  REDUCED_MOTION: 'reduced_motion',
-
-  // Credits
-  INSUFFICIENT_CREDITS_DISMISSED: 'insufficient_credits_dismissed',
-
   // Navigation
   SCROLL_POSITIONS: 'scroll_positions',
 
-  // Session preferences
-  REMEMBER_ME: 'remember_me',
-
-  // Order Search
-  ORDER_SEARCH_RECENT: 'order_search_recent',
-
   // Dashboard Tour
   DASHBOARD_TOUR_COMPLETED: 'dashboard_tour_completed',
-
-  // Weather
-  WEATHER_LOCATION: 'weather_location',
 
   // Sync Status
   SYNC_LAST_SYNCED: 'sync_last_synced',

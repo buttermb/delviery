@@ -4,20 +4,6 @@
  */
 
 /**
- * Safely replace text in a string with null checks
- */
-export const safeReplace = (
-  str: string | null | undefined,
-  search: string | RegExp,
-  replace: string
-): string => {
-  if (!str || typeof str !== 'string') {
-    return '';
-  }
-  return str.replace(search, replace);
-};
-
-/**
  * Safely convert string to uppercase with null checks
  */
 export const safeUpperCase = (str: string | null | undefined): string => {
@@ -25,16 +11,6 @@ export const safeUpperCase = (str: string | null | undefined): string => {
     return '';
   }
   return str.toUpperCase();
-};
-
-/**
- * Safely convert string to lowercase with null checks
- */
-export const safeLowerCase = (str: string | null | undefined): string => {
-  if (!str || typeof str !== 'string') {
-    return '';
-  }
-  return str.toLowerCase();
 };
 
 /**
@@ -98,26 +74,3 @@ export const truncate = (
   return str.substring(0, maxLength - suffix.length) + suffix;
 };
 
-/**
- * Safely handle status display with null checks
- */
-export const safeStatus = (status: string | null | undefined): string => {
-  if (!status || typeof status !== 'string' || status.trim() === '') {
-    return 'pending';
-  }
-  return status.replace(/_/g, ' ').toLowerCase();
-};
-
-/**
- * Safely handle action type display with null checks
- */
-export const safeAction = (action: string | null | undefined): string => {
-  if (!action || typeof action !== 'string' || action.trim() === '') {
-    return 'unknown';
-  }
-  return action
-    .replace(/_/g, ' ')
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-};
