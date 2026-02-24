@@ -318,7 +318,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
               ${address.label}
               ${address.is_primary ? '<span style="background: #3b82f6; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px;">Primary</span>' : ''}
             </div>
-            <div style="font-size: 12px; color: #666; margin-bottom: 8px;">${fullAddress}</div>
+            <div style="font-size: 12px; color: #555; margin-bottom: 8px;">${fullAddress}</div>
             ${address.delivery_instructions ? `<div style="font-size: 11px; color: #888; font-style: italic;">Note: ${address.delivery_instructions}</div>` : ''}
           </div>
         `);
@@ -342,7 +342,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
             <span style="background: #10b981; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px;">Hub</span>
             ${hub.name}
           </div>
-          <div style="font-size: 12px; color: #666;">${hub.address}</div>
+          <div style="font-size: 12px; color: #555;">${hub.address}</div>
         </div>
       `);
 

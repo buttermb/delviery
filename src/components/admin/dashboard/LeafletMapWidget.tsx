@@ -84,7 +84,7 @@ export function LeafletMapWidget({
 
       marker.bindPopup(`
         <div style="font-weight: 600; margin-bottom: 4px;">${location.name}</div>
-        <div style="font-size: 12px; color: #666;">${location.type}</div>
+        <div style="font-size: 12px; color: #555;">${location.type}</div>
       `);
     });
 

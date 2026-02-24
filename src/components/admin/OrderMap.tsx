@@ -221,7 +221,7 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
             <div style="font-size: 14px; margin-bottom: 4px;">
               ${escapeHtml(order.delivery_address)}
             </div>
-            <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+            <div style="font-size: 12px; color: #555; margin-bottom: 8px;">
               Status: <span style="color: ${statusColor}; font-weight: 600;">${formatStatus(order.status).toUpperCase()}</span>
             </div>
             ${order.eta_minutes ? `
@@ -290,10 +290,10 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
             <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #8b5cf6;">
               ${escapeHtml(order.courier.full_name)}
             </div>
-            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+            <div style="font-size: 12px; color: #555; margin-bottom: 4px;">
               Delivering: ${escapeHtml(order.tracking_code)}
             </div>
-            <div style="font-size: 12px; color: #666;">
+            <div style="font-size: 12px; color: #555;">
               Vehicle: ${escapeHtml(order.courier.vehicle_type || 'N/A')}
             </div>
           </div>
@@ -374,13 +374,13 @@ export const OrderMap = ({ orders, activeCouriers = [], selectedOrderId, onOrder
               <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #10b981;">
                 ${escapeHtml(courier.full_name)}
               </div>
-              <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+              <div style="font-size: 12px; color: #555; margin-bottom: 4px;">
                 Status: <span style="color: #10b981; font-weight: 600;">AVAILABLE</span>
               </div>
-              <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+              <div style="font-size: 12px; color: #555; margin-bottom: 4px;">
                 Vehicle: ${escapeHtml(courier.vehicle_type || 'N/A')}
               </div>
-              <div style="font-size: 12px; color: #666;">
+              <div style="font-size: 12px; color: #555;">
                 Rating: ${courier.rating?.toFixed(1) || '5.0'}
               </div>
             </div>

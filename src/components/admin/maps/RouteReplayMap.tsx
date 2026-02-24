@@ -179,7 +179,7 @@ export function RouteReplayMap({
     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
       <div style="padding: 8px;">
         <h3 style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(runnerName)}</h3>
-        <p style="font-size: 12px; color: #666;">
+        <p style="font-size: 12px; color: #555;">
           ${formatSmartDate(currentLocation.recorded_at, { includeTime: true })}
         </p>
         ${currentLocation.speed ? `
