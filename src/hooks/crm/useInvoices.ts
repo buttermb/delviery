@@ -242,7 +242,7 @@ export function useInvoices() {
 export function useClientInvoices(clientId: string | undefined) {
     const accountId = useAccountIdSafe();
     return useQuery({
-        queryKey: queryKeys.crm.invoices.byClient(clientId || ''),
+        queryKey: queryKeys.crm.invoices.byClient(clientId ?? ''),
         queryFn: async () => {
             if (!clientId || !accountId) return [];
             const { data, error } = await crmClient

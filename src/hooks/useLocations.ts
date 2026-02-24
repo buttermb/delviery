@@ -94,7 +94,7 @@ export const useLocations = (filters?: { status?: string }) => {
 
   // Fetch operations summary for locations
   const operationsSummaryQuery = useQuery({
-    queryKey: queryKeys.locations.operationsSummary(tenant?.id || ''),
+    queryKey: queryKeys.locations.operationsSummary(tenant?.id ?? ''),
     queryFn: async () => {
       if (!tenant?.id) return [];
 
@@ -322,7 +322,7 @@ export const useLocationOptions = () => {
   const options = locations.map((loc) => ({
     value: loc.id,
     label: loc.name,
-    description: `${loc.city || ''}${loc.city && loc.state ? ', ' : ''}${loc.state || ''}`,
+    description: `${loc.city ?? ''}${loc.city && loc.state ? ', ' : ''}${loc.state ?? ''}`,
   }));
 
   return {

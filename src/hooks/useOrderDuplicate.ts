@@ -96,8 +96,8 @@ export function useOrderDuplicate(options: UseOrderDuplicateOptions = {}) {
           customer_id: order.customer_id || null,
           customer_name: order.customer_name || null,
           customer_phone: order.customer_phone || null,
-          delivery_address: order.delivery_address || '',
-          delivery_borough: order.delivery_borough || '',
+          delivery_address: order.delivery_address ?? '',
+          delivery_borough: order.delivery_borough ?? '',
           delivery_notes: order.delivery_notes
             ? `[Duplicated from #${order.order_number || order.id.slice(0, 8)}] ${order.delivery_notes}`
             : `[Duplicated from #${order.order_number || order.id.slice(0, 8)}]`,

@@ -318,7 +318,7 @@ export function useOrganizations({
     error,
     refetch,
   } = useQuery({
-    queryKey: organizationKeys.list(tenantId || '', filters),
+    queryKey: organizationKeys.list(tenantId ?? '', filters),
     queryFn: () => fetchOrganizations(tenantId!, filters),
     enabled: enabled && !!tenantId,
     staleTime: 60000, // 1 minute
@@ -614,7 +614,7 @@ export function useOrganizationDetail({
     error,
     refetch,
   } = useQuery({
-    queryKey: organizationKeys.detail(tenantId || '', organizationId || ''),
+    queryKey: organizationKeys.detail(tenantId ?? '', organizationId ?? ''),
     queryFn: () => fetchOrganizationDetail(tenantId!, organizationId!),
     enabled: enabled && !!tenantId && !!organizationId,
     staleTime: 60000,
@@ -626,7 +626,7 @@ export function useOrganizationDetail({
     isLoading: isLoadingMembers,
     refetch: refetchMembers,
   } = useQuery({
-    queryKey: organizationKeys.members(tenantId || '', organizationId || ''),
+    queryKey: organizationKeys.members(tenantId ?? '', organizationId ?? ''),
     queryFn: () => fetchOrganizationMembers(tenantId!, organizationId!),
     enabled: enabled && !!tenantId && !!organizationId,
     staleTime: 30000,
@@ -837,7 +837,7 @@ export function useOrganizationSearch(searchTerm: string) {
   const tenantId = tenant?.id;
 
   const { data, isLoading } = useQuery({
-    queryKey: organizationKeys.search(tenantId || '', searchTerm),
+    queryKey: organizationKeys.search(tenantId ?? '', searchTerm),
     queryFn: async () => {
       if (!tenantId || !searchTerm || searchTerm.length < 2) return [];
 

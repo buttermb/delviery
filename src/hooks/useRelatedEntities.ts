@@ -160,7 +160,7 @@ export function useRelatedClientInvoices(clientId: string | undefined) {
   const accountId = useAccountIdSafe();
 
   const { data, isLoading, error, enable } = useLazyQuery(
-    [...queryKeys.crm.invoices.byClient(clientId || ''), 'related'] as const,
+    [...queryKeys.crm.invoices.byClient(clientId ?? ''), 'related'] as const,
     async (): Promise<RelatedEntityItem[]> => {
       const { data: invoices, error } = await supabase
         .from('crm_invoices')
@@ -196,7 +196,7 @@ export function useRelatedClientPreOrders(clientId: string | undefined) {
   const accountId = useAccountIdSafe();
 
   const { data, isLoading, error, enable } = useLazyQuery(
-    [...queryKeys.crm.preOrders.byClient(clientId || ''), 'related'] as const,
+    [...queryKeys.crm.preOrders.byClient(clientId ?? ''), 'related'] as const,
     async (): Promise<RelatedEntityItem[]> => {
       const { data: preOrders, error } = await supabase
         .from('crm_pre_orders')
@@ -232,7 +232,7 @@ export function useRelatedCustomerOrders(customerId: string | undefined) {
   const accountId = useAccountIdSafe();
 
   const { data, isLoading, error, enable } = useLazyQuery(
-    [...queryKeys.orders.all, 'related', 'customer', customerId || ''] as const,
+    [...queryKeys.orders.all, 'related', 'customer', customerId ?? ''] as const,
     async (): Promise<RelatedEntityItem[]> => {
       const { data: orders, error } = await supabase
         .from('orders')
@@ -267,7 +267,7 @@ export function useRelatedPreOrderInvoices(clientId: string | undefined, exclude
   const accountId = useAccountIdSafe();
 
   const { data, isLoading, error, enable } = useLazyQuery(
-    [...queryKeys.crm.invoices.byClient(clientId || ''), 'related', 'pre-order', excludeId || ''] as const,
+    [...queryKeys.crm.invoices.byClient(clientId ?? ''), 'related', 'pre-order', excludeId ?? ''] as const,
     async (): Promise<RelatedEntityItem[]> => {
       const { data: invoices, error } = await supabase
         .from('crm_invoices')
@@ -303,7 +303,7 @@ export function useRelatedInvoicePreOrders(clientId: string | undefined, exclude
   const accountId = useAccountIdSafe();
 
   const { data, isLoading, error, enable } = useLazyQuery(
-    [...queryKeys.crm.preOrders.byClient(clientId || ''), 'related', 'invoice', excludeId || ''] as const,
+    [...queryKeys.crm.preOrders.byClient(clientId ?? ''), 'related', 'invoice', excludeId ?? ''] as const,
     async (): Promise<RelatedEntityItem[]> => {
       const { data: preOrders, error } = await supabase
         .from('crm_pre_orders')
@@ -339,7 +339,7 @@ export function useRelatedClientPayments(clientId: string | undefined) {
   const accountId = useAccountIdSafe();
 
   const { data, isLoading, error, enable } = useLazyQuery(
-    ['related-client-payments', clientId || ''] as string[],
+    ['related-client-payments', clientId ?? ''] as string[],
     async (): Promise<RelatedEntityItem[]> => {
       const { data: payments, error } = await supabase
         .from('customer_payments')

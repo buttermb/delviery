@@ -109,7 +109,7 @@ export function useVendorCommunications(vendorId: string) {
 
   // Fetch all communication logs for a vendor
   const communicationsQuery = useQuery({
-    queryKey: queryKeys.vendors.communications(tenantId || '', vendorId),
+    queryKey: queryKeys.vendors.communications(tenantId ?? '', vendorId),
     queryFn: async (): Promise<VendorCommunicationLog[]> => {
       if (!tenantId) {
         throw new Error('No tenant context');
@@ -235,7 +235,7 @@ export function useVendorCommunications(vendorId: string) {
     onSuccess: () => {
       toast.success('Communication logged successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.communications(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.communications(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -285,7 +285,7 @@ export function useVendorCommunications(vendorId: string) {
     onSuccess: () => {
       toast.success('Communication updated successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.communications(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.communications(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -318,7 +318,7 @@ export function useVendorCommunications(vendorId: string) {
     onSuccess: () => {
       toast.success('Communication deleted successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.communications(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.communications(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -369,7 +369,7 @@ export function useVendorPurchaseOrders(vendorId: string) {
   const tenantId = tenant?.id;
 
   return useQuery({
-    queryKey: queryKeys.vendors.orders(tenantId || '', vendorId),
+    queryKey: queryKeys.vendors.orders(tenantId ?? '', vendorId),
     queryFn: async () => {
       if (!tenantId) {
         throw new Error('No tenant context');

@@ -30,7 +30,7 @@ export const useRoutePrefetch = () => {
 
     // Extract the last meaningful path segment
     const segments = route.split('/').filter(Boolean);
-    const routeName = segments[segments.length - 1] || '';
+    const routeName = segments[segments.length - 1] ?? '';
 
     // Debounce: Only prefetch after 150ms hover
     hoverTimerRef.current = setTimeout(() => {

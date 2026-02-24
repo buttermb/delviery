@@ -199,7 +199,7 @@ export function useFeatureTracking() {
       general: 'What would you like to do today?',
     };
 
-    return `${timeGreeting}, ${userName}! ${workflowContext[workflow] || ''}`;
+    return `${timeGreeting}, ${userName}! ${workflowContext[workflow] ?? ''}`;
   }, [detectPrimaryWorkflow]);
 
   return {

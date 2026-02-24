@@ -65,7 +65,7 @@ export function useClient(clientId: string | undefined) {
     const accountId = tenant?.id;
 
     return useQuery({
-        queryKey: crmClientKeys.detail(clientId || ''),
+        queryKey: crmClientKeys.detail(clientId ?? ''),
         queryFn: async () => {
             if (!clientId || !accountId) return null;
 
@@ -128,7 +128,7 @@ export function useCreateClient() {
 
             const optimisticClient = {
                 id: `temp-${Date.now()}`,
-                account_id: values.account_id || accountId || '',
+                account_id: values.account_id ?? accountId ?? '',
                 name: values.name,
                 email: values.email || null,
                 phone: values.phone || null,

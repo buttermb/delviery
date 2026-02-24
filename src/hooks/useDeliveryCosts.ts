@@ -20,7 +20,7 @@ export function useDeliveryCostByOrder(orderId: string | undefined) {
   const tenantId = tenant?.id;
 
   return useQuery({
-    queryKey: queryKeys.deliveryCosts.byOrder(tenantId || '', orderId || ''),
+    queryKey: queryKeys.deliveryCosts.byOrder(tenantId ?? '', orderId ?? ''),
     queryFn: async (): Promise<DeliveryCost | null> => {
       if (!tenantId || !orderId) return null;
 
@@ -136,7 +136,7 @@ export function useSaveDeliveryCost() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.deliveryCosts.byOrder(tenantId || '', variables.order_id),
+        queryKey: queryKeys.deliveryCosts.byOrder(tenantId ?? '', variables.order_id),
       });
       queryClient.invalidateQueries({
         queryKey: queryKeys.deliveryCosts.analytics(tenantId),

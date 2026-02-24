@@ -139,7 +139,7 @@ export function useUnifiedOrders(options: UseUnifiedOrdersOptions = {}) {
     realtime = true,
   } = options;
 
-  const queryKey = unifiedOrdersKeys.list(tenant?.id || '', { orderType, status, priority, sortByPriority, limit, offset });
+  const queryKey = unifiedOrdersKeys.list(tenant?.id ?? '', { orderType, status, priority, sortByPriority, limit, offset });
 
   const query = useQuery({
     queryKey,
@@ -269,7 +269,7 @@ export function useUnifiedOrder(orderId: string | undefined) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: unifiedOrdersKeys.detail(orderId || ''),
+    queryKey: unifiedOrdersKeys.detail(orderId ?? ''),
     queryFn: async () => {
       if (!tenant?.id || !orderId) throw new Error('Missing tenant or order ID');
 
@@ -357,7 +357,7 @@ export function useCreateUnifiedOrder() {
       // Create optimistic order
       const optimisticOrder: UnifiedOrder = {
         id: `temp-${Date.now()}`,
-        tenant_id: tenant?.id || '',
+        tenant_id: tenant?.id ?? '',
         order_number: 'Creating...',
         order_type: input.order_type,
         source: input.source,
@@ -707,7 +707,7 @@ export function useUpdateOrderStatus() {
           // Update customer stats on order completion
           if (data.customer_id) {
             queryClient.invalidateQueries({
-             queryKey: queryKeys.customers.stats(tenant?.id || '', data.customer_id),
+             queryKey: queryKeys.customers.stats(tenant?.id ?? '', data.customer_id),
             });
           }
         }
@@ -721,7 +721,7 @@ export function useUpdateOrderStatus() {
           queryClient.invalidateQueries({ queryKey: queryKeys.activityFeed.all });
           if (data.customer_id) {
             queryClient.invalidateQueries({
-             queryKey: queryKeys.customers.stats(tenant?.id || '', data.customer_id),
+             queryKey: queryKeys.customers.stats(tenant?.id ?? '', data.customer_id),
             });
           }
         }
@@ -939,10 +939,10 @@ export function useCancelOrder() {
         // Update customer stats if attached
         if (data.customer_id) {
           queryClient.invalidateQueries({
-             queryKey: queryKeys.customers.stats(tenant?.id || '', data.customer_id),
+             queryKey: queryKeys.customers.stats(tenant?.id ?? '', data.customer_id),
           });
           queryClient.invalidateQueries({
-            queryKey: queryKeys.customers.detail(tenant?.id || '', data.customer_id),
+            queryKey: queryKeys.customers.detail(tenant?.id ?? '', data.customer_id),
           });
         }
       }

@@ -17,7 +17,7 @@ export function useClientActivity(clientId: string | undefined) {
     const accountId = useAccountIdSafe();
 
     return useQuery({
-        queryKey: crmActivityKeys.byClient(clientId || ''),
+        queryKey: crmActivityKeys.byClient(clientId ?? ''),
         queryFn: async () => {
             if (!clientId || !accountId) return [];
 

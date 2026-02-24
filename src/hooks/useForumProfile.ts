@@ -21,7 +21,7 @@ export function useForumProfile() {
 
 export function useForumProfileByUsername(username: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.forum.profile.byUsername(username || ''),
+    queryKey: queryKeys.forum.profile.byUsername(username ?? ''),
     queryFn: () => {
       if (!username) throw new Error('Username is required');
       return forumApi.getForumProfileByUsername(username);

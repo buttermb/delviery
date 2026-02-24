@@ -435,7 +435,7 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
             }
 
             const coupon: AppliedCoupon = {
-                coupon_id: result.coupon_id || '',
+                coupon_id: result.coupon_id ?? '',
                 code: code.toUpperCase(),
                 discount_type: (result.discount_type === 'fixed' ? 'fixed_amount' : result.discount_type || 'percentage') as AppliedCoupon['discount_type'],
                 discount_value: result.discount_value || result.discount_amount || 0,

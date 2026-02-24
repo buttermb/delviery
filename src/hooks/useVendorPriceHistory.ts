@@ -56,7 +56,7 @@ export function useVendorPriceHistory(vendorId: string, productId?: string) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: [...queryKeys.vendors.detail(tenant?.id || '', vendorId), 'price-history', productId],
+    queryKey: [...queryKeys.vendors.detail(tenant?.id ?? '', vendorId), 'price-history', productId],
     queryFn: async () => {
       if (!tenant?.id || !vendorId) return [];
 
@@ -171,7 +171,7 @@ export function useVendorPriceAlertSettings(vendorId: string) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: [...queryKeys.vendors.detail(tenant?.id || '', vendorId), 'alert-settings'],
+    queryKey: [...queryKeys.vendors.detail(tenant?.id ?? '', vendorId), 'alert-settings'],
     queryFn: async () => {
       if (!tenant?.id || !vendorId) return [];
 
@@ -239,7 +239,7 @@ export function useUpdatePriceAlertSettings() {
     onSuccess: (_, variables) => {
       toast.success('Alert settings updated successfully');
       queryClient.invalidateQueries({
-        queryKey: [...queryKeys.vendors.detail(tenant?.id || '', variables.vendorId), 'alert-settings'],
+        queryKey: [...queryKeys.vendors.detail(tenant?.id ?? '', variables.vendorId), 'alert-settings'],
       });
     },
     onError: (error) => {
@@ -294,7 +294,7 @@ export function useLogVendorPriceChange() {
       toast.success('Price change logged successfully');
       // Invalidate price history queries
       queryClient.invalidateQueries({
-        queryKey: [...queryKeys.vendors.detail(tenant?.id || '', variables.vendorId), 'price-history'],
+        queryKey: [...queryKeys.vendors.detail(tenant?.id ?? '', variables.vendorId), 'price-history'],
       });
       // Invalidate alerts
       queryClient.invalidateQueries({
@@ -314,7 +314,7 @@ export function useProductPriceTrend(vendorId: string, productId: string) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: [...queryKeys.vendors.detail(tenant?.id || '', vendorId), 'price-trend', productId],
+    queryKey: [...queryKeys.vendors.detail(tenant?.id ?? '', vendorId), 'price-trend', productId],
     queryFn: async () => {
       if (!tenant?.id || !vendorId || !productId) return [];
 

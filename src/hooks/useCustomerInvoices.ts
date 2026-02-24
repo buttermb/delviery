@@ -284,7 +284,7 @@ export function useCustomerInvoices() {
           amount_due: Math.max(0, newAmountDue),
           status: isPaidInFull ? 'paid' : invoice.status,
           paid_at: isPaidInFull ? new Date().toISOString() : invoice.paid_at,
-          notes: notes ? `${invoice.notes || ''}\n\nPayment recorded: ${formatCurrency(amount)}` : invoice.notes,
+          notes: notes ? `${invoice.notes ?? ''}\n\nPayment recorded: ${formatCurrency(amount)}` : invoice.notes,
         }).eq('id', invoiceId).eq('tenant_id', tenant.id).select(`
             *,
             customer:customers(id, first_name, last_name, email, phone)

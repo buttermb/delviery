@@ -16,7 +16,7 @@ export function useClientNotes(clientId: string | undefined) {
     const accountId = useAccountIdSafe();
 
     return useQuery({
-        queryKey: crmNoteKeys.byClient(clientId || ''),
+        queryKey: crmNoteKeys.byClient(clientId ?? ''),
         queryFn: async () => {
             if (!clientId || !accountId) return [];
 

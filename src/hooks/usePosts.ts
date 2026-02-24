@@ -21,7 +21,7 @@ export function usePosts(options: GetPostsOptions = {}) {
 
 export function usePost(postId: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.forum.posts.detail(postId || ''),
+    queryKey: queryKeys.forum.posts.detail(postId ?? ''),
     queryFn: () => {
       if (!postId) throw new Error('Post ID is required');
       return forumApi.getPostById(postId);

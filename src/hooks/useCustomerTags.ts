@@ -83,7 +83,7 @@ export function useContactTags(contactId: string | undefined) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: queryKeys.customerTags.byContact(contactId || ''),
+    queryKey: queryKeys.customerTags.byContact(contactId ?? ''),
     queryFn: async () => {
       if (!tenant?.id || !contactId) throw new Error('No tenant or contact');
 

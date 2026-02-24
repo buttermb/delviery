@@ -29,7 +29,7 @@ export function useVote() {
 
 export function useUserVote(votableType: 'post' | 'comment', votableId: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.forum.votes.userVote(votableType, votableId || ''),
+    queryKey: queryKeys.forum.votes.userVote(votableType, votableId ?? ''),
     queryFn: () => {
       if (!votableId) return null;
       return forumApi.getUserVote(votableType, votableId);

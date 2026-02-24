@@ -105,7 +105,7 @@ export function useVendorOrders(vendorId: string | null) {
     const { tenant } = useTenantAdminAuth();
 
     return useQuery({
-        queryKey: queryKeys.vendors.orders(tenant?.id || '', vendorId || ''),
+        queryKey: queryKeys.vendors.orders(tenant?.id ?? '', vendorId ?? ''),
         queryFn: async () => {
             if (!tenant?.id || !vendorId) return [];
 

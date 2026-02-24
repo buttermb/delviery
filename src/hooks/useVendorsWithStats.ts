@@ -46,7 +46,7 @@ export function useVendorsWithStats() {
   const tenantId = tenant?.id;
 
   return useQuery({
-    queryKey: [...queryKeys.vendors.list(tenantId || ''), 'with-stats'],
+    queryKey: [...queryKeys.vendors.list(tenantId ?? ''), 'with-stats'],
     queryFn: async (): Promise<VendorWithStats[]> => {
       if (!tenantId) {
         return [];
@@ -170,7 +170,7 @@ export function useVendorDetails(vendorName: string | null | undefined) {
   const tenantId = tenant?.id;
 
   return useQuery({
-    queryKey: queryKeys.vendors.detail(tenantId || '', vendorName || ''),
+    queryKey: queryKeys.vendors.detail(tenantId ?? '', vendorName ?? ''),
     queryFn: async (): Promise<VendorWithStats | null> => {
       if (!tenantId || !vendorName) {
         return null;

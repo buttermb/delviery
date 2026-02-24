@@ -396,7 +396,7 @@ export function useLoyaltyConfig(): UseLoyaltyConfigReturn {
     error,
     refetch,
   } = useQuery({
-    queryKey: customerLoyaltyKeys.config(tenantId || ''),
+    queryKey: customerLoyaltyKeys.config(tenantId ?? ''),
     queryFn: () => fetchLoyaltyConfig(tenantId!),
     enabled: !!tenantId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -408,7 +408,7 @@ export function useLoyaltyConfig(): UseLoyaltyConfigReturn {
     return {
       ...DEFAULT_CONFIG,
       id: '',
-      tenant_id: tenantId || '',
+      tenant_id: tenantId ?? '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     } as LoyaltyConfig;
@@ -541,7 +541,7 @@ export function useCustomerLoyaltyStatus({
 
   // Then get the status
   const { data: status, isLoading, error, refetch } = useQuery({
-    queryKey: customerLoyaltyKeys.status(tenantId || '', customerId || ''),
+    queryKey: customerLoyaltyKeys.status(tenantId ?? '', customerId ?? ''),
     queryFn: () => fetchCustomerLoyaltyStatus(tenantId!, customerId!, config),
     enabled: enabled && !!tenantId && !!customerId,
     staleTime: 30000, // 30 seconds
@@ -581,7 +581,7 @@ export function usePointsHistory({
   const tenantId = tenant?.id;
 
   const { data: history, isLoading, error, refetch } = useQuery({
-    queryKey: customerLoyaltyKeys.history(tenantId || '', customerId || ''),
+    queryKey: customerLoyaltyKeys.history(tenantId ?? '', customerId ?? ''),
     queryFn: () => fetchPointsHistory(tenantId!, customerId!, limit),
     enabled: enabled && !!tenantId && !!customerId,
     staleTime: 30000,

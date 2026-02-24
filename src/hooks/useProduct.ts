@@ -208,7 +208,7 @@ export function useProductInventoryChart(productId: string | undefined, timeRang
 
                 // Determine event type
                 let eventType: 'restock' | 'deduction' | 'adjustment' = 'adjustment';
-                const movementType = typedItem.movement_type?.toLowerCase() || '';
+                const movementType = typedItem.movement_type?.toLowerCase() ?? '';
 
                 if (movementType.includes('restock') || movementType.includes('receive') || movementType.includes('add')) {
                     eventType = 'restock';

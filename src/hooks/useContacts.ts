@@ -143,7 +143,7 @@ export function useContacts(options: UseContactsOptions = {}) {
     realtime = true,
   } = options;
 
-  const queryKey = contactsKeys.list(tenant?.id || '', { contactType, status, search, limit, offset });
+  const queryKey = contactsKeys.list(tenant?.id ?? '', { contactType, status, search, limit, offset });
 
   const query = useQuery({
     queryKey,
@@ -237,7 +237,7 @@ export function useContact(contactId: string | undefined) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: contactsKeys.detail(contactId || ''),
+    queryKey: contactsKeys.detail(contactId ?? ''),
     queryFn: async () => {
       if (!tenant?.id || !contactId) throw new Error('Missing tenant or contact ID');
 
@@ -294,7 +294,7 @@ export function useCreateContact() {
 
       const optimisticContact: Contact = {
         id: `temp-${Date.now()}`,
-        tenant_id: tenant?.id || '',
+        tenant_id: tenant?.id ?? '',
         contact_type: input.contact_type || ['retail'],
         name: input.name || null,
         first_name: input.first_name || null,

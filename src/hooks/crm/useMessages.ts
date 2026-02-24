@@ -16,7 +16,7 @@ export function useClientMessages(clientId: string | undefined) {
     const accountId = useAccountIdSafe();
 
     return useQuery({
-        queryKey: crmMessageKeys.byClient(clientId || ''),
+        queryKey: crmMessageKeys.byClient(clientId ?? ''),
         queryFn: async () => {
             if (!clientId || !accountId) return [];
 

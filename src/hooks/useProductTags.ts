@@ -173,7 +173,7 @@ export function useProductTagAssignments(productId: string | undefined) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: queryKeys.productTags.byProduct(productId || ''),
+    queryKey: queryKeys.productTags.byProduct(productId ?? ''),
     queryFn: async () => {
       if (!tenant?.id || !productId) throw new Error('No tenant or product');
 

@@ -28,7 +28,7 @@ export function usePreOrders() {
 export function useClientPreOrders(clientId: string | undefined) {
     const accountId = useAccountIdSafe();
     return useQuery({
-        queryKey: queryKeys.crm.preOrders.byClient(clientId || ''),
+        queryKey: queryKeys.crm.preOrders.byClient(clientId ?? ''),
         queryFn: async () => {
             if (!clientId || !accountId) return [];
             const { data, error } = await supabase.from('crm_pre_orders').select('*').eq('client_id', clientId).eq('account_id', accountId).order('created_at', { ascending: false }).limit(200);
@@ -42,7 +42,7 @@ export function useClientPreOrders(clientId: string | undefined) {
 export function usePreOrder(preOrderId: string | undefined) {
     const accountId = useAccountIdSafe();
     return useQuery({
-        queryKey: queryKeys.crm.preOrders.detail(preOrderId || ''),
+        queryKey: queryKeys.crm.preOrders.detail(preOrderId ?? ''),
         queryFn: async () => {
             if (!preOrderId || !accountId) return null;
             const { data, error } = await supabase.from('crm_pre_orders').select('*, client:crm_clients(*)').eq('id', preOrderId).eq('account_id', accountId).maybeSingle();

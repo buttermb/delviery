@@ -42,7 +42,7 @@ export function useContactCRMLinks(contactId: string | undefined) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
-    queryKey: customerCRMKeys.linksByContact(contactId || ''),
+    queryKey: customerCRMKeys.linksByContact(contactId ?? ''),
     queryFn: async () => {
       if (!contactId || !tenant?.id) return [];
 
@@ -77,7 +77,7 @@ export function useCRMClientContacts(clientId: string | undefined) {
   const accountId = useAccountIdSafe();
 
   return useQuery({
-    queryKey: customerCRMKeys.linksByClient(clientId || ''),
+    queryKey: customerCRMKeys.linksByClient(clientId ?? ''),
     queryFn: async () => {
       if (!clientId || !accountId) return [];
 
@@ -110,7 +110,7 @@ export function useCRMClientContacts(clientId: string | undefined) {
  */
 export function useCustomerCRMTimeline(contactId: string | undefined, limit: number = 50) {
   return useQuery({
-    queryKey: customerCRMKeys.timelineByContact(contactId || '', limit),
+    queryKey: customerCRMKeys.timelineByContact(contactId ?? '', limit),
     queryFn: async () => {
       if (!contactId) return [];
 

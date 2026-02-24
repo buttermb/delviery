@@ -35,7 +35,7 @@ interface RedemptionResult {
  */
 export function useLoyaltyConfig(storeId: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.loyalty.config(storeId || ''),
+    queryKey: queryKeys.loyalty.config(storeId ?? ''),
     queryFn: async () => {
       if (!storeId) return null;
 
@@ -62,7 +62,7 @@ export function useLoyaltyConfig(storeId: string | undefined) {
  */
 export function useCustomerLoyalty(storeId: string | undefined, customerEmail: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.loyalty.customer(customerEmail || ''),
+    queryKey: queryKeys.loyalty.customer(customerEmail ?? ''),
     queryFn: async () => {
       if (!storeId || !customerEmail) return null;
 

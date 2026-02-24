@@ -514,7 +514,7 @@ function buildDeliveryZoneCheck(
     status: 'passed',
     label: 'In Delivery Zone',
     description: customer.address
-      ? `${customer.city || ''}, ${customer.state || ''} ${customer.zip_code || ''}`
+      ? `${customer.city ?? ''}, ${customer.state ?? ''} ${customer.zip_code ?? ''}`
       : 'Address validated',
     isRequired,
   };
@@ -536,7 +536,7 @@ export function useCustomerCompliance(
     error,
     refetch,
   } = useQuery({
-    queryKey: complianceKeys.customer(tenantId || '', customerId || ''),
+    queryKey: complianceKeys.customer(tenantId ?? '', customerId ?? ''),
     queryFn: () => fetchCustomerComplianceData(tenantId!, customerId!),
     enabled: !!tenantId && !!customerId,
     staleTime: 60000, // 1 minute

@@ -55,7 +55,7 @@ export function useUnsavedChanges({
   useEffect(() => {
     if (!showBlockerDialog) {
       currentUrlRef.current =
-        location.pathname + location.search + (location.hash || '');
+        location.pathname + location.search + (location.hash ?? '');
     }
   }, [location, showBlockerDialog]);
 

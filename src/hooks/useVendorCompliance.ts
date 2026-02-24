@@ -181,7 +181,7 @@ export function useVendorCompliance(vendorId: string) {
 
   // Fetch compliance records for a vendor
   const complianceQuery = useQuery({
-    queryKey: queryKeys.vendors.compliance(tenantId || '', vendorId),
+    queryKey: queryKeys.vendors.compliance(tenantId ?? '', vendorId),
     queryFn: async (): Promise<VendorCompliance[]> => {
       if (!tenantId) {
         throw new Error('No tenant context');
@@ -254,7 +254,7 @@ export function useVendorCompliance(vendorId: string) {
     onSuccess: () => {
       toast.success('Compliance record created successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.compliance(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.compliance(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -362,7 +362,7 @@ export function useVendorCompliance(vendorId: string) {
     onSuccess: () => {
       toast.success('Compliance record updated successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.compliance(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.compliance(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -395,7 +395,7 @@ export function useVendorCompliance(vendorId: string) {
     onSuccess: () => {
       toast.success('Compliance record deleted successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.compliance(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.compliance(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -468,7 +468,7 @@ export function useVendorComplianceDocuments(complianceId: string) {
 
   const documentsQuery = useQuery({
     queryKey: queryKeys.vendors.complianceDocuments(
-      tenantId || '',
+      tenantId ?? '',
       complianceId
     ),
     queryFn: async (): Promise<ComplianceDocument[]> => {
@@ -533,7 +533,7 @@ export function useVendorComplianceDocuments(complianceId: string) {
       toast.success('Document uploaded successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.complianceDocuments(
-          tenantId || '',
+          tenantId ?? '',
           complianceId
         ),
       });
@@ -568,7 +568,7 @@ export function useVendorComplianceDocuments(complianceId: string) {
       toast.success('Document deleted successfully');
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.complianceDocuments(
-          tenantId || '',
+          tenantId ?? '',
           complianceId
         ),
       });
@@ -598,7 +598,7 @@ export function useVendorComplianceAudit(complianceId: string) {
   const tenantId = tenant?.id;
 
   return useQuery({
-    queryKey: queryKeys.vendors.complianceAudit(tenantId || '', complianceId),
+    queryKey: queryKeys.vendors.complianceAudit(tenantId ?? '', complianceId),
     queryFn: async (): Promise<ComplianceAuditEntry[]> => {
       if (!tenantId) {
         throw new Error('No tenant context');

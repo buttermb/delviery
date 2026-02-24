@@ -30,7 +30,7 @@ function parseDataSource(raw: RawDataSource): ReportDataSource {
     id: raw.id,
     name: raw.name,
     display_name: raw.display_name,
-    description: raw.description || '',
+    description: raw.description ?? '',
     source_type: raw.source_type as 'table' | 'view' | 'rpc',
     source_table: raw.source_table,
     source_rpc: raw.source_rpc,

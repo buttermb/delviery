@@ -33,7 +33,7 @@ interface PublicInvoiceResponse {
 
 export function usePublicInvoice(token: string | undefined) {
     return useQuery({
-        queryKey: queryKeys.crm.invoices.byToken(token || ''),
+        queryKey: queryKeys.crm.invoices.byToken(token ?? ''),
         queryFn: async () => {
             if (!token) return null;
 

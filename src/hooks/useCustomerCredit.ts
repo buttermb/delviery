@@ -198,7 +198,7 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
     error,
     refetch,
   } = useQuery({
-    queryKey: customerCreditKeys.balance(tenantId || '', customerId || ''),
+    queryKey: customerCreditKeys.balance(tenantId ?? '', customerId ?? ''),
     queryFn: () => fetchCustomerCreditBalance(tenantId!, customerId!),
     enabled: !!tenantId && !!customerId,
     staleTime: 30000, // 30 seconds
@@ -209,7 +209,7 @@ export function useCustomerCredit(customerId: string | undefined): UseCustomerCr
     data: transactions,
     isLoading: isLoadingTransactions,
   } = useQuery({
-    queryKey: customerCreditKeys.transactions(tenantId || '', customerId || ''),
+    queryKey: customerCreditKeys.transactions(tenantId ?? '', customerId ?? ''),
     queryFn: () => fetchCustomerCreditTransactions(tenantId!, customerId!),
     enabled: !!tenantId && !!customerId,
     staleTime: 30000,

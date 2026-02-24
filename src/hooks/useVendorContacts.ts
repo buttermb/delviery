@@ -88,7 +88,7 @@ export function useVendorContacts(vendorId: string) {
 
   // Fetch all contacts for a vendor
   const contactsQuery = useQuery({
-    queryKey: queryKeys.vendors.contacts(tenantId || '', vendorId),
+    queryKey: queryKeys.vendors.contacts(tenantId ?? '', vendorId),
     queryFn: async (): Promise<VendorContact[]> => {
       if (!tenantId) {
         throw new Error('No tenant context');
@@ -153,7 +153,7 @@ export function useVendorContacts(vendorId: string) {
     onSuccess: () => {
       toast.success('Contact created successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.contacts(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.contacts(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -199,7 +199,7 @@ export function useVendorContacts(vendorId: string) {
     onSuccess: () => {
       toast.success('Contact updated successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.contacts(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.contacts(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -232,7 +232,7 @@ export function useVendorContacts(vendorId: string) {
     onSuccess: () => {
       toast.success('Contact deleted successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.contacts(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.contacts(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -269,7 +269,7 @@ export function useVendorContacts(vendorId: string) {
     onSuccess: () => {
       toast.success('Primary contact updated');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.contacts(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.contacts(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -310,7 +310,7 @@ export function useVendorContacts(vendorId: string) {
     onSuccess: (_, variables) => {
       toast.success('Interaction logged successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.contactHistory(tenantId || '', variables.vendor_contact_id),
+        queryKey: queryKeys.vendors.contactHistory(tenantId ?? '', variables.vendor_contact_id),
       });
     },
     onError: (error) => {
@@ -353,7 +353,7 @@ export function useVendorContactHistory(contactId: string) {
   const tenantId = tenant?.id;
 
   return useQuery({
-    queryKey: queryKeys.vendors.contactHistory(tenantId || '', contactId),
+    queryKey: queryKeys.vendors.contactHistory(tenantId ?? '', contactId),
     queryFn: async (): Promise<VendorContactHistory[]> => {
       if (!tenantId) {
         throw new Error('No tenant context');

@@ -54,7 +54,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
 
   // Fetch alerts data
   const { data: rawAlerts = [], isLoading } = useQuery({
-    queryKey: queryKeys.dashboard.alerts(tenantId || ''),
+    queryKey: queryKeys.dashboard.alerts(tenantId ?? ''),
     queryFn: async () => {
       if (!tenantId) return [];
 
@@ -80,7 +80,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
             title: 'Out of Stock',
             message: `${item.name} is currently out of stock`,
             actionLabel: 'Reorder Now',
-            actionHref: `/${tenantSlug}/admin/inventory/products?search=${encodeURIComponent(item.name || '')}`,
+            actionHref: `/${tenantSlug}/admin/inventory/products?search=${encodeURIComponent(item.name ?? '')}`,
             daysUntil: 0,
             entityId: item.id,
             entityType: 'product',
@@ -94,7 +94,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
             title: 'Low Stock Alert',
             message: `${item.name} has only ${currentQty.toFixed(1)} units remaining`,
             actionLabel: 'View Product',
-            actionHref: `/${tenantSlug}/admin/inventory/products?search=${encodeURIComponent(item.name || '')}`,
+            actionHref: `/${tenantSlug}/admin/inventory/products?search=${encodeURIComponent(item.name ?? '')}`,
             entityId: item.id,
             entityType: 'product',
             createdAt: now,

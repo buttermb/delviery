@@ -113,7 +113,7 @@ export function useVendorDocuments(vendorId: string) {
 
   // Fetch all documents for a vendor
   const documentsQuery = useQuery({
-    queryKey: queryKeys.vendors.documents(tenantId || '', vendorId),
+    queryKey: queryKeys.vendors.documents(tenantId ?? '', vendorId),
     queryFn: async (): Promise<VendorDocument[]> => {
       if (!tenantId) {
         throw new Error('No tenant context');
@@ -306,7 +306,7 @@ export function useVendorDocuments(vendorId: string) {
     onSuccess: () => {
       toast.success('Document created successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.documents(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.documents(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -349,7 +349,7 @@ export function useVendorDocuments(vendorId: string) {
     onSuccess: () => {
       toast.success('Document updated successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.documents(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.documents(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {
@@ -418,7 +418,7 @@ export function useVendorDocuments(vendorId: string) {
     onSuccess: () => {
       toast.success('Document deleted successfully');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.vendors.documents(tenantId || '', vendorId),
+        queryKey: queryKeys.vendors.documents(tenantId ?? '', vendorId),
       });
     },
     onError: (error) => {

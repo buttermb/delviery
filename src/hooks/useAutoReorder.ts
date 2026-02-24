@@ -454,7 +454,7 @@ export function useCreateReorderPO() {
       queryClient.invalidateQueries({ queryKey: reorderQueryKeys.suggestions(tenant?.id) });
 
       toast.success(
-        `Purchase order ${data.purchase_order?.po_number || ''} created successfully`
+        `Purchase order ${data.purchase_order?.po_number ?? ''} created successfully`
       );
     },
     onError: (error: Error) => {

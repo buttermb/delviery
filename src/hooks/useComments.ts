@@ -13,7 +13,7 @@ import { humanizeError } from '@/lib/humanizeError';
 
 export function useComments(postId: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.forum.comments.list(postId || ''),
+    queryKey: queryKeys.forum.comments.list(postId ?? ''),
     queryFn: () => {
       if (!postId) throw new Error('Post ID is required');
       return forumApi.getComments(postId);
