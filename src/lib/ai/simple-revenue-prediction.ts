@@ -34,7 +34,7 @@ export class SimpleRevenuePredictor {
    */
   private linearRegression(data: HistoricalData[]): { slope: number; intercept: number } {
     if (data.length < 2) {
-      return { slope: 0, intercept: data[0]?.revenue || 0 };
+      return { slope: 0, intercept: data[0]?.revenue ?? 0 };
     }
 
     const n = data.length;

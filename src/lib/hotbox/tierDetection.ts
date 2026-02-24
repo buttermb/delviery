@@ -231,41 +231,41 @@ export async function fetchTenantMetrics(tenantId: string): Promise<TenantMetric
   // Calculate totals
   const ordersRevenue = ordersResult.data?.reduce(
     (sum, o) => sum + Number(o.total_amount || 0), 0
-  ) || 0;
+  ) ?? 0;
 
   const posRevenue = posResult.data?.reduce(
     (sum, t) => sum + Number(t.total_amount || 0), 0
-  ) || 0;
+  ) ?? 0;
 
   const wholesaleRevenue = wholesaleResult.data?.reduce(
     (sum, o) => sum + Number(o.total_amount || 0), 0
-  ) || 0;
+  ) ?? 0;
 
   const inventoryValue = inventoryResult.data?.reduce(
     (sum, p) => sum + (Number(p.price || 0) * Number(p.stock_quantity || 0)), 0
-  ) || 0;
+  ) ?? 0;
 
   const monthlyRevenue = ordersRevenue + posRevenue + wholesaleRevenue;
-  const totalOrders = (ordersResult.data?.length || 0) + (posResult.data?.length || 0);
+  const totalOrders = (ordersResult.data?.length ?? 0) + (posResult.data?.length ?? 0);
   const averageOrderValue = totalOrders > 0 ? monthlyRevenue / totalOrders : 0;
 
   return {
     tenantId,
     revenue: monthlyRevenue,
     monthlyRevenue,
-    locations: Math.max(1, locationsResult.count || 0),
-    teamSize: Math.max(1, employeesResult.count || 0),
+    locations: Math.max(1, locationsResult.count ?? 0),
+    teamSize: Math.max(1, employeesResult.count ?? 0),
     averageOrderValue,
     avgOrderValue: averageOrderValue,
     totalOrders,
-    activeCustomers: customersResult.count || 0,
-    customerCount: customersResult.count || 0,
-    locationCount: Math.max(1, locationsResult.count || 0), // Minimum 1 location
-    employeeCount: Math.max(1, employeesResult.count || 0), // Minimum 1 employee
+    activeCustomers: customersResult.count ?? 0,
+    customerCount: customersResult.count ?? 0,
+    locationCount: Math.max(1, locationsResult.count ?? 0), // Minimum 1 location
+    employeeCount: Math.max(1, employeesResult.count ?? 0), // Minimum 1 employee
     inventoryValue,
     wholesaleRevenue,
-    deliveryCount: deliveriesResult.count || 0,
-    posTransactions: posResult.data?.length || 0,
+    deliveryCount: deliveriesResult.count ?? 0,
+    posTransactions: posResult.data?.length ?? 0,
     // Default values for fields not yet fetched
     activeOrders: 0,
     pendingOrders: 0,

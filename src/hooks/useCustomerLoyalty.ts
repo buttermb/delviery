@@ -620,7 +620,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
 
       // Get current balance to calculate balance_after
       const loyaltyStatus = await fetchCustomerLoyaltyStatus(tenantId, params.customerId, null);
-      const currentBalance = loyaltyStatus?.current_points || 0;
+      const currentBalance = loyaltyStatus?.current_points ?? 0;
       const newBalance = currentBalance + params.points;
 
       const { data, error } = await supabase
@@ -680,7 +680,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
 
       // Get current balance
       const loyaltyStatus = await fetchCustomerLoyaltyStatus(tenantId, params.customerId, null);
-      const currentBalance = loyaltyStatus?.current_points || 0;
+      const currentBalance = loyaltyStatus?.current_points ?? 0;
 
       if (params.points > currentBalance) {
         throw new Error(`Insufficient points. Current balance: ${currentBalance}`);
@@ -745,7 +745,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
 
       // Get current balance
       const loyaltyStatus = await fetchCustomerLoyaltyStatus(tenantId, params.customerId, null);
-      const currentBalance = loyaltyStatus?.current_points || 0;
+      const currentBalance = loyaltyStatus?.current_points ?? 0;
       const newBalance = Math.max(0, currentBalance + params.points);
 
       const { data, error } = await supabase

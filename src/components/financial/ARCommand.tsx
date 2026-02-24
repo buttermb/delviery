@@ -160,7 +160,7 @@ export function ARCommand() {
             <div className="w-3 h-3 rounded-full bg-red-500" />
             <span className="text-xs text-zinc-400 flex-1">OVERDUE</span>
             <span className="text-sm font-mono text-red-400">
-              {formatCompactCurrency(data?.overdue || 0)}
+              {formatCompactCurrency(data?.overdue ?? 0)}
             </span>
             <Progress 
               value={overduePercentage} 
@@ -173,7 +173,7 @@ export function ARCommand() {
             <div className="w-3 h-3 rounded-full bg-amber-500" />
             <span className="text-xs text-zinc-400 flex-1">DUE THIS WEEK</span>
             <span className="text-sm font-mono text-amber-400">
-              {formatCompactCurrency(data?.dueThisWeek || 0)}
+              {formatCompactCurrency(data?.dueThisWeek ?? 0)}
             </span>
             <Progress 
               value={data?.totalOutstanding ? (data.dueThisWeek / data.totalOutstanding) * 100 : 0} 
@@ -186,7 +186,7 @@ export function ARCommand() {
             <div className="w-3 h-3 rounded-full bg-emerald-500" />
             <span className="text-xs text-zinc-400 flex-1">UPCOMING</span>
             <span className="text-sm font-mono text-emerald-400">
-              {formatCompactCurrency(data?.upcoming || 0)}
+              {formatCompactCurrency(data?.upcoming ?? 0)}
             </span>
             <Progress 
               value={data?.totalOutstanding ? (data.upcoming / data.totalOutstanding) * 100 : 0} 
@@ -222,7 +222,7 @@ export function ARCommand() {
           <CardTitle className="text-sm font-medium flex items-center gap-2 text-zinc-300">
             <AlertCircle className="h-4 w-4 text-red-400" />
             NEEDS ATTENTION NOW
-            {(data?.overdueCount || 0) > 0 && (
+            {(data?.overdueCount ?? 0) > 0 && (
               <Badge variant="destructive" className="ml-auto">
                 {data?.overdueCount} overdue
               </Badge>
@@ -249,13 +249,13 @@ export function ARCommand() {
                 />
               ))}
               
-              {(data?.priorityClients.length || 0) > 3 && !expandedView && (
+              {(data?.priorityClients.length ?? 0) > 3 && !expandedView && (
                 <Button
                   variant="ghost"
                   className="w-full text-zinc-400 hover:text-zinc-200"
                   onClick={() => setExpandedView(true)}
                 >
-                  + {(data?.priorityClients.length || 0) - 3} more accounts
+                  + {(data?.priorityClients.length ?? 0) - 3} more accounts
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               )}

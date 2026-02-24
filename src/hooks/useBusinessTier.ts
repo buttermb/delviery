@@ -93,9 +93,9 @@ export function useBusinessTier() {
         locationCount: Number((tenantData?.usage as Record<string, unknown>)?.locations || 1),
         teamSize: teamCount || 1,
         employeeCount: teamCount || 1,
-        totalOrders: ordersCount || 0,
-        activeCustomers: customersCount || 0,
-        customerCount: customersCount || 0,
+        totalOrders: ordersCount ?? 0,
+        activeCustomers: customersCount ?? 0,
+        customerCount: customersCount ?? 0,
         activeOrders: 0,
         pendingOrders: 0,
         lowStockItems: 0,
@@ -308,8 +308,8 @@ export function useBusinessTier() {
     nextTierRequirements: data?.nextTierRequirements || null,
     qualifiesForUpgrade: data?.qualifiesForUpgrade || false,
     tierOverride: data?.tierOverride || false,
-    score: data?.score || 0,
-    progress: data?.progress || 0,
+    score: data?.score ?? 0,
+    progress: data?.progress ?? 0,
 
     // State
     isLoading,

@@ -433,7 +433,7 @@ export function POReceiving({
   const isLoading = receiveMutation.isPending || itemsLoading;
 
   // Calculate totals
-  const totalOrdered = items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+  const totalOrdered = items?.reduce((sum, item) => sum + (item.quantity || 0), 0) ?? 0;
   const totalReceived = Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
 
   return (
@@ -493,7 +493,7 @@ export function POReceiving({
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Package className="h-4 w-4" />
-                  Items ({items?.length || 0})
+                  Items ({items?.length ?? 0})
                 </CardTitle>
               </CardHeader>
               <CardContent>

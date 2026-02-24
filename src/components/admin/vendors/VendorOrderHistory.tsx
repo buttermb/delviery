@@ -212,7 +212,7 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
   };
 
   const getItemsCount = (po: PurchaseOrderWithItems): number => {
-    return po.purchase_order_items?.length || 0;
+    return po.purchase_order_items?.length ?? 0;
   };
 
   const formatDate = (dateString: string | null) => {

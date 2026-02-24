@@ -38,7 +38,7 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
-import { BetterEmptyState } from '@/components/BetterEmptyState';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { format, addDays, startOfWeek, endOfWeek, parseISO } from 'date-fns';
@@ -414,7 +414,7 @@ export default function PayoutsPage() {
                   </div>
                 </div>
               ) : (
-                <BetterEmptyState
+                <EnhancedEmptyState type="generic" compact
                   icon={CalendarDays}
                   title="No Scheduled Payouts"
                   description="You'll see upcoming payouts here once you have delivered orders ready for payout."
@@ -473,7 +473,7 @@ export default function PayoutsPage() {
                   </TableBody>
                 </Table>
               ) : (
-                <BetterEmptyState
+                <EnhancedEmptyState type="generic" compact
                   icon={History}
                   title="No Payout History"
                   description="Your payout history will appear here once you receive your first payout."

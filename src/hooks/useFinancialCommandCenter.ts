@@ -184,14 +184,14 @@ export const useQuickStats = () => {
           .eq('status', 'active')
       ]);
       
-      const todayIn = paymentsResult.data?.reduce((sum, p) => sum + Number(p.amount || 0), 0) || 0;
-      const todayRevenue = ordersResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+      const todayIn = paymentsResult.data?.reduce((sum, p) => sum + Number(p.amount || 0), 0) ?? 0;
+      const todayRevenue = ordersResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) ?? 0;
       const todayProfit = todayRevenue * 0.35; // ~35% margin estimate
-      const outstanding = clientsResult.data?.reduce((sum, c) => sum + Number(c.outstanding_balance || 0), 0) || 0;
-      const fronted = frontedResult.data?.reduce((sum, f) => sum + Number(f.expected_revenue || 0), 0) || 0;
+      const outstanding = clientsResult.data?.reduce((sum, c) => sum + Number(c.outstanding_balance || 0), 0) ?? 0;
+      const fronted = frontedResult.data?.reduce((sum, f) => sum + Number(f.expected_revenue || 0), 0) ?? 0;
       
       // Count alerts (overdue AR + aging fronted)
-      const overdueCount = clientsResult.data?.filter(c => Number(c.outstanding_balance) > 0).length || 0;
+      const overdueCount = clientsResult.data?.filter(c => Number(c.outstanding_balance) > 0).length ?? 0;
       
       return {
         cashPosition: todayIn,
@@ -264,8 +264,8 @@ export const useCashFlowPulse = () => {
           .in('status', ['completed', 'delivered'])
       ]);
       
-      const todayIn = todayPaymentsResult.data?.reduce((sum, p) => sum + Number(p.amount || 0), 0) || 0;
-      const todayOrdersTotal = todayOrdersResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+      const todayIn = todayPaymentsResult.data?.reduce((sum, p) => sum + Number(p.amount || 0), 0) ?? 0;
+      const todayOrdersTotal = todayOrdersResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) ?? 0;
       const todayOut = todayOrdersTotal * 0.62; // COGS estimate
       const todayNet = todayIn - todayOut;
       
@@ -298,7 +298,7 @@ export const useCashFlowPulse = () => {
       }
       
       // Cash runway calculation
-      const last30DaysTotal = last30DaysOrdersResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+      const last30DaysTotal = last30DaysOrdersResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) ?? 0;
       const avgDailyBurn = (last30DaysTotal * 0.62) / 30; // COGS per day
       const availableCash = todayIn + 45000; // Placeholder - would need actual cash balance
       const daysRemaining = avgDailyBurn > 0 ? Math.floor(availableCash / avgDailyBurn) : 999;
@@ -307,8 +307,8 @@ export const useCashFlowPulse = () => {
         todayIn,
         todayOut,
         todayNet,
-        paymentsReceived: todayPaymentsResult.data?.length || 0,
-        payoutsProcessed: todayOrdersResult.data?.length || 0,
+        paymentsReceived: todayPaymentsResult.data?.length ?? 0,
+        payoutsProcessed: todayOrdersResult.data?.length ?? 0,
         weeklyForecast,
         expectedCollections: todayIn * 5, // Estimate
         scheduledPayouts: todayOut * 5,
@@ -344,7 +344,7 @@ export const useARCommand = () => {
       
       if (error) throw error;
       
-      const totalOutstanding = clients?.reduce((sum, c) => sum + Number(c.outstanding_balance || 0), 0) || 0;
+      const totalOutstanding = clients?.reduce((sum, c) => sum + Number(c.outstanding_balance || 0), 0) ?? 0;
       
       // Categorize clients by urgency
       const now = new Date();
@@ -539,18 +539,18 @@ export const usePerformancePulse = () => {
       ]);
       
       // Calculate this month metrics
-      const thisMonthRevenue = thisMonthResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+      const thisMonthRevenue = thisMonthResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) ?? 0;
       const thisMonthCost = thisMonthRevenue * 0.635;
       const thisMonthProfit = thisMonthRevenue - thisMonthCost;
       const thisMonthMargin = thisMonthRevenue > 0 ? (thisMonthProfit / thisMonthRevenue) * 100 : 0;
-      const thisMonthDeals = thisMonthResult.data?.length || 0;
+      const thisMonthDeals = thisMonthResult.data?.length ?? 0;
       
       // Calculate last month metrics
-      const lastMonthRevenue = lastMonthResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+      const lastMonthRevenue = lastMonthResult.data?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) ?? 0;
       const lastMonthCost = lastMonthRevenue * 0.635;
       const lastMonthProfit = lastMonthRevenue - lastMonthCost;
       const lastMonthMargin = lastMonthRevenue > 0 ? (lastMonthProfit / lastMonthRevenue) * 100 : 0;
-      const lastMonthDeals = lastMonthResult.data?.length || 0;
+      const lastMonthDeals = lastMonthResult.data?.length ?? 0;
       
       // Calculate changes
       const revenueChange = lastMonthRevenue > 0 

@@ -127,7 +127,7 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
             <TableRow key={order.id}>
               <TableCell className="font-medium">#{order.id.slice(0, 8)}</TableCell>
               <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy HH:mm')}</TableCell>
-              <TableCell>{order.items?.length || 0} item(s)</TableCell>
+              <TableCell>{order.items?.length ?? 0} item(s)</TableCell>
               <TableCell className="font-semibold">
                 ${order.total_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </TableCell>

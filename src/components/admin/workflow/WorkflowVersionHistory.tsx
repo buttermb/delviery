@@ -220,7 +220,7 @@ export function WorkflowVersionHistory({
                           <div>
                             <span className="text-muted-foreground">Actions:</span>
                             <p className="font-medium">
-                              {version.actions?.length || 0}
+                              {version.actions?.length ?? 0}
                             </p>
                           </div>
                           <div>
@@ -392,7 +392,7 @@ export function WorkflowVersionHistory({
 
               <div>
                 <p className="text-sm font-medium text-muted-foreground mb-2">
-                  Actions ({selectedVersion.actions?.length || 0})
+                  Actions ({selectedVersion.actions?.length ?? 0})
                 </p>
                 <pre className="p-4 bg-muted rounded-lg text-xs overflow-x-auto">
                   {JSON.stringify(selectedVersion.actions, null, 2)}

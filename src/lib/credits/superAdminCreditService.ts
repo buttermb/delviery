@@ -257,17 +257,17 @@ export async function getPlatformCreditStats(): Promise<PlatformCreditStats | nu
 
     const row = data[0];
     return {
-      totalFreeTierTenants: row.total_free_tier_tenants || 0,
-      totalPaidTierTenants: row.total_paid_tier_tenants || 0,
-      tenantsAtZero: row.tenants_at_zero || 0,
-      tenantsCritical: row.tenants_critical || 0,
-      tenantsWarning: row.tenants_warning || 0,
-      tenantsHealthy: row.tenants_healthy || 0,
-      totalCreditsConsumedToday: row.total_credits_consumed_today || 0,
-      totalCreditsConsumedWeek: row.total_credits_consumed_week || 0,
-      totalCreditsConsumedMonth: row.total_credits_consumed_month || 0,
+      totalFreeTierTenants: row.total_free_tier_tenants ?? 0,
+      totalPaidTierTenants: row.total_paid_tier_tenants ?? 0,
+      tenantsAtZero: row.tenants_at_zero ?? 0,
+      tenantsCritical: row.tenants_critical ?? 0,
+      tenantsWarning: row.tenants_warning ?? 0,
+      tenantsHealthy: row.tenants_healthy ?? 0,
+      totalCreditsConsumedToday: row.total_credits_consumed_today ?? 0,
+      totalCreditsConsumedWeek: row.total_credits_consumed_week ?? 0,
+      totalCreditsConsumedMonth: row.total_credits_consumed_month ?? 0,
       avgBalanceFreeTier: parseFloat(row.avg_balance_free_tier) || 0,
-      totalCreditPurchasesRevenue: row.total_credit_purchases_revenue || 0,
+      totalCreditPurchasesRevenue: row.total_credit_purchases_revenue ?? 0,
     };
   } catch (err) {
     logger.error('Error getting platform credit stats', err as Error);
@@ -302,13 +302,13 @@ export async function getTenantsWithCredits(
       tenantId: row.tenant_id,
       tenantName: row.tenant_name || 'Unknown',
       tenantSlug: row.tenant_slug || '',
-      balance: row.balance || 0,
+      balance: row.balance ?? 0,
       tierStatus: row.tier_status || 'free',
       isFreeTier: row.is_free_tier || false,
-      creditsUsedToday: row.credits_used_today || 0,
-      creditsUsedThisWeek: row.credits_used_this_week || 0,
-      creditsUsedThisMonth: row.credits_used_this_month || 0,
-      lifetimeSpent: row.lifetime_spent || 0,
+      creditsUsedToday: row.credits_used_today ?? 0,
+      creditsUsedThisWeek: row.credits_used_this_week ?? 0,
+      creditsUsedThisMonth: row.credits_used_this_month ?? 0,
+      lifetimeSpent: row.lifetime_spent ?? 0,
       lastActivity: row.last_activity,
       createdAt: row.created_at,
       creditStatus: row.credit_status || 'healthy',
@@ -395,10 +395,10 @@ export async function getTenantCreditDetail(
       credits: {
         balance: credits?.balance || 1000,
         lifetimeEarned: credits?.lifetime_earned || 1000,
-        lifetimeSpent: credits?.lifetime_spent || 0,
-        creditsUsedToday: credits?.credits_used_today || 0,
-        creditsUsedThisWeek: credits?.credits_used_this_week || 0,
-        creditsUsedThisMonth: credits?.credits_used_this_month || 0,
+        lifetimeSpent: credits?.lifetime_spent ?? 0,
+        creditsUsedToday: credits?.credits_used_today ?? 0,
+        creditsUsedThisWeek: credits?.credits_used_this_week ?? 0,
+        creditsUsedThisMonth: credits?.credits_used_this_month ?? 0,
         tierStatus: credits?.tier_status || 'free',
         lastFreeGrantAt: credits?.last_free_grant_at,
         nextFreeGrantAt: credits?.next_free_grant_at,
@@ -431,7 +431,7 @@ export async function getTenantCreditDetail(
       referralInfo: referralCode
         ? {
             referralCode: referralCode.code,
-            totalReferrals: referralCode.uses_count || 0,
+            totalReferrals: referralCode.uses_count ?? 0,
             creditsEarned: totalReferralCredits,
           }
         : undefined,
@@ -516,7 +516,7 @@ export async function grantBulkCredits(
       grantType: request.grantType,
     });
 
-    return { success: true, count: data || 0 };
+    return { success: true, count: data ?? 0 };
   } catch (err) {
     logger.error('Error granting bulk credits', err as Error);
     return { success: false, error: (err as Error).message };
@@ -667,7 +667,7 @@ export async function getAllTransactions(options: {
         },
         createdAt: tx.created_at,
       })),
-      total: count || 0,
+      total: count ?? 0,
     };
   } catch (err) {
     logger.error('Error getting all transactions', err as Error);
@@ -837,7 +837,7 @@ export async function getAllPromoCodes(): Promise<PromoCodeAdmin[]> {
       code: code.code,
       creditsAmount: code.credits_amount,
       maxUses: code.max_uses,
-      usesCount: code.uses_count || 0,
+      usesCount: code.uses_count ?? 0,
       isActive: code.is_active,
       validFrom: code.valid_from,
       validUntil: code.valid_until,
@@ -1141,7 +1141,7 @@ export async function getReferralStats(): Promise<ReferralStats> {
         return {
           tenantId: r.tenant_id,
           tenantName: r.tenants?.business_name || 'Unknown',
-          referrals: r.uses_count || 0,
+          referrals: r.uses_count ?? 0,
           creditsEarned: (earned || []).reduce(
             (sum, e) => sum + (e.referrer_credits_granted || 0),
             0
@@ -1151,10 +1151,10 @@ export async function getReferralStats(): Promise<ReferralStats> {
     );
 
     return {
-      totalReferrals: totalReferrals || 0,
+      totalReferrals: totalReferrals ?? 0,
       totalCreditsAwarded,
-      totalConversions: totalConversions || 0,
-      pendingConversions: pendingConversions || 0,
+      totalConversions: totalConversions ?? 0,
+      pendingConversions: pendingConversions ?? 0,
       topReferrers,
     };
   } catch (err) {

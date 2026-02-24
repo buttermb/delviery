@@ -218,7 +218,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
     if (!purchaseOrders) return 0;
 
     return purchaseOrders.reduce((total, po) => {
-      const remaining = po.total - (po.paid_amount || 0);
+      const remaining = po.total - (po.paid_amount ?? 0);
       return total + remaining;
     }, 0);
   }, [purchaseOrders]);
@@ -306,7 +306,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
     if (poId) {
       const po = purchaseOrders?.find(p => p.id === poId);
       if (po) {
-        const remaining = po.total - (po.paid_amount || 0);
+        const remaining = po.total - (po.paid_amount ?? 0);
         form.setValue('amount', remaining);
       }
     }
@@ -365,7 +365,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{purchaseOrders?.length || 0}</div>
+            <div className="text-2xl font-bold">{purchaseOrders?.length ?? 0}</div>
             <p className="text-xs text-muted-foreground">Awaiting payment</p>
           </CardContent>
         </Card>
@@ -416,7 +416,7 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
                               <SelectItem value="__none__">No specific PO</SelectItem>
                               {purchaseOrders?.map((po) => (
                                 <SelectItem key={po.id} value={po.id}>
-                                  {po.po_number} - {formatCurrency(po.total - (po.paid_amount || 0))} remaining
+                                  {po.po_number} - {formatCurrency(po.total - (po.paid_amount ?? 0))} remaining
                                 </SelectItem>
                               ))}
                             </SelectContent>

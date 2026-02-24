@@ -150,7 +150,7 @@ export function FrontedInventoryZone() {
     );
   }
 
-  if ((data?.items.length || 0) === 0) {
+  if ((data?.items.length ?? 0) === 0) {
     return (
       <Card className="bg-zinc-900/80 border-zinc-800/50 backdrop-blur-xl">
         <CardContent className="py-12 text-center">
@@ -220,7 +220,7 @@ export function FrontedInventoryZone() {
                 />
               </div>
               <span className="text-[10px] sm:text-xs font-mono text-emerald-400 w-12 sm:w-16 text-right flex-shrink-0">
-                {formatCompactCurrency(data?.aging.healthy.value || 0)}
+                {formatCompactCurrency(data?.aging.healthy.value ?? 0)}
               </span>
             </div>
 
@@ -236,7 +236,7 @@ export function FrontedInventoryZone() {
                 />
               </div>
               <span className="text-[10px] sm:text-xs font-mono text-amber-400 w-12 sm:w-16 text-right flex-shrink-0">
-                {formatCompactCurrency(data?.aging.warning.value || 0)}
+                {formatCompactCurrency(data?.aging.warning.value ?? 0)}
               </span>
             </div>
 
@@ -252,7 +252,7 @@ export function FrontedInventoryZone() {
                 />
               </div>
               <span className="text-[10px] sm:text-xs font-mono text-red-400 w-12 sm:w-16 text-right flex-shrink-0">
-                {formatCompactCurrency(data?.aging.overdue.value || 0)}
+                {formatCompactCurrency(data?.aging.overdue.value ?? 0)}
               </span>
             </div>
           </div>
@@ -262,7 +262,7 @@ export function FrontedInventoryZone() {
       {/* Health Score */}
       <Card className={cn(
         "border backdrop-blur-xl",
-        (data?.healthScore || 0) >= 75 
+        (data?.healthScore ?? 0) >= 75 
           ? "bg-zinc-900/80 border-zinc-800/50"
           : "bg-amber-950/30 border-amber-800/50"
       )}>
@@ -271,14 +271,14 @@ export function FrontedInventoryZone() {
             <span className="text-sm text-zinc-400">INVENTORY HEALTH</span>
             <span className={cn(
               "text-lg font-bold font-mono",
-              (data?.healthScore || 0) >= 75 ? "text-emerald-400" : "text-amber-400"
+              (data?.healthScore ?? 0) >= 75 ? "text-emerald-400" : "text-amber-400"
             )}>
-              {Math.round(data?.healthScore || 0)}%
+              {Math.round(data?.healthScore ?? 0)}%
             </span>
           </div>
           
           <Slider
-            value={[data?.healthScore || 0]}
+            value={[data?.healthScore ?? 0]}
             max={100}
             step={1}
             disabled
@@ -290,7 +290,7 @@ export function FrontedInventoryZone() {
             <span>Healthy</span>
           </div>
 
-          {(data?.healthScore || 0) < 75 && (
+          {(data?.healthScore ?? 0) < 75 && (
             <div className="mt-3 text-xs text-amber-400/80 flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Consider recalling aging inventory or converting to sales
@@ -322,7 +322,7 @@ export function FrontedInventoryZone() {
               />
             ))}
 
-          {(data?.items.length || 0) > 3 && !showAll && (
+          {(data?.items.length ?? 0) > 3 && !showAll && (
             <Button
               variant="ghost"
               className="w-full text-zinc-400 hover:text-zinc-200"

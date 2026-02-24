@@ -87,13 +87,13 @@ export function PerformancePulse() {
             <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
               <div className="text-[10px] sm:text-xs text-zinc-400">Revenue</div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-100">
-                {formatCompactCurrency(data?.thisMonth.revenue || 0)}
+                {formatCompactCurrency(data?.thisMonth.revenue ?? 0)}
               </div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
-                {formatCompactCurrency(data?.lastMonth.revenue || 0)}
+                {formatCompactCurrency(data?.lastMonth.revenue ?? 0)}
               </div>
               <div className="text-right">
-                <TrendIndicator value={data?.changes.revenue || 0} />
+                <TrendIndicator value={data?.changes.revenue ?? 0} />
               </div>
             </div>
 
@@ -101,13 +101,13 @@ export function PerformancePulse() {
             <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
               <div className="text-[10px] sm:text-xs text-zinc-400">COGS</div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-100">
-                {formatCompactCurrency(data?.thisMonth.cost || 0)}
+                {formatCompactCurrency(data?.thisMonth.cost ?? 0)}
               </div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
-                {formatCompactCurrency(data?.lastMonth.cost || 0)}
+                {formatCompactCurrency(data?.lastMonth.cost ?? 0)}
               </div>
               <div className="text-right">
-                <TrendIndicator value={-(data?.changes.cost || 0)} />
+                <TrendIndicator value={-(data?.changes.cost ?? 0)} />
               </div>
             </div>
 
@@ -115,13 +115,13 @@ export function PerformancePulse() {
             <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
               <div className="text-[10px] sm:text-xs text-zinc-400">Profit</div>
               <div className="text-center font-mono text-xs sm:text-sm text-emerald-400 font-bold">
-                {formatCompactCurrency(data?.thisMonth.profit || 0)}
+                {formatCompactCurrency(data?.thisMonth.profit ?? 0)}
               </div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
-                {formatCompactCurrency(data?.lastMonth.profit || 0)}
+                {formatCompactCurrency(data?.lastMonth.profit ?? 0)}
               </div>
               <div className="text-right">
-                <TrendIndicator value={data?.changes.profit || 0} />
+                <TrendIndicator value={data?.changes.profit ?? 0} />
               </div>
             </div>
 
@@ -129,13 +129,13 @@ export function PerformancePulse() {
             <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
               <div className="text-[10px] sm:text-xs text-zinc-400">Margin</div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-100">
-                {data?.thisMonth.margin || 0}%
+                {data?.thisMonth.margin ?? 0}%
               </div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
-                {data?.lastMonth.margin || 0}%
+                {data?.lastMonth.margin ?? 0}%
               </div>
               <div className="text-right">
-                <TrendIndicator value={data?.changes.margin || 0} suffix="pp" />
+                <TrendIndicator value={data?.changes.margin ?? 0} suffix="pp" />
               </div>
             </div>
 
@@ -143,13 +143,13 @@ export function PerformancePulse() {
             <div className="grid grid-cols-3 sm:grid-cols-4 items-center min-w-[200px]">
               <div className="text-[10px] sm:text-xs text-zinc-400">Deals</div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-100">
-                {data?.thisMonth.deals || 0}
+                {data?.thisMonth.deals ?? 0}
               </div>
               <div className="text-center font-mono text-xs sm:text-sm text-zinc-500 hidden sm:block">
-                {data?.lastMonth.deals || 0}
+                {data?.lastMonth.deals ?? 0}
               </div>
               <div className="text-right">
-                <TrendIndicator value={data?.changes.deals || 0} />
+                <TrendIndicator value={data?.changes.deals ?? 0} />
               </div>
             </div>
           </div>
@@ -225,7 +225,7 @@ export function PerformancePulse() {
               MARGIN TREND (90 days)
             </span>
             <span className="text-lg font-bold font-mono text-zinc-100">
-              {data?.thisMonth.margin || 0}%
+              {data?.thisMonth.margin ?? 0}%
             </span>
           </CardTitle>
         </CardHeader>
@@ -247,7 +247,7 @@ export function PerformancePulse() {
                   <div
                     className={cn(
                       "w-full rounded-t transition-all",
-                      i === (data?.marginTrend.length || 0) - 1
+                      i === (data?.marginTrend.length ?? 0) - 1
                         ? "bg-emerald-500"
                         : "bg-zinc-700"
                     )}

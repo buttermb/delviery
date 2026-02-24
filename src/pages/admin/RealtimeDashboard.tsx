@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Activity, ShoppingCart, DollarSign, Users, TrendingUp, Clock } from 'lucide-react';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
-import { BetterEmptyState } from '@/components/BetterEmptyState';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
@@ -241,7 +241,9 @@ export default function RealtimeDashboard() {
               </AnimatePresence>
             </div>
           ) : (
-            <BetterEmptyState
+            <EnhancedEmptyState
+              type="generic"
+              compact
               icon={ShoppingCart}
               title="No Live Orders"
               description="New orders will appear here in real-time as they're placed."

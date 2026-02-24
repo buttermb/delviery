@@ -11,7 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
-import { BetterEmptyState } from '@/components/BetterEmptyState';
+import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
@@ -284,7 +284,7 @@ export default function CommissionTracking() {
               ))}
             </div>
           ) : (
-            <BetterEmptyState
+            <EnhancedEmptyState type="generic" compact
               icon={DollarSign}
               title="No Commissions Yet"
               description="Commission data will appear here once orders are processed."
