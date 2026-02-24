@@ -982,12 +982,12 @@ export default function Orders() {
     }
   ];
 
-  const stats = [
+  const stats = useMemo(() => [
     { label: 'Total Orders', value: orders.length, icon: Package, color: 'text-blue-500' },
     { label: 'Pending', value: orders.filter(o => o.status === 'pending').length, icon: Clock, color: 'text-yellow-500' },
     { label: 'In Progress', value: orders.filter(o => ['confirmed', 'preparing', 'in_transit'].includes(o.status)).length, icon: TrendingUp, color: 'text-green-500' },
     { label: 'Cancelled', value: orders.filter(o => o.status === 'cancelled').length, icon: XCircle, color: 'text-red-500' },
-  ];
+  ], [orders]);
 
   return (
     <>
