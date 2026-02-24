@@ -31,14 +31,17 @@ export function UnreadIndicator({ userId, tenantId, className }: UnreadIndicator
 
     // Real-time subscription for new messages
     useEffect(() => {
+        if (!tenantId) return;
+
         const channel = supabase
-            .channel('unread-messages')
+            .channel(`unread-messages-${tenantId}`)
             .on(
                 'postgres_changes',
                 {
                     event: 'INSERT',
                     schema: 'public',
                     table: 'messages',
+                    filter: `tenant_id=eq.${tenantId}`,
                 },
                 () => {
                     refetch();
@@ -49,7 +52,7 @@ export function UnreadIndicator({ userId, tenantId, className }: UnreadIndicator
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [refetch]);
+    }, [refetch, tenantId]);
 
     if (unreadCount === 0) {
         return null;
