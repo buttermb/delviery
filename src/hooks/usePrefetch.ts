@@ -3,8 +3,7 @@
  * React hook for prefetching data
  */
 
-import { useQueryClient } from '@tanstack/react-query';
-import { QueryKey } from '@tanstack/react-query';
+import { useQueryClient, QueryKey } from '@tanstack/react-query';
 import { prefetchRoute, prefetchQuery as prefetchQueryUtil } from '@/lib/utils/prefetch';
 
 /**

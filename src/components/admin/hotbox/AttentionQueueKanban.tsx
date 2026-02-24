@@ -12,7 +12,7 @@
  * - Responsive mobile stacking
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -86,7 +86,6 @@ const columns: KanbanColumn[] = [
 ];
 
 import { useSwipeable } from 'react-swipeable';
-import { useCallback } from 'react';
 import { Check, Clock as ClockIcon, ArrowRight, Loader2, CheckCheck } from 'lucide-react';
 
 interface KanbanCardProps {

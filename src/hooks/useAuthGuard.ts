@@ -11,8 +11,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { logger } from '@/lib/logger';
-import type { Role } from '@/lib/permissions/rolePermissions';
-import type { Permission } from '@/lib/permissions/rolePermissions';
+import type { Role, Permission } from '@/lib/permissions/rolePermissions';
 
 interface UseAuthGuardOptions {
   /** Required role for access (e.g., 'owner', 'admin') */

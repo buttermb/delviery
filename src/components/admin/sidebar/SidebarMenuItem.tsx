@@ -5,11 +5,10 @@
  */
 
 import { memo, useEffect, useRef } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useParams } from 'react-router-dom';
 import { SidebarMenuButton, SidebarMenuItem as UISidebarMenuItem, useSidebar as useUiSidebar } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Star } from 'lucide-react';
-import { useParams } from 'react-router-dom';
 import { useSidebar } from './SidebarContext';
 import { useLiveBadge } from './LiveBadgeContext';
 import { LiveCountBadge } from './LiveCountBadge';

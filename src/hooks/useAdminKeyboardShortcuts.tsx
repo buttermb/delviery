@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useCredits } from '@/hooks/useCredits';
 import { Coins } from 'lucide-react';
-import React from 'react';
 
 interface KeyboardShortcutsOptions {
   onSearch?: () => void;

@@ -12,8 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, ShoppingCart, Calendar, MessageSquare } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import { Mail, Phone, ShoppingCart, Calendar, MessageSquare, Loader2 } from "lucide-react";
 import { formatSmartDate } from "@/lib/formatters";
 
 interface Customer {

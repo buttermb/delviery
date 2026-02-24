@@ -27,7 +27,6 @@ import ShoppingBag from 'lucide-react/dist/esm/icons/shopping-bag';
 import Link from 'lucide-react/dist/esm/icons/link';
 import FileText from 'lucide-react/dist/esm/icons/file-text';
 import Warehouse from 'lucide-react/dist/esm/icons/warehouse';
-import Storefront from 'lucide-react/dist/esm/icons/store';
 import CreditCard from 'lucide-react/dist/esm/icons/credit-card';
 import Palette from 'lucide-react/dist/esm/icons/palette';
 import type { LucideIcon } from 'lucide-react';
@@ -82,7 +81,7 @@ const CORE_FEATURES: FeatureItem[] = [
     key: 'storefront',
     label: 'Storefront',
     description: 'Online store for customer orders',
-    icon: Storefront,
+    icon: Store,
   },
   {
     key: 'inventory',

@@ -10,8 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { FormField } from '@/components/ui/form-field';
-import { ErrorSummary } from '@/components/ui/form-field';
+import { FormField, ErrorSummary } from '@/components/ui/form-field';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { cn } from '@/lib/utils';
 

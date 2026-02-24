@@ -26,9 +26,8 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import { formatDateForDisplay } from '@/lib/utils/revenue-analysis';
+import { formatDateForDisplay, groupOrdersByDate } from '@/lib/utils/revenue-analysis';
 import { SimpleRevenuePredictor } from '@/lib/ai/simple-revenue-prediction';
-import { groupOrdersByDate } from '@/lib/utils/revenue-analysis';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
 

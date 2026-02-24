@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,6 @@ import { Input } from '@/components/ui/input';
 import { Download, Copy, Share2, CheckCircle2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'sonner';
-import { useState } from 'react';
 
 interface QRCodeDialogProps {
   open: boolean;

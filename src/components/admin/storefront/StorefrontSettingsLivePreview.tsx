@@ -3,12 +3,11 @@
  * Real-time preview of storefront appearance based on current settings
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Monitor, Smartphone, Tablet, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
 
 interface PreviewProduct {
   id: string;

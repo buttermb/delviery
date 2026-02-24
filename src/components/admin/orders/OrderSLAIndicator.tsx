@@ -23,8 +23,7 @@ import {
   getSLAStatusDisplay,
   formatRemainingTime,
 } from '@/lib/sla/slaCalculations';
-import type { OrderWithSLATimestamps } from '@/types/sla';
-import type { SLATargets } from '@/types/sla';
+import type { OrderWithSLATimestamps, SLATargets } from '@/types/sla';
 import { DEFAULT_SLA_TARGETS } from '@/types/sla';
 
 interface OrderSLAIndicatorProps {

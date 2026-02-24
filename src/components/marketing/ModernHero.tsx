@@ -9,14 +9,13 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ShieldCheck, MousePointer2, Play } from "lucide-react";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 // Lazy load the heavy demo component
 const BusinessAdminDemo = lazy(() => import("./demos/BusinessAdminDemo").then(module => ({ default: module.BusinessAdminDemo })));
 import { useMobileOptimized } from "@/hooks/useMobileOptimized";
 
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
 
 const ROTATING_FEATURES = [
   {

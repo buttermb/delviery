@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   Sidebar,
@@ -20,13 +20,12 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { LogOut, ChevronDown } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { getNavigationForRole } from '@/lib/constants/navigation';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import type { LucideIcon } from 'lucide-react';
 import { prefetchOnHover } from '@/lib/utils/prefetch';
 
 export function RoleBasedSidebar() {

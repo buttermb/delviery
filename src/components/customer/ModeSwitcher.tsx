@@ -4,12 +4,11 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag, Building2, Shield } from 'lucide-react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 import { cn } from '@/lib/utils';
-import { useParams } from 'react-router-dom';
 
 type CustomerMode = 'retail' | 'wholesale';
 

@@ -13,12 +13,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { formatSmartDate } from '@/lib/formatters';
+import { formatSmartDate, formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useARCommand, useCollectionActions, type ARClient } from '@/hooks/useFinancialCommandCenter';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
-import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 
 interface ClientCardProps {
   client: ARClient;

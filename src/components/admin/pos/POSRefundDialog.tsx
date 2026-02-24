@@ -42,8 +42,7 @@ import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import Package from 'lucide-react/dist/esm/icons/package';
 import { sanitizeTextareaInput } from '@/lib/utils/sanitize';
 import { useDirtyFormGuard } from '@/hooks/useDirtyFormGuard';
-import { formatSmartDate } from '@/lib/formatters';
-import { formatCurrency } from '@/lib/formatters';
+import { formatSmartDate, formatCurrency } from '@/lib/formatters';
 
 const REFUND_METHODS = [
   { value: 'cash', label: 'Cash' },
