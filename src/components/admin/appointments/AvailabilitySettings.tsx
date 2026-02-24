@@ -86,6 +86,7 @@ export function AvailabilitySettings({
                   <Switch
                     checked={hours.enabled}
                     onCheckedChange={(checked) => updateHours(index, "enabled", checked)}
+                    aria-label={`Enable ${hours.day}`}
                   />
                   <span className="w-24 font-medium">{hours.day}</span>
                   {hours.enabled && (
@@ -95,6 +96,7 @@ export function AvailabilitySettings({
                         value={hours.start}
                         onChange={(e) => updateHours(index, "start", e.target.value)}
                         className="w-32"
+                        aria-label={`${hours.day} start time`}
                       />
                       <span>to</span>
                       <Input
@@ -102,6 +104,7 @@ export function AvailabilitySettings({
                         value={hours.end}
                         onChange={(e) => updateHours(index, "end", e.target.value)}
                         className="w-32"
+                        aria-label={`${hours.day} end time`}
                       />
                     </>
                   )}
@@ -139,6 +142,7 @@ export function AvailabilitySettings({
                 value={newBlockedDate}
                 onChange={(e) => setNewBlockedDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
+                aria-label="Select date to block"
               />
               <Button onClick={addBlockedDate} variant="outline">
                 Add
@@ -155,6 +159,7 @@ export function AvailabilitySettings({
                       variant="ghost"
                       size="sm"
                       onClick={() => removeBlockedDate(date)}
+                      aria-label={`Remove blocked date ${date}`}
                     >
                       <X className="h-4 w-4" />
                     </Button>
