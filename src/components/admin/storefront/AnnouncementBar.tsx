@@ -645,7 +645,8 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
               onClick={() => saveMutation.mutate(formData)}
               disabled={saveMutation.isPending || !formData.text.trim()}
             >
-              {saveMutation.isPending ? 'Saving...' : 'Save Announcement'}
+              {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Save Announcement
             </Button>
           </DialogFooter>
         </DialogContent>

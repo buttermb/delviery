@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MessageSquare, Send } from "lucide-react";
+import { Loader2, MessageSquare, Send } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -129,8 +129,9 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
             disabled={!comment.trim() || addCommentMutation.isPending}
             className="min-h-[44px]"
           >
+            {addCommentMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             <Send className="h-4 w-4 mr-2" />
-            {addCommentMutation.isPending ? "Sending..." : "Send Comment"}
+            Send Comment
           </Button>
         </div>
       </div>

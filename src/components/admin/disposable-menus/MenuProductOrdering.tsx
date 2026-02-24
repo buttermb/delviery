@@ -654,6 +654,7 @@ export function MenuProductOrdering({
                 onClick={handleReset}
                 disabled={!hasChanges || saveMutation.isPending}
               >
+                {saveMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 <Undo className="w-4 h-4 mr-1" />
                 Reset
               </Button>

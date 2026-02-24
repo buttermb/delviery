@@ -244,21 +244,23 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
                         <Send className="h-3 w-3 mr-1" />
                         Send Link
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => handleRegenerateToken(customer.id)}
                         disabled={manageWhitelist.isPending}
                       >
+                        {manageWhitelist.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                         <RefreshCw className="h-3 w-3 mr-1" />
                         Regenerate
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="destructive"
                         onClick={() => handleRevoke(customer.id)}
                         disabled={manageWhitelist.isPending}
                       >
+                        {manageWhitelist.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                         <Ban className="h-3 w-3 mr-1" />
                         Revoke
                       </Button>
@@ -308,12 +310,13 @@ export const ManageAccessDialog = ({ menu, open, onOpenChange }: ManageAccessDia
                         <Copy className="h-3 w-3 mr-1" />
                         Copy Invite URL
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="destructive"
                         onClick={() => handleRevoke(customer.id)}
                         disabled={manageWhitelist.isPending}
                       >
+                        {manageWhitelist.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                         <Ban className="h-3 w-3 mr-1" />
                         Cancel Invite
                       </Button>

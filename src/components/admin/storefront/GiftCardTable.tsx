@@ -287,6 +287,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
                 onClick={() => setBulkAction('disable')}
                 disabled={bulkStatusMutation.isPending}
               >
+                {bulkStatusMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 <Ban className="h-3 w-3 mr-1" />
                 Deactivate
               </Button>
@@ -296,6 +297,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
                 onClick={() => setBulkAction('enable')}
                 disabled={bulkStatusMutation.isPending}
               >
+                {bulkStatusMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Activate
               </Button>

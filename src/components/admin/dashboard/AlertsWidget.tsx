@@ -15,6 +15,7 @@ import Clock from "lucide-react/dist/esm/icons/clock";
 import FileWarning from "lucide-react/dist/esm/icons/file-warning";
 import X from "lucide-react/dist/esm/icons/x";
 import CheckCheck from "lucide-react/dist/esm/icons/check-check";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -222,6 +223,7 @@ export function AlertsWidget() {
                 onClick={handleDismissAll}
                 disabled={dismissAllMutation.isPending}
               >
+                {dismissAllMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 <CheckCheck className="mr-1 h-3 w-3" />
                 Dismiss All
               </Button>
