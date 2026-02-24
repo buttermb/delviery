@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Copy, Check, AlertCircle, Clock, User, Building2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { getTokenExpiration } from '@/lib/auth/jwt';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 
@@ -122,8 +123,8 @@ export function JWTDecoder() {
       setCopied(label);
       toast.success(`${label} copied to clipboard`);
       setTimeout(() => setCopied(null), 2000);
-    } catch {
-      toast.error('Failed to copy to clipboard');
+    } catch (error) {
+      toast.error('Failed to copy to clipboard', { description: humanizeError(error) });
     }
   };
 

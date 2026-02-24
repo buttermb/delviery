@@ -27,6 +27,7 @@ import { ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import type { CustomPreset } from '@/types/sidebar';
 import { Plus, Save, Trash2, Edit, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 export function CustomPresetBuilder() {
   const { sidebarConfig } = useSidebarConfig();
@@ -144,8 +145,8 @@ export function CustomPresetBuilder() {
 
       await updatePreferences({ customPresets: updatedPresets });
       setIsOpen(false);
-    } catch {
-      toast.error('Failed to save preset');
+    } catch (error) {
+      toast.error('Failed to save preset', { description: humanizeError(error) });
     } finally {
       setSaving(false);
     }
@@ -157,8 +158,8 @@ export function CustomPresetBuilder() {
       await updatePreferences({ customPresets: updatedPresets });
       toast.success('Preset deleted');
       setDeletePresetId(null);
-    } catch {
-      toast.error('Failed to delete preset');
+    } catch (error) {
+      toast.error('Failed to delete preset', { description: humanizeError(error) });
     }
   };
 
@@ -175,8 +176,8 @@ export function CustomPresetBuilder() {
 
       await new Promise(resolve => setTimeout(resolve, 200));
       toast.success(`Applied ${preset.name}`, { id: 'apply-custom-preset' });
-    } catch {
-      toast.error('Failed to apply preset', { id: 'apply-custom-preset' });
+    } catch (error) {
+      toast.error('Failed to apply preset', { id: 'apply-custom-preset', description: humanizeError(error) });
     }
   };
 

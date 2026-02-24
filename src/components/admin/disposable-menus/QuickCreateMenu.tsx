@@ -24,6 +24,7 @@ import {
   Shield, Copy, Sparkles, Truck, Zap, Crown, MapPin
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { queryKeys } from '@/lib/queryKeys';
@@ -198,8 +199,8 @@ export function QuickCreateMenu({ open, onOpenChange }: QuickCreateMenuProps) {
       setDescription('');
       setSelectedProducts([]);
       onOpenChange(false);
-    } catch {
-      // Error handled by mutation
+    } catch (error) {
+      toast.error('Failed to create menu', { description: humanizeError(error) });
     }
   };
 

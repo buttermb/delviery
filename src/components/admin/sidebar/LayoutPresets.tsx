@@ -12,6 +12,7 @@ import { getLayoutPresets } from '@/lib/sidebar/layoutPresets';
 import { getAllFeatures, ESSENTIAL_FEATURES as _ESSENTIAL_FEATURES } from '@/lib/sidebar/featureRegistry';
 import { Check, Download, Upload, RotateCcw, Eye, Star } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { useState, useMemo } from 'react';
 import { CustomPresetBuilder } from './CustomPresetBuilder';
 import {
@@ -59,8 +60,8 @@ export function LayoutPresets() {
       await new Promise(resolve => setTimeout(resolve, 200));
 
       toast.success(`Applied ${presetName}`, { id: 'preset-apply' });
-    } catch {
-      toast.error('Failed to apply preset', { id: 'preset-apply' });
+    } catch (error) {
+      toast.error('Failed to apply preset', { id: 'preset-apply', description: humanizeError(error) });
     } finally {
       setApplyingPreset(null);
     }
@@ -112,8 +113,8 @@ export function LayoutPresets() {
         } else {
           toast.error('Invalid configuration file');
         }
-      } catch {
-        toast.error('Failed to import configuration');
+      } catch (error) {
+        toast.error('Failed to import configuration', { description: humanizeError(error) });
       } finally {
         setImporting(false);
       }

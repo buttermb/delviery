@@ -68,6 +68,7 @@ import { useActivityLog, ActivityAction, EntityType } from '@/hooks/useActivityL
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { cn } from '@/lib/utils';
 
 // ============================================================================
@@ -249,7 +250,7 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
       setStep('map');
     } catch (error) {
       logger.error('Error parsing file', error, { component: 'CustomerImport' });
-      toast.error('Failed to parse file. Please check the format.');
+      toast.error('Failed to parse file. Please check the format.', { description: humanizeError(error) });
       setFile(null);
     } finally {
       setLoading(false);
@@ -604,7 +605,7 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
     },
     onError: (error) => {
       logger.error('Customer import failed', error, { component: 'CustomerImport' });
-      toast.error('Import failed. Please try again.');
+      toast.error('Import failed. Please try again.', { description: humanizeError(error) });
       setLoading(false);
     },
   });

@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface CustomIntegrationFormProps {
   open: boolean;
@@ -96,7 +97,7 @@ export function CustomIntegrationForm({
       setCustomHeaders([{ key: '', value: '' }]);
     } catch (error) {
       logger.error('Failed to add custom integration:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomIntegrationForm' });
-      toast.error('Failed to add custom integration');
+      toast.error('Failed to add custom integration', { description: humanizeError(error) });
     } finally {
       setIsSubmitting(false);
     }

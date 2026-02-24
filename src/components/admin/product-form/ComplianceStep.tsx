@@ -7,6 +7,7 @@ import { Upload, FileText, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 interface ProductFormData {
   name?: string;
@@ -42,7 +43,7 @@ export function ComplianceStep({ formData, updateFormData }: ComplianceStepProps
       updateFormData({ coa_url: publicUrl });
       toast.success('COA uploaded successfully');
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : 'Upload failed');
+      toast.error('Upload failed', { description: humanizeError(error) });
     } finally {
       setUploading(false);
     }

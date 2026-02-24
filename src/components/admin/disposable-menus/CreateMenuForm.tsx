@@ -19,6 +19,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantLimits } from '@/hooks/useTenantLimits';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 
 export interface CreateMenuFormData {
@@ -183,6 +184,7 @@ export function CreateMenuForm({
       }
     } catch (error) {
       logger.error('Error creating menu', error, { component: 'CreateMenuForm' });
+      toast.error('Failed to create menu', { description: humanizeError(error) });
     }
   };
 

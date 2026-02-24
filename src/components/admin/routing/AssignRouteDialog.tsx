@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import { logger } from "@/lib/logger";
 import {
     Dialog,
@@ -68,7 +69,7 @@ export const AssignRouteDialog = ({
                 setCouriers(data || []);
             } catch (error) {
                 logger.error("Failed to fetch couriers:", error);
-                toast.error('Failed to load available couriers');
+                toast.error('Failed to load available couriers', { description: humanizeError(error) });
             } finally {
                 setLoading(false);
             }

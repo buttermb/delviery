@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Copy, Check, ArrowRightLeft, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 type EncodingType = 'url' | 'urlComponent' | 'base64';
 
@@ -63,8 +64,8 @@ export function URLEncoder() {
       setCopied(true);
       toast.success('Output copied to clipboard');
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Failed to copy to clipboard');
+    } catch (error) {
+      toast.error('Failed to copy to clipboard', { description: humanizeError(error) });
     }
   };
 

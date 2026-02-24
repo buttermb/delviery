@@ -33,6 +33,7 @@ import {
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { exportAnalyticsToCSV, exportAnalyticsToPDF, formatNumberForReport } from '@/lib/utils/analyticsExport';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 import {
   BarChart as RechartsBarChart,
   Bar,
@@ -752,8 +753,8 @@ export function SelfHostedAnalytics() {
         exportAnalyticsToPDF(reportData);
         toast.success('PDF report downloaded successfully');
       }
-    } catch {
-      toast.error('Failed to export report');
+    } catch (error) {
+      toast.error('Failed to export report', { description: humanizeError(error) });
     } finally {
       setIsExporting(false);
     }

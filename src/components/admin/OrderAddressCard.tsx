@@ -18,6 +18,7 @@ import Home from "lucide-react/dist/esm/icons/home";
 import MapIcon from "lucide-react/dist/esm/icons/map";
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { humanizeError } from '@/lib/humanizeError';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -177,8 +178,8 @@ export function OrderAddressCard({
       setCopied(true);
       toast.success('Address copied to clipboard');
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Failed to copy address');
+    } catch (error) {
+      toast.error('Failed to copy address', { description: humanizeError(error) });
     }
   };
 
