@@ -49,7 +49,7 @@ const Navigation = () => {
         .select("*, products(*)")
         .eq("user_id", user.id);
       if (error) throw error;
-      return (data || []) as DbCartItem[];
+      return (data ?? []) as DbCartItem[];
     },
     enabled: !!user,
     refetchOnMount: true,

@@ -61,7 +61,7 @@ export function SearchBar({ variant = 'full' }: SearchBarProps) {
           .eq('in_stock', true)
           .limit(10);
         
-        setProducts(data || []);
+        setProducts(data ?? []);
       } catch (error) {
         logger.error('Search error', error, { component: 'SearchBar' });
       } finally {

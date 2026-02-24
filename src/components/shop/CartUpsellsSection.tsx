@@ -63,7 +63,7 @@ export function CartUpsellsSection({
                 }
 
                 // Cast and map to MarketplaceProduct interface
-                const allProducts = (data as unknown as Record<string, unknown>[]) || [];
+                const allProducts = (data as unknown as Record<string, unknown>[]) ?? [];
 
                 return allProducts
                     .filter((p) => ((p.stock_quantity as number) || 0) > 0 && !excludeProductIds.includes(p.product_id as string))
@@ -75,7 +75,7 @@ export function CartUpsellsSection({
                         price: p.price as number,
                         description: (p.description as string) || '',
                         image_url: p.image_url as string | null,
-                        images: (p.images as string[]) || [],
+                        images: (p.images as string[]) ?? [],
                         thc_content: p.thc_content as number | null,
                         cbd_content: p.cbd_content as number | null,
                         is_visible: true,

@@ -73,7 +73,7 @@ export function SessionManagement() {
       const sessionsWithCurrent = result.sessions?.map((s: Session) => ({
         ...s,
         is_current: s.token === token,
-      })) || [];
+      })) ?? [];
       setSessions(sessionsWithCurrent);
     } catch (error: unknown) {
       logger.error('Failed to load sessions', error, { component: 'SessionManagement' });

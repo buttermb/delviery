@@ -163,7 +163,7 @@ ${i + 1}. ${t.transaction_number}
   // Compute refund stats from transactions
   const refundTransactions = transactions?.filter(
     (t) => t.payment_status === 'refunded' || t.total_amount < 0
-  ) || [];
+  ) ?? [];
   const refundCount = refundTransactions.length;
   const totalRefunds = shift.refunds_amount || 0;
   const cashRefunds = refundTransactions

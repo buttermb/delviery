@@ -61,7 +61,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
           .order("created_at", { ascending: false })
           .limit(10);
         if (error) throw error;
-        return data || [];
+        return data ?? [];
       }
     );
   }, [product.id, prefetchQuery]);

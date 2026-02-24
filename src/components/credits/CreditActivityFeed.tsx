@@ -109,7 +109,7 @@ export function CreditActivityFeed({
         throw error;
       }
 
-      return (data || []) as CreditTransaction[];
+      return (data ?? []) as CreditTransaction[];
     },
     enabled: !!tenantId,
     staleTime: 30 * 1000, // 30 seconds

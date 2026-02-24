@@ -59,7 +59,7 @@ export function AdvancedWorkflowBuilder() {
         .limit(50);
 
       if (error) throw error;
-      setExecutions((data as WorkflowExecution[]) || []);
+      setExecutions((data as WorkflowExecution[]) ?? []);
     } catch (error: unknown) {
       toast.error("Error loading executions");
     } finally {

@@ -76,7 +76,7 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return (data || []) as Review[];
+      return (data ?? []) as Review[];
     },
     enabled: !!product?.id && open,
   });

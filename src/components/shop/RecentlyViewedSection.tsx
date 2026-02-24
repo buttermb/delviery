@@ -65,7 +65,7 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
                     price: p.price,
                     description: p.description || '',
                     image_url: p.image_url,
-                    images: p.images || [],
+                    images: p.images ?? [],
                     thc_content: p.thc_content,
                     cbd_content: p.cbd_content,
                     is_visible: true,

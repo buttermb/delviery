@@ -129,7 +129,7 @@ export function ARCommand() {
   };
 
   const handleSendAllReminders = () => {
-    const clientIds = data?.priorityClients.map(c => c.id) || [];
+    const clientIds = data?.priorityClients.map(c => c.id) ?? [];
     if (clientIds.length > 0) {
       sendAllReminders.mutate(clientIds);
     }

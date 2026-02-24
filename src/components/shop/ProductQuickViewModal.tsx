@@ -76,7 +76,7 @@ export function ProductQuickViewModal({
                     return null;
                 }
 
-                const products = (data || []) as QuickViewProduct[];
+                const products = (data ?? []) as QuickViewProduct[];
                 return products.find((p) => p.product_id === productId) || null;
             } catch (err) {
                 logger.error('Error fetching quick view product', err);

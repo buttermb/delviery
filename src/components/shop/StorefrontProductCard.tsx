@@ -81,7 +81,7 @@ export function StorefrontProductCard({
         : product.image_url;
 
     // Get first 2 effects for display
-    const displayEffects = product.effects?.slice(0, 2) || [];
+    const displayEffects = product.effects?.slice(0, 2) ?? [];
 
     return (
         <motion.div

@@ -43,7 +43,7 @@ export function CreditBalance({
         .eq('transaction_type', 'usage')
         .gte('created_at', thirtyDaysAgo.toISOString());
 
-      const monthUsage = (transactions || []).reduce(
+      const monthUsage = (transactions ?? []).reduce(
         (sum, t) => sum + Math.abs(t.amount),
         0
       );

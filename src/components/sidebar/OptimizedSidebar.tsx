@@ -335,7 +335,7 @@ export function OptimizedSidebar({
         const maxVisible = section.maxVisible || 4;
         const visibleItems = showMore ? section.items : section.items.slice(0, maxVisible);
         const hasMore = section.items.length > maxVisible;
-        const lockedItems = lockedItemsBySection[section.id] || [];
+        const lockedItems = lockedItemsBySection[section.id] ?? [];
 
         return (
             <Collapsible

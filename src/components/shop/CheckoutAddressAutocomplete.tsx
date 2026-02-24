@@ -144,7 +144,7 @@ export function CheckoutAddressAutocomplete({
       }
 
       const data = await response.json();
-      setSuggestions(data.features || []);
+      setSuggestions(data.features ?? []);
       setShowSuggestions(true);
     } catch (error) {
       logger.error('Error fetching address suggestions:', error);

@@ -30,7 +30,7 @@ export function ReportBuilder({ onClose }: { onClose?: () => void }) {
   const [emailRecipients, setEmailRecipients] = useState<string[]>([]);
   const [newEmail, setNewEmail] = useState('');
 
-  const availableFields = REPORT_FIELDS[reportType] || [];
+  const availableFields = REPORT_FIELDS[reportType] ?? [];
   
   // Group fields by category
   const fieldsByCategory = availableFields.reduce((acc, field) => {

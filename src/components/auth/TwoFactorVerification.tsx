@@ -36,7 +36,7 @@ export function TwoFactorVerification({ onVerified, onCancel }: TwoFactorVerific
             try {
                 const { data, error } = await supabase.auth.mfa.listFactors();
                 if (error) throw error;
-                const totpFactors = data?.totp || [];
+                const totpFactors = data?.totp ?? [];
                 setFactors(totpFactors);
                 if (totpFactors.length > 0) {
                     setSelectedFactorId(totpFactors[0].id);
