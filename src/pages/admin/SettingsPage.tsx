@@ -135,9 +135,6 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
         sessionTimeout: secSettings.sessionTimeout as number || 30,
         passwordMinLength: secSettings.passwordMinLength as number || 8,
       });
-
-      // Mark forms as initialized once account data is loaded
-      setFormsInitialized(true);
     }
 
     if (accountSettings) {
@@ -150,10 +147,16 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
         orderAlerts: notifSettings.orderAlerts as boolean ?? true,
       });
     }
-  }, [account, accountSettings, generalForm, securityForm, notificationForm]);
+
+    // Mark forms as initialized once account loading is complete
+    // (whether account exists or not — prevents infinite skeleton)
+    if (!accountLoading) {
+      setFormsInitialized(true);
+    }
+  }, [account, accountSettings, accountLoading, generalForm, securityForm, notificationForm]);
 
   // Determine if we should show loading skeletons
-  const showSkeletons = accountLoading || !formsInitialized;
+  const showSkeletons = accountLoading;
 
   // Warn on unsaved changes when navigating away
   const isDirty = formsInitialized && (
