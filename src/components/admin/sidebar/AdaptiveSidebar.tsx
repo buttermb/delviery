@@ -186,20 +186,20 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
     <>
       <Sidebar data-tutorial="navigation-sidebar" collapsible={collapsible} className="dark:bg-gray-900 dark:text-white">
         {/* Streamlined Header with Integrated Credits */}
-        <SidebarHeader className="p-0 border-b">
+        <SidebarHeader className="p-0 border-b group-data-[collapsible=icon]:p-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full p-3 flex items-center gap-3 hover:bg-accent/50 transition-colors group cursor-pointer">
-                <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base flex-shrink-0 group-hover:scale-105 transition-transform">
+              <button className="w-full p-3 flex items-center gap-3 hover:bg-accent/50 transition-colors group cursor-pointer group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:justify-center">
+                <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-base flex-shrink-0 group-hover:scale-105 transition-transform group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8">
                   {tenant?.slug?.charAt(0).toUpperCase() || "T"}
                 </div>
-                <div className="flex flex-col min-w-0 flex-1 gap-0">
+                <div className="flex flex-col min-w-0 flex-1 gap-0 group-data-[collapsible=icon]:hidden">
                   <span className="font-semibold text-sm truncate">{tenant?.slug || "Tenant Admin"}</span>
                   <div className="flex items-center gap-1.5">
                     <CreditBalance variant="badge" showLabel={false} />
                   </div>
                 </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0 group-data-[collapsible=icon]:hidden" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
@@ -228,8 +228,8 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
           </DropdownMenu>
         </SidebarHeader>
 
-        {/* Unified Search & Quick Actions Bar */}
-        <div className="px-3 py-2 border-b space-y-2">
+        {/* Unified Search & Quick Actions Bar — hidden when collapsed */}
+        <div className="px-3 py-2 border-b space-y-2 group-data-[collapsible=icon]:hidden">
           {/* Menu Filter Search */}
           <SidebarSearch
             value={searchQuery}
