@@ -22,6 +22,9 @@ export const useAdminKeyboardShortcuts = (options: KeyboardShortcutsOptions = {}
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      // Guard against undefined key (dead keys, IME events)
+      if (!e.key) return;
+
       // Check if ? is pressed (for shortcuts help)
       if (e.key === '?' && !e.metaKey && !e.ctrlKey && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
         e.preventDefault();
