@@ -372,7 +372,7 @@ export default function CustomerInvoices() {
         reference_number: '',
         tax_rate: '8.875'
       });
-      setLineItems([{ description: '', quantity: 1, rate: 0, amount: 0 }]);
+      setLineItems([{ id: crypto.randomUUID(), description: '', quantity: 1, rate: 0, amount: 0 }]);
       // Reset pagination and reload from page 1
       setCurrentPage(1);
       setAllInvoices([]); // Clear stored invoices

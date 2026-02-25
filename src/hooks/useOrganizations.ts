@@ -184,7 +184,7 @@ async function fetchOrganizations(
       total_orders: totalOrders,
       avg_order_value: Math.round(avgOrderValue * 100) / 100,
       last_order_date: lastOrderDate,
-    });
+    } as OrganizationWithStats);
   }
 
   return orgsWithStats;

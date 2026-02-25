@@ -165,8 +165,8 @@ export default function ProductManagement() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   // Filters - initialize from saved preferences
-  const [categoryFilter, setCategoryFilter] = useState<string>(preferences.customFilters?.category || "all");
-  const [stockStatusFilter, setStockStatusFilter] = useState<string>(preferences.customFilters?.stockStatus || "all");
+  const [categoryFilter, setCategoryFilter] = useState<string>(String(preferences.customFilters?.category || "all"));
+  const [stockStatusFilter, setStockStatusFilter] = useState<string>(String(preferences.customFilters?.stockStatus || "all"));
   const [sortBy, setSortBy] = useState<string>(preferences.sortBy || "name");
 
   // Column visibility - margin column hidden by default
@@ -179,7 +179,7 @@ export default function ProductManagement() {
     { id: "stock", label: "Stock" },
   ];
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
-    () => preferences.customFilters?.visibleColumns || ["image", "name", "category", "price", "stock"]
+    () => (preferences.customFilters?.visibleColumns as string[]) || ["image", "name", "category", "price", "stock"]
   );
 
   // Margin threshold for alerts (default 20%)

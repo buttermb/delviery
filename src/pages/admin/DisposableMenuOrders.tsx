@@ -38,7 +38,7 @@ interface OrderDataItems {
   items?: Array<{ quantity: number; name?: string; product_name?: string }>;
 }
 
-type MenuOrder = NonNullable<ReturnType<typeof useMenuOrders>['data']>[number];
+type MenuOrder = any;
 
 const DisposableMenuOrders = () => {
   const { tenant } = useTenantAdminAuth();

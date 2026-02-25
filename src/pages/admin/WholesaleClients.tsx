@@ -96,7 +96,7 @@ export default function WholesaleClients() {
   const handleSearch = useCallback((value: string) => {
     setSearchTerm(value);
   }, []);
-  const [filter, setFilter] = useState<string>(preferences.customFilters?.filter || "all");
+  const [filter, setFilter] = useState<string>(String(preferences.customFilters?.filter || "all"));
   const [sortField, setSortField] = useState<ClientSortField>('business_name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; client?: WholesaleClient }>({ open: false });

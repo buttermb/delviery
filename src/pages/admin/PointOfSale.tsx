@@ -447,7 +447,7 @@ export default function PointOfSale() {
         quantity: item.quantity,
         category: 'flower',
         stock_quantity: 999, // Placeholder
-        subtotal: item.price * item.quantity,
+        subtotal: Number(item.price) * Number(item.quantity),
         image_url: null,
         thc_percent: null
       }));

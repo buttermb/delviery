@@ -204,7 +204,7 @@ export class ClientEncryption {
 
     for (const [key, value] of Object.entries(obj)) {
       if (value !== undefined && value !== null) {
-        encrypted[`${key}_encrypted`] = this.encrypt(value);
+        encrypted[`${key}_encrypted`] = this.encrypt(value as EncryptableValue);
       }
     }
 

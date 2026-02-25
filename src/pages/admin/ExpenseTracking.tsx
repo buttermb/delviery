@@ -334,8 +334,8 @@ export default function ExpenseTracking() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    {uniqueCategories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    {uniqueCategories.map((cat: any) => (
+                      <SelectItem key={String(cat)} value={String(cat)}>{String(cat)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -366,7 +366,7 @@ export default function ExpenseTracking() {
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       <div className="text-lg font-bold text-red-600">
-                        -{formatCurrency(parseFloat(expense.amount ?? 0))}
+                        -{formatCurrency(parseFloat(String(expense.amount ?? 0)))}
                       </div>
                       <Button
                         variant="ghost"

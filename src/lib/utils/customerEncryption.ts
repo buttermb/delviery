@@ -84,7 +84,7 @@ export async function decryptCustomerData(encryptedCustomer: Record<string, unkn
     const encryptedField = `${field}_encrypted`;
     if (encryptedCustomer[encryptedField]) {
       try {
-        const decryptedValue = clientEncryption.decrypt<string>(encryptedCustomer[encryptedField]);
+        const decryptedValue = clientEncryption.decrypt<string>(encryptedCustomer[encryptedField] as string);
         
         // Parse JSON arrays back to arrays
         if (field === 'qualifying_conditions' || field === 'allergies' || 
@@ -108,7 +108,7 @@ export async function decryptCustomerData(encryptedCustomer: Record<string, unkn
     }
   }
 
-  return decrypted as DecryptedCustomer;
+  return decrypted as unknown as DecryptedCustomer;
 }
 
 /**

@@ -130,10 +130,10 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
 
       const secSettings = (metadata?.security as Record<string, unknown>) || {};
       securityForm.reset({
-        twoFactorEnabled: secSettings.twoFactorEnabled ?? false,
-        requirePasswordChange: secSettings.requirePasswordChange ?? false,
-        sessionTimeout: secSettings.sessionTimeout || 30,
-        passwordMinLength: secSettings.passwordMinLength || 8,
+        twoFactorEnabled: secSettings.twoFactorEnabled as boolean ?? false,
+        requirePasswordChange: secSettings.requirePasswordChange as boolean ?? false,
+        sessionTimeout: secSettings.sessionTimeout as number || 30,
+        passwordMinLength: secSettings.passwordMinLength as number || 8,
       });
 
       // Mark forms as initialized once account data is loaded
@@ -143,11 +143,11 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
     if (accountSettings) {
       const notifSettings = (accountSettings.notification_settings as Record<string, unknown>) || {};
       notificationForm.reset({
-        emailNotifications: notifSettings.emailNotifications ?? true,
-        smsNotifications: notifSettings.smsNotifications ?? false,
-        lowStockAlerts: notifSettings.lowStockAlerts ?? true,
-        overdueAlerts: notifSettings.overdueAlerts ?? true,
-        orderAlerts: notifSettings.orderAlerts ?? true,
+        emailNotifications: notifSettings.emailNotifications as boolean ?? true,
+        smsNotifications: notifSettings.smsNotifications as boolean ?? false,
+        lowStockAlerts: notifSettings.lowStockAlerts as boolean ?? true,
+        overdueAlerts: notifSettings.overdueAlerts as boolean ?? true,
+        orderAlerts: notifSettings.orderAlerts as boolean ?? true,
       });
     }
   }, [account, accountSettings, generalForm, securityForm, notificationForm]);

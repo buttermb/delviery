@@ -336,7 +336,7 @@ export default function DispatchInventory() {
         .from('products')
         .select('fronted_quantity, available_quantity')
         .eq('id', product.product_id)
-        .maybeSingle<ProductQuantity>();
+        .maybeSingle() as { data: ProductQuantity | null };
 
       if (currentProduct) {
         await supabase

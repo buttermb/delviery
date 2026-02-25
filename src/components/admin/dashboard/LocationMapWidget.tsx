@@ -87,7 +87,7 @@ export function LocationMapWidget() {
       const BASE_LNG = -74.0060;
 
       return {
-        warehouses: Object.entries(warehouses).map(([name, stats]) => ({
+        warehouses: Object.entries(warehouses).map(([name, stats]: [string, any]) => ({
           name,
           lbs: stats.lbs,
           count: stats.count,
