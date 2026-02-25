@@ -295,7 +295,7 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
     <nav
       aria-label="Breadcrumb navigation"
       className={cn(
-        'flex items-center gap-1.5 text-sm text-muted-foreground overflow-hidden',
+        'flex items-center gap-1.5 text-sm text-muted-foreground',
         className
       )}
     >
@@ -306,7 +306,7 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
         title={`${tenantDisplayName} Dashboard`}
       >
         <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
-        <span className="font-medium max-w-[120px] truncate">
+        <span className="font-medium">
           {tenantDisplayName}
         </span>
       </Link>
@@ -319,21 +319,19 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
           : crumb.label;
 
         return (
-          <span key={crumb.path} className="inline-flex items-center gap-1.5 min-w-0">
+          <span key={crumb.path} className="inline-flex items-center gap-1.5 flex-shrink-0">
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
             {crumb.isCurrentPage ? (
               <span
-                className="text-foreground font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]"
+                className="text-foreground font-medium whitespace-nowrap"
                 aria-current="page"
-                title={displayLabel}
               >
                 {displayLabel}
               </span>
             ) : (
               <Link
                 to={crumb.path}
-                className="hover:text-foreground transition-colors whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]"
-                title={crumb.label}
+                className="hover:text-foreground transition-colors whitespace-nowrap"
               >
                 {crumb.label}
               </Link>
