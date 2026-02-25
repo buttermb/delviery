@@ -25,7 +25,7 @@ export default function CustomerReports() {
     totalRevenue: 0,
     avgOrderValue: 0,
     avgLifetimeValue: 0,
-    topCustomers: [] as { id: string; name: string; totalSpent: number; orderCount: number }[]
+    topCustomers: [] as any[]
   });
 
   useEffect(() => {

@@ -472,7 +472,7 @@ export function useBulkProductVelocity({
 
       // Build velocity objects
       for (const productId of productIds) {
-        const productInfo = productLookup.get(productId);
+        const productInfo = productLookup.get(productId) as { name: string; stock: number } | undefined;
         const sales = salesData.get(productId);
 
         if (!productInfo || !sales) continue;

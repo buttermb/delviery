@@ -582,7 +582,7 @@ export const usePerformancePulse = () => {
         .sort(([, a], [, b]) => b - a)
         .slice(0, 5)
         .map(([clientId, revenue]) => ({
-          name: clientMap.get(clientId) || 'Unknown',
+          name: String(clientMap.get(clientId) || 'Unknown'),
           revenue,
           percentage: thisMonthRevenue > 0 ? (revenue / thisMonthRevenue) * 100 : 0
         }));

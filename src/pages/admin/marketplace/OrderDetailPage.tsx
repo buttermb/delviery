@@ -354,7 +354,7 @@ export default function OrderDetailPage() {
                                         <DialogHeader>
                                             <DialogTitle>Message Buyer</DialogTitle>
                                             <DialogDescription>
-                                                Send a message to {(order as unknown as Record<string, unknown>).buyer_tenant?.business_name || 'Buyer'} about Order #{order.order_number}.
+                                                Send a message to {(order as any).buyer_tenant?.business_name || 'Buyer'} about Order #{order.order_number}.
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="space-y-4 py-4">
@@ -690,7 +690,7 @@ export default function OrderDetailPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-sm">
-                                <div className="font-medium mb-1">{(order as unknown as Record<string, unknown>).buyer_business_name || 'Guest/Unknown'}</div>
+                                <div className="font-medium mb-1">{String((order as any).buyer_business_name || 'Guest/Unknown')}</div>
                                 <div className="text-muted-foreground">Order #{order.order_number}</div>
                             </div>
                         </CardContent>

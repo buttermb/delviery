@@ -256,7 +256,7 @@ export default function CustomReports() {
 
                         if (data) {
                           // Convert to CSV
-                          const items = data.data?.wholesale_orders || data.data?.wholesale_clients ?? [];
+                          const items = (data.data?.wholesale_orders || data.data?.wholesale_clients) ?? [];
                           if (items.length > 0) {
                             const headers = Object.keys(items[0]);
                             const csvContent = [

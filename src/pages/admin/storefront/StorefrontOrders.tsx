@@ -503,7 +503,7 @@ export default function StorefrontOrders() {
                   <h3 className="font-medium mb-3">Delivery</h3>
                   <div className="space-y-2 text-sm">
                     {selectedOrder.delivery_address && (
-                      <p>{selectedOrder.delivery_address.street}, {selectedOrder.delivery_address.city}</p>
+                      <p>{typeof selectedOrder.delivery_address === 'string' ? selectedOrder.delivery_address : `${(selectedOrder.delivery_address as any)?.street}, ${(selectedOrder.delivery_address as any)?.city}`}</p>
                     )}
                     {selectedOrder.delivery_notes && (
                       <p className="text-muted-foreground">Notes: {selectedOrder.delivery_notes}</p>
