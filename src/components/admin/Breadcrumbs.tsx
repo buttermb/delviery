@@ -286,26 +286,26 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
   // Tenant display name - use business_name if available, otherwise format the slug
   const tenantDisplayName = tenant?.business_name || (tenantSlug
     ? tenantSlug
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
     : 'Admin');
 
   return (
     <nav
       aria-label="Breadcrumb navigation"
       className={cn(
-        'flex items-center gap-1.5 text-sm text-muted-foreground',
+        'flex items-center gap-1.5 text-sm text-muted-foreground overflow-hidden',
         className
       )}
     >
       {/* Tenant context - always shown */}
       <Link
         to={`/${tenantSlug}/admin/dashboard`}
-        className="hover:text-foreground transition-colors flex items-center gap-1.5 flex-shrink-0"
+        className="hover:text-foreground transition-colors inline-flex items-center gap-1.5 flex-shrink-0"
         title={`${tenantDisplayName} Dashboard`}
       >
-        <Building2 className="h-3.5 w-3.5" />
+        <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
         <span className="font-medium max-w-[120px] truncate">
           {tenantDisplayName}
         </span>
@@ -323,7 +323,7 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
             {crumb.isCurrentPage ? (
               <span
-                className="text-foreground font-medium whitespace-nowrap truncate max-w-[200px]"
+                className="text-foreground font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px] leading-normal"
                 aria-current="page"
                 title={displayLabel}
               >
@@ -332,7 +332,7 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
             ) : (
               <Link
                 to={crumb.path}
-                className="hover:text-foreground transition-colors whitespace-nowrap truncate max-w-[120px]"
+                className="hover:text-foreground transition-colors whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px] leading-normal"
                 title={crumb.label}
               >
                 {crumb.label}
