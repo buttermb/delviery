@@ -5,7 +5,7 @@
  * Includes tenant slug context and clickable navigation paths
  */
 
-import { Fragment, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { ChevronRight, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -319,11 +319,11 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
           : crumb.label;
 
         return (
-          <Fragment key={crumb.path}>
+          <span key={crumb.path} className="inline-flex items-center gap-1.5 min-w-0">
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
             {crumb.isCurrentPage ? (
               <span
-                className="text-foreground font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px] leading-normal"
+                className="text-foreground font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]"
                 aria-current="page"
                 title={displayLabel}
               >
@@ -332,13 +332,13 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
             ) : (
               <Link
                 to={crumb.path}
-                className="hover:text-foreground transition-colors whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px] leading-normal"
+                className="hover:text-foreground transition-colors whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]"
                 title={crumb.label}
               >
                 {crumb.label}
               </Link>
             )}
-          </Fragment>
+          </span>
         );
       })}
     </nav>
