@@ -52,6 +52,10 @@ import { CustomerTagFilter } from "@/components/admin/customers/CustomerTagFilte
 import { CustomerTagBadges } from "@/components/admin/customers/CustomerTagBadges";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
+import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
+import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { ExportButton } from '@/components/ui/ExportButton';
 
 import { useCustomersByTags } from "@/hooks/useAutoTagRules";
 
@@ -96,7 +100,6 @@ export function CustomerManagement() {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -425,6 +428,201 @@ export function CustomerManagement() {
     );
   }
 
+  const customerColumns = useMemo<ResponsiveColumn<Customer>[]>(() => [
+    {
+      header: 'Customer',
+      accessorKey: 'first_name',
+      cell: (customer) => (
+        <div className="flex items-center min-w-0">
+          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
+            {customer.first_name?.[0] ?? ''}{customer.last_name?.[0] ?? '?'}
+          </div>
+          <div className="ml-4 min-w-0">
+            <TruncatedText
+              text={displayName(customer.first_name, customer.last_name)}
+              className="text-sm font-medium"
+              maxWidthClass="max-w-[200px]"
+              as="div"
+            />
+            <div className="text-sm text-muted-foreground flex items-center gap-1">
+              {customer._encryptedIndicator ? (
+                <span className="flex items-center gap-1 text-amber-600" title="Contact info encrypted - sign in to view">
+                  <Lock className="w-3 h-3" />
+                  <span className="italic">Encrypted</span>
+                </span>
+              ) : (
+                <>
+                  <TruncatedText
+                    text={customer.email || customer.phone || 'No contact'}
+                    className="text-sm text-muted-foreground"
+                    maxWidthClass="max-w-[200px]"
+                    as="span"
+                  />
+                  {customer.email && (
+                    <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      header: 'Type',
+      accessorKey: 'customer_type',
+      cell: (customer) => (
+        <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
+          {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
+        </Badge>
+      )
+    },
+    {
+      header: 'Total Spent',
+      accessorKey: 'total_spent',
+      cell: (customer) => <span className="text-sm font-semibold">{formatCurrency(customer.total_spent)}</span>
+    },
+    {
+      header: 'Points',
+      accessorKey: 'loyalty_points',
+      cell: (customer) => (
+        <span className="flex items-center gap-1">
+          <Award className="w-4 h-4 text-yellow-600" />
+          {customer.loyalty_points ?? 0}
+        </span>
+      )
+    },
+    {
+      header: 'Last Order',
+      accessorKey: 'last_purchase_at',
+      cell: (customer) => <span className="text-sm text-muted-foreground">{customer.last_purchase_at ? formatSmartDate(customer.last_purchase_at) : 'Never'}</span>
+    },
+    {
+      header: 'Tags',
+      accessorKey: 'id',
+      cell: (customer) => <CustomerTagBadges customerId={customer.id} maxVisible={2} />
+    },
+    {
+      header: 'Status',
+      accessorKey: 'status',
+      cell: (customer) => getCustomerStatus(customer)
+    },
+    {
+      header: 'Actions',
+      accessorKey: 'id',
+      cell: (customer) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
+              <MoreHorizontal className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)}>
+              <Eye className="w-4 h-4 mr-2" />
+              View Details
+            </DropdownMenuItem>
+            {canEdit('customers') && (
+              <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${customer.id}/edit`)}>
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
+              </DropdownMenuItem>
+            )}
+            {canEdit('orders') && (
+              <DropdownMenuItem
+                disabled={!posEnabled}
+                title={!posEnabled ? 'Enable POS in Settings' : undefined}
+                onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}
+              >
+                <DollarSign className="w-4 h-4 mr-2" />
+                New Order
+              </DropdownMenuItem>
+            )}
+            {canDelete('customers') && (
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={() => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))}
+              >
+                <Trash className="w-4 h-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    }
+  ], [tenant?.slug, navigate, canEdit, canDelete, posEnabled, handleDeleteClick]);
+
+  const renderMobileItem = (customer: Customer) => (
+    <SwipeableItem
+      key={customer.id}
+      leftAction={{
+        icon: <Trash className="h-5 w-5" />,
+        color: 'bg-red-500',
+        label: 'Delete',
+        onClick: () => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))
+      }}
+      rightAction={{
+        icon: <Eye className="h-5 w-5" />,
+        color: 'bg-blue-500',
+        label: 'View',
+        onClick: () => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)
+      }}
+    >
+      <div
+        className="p-4 bg-card rounded-lg border shadow-sm active:scale-[0.98] transition-transform"
+        onClick={() => {
+          triggerHaptic('light');
+          setSelectedCustomerForDrawer(customer);
+        }}
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
+              {customer.first_name?.[0]}{customer.last_name?.[0]}
+            </div>
+            <div className="flex-1 min-w-0">
+              <TruncatedText
+                text={`${customer.first_name ?? ''} ${customer.last_name ?? ''}`.trim() || 'Unknown'}
+                className="font-semibold text-base"
+                as="p"
+              />
+              <div className="text-sm text-muted-foreground">
+                {customer._encryptedIndicator ? (
+                  <span className="flex items-center gap-1 text-amber-600">
+                    <Lock className="w-3 h-3" />
+                    <span className="italic">Encrypted</span>
+                  </span>
+                ) : (
+                  <TruncatedText
+                    text={customer.email || customer.phone || 'No contact'}
+                    className="text-sm text-muted-foreground"
+                    maxWidthClass="max-w-[180px]"
+                    as="span"
+                  />
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
+                  {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
+                </Badge>
+                {getCustomerStatus(customer)}
+                <CustomerTagBadges customerId={customer.id} maxVisible={2} size="sm" />
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <div className="font-bold">{formatCurrency(customer.total_spent)}</div>
+            <div className="text-xs text-muted-foreground flex items-center gap-1">
+              <Award className="w-3 h-3 text-yellow-600" />
+              {customer.loyalty_points ?? 0}
+            </div>
+          </div>
+        </div>
+      </div>
+    </SwipeableItem>
+  );
+
   const stats = [
     {
       title: "Total Customers",
@@ -492,16 +690,6 @@ export function CustomerManagement() {
           </div>
           <p className="text-muted-foreground text-sm sm:text-base">Complete CRM for your customers</p>
         </div>
-        {canEdit('customers') && (
-          <Button
-            onClick={() => navigate(`/${tenantSlug}/admin/customers/new`)}
-            className="min-h-[44px] touch-manipulation flex-shrink-0"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Add Customer</span>
-            <span className="sm:hidden">Add</span>
-          </Button>
-        )}
       </div>
 
       {/* Stats Carousel */}
@@ -532,23 +720,16 @@ export function CustomerManagement() {
         ))}
       </div>
 
-      {/* Search and Filters */}
-      <Card className="border-none shadow-sm">
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4 mb-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                aria-label="Search customers"
-                placeholder="Search customers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <div className="flex gap-2">
+      {/* Table Toolbar & Data */}
+      <div className="space-y-4">
+        <AdminToolbar
+          searchQuery={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search customers..."
+          filters={
+            <>
               <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[140px] h-9">
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -558,7 +739,7 @@ export function CustomerManagement() {
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[140px] h-9">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -572,325 +753,69 @@ export function CustomerManagement() {
                 selectedTagIds={filterTagIds}
                 onTagsChange={setFilterTagIds}
               />
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {canExport('customers') && (
-              <Button variant="outline" size="sm" onClick={handleExport} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
-                <Download className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Export</span>
-                <span className="sm:hidden">Export</span>
+            </>
+          }
+          actions={
+            <>
+              {canEdit('customers') && (
+                <Button onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/new`)} className="h-9 min-w-[100px] sm:min-w-0">
+                  <Plus className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Add Customer</span>
+                  <span className="sm:hidden">Add</span>
+                </Button>
+              )}
+              {canExport('customers') && (
+                <Button variant="outline" size="sm" onClick={handleExport} className="h-9 min-w-[100px] sm:min-w-0">
+                  <Download className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Export</span>
+                </Button>
+              )}
+              {canEdit('customers') && (
+                <Button variant="outline" size="sm" className="h-9 min-w-[100px] sm:min-w-0" onClick={() => setImportDialogOpen(true)}>
+                  <Upload className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Import</span>
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })} className="h-9 min-w-[100px] sm:min-w-0">
+                <Filter className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
-            )}
-            {canEdit('customers') && (
-              <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]" onClick={() => setImportDialogOpen(true)}>
-                <Upload className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Import</span>
-                <span className="sm:hidden">Import</span>
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
-              <Filter className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Refresh</span>
-              <span className="sm:hidden">Refresh</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            </>
+          }
+        />
 
-      {/* Customer Table (Desktop) */}
-      <Card className="hidden md:block border-none shadow-md">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/50 border-b">
-                <tr>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    <input
-                      type="checkbox"
-                      className="rounded"
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedCustomers(paginatedCustomers.map(c => c.id));
-                        } else {
-                          setSelectedCustomers([]);
-                        }
-                      }}
-                    />
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Total Spent
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Points
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Last Order
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Tags
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-background divide-y divide-border">
-                {paginatedCustomers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-2.5">
-                      <input
-                        type="checkbox"
-                        className="rounded"
-                        checked={selectedCustomers.includes(customer.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedCustomers([...selectedCustomers, customer.id]);
-                          } else {
-                            setSelectedCustomers(selectedCustomers.filter(id => id !== customer.id));
-                          }
-                        }}
-                      />
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <div className="flex items-center min-w-0">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
-                          {customer.first_name?.[0] ?? ''}{customer.last_name?.[0] ?? '?'}
-                        </div>
-                        <div className="ml-4 min-w-0">
-                          <TruncatedText
-                            text={displayName(customer.first_name, customer.last_name)}
-                            className="text-sm font-medium"
-                            maxWidthClass="max-w-[200px]"
-                            as="div"
-                          />
-                          <div className="text-sm text-muted-foreground flex items-center gap-1">
-                            {customer._encryptedIndicator ? (
-                              <span className="flex items-center gap-1 text-amber-600" title="Contact info encrypted - sign in to view">
-                                <Lock className="w-3 h-3" />
-                                <span className="italic">Encrypted</span>
-                              </span>
-                            ) : (
-                              <>
-                                <TruncatedText
-                                  text={customer.email || customer.phone || 'No contact'}
-                                  className="text-sm text-muted-foreground"
-                                  maxWidthClass="max-w-[200px]"
-                                  as="span"
-                                />
-                                {customer.email && (
-                                  <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
-                        {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-2.5 text-sm font-semibold">
-                      {formatCurrency(customer.total_spent)}
-                    </td>
-                    <td className="px-4 py-2.5 text-sm">
-                      <span className="flex items-center gap-1">
-                        <Award className="w-4 h-4 text-yellow-600" />
-                        {customer.loyalty_points ?? 0}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2.5 text-sm text-muted-foreground">
-                      {customer.last_purchase_at
-                        ? formatSmartDate(customer.last_purchase_at)
-                        : 'Never'}
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <CustomerTagBadges customerId={customer.id} maxVisible={2} />
-                    </td>
-                    <td className="px-4 py-2.5">
-                      {getCustomerStatus(customer)}
-                    </td>
-                    <td className="px-4 py-2.5 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)}>
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          {canEdit('customers') && (
-                            <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${customer.id}/edit`)}>
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                          )}
-                          {canEdit('orders') && (
-                            <DropdownMenuItem
-                              disabled={!posEnabled}
-                              title={!posEnabled ? 'Enable POS in Settings' : undefined}
-                              onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}
-                            >
-                              <DollarSign className="w-4 h-4 mr-2" />
-                              New Order
-                            </DropdownMenuItem>
-                          )}
-                          {canDelete('customers') && (
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))}
-                            >
-                              <Trash className="w-4 h-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {filteredCustomers.length === 0 && (
-              <EnhancedEmptyState
-                icon={Users}
-                title={debouncedSearchTerm ? "No customers found" : "No customers yet"}
-                description={debouncedSearchTerm ? "No customers match your search." : "Customers are automatically added when they place orders"}
-                primaryAction={debouncedSearchTerm ? {
-                  label: "Clear Search",
-                  onClick: () => setSearchTerm('')
-                } : undefined}
-                secondaryAction={!debouncedSearchTerm ? {
-                  label: "Import Customers",
-                  onClick: () => setImportDialogOpen(true),
-                } : undefined}
-                designSystem="tenant-admin"
-              />
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Mobile Swipeable List View */}
-      <div className="md:hidden space-y-3">
-        {filteredCustomers.length === 0 ? (
-          <EnhancedEmptyState
-            icon={Users}
-            title={debouncedSearchTerm ? "No customers found" : "No customers yet"}
-            description={debouncedSearchTerm ? "No customers match your search." : "Customers are automatically added when they place orders"}
-            primaryAction={debouncedSearchTerm ? {
+        <AdminDataTable
+          data={paginatedCustomers}
+          columns={customerColumns}
+          keyExtractor={(c) => c.id}
+          isLoading={loading}
+          renderMobileItem={renderMobileItem}
+          emptyStateIcon={Users}
+          emptyStateTitle={debouncedSearchTerm ? "No customers found" : "No customers yet"}
+          emptyStateDescription={debouncedSearchTerm ? "No customers match your search." : "Customers are automatically added when they place orders"}
+          emptyStateAction={
+            debouncedSearchTerm ? {
               label: "Clear Search",
               onClick: () => setSearchTerm('')
-            } : undefined}
-            secondaryAction={!debouncedSearchTerm ? {
+            } : {
               label: "Import Customers",
               onClick: () => setImportDialogOpen(true),
-            } : undefined}
-            designSystem="tenant-admin"
+            }
+          }
+        />
+
+        {filteredCustomers.length > 0 && (
+          <StandardPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            pageSizeOptions={pageSizeOptions}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
           />
-        ) : (
-          <AnimatePresence>
-            {paginatedCustomers.map((customer) => (
-              <SwipeableItem
-                key={customer.id}
-                leftAction={{
-                  icon: <Trash className="h-5 w-5" />,
-                  color: 'bg-red-500',
-                  label: 'Delete',
-                  onClick: () => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))
-                }}
-                rightAction={{
-                  icon: <Eye className="h-5 w-5" />,
-                  color: 'bg-blue-500',
-                  label: 'View',
-                  onClick: () => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)
-                }}
-              >
-                <div
-                  className="p-4 bg-card rounded-lg border shadow-sm active:scale-[0.98] transition-transform"
-                  onClick={() => {
-                    triggerHaptic('light');
-                    setSelectedCustomerForDrawer(customer);
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
-                        {customer.first_name?.[0]}{customer.last_name?.[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <TruncatedText
-                          text={`${customer.first_name ?? ''} ${customer.last_name ?? ''}`.trim() || 'Unknown'}
-                          className="font-semibold text-base"
-                          as="p"
-                        />
-                        <div className="text-sm text-muted-foreground">
-                          {customer._encryptedIndicator ? (
-                            <span className="flex items-center gap-1 text-amber-600">
-                              <Lock className="w-3 h-3" />
-                              <span className="italic">Encrypted</span>
-                            </span>
-                          ) : (
-                            <TruncatedText
-                              text={customer.email || customer.phone || 'No contact'}
-                              className="text-sm text-muted-foreground"
-                              maxWidthClass="max-w-[180px]"
-                              as="span"
-                            />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
-                            {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
-                          </Badge>
-                          {getCustomerStatus(customer)}
-                          <CustomerTagBadges customerId={customer.id} maxVisible={2} size="sm" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <div className="font-bold">{formatCurrency(customer.total_spent)}</div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Award className="w-3 h-3 text-yellow-600" />
-                        {customer.loyalty_points ?? 0}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </SwipeableItem>
-            ))}
-          </AnimatePresence>
         )}
       </div>
-
-      {/* Pagination */}
-      {filteredCustomers.length > 0 && (
-        <StandardPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          pageSize={pageSize}
-          totalItems={totalItems}
-          pageSizeOptions={pageSizeOptions}
-          onPageChange={goToPage}
-          onPageSizeChange={changePageSize}
-        />
-      )}
 
       <ConfirmDeleteDialog
         open={deleteDialogOpen}

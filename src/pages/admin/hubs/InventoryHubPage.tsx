@@ -94,31 +94,25 @@ export default function InventoryHubPage() {
                                 Manage products, stock levels, and alerts
                             </p>
                         </div>
-                        {activeTab === 'products' && (
-                            <Button onClick={() => navigateToAdmin('inventory-hub?tab=products&new=true')}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Product
-                            </Button>
-                        )}
                     </div>
                     <ScrollableTabsList>
-                    <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 w-full max-w-full gap-0.5">
-                        {tabs.map((tab, index) => {
-                            const prevTab = index > 0 ? tabs[index - 1] : null;
-                            const showSeparator = prevTab && prevTab.group !== tab.group;
-                            return (
-                                <Fragment key={tab.id}>
-                                    {showSeparator && (
-                                        <div className="w-px h-6 bg-border mx-1" />
-                                    )}
-                                    <TabsTrigger value={tab.id} className="flex items-center gap-2 whitespace-nowrap">
-                                        <tab.icon className="h-4 w-4" />
-                                        <span className="text-xs sm:text-sm truncate">{tab.label}</span>
-                                    </TabsTrigger>
-                                </Fragment>
-                            );
-                        })}
-                    </TabsList>
+                        <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 w-full max-w-full gap-0.5">
+                            {tabs.map((tab, index) => {
+                                const prevTab = index > 0 ? tabs[index - 1] : null;
+                                const showSeparator = prevTab && prevTab.group !== tab.group;
+                                return (
+                                    <Fragment key={tab.id}>
+                                        {showSeparator && (
+                                            <div className="w-px h-6 bg-border mx-1" />
+                                        )}
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2 whitespace-nowrap">
+                                            <tab.icon className="h-4 w-4" />
+                                            <span className="text-xs sm:text-sm truncate">{tab.label}</span>
+                                        </TabsTrigger>
+                                    </Fragment>
+                                );
+                            })}
+                        </TabsList>
                     </ScrollableTabsList>
                 </div>
 

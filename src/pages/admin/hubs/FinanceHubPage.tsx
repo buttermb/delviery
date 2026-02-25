@@ -87,23 +87,6 @@ export default function FinanceHubPage() {
                                 Financial management and reporting
                             </p>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleTabChange('expenses')}
-                            >
-                                <Receipt className="h-4 w-4 mr-2" />
-                                Record Expense
-                            </Button>
-                            <Button
-                                size="sm"
-                                onClick={() => handleTabChange('invoices')}
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Create Invoice
-                            </Button>
-                        </div>
                     </div>
                     <ScrollableTabsList>
                         <TabsList className="inline-flex min-w-max gap-0.5">

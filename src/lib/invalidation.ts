@@ -41,6 +41,10 @@ export type InvalidationEvent =
   | 'DELIVERY_STATUS_CHANGED'
   | 'INVOICE_CREATED'
   | 'INVOICE_PAID'
+  | 'EXPENSE_CREATED'
+  | 'EXPENSE_UPDATED'
+  | 'EXPENSE_DELETED'
+  | 'WHOLESALE_CLIENT_UPDATED'
   | 'WHOLESALE_ORDER_CREATED'
   | 'WHOLESALE_ORDER_UPDATED'
   | 'COURIER_STATUS_CHANGED'
@@ -536,6 +540,54 @@ export function invalidateOnEvent(
       if (metadata?.invoiceId) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.crm.invoices.detail(metadata.invoiceId),
+        });
+      }
+    },
+
+    EXPENSE_CREATED: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.byTenant(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.financeSummary.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueReports.byTenant(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.taxManagement.summary(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
+    },
+
+    EXPENSE_UPDATED: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.byTenant(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.financeSummary.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueReports.byTenant(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.taxManagement.summary(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
+    },
+
+    EXPENSE_DELETED: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.expenses.byTenant(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.finance.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.financeSummary.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueReports.byTenant(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.taxManagement.summary(tenantId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all });
+    },
+
+    WHOLESALE_CLIENT_UPDATED: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.crm.clients.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardStats.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.customers() });
+
+      if (metadata?.customerId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.wholesaleClients.detail(metadata.customerId),
         });
       }
     },
