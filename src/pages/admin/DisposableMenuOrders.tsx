@@ -330,7 +330,7 @@ const DisposableMenuOrders = () => {
               />
             ) : (
               <div className="space-y-3">
-                {paginatedOrders.map((order) => (
+                {paginatedOrders.map((order: any) => (
                   <div
                     key={order.id}
                     className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer group"

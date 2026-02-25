@@ -115,7 +115,7 @@ class BugFinder {
             const clone = response.clone();
             errorBody = await clone.text();
             try {
-              errorBody = JSON.parse(errorBody);
+              errorBody = JSON.parse(errorBody as string);
             } catch (e) { logger.warn('[BugFinder] Failed to parse error response body as JSON', { error: e }); }
           } catch (e) { logger.warn('[BugFinder] Failed to read error response body', { error: e }); }
 

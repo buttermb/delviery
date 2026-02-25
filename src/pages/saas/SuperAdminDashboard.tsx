@@ -370,7 +370,7 @@ export default function SuperAdminDashboard() {
         </div>
 
         <DataTable
-          columns={columns}
+          columns={columns as any}
           data={filteredTenants ?? []}
           loading={isLoading}
           emptyMessage="No tenants found"
@@ -434,7 +434,7 @@ export default function SuperAdminDashboard() {
                 </div>
                 <div>
                   <Label>Owner</Label>
-                  <p className="font-medium">{selectedTenant.owner_name}</p>
+                  <p className="font-medium">{String(selectedTenant.owner_name ?? '')}</p>
                 </div>
                 <div>
                   <Label>Email</Label>
@@ -442,7 +442,7 @@ export default function SuperAdminDashboard() {
                 </div>
                 <div>
                   <Label>Phone</Label>
-                  <p className="font-medium">{selectedTenant.phone || '—'}</p>
+                  <p className="font-medium">{String(selectedTenant.phone ?? '') || '—'}</p>
                 </div>
                 <div>
                   <Label>Plan</Label>
@@ -465,7 +465,7 @@ export default function SuperAdminDashboard() {
                   <Label>Last Activity</Label>
                   <p className="text-sm">
                     {selectedTenant.last_activity_at
-                      ? formatSmartDate(selectedTenant.last_activity_at)
+                      ? formatSmartDate(String(selectedTenant.last_activity_at))
                       : 'Never'}
                   </p>
                 </div>
@@ -475,28 +475,28 @@ export default function SuperAdminDashboard() {
                 <Label>Usage</Label>
                 <div className="mt-2 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Customers:</span>
+                     <span>Customers:</span>
                     <span>
-                      {selectedTenant.usage?.customers ?? 0} /{' '}
-                      {selectedTenant.limits?.customers === -1
+                      {(selectedTenant as any).usage?.customers ?? 0} /{' '}
+                      {(selectedTenant as any).limits?.customers === -1
                         ? '∞'
-                        : selectedTenant.limits?.customers ?? 0}
+                        : (selectedTenant as any).limits?.customers ?? 0}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Menus:</span>
                     <span>
-                      {selectedTenant.usage?.menus ?? 0} /{' '}
-                      {selectedTenant.limits?.menus === -1 ? '∞' : selectedTenant.limits?.menus ?? 0}
+                      {(selectedTenant as any).usage?.menus ?? 0} /{' '}
+                      {(selectedTenant as any).limits?.menus === -1 ? '∞' : (selectedTenant as any).limits?.menus ?? 0}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Products:</span>
                     <span>
-                      {selectedTenant.usage?.products ?? 0} /{' '}
-                      {selectedTenant.limits?.products === -1
+                      {(selectedTenant as any).usage?.products ?? 0} /{' '}
+                      {(selectedTenant as any).limits?.products === -1
                         ? '∞'
-                        : selectedTenant.limits?.products ?? 0}
+                        : (selectedTenant as any).limits?.products ?? 0}
                     </span>
                   </div>
                 </div>

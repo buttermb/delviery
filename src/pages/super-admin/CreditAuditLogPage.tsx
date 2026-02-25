@@ -60,7 +60,7 @@ export default function CreditAuditLogPage() {
 
   // Fetch transactions
   const { data, isLoading, refetch } = useQuery({
-    queryKey: queryKeys.superAdminTools.creditAuditLog(typeFilter, dateFrom, dateTo, page),
+    queryKey: queryKeys.superAdminTools.creditAuditLog(typeFilter, dateFrom?.toISOString(), dateTo?.toISOString(), page),
     queryFn: () => getAllTransactions({
       transactionType: typeFilter === 'all' ? undefined : typeFilter,
       startDate: dateFrom?.toISOString(),

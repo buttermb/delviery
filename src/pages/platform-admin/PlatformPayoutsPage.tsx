@@ -135,15 +135,15 @@ export default function PlatformPayoutsPage() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            payouts.map((payout: { id: string; seller_tenant_id: string; amount: number; status: string; created_at: string; paid_at?: string; tenant?: { business_name: string } }) => (
+                            (payouts as any[]).map((payout: any) => (
                                 <TableRow key={payout.id}>
                                     <TableCell>
                                         <div className="font-medium">{payout.tenant?.business_name}</div>
-                                        <div className="text-xs text-muted-foreground">ID: {payout.seller_tenant_id.slice(0, 8)}...</div>
+                                        <div className="text-xs text-muted-foreground">ID: {payout.seller_tenant_id?.slice(0, 8)}...</div>
                                     </TableCell>
                                     <TableCell>{formatSmartDate(payout.created_at)}</TableCell>
                                     <TableCell className="font-bold">{formatCurrency(payout.amount)}</TableCell>
-                                    <TableCell className="capitalize">{payout.method}</TableCell>
+                                    <TableCell className="capitalize">{payout.method ?? '—'}</TableCell>
                                     <TableCell><Badge variant="secondary">{payout.status}</Badge></TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">

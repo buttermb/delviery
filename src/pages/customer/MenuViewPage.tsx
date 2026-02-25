@@ -360,15 +360,15 @@ export default function CustomerMenuViewPage() {
                   All
                 </Button>
                 {/* Extract unique categories from products */}
-                {Array.from(new Set(products?.map((p) => p.products?.category).filter(Boolean))).map((category) => (
+                {Array.from(new Set(products?.map((p) => p.products?.category).filter(Boolean))).map((category: any) => (
                   <Button
-                    key={category}
+                    key={String(category)}
                     variant="secondary"
                     size="sm"
                     className="rounded-full px-4 h-8 font-medium whitespace-nowrap hover:bg-primary/10 hover:text-primary transition-colors"
-                    onClick={() => setSearchTerm(category)}
+                    onClick={() => setSearchTerm(String(category))}
                   >
-                    {category}
+                    {String(category)}
                   </Button>
                 ))}
               </div>
