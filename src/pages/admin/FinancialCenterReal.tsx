@@ -340,11 +340,11 @@ export default function FinancialCenterReal() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <div className="text-sm font-medium">Total Expenses</div>
-                <div className="text-lg font-semibold">${expenseSummary.totalExpenses.toFixed(2)}</div>
+                <div className="text-lg font-semibold">${(Number(expenseSummary.totalExpenses) || 0).toFixed(2)}</div>
               </div>
               <div>
                 <div className="text-sm font-medium">Expenses This Month</div>
-                <div className="text-lg font-semibold">${expenseSummary.thisMonthExpenses.toFixed(2)}</div>
+                <div className="text-lg font-semibold">${(Number(expenseSummary.thisMonthExpenses) || 0).toFixed(2)}</div>
               </div>
             </div>
           </Card>
