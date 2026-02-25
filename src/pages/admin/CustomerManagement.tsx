@@ -348,6 +348,12 @@ export function CustomerManagement() {
     return <Badge variant="secondary">Regular</Badge>;
   };
 
+  const atRiskCount = useMemo(() => customers.filter(c => {
+    if (!c.last_purchase_at) return false;
+    const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
+    return days > 60;
+  }).length, [customers]);
+
   if (accountLoading || loading) {
     return (
       <div className="space-y-4 max-w-7xl mx-auto p-4 sm:p-4">
@@ -418,12 +424,6 @@ export function CustomerManagement() {
       </div>
     );
   }
-
-  const atRiskCount = useMemo(() => customers.filter(c => {
-    if (!c.last_purchase_at) return false;
-    const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
-    return days > 60;
-  }).length, [customers]);
 
   const stats = [
     {
