@@ -98,7 +98,7 @@ export function MobileBottomNav() {
       <OfflineIndicator />
       <MobileErrorBoundary>
         <nav
-          className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t lg:hidden min-h-[64px] shadow-lg no-print print:hidden z-sticky"
+          className="fixed bottom-0 left-0 right-0 bg-background border-t lg:hidden min-h-[64px] shadow-lg no-print print:hidden z-sticky"
           style={{
             pointerEvents: 'auto',
             paddingBottom: 'env(safe-area-inset-bottom, 0px)',
@@ -284,7 +284,7 @@ export function MobileBottomNav() {
                           } as React.CSSProperties}
                         >
                           <div
-                            className="overflow-x-hidden pb-20 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background w-full"
+                            className="overflow-x-hidden pb-4 pt-4 px-2 -webkit-overflow-scrolling-touch bg-background w-full"
                             style={{
                               height: '100%',
                               minHeight: '100%',

@@ -358,7 +358,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
         </SidebarContent>
 
         {/* Useful Footer with Quick Links */}
-        <SidebarFooter className="p-2 border-t group-data-[collapsible=icon]:p-1">
+        <SidebarFooter className="p-2 border-t group-data-[collapsible=icon]:p-1 bg-sidebar">
           <div className="flex items-center justify-between gap-1 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-0.5">
             <Button
               variant="ghost"
@@ -381,9 +381,10 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               <span className="group-data-[collapsible=icon]:hidden">Help</span>
             </Button>
           </div>
+          {/* Features count — desktop only, useless on mobile */}
           <button
             onClick={handleNavigateToFeatures}
-            className="flex items-center gap-1.5 w-full px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent/50 group-data-[collapsible=icon]:hidden"
+            className="hidden md:flex items-center gap-1.5 w-full px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent/50 group-data-[collapsible=icon]:hidden"
           >
             <Settings2 className="h-3 w-3" />
             <span>
@@ -392,7 +393,8 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               <span className="underline underline-offset-2">Manage</span>
             </span>
           </button>
-          <div className="text-[10px] text-muted-foreground/60 text-center mt-1 group-data-[collapsible=icon]:hidden">
+          {/* Keyboard shortcuts — desktop only, no keyboard on mobile */}
+          <div className="hidden md:block text-[10px] text-muted-foreground/60 text-center mt-1 group-data-[collapsible=icon]:!hidden">
             <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘B</kbd> toggle • <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘K</kbd> search
           </div>
         </SidebarFooter>
