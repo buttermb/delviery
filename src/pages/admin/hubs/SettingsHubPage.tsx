@@ -78,6 +78,10 @@ export default function SettingsHubPage() {
 
     const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab }, { replace: true });
+        // Prevent auto-scroll jump caused by lazy-loaded component mounts inside TabsContent
+        setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }, 0);
     }, [setSearchParams]);
 
     return (

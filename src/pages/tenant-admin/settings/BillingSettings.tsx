@@ -565,7 +565,7 @@ export default function BillingSettings() {
                   Save 17% with Annual Billing
                 </p>
                 <p className="text-sm text-green-700 dark:text-green-300">
-                  Switch to yearly billing and get 2 months free - that's ${formatCurrency(Math.round(TIER_PRICES[currentSubscriptionTier] * 12 * 0.17))} savings!
+                  Switch to yearly billing and get 2 months free — that&apos;s {formatCurrency(Math.round(TIER_PRICES[currentSubscriptionTier] * 12 * 0.17))} in savings!
                 </p>
               </div>
             </div>
