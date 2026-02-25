@@ -358,30 +358,32 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
         </SidebarContent>
 
         {/* Useful Footer with Quick Links */}
-        <SidebarFooter className="p-2 border-t">
-          <div className="flex items-center justify-between gap-1">
+        <SidebarFooter className="p-2 border-t group-data-[collapsible=icon]:p-1">
+          <div className="flex items-center justify-between gap-1 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-0.5">
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground"
+              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex-none"
               onClick={handleNavigateToSettings}
+              title="Settings"
             >
-              <Settings className="h-3.5 w-3.5 mr-1" />
-              Settings
+              <Settings className="h-3.5 w-3.5 mr-1 group-data-[collapsible=icon]:mr-0" />
+              <span className="group-data-[collapsible=icon]:hidden">Settings</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground"
+              className="flex-1 h-8 text-xs text-muted-foreground hover:text-foreground group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex-none"
               onClick={handleNavigateToHelp}
+              title="Help"
             >
-              <HelpCircle className="h-3.5 w-3.5 mr-1" />
-              Help
+              <HelpCircle className="h-3.5 w-3.5 mr-1 group-data-[collapsible=icon]:mr-0" />
+              <span className="group-data-[collapsible=icon]:hidden">Help</span>
             </Button>
           </div>
           <button
             onClick={handleNavigateToFeatures}
-            className="flex items-center gap-1.5 w-full px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent/50"
+            className="flex items-center gap-1.5 w-full px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent/50 group-data-[collapsible=icon]:hidden"
           >
             <Settings2 className="h-3 w-3" />
             <span>
@@ -390,7 +392,7 @@ export function AdaptiveSidebarInner({ collapsible = "offcanvas" }: AdaptiveSide
               <span className="underline underline-offset-2">Manage</span>
             </span>
           </button>
-          <div className="text-[10px] text-muted-foreground/60 text-center mt-1">
+          <div className="text-[10px] text-muted-foreground/60 text-center mt-1 group-data-[collapsible=icon]:hidden">
             <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘B</kbd> toggle • <kbd className="px-1 py-0.5 rounded bg-muted/50 font-mono">⌘K</kbd> search
           </div>
         </SidebarFooter>
