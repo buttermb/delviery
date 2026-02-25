@@ -161,6 +161,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
     securityForm.formState.isDirty ||
     notificationForm.formState.isDirty
   );
+
   const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
     isDirty,
   });
@@ -175,7 +176,6 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       else if (activeTab === 'notifications') notificationForm.handleSubmit(onSaveNotifications)();
     },
   });
-
 
   // --- Submit Handlers ---
 
@@ -463,6 +463,11 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
     return (
       <div className="p-2 sm:p-4 space-y-4">
         {generalSettingsContent}
+        <UnsavedChangesDialog
+          open={showBlockerDialog}
+          onConfirmLeave={confirmLeave}
+          onCancelLeave={cancelLeave}
+        />
       </div>
     );
   }
