@@ -42,27 +42,6 @@ export default function FinancialCenterReal() {
     avgDealSize,
     clientProfits,
   } = useMemo(() => {
-    // Return safe defaults while loading to avoid errors on empty arrays
-    if (!orders.length && !clients.length && !payments.length) {
-      return {
-        todayOrders: [] as typeof orders,
-        todayRevenue: 0,
-        todayCost: 0,
-        todayProfit: 0,
-        todayMargin: 0,
-        todayCollections: 0,
-        totalOutstanding: 0,
-        overdueClients: [] as { client: string; amount: number; days: number }[],
-        monthRevenue: 0,
-        monthCost: 0,
-        monthGrossProfit: 0,
-        monthMargin: "0",
-        monthDeals: 0,
-        avgDealSize: 0,
-        clientProfits: [] as { name: string; profit: number; volume: number; warning: string }[],
-      };
-    }
-
     const monthStart = startOfMonth(now);
     const monthEnd = endOfMonth(now);
 
@@ -153,12 +132,13 @@ export default function FinancialCenterReal() {
       avgDealSize,
       clientProfits,
     };
-    // `now`, `monthStart`, `monthEnd` are derived from `new Date()` inside the memo.
-    // Adding `now` would defeat memoization since it changes every render.
-    // Recomputation is correctly driven by data changes (orders/clients/payments).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // `now`, `monthStart`, `monthEnd` are derived from `new Date()` inside the memo.
+  // Adding `now` would defeat memoization since it changes every render.
+  // Recomputation is correctly driven by data changes (orders/clients/payments).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders, clients, payments]);
 
+  // Loading check AFTER all hooks to comply with Rules of Hooks
   if (ordersLoading || clientsLoading || paymentsLoading) {
     return (
       <div className="flex items-center justify-center h-dvh">
@@ -168,353 +148,216 @@ export default function FinancialCenterReal() {
   }
 
   return (
-    <div className="space-y-4 p-4">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-foreground flex items-center gap-2"><DollarSign className="h-7 w-7" /> Financial Command Center</h1>
-        <p className="text-sm text-muted-foreground mt-1">{format(now, "MMMM d, yyyy")}</p>
-      </div>
+    <div className="container py-8">
+      <h1 className="text-2xl font-bold mb-4">Financial Center</h1>
 
       {/* Today's Snapshot */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2"><BarChart className="h-5 w-5" /> Today's Snapshot</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">Revenue</div>
-            <div className="text-3xl font-bold text-emerald-500">
-              ${todayRevenue.toLocaleString()}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card className="bg-blue-50 text-blue-900">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Today's Revenue</div>
+              <div className="text-lg font-semibold">${todayRevenue.toFixed(2)}</div>
             </div>
-            <div className="text-xs text-muted-foreground mt-1">{todayOrders.length} deals</div>
-          </Card>
-          <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">Cost</div>
-            <div className="text-3xl font-bold">${todayCost.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground mt-1">COGS</div>
-          </Card>
-          <Card className="p-4">
-            <div className="text-sm text-muted-foreground mb-1">Net Profit</div>
-            <div className="text-3xl font-bold text-emerald-500">
-              ${todayProfit.toLocaleString()}
-            </div>
-            <div className="text-xs text-emerald-500 mt-1">{todayMargin}% margin</div>
-          </Card>
-        </div>
-      </div>
-
-      {/* Cash Flow */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <DollarSign className="h-5 w-5" />
-          Cash Flow
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Incoming */}
-          <div>
-            <h3 className="font-semibold mb-3 flex items-center gap-2 text-emerald-500">
-              <ArrowUpRight className="h-4 w-4" />
-              Incoming
-            </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Collections Today:</span>
-                <span className="font-mono font-semibold">${todayCollections.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Expected This Week:</span>
-                <span className="font-mono font-semibold">TBD</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Outstanding:</span>
-                <span className="font-mono font-semibold">${totalOutstanding.toLocaleString()}</span>
-              </div>
-            </div>
+            <DollarSign className="h-5 w-5" />
           </div>
+        </Card>
 
-          {/* Outgoing */}
-          <div>
-            <h3 className="font-semibold mb-3 flex items-center gap-2 text-red-500">
-              <ArrowDownRight className="h-4 w-4" />
-              Outgoing
-            </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">This Month Expenses:</span>
-                <span className="font-mono font-semibold text-red-500">
-                  ${expenseSummary?.thisMonthExpenses.toLocaleString() || '0'}
-                </span>
-              </div>
-              {expenseSummary?.topCategory && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Top Category:</span>
-                  <span className="font-mono text-xs">
-                    {expenseSummary.topCategory.name} (${expenseSummary.topCategory.amount.toLocaleString()})
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Tracked:</span>
-                <span className="font-mono font-semibold">
-                  ${expenseSummary?.totalExpenses.toLocaleString() || '0'}
-                </span>
-              </div>
+        <Card className="bg-green-50 text-green-900">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Today's Profit</div>
+              <div className="text-lg font-semibold">${todayProfit.toFixed(2)}</div>
             </div>
+            <TrendingUp className="h-5 w-5" />
           </div>
-        </div>
-      </Card>
+        </Card>
 
-      {/* Expense Summary */}
-      <Card className="p-6 border-l-4 border-l-red-500">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-red-500" />
-            Expense Summary
-          </h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/${tenantSlug}/admin/finance-hub?tab=expenses`)}
-          >
-            View All Expenses
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div className="bg-red-500/10 rounded-lg p-3">
-            <div className="text-sm text-muted-foreground mb-1">Total Expenses</div>
-            <div className="text-2xl font-bold text-red-600">
-              ${expenseSummary?.totalExpenses.toLocaleString() || '0'}
+        <Card className="bg-yellow-50 text-yellow-900">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Today's Margin</div>
+              <div className="text-lg font-semibold">{todayMargin}%</div>
             </div>
+            <ArrowUpRight className="h-5 w-5" />
           </div>
-          <div className="bg-orange-500/10 rounded-lg p-3">
-            <div className="text-sm text-muted-foreground mb-1">This Month</div>
-            <div className="text-2xl font-bold text-orange-600">
-              ${expenseSummary?.thisMonthExpenses.toLocaleString() || '0'}
+        </Card>
+
+        <Card className="bg-purple-50 text-purple-900">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Today's Collections</div>
+              <div className="text-lg font-semibold">${todayCollections.toFixed(2)}</div>
             </div>
+            <Receipt className="h-5 w-5" />
           </div>
-          <div className="bg-purple-500/10 rounded-lg p-3">
-            <div className="text-sm text-muted-foreground mb-1">Categories</div>
-            <div className="text-2xl font-bold text-purple-600">
-              {expenseSummary?.categoryBreakdown.length ?? 0}
-            </div>
-          </div>
-        </div>
-
-        {/* Category Breakdown */}
-        {expenseSummary?.categoryBreakdown && expenseSummary.categoryBreakdown.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-              <Tag className="h-4 w-4" />
-              Spending by Category
-            </h3>
-            <div className="space-y-2">
-              {expenseSummary.categoryBreakdown.slice(0, 5).map((category, idx) => (
-                <div key={category.name} className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>{category.name}</span>
-                      <span className="font-mono">${category.value.toLocaleString()}</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${category.percentage}%`,
-                          backgroundColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {category.percentage}%
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Recent Expenses */}
-        {expenseSummary?.recentExpenses && expenseSummary.recentExpenses.length > 0 && (
-          <div>
-            <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              Recent Expenses
-            </h3>
-            <div className="space-y-2">
-              {expenseSummary.recentExpenses.map((expense) => (
-                <div key={expense.id} className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded-lg">
-                  <div className="min-w-0 flex-1">
-                    <TruncatedText text={expense.description} className="font-medium" as="div" />
-                    <div className="text-xs text-muted-foreground flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {expense.category}
-                      </Badge>
-                      <span>{format(new Date(expense.created_at), "MMM d")}</span>
-                    </div>
-                  </div>
-                  <div className="font-mono font-semibold text-red-600 ml-2">
-                    -${expense.amount.toLocaleString()}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {(!expenseSummary?.recentExpenses || expenseSummary.recentExpenses.length === 0) && (
-          <div className="text-center py-6 text-muted-foreground">
-            <Receipt className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>No expenses recorded yet</p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              onClick={() => navigate(`/${tenantSlug}/admin/finance-hub?tab=expenses`)}
-            >
-              Add First Expense
-            </Button>
-          </div>
-        )}
-      </Card>
-
-      {/* Credit Out (Who Owes You) */}
-      <Card className="p-6 border-l-4 border-l-yellow-500">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><AlertCircle className="h-5 w-5 text-destructive" /> Credit Out (Who Owes You)</h2>
-
-        <div className="mb-4">
-          <div className="text-3xl font-bold font-mono mb-1">
-            ${totalOutstanding.toLocaleString()}
-          </div>
-          <div className="text-sm text-muted-foreground">Total Outstanding</div>
-        </div>
-
-        {overdueClients.length > 0 && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertCircle className="h-5 w-5 text-destructive" />
-              <span className="font-semibold text-destructive">OVERDUE (Priority)</span>
-              <span className="font-mono font-bold ml-auto">
-                ${overdueClients.reduce((sum, c) => sum + c.amount, 0).toLocaleString()}
-              </span>
-            </div>
-            <div className="space-y-2">
-              {overdueClients.slice(0, 5).map((client, idx) => {
-                const clientData = clients.find(c => c.business_name === client.client);
-                return (
-                  <div key={idx} className="flex items-center justify-between text-sm">
-                    <span>• {client.client}: ${client.amount.toLocaleString()} ({client.days} days)</span>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => {
-                        if (clientData) {
-                          setSelectedClient(clientData);
-                          setPaymentDialogOpen(true);
-                        }
-                      }}
-                    >
-                      Collect
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-2">
-          <Button
-            className="bg-emerald-500 hover:bg-emerald-600"
-            onClick={() => navigateToAdmin('wholesale-clients')}
-          >
-            Collections Dashboard
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigateToAdmin('wholesale-clients')}
-          >
-            Send Reminders
-          </Button>
-        </div>
-      </Card>
+        </Card>
+      </section>
 
       {/* Monthly Performance */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp className="h-5 w-5" />
-          This Month Performance
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Revenue:</span>
-              <div className="text-right">
-                <div className="font-mono font-bold">${monthRevenue.toLocaleString()}</div>
-              </div>
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card className="bg-blue-50 text-blue-900">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Month Revenue</div>
+              <div className="text-lg font-semibold">${monthRevenue.toFixed(2)}</div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Cost:</span>
-              <span className="font-mono">${monthCost.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Gross Profit:</span>
-              <div className="text-right">
-                <div className="font-mono font-bold text-emerald-500">
-                  ${monthGrossProfit.toLocaleString()}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {monthMargin}% margin
-                </div>
-              </div>
-            </div>
+            <DollarSign className="h-5 w-5" />
           </div>
+        </Card>
 
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Volume:</span>
-              <span className="font-mono font-bold">Tracked</span>
+        <Card className="bg-green-50 text-green-900">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Month Gross Profit</div>
+              <div className="text-lg font-semibold">${monthGrossProfit.toFixed(2)}</div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Deals:</span>
-              <span className="font-mono font-bold">{monthDeals} clients</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Avg Deal Size:</span>
-              <span className="font-mono font-bold">${avgDealSize.toLocaleString()}</span>
-            </div>
-
-            {clientProfits.length > 0 && (
-              <div className="pt-3 border-t">
-                <div className="text-sm font-semibold mb-2">Top Clients by Profit:</div>
-                <div className="space-y-2">
-                  {clientProfits.map((client, idx) => (
-                    <div key={idx} className="text-sm">
-                      <div className="flex justify-between">
-                        <span>{idx + 1}. {client.name}</span>
-                        <span className="font-mono font-semibold text-emerald-500">
-                          ${(client.profit / 1000).toFixed(1)}k
-                        </span>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {client.warning && <span className="text-destructive flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {client.warning}</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <TrendingUp className="h-5 w-5" />
           </div>
+        </Card>
+
+        <Card className="bg-yellow-50 text-yellow-900">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Month Margin</div>
+              <div className="text-lg font-semibold">{monthMargin}%</div>
+            </div>
+            <ArrowUpRight className="h-5 w-5" />
+          </div>
+        </Card>
+
+        <Card className="bg-purple-50 text-purple-900">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Avg Deal Size</div>
+              <div className="text-lg font-semibold">${avgDealSize.toFixed(2)}</div>
+            </div>
+            <BarChart className="h-5 w-5" />
+          </div>
+        </Card>
+      </section>
+
+      {/* Receivables */}
+      <section className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold">Receivables</h2>
+          <Button size="sm" onClick={() => navigateToAdmin(`/clients`)}>
+            View All
+          </Button>
         </div>
-      </Card>
+
+        <Card className="bg-red-50 text-red-900">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Total Outstanding</div>
+              <div className="text-lg font-semibold">${totalOutstanding.toFixed(2)}</div>
+            </div>
+            <AlertCircle className="h-5 w-5" />
+          </div>
+        </Card>
+      </section>
+
+      {/* Overdue Invoices */}
+      <section className="mb-6">
+        <h2 className="text-lg font-semibold mb-2">Overdue Invoices</h2>
+        {overdueClients.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {overdueClients.map((invoice, index) => (
+              <Card key={index} className="bg-orange-50 text-orange-900">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-sm font-medium">Client</div>
+                    <div className="text-lg font-semibold">{invoice.client}</div>
+                    <div className="text-sm">Amount: ${invoice.amount.toFixed(2)}</div>
+                    <div className="text-xs">Days Overdue: {invoice.days}</div>
+                  </div>
+                  <AlertCircle className="h-5 w-5" />
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="text-center p-4">No overdue invoices</Card>
+        )}
+      </section>
+
+      {/* Top Clients by Profit */}
+      <section className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold">Top Clients by Profit</h2>
+          <Button size="sm" onClick={() => navigateToAdmin(`/clients`)}>
+            View All
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {clientProfits.map((client, index) => (
+            <Card key={index} className="bg-green-50 text-green-900">
+              <div className="flex flex-col">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">Client</div>
+                  <Tag className="h-4 w-4" />
+                </div>
+                <div className="text-lg font-semibold">
+                  <TruncatedText text={client.name} maxWidthClass="max-w-[200px]" />
+                </div>
+                <div className="text-sm">Profit: ${client.profit.toFixed(2)}</div>
+                {client.warning && (
+                  <Badge variant="destructive" className="mt-2">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {client.warning}
+                  </Badge>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3"
+                  onClick={() => {
+                    const clientData = clients.find(c => c.business_name === client.name);
+                    if (clientData) {
+                      setSelectedClient({
+                        id: clientData.id,
+                        business_name: clientData.business_name,
+                        outstanding_balance: clientData.outstanding_balance
+                      });
+                      setPaymentDialogOpen(true);
+                    }
+                  }}
+                >
+                  Record Payment
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Expenses Summary */}
+      {expenseSummary && (
+        <section className="mb-6">
+          <h2 className="text-lg font-semibold mb-2">Expenses Summary</h2>
+          <Card className="bg-muted/50">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm font-medium">Total Expenses</div>
+                <div className="text-lg font-semibold">${expenseSummary.totalExpenses.toFixed(2)}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium">Expenses This Month</div>
+                <div className="text-lg font-semibold">${expenseSummary.thisMonthExpenses.toFixed(2)}</div>
+              </div>
+            </div>
+          </Card>
+        </section>
+      )}
 
       {selectedClient && (
         <PaymentDialog
-          clientId={selectedClient.id}
-          clientName={selectedClient.business_name}
-          outstandingBalance={Number(selectedClient.outstanding_balance ?? 0)}
           open={paymentDialogOpen}
           onOpenChange={setPaymentDialogOpen}
+          clientId={selectedClient.id}
+          clientName={selectedClient.business_name}
+          outstandingBalance={selectedClient.outstanding_balance}
         />
       )}
     </div>
