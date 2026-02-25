@@ -31,7 +31,7 @@ const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
 const TenantSecuritySettings = lazy(() => import('@/components/admin/settings/TenantSecuritySettings'));
 const HelpPage = lazy(() => import('@/pages/HelpPage'));
 const FeatureTogglesPanel = lazy(() => import('@/components/admin/settings/FeatureTogglesPanel').then(m => ({ default: m.FeatureTogglesPanel })));
-const PaymentSettingsForm = lazy(() => import('@/components/settings/PaymentSettingsForm'));
+const PaymentSettingsTab = lazy(() => import('@/components/admin/settings/PaymentSettingsTab'));
 
 const TabSkeleton = () => (
     <div className="p-4 space-y-4">
@@ -123,7 +123,7 @@ export default function SettingsHubPage() {
                 </TabsContent>
                 <TabsContent value="payments" className="m-0">
                     <ModuleErrorBoundary moduleName="Payments">
-                        <Suspense fallback={<TabSkeleton />}><PaymentSettingsForm /></Suspense>
+                        <Suspense fallback={<TabSkeleton />}><PaymentSettingsTab /></Suspense>
                     </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="integrations" className="m-0">
