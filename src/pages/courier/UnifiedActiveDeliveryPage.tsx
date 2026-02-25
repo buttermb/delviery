@@ -22,7 +22,7 @@ export default function UnifiedActiveDeliveryPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { role } = useCourier();
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [data, setData] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(true);
   const { updateStatus, updating } = useDeliveryStatus();
 

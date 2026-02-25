@@ -119,10 +119,10 @@ export default function MessagesPage() {
       }
 
       // Decrypt messages
-      const decryptedData = await Promise.all((data ?? []).map(async (msg: Record<string, unknown>) => {
+      const decryptedData = await Promise.all((data as any[] ?? []).map(async (msg: any) => {
         if (msg.message_encrypted && msg.message_text) {
           try {
-            const decrypted = await decryptMessage(msg.message_text);
+            const decrypted = await decryptMessage(String(msg.message_text));
             return { ...msg, message_text: decrypted };
           } catch {
             logger.warn('Failed to decrypt message', { messageId: msg.id });

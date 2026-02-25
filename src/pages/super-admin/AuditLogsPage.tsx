@@ -39,7 +39,7 @@ export default function AuditLogsPage() {
 
   // Fetch tenant names for display
   const tenantIds = useMemo(() => 
-    [...new Set(auditLogs.map(log => log.tenant_id).filter(Boolean))], 
+    [...new Set(auditLogs.map(log => log.tenant_id).filter(Boolean))] as string[], 
     [auditLogs]
   );
 
@@ -63,7 +63,7 @@ export default function AuditLogsPage() {
 
   // Fetch actor emails (super admins)
   const actorIds = useMemo(() => 
-    [...new Set(auditLogs.map(log => log.actor_id).filter(Boolean))], 
+    [...new Set(auditLogs.map(log => log.actor_id).filter(Boolean))] as string[], 
     [auditLogs]
   );
 

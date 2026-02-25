@@ -118,7 +118,7 @@ export default function TeamSettings() {
           .in('id', userIds);
 
         if (profiles) {
-          profilesMap = profiles.reduce<Record<string, { first_name: string | null; last_name: string | null }>>((acc, p) => ({ ...acc, [p.id]: p }), {});
+          profilesMap = (profiles as any[]).reduce((acc: Record<string, { first_name: string | null; last_name: string | null }>, p: any) => ({ ...acc, [p.id]: p }), {});
         }
       }
 

@@ -226,20 +226,18 @@ export default function TenantAdminDashboardPage() {
         const orderCount = allOrders.length;
 
         // Get low stock items from products table (including low_stock_alert field)
-        let inventoryResult = await supabase
+        let inventoryResult = await (supabase
           .from("products")
           .select("id, name, stock_quantity, available_quantity, low_stock_alert")
-          .eq("tenant_id", tenantId)
-          .returns<DashboardInventoryRow[]>();
+          .eq("tenant_id", tenantId) as any);
 
         // Fallback without tenant filter if column doesn't exist
         if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.message?.includes('column'))) {
           logger.warn("tenant_id filter failed for products, retrying without filter", inventoryResult.error, { component: 'DashboardPage' });
-          inventoryResult = await supabase
+          inventoryResult = await (supabase
             .from("products")
             .select("id, name, stock_quantity, available_quantity, low_stock_alert")
-            .limit(100)
-            .returns<DashboardInventoryRow[]>();
+            .limit(100) as any);
         }
 
         const inventory = inventoryResult.error ? [] : (inventoryResult.data ?? []);
