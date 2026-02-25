@@ -31,6 +31,7 @@ const APIAccessPage = lazy(() => import('@/pages/tenant-admin/APIAccessPage'));
 const TenantSecuritySettings = lazy(() => import('@/components/admin/settings/TenantSecuritySettings'));
 const HelpPage = lazy(() => import('@/pages/HelpPage'));
 const FeatureTogglesPanel = lazy(() => import('@/components/admin/settings/FeatureTogglesPanel').then(m => ({ default: m.FeatureTogglesPanel })));
+const PaymentSettingsForm = lazy(() => import('@/components/settings/PaymentSettingsForm'));
 
 const TabSkeleton = () => (
     <div className="p-4 space-y-4">
@@ -45,6 +46,7 @@ const tabs = [
     { id: 'features', label: 'Features', icon: ToggleRight, group: 'Configuration' },
     // Account
     { id: 'billing', label: 'Billing', icon: CreditCard, group: 'Account' },
+    { id: 'payments', label: 'Payments', icon: CreditCard, group: 'Account' },
     { id: 'security', label: 'Security', icon: Shield, group: 'Account' },
     // Tools
     { id: 'integrations', label: 'Integrations', icon: Plug, group: 'Tools' },
@@ -117,6 +119,11 @@ export default function SettingsHubPage() {
                 <TabsContent value="billing" className="m-0">
                     <ModuleErrorBoundary moduleName="Billing">
                         <Suspense fallback={<TabSkeleton />}><BillingPage /></Suspense>
+                    </ModuleErrorBoundary>
+                </TabsContent>
+                <TabsContent value="payments" className="m-0">
+                    <ModuleErrorBoundary moduleName="Payments">
+                        <Suspense fallback={<TabSkeleton />}><PaymentSettingsForm /></Suspense>
                     </ModuleErrorBoundary>
                 </TabsContent>
                 <TabsContent value="integrations" className="m-0">
