@@ -23,14 +23,6 @@ export default function FinancialCenterReal() {
   const { data: payments = [], isLoading: paymentsLoading } = useWholesalePayments();
   const { data: expenseSummary } = useExpenseSummary();
 
-  if (ordersLoading || clientsLoading || paymentsLoading) {
-    return (
-      <div className="flex items-center justify-center h-dvh">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   const now = new Date();
 
   const {
@@ -50,6 +42,27 @@ export default function FinancialCenterReal() {
     avgDealSize,
     clientProfits,
   } = useMemo(() => {
+    // Return safe defaults while loading to avoid errors on empty arrays
+    if (!orders.length && !clients.length && !payments.length) {
+      return {
+        todayOrders: [] as typeof orders,
+        todayRevenue: 0,
+        todayCost: 0,
+        todayProfit: 0,
+        todayMargin: 0,
+        todayCollections: 0,
+        totalOutstanding: 0,
+        overdueClients: [] as { client: string; amount: number; days: number }[],
+        monthRevenue: 0,
+        monthCost: 0,
+        monthGrossProfit: 0,
+        monthMargin: "0",
+        monthDeals: 0,
+        avgDealSize: 0,
+        clientProfits: [] as { name: string; profit: number; volume: number; warning: string }[],
+      };
+    }
+
     const monthStart = startOfMonth(now);
     const monthEnd = endOfMonth(now);
 
@@ -140,11 +153,19 @@ export default function FinancialCenterReal() {
       avgDealSize,
       clientProfits,
     };
-  // `now`, `monthStart`, `monthEnd` are derived from `new Date()` inside the memo.
-  // Adding `now` would defeat memoization since it changes every render.
-  // Recomputation is correctly driven by data changes (orders/clients/payments).
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // `now`, `monthStart`, `monthEnd` are derived from `new Date()` inside the memo.
+    // Adding `now` would defeat memoization since it changes every render.
+    // Recomputation is correctly driven by data changes (orders/clients/payments).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders, clients, payments]);
+
+  if (ordersLoading || clientsLoading || paymentsLoading) {
+    return (
+      <div className="flex items-center justify-center h-dvh">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 p-4">
