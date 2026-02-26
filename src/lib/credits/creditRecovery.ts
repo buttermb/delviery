@@ -38,7 +38,7 @@ export interface RecoveryResult {
  */
 export async function refundCredits(request: RefundRequest): Promise<RefundResult> {
     try {
-        const { data, error } = await (supabase as any).rpc('refund_credits', {
+        const { data, error } = await supabase.rpc('refund_credits', {
             p_transaction_id: request.transactionId,
             p_tenant_id: request.tenantId,
             p_reason: request.reason,
@@ -66,7 +66,7 @@ export async function recoverFailedAction(
     transactionId?: string
 ): Promise<RecoveryResult> {
     try {
-        const { data, error } = await (supabase as any).rpc('recover_failed_credits', {
+        const { data, error } = await supabase.rpc('recover_failed_credits', {
             p_tenant_id: tenantId,
             p_action_type: actionType,
             p_transaction_id: transactionId ?? null,
@@ -94,7 +94,7 @@ export async function directRefund(
     notes?: string
 ): Promise<RefundResult> {
     try {
-        const { data, error } = await (supabase as any).rpc('direct_credit_refund', {
+        const { data, error } = await supabase.rpc('direct_credit_refund', {
             p_tenant_id: tenantId,
             p_amount: amount,
             p_reason: reason,
@@ -138,7 +138,7 @@ export async function batchRefund(
  */
 export async function isTransactionRefunded(transactionId: string): Promise<boolean> {
     try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
             .from('credit_transactions')
             .select('id')
             .eq('reference_id', transactionId)
@@ -162,9 +162,9 @@ export async function isTransactionRefunded(transactionId: string): Promise<bool
 export async function getRefundHistory(
     tenantId: string,
     limit = 50
-): Promise<{ data: any[]; error: string | null }> {
+): Promise<{ data: unknown[]; error: string | null }> {
     try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
             .from('credit_transactions')
             .select('*')
             .eq('tenant_id', tenantId)

@@ -67,6 +67,7 @@ export default function FrontedInventory() {
     if (account) {
       loadFrontedInventory();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadFrontedInventory is defined below, only run when account/filter changes
   }, [account, filter]);
 
   const loadFrontedInventory = async () => {

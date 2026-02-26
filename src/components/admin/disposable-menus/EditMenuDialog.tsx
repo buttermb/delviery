@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Search, Pencil } from 'lucide-react';
 
-import type { Menu } from '@/components/admin/disposable-menus/MenuCard';
+import type { Menu as _Menu } from '@/components/admin/disposable-menus/MenuCard';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';

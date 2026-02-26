@@ -58,7 +58,7 @@ export default function CustomerPortal() {
       navigate(`/${tenantSlug || 'shop'}/customer/login`);
     }
     setAuthLoading(false);
-  }, [user, navigate]);
+  }, [user, navigate, tenantSlug]);
 
   // Fetch orders using the new hook
   const {

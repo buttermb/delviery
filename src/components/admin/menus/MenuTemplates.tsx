@@ -265,7 +265,7 @@ const useMenuTemplates = (tenantId?: string) => {
     queryFn: async (): Promise<MenuTemplate[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_templates')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -276,7 +276,7 @@ const useMenuTemplates = (tenantId?: string) => {
         return [];
       }
 
-      return (data ?? []).map((template: any) => ({
+      return (data ?? []).map((template: Record<string, unknown>) => ({
         id: template.id as string,
         tenantId: template.tenant_id as string,
         name: template.name as string,
@@ -303,7 +303,7 @@ const useTemplateVersions = (templateId?: string, tenantId?: string) => {
     queryFn: async (): Promise<TemplateVersion[]> => {
       if (!templateId || !tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_template_versions')
         .select('*')
         .eq('template_id', templateId)
@@ -315,7 +315,7 @@ const useTemplateVersions = (templateId?: string, tenantId?: string) => {
         return [];
       }
 
-      return (data ?? []).map((version: any) => ({
+      return (data ?? []).map((version: Record<string, unknown>) => ({
         id: version.id as string,
         templateId: version.template_id as string,
         version: version.version as number,
@@ -343,7 +343,7 @@ const useCreateTemplate = () => {
       isShared: boolean;
       createdBy: string;
     }) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_templates')
         .insert({
           tenant_id: templateData.tenantId,
@@ -390,14 +390,14 @@ const useUpdateTemplate = () => {
       changelog?: string;
     }) => {
       // Get current template for version increment
-      const { data: currentTemplate } = await (supabase as any)
+      const { data: currentTemplate } = await supabase
         .from('menu_templates')
         .select('version, config')
         .eq('id', templateData.id)
         .eq('tenant_id', templateData.tenantId)
         .maybeSingle();
 
-      const newVersion = ((currentTemplate as any)?.version ?? 0) + 1;
+      const newVersion = ((currentTemplate as Record<string, unknown> | null)?.version as number ?? 0) + 1;
 
       // Update the template
       const updateData: Record<string, unknown> = {
@@ -414,7 +414,7 @@ const useUpdateTemplate = () => {
         updateData.version = newVersion;
 
         // Save version history
-        await (supabase as any).from('menu_template_versions').insert({
+        await supabase.from('menu_template_versions').insert({
           template_id: templateData.id,
           tenant_id: templateData.tenantId,
           version: newVersion,
@@ -424,7 +424,7 @@ const useUpdateTemplate = () => {
         });
       }
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('menu_templates')
         .update(updateData)
         .eq('id', templateData.id)
@@ -454,14 +454,14 @@ const useDeleteTemplate = () => {
   return useMutation({
     mutationFn: async ({ id, tenantId }: { id: string; tenantId: string }) => {
       // Delete version history first
-      await (supabase as any)
+      await supabase
         .from('menu_template_versions')
         .delete()
         .eq('template_id', id)
         .eq('tenant_id', tenantId);
 
       // Delete the template
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_templates')
         .delete()
         .eq('id', id)
@@ -486,23 +486,23 @@ const useIncrementUsage = () => {
 
   return useMutation({
     mutationFn: async ({ id, tenantId }: { id: string; tenantId: string }) => {
-      const { error } = await (supabase as any).rpc('increment_template_usage', {
+      const { error } = await supabase.rpc('increment_template_usage', {
         template_id: id,
         p_tenant_id: tenantId,
       });
 
       if (error) {
         // Fallback: manual increment if RPC doesn't exist
-        const { data: current } = await (supabase as any)
+        const { data: current } = await supabase
           .from('menu_templates')
           .select('usage_count')
           .eq('id', id)
           .eq('tenant_id', tenantId)
           .maybeSingle();
 
-        await (supabase as any)
+        await supabase
           .from('menu_templates')
-          .update({ usage_count: ((current as any)?.usage_count ?? 0) + 1 })
+          .update({ usage_count: ((current as Record<string, unknown> | null)?.usage_count as number ?? 0) + 1 })
           .eq('id', id)
           .eq('tenant_id', tenantId);
       }

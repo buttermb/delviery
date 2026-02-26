@@ -79,7 +79,7 @@ export const NotificationSettings = () => {
 
       toast.success("Notification settings have been updated successfully.");
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Save failed';
+      const _errorMessage = error instanceof Error ? error.message : 'Save failed';
       toast.error("Save Failed");
     } finally {
       setSaving(false);

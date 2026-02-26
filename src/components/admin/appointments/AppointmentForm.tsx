@@ -72,7 +72,7 @@ export function AppointmentForm({
       if (!tenant?.id) throw new Error("Tenant ID required");
 
       try {
-        const { error } = await (supabase as any).from("appointments").insert([
+        const { error } = await supabase.from("appointments").insert([
           {
             ...data,
             account_id: tenant.id,

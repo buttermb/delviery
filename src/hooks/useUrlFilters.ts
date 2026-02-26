@@ -12,7 +12,7 @@ interface FilterConfig<T> {
   type?: 'string' | 'number' | 'boolean' | 'array';
 }
 
-export function useUrlFilters<T extends Record<string, any>>(
+export function useUrlFilters<T extends Record<string, unknown>>(
   config: FilterConfig<T>[]
 ): [T, (newFilters: Partial<T>) => void, () => void] {
   const [searchParams, setSearchParams] = useSearchParams();

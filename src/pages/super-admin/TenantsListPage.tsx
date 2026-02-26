@@ -119,7 +119,7 @@ export default function TenantsListPage() {
   const { data: tenants = [], isLoading } = useQuery({
     queryKey: queryKeys.superAdminTools.tenantsListPage(debouncedSearch, statusFilter, planFilter),
     queryFn: async () => {
-      let query = (supabase as any).from('tenants').select('*');
+      let query = supabase.from('tenants').select('*');
 
       if (debouncedSearch) {
         query = query.or(
@@ -649,7 +649,7 @@ export default function TenantsListPage() {
             <Button onClick={async () => {
               try {
                 for (const tid of selectedTenants) {
-                  const { error } = await (supabase as any).from('tenants').update({ subscription_plan: selectedPlan }).eq('id', tid);
+                  const { error } = await supabase.from('tenants').update({ subscription_plan: selectedPlan }).eq('id', tid);
                   if (error) throw error;
                 }
                 clearSelection();
@@ -683,7 +683,7 @@ export default function TenantsListPage() {
               onClick={async () => {
                 try {
                   for (const tid of selectedTenants) {
-                    const { error } = await (supabase as any).from('tenants').update({ status: 'suspended' }).eq('id', tid);
+                    const { error } = await supabase.from('tenants').update({ status: 'suspended' }).eq('id', tid);
                     if (error) throw error;
                   }
                   clearSelection();

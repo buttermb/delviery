@@ -391,7 +391,7 @@ export default function ShopLayout() {
   const accentColor = store.theme_config?.colors?.accent || store.accent_color || '#10b981';
 
   // Handler for floating cart checkout
-  const handleCartCheckout = () => {
+  const _handleCartCheckout = () => {
     navigate(`/shop/${storeSlug}/checkout`);
   };
 

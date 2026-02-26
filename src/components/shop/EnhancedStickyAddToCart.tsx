@@ -57,6 +57,7 @@ export function EnhancedStickyAddToCart({
       }
     };
     checkStock();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- quantity is intentionally omitted; stock check only needed when product changes, not on every quantity change
   }, [product.product_id, checkProductStock]);
 
   // Show bar only after scrolling past the main add-to-cart button

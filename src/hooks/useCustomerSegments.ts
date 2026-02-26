@@ -242,7 +242,7 @@ export function useCustomerSegment({
       });
 
       // Fetch customer info
-      const { data: customer, error: customerError } = await (supabase as any)
+      const { data: customer, error: customerError } = await supabase
         .from('contacts')
         .select('id, full_name')
         .eq('id', customerId)
@@ -379,7 +379,7 @@ export function useCustomerSegments({
       });
 
       // Fetch all customers
-      const { data: customers, error: customersError } = await (supabase as any)
+      const { data: customers, error: customersError } = await supabase
         .from('contacts')
         .select('id, full_name')
         .eq('tenant_id', tenantId);
@@ -563,7 +563,7 @@ export function useSegmentCounts(enabled = true): {
   error: Error | null;
   refetch: () => void;
 } {
-  const { segments, counts, isLoading, error, refetch } = useCustomerSegments({ enabled });
+  const { segments: _segments, counts, isLoading, error, refetch } = useCustomerSegments({ enabled });
 
   return {
     counts,

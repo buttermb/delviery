@@ -271,7 +271,7 @@ export function StorefrontLiveOrders() {
     onMutate: ({ orderId }) => {
       setUpdatingOrderId(orderId);
     },
-    onSuccess: (_, { newStatus }) => {
+    onSuccess: (_, { newStatus: _newStatus }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.storefrontLiveOrders.all });
       toast.success("Status changed to ${STATUS_LABELS[newStatus] || newStatus}");
     },

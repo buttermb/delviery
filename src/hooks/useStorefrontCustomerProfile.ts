@@ -75,7 +75,7 @@ interface UseStorefrontCustomerProfileOptions {
 
 export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfileOptions = {}) {
   const { customer, tenant } = useCustomerAuth();
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
   const { enabled = true } = options;
 
   const customerEmail = customer?.email;
@@ -192,7 +192,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
         status: customerData.status,
         loyalty_points: customerData.loyalty_points ?? 0,
         loyalty_tier: customerData.loyalty_tier,
-        total_spent: Number(customerData.total_spent) ?? 0,
+        total_spent: Number(customerData.total_spent ?? 0),
         last_purchase_at: customerData.last_purchase_at,
         referral_source: customerData.referral_source,
         created_at: customerData.created_at,

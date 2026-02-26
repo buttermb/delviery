@@ -181,7 +181,7 @@ export default function GenerateBarcodes() {
       toast.success("Generated ${newBarcodes.length} ${mode === ");
     } catch (error: unknown) {
       logger.error('Error generating barcodes', error, { component: 'GenerateBarcodes' });
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate barcodes';
+      const _errorMessage = error instanceof Error ? error.message : 'Failed to generate barcodes';
       toast.error("Error");
     } finally {
       setLoading(false);
@@ -203,7 +203,7 @@ export default function GenerateBarcodes() {
       // Individual label printing can be added later with proper QR code rendering
       await handlePrintSheet();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate PDFs';
+      const _errorMessage = error instanceof Error ? error.message : 'Failed to generate PDFs';
       toast.error("Error");
     } finally {
       setPdfGenerating(false);

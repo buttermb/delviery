@@ -56,7 +56,7 @@ async function createBulkAssignNotification(
     ? `${successCount} order${successCount !== 1 ? 's' : ''} assigned to ${runnerName}`
     : `${successCount} order${successCount !== 1 ? 's' : ''} assigned, ${failedCount} failed`;
 
-  const { error } = await (supabase as any).from('notifications').insert({
+  const { error } = await supabase.from('notifications').insert({
     tenant_id: tenantId,
     user_id: null, // Notify all admins
     title,
@@ -91,7 +91,7 @@ async function notifyRunner(
   orderCount: number,
   runnerName: string
 ): Promise<void> {
-  const { error } = await (supabase as any).from('notifications').insert({
+  const { error } = await supabase.from('notifications').insert({
     tenant_id: tenantId,
     user_id: runnerId,
     title: 'New Deliveries Assigned',

@@ -22,7 +22,18 @@ import { format } from "date-fns";
 export default function DriverPortal() {
   const navigate = useNavigate();
   const [_loading, setLoading] = useState(true);
-  const [myFronts, setMyFronts] = useState<any[]>([]);
+  const [myFronts, setMyFronts] = useState<Array<{
+    id: string;
+    quantity_fronted: number;
+    quantity_sold: number;
+    quantity_returned: number;
+    expected_revenue: string | number;
+    payment_received: string | number;
+    dispatched_at: string;
+    tenants?: { slug: string };
+    products?: { name: string };
+    [key: string]: unknown;
+  }>>([]);
   const [stats, setStats] = useState({
     totalUnits: 0,
     unitsSold: 0,
@@ -33,6 +44,7 @@ export default function DriverPortal() {
   useEffect(() => {
     loadDriverData();
     subscribeToUpdates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- subscribeToUpdates and loadDriverData are defined below; only run once on mount
   }, []);
 
   const subscribeToUpdates = () => {

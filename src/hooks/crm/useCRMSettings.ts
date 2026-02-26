@@ -90,7 +90,7 @@ export function useUpdateCRMSettings() {
                     createPayload.faqs = values.faqs as unknown as Json;
                 }
 
-                const { data: newData, error: createError } = await (supabase as any)
+                const { data: newData, error: createError } = await supabase
                     .from('crm_settings')
                     .insert(createPayload)
                     .select()
@@ -111,7 +111,7 @@ export function useUpdateCRMSettings() {
                 updatePayload.faqs = values.faqs as unknown as Json;
             }
 
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('crm_settings')
                 .update(updatePayload)
                 .eq('id', currentSettings.id)

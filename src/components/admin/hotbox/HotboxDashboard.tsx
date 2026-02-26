@@ -68,6 +68,7 @@ function useTierGreeting(userName: string, tier: string) {
 
   return useMemo(() => {
     return generateGreeting(userName, tier as Parameters<typeof generateGreeting>[1]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dateKey is intentionally used to refresh greeting daily
   }, [userName, tier, dateKey]);
 }
 

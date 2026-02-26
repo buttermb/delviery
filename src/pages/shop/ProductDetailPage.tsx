@@ -414,7 +414,7 @@ export function ProductDetailPage() {
         }
       };
     }
-  }, [product, store, productId, addToRecentlyViewed, allImages, reviews, averageRating]);
+  }, [product, store, productId, storeSlug, addToRecentlyViewed, allImages, reviews, averageRating]);
 
 
   // Toggle wishlist with error handling

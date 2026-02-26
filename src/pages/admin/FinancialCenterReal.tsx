@@ -1,25 +1,19 @@
+import { useState, useMemo } from "react";
+import { isToday, startOfMonth, endOfMonth } from "date-fns";
+import { motion } from "framer-motion";
+import { DollarSign, TrendingUp, ArrowUpRight, AlertCircle, Loader2, BarChart, Receipt, CreditCard, Wallet, Calendar, ArrowRight, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight, AlertCircle, Loader2, BarChart, Receipt, Tag, CreditCard, Wallet, Calendar, ArrowRight, Users } from "lucide-react";
-import { useWholesaleOrders, useWholesaleClients, useWholesalePayments } from "@/hooks/useWholesaleData";
-import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { format, isToday, startOfMonth, endOfMonth } from "date-fns";
-import { useNavigate } from "react-router-dom";
-import { useState, useMemo } from "react";
 import { PaymentDialog } from "@/components/admin/PaymentDialog";
+import { useWholesaleOrders, useWholesaleClients, useWholesalePayments } from "@/hooks/useWholesaleData";
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useExpenseSummary } from "@/hooks/useFinancialData";
-import { TruncatedText } from "@/components/shared/TruncatedText";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const MotionCard = motion(Card);
 
 export default function FinancialCenterReal() {
-  const navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
-  const { tenantSlug } = useTenantAdminAuth();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<{ id: string; business_name: string; outstanding_balance: number } | null>(null);
   const { data: orders = [], isLoading: ordersLoading } = useWholesaleOrders();
@@ -30,19 +24,19 @@ export default function FinancialCenterReal() {
   const now = new Date();
 
   const {
-    todayOrders,
+    todayOrders: _todayOrders,
     todayRevenue,
-    todayCost,
+    todayCost: _todayCost,
     todayProfit,
     todayMargin,
     todayCollections,
     totalOutstanding,
     overdueClients,
     monthRevenue,
-    monthCost,
+    monthCost: _monthCost,
     monthGrossProfit,
     monthMargin,
-    monthDeals,
+    monthDeals: _monthDeals,
     avgDealSize,
     clientProfits,
   } = useMemo(() => {

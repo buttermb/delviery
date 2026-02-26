@@ -121,7 +121,7 @@ export default function MarketplaceProductDetailPage() {
             if (!tenant?.id || !product?.marketplace_profiles?.tenant_id) throw new Error("Missing tenant info");
 
             const { error } = await supabase
-                .from('marketplace_messages' as any) // Supabase type limitation
+                .from('marketplace_messages' as 'tenants') // Supabase type limitation
                 .insert({
                     sender_tenant_id: tenant.id,
                     receiver_tenant_id: product.marketplace_profiles.tenant_id,

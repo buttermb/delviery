@@ -316,7 +316,7 @@ export function OrderAnalyticsInsights({
     }
 
     return result;
-  }, [analytics, customerId, orderCreatedAt]);
+  }, [analytics, customerId, orderCreatedAt, orderTotal]);
 
   if (isLoading) {
     return (

@@ -169,7 +169,7 @@ const VARIANT_TYPE_CONFIG: Record<VariantType, {
 
 export function ProductVariants({
   productId,
-  productName,
+  productName: _productName,
   readOnly = false,
   compact = false,
   onVariantSelect,
@@ -196,7 +196,7 @@ export function ProductVariants({
   // Computed Values
   // ============================================================================
 
-  const groupedVariants = useMemo(() => ({
+  const _groupedVariants = useMemo(() => ({
     weight: variants?.filter((v) => v.variant_type === 'weight') ?? [],
     size: variants?.filter((v) => v.variant_type === 'size') ?? [],
     strain: variants?.filter((v) => v.variant_type === 'strain') ?? [],

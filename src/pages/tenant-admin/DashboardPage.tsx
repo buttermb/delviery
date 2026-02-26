@@ -226,10 +226,10 @@ export default function TenantAdminDashboardPage() {
         const orderCount = allOrders.length;
 
         // Get low stock items from products table (including low_stock_alert field)
-        let inventoryResult = await (supabase
+        let inventoryResult: { data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null } = await (supabase
           .from("products")
           .select("id, name, stock_quantity, available_quantity, low_stock_alert")
-          .eq("tenant_id", tenantId) as any);
+          .eq("tenant_id", tenantId) as unknown as Promise<{ data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null }>);
 
         // Fallback without tenant filter if column doesn't exist
         if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.message?.includes('column'))) {
@@ -237,7 +237,7 @@ export default function TenantAdminDashboardPage() {
           inventoryResult = await (supabase
             .from("products")
             .select("id, name, stock_quantity, available_quantity, low_stock_alert")
-            .limit(100) as any);
+            .limit(100) as unknown as Promise<{ data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null }>);
         }
 
         const inventory = inventoryResult.error ? [] : (inventoryResult.data ?? []);
@@ -474,8 +474,8 @@ export default function TenantAdminDashboardPage() {
       }, 500);
       return () => clearTimeout(timer);
     }
-    // Only run once per location change, not on every state update
-  }, [location.pathname]); // Changed from location.state to location.pathname
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally using pathname only; location.state change should not re-trigger (we're clearing it)
+  }, [location.pathname]);
 
   // Auto-show Quick Start for completely empty accounts (new users)
   useEffect(() => {

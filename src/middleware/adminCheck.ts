@@ -8,7 +8,7 @@ import { logger } from '@/lib/logger';
  */
 export async function verifyAdminAccess(userId: string): Promise<boolean> {
   try {
-    const { data, error } = await (supabase as any).rpc('is_admin', {
+    const { data, error } = await supabase.rpc('is_admin', {
       _user_id: userId
     });
 

@@ -29,7 +29,7 @@ vi.mock('@/hooks/useDashboardStats', () => ({
 }));
 
 vi.mock('@/components/admin/dashboard/KPICard', () => ({
-  KPICard: ({ title, value, description, trend }: any) => (
+  KPICard: ({ title, value, description, trend }: { title: string; value: React.ReactNode; description?: string; trend?: { value: number; label: string } }) => (
     <div data-testid={`kpi-card-${title}`}>
       <div data-testid="title">{title}</div>
       <div data-testid="value">{value}</div>
@@ -71,7 +71,7 @@ describe('RevenueWidget', () => {
         isLoading: true,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderRevenueWidget();
 
@@ -91,7 +91,7 @@ describe('RevenueWidget', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderRevenueWidget();
 
@@ -111,7 +111,7 @@ describe('RevenueWidget', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderRevenueWidget();
 
@@ -134,7 +134,7 @@ describe('RevenueWidget', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderRevenueWidget();
 
@@ -159,7 +159,7 @@ describe('RevenueWidget', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderRevenueWidget();
 
@@ -172,7 +172,7 @@ describe('RevenueWidget', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderRevenueWidget();
 
@@ -191,7 +191,7 @@ describe('RevenueWidget', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderRevenueWidget();
 
@@ -214,7 +214,7 @@ describe('RevenueWidget', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderRevenueWidget();
 

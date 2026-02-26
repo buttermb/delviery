@@ -48,7 +48,7 @@ export function InventoryAlertsDashboard() {
 
   const resolveAlertMutation = useMutation({
     mutationFn: async (alertId: string) => {
-      const { error } = await (supabase as any).rpc('resolve_inventory_alert', {
+      const { error } = await supabase.rpc('resolve_inventory_alert', {
         alert_id: alertId,
       });
       if (error) throw error;

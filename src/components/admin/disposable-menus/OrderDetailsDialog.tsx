@@ -74,7 +74,7 @@ export const OrderDetailsDialog = ({
   const handleUpdateStatus = async () => {
     setUpdating(true);
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('menu_orders')
         .update({ 
           status: newStatus,
@@ -103,7 +103,7 @@ export const OrderDetailsDialog = ({
 
       onUpdate();
       onOpenChange(false);
-    } catch (error: unknown) {
+    } catch {
       toast.error("Update Failed");
     } finally {
       setUpdating(false);

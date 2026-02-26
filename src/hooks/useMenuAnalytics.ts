@@ -57,7 +57,7 @@ export const useMenuAnalytics = (menuId: string) => {
       if (!tenant?.id) throw new Error('No tenant');
 
       // Get basic menu stats
-      const { data: menu } = await (supabase as any)
+      const { data: menu } = await supabase
         .from('disposable_menus')
         .select(`
           *,
@@ -126,7 +126,7 @@ export const useProductImageAnalytics = (menuId: string) => {
   return useQuery({
     queryKey: queryKeys.productImageAnalytics.byMenu(menuId),
     queryFn: async () => {
-      const { data: menuProducts } = await (supabase as any)
+      const { data: menuProducts } = await supabase
         .from('disposable_menu_products')
         .select(`
           *,
@@ -141,7 +141,7 @@ export const useProductImageAnalytics = (menuId: string) => {
       if (!menuProducts) return [];
 
       // Fetch logs for this menu to aggregate per product
-      const { data: logs } = await (supabase as any)
+      const { data: logs } = await supabase
         .from('menu_access_logs')
         .select('actions_taken')
         .eq('menu_id', menuId)
@@ -187,7 +187,7 @@ export const trackImageView = async (
   _accessToken?: string
 ) => {
   try {
-    await (supabase as any).from('menu_access_logs').insert({
+    await supabase.from('menu_access_logs').insert({
       menu_id: menuId,
       actions_taken: { action: 'image_viewed', product_id: productId },
       accessed_at: new Date().toISOString()
@@ -206,7 +206,7 @@ export const trackImageZoom = async (
   _accessToken?: string
 ) => {
   try {
-    await (supabase as any).from('menu_access_logs').insert({
+    await supabase.from('menu_access_logs').insert({
       menu_id: menuId,
       actions_taken: { action: 'image_zoomed', product_id: productId },
       accessed_at: new Date().toISOString()

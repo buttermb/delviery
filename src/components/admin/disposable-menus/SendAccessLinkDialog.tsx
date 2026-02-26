@@ -80,7 +80,7 @@ export function SendAccessLinkDialog({
       toast.success("Link sent via ${method} to ${whitelistEntry.customer_name}");
     } catch (error: unknown) {
       logger.error('Error sending access link', error, { component: 'SendAccessLinkDialog' });
-      const errorMessage = error instanceof Error ? error.message : 'Could not send access link';
+      const _errorMessage = error instanceof Error ? error.message : 'Could not send access link';
       toast.error("Failed to Send");
     } finally {
       setLoading(false);

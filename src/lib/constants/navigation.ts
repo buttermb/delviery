@@ -230,7 +230,7 @@ export const navigation: NavItem[] = [
       },
       {
         name: 'Expense Tracking',
-        href: '/admin/expense-tracking',
+        href: '/admin/finance-hub?tab=expenses',
         icon: FileText,
         iconSize: 'h-4 w-4',
         roles: ['owner', 'manager'],

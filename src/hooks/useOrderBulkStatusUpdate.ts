@@ -67,7 +67,7 @@ async function createBulkStatusNotification(
     ? `${successCount} order${successCount !== 1 ? 's' : ''} updated to "${statusLabel}"`
     : `${successCount} order${successCount !== 1 ? 's' : ''} updated, ${failedCount} failed`;
 
-  const { error } = await (supabase as any).from('notifications').insert({
+  const { error } = await supabase.from('notifications').insert({
     tenant_id: tenantId,
     user_id: null, // Notify all admins
     title,
@@ -209,7 +209,7 @@ async function restoreInventoryForCancelledOrders(
         };
 
         // inventory_history table is not in generated Supabase types
-        await (supabase as any)
+        await supabase
           .from('inventory_history')
           .insert(historyEntry);
       }
@@ -356,7 +356,7 @@ async function decrementInventoryForDeliveredOrders(
         };
 
         // inventory_history table is not in generated Supabase types
-        await (supabase as any)
+        await supabase
           .from('inventory_history')
           .insert(historyEntry);
       }

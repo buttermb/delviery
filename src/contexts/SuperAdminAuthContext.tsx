@@ -422,6 +422,7 @@ export const SuperAdminAuthProvider = ({ children }: { children: ReactNode }) =>
         clearInterval(refreshIntervalRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- logout and refreshToken are stable auth functions; adding them would cause infinite re-subscription
   }, [token]);
 
   const handleStayLoggedIn = () => {

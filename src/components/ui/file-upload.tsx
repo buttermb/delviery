@@ -181,6 +181,7 @@ function FileUpload({
         }
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cleanup only on unmount; files ref is captured at cleanup time
   }, []);
 
   const validateFileBasic = (file: File): string | null => {

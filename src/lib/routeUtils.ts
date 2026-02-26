@@ -38,13 +38,13 @@ const ROUTE_PATTERNS: Array<{ pattern: RegExp; type: RouteType; hasTenantSlug: b
   { pattern: /^\/callback(\/.*)?$/, type: 'auth', hasTenantSlug: false },
   
   // Tenant Admin routes (/:tenantSlug/admin/*)
-  { pattern: /^\/([^\/]+)\/admin(\/.*)?$/, type: 'tenant-admin', hasTenantSlug: true },
-  
+  { pattern: /^\/([^/]+)\/admin(\/.*)?$/, type: 'tenant-admin', hasTenantSlug: true },
+
   // Customer Portal routes (/:tenantSlug/shop/*)
-  { pattern: /^\/([^\/]+)\/shop(\/.*)?$/, type: 'customer-portal', hasTenantSlug: true },
-  
+  { pattern: /^\/([^/]+)\/shop(\/.*)?$/, type: 'customer-portal', hasTenantSlug: true },
+
   // Legacy/alternative customer routes (/:tenantSlug/menu, /:tenantSlug/order)
-  { pattern: /^\/([^\/]+)\/(menu|order|checkout)(\/.*)?$/, type: 'customer-portal', hasTenantSlug: true },
+  { pattern: /^\/([^/]+)\/(menu|order|checkout)(\/.*)?$/, type: 'customer-portal', hasTenantSlug: true },
 ];
 
 /**

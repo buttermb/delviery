@@ -46,7 +46,7 @@ export const MenuShareDialog = ({
   menu,
   whitelistEntry
 }: MenuShareDialogProps) => {
-  const [copied, setCopied] = useState(false);
+  const [_copied, setCopied] = useState(false);
   const menuUrl = formatMenuUrl(
     menu.encrypted_url_token,
     whitelistEntry?.unique_access_token

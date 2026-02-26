@@ -43,7 +43,7 @@ export function RecentOrdersWidget() {
         wholesale_clients: { business_name: string } | null;
       }
 
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('wholesale_orders')
         .select(`
           id,

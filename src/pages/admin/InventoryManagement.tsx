@@ -125,7 +125,7 @@ export function InventoryManagement() {
   const { tenant } = useTenantAdminAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, _setSearchTerm] = useState("");
+  const [_searchTerm, _setSearchTerm] = useState("");
 
   const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);

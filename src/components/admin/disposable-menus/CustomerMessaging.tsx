@@ -109,7 +109,7 @@ export const CustomerMessaging = () => {
 
       setMessage('');
       setSubject('');
-    } catch (error: unknown) {
+    } catch {
       toast.error("Send Failed");
     } finally {
       setSending(false);

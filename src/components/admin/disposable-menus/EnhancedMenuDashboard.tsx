@@ -41,16 +41,16 @@ export function EnhancedMenuDashboard() {
   const { data: overviewStats } = useQuery({
     queryKey: queryKeys.menuOverviewStats.all,
     queryFn: async () => {
-      const allMenus = (menus as any[]) ?? [];
-      const activeMenus = allMenus.filter((m: any) => m.status === 'active');
-      const burnedMenus = allMenus.filter((m: any) => 
+      const allMenus = (menus ?? []) as DisposableMenu[];
+      const activeMenus = allMenus.filter((m) => m.status === 'active');
+      const burnedMenus = allMenus.filter((m) =>
         m.status === 'soft_burned' || m.status === 'hard_burned'
       );
 
       // Total views (from access logs)
       let totalViews = 0;
       for (const menu of allMenus) {
-        const { count } = await (supabase as any)
+        const { count } = await supabase
           .from('menu_access_logs')
           .select('*', { count: 'exact', head: true })
           .eq('menu_id', menu.id);
@@ -63,7 +63,7 @@ export function EnhancedMenuDashboard() {
       
       let todayOrders = 0;
       for (const menu of allMenus) {
-        const { count } = await (supabase as any)
+        const { count } = await supabase
           .from('menu_orders')
           .select('*', { count: 'exact', head: true })
           .eq('menu_id', menu.id)
@@ -102,7 +102,7 @@ export function EnhancedMenuDashboard() {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const burned = ((menus as any[]) ?? []).filter((m: any) =>
+      const burned = ((menus ?? []) as DisposableMenu[]).filter((m) =>
         (m.status === 'soft_burned' || m.status === 'hard_burned') &&
         m.burned_at &&
         new Date(m.burned_at) >= thirtyDaysAgo
@@ -113,7 +113,7 @@ export function EnhancedMenuDashboard() {
     enabled: !!menus,
   });
 
-  const activeMenus = ((menus as any[]) ?? []).filter((m: any) => m.status === 'active');
+  const activeMenus = ((menus ?? []) as DisposableMenu[]).filter((m) => m.status === 'active');
 
   return (
     <div className="space-y-6">

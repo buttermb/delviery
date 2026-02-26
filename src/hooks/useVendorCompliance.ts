@@ -411,7 +411,7 @@ export function useVendorCompliance(vendorId: string) {
     changes: Record<string, unknown>
   ) => {
     try {
-      await (supabase as any).from('vendor_compliance_audit').insert({
+      await supabase.from('vendor_compliance_audit').insert({
         tenant_id: tenantIdVal,
         vendor_compliance_id: complianceId,
         action,

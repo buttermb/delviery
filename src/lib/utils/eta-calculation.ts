@@ -32,7 +32,7 @@ async function getMapboxToken(): Promise<string | null> {
       .eq('account_id', tenantUser.tenant_id)
       .maybeSingle();
 
-    const integrationSettings = settings?.integration_settings as Record<string, any> | null;
+    const integrationSettings = settings?.integration_settings as Record<string, unknown> | null;
     if (integrationSettings && typeof integrationSettings === 'object' && integrationSettings.mapbox_token) {
       return integrationSettings.mapbox_token as string;
     }

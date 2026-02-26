@@ -149,7 +149,7 @@ export default function CustomerMenuViewPage() {
   const {
     isProductAvailable: checkProductAvailable,
     getProductStatus,
-    isConnected: isRealtimeConnected,
+    isConnected: _isRealtimeConnected,
   } = useMenuInventorySync({
     menuId: menuId ?? '',
     tenantId: tenantId || null,
@@ -360,7 +360,7 @@ export default function CustomerMenuViewPage() {
                   All
                 </Button>
                 {/* Extract unique categories from products */}
-                {Array.from(new Set(products?.map((p) => p.products?.category).filter(Boolean))).map((category: any) => (
+                {Array.from(new Set(products?.map((p) => p.products?.category).filter(Boolean))).map((category) => (
                   <Button
                     key={String(category)}
                     variant="secondary"

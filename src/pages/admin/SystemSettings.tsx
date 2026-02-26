@@ -61,13 +61,13 @@ const SystemSettings = () => {
       const tenantId = tenant.id;
 
       // Execute queries with explicit typing to avoid type instantiation depth issues
-      const ordersLastHourQuery = (supabase as any).from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneHourAgo.toISOString());
+      const ordersLastHourQuery = supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneHourAgo.toISOString());
 
-      const ordersTodayQuery = (supabase as any).from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneDayAgo.toISOString());
+      const ordersTodayQuery = supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", oneDayAgo.toISOString());
 
       // Execute fraud flags query with type casting to avoid depth issues
       const errorCountPromise = (async () => {
-        return await (supabase as any).from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).is("resolved_at", null);
+        return await supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).is("resolved_at", null);
       })();
 
       const [
@@ -110,12 +110,12 @@ const SystemSettings = () => {
       if (!tenant) return null;
       const tenantId = tenant.id;
 
-      const usersPromise = (supabase as any).from("profiles").select("id", { count: "exact", head: true }).eq("account_id", tenantId);
-      const ordersPromise = (supabase as any).from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
-      const productsPromise = (supabase as any).from("products").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
+      const usersPromise = supabase.from("profiles").select("id", { count: "exact", head: true }).eq("account_id", tenantId);
+      const ordersPromise = supabase.from("orders").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
+      const productsPromise = supabase.from("products").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
 
       // Break type inference for complex query
-      const fraudFlagsPromise = (supabase as any).from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
+      const fraudFlagsPromise = supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId);
 
       const results = await Promise.all([
         usersPromise,

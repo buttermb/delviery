@@ -87,7 +87,7 @@ export function useEncryption(): EncryptionHookResult {
   /**
    * Encrypt entire object
    */
-  const encryptObject = useCallback(<T extends Record<string, any>>(
+  const encryptObject = useCallback(<T extends Record<string, unknown>>(
     obj: T
   ): Record<string, string> => {
     if (!isReady) {
@@ -99,7 +99,7 @@ export function useEncryption(): EncryptionHookResult {
   /**
    * Decrypt entire object
    */
-  const decryptObject = useCallback(<T extends Record<string, any>>(
+  const decryptObject = useCallback(<T extends Record<string, unknown>>(
     obj: Record<string, string>
   ): T => {
     if (!isReady) {

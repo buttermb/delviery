@@ -3,7 +3,7 @@
  * Enables swipe-to-go-back navigation on detail pages
  */
 
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { haptics } from '@/utils/haptics';
@@ -36,14 +36,14 @@ export function SwipeBackWrapper({
   const startYRef = useRef(0);
   const isHorizontalRef = useRef<boolean | null>(null);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     haptics.medium();
     if (onBack) {
       onBack();
     } else {
       navigate(-1);
     }
-  };
+  }, [onBack, navigate]);
 
   useEffect(() => {
     if (!enabled) return;

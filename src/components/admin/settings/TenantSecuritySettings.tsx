@@ -39,7 +39,7 @@ function SecuritySkeleton() {
 export default function TenantSecuritySettings() {
   const { account, refreshAccount, loading: accountLoading } = useAccount();
   const [saving, setSaving] = useState(false);
-  const [initialized, setInitialized] = useState(false);
+  const [_initialized, setInitialized] = useState(false);
 
   const form = useForm<SecurityFormValues>({
     resolver: zodResolver(securitySchema),

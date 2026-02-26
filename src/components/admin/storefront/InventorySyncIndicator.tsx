@@ -52,7 +52,7 @@ interface InventorySyncIndicatorProps {
 }
 
 /** Threshold in milliseconds for considering sync as lagging (30 seconds) */
-const LAG_THRESHOLD_MS = 30000;
+const _LAG_THRESHOLD_MS = 30000;
 
 /** Tables to monitor for inventory sync */
 const INVENTORY_TABLES = ['products', 'inventory_batches', 'marketplace_product_settings'];

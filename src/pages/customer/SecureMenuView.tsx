@@ -485,9 +485,10 @@ const SecureMenuView = () => {
         setMenuToken(token);
       }
 
+      const cleanupFn = cleanupScreenshotProtection.current;
       return () => {
-        if (cleanupScreenshotProtection.current) {
-          cleanupScreenshotProtection.current();
+        if (cleanupFn) {
+          cleanupFn();
         }
       };
     } else {

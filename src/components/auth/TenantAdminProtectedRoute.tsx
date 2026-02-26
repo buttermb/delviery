@@ -322,7 +322,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       clearTimeout(totalWaitTimeout);
       clearTimeout(verificationTimeout);
     };
-    // Remove verified, skipVerification, and verifying from deps to prevent infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- verified, skipVerification, and verifying are intentionally omitted to prevent infinite verification loops
   }, [tenantSlug, location.pathname, effectiveAdmin, effectiveTenant, effectiveLoading]);
 
   // Show spinner while auth is initializing — prevents flash of login page

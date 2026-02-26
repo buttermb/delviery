@@ -185,7 +185,7 @@ export default function Orders() {
 
   // Data Fetching - includes both regular orders and POS orders from unified_orders
   const { data: orders = [], isLoading, isError, isFetching, refetch } = useQuery({
-    queryKey: queryKeys.orders.byTenant(tenant?.id!),
+    queryKey: queryKeys.orders.byTenant(tenant!.id),
     queryFn: async () => {
       if (!tenant) return [];
 
@@ -310,19 +310,19 @@ export default function Orders() {
   // Mutations
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string, status: string }) => {
-      const { error } = await (supabase as any).from('orders').update({ status }).eq('id', id).eq('tenant_id', tenant?.id);
+      const { error } = await supabase.from('orders').update({ status }).eq('id', id).eq('tenant_id', tenant?.id);
       if (error) throw error;
       return { id, status };
     },
     onMutate: async ({ id, status }) => {
       // Cancel outgoing refetches to avoid overwriting optimistic update
-      await queryClient.cancelQueries({ queryKey: queryKeys.orders.byTenant(tenant?.id!) });
+      await queryClient.cancelQueries({ queryKey: queryKeys.orders.byTenant(tenant!.id) });
 
       // Snapshot previous value for rollback
-      const previousOrders = queryClient.getQueryData<Order[]>(queryKeys.orders.byTenant(tenant?.id!));
+      const previousOrders = queryClient.getQueryData<Order[]>(queryKeys.orders.byTenant(tenant!.id));
 
       // Optimistically update the UI immediately
-      queryClient.setQueryData(queryKeys.orders.byTenant(tenant?.id!), (old: Order[] = []) =>
+      queryClient.setQueryData(queryKeys.orders.byTenant(tenant!.id), (old: Order[] = []) =>
         old.map(o => o.id === id ? { ...o, status } : o)
       );
 
@@ -338,20 +338,20 @@ export default function Orders() {
     onError: (error, _variables, context) => {
       // Rollback to previous state on failure
       if (context?.previousOrders) {
-        queryClient.setQueryData(queryKeys.orders.byTenant(tenant?.id!), context.previousOrders);
+        queryClient.setQueryData(queryKeys.orders.byTenant(tenant!.id), context.previousOrders);
       }
       logger.error('Error updating status:', error instanceof Error ? error : new Error(String(error)), { component: 'Orders' });
       toast.error("Failed to update status", { description: humanizeError(error) });
     },
     onSettled: () => {
       // Always refetch to ensure server consistency
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.byTenant(tenant?.id!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.byTenant(tenant!.id) });
     }
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      const { error } = await (supabase as any).from('orders').delete().in('id', ids).eq('tenant_id', tenant?.id);
+      const { error } = await supabase.from('orders').delete().in('id', ids).eq('tenant_id', tenant?.id);
       if (error) throw error;
       return ids;
     },
@@ -588,6 +588,35 @@ export default function Orders() {
     persistInUrl: false,
   });
 
+  const handleOrderAction = useCallback((action: OrderAction, orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    switch (action) {
+      case 'edit':
+        setEditOrder(order);
+        setEditModalOpen(true);
+        break;
+      case 'cancel':
+        setCancelConfirmOrder(order);
+        break;
+      case 'refund':
+        setRefundOrder(order);
+        setRefundModalOpen(true);
+        break;
+      case 'duplicate':
+        navigate(`orders/${order.id}?action=duplicate`);
+        break;
+    }
+  }, [orders, navigate]);
+
+  const stats = useMemo(() => [
+    { label: 'Total Orders', value: orders.length, icon: Package, color: 'text-blue-500' },
+    { label: 'Pending', value: orders.filter(o => o.status === 'pending').length, icon: Clock, color: 'text-yellow-500' },
+    { label: 'In Progress', value: orders.filter(o => ['confirmed', 'preparing', 'in_transit'].includes(o.status)).length, icon: TrendingUp, color: 'text-green-500' },
+    { label: 'Cancelled', value: orders.filter(o => o.status === 'cancelled').length, icon: XCircle, color: 'text-red-500' },
+  ], [orders]);
+
   // Loading skeleton — full page placeholder while data fetches
   if (isLoading) {
     return (
@@ -751,28 +780,6 @@ export default function Orders() {
       navigate(`orders/${order.id}`);
     }
   };
-
-  const handleOrderAction = useCallback((action: OrderAction, orderId: string) => {
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-
-    switch (action) {
-      case 'edit':
-        setEditOrder(order);
-        setEditModalOpen(true);
-        break;
-      case 'cancel':
-        setCancelConfirmOrder(order);
-        break;
-      case 'refund':
-        setRefundOrder(order);
-        setRefundModalOpen(true);
-        break;
-      case 'duplicate':
-        navigate(`orders/${order.id}?action=duplicate`);
-        break;
-    }
-  }, [orders, navigate]);
 
   // Helper
   const getStatusBadge = (status: string) => {
@@ -983,13 +990,6 @@ export default function Orders() {
       )
     }
   ];
-
-  const stats = useMemo(() => [
-    { label: 'Total Orders', value: orders.length, icon: Package, color: 'text-blue-500' },
-    { label: 'Pending', value: orders.filter(o => o.status === 'pending').length, icon: Clock, color: 'text-yellow-500' },
-    { label: 'In Progress', value: orders.filter(o => ['confirmed', 'preparing', 'in_transit'].includes(o.status)).length, icon: TrendingUp, color: 'text-green-500' },
-    { label: 'Cancelled', value: orders.filter(o => o.status === 'cancelled').length, icon: XCircle, color: 'text-red-500' },
-  ], [orders]);
 
   return (
     <>

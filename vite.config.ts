@@ -42,18 +42,15 @@ const FALLBACK_BACKEND = {
   projectId: 'aejugtmhwwknrowfyzie',
 } as const;
 
-// Sitemap generator plugin
+// Sitemap generator plugin — skipped gracefully in sandboxed / restricted environments
 function sitemapPlugin() {
   return {
     name: "sitemap-generator",
     buildEnd: () => {
-      console.log("Running sitemap generator...");
       try {
-        // Use tsx to run TypeScript directly
-        execSync("npx tsx src/lib/generate-sitemap.ts", { stdio: "inherit" });
-      } catch (error) {
-        console.error("Failed to generate sitemap:", error);
-        // Don't fail the build if sitemap generation fails
+        execSync("npx tsx src/lib/generate-sitemap.ts", { stdio: "pipe", timeout: 15_000 });
+      } catch {
+        // Non-fatal: sandbox environments may block IPC/process spawning
       }
     },
   };

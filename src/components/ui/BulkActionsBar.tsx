@@ -32,7 +32,7 @@ interface BulkActionsBarProps {
   selectedIds: string[];
   onClearSelection: () => void;
   actions?: BulkAction[];
-  data?: Record<string, any>[];
+  data?: Record<string, unknown>[];
   exportFilename?: string;
   exportColumns?: { key: string; label: string }[];
   className?: string;

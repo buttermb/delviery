@@ -26,7 +26,7 @@ interface OptimisticUpdateReturn<T, P> {
   reset: () => void;
 }
 
-export function useOptimisticUpdate<T = any, P = any>(
+export function useOptimisticUpdate<T = unknown, P = unknown>(
   options: OptimisticUpdateOptions<T> = {}
 ): OptimisticUpdateReturn<T, P> {
   const {

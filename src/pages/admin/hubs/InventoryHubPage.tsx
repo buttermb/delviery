@@ -16,13 +16,11 @@ import {
     ArrowLeftRight,
     AlertTriangle,
     Truck,
-    Plus,
     CreditCard,
     Barcode,
     Menu,
     Globe,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { Fragment, lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -71,7 +69,7 @@ export default function InventoryHubPage() {
     usePageTitle('Inventory');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'products';
-    const { navigateToAdmin } = useTenantNavigation();
+    const { navigateToAdmin: _navigateToAdmin } = useTenantNavigation();
 
     const handleTabChange = (tab: string) => {
         setSearchParams({ tab }, { replace: true });

@@ -44,6 +44,7 @@ export function AdvancedWorkflowBuilder() {
     if (tenant?.id) {
       loadExecutions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadExecutions is defined below, only run on tenant change
   }, [tenant?.id]);
 
   const loadExecutions = async () => {
@@ -60,7 +61,7 @@ export function AdvancedWorkflowBuilder() {
 
       if (error) throw error;
       setExecutions((data as WorkflowExecution[]) ?? []);
-    } catch (error: unknown) {
+    } catch {
       toast.error("Error loading executions");
     } finally {
       setLoading(false);

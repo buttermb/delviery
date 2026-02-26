@@ -70,7 +70,7 @@ const signupSchema = z.object({
     .max(72, 'Password must be less than 72 characters')
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must include uppercase, lowercase, and a number'),
   phone: z.string()
-    .regex(/^[\d\s\-\(\)\+]*$/, 'Phone number contains invalid characters')
+    .regex(/^[\d\s\-()+]*$/, 'Phone number contains invalid characters')
     .max(20, 'Phone number is too long')
     .optional(),
   state: z.string().optional(),
@@ -404,7 +404,7 @@ export default function SignUpPage() {
         }
 
         // Grant initial credits via RPC
-        const { error: creditError } = await (supabase as any).rpc('grant_free_credits' as never, {
+        const { error: creditError } = await supabase.rpc('grant_free_credits' as never, {
           p_tenant_id: tenant.id
         } as never);
 

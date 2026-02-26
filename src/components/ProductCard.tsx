@@ -131,7 +131,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
       setAdded(true);
 
       // Authenticated user - use database with upsert for instant response
-      const { error } = await (supabase as any).rpc('add_to_cart', {
+      const { error } = await supabase.rpc('add_to_cart', {
         p_user_id: user.id,
         p_product_id: product.id,
         p_quantity: quantity,

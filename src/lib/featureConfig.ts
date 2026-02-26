@@ -504,7 +504,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Track and manage team commissions',
     tier: 'professional',
     category: 'Analytics & Finance',
-    route: '/admin/finance-hub?tab=commissions',
+    route: '/admin/commission-tracking',
   },
   'expense-tracking': {
     id: 'expense-tracking',

@@ -4,13 +4,13 @@ import { safeStorage } from '@/utils/safeStorage';
 
 interface AnalyticsEvent {
   event: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
 }
 
 class Analytics {
   private enabled: boolean = true;
 
-  track(event: string, properties?: Record<string, any>) {
+  track(event: string, properties?: Record<string, unknown>) {
     if (!this.enabled) return;
 
     const eventData: AnalyticsEvent = {

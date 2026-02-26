@@ -98,7 +98,7 @@ describe('DashboardPage', () => {
         isLoading: true,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 
@@ -128,7 +128,7 @@ describe('DashboardPage', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 
@@ -160,7 +160,7 @@ describe('DashboardPage', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 
@@ -192,7 +192,7 @@ describe('DashboardPage', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 
@@ -210,7 +210,7 @@ describe('DashboardPage', () => {
         isLoading: true,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 
@@ -239,7 +239,7 @@ describe('DashboardPage', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 
@@ -260,7 +260,7 @@ describe('DashboardPage', () => {
         isLoading: false,
         error: new Error('Failed to load stats'),
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 
@@ -275,7 +275,7 @@ describe('DashboardPage', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 
@@ -285,11 +285,11 @@ describe('DashboardPage', () => {
     it('should display last updated time when available', () => {
       const now = Date.now();
       vi.mocked(useDashboardStats).mockReturnValue({
-        data: {} as any,
+        data: {} as unknown as ReturnType<typeof useDashboardStats>['data'],
         isLoading: false,
         error: null,
         dataUpdatedAt: now,
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 
@@ -308,7 +308,7 @@ describe('DashboardPage', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 
@@ -340,7 +340,7 @@ describe('DashboardPage', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 
@@ -372,7 +372,7 @@ describe('DashboardPage', () => {
         isLoading: false,
         error: null,
         dataUpdatedAt: Date.now(),
-      } as any);
+      } as unknown as ReturnType<typeof useDashboardStats>);
 
       renderDashboardPage();
 

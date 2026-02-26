@@ -44,7 +44,7 @@ export async function checkIntegrationConnection(integrationId: string): Promise
           .eq('account_id', account.id)
           .maybeSingle();
 
-        const integrationSettings = settings?.integration_settings as Record<string, any> | null;
+        const integrationSettings = settings?.integration_settings as Record<string, unknown> | null;
         return !!(integrationSettings && typeof integrationSettings === 'object' && integrationSettings.mapbox_token);
       } catch (error) {
         logger.error('Mapbox connection check error', error, { component: 'integrations' });
@@ -80,7 +80,7 @@ export async function checkIntegrationConnection(integrationId: string): Promise
           .eq('account_id', account.id)
           .maybeSingle();
 
-        const integrationSettings = settings?.integration_settings as Record<string, any> | null;
+        const integrationSettings = settings?.integration_settings as Record<string, unknown> | null;
         return !!(integrationSettings?.stripe_secret_key && integrationSettings?.stripe_publishable_key);
       } catch (error) {
         logger.error('Stripe connection check error', error, { component: 'integrations' });
@@ -119,7 +119,7 @@ export async function checkIntegrationConnection(integrationId: string): Promise
       // Custom integrations are checked via database
       try {
         const { supabase } = await import('@/integrations/supabase/client');
-        const { data, error } = await (supabase as any).from('custom_integrations').select('id').limit(1).maybeSingle();
+        const { data, error } = await supabase.from('custom_integrations').select('id').limit(1).maybeSingle();
         if (error) {
           logger.debug('Custom integrations table check failed', { error, component: 'integrations' });
         }

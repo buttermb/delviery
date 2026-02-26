@@ -64,7 +64,7 @@ export function EnhancedPriceSlider({
 
   const handleKeyDown = (e: React.KeyboardEvent, isMin: boolean) => {
     if (e.key === 'Enter') {
-      isMin ? handleMinBlur() : handleMaxBlur();
+      if (isMin) { handleMinBlur(); } else { handleMaxBlur(); }
     }
   };
 

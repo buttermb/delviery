@@ -85,7 +85,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
     };
 
     orders.forEach((order: MenuOrderItem) => {
-      const column = COLUMNS.find(c => c.statuses.includes(order.status as any));
+      const column = COLUMNS.find(c => (c.statuses as string[]).includes(order.status));
       if (column) {
         grouped[column.id].push(order);
       } else {
@@ -122,7 +122,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
         updates.cancelled_at = new Date().toISOString();
         // Release inventory for cancelled/rejected menu orders
         try {
-          await (supabase as any).rpc('release_order_inventory', {
+          await supabase.rpc('release_order_inventory', {
             p_order_id: orderId,
             p_order_type: 'menu'
           });
@@ -265,7 +265,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
       {/* Dialogs */}
       {selectedOrder && (
         <OrderDetailsDialog
-          order={selectedOrder as any}
+          order={selectedOrder as unknown as Parameters<typeof OrderDetailsDialog>[0]['order']}
           open={detailsOpen}
           onOpenChange={setDetailsOpen}
           onUpdate={() => refetch()}

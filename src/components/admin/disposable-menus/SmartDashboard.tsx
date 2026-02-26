@@ -651,10 +651,10 @@ export function SmartDashboard() {
 
   // Calculate quick stats
   const stats = useMemo(() => {
-    const allMenus = menus as any[];
-    const activeMenus = allMenus.filter((m: any) => m.status === 'active');
-    const burnedMenus = allMenus.filter((m: any) => m.status === 'soft_burned' || m.status === 'hard_burned');
-    const totalViews = allMenus.reduce((sum: number, m: any) => sum + (m.view_count ?? 0), 0);
+    const allMenus = menus as MenuData[];
+    const activeMenus = allMenus.filter((m) => m.status === 'active');
+    const burnedMenus = allMenus.filter((m) => m.status === 'soft_burned' || m.status === 'hard_burned');
+    const totalViews = allMenus.reduce((sum: number, m) => sum + (m.view_count ?? 0), 0);
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce((sum: number, o: OrderData) => sum + Number(o.total_amount || 0), 0);
     const pendingOrders = orders.filter((o: OrderData) => o.status === 'pending').length;
@@ -673,7 +673,7 @@ export function SmartDashboard() {
 
   // Filter menus
   const filteredMenus = useMemo(() => {
-    return (menus as any[]).filter((menu: any) => {
+    return (menus as MenuData[]).filter((menu) => {
       const matchesSearch = !searchQuery ||
         menu.name?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'all' ||
@@ -709,8 +709,8 @@ export function SmartDashboard() {
   // Top performing menu
   const topMenu = useMemo(() => {
     if (menus.length === 0) return null;
-    const allMenus = menus as any[];
-    return allMenus.reduce((top: any, current: any) => {
+    const allMenus = menus as MenuData[];
+    return allMenus.reduce((top: MenuData, current: MenuData) => {
       const currentRevenue = Number(current.total_revenue || 0);
       const topRevenue = Number(top?.total_revenue || 0);
       return currentRevenue > topRevenue ? current : top;
@@ -919,8 +919,8 @@ export function SmartDashboard() {
             <ResponsiveGrid
               data={filteredMenus}
               isLoading={isLoading}
-              keyExtractor={(menu: any) => menu.id}
-              renderItem={(menu: any) => <MenuCard menu={menu as unknown as Parameters<typeof MenuCard>[0]['menu']} />}
+              keyExtractor={(menu: MenuData) => menu.id}
+              renderItem={(menu: MenuData) => <MenuCard menu={menu as unknown as Parameters<typeof MenuCard>[0]['menu']} />}
               columns={{ default: 1, md: 2, lg: 3 }}
               emptyState={{
                 icon: Link,

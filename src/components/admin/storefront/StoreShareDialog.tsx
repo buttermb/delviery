@@ -99,7 +99,7 @@ export function StoreShareDialog({
         .catch((err) => { logger.warn('QR code generation failed', err); })
         .finally(() => setQrLoading(false));
     }
-  }, [useEncryptedLink]);
+  }, [useEncryptedLink, open, shareUrl]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);

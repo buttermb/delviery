@@ -152,7 +152,7 @@ export function ReportBuilder({
         report_type: data.data_sources[0] || 'custom',
       };
 
-      const { error } = await (supabase as any).from("custom_reports").insert([reportData]);
+      const { error } = await supabase.from("custom_reports").insert([reportData]);
 
       if (error && error.code !== "42P01") throw error;
     },

@@ -12,7 +12,7 @@
  * - Lazy loading in lists
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { logger } from '@/lib/logger';
@@ -108,18 +108,21 @@ export function ProductImageGallery({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const touchStartXRef = useRef<number | null>(null);
 
-  // Combine primary image and additional images
-  const allImages: string[] = [];
-  if (product.image_url) {
-    allImages.push(product.image_url);
-  }
-  if (product.images && Array.isArray(product.images)) {
-    // Filter out the primary image if it's also in the images array
-    const additionalImages = product.images.filter(
-      (img) => img !== product.image_url
-    );
-    allImages.push(...additionalImages);
-  }
+  // Combine primary image and additional images - memoized to stabilize deps
+  const allImages = useMemo(() => {
+    const images: string[] = [];
+    if (product.image_url) {
+      images.push(product.image_url);
+    }
+    if (product.images && Array.isArray(product.images)) {
+      // Filter out the primary image if it's also in the images array
+      const additionalImages = product.images.filter(
+        (img) => img !== product.image_url
+      );
+      images.push(...additionalImages);
+    }
+    return images;
+  }, [product.image_url, product.images]);
 
   const hasImages = allImages.length > 0;
   const hasMultiple = allImages.length > 1;

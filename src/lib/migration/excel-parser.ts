@@ -29,7 +29,7 @@ const HEADER_PATTERNS: Record<keyof ColumnMapping, RegExp[]> = {
   ],
   strainType: [
     /^strain[_\s]?type$/i,
-    /^indica[_\/]sativa$/i,
+    /^indica[_/]sativa$/i,
     /^genetics$/i,
     /^effect$/i,
   ],
@@ -93,7 +93,7 @@ const HEADER_PATTERNS: Record<keyof ColumnMapping, RegExp[]> = {
     /^grow[_\s]?(info|type)?$/i,
     /^cultivation$/i,
     /^source$/i,
-    /^indoor[_\/]outdoor$/i,
+    /^indoor[_/]outdoor$/i,
   ],
   notes: [
     /^notes?$/i,
@@ -509,7 +509,7 @@ function parseTerpenes(value: unknown): string[] | undefined {
   
   // Split by common delimiters
   const terpenes = str
-    .split(/[,;|\/]/)
+    .split(/[,;|/]/)
     .map(t => t.trim())
     .filter(t => t.length > 0);
   

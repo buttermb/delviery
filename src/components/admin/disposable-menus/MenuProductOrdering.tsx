@@ -288,7 +288,7 @@ function SortableCategoryItem({
 }
 
 // Product Overlay for dragging
-function ProductOverlay({ product, index }: { product: OrderedProduct; index: number }) {
+function _ProductOverlay({ product, index }: { product: OrderedProduct; index: number }) {
   return (
     <div className="flex items-center gap-3 p-3 bg-background border rounded-lg shadow-xl">
       <GripVertical className="w-4 h-4 text-muted-foreground cursor-grabbing" />
@@ -476,7 +476,7 @@ export function MenuProductOrdering({
         }
       }
     },
-    [categoryOrder]
+    [categoryOrder, updateProductOrders]
   );
 
   // Update product display orders when category order changes

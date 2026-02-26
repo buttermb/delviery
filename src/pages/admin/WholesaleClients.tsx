@@ -4,19 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { logger } from "@/lib/logger";
 import { PullToRefresh } from "@/components/mobile/PullToRefresh";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Plus,
   Phone,
@@ -56,14 +46,12 @@ import { Link2 } from "lucide-react";
 import { customersTutorial } from "@/lib/tutorials/tutorialConfig";
 import { Database } from "@/integrations/supabase/types";
 import { CustomerQuickViewCard } from "@/components/tenant-admin/CustomerQuickViewCard";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
-import { SearchInput } from "@/components/shared/SearchInput";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
 import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
 import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
 import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
-import { Download, Upload, Filter, Eye, Trash, MoreHorizontal } from "lucide-react";
+import { Upload, Filter, Eye, MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type WholesaleClientRow = Database['public']['Tables']['wholesale_clients']['Row'];
@@ -99,9 +87,6 @@ export default function WholesaleClients() {
   });
 
   const [searchTerm, setSearchTerm] = useState("");
-  const handleSearch = useCallback((value: string) => {
-    setSearchTerm(value);
-  }, []);
   const [filter, setFilter] = useState<string>(String(preferences.customFilters?.filter || "all"));
   const [sortField, setSortField] = useState<ClientSortField>('business_name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -497,6 +482,7 @@ export default function WholesaleClients() {
         </DropdownMenu>
       )
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [sortField, sortOrder, updateClientMutation.isPending, tenant?.slug, navigate]);
 
   const renderMobileItem = useCallback((client: WholesaleClient) => (
@@ -787,7 +773,8 @@ export default function WholesaleClients() {
                         });
 
                         if (client.business_name && client.contact_name) {
-                          const { error } = await (supabase as any).from('wholesale_clients').insert([{
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          const { error } = await supabase.from('wholesale_clients').insert([{
                             tenant_id: tenant.id,
                             business_name: String(client.business_name),
                             contact_name: String(client.contact_name),

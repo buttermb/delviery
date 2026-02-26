@@ -33,8 +33,6 @@ import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate, displayName } from '@/lib/formatters';
 import type { CRMActivityLog } from '@/types/crm';
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
-import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
-import { SearchInput } from '@/components/shared/SearchInput';
 import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
 import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
 
@@ -464,9 +462,9 @@ export default function CustomerCRMPage() {
 
         <TabsContent value="overview" className="space-y-4">
           <AdminDataTable
-            data={filteredCustomers as unknown as any[]}
+            data={filteredCustomers}
             columns={crmColumns}
-            keyExtractor={(customer: any) => customer.id as string}
+            keyExtractor={(customer: EnrichedCustomer) => customer.id as string}
             isLoading={isLoading}
             emptyStateIcon={Users}
             emptyStateTitle={searchTerm ? "No Customers Found" : "No Customers Yet"}
@@ -476,7 +474,7 @@ export default function CustomerCRMPage() {
             emptyStateAction={searchTerm
               ? { label: "Clear Search", onClick: () => setSearchTerm('') }
               : { label: "Add Your First Customer", onClick: () => navigateToAdmin('crm/clients/new'), icon: Plus }}
-            renderMobileItem={(customer: any) => renderMobileCRMItem(customer as EnrichedCustomer)}
+            renderMobileItem={(customer: EnrichedCustomer) => renderMobileCRMItem(customer)}
           />
         </TabsContent>
 

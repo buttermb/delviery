@@ -125,7 +125,7 @@ export function VendorContactsManager({ vendorId, vendorName }: VendorContactsMa
 
   const {
     contacts,
-    primaryContact,
+    primaryContact: _primaryContact,
     isLoading,
     isError,
     createContact,

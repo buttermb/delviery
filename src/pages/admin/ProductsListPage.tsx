@@ -118,8 +118,8 @@ export function ProductsListPage() {
       return {
         ...defaultProductFilters,
         ...(saved as Record<string, unknown>),
-        createdAfter: (saved as any).createdAfter ? new Date((saved as any).createdAfter) : null,
-        createdBefore: (saved as any).createdBefore ? new Date((saved as any).createdBefore) : null,
+        createdAfter: (saved as Record<string, unknown>).createdAfter ? new Date((saved as Record<string, unknown>).createdAfter as string) : null,
+        createdBefore: (saved as Record<string, unknown>).createdBefore ? new Date((saved as Record<string, unknown>).createdBefore as string) : null,
       };
     }
     return defaultProductFilters;

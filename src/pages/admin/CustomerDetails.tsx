@@ -101,6 +101,7 @@ export default function CustomerDetails() {
     } else {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadCustomerData is defined below, only run when id changes
   }, [id]);
 
   const loadCustomerData = async () => {
@@ -191,7 +192,7 @@ export default function CustomerDetails() {
     if (!newNote.trim()) return;
 
     try {
-      const { error } = await (supabase as any).from('customer_notes').insert({
+      const { error } = await supabase.from('customer_notes').insert({
         account_id: customer?.account_id ?? '',
         customer_id: id ?? '',
         note: newNote,
@@ -300,7 +301,7 @@ export default function CustomerDetails() {
 
   // Customer Lifetime Value: compute from orders for accuracy
   const totalOrdersCount = orders.length;
-  const totalSpentFromOrders: number = orders.reduce<number>((sum, o) => sum + (Number((o as Record<string, unknown>).total_amount) ?? 0), 0);
+  const totalSpentFromOrders: number = orders.reduce<number>((sum, o) => sum + Number((o as Record<string, unknown>).total_amount ?? 0), 0);
   const computedTotalSpent: number = totalSpentFromOrders > 0 ? totalSpentFromOrders : Number(customer?.total_spent ?? 0);
   const averageOrderValue: number = totalOrdersCount > 0 ? computedTotalSpent / totalOrdersCount : 0;
 

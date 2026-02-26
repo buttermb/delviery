@@ -372,6 +372,7 @@ export function StorefrontBuilder({
         }
 
         setBuilderMode(targetMode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- saveToHistory is defined below; no circular deps
     }, [builderMode, layoutConfig, easyModeBuilder]);
 
     // Save to history
@@ -523,7 +524,7 @@ export function StorefrontBuilder({
         themeCfg: ExtendedThemeConfig,
     ) => {
         try {
-            const { error } = await (supabase as any)
+            const { error } = await supabase
                 .from('marketplace_profiles')
                 .update({
                     layout_config: JSON.parse(JSON.stringify(layoutCfg)),
@@ -555,7 +556,7 @@ export function StorefrontBuilder({
             if (colors?.secondary) updatePayload.secondary_color = colors.secondary;
             if (colors?.accent) updatePayload.accent_color = colors.accent;
 
-            const { error } = await (supabase as any)
+            const { error } = await supabase
                 .from('marketplace_stores')
                 .update(updatePayload)
                 .eq('tenant_id', tenant?.id ?? '');
@@ -595,7 +596,7 @@ export function StorefrontBuilder({
             if (colors?.secondary) updatePayload.secondary_color = colors.secondary;
             if (colors?.accent) updatePayload.accent_color = colors.accent;
 
-            const { error } = await (supabase as any)
+            const { error } = await supabase
                 .from('marketplace_stores')
                 .update(updatePayload)
                 .eq('tenant_id', tenant?.id ?? '');

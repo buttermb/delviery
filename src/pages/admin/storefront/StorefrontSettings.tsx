@@ -29,7 +29,7 @@ import {
   CreditCard,
   Clock,
   Globe,
-  Save,
+  Save as _Save,
   Eye,
   Share2,
   MapPin,

@@ -205,7 +205,7 @@ function useRecentCustomerActivity(tenantId: string | undefined) {
         .in('id', customerIds);
 
       const customerNameMap = new Map(
-        (customers ?? []).map((c: any) => [c.id, { name: c.name || displayName(c.first_name, c.last_name), email: c.email }])
+        (customers ?? []).map((c) => [c.id, { name: c.name || displayName(c.first_name, c.last_name), email: c.email }])
       );
 
       return Array.from(customerMap.values())

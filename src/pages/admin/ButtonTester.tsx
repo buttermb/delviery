@@ -314,7 +314,7 @@ const ButtonTester = () => {
       // Intercept XHR requests with better error handling
       const xhrInstances = new WeakMap<XMLHttpRequest, string>();
       
-      XMLHttpRequest.prototype.open = function(...args: any[]) {
+      XMLHttpRequest.prototype.open = function(...args: unknown[]) {
         const url = args[1] as string;
         xhrInstances.set(this, url);
         
@@ -339,7 +339,7 @@ const ButtonTester = () => {
         return originalXHROpen.apply(this, args);
       };
 
-      XMLHttpRequest.prototype.send = function(...args: any[]) {
+      XMLHttpRequest.prototype.send = function(...args: unknown[]) {
         try {
           return originalXHRSend.apply(this, args);
         } catch (error) {

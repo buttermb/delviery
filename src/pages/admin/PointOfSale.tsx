@@ -93,7 +93,7 @@ export default function PointOfSale() {
   });
 
   // Load customers via useQuery with loading/error states
-  const { data: customers = [], isLoading: customersLoading, isError: customersError, refetch: refetchCustomers } = useQuery({
+  const { data: customers = [], isLoading: customersLoading, isError: customersError, refetch: _refetchCustomers } = useQuery({
     queryKey: queryKeys.customers.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
@@ -129,10 +129,12 @@ export default function PointOfSale() {
     if (tenantId) {
       loadProducts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadProducts is defined below, only run when tenantId changes
   }, [tenantId]);
 
   useEffect(() => {
     filterProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- filterProducts is defined below, runs when search/filter/products change
   }, [searchQuery, categoryFilter, products]);
 
   // Full screen toggle handler
@@ -280,7 +282,7 @@ export default function PointOfSale() {
       }));
 
       // Try atomic RPC first
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_pos_transaction_atomic', {
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('create_pos_transaction_atomic', {
         p_tenant_id: tenantId,
         p_items: transactionItems,
         p_payment_method: paymentMethod,

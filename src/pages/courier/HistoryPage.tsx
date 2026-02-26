@@ -39,6 +39,7 @@ export default function CourierHistoryPage() {
     if (courier) {
       loadHistory();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadHistory is defined below; only run when courier/role/statusFilter change
   }, [courier, role, statusFilter]);
 
   const loadHistory = async () => {

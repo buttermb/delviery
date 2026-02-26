@@ -50,7 +50,7 @@ const generateCouponCode = () => {
 };
 
 export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: CouponCreateFormProps) {
-  const { tenant, admin } = useTenantAdminAuth();
+  const { tenant: _tenant, admin } = useTenantAdminAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     code: "",
@@ -106,7 +106,7 @@ export function CouponCreateForm({ open, onOpenChange, coupon, onSuccess }: Coup
 
   const createMutation = useMutation({
     mutationFn: async (data: CouponInsert) => {
-      const { error } = await (supabase as any).from("coupon_codes").insert([data]);
+      const { error } = await supabase.from("coupon_codes").insert([data]);
       if (error) throw error;
     },
     onSuccess: () => {

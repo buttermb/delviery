@@ -50,7 +50,7 @@ export interface AdminDataTableProps<T> {
 export function AdminDataTable<T>({
     data,
     columns,
-    keyExtractor = (item: any) => item.id || Math.random().toString(),
+    keyExtractor = (item: T) => (item as Record<string, unknown>).id as string || Math.random().toString(),
     isLoading,
     isError,
     onRetry,

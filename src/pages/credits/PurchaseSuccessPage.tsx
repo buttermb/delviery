@@ -53,7 +53,7 @@ const CREDIT_SUGGESTIONS: CreditSuggestion[] = [
 
 export function PurchaseSuccessPage() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { balance, isLoading } = useCredits();
   const { navigateToAdmin } = useTenantNavigation();
   const queryClient = useQueryClient();

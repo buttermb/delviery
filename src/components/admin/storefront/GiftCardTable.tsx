@@ -90,7 +90,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
   const { data: giftCards = [], isLoading } = useQuery({
     queryKey: queryKeys.giftCards.byStore(storeId),
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('marketplace_gift_cards')
         .select('*')
         .eq('store_id', storeId)
@@ -131,7 +131,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
 
   const bulkStatusMutation = useMutation({
     mutationFn: async ({ ids, newStatus }: { ids: string[]; newStatus: 'active' | 'disabled' }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('marketplace_gift_cards')
         .update({ status: newStatus })
         .in('id', ids)
@@ -139,7 +139,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
 
       if (error) throw error;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (_, _variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.byStore(storeId) });
       toast.success("${variables.ids.length} card(s) ${variables.newStatus === ");
       setSelectedIds(new Set());
@@ -155,7 +155,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
   const deleteMutation = useMutation({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- marketplace_gift_cards not in generated types
     mutationFn: async (cardId: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('marketplace_gift_cards')
         .delete()
         .eq('id', cardId)

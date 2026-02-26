@@ -493,8 +493,8 @@ export function DateField<TFieldValues extends FieldValues, TName extends FieldP
  * />
  * ```
  */
-interface SwitchFieldProps<TFieldValues extends FieldValues, TName extends FieldPath<TFieldValues>>
-  extends BaseFieldProps<TFieldValues, TName> {}
+type SwitchFieldProps<TFieldValues extends FieldValues, TName extends FieldPath<TFieldValues>> =
+  BaseFieldProps<TFieldValues, TName>;
 
 export function SwitchField<TFieldValues extends FieldValues, TName extends FieldPath<TFieldValues>>({
   control,

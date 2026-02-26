@@ -505,7 +505,7 @@ export function OrdersListPage() {
         </DropdownMenu>
       ),
     },
-  ], [navigate, updateStatusMutation, deleteMutation]);
+  ], [navigate, updateStatusMutation]);
 
   // Print handler
   const handlePrint = (order: Order) => {

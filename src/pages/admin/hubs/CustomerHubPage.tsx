@@ -64,7 +64,7 @@ export default function CustomerHubPage() {
     usePageTitle('Customers');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'contacts';
-    const { tenant } = useTenantAdminAuth();
+    const { tenant: _tenant } = useTenantAdminAuth();
 
     const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab }, { replace: true });

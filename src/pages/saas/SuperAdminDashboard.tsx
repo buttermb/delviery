@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DataTable } from '@/components/shared/DataTable';
+import type { ColumnDef } from '@tanstack/react-table';
 import {
   Dialog,
   DialogContent,
@@ -55,7 +56,7 @@ export default function SuperAdminDashboard() {
     queryKey: queryKeys.superAdminTools.platformStatsSimple(),
     queryFn: async () => {
       // Get all tenants (super admin bypasses RLS)
-      const { data: tenants } = await (supabase as any).from('tenants').select('*');
+      const { data: tenants } = await supabase.from('tenants').select('*');
 
       const totalTenants = tenants?.length ?? 0;
       const activeTrials = tenants?.filter((t) => isTrial(t.subscription_status)).length ?? 0;
@@ -123,7 +124,7 @@ export default function SuperAdminDashboard() {
   const { data: featureFlags } = useQuery({
     queryKey: queryKeys.saasAdmin.featureFlags(),
     queryFn: async () => {
-      const { data, error } = await (supabase as any).from('feature_flags').select('*');
+      const { data, error } = await supabase.from('feature_flags').select('*');
       if (error) throw error;
       return data;
     },
@@ -370,7 +371,7 @@ export default function SuperAdminDashboard() {
         </div>
 
         <DataTable
-          columns={columns as any}
+          columns={columns as ColumnDef<TenantWithHealth>[]}
           data={filteredTenants ?? []}
           loading={isLoading}
           emptyMessage="No tenants found"
@@ -477,26 +478,26 @@ export default function SuperAdminDashboard() {
                   <div className="flex justify-between text-sm">
                      <span>Customers:</span>
                     <span>
-                      {(selectedTenant as any).usage?.customers ?? 0} /{' '}
-                      {(selectedTenant as any).limits?.customers === -1
+                      {(selectedTenant as unknown as Record<string, Record<string, number>>).usage?.customers ?? 0} /{' '}
+                      {(selectedTenant as unknown as Record<string, Record<string, number>>).limits?.customers === -1
                         ? '∞'
-                        : (selectedTenant as any).limits?.customers ?? 0}
+                        : (selectedTenant as unknown as Record<string, Record<string, number>>).limits?.customers ?? 0}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Menus:</span>
                     <span>
-                      {(selectedTenant as any).usage?.menus ?? 0} /{' '}
-                      {(selectedTenant as any).limits?.menus === -1 ? '∞' : (selectedTenant as any).limits?.menus ?? 0}
+                      {(selectedTenant as unknown as Record<string, Record<string, number>>).usage?.menus ?? 0} /{' '}
+                      {(selectedTenant as unknown as Record<string, Record<string, number>>).limits?.menus === -1 ? '∞' : (selectedTenant as unknown as Record<string, Record<string, number>>).limits?.menus ?? 0}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Products:</span>
                     <span>
-                      {(selectedTenant as any).usage?.products ?? 0} /{' '}
-                      {(selectedTenant as any).limits?.products === -1
+                      {(selectedTenant as unknown as Record<string, Record<string, number>>).usage?.products ?? 0} /{' '}
+                      {(selectedTenant as unknown as Record<string, Record<string, number>>).limits?.products === -1
                         ? '∞'
-                        : (selectedTenant as any).limits?.products ?? 0}
+                        : (selectedTenant as unknown as Record<string, Record<string, number>>).limits?.products ?? 0}
                     </span>
                   </div>
                 </div>

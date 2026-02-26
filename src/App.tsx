@@ -157,7 +157,7 @@ import {
   BusinessFinderPage, BusinessMenuPage, UnifiedOrdersPage,
   CommunityAuthPage, CommunityProtectedRoute, CommunityLayout, CommunityHomePage,
   CategoryPage, PostDetailPage, CreatePostPage, UserProfilePage, SearchPage, ApprovalPage,
-  InvitationAcceptPage, MenuAccess, ComingSoonPage, MobileTestPage,
+  InvitationAcceptPage, MenuAccess, MobileTestPage,
   TenantAdminAuthCallback, SuperAdminAuthCallback, CustomerAuthCallback,
   MFAChallengePage, AuthConfirmPage, SecureAccountPage,
   FeatureCompliancePage, FeatureLogisticsPage, FeatureEcommercePage,
@@ -782,7 +782,7 @@ const App = () => {
                                         <Route path="custom-domain" element={<FeatureProtectedRoute featureId="custom-domain"><CustomDomainPage /></FeatureProtectedRoute>} />
                                         <Route path="priority-support" element={<FeatureProtectedRoute featureId="priority-support"><PrioritySupportPage /></FeatureProtectedRoute>} />
                                         {/* Coming Soon Pages for missing features */}
-                                        <Route path="expense-tracking" element={<ComingSoonPage pageName="Expense Tracking" description="Track and manage business expenses" />} />
+                                        <Route path="expense-tracking" element={<Navigate to="finance-hub?tab=expenses" replace />} />
                                         {/* Catch-all for unknown admin routes */}
                                         <Route path="*" element={<Suspense fallback={<LoadingFallback />}><AdminNotFoundPage /></Suspense>} />
                                       </Route>

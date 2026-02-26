@@ -238,6 +238,7 @@ export function OrderDeliveryStatusSync({
           }
         }
       },
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- updateOrderDeliveryStatus is a stable helper wrapping a mutation; tenant?.id is accessed from closure
       [orderId, queryClient, deliveryQueryKey, onDeliveryStatusChange, autoUpdateOrderStatus]
     ),
   });

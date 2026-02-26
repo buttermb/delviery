@@ -34,7 +34,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
     from: subDays(new Date(), 30),
     to: new Date(),
   });
-  const [filters, setFilters] = useState<FilterState>({});
+  const [_filters, setFilters] = useState<FilterState>({});
   const { data: analytics, isLoading } = useMenuAnalytics(menuId);
   const { data: productAnalytics } = useProductImageAnalytics(menuId);
 
@@ -76,7 +76,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
         const endOfDay = new Date(date);
         endOfDay.setHours(23, 59, 59, 999);
 
-        const { count: views } = await (supabase as any)
+        const { count: views } = await supabase
           .from('menu_access_logs')
           .select('id', { count: 'exact', head: true })
           .eq('menu_id', menuId)
@@ -84,7 +84,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
           .gte('accessed_at', startOfDay.toISOString())
           .lte('accessed_at', endOfDay.toISOString());
 
-        const { count: zooms } = await (supabase as any)
+        const { count: zooms } = await supabase
           .from('menu_access_logs')
           .select('id', { count: 'exact', head: true })
           .eq('menu_id', menuId)

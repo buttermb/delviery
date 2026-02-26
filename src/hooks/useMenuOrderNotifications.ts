@@ -178,7 +178,7 @@ export function useMenuOrderNotifications(
 
       // 1. Create database notification
       try {
-        const { error } = await (supabase as any).from('notifications').insert({
+        const { error } = await supabase.from('notifications').insert({
           tenant_id: tenantId,
           user_id: null, // Notify all admins
           title: 'New Menu Order Received',

@@ -13,7 +13,7 @@ export interface ActivityLogParams {
   action: string;
   resource?: string;
   resourceId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -22,7 +22,7 @@ export interface ActivityLogParams {
  */
 export async function logActivity(params: ActivityLogParams): Promise<void> {
   try {
-    const { error } = await (supabase as any).rpc('log_activity', {
+    const { error } = await supabase.rpc('log_activity', {
       p_user_id: params.userId,
       p_tenant_id: params.tenantId,
       p_action: params.action,
@@ -64,7 +64,7 @@ export async function logActivityAuto(
   action: string,
   resource?: string,
   resourceId?: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   const userId = await getCurrentUserId();
   if (!userId) {

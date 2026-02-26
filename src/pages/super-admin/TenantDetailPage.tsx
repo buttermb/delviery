@@ -165,7 +165,7 @@ export default function TenantDetailPage() {
 
       // Log action (super_admin_audit_logs table)
       if (superAdmin) {
-        await (supabase as any).from("super_admin_audit_logs").insert({
+        await supabase.from("super_admin_audit_logs").insert({
           super_admin_id: superAdmin.id,
           action: suspend ? "TENANT_SUSPENDED" : "TENANT_ACTIVATED",
           entity_type: "tenant",
@@ -196,7 +196,7 @@ export default function TenantDetailPage() {
 
       // Log action (super_admin_audit_logs table)
       if (superAdmin) {
-        await (supabase as any).from("super_admin_audit_logs").insert({
+        await supabase.from("super_admin_audit_logs").insert({
           super_admin_id: superAdmin.id,
           action: "PLAN_CHANGED",
           entity_type: "tenant",
@@ -995,7 +995,7 @@ export default function TenantDetailPage() {
                     onClick={async () => {
                       const credit = prompt("Enter credit amount (USD):");
                       if (credit && !isNaN(Number(credit))) {
-                        const { error } = await (supabase as any).from('tenants').update({
+                        const { error } = await supabase.from('tenants').update({
                           mrr: (tenant.mrr ?? 0) - Number(credit)
                         }).eq('id', tenantId);
 
@@ -1166,7 +1166,7 @@ export default function TenantDetailPage() {
             if (error) throw error;
 
             // Log subscription event
-            await (supabase as any).from("subscription_events").insert({
+            await supabase.from("subscription_events").insert({
               tenant_id: tenant.id,
               event_type: "cancelled",
               from_plan: tenant.subscription_plan,

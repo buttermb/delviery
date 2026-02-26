@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
  * Props for the FormFactory component
  * @template T - The Zod schema type
  */
-interface FormFactoryProps<T extends z.ZodType<any, any>> {
+interface FormFactoryProps<T extends z.ZodTypeAny> {
     /** The Zod schema for validation */
     schema: T;
     /** Default values for the form */
@@ -65,7 +65,7 @@ export interface FormFieldConfig<TFieldValues extends FieldValues> {
     required?: boolean;
 }
 
-export function FormFactory<T extends z.ZodType<any, any>>({
+export function FormFactory<T extends z.ZodTypeAny>({
     schema,
     defaultValues,
     onSubmit,

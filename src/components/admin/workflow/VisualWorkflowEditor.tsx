@@ -264,6 +264,7 @@ export function VisualWorkflowEditor({ workflow, onSave, readOnly = false }: Vis
       setConfiguringNode(newNode);
       setIsConfiguring(true);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDeleteNode is defined below and stable (depends only on setNodes/setEdges)
     [reactFlowInstance, setNodes]
   );
 

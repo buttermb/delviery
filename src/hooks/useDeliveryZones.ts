@@ -32,7 +32,7 @@ export function useDeliveryZones() {
     queryFn: async () => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('delivery_zones')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -53,7 +53,7 @@ export function useDeliveryZones() {
   const fetchZone = async (zoneId: string): Promise<DeliveryZone | null> => {
     if (!tenantId) return null;
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('delivery_zones')
       .select('*')
       .eq('id', zoneId)
@@ -73,7 +73,7 @@ export function useDeliveryZones() {
     mutationFn: async (formData: DeliveryZoneFormData) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('delivery_zones')
         .insert({
           tenant_id: tenantId,
@@ -121,7 +121,7 @@ export function useDeliveryZones() {
     }) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('delivery_zones')
         .update({
           ...formData,
@@ -153,7 +153,7 @@ export function useDeliveryZones() {
     mutationFn: async (zoneId: string) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('delivery_zones')
         .delete()
         .eq('id', zoneId)
@@ -178,7 +178,7 @@ export function useDeliveryZones() {
     mutationFn: async ({ zoneId, isActive }: { zoneId: string; isActive: boolean }) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('delivery_zones')
         .update({ is_active: isActive, updated_at: new Date().toISOString() })
         .eq('id', zoneId)
@@ -242,7 +242,7 @@ export function useZoneValidation() {
   }> => {
     if (!tenantId) return { inZone: false, zone: null };
 
-     const { data, error } = await (supabase as any).rpc('point_in_delivery_zone', {
+     const { data, error } = await supabase.rpc('point_in_delivery_zone', {
       p_tenant_id: tenantId,
       p_lat: lat,
       p_lng: lng,
@@ -272,7 +272,7 @@ export function useZoneValidation() {
   }> => {
     if (!tenantId) return { inZone: false, zone: null };
 
-    const { data, error } = await (supabase as any).rpc('zip_in_delivery_zone', {
+    const { data, error } = await supabase.rpc('zip_in_delivery_zone', {
       p_tenant_id: tenantId,
       p_zip_code: zipCode,
     });

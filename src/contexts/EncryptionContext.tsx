@@ -4,9 +4,8 @@ import { createContext, useContext, ReactNode } from 'react';
 import { useEncryption } from '@/lib/hooks/useEncryption';
 import type { EncryptionHookResult } from '@/lib/encryption/types';
 
-interface EncryptionContextType extends EncryptionHookResult {
-  // Additional context-specific methods can be added here
-}
+// Additional context-specific methods can be added here
+type EncryptionContextType = EncryptionHookResult;
 
 const EncryptionContext = createContext<EncryptionContextType | undefined>(undefined);
 

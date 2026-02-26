@@ -589,7 +589,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'expense-tracking',
     name: 'Expenses',
     icon: Receipt,
-    path: '/admin/expense-tracking',
+    path: '/admin/finance-hub?tab=expenses',
     category: 'Analytics & Finance',
     minTier: 'professional',
   },

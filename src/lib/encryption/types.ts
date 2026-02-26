@@ -206,7 +206,7 @@ export interface EncryptedOrder {
 
 export interface DecryptedOrder {
   id: string;
-  items: any[];
+  items: unknown[];
   total: string;
   customer_notes?: string;
   delivery_address: string;

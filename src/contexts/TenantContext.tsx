@@ -85,7 +85,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
   useEffect(() => {
     if (tenant?.id) {
       const interval = setInterval(() => {
-        (supabase as any)
+        supabase
           .from('tenants')
           .update({ last_activity_at: new Date().toISOString() })
           .eq('id', tenant.id)

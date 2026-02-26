@@ -75,8 +75,8 @@ export default function MarketplaceDashboard() {
         queryKey: queryKeys.marketplaceAnalytics.byProfile(profile?.id),
         queryFn: async () => {
             if (!profile?.id) return null;
-            const { data, error } = await supabase
-                .rpc('get_marketplace_analytics' as any, { p_store_id: profile.id }); // Supabase type limitation
+            const rpc = supabase.rpc as unknown as (fn: string, params: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message?: string } | null }>;
+            const { data, error } = await rpc('get_marketplace_analytics', { p_store_id: profile.id }); // Supabase type limitation
 
             if (error) {
                 logger.error('Failed to fetch analytics', error);

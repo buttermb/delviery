@@ -475,7 +475,7 @@ const AdminLiveChat = function AdminLiveChat() {
         setIsUploading(false);
       }
 
-      const { error } = await (supabase as any).from('chat_messages').insert({
+      const { error } = await supabase.from('chat_messages').insert({
         session_id: selectedSession,
         sender_type: 'admin',
         sender_id: user.id,
@@ -555,7 +555,7 @@ const AdminLiveChat = function AdminLiveChat() {
         .eq('id', sessionId);
 
       // Send system message
-      await (supabase as any).from('chat_messages').insert({
+      await supabase.from('chat_messages').insert({
         session_id: sessionId,
         sender_type: 'admin',
         sender_id: user.id,
@@ -576,7 +576,7 @@ const AdminLiveChat = function AdminLiveChat() {
       const { data: { user } } = await supabase.auth.getUser();
 
       // Send closing message
-      await (supabase as any).from('chat_messages').insert({
+      await supabase.from('chat_messages').insert({
         session_id: sessionId,
         sender_type: 'admin',
         sender_id: user?.id,

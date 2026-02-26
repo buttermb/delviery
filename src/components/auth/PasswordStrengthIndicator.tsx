@@ -24,7 +24,7 @@ const strengthChecks: StrengthCheck[] = [
   { label: 'Contains lowercase letter', test: (p) => /[a-z]/.test(p) },
   { label: 'Contains uppercase letter', test: (p) => /[A-Z]/.test(p) },
   { label: 'Contains number', test: (p) => /\d/.test(p) },
-  { label: 'Contains special character', test: (p) => /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\/'~`]/.test(p) },
+  { label: 'Contains special character', test: (p) => /[!@#$%^&*(),.?":{}|<>_\-+=[\]\\/'~`]/.test(p) },
 ];
 
 type StrengthLevel = 'weak' | 'medium' | 'strong';

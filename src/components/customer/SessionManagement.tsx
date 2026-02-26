@@ -49,6 +49,7 @@ export function SessionManagement() {
     if (customer && tenant) {
       loadSessions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadSessions is defined below and depends on customer/tenant which are already in deps
   }, [customer, tenant]);
 
   const loadSessions = async () => {
@@ -92,7 +93,7 @@ export function SessionManagement() {
     setRevoking(sessionId);
     try {
       const { error } = await supabase
-        .from('customer_sessions' as any) // Supabase type limitation
+        .from('customer_sessions')
         .update({ expires_at: new Date().toISOString() })
         .eq('id', sessionId);
 

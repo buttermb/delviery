@@ -66,7 +66,7 @@ export const PanicModeButton = () => {
 
       // 4. Log panic event
       const { data: userData } = await supabase.auth.getUser();
-      await (supabase as any).from('menu_panic_events').insert({
+      await supabase.from('menu_panic_events').insert({
         triggered_by: userData.user?.id,
         triggered_at: new Date().toISOString(),
         affected_menus: activeMenus?.map(m => ({ id: m.id, name: m.name })),

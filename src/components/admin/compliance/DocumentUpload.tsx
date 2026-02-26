@@ -83,7 +83,7 @@ export function DocumentUpload({
         }
 
         // Save document record
-        const { error } = await (supabase as any).from("compliance_documents").insert([
+        const { error } = await supabase.from("compliance_documents").insert([
           {
             tenant_id: tenant.id,
             name: data.name,

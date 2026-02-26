@@ -15,7 +15,7 @@ import React, { useCallback } from 'react';
 
 // Mock OrderRow component that uses React.memo
 const MockOrderRow = React.memo<{
-  order: any;
+  order: { id: string; order_number: string };
   isSelected: boolean;
   onSelect: (orderId: string, checked: boolean) => void;
   onStatusChange: (orderId: string, newStatus: string) => void;
@@ -69,7 +69,7 @@ describe('useCallback in Orders Component', () => {
 
   describe('Event handler stability', () => {
     it('should maintain stable references for order handlers when using useCallback', () => {
-      const handlerRefs: any[] = [];
+      const handlerRefs: ((orderId: string, checked: boolean) => void)[] = [];
 
       const TestOrdersParent = () => {
         const [unrelatedState, setUnrelatedState] = React.useState(0);
@@ -253,7 +253,7 @@ describe('useCallback in ProductCard Component', () => {
   describe('Event handler stability', () => {
     it('should maintain stable reference for handleCardClick with useCallback', () => {
       let renderCount = 0;
-      const handlers: any[] = [];
+      const handlers: (() => void)[] = [];
 
       const MockProductDetail = React.memo<{ onClose: () => void }>(({ onClose }) => {
         renderCount++;

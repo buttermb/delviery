@@ -53,8 +53,8 @@ export type MarketplaceProfile = {
   shipping_states?: string[];
   shipping_policy?: string | null;
   return_policy?: string | null;
-  layout_config?: any[] | null;
-  theme_config?: any | null;
+  layout_config?: unknown[] | null;
+  theme_config?: Record<string, unknown> | null;
   average_rating?: number;
   total_reviews?: number;
   total_orders?: number;

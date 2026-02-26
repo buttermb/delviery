@@ -248,7 +248,7 @@ export const wholesaleOrderFlowManager = {
         for (const item of items) {
           const productId = productMap.get(item.product_name);
           if (productId) {
-            const { data: success, error } = await (supabase as any).rpc('reserve_inventory_for_order', {
+            const { data: success, error } = await supabase.rpc('reserve_inventory_for_order', {
               p_product_id: productId,
               p_quantity: item.quantity || 1,
             });
@@ -266,7 +266,7 @@ export const wholesaleOrderFlowManager = {
         for (const item of items) {
           const productId = productMap.get(item.product_name);
           if (productId) {
-            await (supabase as any).rpc('commit_reserved_inventory', {
+            await supabase.rpc('commit_reserved_inventory', {
               p_product_id: productId,
               p_quantity: item.quantity || 1,
             });
@@ -279,7 +279,7 @@ export const wholesaleOrderFlowManager = {
         for (const item of items) {
           const productId = productMap.get(item.product_name);
           if (productId) {
-            await (supabase as any).rpc('release_reserved_inventory', {
+            await supabase.rpc('release_reserved_inventory', {
               p_product_id: productId,
               p_quantity: item.quantity || 1,
             });

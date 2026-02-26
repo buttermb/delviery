@@ -174,7 +174,7 @@ export function useBusinessTier() {
 
       try {
         // Try RPC first
-        const { error } = await (supabase as any).rpc('update_tenant_tier', {
+        const { error } = await supabase.rpc('update_tenant_tier', {
           p_tenant_id: tenant.id,
           p_tier: detectedTier,
         });
@@ -294,7 +294,7 @@ export function useBusinessTier() {
       hasAttemptedUpdate.current = true;
       recalculateTierMutation.mutate();
     }
-    // Remove recalculateTierMutation from deps to prevent infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- recalculateTierMutation is intentionally omitted to prevent infinite loops (mutation triggers data refetch which triggers this effect)
   }, [tierData]);
 
   return {

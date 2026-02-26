@@ -84,9 +84,9 @@ export function OrderNotesSection({
       const updateData = { [field]: value };
 
       // Supabase type limitation: dynamic table names can't be statically typed
-      const baseQuery = (supabase as any).from(tableName as any).update(updateData); // Supabase type limitation
+      const baseQuery = supabase.from(tableName).update(updateData);
 
-      let query = baseQuery.eq('id', orderId) as any; // Supabase type limitation: dynamic chaining
+      let query = baseQuery.eq('id', orderId);
 
       if (additionalFilter) {
         query = query.eq(additionalFilter.field, additionalFilter.value);

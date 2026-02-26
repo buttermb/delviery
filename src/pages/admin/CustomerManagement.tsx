@@ -1,17 +1,15 @@
 import { logger } from '@/lib/logger';
-import { useState, useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { queryKeys } from "@/lib/queryKeys";
 import { invalidateOnEvent } from "@/lib/invalidation";
 import { formatCurrency, formatSmartDate, displayName } from '@/lib/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -27,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
+  Users, Plus, DollarSign, Award, TrendingUp, UserCircle,
   MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Mail, Lock, Phone
 } from "lucide-react";
 import { toast } from "sonner";
@@ -40,13 +38,12 @@ import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 import { useEncryption } from "@/lib/hooks/useEncryption";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { SwipeableItem } from "@/components/mobile/SwipeableItem";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { triggerHaptic } from "@/lib/utils/mobile";
 import { cn } from "@/lib/utils";
 import { CustomerImportDialog } from "@/components/admin/CustomerImportDialog";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import CopyButton from "@/components/CopyButton";
 import { CustomerTagFilter } from "@/components/admin/customers/CustomerTagFilter";
 import { CustomerTagBadges } from "@/components/admin/customers/CustomerTagBadges";
@@ -55,7 +52,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
 import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
 import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
-import { ExportButton } from '@/components/ui/ExportButton';
 
 import { useCustomersByTags } from "@/hooks/useAutoTagRules";
 
@@ -91,8 +87,6 @@ const looksLikeEncryptedData = (value: string | null): boolean => {
 
 export function CustomerManagement() {
   const navigate = useNavigate();
-  const { navigateToAdmin } = useTenantNavigation();
-  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const queryClient = useQueryClient();
@@ -198,11 +192,11 @@ export function CustomerManagement() {
     enabled: !!tenant && !accountLoading,
   });
 
-  const handleDeleteClick = (customerId: string, customerName: string) => {
+  const handleDeleteClick = useCallback((customerId: string, customerName: string) => {
     triggerHaptic('medium');
     setCustomerToDelete({ id: customerId, name: customerName });
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
   const handleDelete = async () => {
     if (!customerToDelete || !tenant) return;
@@ -356,78 +350,6 @@ export function CustomerManagement() {
     const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
     return days > 60;
   }).length, [customers]);
-
-  if (accountLoading || loading) {
-    return (
-      <div className="space-y-4 max-w-7xl mx-auto p-4 sm:p-4">
-        {/* Header skeleton */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-48" />
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-
-        {/* Stats skeleton */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-8 w-8 rounded-full" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-7 w-16" />
-                <Skeleton className="h-3 w-20 mt-1" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Table skeleton */}
-        <Card>
-          <CardContent className="p-0">
-            <table className="w-full">
-              <thead className="bg-muted/50 border-b">
-                <tr>
-                  {["", "Customer", "Type", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
-                    <th key={i} scope="col" className="px-4 py-2.5 text-left">
-                      <Skeleton className="h-3 w-16" />
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {Array.from({ length: 6 }).map((_, rowIdx) => (
-                  <tr key={rowIdx}>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-4" /></td>
-                    <td className="px-4 py-2.5">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                        <div className="space-y-1">
-                          <Skeleton className="h-4 w-28" />
-                          <Skeleton className="h-3 w-36" />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-16 rounded-full" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-16" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-12" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-14 rounded-full" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-16 rounded-full" /></td>
-                    <td className="px-4 py-2.5 text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const customerColumns = useMemo<ResponsiveColumn<Customer>[]>(() => [
     {
       header: 'Customer',
@@ -552,6 +474,77 @@ export function CustomerManagement() {
       )
     }
   ], [tenant?.slug, navigate, canEdit, canDelete, posEnabled, handleDeleteClick]);
+
+  if (accountLoading || loading) {
+    return (
+      <div className="space-y-4 max-w-7xl mx-auto p-4 sm:p-4">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+
+        {/* Stats skeleton */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-7 w-16" />
+                <Skeleton className="h-3 w-20 mt-1" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Table skeleton */}
+        <Card>
+          <CardContent className="p-0">
+            <table className="w-full">
+              <thead className="bg-muted/50 border-b">
+                <tr>
+                  {["", "Customer", "Type", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
+                    <th key={i} scope="col" className="px-4 py-2.5 text-left">
+                      <Skeleton className="h-3 w-16" />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {Array.from({ length: 6 }).map((_, rowIdx) => (
+                  <tr key={rowIdx}>
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-4" /></td>
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="space-y-1">
+                          <Skeleton className="h-4 w-28" />
+                          <Skeleton className="h-3 w-36" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-16" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-12" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-20" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-14 rounded-full" /></td>
+                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                    <td className="px-4 py-2.5 text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const renderMobileItem = (customer: Customer) => (
     <SwipeableItem

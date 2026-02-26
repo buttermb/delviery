@@ -15,10 +15,9 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useOptimisticLock } from "@/hooks/useOptimisticLock";
 import { useProductMutations } from "@/hooks/useProductMutations";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SearchInput } from "@/components/shared/SearchInput";
 import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
 import { toast } from "sonner";
 import {
@@ -35,8 +34,6 @@ import {
   Printer,
   MoreVertical,
   Store,
-  AlertTriangle,
-  RefreshCw,
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
@@ -44,11 +41,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { ProductCard } from "@/components/admin/ProductCard";
 import { Toggle } from "@/components/ui/toggle";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import {
   Select,
@@ -67,7 +62,6 @@ import { ProductForm, type ProductFormData } from "@/components/admin/products/P
 import { useProductDuplicate } from "@/hooks/useProductDuplicate";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import type { Database } from "@/integrations/supabase/types";
-import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { Checkbox } from "@/components/ui/checkbox";
 import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -79,7 +73,6 @@ import { ProductMarginBadge } from "@/components/admin/products/ProductMarginBad
 import { ColumnVisibilityControl } from "@/components/admin/ColumnVisibilityControl";
 import { AdminToolbar } from "@/components/admin/shared/AdminToolbar";
 import { AdminDataTable } from "@/components/admin/shared/AdminDataTable";
-import Columns from "lucide-react/dist/esm/icons/columns";
 
 type Product = Database['public']['Tables']['products']['Row'] & {
   // Add fields that might be missing from generated types or are dynamic
@@ -140,7 +133,7 @@ export default function ProductManagement() {
   const {
     items: products,
     optimisticIds,
-    addOptimistic,
+    addOptimistic: _addOptimistic,
     updateOptimistic,
     deleteOptimistic,
     setItems: setProducts,
@@ -367,10 +360,11 @@ export default function ProductManagement() {
             return (b.wholesale_price ?? 0) - (a.wholesale_price ?? 0);
           case "stock":
             return (b.available_quantity ?? 0) - (a.available_quantity ?? 0);
-          case "margin":
+          case "margin": {
             const marginA = profitMargin(a.cost_per_unit ?? 0, a.wholesale_price ?? 0);
             const marginB = profitMargin(b.cost_per_unit ?? 0, b.wholesale_price ?? 0);
             return Number(marginB) - Number(marginA);
+          }
           default:
             return 0;
         }
@@ -584,7 +578,7 @@ export default function ProductManagement() {
           action: 'updated',
         });
       } else {
-        const { data: newProduct, error } = await (supabase as any).from('products').insert(productData).select().maybeSingle();
+        const { data: newProduct, error } = await supabase.from('products').insert(productData).select().maybeSingle();
         if (error) throw error;
         toast.success("Product created");
         // Manually update state
@@ -766,7 +760,7 @@ export default function ProductManagement() {
             return;
           }
 
-          const { error } = await (supabase as any).from('products').delete().in('id', deletableIds).eq('tenant_id', tenant.id);
+          const { error } = await supabase.from('products').delete().in('id', deletableIds).eq('tenant_id', tenant.id);
           if (error) throw error;
 
           if (skippedCount > 0) {

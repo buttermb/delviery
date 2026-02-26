@@ -91,6 +91,7 @@ export function useIntendedDestination() {
       logger.warn('[IntendedDestination] Failed to read from sessionStorage', error);
       return null;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clearIntendedDestination is defined below and stable (no external deps)
   }, [searchParams, setSearchParams]);
 
   /**

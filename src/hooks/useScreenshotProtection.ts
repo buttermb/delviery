@@ -65,7 +65,7 @@ export const useScreenshotProtection = ({
       async (attempt: ScreenshotAttempt) => {
         // Log to database
         try {
-          await (supabase as any).from('menu_screenshot_attempts').insert({
+          await supabase.from('menu_screenshot_attempts').insert({
             menu_id: menuId,
             customer_id: customerId,
             customer_name: customerName,
@@ -77,7 +77,7 @@ export const useScreenshotProtection = ({
           });
 
           // Log security event
-          await (supabase as any).from('menu_security_events').insert({
+          await supabase.from('menu_security_events').insert({
             menu_id: menuId,
             event_type: 'screenshot_attempt',
             severity: 'medium',

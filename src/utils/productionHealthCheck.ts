@@ -28,7 +28,7 @@ export const runProductionHealthCheck = async (): Promise<HealthCheckResult> => 
 
   // Check Supabase connection
   try {
-    const { error } = await (supabase as any).from('products').select('id').limit(1);
+    const { error } = await supabase.from('products').select('id').limit(1);
     result.supabase = !error;
     if (error) {
       result.issues.push('Supabase connection failed');

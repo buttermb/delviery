@@ -77,7 +77,7 @@ export function ProductAdvancedFilters({
   onFiltersChange,
   categories,
   vendors,
-  maxPrice = 1000,
+  maxPrice: _maxPrice = 1000,
   className,
 }: ProductAdvancedFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -152,11 +152,12 @@ export function ProductAdvancedFilters({
         if (filters.archiveStatus === 'all') return 'All Products';
         return '';
       case 'createdAfter':
-      case 'createdBefore':
+      case 'createdBefore': {
         const parts: string[] = [];
         if (filters.createdAfter) parts.push(`After ${format(filters.createdAfter, 'MMM d, yyyy')}`);
         if (filters.createdBefore) parts.push(`Before ${format(filters.createdBefore, 'MMM d, yyyy')}`);
         return parts.join(' - ');
+      }
       default:
         return '';
     }
@@ -192,6 +193,7 @@ export function ProductAdvancedFilters({
     }
 
     return badges;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getFilterLabel only depends on `filters` which is already in deps
   }, [filters]);
 
   return (

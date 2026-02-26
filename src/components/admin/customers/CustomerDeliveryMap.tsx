@@ -146,7 +146,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
     queryFn: async () => {
       if (!tenant?.id) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('customer_delivery_addresses')
         .select('*')
         .eq('customer_id', customerId)
@@ -173,7 +173,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
       if (!tenant?.id) return [];
 
       // Try to get delivery history from orders with delivery info
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('orders')
         .select(`
           id,
@@ -195,7 +195,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
         return [];
       }
 
-      return (data ?? []).map((order: any) => ({
+      return (data ?? []).map((order: { id: string; created_at: string; status: string; delivery_address?: string }) => ({
         id: order.id,
         delivery_date: order.created_at,
         status: order.status,
@@ -389,7 +389,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
   const isLoading = addressesLoading || locationsLoading;
 
   // Get addresses with coordinates for display
-  const geocodedAddresses = addresses.filter((a) => a.latitude && a.longitude);
+  const _geocodedAddresses = addresses.filter((a) => a.latitude && a.longitude);
   const ungeocodedAddresses = addresses.filter((a) => !a.latitude || !a.longitude);
 
   if (isLoading) {

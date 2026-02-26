@@ -102,7 +102,7 @@ export default function ReturnsManagementPage() {
     queryKey: queryKeys.returns.list({ status: statusFilter }),
     queryFn: async () => {
       let query = supabase
-        .from("return_authorizations" as any) // Supabase type limitation
+        .from("return_authorizations" as 'tenants') // Supabase type limitation
         .select("*")
         .order("created_at", { ascending: false });
 

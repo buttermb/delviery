@@ -16,7 +16,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import Plus from 'lucide-react/dist/esm/icons/plus';
-import Tag from 'lucide-react/dist/esm/icons/tag';
+
 import Check from 'lucide-react/dist/esm/icons/check';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import {
@@ -125,7 +125,7 @@ export function ProductTagInput({ productId, className }: ProductTagInputProps) 
     }
   }, [searchTerm, newTagColor, productId, createTag, assignTag]);
 
-  const isLoading = isLoadingTags || isLoadingAssignments;
+  const _isLoading = isLoadingTags || isLoadingAssignments;
   const isPending = assignTag.isPending || removeTag.isPending || createTag.isPending;
 
   return (

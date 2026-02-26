@@ -80,6 +80,7 @@ export function ResetPasswordPage() {
     }
 
     verifyToken(token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- verifyToken is defined below; only run when token changes
   }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {

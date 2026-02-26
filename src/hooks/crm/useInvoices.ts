@@ -70,7 +70,7 @@ export function useInvoices() {
             const sortCol = sort?.column && INVOICE_SORT_COLUMN_MAP[sort.column]
                 ? INVOICE_SORT_COLUMN_MAP[sort.column]
                 : 'created_at';
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('crm_invoices')
                 .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('account_id', accountId)
@@ -107,7 +107,7 @@ export function useInvoices() {
         return useMutation({
             mutationFn: async (invoiceId: string) => {
                 if (!accountId) throw new Error('Account ID required');
-                const { data, error } = await (supabase as any).from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).eq('account_id', accountId).select('*, client:crm_clients(*)').maybeSingle();
+                const { data, error } = await supabase.from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).eq('account_id', accountId).select('*, client:crm_clients(*)').maybeSingle();
                 if (error) throw error;
                 return normalizeInvoice(data);
             },
@@ -131,7 +131,7 @@ export function useInvoices() {
         return useMutation({
             mutationFn: async (invoiceId: string) => {
                 if (!accountId) throw new Error('Account ID required');
-                const { error } = await (supabase as any).from('crm_invoices').delete().eq('id', invoiceId).eq('account_id', accountId);
+                const { error } = await supabase.from('crm_invoices').delete().eq('id', invoiceId).eq('account_id', accountId);
                 if (error) throw error;
             },
             onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() }); toast.success('Invoice deleted'); },

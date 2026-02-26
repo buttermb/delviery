@@ -29,6 +29,7 @@ export default function InvitationAcceptPage() {
 
   useEffect(() => {
     checkAuthAndValidateInvitation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- checkAuthAndValidateInvitation is defined below, only run when token changes
   }, [token]);
 
   const checkAuthAndValidateInvitation = async () => {

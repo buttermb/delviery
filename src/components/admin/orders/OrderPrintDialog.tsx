@@ -268,7 +268,7 @@ export function OrderPrintDialog({
         });
       }, 250);
     };
-  }, [order, selectedLayout, showPrices]);
+  }, [order, selectedLayout]);
 
   if (!order) {
     return null;

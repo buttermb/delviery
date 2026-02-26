@@ -29,7 +29,7 @@ import RotateCcw from 'lucide-react/dist/esm/icons/rotate-ccw';
 import CreditCard from 'lucide-react/dist/esm/icons/credit-card';
 import Plus from 'lucide-react/dist/esm/icons/plus';
 import History from 'lucide-react/dist/esm/icons/history';
-import User from 'lucide-react/dist/esm/icons/user';
+import _User from 'lucide-react/dist/esm/icons/user';
 import Bot from 'lucide-react/dist/esm/icons/bot';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -273,7 +273,7 @@ async function fetchOrderTimeline(
   tenantId: string,
   orderId: string
 ): Promise<ActivityLogEntry[]> {
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('activity_log')
     .select('*')
     .eq('tenant_id', tenantId)

@@ -50,7 +50,7 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Phone validation - accepts formats: (555) 123-4567, 555-123-4567, 5551234567, +1 555-123-4567
-const PHONE_REGEX = /^[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+const PHONE_REGEX = /^[+]?[(]?[0-9]{1,3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
 
 interface CheckoutData {
   // Contact
@@ -227,6 +227,7 @@ export function CheckoutPage() {
     if (isInitialized && cartItems.length > 0 && store?.id) {
       validateCart();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- validateCart is defined below; only run when cart/store changes
   }, [isInitialized, cartItems.length, store?.id]);
 
   // Fetch and calculate active deals
@@ -353,7 +354,7 @@ export function CheckoutPage() {
           return false;
         }
         return true;
-      case 2:
+      case 2: {
         if (!formData.street || !formData.city || !formData.zip) {
           toast.error('Please fill in your delivery address');
           return false;
@@ -377,6 +378,7 @@ export function CheckoutPage() {
           }
         }
         return true;
+      }
       case 3:
         if (!formData.paymentMethod) {
           toast.error('Please select a payment method');

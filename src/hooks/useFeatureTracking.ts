@@ -83,7 +83,7 @@ export function useFeatureTracking() {
     // Also track to database if we have a user
     if (tenant?.id && admin?.userId) {
       try {
-        await (supabase as any).rpc('track_feature_usage', {
+        await supabase.rpc('track_feature_usage', {
           p_user_id: admin.userId,
           p_tenant_id: tenant.id,
           p_feature_id: featureId,

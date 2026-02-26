@@ -124,8 +124,8 @@ export function VendorOrderHistory({ vendorId, vendorName }: VendorOrderHistoryP
     totalPages,
     paginatedItems: paginatedData,
     goToPage,
-    previousPage: prevPage,
-    nextPage,
+    previousPage: _prevPage,
+    nextPage: _nextPage,
     changePageSize,
   } = usePagination(filteredOrders, {
     defaultPageSize: 10,

@@ -104,7 +104,7 @@ function formatCellValue<T>(
 /**
  * Export data to CSV format
  */
-export function exportToCSV<T extends Record<string, any>>(
+export function exportToCSV<T extends Record<string, unknown>>(
   data: T[],
   columns: ExportColumn<T>[],
   filename: string,
@@ -142,7 +142,7 @@ export function exportToCSV<T extends Record<string, any>>(
 /**
  * Export data to JSON format
  */
-export function exportToJSON<T extends Record<string, any>>(
+export function exportToJSON<T extends Record<string, unknown>>(
   data: T[],
   filename: string,
   pretty = true
@@ -249,7 +249,7 @@ export const ExportColumnHelpers = {
 /**
  * Quick export function for simple use cases
  */
-export function quickExportCSV<T extends Record<string, any>>(
+export function quickExportCSV<T extends Record<string, unknown>>(
   data: T[],
   filename: string
 ): void {

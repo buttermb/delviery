@@ -128,8 +128,8 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
     totalPages,
     paginatedItems: paginatedData,
     goToPage,
-    previousPage: prevPage,
-    nextPage,
+    previousPage: _prevPage,
+    nextPage: _nextPage,
     changePageSize,
   } = usePagination(filteredProducts, {
     defaultPageSize: 10,

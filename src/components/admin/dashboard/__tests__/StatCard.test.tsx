@@ -16,7 +16,7 @@ vi.mock('react-router-dom', async () => {
   return {
     ...actual,
     useParams: vi.fn(() => ({ tenantSlug: 'test-tenant' })),
-    Link: ({ to, children, ...props }: any) => (
+    Link: ({ to, children, ...props }: { to: string; children?: React.ReactNode; [key: string]: unknown }) => (
       <a href={to} data-testid="link" {...props}>
         {children}
       </a>
@@ -26,7 +26,7 @@ vi.mock('react-router-dom', async () => {
 
 // Mock UI components
 vi.mock('@/components/ui/card', () => ({
-  Card: ({ children, className, onClick, ...props }: any) => (
+  Card: ({ children, className, onClick, ...props }: { children?: React.ReactNode; className?: string; onClick?: () => void; [key: string]: unknown }) => (
     <div data-testid="card" className={className} onClick={onClick} {...props}>
       {children}
     </div>
@@ -34,7 +34,7 @@ vi.mock('@/components/ui/card', () => ({
 }));
 
 vi.mock('@/components/shared/LastUpdated', () => ({
-  LastUpdated: ({ date, onRefresh, isLoading, className }: any) => (
+  LastUpdated: ({ date, onRefresh, isLoading, className }: { date: Date; onRefresh?: () => void; isLoading?: boolean; className?: string }) => (
     <div data-testid="last-updated" className={className}>
       <span>Last updated: {date.toISOString()}</span>
       {onRefresh && (
@@ -48,17 +48,17 @@ vi.mock('@/components/shared/LastUpdated', () => ({
 
 // Mock lucide-react icons
 vi.mock('lucide-react', () => ({
-  ArrowUp: ({ className }: any) => (
+  ArrowUp: ({ className }: { className?: string }) => (
     <svg data-testid="arrow-up-icon" className={className} />
   ),
-  ArrowDown: ({ className }: any) => (
+  ArrowDown: ({ className }: { className?: string }) => (
     <svg data-testid="arrow-down-icon" className={className} />
   ),
 }));
 
 // Mock utils
 vi.mock('@/lib/utils', () => ({
-  cn: (...args: any[]) => args.filter(Boolean).join(' '),
+  cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
 }));
 
 describe('StatCard', () => {
@@ -414,7 +414,7 @@ describe('StatCard', () => {
     it('should not re-render when props remain the same', () => {
       const renderSpy = vi.fn();
 
-      const TestWrapper = ({ title, value }: any) => {
+      const TestWrapper = ({ title, value }: { title: string; value: string }) => {
         renderSpy();
         return (
           <BrowserRouter>

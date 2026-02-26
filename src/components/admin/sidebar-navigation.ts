@@ -726,7 +726,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Expense Tracking',
-        href: '/admin/expense-tracking',
+        href: '/admin/finance-hub?tab=expenses',
         icon: Wallet,
         tier: 'professional'
       },
@@ -766,7 +766,7 @@ export const navigationSections: NavSection[] = [
       },
       {
         title: 'Payouts',
-        href: '/admin/finance-hub?tab=commissions',
+        href: '/admin/finance-hub?tab=payouts',
         icon: CreditCard,
         tier: 'professional'
       }

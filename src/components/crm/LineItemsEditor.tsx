@@ -255,7 +255,7 @@ export function LineItemsEditor({ items, onChange, onValidationChange }: LineIte
             const validation = validateInventory();
             onValidationChange(validation);
         }
-    }, [items, products, validateInventory, onValidationChange]);
+    }, [products, validateInventory, onValidationChange]);
 
     const handleAddItem = () => {
         const newItem: LineItem = {

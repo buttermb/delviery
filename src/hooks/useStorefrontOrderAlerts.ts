@@ -80,7 +80,7 @@ export function useStorefrontOrderAlerts({
                             return;
                         }
 
-                        const storeName = storeNameMap[storeId] || 'Storefront';
+                        const _storeName = storeNameMap[storeId] || 'Storefront';
                         const customerName = (order.customer_name as string) || 'Customer';
                         const total = (order.total as number) ?? 0;
 

@@ -53,6 +53,7 @@ export default function FrontedInventoryDetails() {
       loadFrontDetails();
       subscribeToUpdates();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadFrontDetails and subscribeToUpdates are defined below, only run when id/tenant changes
   }, [id, tenant]);
 
   const subscribeToUpdates = () => {

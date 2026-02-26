@@ -73,6 +73,7 @@ export default function CourierActiveOrderPage() {
     return () => {
       supabase.removeChannel(channel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadOrder is defined below; only run when orderId changes
   }, [orderId]);
 
   const loadOrder = async () => {

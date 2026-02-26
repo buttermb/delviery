@@ -553,7 +553,7 @@ function DangerZoneTab({ tenantName }: { tenantName?: string }) {
       if (!user) throw new Error('Not authenticated');
 
       // Call RPC to handle account deletion (soft-delete pattern)
-      const { error } = await (supabase as any).rpc('request_account_deletion', {
+      const { error } = await supabase.rpc('request_account_deletion', {
         p_user_id: user.id,
       });
 

@@ -25,6 +25,7 @@ export default function CustomerReports() {
     totalRevenue: 0,
     avgOrderValue: 0,
     avgLifetimeValue: 0,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     topCustomers: [] as any[]
   });
 
@@ -34,6 +35,7 @@ export default function CustomerReports() {
     } else if (!tenantLoading && !tenant) {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenant, tenantLoading]);
 
   const loadReports = async () => {

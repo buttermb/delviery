@@ -43,7 +43,7 @@ export function PendingTransfersWidget() {
         } | null;
       }
 
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('wholesale_deliveries')
         .select(`
           id,

@@ -75,7 +75,7 @@ export default function CheckoutPage() {
   }, []);
 
   // Fetch cart items
-  const { data: dbCartItems = [], isLoading: dbLoading } = useQuery({
+  const { data: dbCartItems = [], isLoading: _dbLoading } = useQuery({
     queryKey: queryKeys.cart.user(user?.id, tenantId),
     queryFn: async () => {
       if (!user) return [];
@@ -170,6 +170,7 @@ export default function CheckoutPage() {
       const defaultAddress = savedAddresses.find(addr => addr.is_default) || savedAddresses[0];
       setDeliveryInfo(prev => ({ ...prev, addressId: defaultAddress.id }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only set default address when savedAddresses loads, not when deliveryInfo changes
   }, [savedAddresses]);
 
   // Set default delivery date (7 days from now)
@@ -182,6 +183,7 @@ export default function CheckoutPage() {
         preferredDate: date.toISOString().split('T')[0]
       }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only set default date once on mount, not when deliveryInfo changes
   }, []);
 
   // Handle place order
@@ -212,7 +214,7 @@ export default function CheckoutPage() {
 
       // Clear cart
       if (user) {
-        await (supabase as any).from("cart_items").delete().eq("user_id", user.id);
+        await supabase.from("cart_items").delete().eq("user_id", user.id);
         queryClient.invalidateQueries({ queryKey: queryKeys.cart.user(user.id, tenantId) });
       } else {
         localStorage.removeItem(STORAGE_KEYS.GUEST_CART);

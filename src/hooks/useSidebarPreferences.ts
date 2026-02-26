@@ -189,6 +189,7 @@ export function useSidebarPreferences() {
         hasPatchedRef.current = true; // Mark as checked even if no patch needed
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- updatePreferencesMutation is defined below; adding it would cause infinite loops as mutation result changes trigger re-renders
   }, [preferences, isLoading, tenant?.id, admin?.userId]);
 
   // Update preferences mutation

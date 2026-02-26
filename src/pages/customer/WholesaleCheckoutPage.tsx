@@ -128,7 +128,7 @@ export default function WholesaleCheckoutPage() {
     items: typeof cartItems;
   }
 
-  const itemsBySeller = cartItems.reduce((acc: Record<string, SellerGroup>, item: any) => {
+  const itemsBySeller = cartItems.reduce((acc: Record<string, SellerGroup>, item: typeof cartItems[number]) => {
     const sellerId = item.marketplace_listings?.marketplace_profiles?.tenant_id;
     if (!sellerId) return acc;
 
@@ -171,7 +171,7 @@ export default function WholesaleCheckoutPage() {
       const orders = [];
 
       for (const sellerGroup of Object.values(itemsBySeller) as SellerGroup[]) {
-        const orderItems = (sellerGroup as SellerGroup).items.map((item: any) => ({
+        const orderItems = (sellerGroup as SellerGroup).items.map((item: typeof cartItems[number]) => ({
           listing_id: item.listing_id,
           product_name: item.marketplace_listings?.product_name || 'Unknown Product',
           product_type: item.marketplace_listings?.product_type || null,
@@ -180,7 +180,7 @@ export default function WholesaleCheckoutPage() {
           total_price: (item.quantity as number) * (item.unit_price as number),
         }));
 
-        const orderSubtotal = orderItems.reduce((sum: number, item) => sum + item.total_price, 0);
+        const _orderSubtotal = orderItems.reduce((sum: number, item) => sum + item.total_price, 0);
 
         // Call edge function to create order
         const { data, error } = await supabase.functions.invoke('create-marketplace-order', {
@@ -450,7 +450,7 @@ export default function WholesaleCheckoutPage() {
                       <span className="text-sm font-medium">{sellerGroup.sellerName}</span>
                     </div>
                     <div className="space-y-1 text-sm">
-                      {sellerGroup.items.map((item: any) => (
+                      {sellerGroup.items.map((item: typeof cartItems[number]) => (
                         <div key={item.id} className="flex justify-between text-muted-foreground">
                           <span>
                             {item.marketplace_listings?.product_name} × {item.quantity}

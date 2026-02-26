@@ -161,7 +161,7 @@ export function useClientSuggestions() {
       }
 
       // Favorite clients
-      if ((client as any).is_favorite) {
+      if ((client as unknown as { is_favorite?: boolean }).is_favorite) {
         suggestions.push({
           ...client,
           suggestion_reason: 'Starred client',
@@ -209,7 +209,7 @@ export function useToggleClientFavorite() {
   const toggleFavorite = async (clientId: string, isFavorite: boolean) => {
     if (!tenant?.id) return false;
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('wholesale_clients')
         .update({ is_favorite: isFavorite })
         .eq('id', clientId)

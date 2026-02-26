@@ -80,7 +80,7 @@ export function useActivityFeed(initialFilters?: Partial<ActivityFeedFilters>) {
       if (!tenantId) return { entries: [], totalCount: 0 };
 
       try {
-        let query = (supabase as any)
+        let query = supabase
           .from('activity_logs')
           .select('*', { count: 'exact' })
           .eq('tenant_id', tenantId)
@@ -153,7 +153,7 @@ export function useActivityFeed(initialFilters?: Partial<ActivityFeedFilters>) {
     mutationFn: async (params: LogActivityParams) => {
       if (!tenantId) throw new Error('No tenant context');
 
-      const { data: result, error: rpcError } = await (supabase as any).rpc(
+      const { data: result, error: rpcError } = await supabase.rpc(
         'log_unified_activity',
         {
           p_tenant_id: tenantId,

@@ -24,8 +24,11 @@ export function SidebarRecentlyUsed() {
     const { sidebarConfig } = useSidebarConfig();
     const { canAccess } = useFeatureAccess();
 
-    // Get last accessed features (limit to 5)
-    const lastAccessed = preferences?.lastAccessedFeatures?.slice(0, 5) ?? [];
+    // Get last accessed features (limit to 5) - memoized to stabilize deps
+    const lastAccessed = useMemo(
+        () => preferences?.lastAccessedFeatures?.slice(0, 5) ?? [],
+        [preferences?.lastAccessedFeatures]
+    );
 
     // Find items in config
     const recentItems = useMemo(() => {

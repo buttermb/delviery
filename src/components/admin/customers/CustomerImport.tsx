@@ -214,6 +214,7 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
 
     setFile(selectedFile);
     await parseFile(selectedFile);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- parseFile is defined below and is stable (no deps)
   }, []);
 
   const parseFile = useCallback(async (file: File) => {
@@ -519,7 +520,7 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
             }
           } else {
             // No duplicate - insert new customer
-            const { error: insertError } = await (supabase as any).from('customers').insert({
+            const { error: insertError } = await supabase.from('customers').insert({
               tenant_id: tenantId,
               first_name: customer.first_name,
               last_name: customer.last_name,

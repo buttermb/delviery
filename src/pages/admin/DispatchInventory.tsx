@@ -234,7 +234,7 @@ export default function DispatchInventory() {
         }));
 
         // Try atomic RPC first (preferred method - prevents race conditions)
-        const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('create_fronted_inventory_atomic', {
+        const { data: rpcResult, error: rpcError } = await supabase.rpc('create_fronted_inventory_atomic', {
           p_tenant_id: tenant.id,
           p_client_id: selectedClient.id,
           p_items: items,
@@ -254,11 +254,11 @@ export default function DispatchInventory() {
         }
 
         // RPC succeeded
-        const result = rpcResult as { success: boolean; total_expected_revenue: number; client_name: string };
+        const _result = rpcResult as { success: boolean; total_expected_revenue: number; client_name: string };
 
         // Create scan records for audit trail
         for (const product of scannedProducts) {
-          await (supabase as any).from('fronted_inventory_scans').insert({
+          await supabase.from('fronted_inventory_scans').insert({
             account_id: tenant.id,
             product_id: product.product_id,
             barcode: product.barcode,
@@ -301,7 +301,7 @@ export default function DispatchInventory() {
         product.price_per_unit
       );
 
-      const { error } = await (supabase as any).from('fronted_inventory').insert({
+      const { error } = await supabase.from('fronted_inventory').insert({
         account_id: tenant.id,
         product_id: product.product_id,
         quantity_fronted: product.quantity,
@@ -319,7 +319,7 @@ export default function DispatchInventory() {
       if (error) throw error;
 
       // Create scan record
-      await (supabase as any).from('fronted_inventory_scans').insert({
+      await supabase.from('fronted_inventory_scans').insert({
         account_id: tenant.id,
         product_id: product.product_id,
         barcode: product.barcode,
@@ -353,7 +353,7 @@ export default function DispatchInventory() {
     await Promise.all(promises);
 
     // Update client's outstanding balance using atomic RPC if available, else direct update
-    const { error: balanceError } = await (supabase as any).rpc('adjust_client_balance', {
+    const { error: balanceError } = await supabase.rpc('adjust_client_balance', {
       p_client_id: selectedClient.id,
       p_amount: totalExpectedRevenue,
       p_operation: 'add'

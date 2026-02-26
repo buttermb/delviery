@@ -162,7 +162,7 @@ export function OrderPaymentStatusSync({
       if (!tenant?.id || !orderId) return null;
 
       // Use type assertion since payments table may not be in generated types
-      const { data, error: fetchError } = await (supabase as any)
+      const { data, error: fetchError } = await supabase
         .from('payments')
         .select('id, order_id, tenant_id, amount, status, payment_method, transaction_id, paid_at, created_at')
         .eq('order_id', orderId)
@@ -236,6 +236,7 @@ export function OrderPaymentStatusSync({
           }
         }
       },
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- updateOrderPaymentStatus is a stable helper; tenant?.id is accessed from closure
       [orderId, queryClient, paymentQueryKey, onPaymentStatusChange, autoUpdateOrderStatus]
     ),
   });
@@ -261,7 +262,7 @@ export function OrderPaymentStatusSync({
       };
 
       // Insert payment record
-      const { error: insertError } = await (supabase as any)
+      const { error: insertError } = await supabase
         .from('payments')
         .insert(paymentRecord);
 

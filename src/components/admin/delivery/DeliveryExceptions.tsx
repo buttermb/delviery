@@ -333,7 +333,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
     queryFn: async (): Promise<DeliveryException[]> => {
       if (!tenantId || !dateRange?.from || !dateRange?.to) return [];
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('delivery_exceptions')
         .select(`
           *,
@@ -528,7 +528,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
         updated_at: new Date().toISOString(),
       };
 
-      const { data: inserted, error } = await (supabase as any)
+      const { data: inserted, error } = await supabase
         .from('delivery_exceptions')
         .insert(exceptionData)
         .select()
@@ -599,7 +599,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('delivery_exceptions')
         .update(updateData)
         .eq('id', data.exception_id)
@@ -712,7 +712,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
       if (!exception) throw new Error('Exception not found');
 
       // Update exception
-      await (supabase as any)
+      await supabase
         .from('delivery_exceptions')
         .update({
           resolution: 'returned_to_store',

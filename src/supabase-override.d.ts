@@ -6,7 +6,7 @@
  * supabase.from() and supabase.rpc() accept any string argument, preventing
  * TS2589/TS2769 build errors while preserving type safety for known tables.
  */
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient as _SupabaseClient } from '@supabase/supabase-js';
 
 declare module '@supabase/supabase-js' {
   interface SupabaseClient<
@@ -14,13 +14,15 @@ declare module '@supabase/supabase-js' {
     SchemaName extends string & keyof Database = 'public' extends keyof Database
       ? 'public'
       : string & keyof Database,
-    Schema extends Record<string, unknown> = Database[SchemaName] extends Record<string, unknown>
+    _Schema extends Record<string, unknown> = Database[SchemaName] extends Record<string, unknown>
       ? Database[SchemaName]
       : Record<string, unknown>,
   > {
     // Allow any table name in .from()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     from(relation: string): any;
-    // Allow any function name in .rpc()  
+    // Allow any function name in .rpc()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rpc(fn: string, args?: Record<string, unknown>, options?: Record<string, unknown>): any;
   }
 }

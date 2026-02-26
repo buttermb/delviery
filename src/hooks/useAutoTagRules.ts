@@ -109,7 +109,7 @@ export function useEnsureAutoTag() {
       if (!tenant?.id) throw new Error('No tenant');
 
       // Check if tag exists
-      const { data: existingTag, error: findError } = await (supabase as any)
+      const { data: existingTag, error: findError } = await supabase
         .from('tags')
         .select('id, name, color')
         .eq('tenant_id', tenant.id)
@@ -127,7 +127,7 @@ export function useEnsureAutoTag() {
 
       // Create the tag
       const color = AUTO_TAG_COLORS[tagName] || '#6B7280';
-      const { data: newTag, error: createError } = await (supabase as any)
+      const { data: newTag, error: createError } = await supabase
         .from('tags')
         .insert({
           tenant_id: tenant.id,
@@ -260,7 +260,7 @@ export function useCustomersByTags(tagIds: string[]) {
       if (!tenant?.id || tagIds.length === 0) return [];
 
       // Get customer IDs that have all selected tags
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('customer_tags')
         .select('contact_id')
         .eq('tenant_id', tenant.id)
@@ -272,7 +272,7 @@ export function useCustomersByTags(tagIds: string[]) {
       }
 
       // Count occurrences to find customers with ALL tags
-      const customerCounts = (data ?? []).reduce((acc: Record<string, number>, item: any) => {
+      const customerCounts = (data ?? []).reduce((acc: Record<string, number>, item: { contact_id: string }) => {
         acc[item.contact_id] = (acc[item.contact_id] ?? 0) + 1;
         return acc;
       }, {} as Record<string, number>);
@@ -299,7 +299,7 @@ export function useTagCounts() {
     queryFn: async () => {
       if (!tenant?.id) return {};
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('customer_tags')
         .select('tag_id')
         .eq('tenant_id', tenant.id);
@@ -310,7 +310,7 @@ export function useTagCounts() {
       }
 
       // Count customers per tag
-      const counts = (data ?? []).reduce((acc: Record<string, number>, item: any) => {
+      const counts = (data ?? []).reduce((acc: Record<string, number>, item: { tag_id: string }) => {
         acc[item.tag_id] = (acc[item.tag_id] ?? 0) + 1;
         return acc;
       }, {} as Record<string, number>);

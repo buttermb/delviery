@@ -6,15 +6,6 @@ import { useInvoices, type InvoiceSortState } from "@/hooks/crm/useInvoices";
 import { CustomerLink } from "@/components/admin/cross-links";
 import { useCRMSettings } from "@/hooks/crm/useCRMSettings";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -27,7 +18,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Plus,
-    Search,
     MoreHorizontal,
     FileText,
     Filter,
@@ -46,7 +36,6 @@ import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { CRMInvoice, CRMSettings } from "@/types/crm";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
 import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
@@ -562,11 +551,6 @@ export function InvoicesPage() {
     const { data: crmSettings } = useCRMSettings();
     const mod = useModifierKey();
 
-    // Show full-page skeleton during initial load
-    if (isLoading && !invoices) {
-        return <InvoicesPageSkeleton />;
-    }
-
     const filteredInvoices = (() => {
         const sanitizedSearch = sanitizeSearchInput(searchQuery).toLowerCase();
         const filtered = invoices?.filter((invoice) => {
@@ -660,6 +644,11 @@ export function InvoicesPage() {
             setIsGeneratingPDF(false);
         }
     }, [crmSettings, isGeneratingPDF]);
+
+    // Show full-page skeleton during initial load
+    if (isLoading && !invoices) {
+        return <InvoicesPageSkeleton />;
+    }
 
     const getStatusBadge = (status: string) => {
         switch (status) {

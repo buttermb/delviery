@@ -76,7 +76,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       if (!tenant?.id) return [];
 
       // First try to fetch from stock_alerts table
-      const { data: alerts, error: alertError } = await (supabase as any)
+      const { data: alerts, error: alertError } = await supabase
         .from('stock_alerts')
         .select('id, product_id, product_name, current_quantity, threshold, severity')
         .eq('tenant_id', tenant.id)
@@ -152,7 +152,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
     refetchOnWindowFocus: true,
   });
 
-  const products = data ?? [];
+  const products = useMemo(() => data ?? [], [data]);
 
   const summary = useMemo(() => {
     const outOfStock = products.filter((p) => p.alertLevel === 'out_of_stock');

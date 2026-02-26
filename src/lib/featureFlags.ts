@@ -91,7 +91,7 @@ export async function isFeatureEnabled(flagKey: string, tenantId?: string): Prom
 
 export async function getFeatureFlags(tenantId?: string): Promise<Array<{ flag_key: string; enabled: boolean; rollout_percentage: number }>> {
   try {
-    let query = (supabase as any).from('feature_flags').select('flag_name, enabled');
+    let query = supabase.from('feature_flags').select('flag_name, enabled');
 
     if (tenantId) {
       query = query.eq('tenant_id', tenantId);

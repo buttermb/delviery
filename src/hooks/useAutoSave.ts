@@ -57,7 +57,7 @@ export function useAutoSave<T extends Record<string, unknown>>({
 
           // Only save version if there are actual changes
           if (changedFields.length > 0) {
-            await (supabase as any).rpc('save_settings_version', {
+            await supabase.rpc('save_settings_version', {
               p_tenant_id: versionTracking.tenantId,
               p_settings_key: versionTracking.settingsKey,
               p_snapshot: value,

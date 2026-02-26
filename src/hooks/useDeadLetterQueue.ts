@@ -64,7 +64,7 @@ export function useDeadLetterQueue() {
 
   const retryExecution = useMutation({
     mutationFn: async (dlqId: string) => {
-      const { data, error } = await (supabase as any).rpc('retry_from_dead_letter_queue', {
+      const { data, error } = await supabase.rpc('retry_from_dead_letter_queue', {
         p_dlq_id: dlqId,
         p_user_id: (await supabase.auth.getUser()).data.user?.id
       });
@@ -84,7 +84,7 @@ export function useDeadLetterQueue() {
 
   const resolveEntry = useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes?: string }) => {
-      const { error } = await (supabase as any).rpc('resolve_dead_letter_entry', {
+      const { error } = await supabase.rpc('resolve_dead_letter_entry', {
         p_dlq_id: id,
         p_user_id: (await supabase.auth.getUser()).data.user?.id,
         p_notes: notes

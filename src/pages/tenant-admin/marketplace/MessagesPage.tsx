@@ -90,7 +90,7 @@ export default function MessagesPage() {
       if (!tenantId) return [];
 
       const { data, error } = await supabase
-        .from('marketplace_messages' as any) // Supabase type limitation
+        .from('marketplace_messages' as 'tenants') // Supabase type limitation
         .select(`
           *,
           sender_tenant:tenants!marketplace_messages_sender_tenant_id_fkey (
@@ -119,7 +119,7 @@ export default function MessagesPage() {
       }
 
       // Decrypt messages
-      const decryptedData = await Promise.all((data as any[] ?? []).map(async (msg: any) => {
+      const decryptedData = await Promise.all((data as unknown as Record<string, unknown>[] ?? []).map(async (msg: Record<string, unknown>) => {
         if (msg.message_encrypted && msg.message_text) {
           try {
             const decrypted = await decryptMessage(String(msg.message_text));
@@ -203,7 +203,7 @@ export default function MessagesPage() {
   const markAsReadMutation = useMutation({
     mutationFn: async (messageIds: string[]) => {
       const { error } = await supabase
-        .from('marketplace_messages' as any) // Supabase type limitation
+        .from('marketplace_messages' as 'tenants') // Supabase type limitation
         .update({
           read: true,
           read_at: new Date().toISOString()
@@ -234,7 +234,7 @@ export default function MessagesPage() {
       const encryptedText = await encryptMessage(text);
 
       const { data, error } = await supabase
-        .from('marketplace_messages' as any) // Supabase type limitation
+        .from('marketplace_messages' as 'tenants') // Supabase type limitation
         .insert({
           sender_tenant_id: tenantId,
           receiver_tenant_id: buyerTenantId,

@@ -74,7 +74,7 @@ interface SettingsPageProps {
 }
 
 export default function SettingsPage({ embedded = false }: SettingsPageProps) {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { account, accountSettings, refreshAccount, loading: accountLoading } = useAccount();
   const [searchParams, setSearchParams] = useSearchParams();

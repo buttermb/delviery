@@ -417,7 +417,7 @@ export function useContextAwareHotItems({
     queryFn: async () => {
       if (!storeId || storeId.length < 32) return [];
       try {
-        const { data, error: fetchError } = await (supabase as any).rpc(
+        const { data, error: fetchError } = await supabase.rpc(
           'get_marketplace_products',
           { p_store_id: storeId }
         );

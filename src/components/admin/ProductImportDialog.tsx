@@ -33,7 +33,7 @@ const SYSTEM_FIELDS = [
 export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductImportDialogProps) {
     const { tenant } = useTenantAdminAuth();
     const [step, setStep] = useState<ImportStep>('upload');
-    const [file, setFile] = useState<File | null>(null);
+    const [_file, _setFile] = useState<File | null>(null);
     const [fileHeaders, setFileHeaders] = useState<string[]>([]);
     const [rawRecords, setRawRecords] = useState<Record<string, unknown>[]>([]);
     const [mapping, setMapping] = useState<Record<string, string>>({});
@@ -224,7 +224,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
             for (let i = 0; i < validRecords.length; i += batchSize) {
                 const batch = validRecords.slice(i, i + batchSize);
 
-                const { error } = await (supabase as any).from('products').insert(
+                const { error } = await supabase.from('products').insert(
                     batch.map(record => ({
                         tenant_id: tenant.id,
                         name: String(record.name || ''),

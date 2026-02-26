@@ -144,7 +144,7 @@ export function QuickCreateCustomerDialog({
       const encryptedData = await encryptCustomerData(customerData);
 
       // Insert customer
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('customers')
         .insert(encryptedData)
         .select('id, first_name, last_name, customer_type, loyalty_points, email, phone')

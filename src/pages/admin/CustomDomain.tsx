@@ -28,7 +28,7 @@ export default function CustomDomain() {
 
       try {
         const { data, error } = await supabase
-          .from('custom_domains' as any) // Supabase type limitation
+          .from('custom_domains' as 'tenants') // Supabase type limitation
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -49,7 +49,7 @@ export default function CustomDomain() {
       if (!tenantId) throw new Error('Tenant ID required');
 
       const { data, error } = await supabase
-        .from('custom_domains' as any) // Supabase type limitation
+        .from('custom_domains' as 'tenants') // Supabase type limitation
         .insert({
           tenant_id: tenantId,
           domain: domainName,
@@ -154,7 +154,7 @@ export default function CustomDomain() {
         <CardContent>
           {domains && domains.length > 0 ? (
             <div className="space-y-4">
-              {(domains as any[]).map((domainItem: { id: string; domain: string; status: string; ssl_status?: string; created_at: string }) => (
+              {(domains as unknown as Array<{ id: string; domain: string; status: string; ssl_status?: string; created_at: string }>).map((domainItem) => (
                 <div key={domainItem.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-4">
                     <Globe className="h-5 w-5" />

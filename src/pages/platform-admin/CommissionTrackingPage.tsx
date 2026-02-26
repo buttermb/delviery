@@ -14,7 +14,7 @@ export default function CommissionTrackingPage() {
     const { data: metrics, isLoading } = useQuery({
         queryKey: queryKeys.superAdminTools.platformMetrics(),
         queryFn: async () => {
-            const { data, error } = await (supabase as any).rpc('get_platform_metrics');
+            const { data, error } = await supabase.rpc('get_platform_metrics');
             if (error) throw error;
             return data as {
                 total_gmv: number;

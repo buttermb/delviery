@@ -173,7 +173,7 @@ describe('WidgetSkeleton - Integration Tests', () => {
 
       // Named component function to satisfy React hooks rules
       function DataWidgetComponent() {
-        const [data, setData] = useState<any>(null);
+        const [data, setData] = useState<{ revenue: number; trend: string } | null>(null);
 
         // Simulate data fetch
         if (!data) {

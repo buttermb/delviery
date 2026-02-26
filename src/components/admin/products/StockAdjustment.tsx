@@ -231,7 +231,7 @@ export function StockAdjustment({
       };
 
       // Use type assertion for dynamic table access
-      const { error: historyError } = await (supabase as any)
+      const { error: historyError } = await supabase
         .from('inventory_history')
         .insert(historyEntry);
 

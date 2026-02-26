@@ -197,7 +197,7 @@ export default function AccountPage() {
     setIsSendingCode(true);
     try {
       // Call RPC to generate and store code
-      const { data: code, error } = await (supabase as any).rpc('request_magic_code' as 'get_secret', {
+      const { data: code, error } = await supabase.rpc('request_magic_code' as 'get_secret', {
         p_store_id: store.id,
         p_email: email.trim()
       } as Record<string, unknown>);
@@ -228,7 +228,7 @@ export default function AccountPage() {
 
     setIsVerifyingCode(true);
     try {
-      const { data: customerData, error } = await (supabase as any).rpc('verify_magic_code' as 'get_secret', {
+      const { data: customerData, error } = await supabase.rpc('verify_magic_code' as 'get_secret', {
         p_store_id: store.id,
         p_email: codeSentTo.trim(),
         p_code: magicCode.trim()

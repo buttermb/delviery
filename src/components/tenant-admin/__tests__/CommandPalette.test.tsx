@@ -19,6 +19,7 @@ Element.prototype.getAnimations = vi.fn().mockReturnValue([]);
 // cmdk applies its own fuzzy filtering which hides items in jsdom tests.
 // We replace with simple wrappers that render all children unconditionally.
 vi.mock('@/components/ui/command', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
 
   const CommandDialog = ({ children, open, onOpenChange: _onOpenChange }: { children: React.ReactNode; open: boolean; onOpenChange: (open: boolean) => void }) => {

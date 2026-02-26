@@ -30,7 +30,7 @@ export function InventoryMovementLog() {
       if (!tenant?.id) return [];
 
       // Query wholesale_inventory_movements with product info via wholesale_inventory
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("wholesale_inventory_movements")
         .select(`
           id,
@@ -53,7 +53,15 @@ export function InventoryMovementLog() {
       }
 
       // Map to our interface
-      return (data ?? []).map((m: any) => ({
+      interface MovementRow {
+        id: string;
+        movement_type?: string;
+        quantity?: number;
+        notes?: string;
+        created_at: string;
+        wholesale_inventory?: { strain_name?: string; location?: string } | null;
+      }
+      return (data ?? []).map((m: MovementRow) => ({
         id: m.id,
         product_name: m.wholesale_inventory?.strain_name || 'Unknown Product',
         movement_type: m.movement_type || 'adjustment',

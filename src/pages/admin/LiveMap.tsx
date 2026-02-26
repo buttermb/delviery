@@ -82,11 +82,11 @@ export default function LiveMap() {
   const { token: mapboxToken, loading: tokenLoading } = useMapboxToken();
 
   // Map style URLs
-  const mapStyles = {
+  const mapStyles = useMemo(() => ({
     streets: 'mapbox://styles/mapbox/streets-v12',
     satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
     dark: 'mapbox://styles/mapbox/dark-v11'
-  };
+  }), []);
 
   // Filter couriers based on search and online status
   const filteredCouriers = useMemo(() => {
@@ -277,6 +277,7 @@ export default function LiveMap() {
       map.current?.remove();
       map.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mapStyle and mapStyles are only needed at init time; style changes handled by separate effect
   }, [mapboxToken]);
 
   // Change map style
@@ -284,7 +285,7 @@ export default function LiveMap() {
     if (map.current && mapLoaded) {
       map.current.setStyle(mapStyles[mapStyle]);
     }
-  }, [mapStyle, mapLoaded]);
+  }, [mapStyle, mapLoaded, mapStyles]);
 
   // Load couriers and orders on mount and set up realtime subscriptions
   useEffect(() => {
@@ -378,7 +379,7 @@ export default function LiveMap() {
   };
 
   // Get status color for orders
-  const getOrderStatusColor = (status: string) => {
+  const getOrderStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'pending':
         return { bg: 'bg-yellow-500', text: 'text-yellow-600', hex: '#eab308' };
@@ -394,10 +395,10 @@ export default function LiveMap() {
       default:
         return { bg: 'bg-gray-500', text: 'text-gray-600', hex: '#6b7280' };
     }
-  };
+  }, []);
 
   // Get readable status label
-  const getOrderStatusLabel = (status: string) => {
+  const getOrderStatusLabel = useCallback((status: string) => {
     switch (status) {
       case 'pending': return 'Pending';
       case 'confirmed': return 'Confirmed';
@@ -408,7 +409,7 @@ export default function LiveMap() {
       case 'in_transit': return 'In Transit';
       default: return status;
     }
-  };
+  }, []);
 
   // Center map on all active couriers
   const centerOnActivity = useCallback(() => {

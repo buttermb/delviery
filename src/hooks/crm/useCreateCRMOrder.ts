@@ -46,7 +46,7 @@ export function useCreateCRMOrder() {
                     ? input.expected_date.toISOString().split('T')[0]
                     : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-                const { data, error } = await (supabase as any)
+                const { data, error } = await supabase
                     .from('crm_invoices')
                     .insert({
                         client_id: input.client_id,
@@ -79,7 +79,7 @@ export function useCreateCRMOrder() {
                 };
             } else {
                 // Create pre-order (for both standard and pre_order types)
-                const { data, error } = await (supabase as any)
+                const { data, error } = await supabase
                     .from('crm_pre_orders')
                     .insert({
                         client_id: input.client_id,

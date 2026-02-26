@@ -166,7 +166,7 @@ export function StockHistoryLog({
       if (!tenant?.id) return { entries: [], totalCount: 0 };
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let query = (supabase as any)
+      let query = supabase
         .from('inventory_history')
         .select(`
           *,

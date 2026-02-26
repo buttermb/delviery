@@ -136,6 +136,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
     }
 
     return id;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- syncSingleOrder is defined below and stable
   }, []);
 
   // Sync a single order to Supabase

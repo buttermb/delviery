@@ -174,7 +174,7 @@ async function fetchCustomerComplianceData(
     .maybeSingle();
 
   // Fetch tenant compliance settings
-  const { data: tenantData } = await (supabase as any)
+  const { data: tenantData } = await supabase
     .from('tenants')
     .select('metadata')
     .eq('id', tenantId)
@@ -202,7 +202,7 @@ async function fetchCustomerComplianceData(
   );
 
   // Fetch delivery zones for the tenant
-  const { data: storefrontSettings } = await (supabase as any)
+  const { data: storefrontSettings } = await supabase
     .from('storefront_settings')
     .select('delivery_zones')
     .eq('tenant_id', tenantId)

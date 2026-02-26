@@ -21,7 +21,6 @@ import {
   CheckCircle,
   Clock,
   TrendingUp,
-  Building2,
   Percent
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, subMonths } from 'date-fns';

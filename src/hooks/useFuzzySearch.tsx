@@ -35,7 +35,7 @@ interface UseFuzzySearchReturn<T> {
   suggestion: string | null;
 }
 
-const defaultOptions: IFuseOptions<any> = {
+const defaultOptions: IFuseOptions<unknown> = {
   threshold: 0.3,
   distance: 100,
   minMatchCharLength: 2,

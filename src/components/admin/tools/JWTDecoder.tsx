@@ -31,14 +31,6 @@ interface TokenInfo {
 }
 
 export function JWTDecoder() {
-  if (!import.meta.env.DEV) {
-    return (
-      <div className="p-4 text-muted-foreground text-sm">
-        Development only — this tool is not available in production.
-      </div>
-    );
-  }
-
   const [token, setToken] = useState('');
   const [copied, setCopied] = useState<string | null>(null);
   const [currentTokens, setCurrentTokens] = useState<TokenInfo[]>([]);
@@ -131,6 +123,14 @@ export function JWTDecoder() {
   const loadToken = (tokenToLoad: string) => {
     setToken(tokenToLoad);
   };
+
+  if (!import.meta.env.DEV) {
+    return (
+      <div className="p-4 text-muted-foreground text-sm">
+        Development only — this tool is not available in production.
+      </div>
+    );
+  }
 
   return (
     <Card>

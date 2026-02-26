@@ -126,7 +126,7 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      const { data, error } = await (supabase as any).rpc('adjust_client_balance', {
+      const { data, error } = await supabase.rpc('adjust_client_balance', {
         p_client_id: clientId,
         p_amount: amount,
         p_operation: operation
@@ -280,7 +280,7 @@ class PaymentService {
       if (!balanceResult.success) {
         // Try to rollback payment record if balance update failed
         if (payment?.id) {
-          const { error: rollbackError } = await (supabase as any).from('wholesale_payments').delete().eq('id', payment.id);
+          const { error: rollbackError } = await supabase.from('wholesale_payments').delete().eq('id', payment.id);
           if (rollbackError) {
             logger.error('Failed to rollback payment record', rollbackError, { paymentId: payment.id });
           }
@@ -333,7 +333,7 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('record_fronted_payment_atomic', {
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('record_fronted_payment_atomic', {
         p_fronted_id: frontedId,
         p_payment_amount: amount,
         p_payment_method: paymentMethod,
@@ -358,7 +358,7 @@ class PaymentService {
       };
 
       // Also create detailed payment record
-      await (supabase as any).from('fronted_payments').insert({
+      await supabase.from('fronted_payments').insert({
         account_id: tenantId,
         fronted_inventory_id: frontedId,
         amount,
@@ -416,7 +416,7 @@ class PaymentService {
       }
 
       // Create payment record
-      await (supabase as any).from('fronted_payments').insert({
+      await supabase.from('fronted_payments').insert({
         account_id: tenantId,
         fronted_inventory_id: frontedId,
         amount,
@@ -475,7 +475,7 @@ class PaymentService {
 
     try {
       // Try atomic RPC first
-      const { data: rpcResult, error: rpcError } = await (supabase as any).rpc('complete_delivery_with_collection', {
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('complete_delivery_with_collection', {
         p_delivery_id: deliveryId,
         p_amount_collected: amountCollected,
         p_proof_photo_url: proofPhotoUrl || null

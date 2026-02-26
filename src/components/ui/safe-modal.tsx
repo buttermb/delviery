@@ -152,7 +152,7 @@ export function SafeModal({
 /**
  * Hook to track form dirty state
  */
-export function useFormDirtyState<T extends Record<string, any>>(
+export function useFormDirtyState<T extends Record<string, unknown>>(
   initialValues: T,
   currentValues: T
 ): boolean {

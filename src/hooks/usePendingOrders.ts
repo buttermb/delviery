@@ -60,6 +60,7 @@ export function usePendingOrders(tenantId?: string) {
         return () => {
             supabase.removeChannel(channel);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- loadPendingOrders is defined below and depends on tenantId which is already in deps
     }, [tenantId]);
 
     const loadPendingOrders = async () => {

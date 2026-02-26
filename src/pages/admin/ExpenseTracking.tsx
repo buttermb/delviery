@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CurrencyInput } from '@/components/ui/currency-input';
@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
   DollarSign, Calendar, Tag, Plus, Loader2, Receipt,
-  TrendingDown, Filter, X, Trash2
+  TrendingDown, X, Trash2
 } from 'lucide-react';
 import {
   Dialog,
@@ -21,7 +21,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { TruncatedText } from '@/components/shared/TruncatedText';
 import {
   Select,
   SelectContent,
@@ -33,7 +32,6 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
@@ -388,7 +386,7 @@ export default function ExpenseTracking() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    {uniqueCategories.map((cat: any) => (
+                    {uniqueCategories.map((cat) => (
                       <SelectItem key={String(cat)} value={String(cat)}>{String(cat)}</SelectItem>
                     ))}
                   </SelectContent>

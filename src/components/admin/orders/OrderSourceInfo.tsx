@@ -93,7 +93,7 @@ function useSourceSession(sessionId: string | null | undefined, tenantId: string
       if (!sessionId || !tenantId) return null;
 
       // Try to fetch from storefront_sessions if it exists
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('storefront_sessions')
         .select('started_at, browsing_duration_seconds, items_viewed')
         .eq('id', sessionId)

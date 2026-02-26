@@ -23,7 +23,7 @@ import ExternalLink from 'lucide-react/dist/esm/icons/external-link';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
 import Plus from 'lucide-react/dist/esm/icons/plus';
-import Check from 'lucide-react/dist/esm/icons/check';
+
 import X from 'lucide-react/dist/esm/icons/x';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -250,7 +250,7 @@ function useRemoveFromMenu() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ menuProductId, productId }: { menuProductId: string; productId: string }) => {
+    mutationFn: async ({ menuProductId, productId: _productId }: { menuProductId: string; productId: string }) => {
       const { error } = await supabase
         .from('disposable_menu_products')
         .delete()
@@ -264,9 +264,9 @@ function useRemoveFromMenu() {
         throw error;
       }
     },
-    onSuccess: (_, { productId }) => {
+    onSuccess: (_, { productId: _productId }) => {
       queryClient.invalidateQueries({
-        queryKey: [...queryKeys.products.all, 'menu-appearances', productId]
+        queryKey: [...queryKeys.products.all, 'menu-appearances', _productId]
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
       showSuccessToast('Product removed from menu');
@@ -285,7 +285,7 @@ function useToggleStoreVisibility() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ settingsId, isVisible, productId }: {
+    mutationFn: async ({ settingsId, isVisible, productId: _productId }: {
       settingsId: string;
       isVisible: boolean;
       productId: string;
@@ -303,9 +303,9 @@ function useToggleStoreVisibility() {
         throw error;
       }
     },
-    onSuccess: (_, { productId }) => {
+    onSuccess: (_, { productId: _productId }) => {
       queryClient.invalidateQueries({
-        queryKey: [...queryKeys.products.all, 'menu-appearances', productId]
+        queryKey: [...queryKeys.products.all, 'menu-appearances', _productId]
       });
       showSuccessToast('Store visibility updated');
     },

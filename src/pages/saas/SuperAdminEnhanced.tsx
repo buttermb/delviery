@@ -409,7 +409,7 @@ export default function SuperAdminEnhanced() {
             variant="outline"
             onClick={() => {
               if (tenants && tenants.length > 0) {
-                exportTenantsToCSV(tenants as any);
+                exportTenantsToCSV(tenants as unknown as Array<Record<string, unknown>>);
               }
             }}
           >
@@ -420,7 +420,7 @@ export default function SuperAdminEnhanced() {
             variant="outline"
             onClick={() => {
               if (tenants && tenants.length > 0) {
-                exportTenantsToJSON(tenants as any);
+                exportTenantsToJSON(tenants as unknown as Array<Record<string, unknown>>);
               }
             }}
           >
@@ -690,7 +690,7 @@ export default function SuperAdminEnhanced() {
                       <td className="p-3">{getStatusBadge(tenant.subscription_status)}</td>
                       <td className="p-3">{formatCurrency(tenant.mrr ?? 0)}</td>
                       <td className="p-3">
-                        <HealthScoreTooltip score={tenant.health_score} reasons={tenant.health_reasons as any}>
+                        <HealthScoreTooltip score={tenant.health_score} reasons={tenant.health_reasons as unknown as Array<{ factor: string; impact: 'positive' | 'negative' | 'neutral'; message: string }>}>
                           <div className="flex items-center gap-2">
                             {getHealthBadge(tenant.health_score)}
                             <span className="text-sm text-muted-foreground">
@@ -776,7 +776,7 @@ export default function SuperAdminEnhanced() {
           onBulkUnsuspend={() => { }}
           onBulkExport={() => {
             const selectedData = tenants?.filter(t => selectedTenants.includes(t.id)) ?? [];
-            exportTenantsToCSV(selectedData as any);
+            exportTenantsToCSV(selectedData as unknown as Array<Record<string, unknown>>);
             setSelectedTenants([]);
           }}
         />

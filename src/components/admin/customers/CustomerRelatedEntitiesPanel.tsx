@@ -170,7 +170,7 @@ function useRelatedDeliveries(customerId: string | undefined, tenantId: string |
 
       const orderIds = orders.map((o) => o.id);
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('wholesale_deliveries')
         .select('id, status, scheduled_at, delivered_at, order_id')
         .in('order_id', orderIds)
@@ -184,7 +184,7 @@ function useRelatedDeliveries(customerId: string | undefined, tenantId: string |
         throw error;
       }
 
-      return (data ?? []).map((delivery: any) => ({
+      return (data ?? []).map((delivery) => ({
         id: delivery.id,
         title: `Delivery for Order #${delivery.order_id?.slice(0, 8) || 'N/A'}`,
         subtitle: delivery.scheduled_at
@@ -202,7 +202,7 @@ function useRelatedPayments(customerId: string | undefined, tenantId: string | u
   return useLazyQuery(
     [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'payments'],
     async (): Promise<RelatedEntityItem[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('customer_payments')
         .select('id, amount, payment_method, payment_status, created_at')
         .eq('customer_id', customerId!)
@@ -231,7 +231,7 @@ function useRelatedSpecialPricing(customerId: string | undefined, tenantId: stri
   return useLazyQuery(
     [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'special-pricing'],
     async (): Promise<RelatedEntityItem[]> => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('customer_pricing')
         .select(`
           id,
@@ -294,7 +294,7 @@ function useRelatedLoyalty(customerId: string | undefined, tenantId: string | un
     [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'loyalty'],
     async (): Promise<LoyaltyInfo | null> => {
       // Get loyalty points
-      const { data: pointsData, error: pointsError } = await (supabase as any)
+      const { data: pointsData, error: pointsError } = await supabase
         .from('loyalty_points')
         .select('points, type')
         .eq('customer_id', customerId!)
@@ -306,7 +306,7 @@ function useRelatedLoyalty(customerId: string | undefined, tenantId: string | un
       }
 
       // Get loyalty config for tier thresholds
-      const { data: config, error: configError } = await (supabase as any)
+      const { data: config, error: configError } = await supabase
         .from('loyalty_config')
         .select('*')
         .eq('tenant_id', tenantId!)
@@ -317,12 +317,14 @@ function useRelatedLoyalty(customerId: string | undefined, tenantId: string | un
         throw configError;
       }
 
+      const configRecord = config as Record<string, unknown> | null;
+
       if (!pointsData || pointsData.length === 0) {
         return {
           tier: 'bronze',
           currentPoints: 0,
           lifetimePoints: 0,
-          pointsToNextTier: (config as any)?.silver_threshold || 500,
+          pointsToNextTier: (configRecord?.silver_threshold as number) || 500,
           nextTier: 'silver',
         };
       }
@@ -330,10 +332,10 @@ function useRelatedLoyalty(customerId: string | undefined, tenantId: string | un
       let currentPoints = 0;
       let lifetimePoints = 0;
 
-      for (const tx of pointsData) {
-        currentPoints += (tx as any).points;
-        if ((tx as any).type === 'earned' || (tx as any).type === 'bonus') {
-          lifetimePoints += (tx as any).points;
+      for (const tx of pointsData as Array<{ points: number; type: string }>) {
+        currentPoints += tx.points;
+        if (tx.type === 'earned' || tx.type === 'bonus') {
+          lifetimePoints += tx.points;
         }
       }
 
@@ -341,9 +343,9 @@ function useRelatedLoyalty(customerId: string | undefined, tenantId: string | un
       lifetimePoints = Math.max(0, lifetimePoints);
 
       // Calculate tier
-      const silverThreshold = (config as any)?.silver_threshold || 500;
-      const goldThreshold = (config as any)?.gold_threshold || 2000;
-      const platinumThreshold = (config as any)?.platinum_threshold || 5000;
+      const silverThreshold = (configRecord?.silver_threshold as number) || 500;
+      const goldThreshold = (configRecord?.gold_threshold as number) || 2000;
+      const platinumThreshold = (configRecord?.platinum_threshold as number) || 5000;
 
       let tier: LoyaltyTier = 'bronze';
       let nextTier: LoyaltyTier | null = 'silver';
@@ -387,7 +389,7 @@ function useRelatedCommunicationPrefs(customerId: string | undefined, tenantId: 
     [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'comm-prefs'],
     async (): Promise<CommunicationPrefs | null> => {
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('customer_communication_preferences')
           .select('email_marketing, sms_marketing, push_notifications, order_updates')
           .eq('customer_id', customerId!)
@@ -401,7 +403,7 @@ function useRelatedCommunicationPrefs(customerId: string | undefined, tenantId: 
         }
 
         return data as unknown as CommunicationPrefs | null;
-      } catch (err) {
+      } catch {
         // Gracefully handle missing table
         logger.debug('Communication preferences table not available', { customerId, tenantId });
         return null;
@@ -439,7 +441,7 @@ function useRelatedOrganization(customerId: string | undefined, tenantId: string
         const orgId = (customer as { organization_id?: string } | null)?.organization_id;
         if (!orgId) return null;
 
-        const { data: org, error: orgError } = await (supabase as any)
+        const { data: org, error: orgError } = await supabase
           .from('organizations')
           .select('id, name, type')
           .eq('id', orgId)
@@ -452,7 +454,7 @@ function useRelatedOrganization(customerId: string | undefined, tenantId: string
         }
 
         return org as unknown as OrganizationInfo | null;
-      } catch (err) {
+      } catch {
         // Gracefully handle missing table/column
         logger.debug('Organization data not available', { customerId, tenantId });
         return null;
@@ -467,7 +469,7 @@ function useRelatedMenus(customerId: string | undefined, tenantId: string | unde
     [...queryKeys.customers.related(tenantId ?? '', customerId ?? ''), 'saved-menus'],
     async (): Promise<RelatedEntityItem[]> => {
       // Get menus that the customer has ordered from
-      const { data: orders, error: ordersError } = await (supabase as any)
+      const { data: orders, error: ordersError } = await supabase
         .from('menu_orders')
         .select(`
           menu_id,
@@ -486,7 +488,7 @@ function useRelatedMenus(customerId: string | undefined, tenantId: string | unde
       const uniqueMenus = new Map<string, { id: string; name: string }>();
 
       for (const order of orders ?? []) {
-        const menu = (order as any).disposable_menus as { id: string; name: string; is_active: boolean } | null;
+        const menu = (order as unknown as Record<string, unknown>).disposable_menus as { id: string; name: string; is_active: boolean } | null;
         if (menu && menu.is_active && !uniqueMenus.has(menu.id)) {
           uniqueMenus.set(menu.id, { id: menu.id, name: menu.name });
         }

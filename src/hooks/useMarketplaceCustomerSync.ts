@@ -25,7 +25,7 @@ export function useMarketplaceCustomerSync(options?: UseMarketplaceCustomerSyncO
 
   const syncMutation = useMutation({
     mutationFn: async (storeId?: string) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .rpc('sync_all_marketplace_customers_to_hub', {
           p_store_id: storeId ?? null,
         });

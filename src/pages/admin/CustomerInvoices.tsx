@@ -84,6 +84,7 @@ export default function CustomerInvoices() {
     } else if (!accountLoading && !tenant) {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenant, accountLoading]);
 
   const loadInvoices = async (page: number = 1, append: boolean = false) => {
@@ -147,7 +148,8 @@ export default function CustomerInvoices() {
       // Fallback: Try RPC (may not support pagination, so load all and paginate client-side)
       if (page === 1) {
         try {
-          const { data: rpcData, error: rpcError } = await (supabase as any).rpc('get_tenant_invoices' as 'get_secret', {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data: rpcData, error: rpcError } = await supabase.rpc('get_tenant_invoices' as 'get_secret', {
             tenant_id: tenant.id,
           } as Record<string, unknown>);
           if (rpcError) {
@@ -295,7 +297,8 @@ export default function CustomerInvoices() {
       // Prefer generating a unique invoice number via RPC (guaranteed unique per tenant/year)
       let invoiceNumber = `INV-${Date.now()}`;
       try {
-        const { data: genNum, error: genErr } = await (supabase as any).rpc('generate_invoice_number' as 'get_secret', {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: genNum, error: genErr } = await supabase.rpc('generate_invoice_number' as 'get_secret', {
           tenant_id: tenant.id,
         } as Record<string, unknown>);
         if (genErr) {

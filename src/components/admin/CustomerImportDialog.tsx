@@ -32,7 +32,7 @@ const SYSTEM_FIELDS = [
 export function CustomerImportDialog({ open, onOpenChange, onSuccess }: CustomerImportDialogProps) {
     const { tenant } = useTenantAdminAuth();
     const [step, setStep] = useState<ImportStep>('upload');
-    const [file, setFile] = useState<File | null>(null);
+    const [_file, setFile] = useState<File | null>(null);
     const [fileHeaders, setFileHeaders] = useState<string[]>([]);
     const [rawRecords, setRawRecords] = useState<Record<string, unknown>[]>([]);
     const [mapping, setMapping] = useState<Record<string, string>>({});
@@ -124,7 +124,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
 
         const strVal = String(value).trim();
         // Regex for DD/MM/YYYY or MM/DD/YYYY or YYYY-MM-DD with separators [/-.]
-        const parts = strVal.split(/[\/\-\.]/);
+        const parts = strVal.split(/[/\-.]/);
 
         if (parts.length === 3) {
             let day, month, year;
@@ -237,7 +237,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
             for (let i = 0; i < validRecords.length; i += batchSize) {
                 const batch = validRecords.slice(i, i + batchSize);
 
-                const { error } = await (supabase as any).from('customers').insert(
+                const { error } = await supabase.from('customers').insert(
                     batch.map(record => ({
                         account_id: tenant.id,
                         first_name: String(record.first_name || ''),

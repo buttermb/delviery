@@ -124,7 +124,7 @@ export default function StoreMenuPage() {
     queryFn: async (): Promise<StoreData | null> => {
       if (!slug) return null;
 
-      const { data, error } = await (supabase as any).rpc(
+      const { data, error } = await supabase.rpc(
         'get_marketplace_store_by_slug',
         { p_slug: slug }
       );

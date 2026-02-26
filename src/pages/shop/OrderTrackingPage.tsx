@@ -70,8 +70,8 @@ export default function OrderTrackingPage() {
       if (!trackingToken) return null;
 
       try {
-        const { data, error } = await supabase
-          .rpc('get_marketplace_order_by_token' as any, { p_tracking_token: trackingToken }); // Supabase type limitation
+        const rpc = supabase.rpc as unknown as (fn: string, params: Record<string, unknown>) => PromiseLike<{ data: unknown[] | null; error: { message?: string } | null }>;
+        const { data, error } = await rpc('get_marketplace_order_by_token', { p_tracking_token: trackingToken }); // Supabase type limitation
 
         if (error) {
           logger.error('Order tracking fetch failed', error, { trackingToken });

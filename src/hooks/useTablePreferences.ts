@@ -20,15 +20,22 @@ const defaultPreferences: TablePreferences = {
 export function useTablePreferences(tableId: string, initialPreferences: TablePreferences = defaultPreferences) {
     const storageKey = `table-preferences-${tableId}`;
 
+    // Extract complex expressions to separate variables for stable dependency tracking
+    const visibleColumnsStr = JSON.stringify(initialPreferences.visibleColumns);
+    const customFiltersStr = JSON.stringify(initialPreferences.customFilters);
+    const sortingStr = JSON.stringify(initialPreferences.sorting);
+    const columnVisibilityStr = JSON.stringify(initialPreferences.columnVisibility);
+
     // Stabilize initialPreferences to prevent re-renders from object reference changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initialPreferences is intentionally decomposed into individual fields above
     const stableInitialPreferences = useMemo(() => initialPreferences, [
         initialPreferences.sortBy,
         initialPreferences.sortOrder,
         initialPreferences.pageSize,
-        JSON.stringify(initialPreferences.visibleColumns),
-        JSON.stringify(initialPreferences.customFilters),
-        JSON.stringify(initialPreferences.sorting),
-        JSON.stringify(initialPreferences.columnVisibility),
+        visibleColumnsStr,
+        customFiltersStr,
+        sortingStr,
+        columnVisibilityStr,
     ]);
 
     const loadPreferences = useCallback((): TablePreferences => {

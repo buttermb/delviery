@@ -131,7 +131,7 @@ export function POSRefundDialog({
     enabled: !!tenantId && !!searchSubmitted,
   });
 
-  const orderItems = foundOrder?.unified_order_items ?? [];
+  const orderItems = useMemo(() => foundOrder?.unified_order_items ?? [], [foundOrder?.unified_order_items]);
 
   // Calculate refund amount from selected items
   const selectedRefundTotal = useMemo(() => {
@@ -230,6 +230,7 @@ export function POSRefundDialog({
   const handleClose = useCallback(() => {
     resetDialog();
     onOpenChange(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- resetDialog is a stable function that only calls setState and reset
   }, [onOpenChange]);
 
   const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);

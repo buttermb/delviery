@@ -181,7 +181,7 @@ export function ConvertToInvoiceDialog({
     } finally {
       setIsConverting(false);
     }
-  }, [selectedClientId, order, queryClient, onSuccess, onOpenChange]);
+  }, [selectedClientId, order, queryClient, onSuccess, onOpenChange, tenant?.id]);
 
   // Check if already converted
   if (order.converted_to_invoice_id) {

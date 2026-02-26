@@ -132,7 +132,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
     // Mutation: Delete
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { error } = await (supabase as any).from('marketplace_banners').delete().eq('id', id);
+            const { error } = await supabase.from('marketplace_banners').delete().eq('id', id);
             if (error) throw error;
         },
         onSuccess: () => {
