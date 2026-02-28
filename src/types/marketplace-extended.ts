@@ -107,6 +107,7 @@ export interface EasyModeConfig {
  * Extended theme config with Easy Mode support
  */
 export interface ExtendedThemeConfig {
+  theme_id?: string;
   colors?: {
     primary?: string;
     secondary?: string;

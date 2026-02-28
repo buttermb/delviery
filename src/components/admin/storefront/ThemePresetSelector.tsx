@@ -44,6 +44,7 @@ function ThemePreviewCard({
 
     return (
         <Card
+            data-testid={`theme-preview-${theme.id}`}
             className={cn(
                 'cursor-pointer transition-all duration-200 overflow-hidden group',
                 isSelected
@@ -127,7 +128,7 @@ function ThemePreviewCard({
 }
 
 /**
- * Main theme preset selector component
+ * Main theme preset selector component (dialog variant)
  */
 export function ThemePresetSelector({
     onSelectTheme,
@@ -135,7 +136,6 @@ export function ThemePresetSelector({
     trigger,
 }: ThemePresetSelectorProps) {
     const [open, setOpen] = useState(false);
-    const [previewTheme, _setPreviewTheme] = useState<ThemePreset | null>(null);
 
     const handleSelect = (theme: ThemePreset) => {
         logger.debug('Theme selected', { themeId: theme.id });
@@ -173,23 +173,38 @@ export function ThemePresetSelector({
                         ))}
                     </div>
                 </ScrollArea>
-
-                {/* Quick preview section */}
-                {previewTheme && (
-                    <div className="border-t pt-4 mt-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h4 className="font-semibold">{previewTheme.name}</h4>
-                                <p className="text-sm text-muted-foreground">{previewTheme.description}</p>
-                            </div>
-                            <Button onClick={() => handleSelect(previewTheme)}>
-                                Apply Theme
-                            </Button>
-                        </div>
-                    </div>
-                )}
             </DialogContent>
         </Dialog>
+    );
+}
+
+/**
+ * Vertical grid of theme preview cards for sidebar/inline use
+ */
+interface ThemePresetGridProps {
+    onSelectTheme: (theme: ThemePreset) => void;
+    selectedThemeId?: string;
+}
+
+export function ThemePresetGrid({
+    onSelectTheme,
+    selectedThemeId,
+}: ThemePresetGridProps) {
+    return (
+        <div className="grid grid-cols-1 gap-2" data-testid="theme-preset-grid">
+            {THEME_PRESETS.map((theme) => (
+                <div key={theme.id} data-testid={`theme-preset-${theme.id}`}>
+                    <ThemePreviewCard
+                        theme={theme}
+                        isSelected={selectedThemeId === theme.id}
+                        onSelect={() => {
+                            logger.debug('Theme selected from grid', { themeId: theme.id });
+                            onSelectTheme(theme);
+                        }}
+                    />
+                </div>
+            ))}
+        </div>
     );
 }
 
