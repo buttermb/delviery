@@ -115,3 +115,18 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Updated ProductGridSectionProps interface with new fields: columns, max_products, sort_order, show_view_all_link, category_filter
 - Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
 - TypeScript compilation passes with zero errors
+
+## Live Orders notification sound on new order with settings toggle
+- Added synthesized tone fallback to `src/lib/soundAlerts.ts` using Web Audio API oscillators
+  - When MP3 files are unavailable (no `/public/sounds/*.mp3` present), the system now plays synthesized tones instead of silently failing
+  - `newOrder`: Two-tone ascending chime (C5 → E5) — distinct and attention-grabbing
+  - `success`: Quick ascending ding (A5)
+  - All other types: Default notification beep (F#5)
+  - Volume-controlled via gain node, consistent with existing volume settings
+- Fixed `StorefrontLiveOrders.tsx` sound toggle to persist to localStorage
+  - Changed `useState(true)` → `useState(isSoundEnabled)` to load saved preference
+  - Toggle now calls `persistSoundEnabled()` to save state via `STORAGE_KEYS.SOUND_ALERTS_ENABLED`
+  - Toggle also calls `initAudio()` to ensure AudioContext is initialized on interaction
+  - Button now uses `variant={soundEnabled ? 'default' : 'outline'}` for visual feedback (matches LiveOrders.tsx pattern)
+- Both LiveOrders.tsx and StorefrontLiveOrders.tsx now share the same persisted sound preference
+- TypeScript compilation passes with zero errors

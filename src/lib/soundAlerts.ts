@@ -80,6 +80,55 @@ export async function preloadSounds(sounds: SoundType[] = Object.keys(SOUND_FILE
 }
 
 /**
+ * Synthesize a notification tone using Web Audio API oscillators.
+ * Used as fallback when MP3 files are unavailable.
+ */
+function playSynthesizedTone(ctx: AudioContext, type: SoundType, volume: number): void {
+    const now = ctx.currentTime;
+    const gainNode = ctx.createGain();
+    gainNode.connect(ctx.destination);
+    gainNode.gain.setValueAtTime(volume * 0.4, now);
+
+    if (type === 'newOrder') {
+        // Two-tone ascending chime (C5 → E5)
+        const osc1 = ctx.createOscillator();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(523, now); // C5
+        osc1.connect(gainNode);
+        osc1.start(now);
+        osc1.stop(now + 0.15);
+
+        const osc2 = ctx.createOscillator();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(659, now + 0.18); // E5
+        osc2.connect(gainNode);
+        osc2.start(now + 0.18);
+        osc2.stop(now + 0.35);
+
+        gainNode.gain.setValueAtTime(volume * 0.4, now);
+        gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+    } else if (type === 'success') {
+        // Quick ascending ding
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now); // A5
+        osc.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.2);
+        gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+    } else {
+        // Default notification beep
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(740, now); // F#5
+        osc.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.15);
+        gainNode.gain.linearRampToValueAtTime(0, now + 0.25);
+    }
+}
+
+/**
  * Play a sound alert
  */
 export async function playSound(
@@ -89,9 +138,6 @@ export async function playSound(
     if (!audioEnabled) return;
 
     const url = SOUND_FILES[type];
-
-    // Skip if this sound file was already found to be unavailable
-    if (unavailableSounds.has(url)) return;
 
     const {
         volume = defaultVolume,
@@ -111,6 +157,14 @@ export async function playSound(
         navigator.vibrate(100);
     }
 
+    // If MP3 is unavailable, use synthesized tone fallback
+    if (unavailableSounds.has(url)) {
+        if (audioContext) {
+            playSynthesizedTone(audioContext, type, volume);
+        }
+        return;
+    }
+
     // Try Web Audio API first
     if (audioContext) {
         // Check cache
@@ -121,6 +175,7 @@ export async function playSound(
                 const response = await fetch(url);
                 if (!response.ok) {
                     unavailableSounds.add(url);
+                    playSynthesizedTone(audioContext, type, volume);
                     return;
                 }
 
@@ -129,6 +184,7 @@ export async function playSound(
                 audioCache.set(url, buffer);
             } catch {
                 unavailableSounds.add(url);
+                playSynthesizedTone(audioContext, type, volume);
                 return;
             }
         }
@@ -147,7 +203,9 @@ export async function playSound(
             source.start(0);
             return;
         } catch (error) {
-            logger.warn('Web Audio playback failed', error);
+            logger.warn('Web Audio playback failed, using synthesized fallback', error);
+            playSynthesizedTone(audioContext, type, volume);
+            return;
         }
     }
 
