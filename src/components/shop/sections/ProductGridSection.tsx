@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ export interface ProductGridSectionProps {
 }
 
 export function ProductGridSection({ content, styles, storeId }: ProductGridSectionProps) {
+    const { storeSlug } = useParams<{ storeSlug: string }>();
     const {
         heading = "Shop Premium Flower",
         subheading = "Premium indoor-grown flower from licensed NYC cultivators",
@@ -345,7 +347,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                                 display_order: 0,
                                                                 stock_quantity: product.in_stock ? 100 : 0
                                                             }}
-                                                            storeSlug=""
+                                                            storeSlug={storeSlug}
                                                             isPreviewMode={false}
                                                             onQuickAdd={(e) => handleQuickAdd(e, { ...product, id: product.id || '' })}
                                                             isAdded={false}

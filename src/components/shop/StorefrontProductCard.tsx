@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, Check, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -174,7 +175,11 @@ export function StorefrontProductCard({
                                 {cleanedName}
                             </h3>
                         </Link>
-                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">{product.category}</p>
+                        {product.category && (
+                            <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider w-fit">
+                                {product.category}
+                            </Badge>
+                        )}
 
                         {(product.thc_content || product.cbd_content) && (
                             <div className="flex flex-wrap gap-2 text-[10px] font-bold text-neutral-500 pt-1">
@@ -200,6 +205,18 @@ export function StorefrontProductCard({
                                     </span>
                                 ))}
                             </div>
+                        )}
+
+                        {/* Stock Status */}
+                        {showStockWarning && product.stock_quantity !== undefined && (
+                            <p className={cn(
+                                "text-[11px] font-semibold pt-1",
+                                isOutStock ? "text-red-500" :
+                                isLowStock ? "text-orange-500" :
+                                "text-emerald-600"
+                            )}>
+                                {isOutStock ? "Out of Stock" : isLowStock ? `Only ${product.stock_quantity} left` : "In Stock"}
+                            </p>
                         )}
                     </div>
                 </div>
