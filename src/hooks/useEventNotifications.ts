@@ -331,6 +331,30 @@ export function useEventNotifications({
       channelsRef.current.push(channel);
     });
 
+    // Subscribe to marketplace_orders (storefront checkout uses seller_tenant_id)
+    const marketplaceOrdersChannel = supabase
+      .channel(`event-notif-marketplace-orders-${tenant.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'marketplace_orders',
+          filter: `seller_tenant_id=eq.${tenant.id}`,
+        },
+        handleNewOrder
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.debug('Subscribed to marketplace_orders events', {
+            tenantId: tenant.id,
+            component: 'useEventNotifications',
+          });
+        }
+      });
+
+    channelsRef.current.push(marketplaceOrdersChannel);
+
     // Subscribe to products table for stock changes
     const productsChannel = supabase
       .channel(`event-notif-products-${tenant.id}`)
