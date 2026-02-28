@@ -32,8 +32,8 @@ export function ConversionRateChart({ storeId, className }: ConversionRateChartP
                 .select('id, status, customer_email')
                 .eq('store_id', storeId);
 
-            if (ordersError) {
-                logger.warn('Error fetching orders for conversion', ordersError);
+            if (ordersError || !orders?.length) {
+                if (ordersError) logger.warn('Error fetching orders for conversion', ordersError);
                 return { funnel: [], overallRate: 0 };
             }
 

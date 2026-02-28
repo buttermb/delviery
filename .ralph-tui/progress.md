@@ -17,6 +17,7 @@ after each iteration and it's included in prompts for context.
 - **Edge function fallback pattern**: CheckoutPage tries `storefront-checkout` edge function first (full server-side flow), falls back to direct `create_marketplace_order` RPC if edge function returns 500 or is unreachable. Business errors (400, 403, 409) propagate without fallback. Detect error type via `(error as { name?: string }).name` — `FunctionsFetchError`/`FunctionsRelayError` = network/deployment issue.
 - **queryKeys injection corruption**: Previous automated tooling injected `import { queryKeys }` mid-import-block and corrupted `Database['public']['Tables']['x']['Row']` type patterns with `queryKeys.x.all`. Always check for these corruptions after automated `queryKeys` migrations.
 - **||/?? mixing**: esbuild (Vite) strictly enforces parenthesization when `||` and `??` are mixed in the same expression. TypeScript may allow it, but the build will fail. Always wrap: `a || (b ?? c)`.
+- **Storefront order reads vs writes**: READ from `storefront_orders` view (aliased columns: `total`, `delivery_fee`, `delivery_address`). WRITE to `marketplace_orders` table (raw columns: `total_amount`, `shipping_cost`, `shipping_address`). Filter by `store_id` + `seller_tenant_id`, NOT `seller_profile_id` (that's for B2B marketplace orders).
 
 ---
 
@@ -653,4 +654,51 @@ after each iteration and it's included in prompts for context.
   - Easy mode uses `useEasyModeBuilder` hook with preset packs from `storefrontPresets.ts`
   - `marketplace_profiles` is synced alongside `marketplace_stores` so the public shop RPC returns fresh data
   - The `sectionDefaults()` function exists both in `StorefrontBuilder.tsx` (local) and `storefront-builder.config.ts` (shared) — careful with imports
+---
+
+## 2026-02-28 - floraiq-6w6.5
+- Audited `StorefrontSettings.tsx` for runtime console errors
+- Fixed missing `tenant_id` filter on featured products preview query (was querying products table without tenant isolation)
+- Added `tenant_id` filter to save settings mutation and regenerate token mutation
+- Added `tenantId` guard to featured products query `enabled` condition
+- Verified: no `console.log` statements, `npx tsc --noEmit` passes, all tabs render correctly
+- Files changed: `src/pages/admin/storefront/StorefrontSettings.tsx`
+- **Learnings:**
+  - StorefrontSettings is loaded as `?tab=settings` in StorefrontHubPage, not a standalone route
+  - `queryKeys.marketplaceStore.byTenant()` (no args) is used for broad cache invalidation — this is intentional
+  - Featured products preview uses a separate queryKey factory (`featuredProductsPreview.byIds`) from the product list (`featuredProducts.list`)
+  - Spreading `null`/`undefined` in JS objects is safe (`{...null}` → `{}`), so checkout_settings/operating_hours spreads aren't real runtime errors
+---
+
+## 2026-02-28 - floraiq-6w6.6
+- Fixed StorefrontOrders page runtime errors and added realtime subscription
+- Switched orders query from `marketplace_orders` table to `storefront_orders` view (correct aliased column names: `total`, `delivery_fee`, `delivery_address`)
+- Fixed filter column from `seller_profile_id` to `store_id` — storefront orders are linked via `store_id`, not `seller_profile_id`
+- Added `seller_tenant_id` filter to update mutation for proper tenant isolation
+- Added realtime subscription on `marketplace_orders` filtered by `store_id`
+- Fixed `delivery_address` type narrowing (was accessing `.street`/`.city` on union type without guard)
+- Fixed tracking URL to use `store.slug` instead of `store.id`
+- Applied same `store_id` filter fix to StoreOrdersTab component
+- Files changed: `src/pages/admin/storefront/StorefrontOrders.tsx`, `src/pages/admin/storefront/StoreOrdersTab.tsx`
+- **Learnings:**
+  - `storefront_orders` is a VIEW with aliased columns (`total` not `total_amount`, `delivery_fee` not `shipping_cost`, `delivery_address` not `shipping_address`). Always use this view for storefront order reads.
+  - `seller_profile_id` references `marketplace_profiles` (B2B marketplace), NOT `marketplace_stores` (storefront). Storefront orders use `store_id`.
+  - The LiveOrders page (StorefrontLiveOrders.tsx) is the reference implementation: uses `store_id` + `seller_tenant_id` for tenant isolation, realtime via `supabase.channel()` with `postgres_changes` on `marketplace_orders`.
+  - Writes must go to `marketplace_orders` directly (the view is read-only for computed columns).
+  - Store tracking URLs use `slug` not `id`: `/shop/{slug}/track/{token}`
+---
+
+## 2026-02-28 - floraiq-6w6.7
+- Audited StorefrontAnalytics page (`/:tenantSlug/admin/storefront/analytics`) for runtime console errors
+- Fixed critical store resolution bug: was querying `marketplace_profiles` for store ID, but `storefront_orders.store_id` references `marketplace_stores.id` — analytics would return no data
+- Switched from `marketplace_profiles` to `marketplace_stores` to match all other storefront pages (StorefrontLiveOrders, StorefrontOrders, StoreOrdersTab, StorefrontSettings)
+- Changed query key from `queryKeys.storefrontAnalyticsStore.byTenant()` to `queryKeys.marketplaceStore.byTenant()` to match other pages and enable cache sharing
+- Fixed ConversionRateChart empty state: when no orders exist, funnel had 4 items with all-zero values that bypassed the empty state check — now returns empty funnel to show "No conversion data available"
+- Verified: `npx tsc --noEmit` passes, no `console.log` statements, all queries filter by `tenant_id` (via `marketplace_stores.tenant_id` → `store.id` → `storefront_orders.store_id`)
+- Files changed: `src/pages/admin/storefront/StorefrontAnalytics.tsx`, `src/components/admin/analytics/ConversionRateChart.tsx`
+- **Learnings:**
+  - `storefront_orders.store_id` references `marketplace_stores.id`, NOT `marketplace_profiles.id`. The `marketplace_profiles` table is for B2B marketplace profiles (linked via `seller_profile_id`). For storefront operations, always use `marketplace_stores`.
+  - All storefront admin pages should use `queryKeys.marketplaceStore.byTenant()` for the store resolution query — this ensures cache sharing across tabs in StorefrontHubPage.
+  - The `storefront_orders` view doesn't expose `seller_tenant_id` — tenant isolation for reads is achieved through the `store_id` chain (store belongs to tenant). For writes to `marketplace_orders`, add `seller_tenant_id` explicitly.
+  - When Recharts data has all-zero values but non-empty array, the chart renders but looks broken. Always check for semantic emptiness (no meaningful data) in addition to array length.
 ---

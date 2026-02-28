@@ -36,24 +36,26 @@ export default function StorefrontAnalytics() {
     to: new Date(),
   });
 
+  const tenantId = tenant?.id;
+
   // Get the store ID for this tenant
   const { data: store, isLoading: storeLoading } = useQuery({
-    queryKey: queryKeys.storefrontAnalyticsStore.byTenant(tenant?.id),
+    queryKey: queryKeys.marketplaceStore.byTenant(tenantId),
     queryFn: async () => {
-      if (!tenant?.id) return null;
+      if (!tenantId) return null;
       const { data } = await supabase
-        .from('marketplace_profiles')
+        .from('marketplace_stores')
         .select('id')
-        .eq('tenant_id', tenant.id)
+        .eq('tenant_id', tenantId)
         .maybeSingle();
       return data;
     },
-    enabled: !!tenant?.id,
+    enabled: !!tenantId,
   });
 
   // Fetch summary metrics
   const { data: metrics, isLoading: metricsLoading } = useQuery({
-    queryKey: queryKeys.analytics.orders(tenant?.id, { storeId: store?.id, from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString() }),
+    queryKey: queryKeys.analytics.orders(tenantId, { storeId: store?.id, from: dateRange.from?.toISOString(), to: dateRange.to?.toISOString() }),
     queryFn: async (): Promise<OrderMetrics> => {
       if (!store?.id) return { totalOrders: 0, totalRevenue: 0, conversionRate: 0, averageOrderValue: 0 };
 
