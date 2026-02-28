@@ -6,9 +6,6 @@
 
 import { z } from 'zod';
 
-// Re-export storefront settings schema
-export * from './storefrontSettingsSchema';
-
 /**
  * Sanitize string input
  * Removes HTML tags and limits length

@@ -15,7 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
-import { InventoryStatusBadge } from './InventoryStatusBadge';
+import { InventoryStatusBadge } from '@/components/admin/InventoryStatusBadge';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 

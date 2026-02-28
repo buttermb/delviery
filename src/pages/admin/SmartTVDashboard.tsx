@@ -24,8 +24,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 
-import {
 import { queryKeys } from '@/lib/queryKeys';
+import {
     TVHeaderBar,
     TVMetricsWidget,
     TVLiveOrdersWidget,
