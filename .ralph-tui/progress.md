@@ -1064,3 +1064,35 @@ after each iteration and it's included in prompts for context.
   - When updating `create_marketplace_order`, must re-issue GRANT with the new parameter count (14 params: UUID, TEXT×6, JSONB, NUMERIC×4, TEXT×2) or anon/authenticated users can't call it.
   - The `storefront_orders` view must be DROP+CREATE'd when adding columns since views don't support ALTER ADD COLUMN.
 ---
+
+## 2026-02-28 - floraiq-dy9.22
+- Created composite performance indexes via migration `20260228000011_performance_indexes.sql`
+- Added 4 new indexes:
+  - `idx_marketplace_orders_seller_created` — (seller_tenant_id, created_at DESC)
+  - `idx_marketplace_orders_seller_status` — (seller_tenant_id, status)
+  - `idx_marketplace_orders_seller_customer` — (seller_tenant_id, customer_id)
+  - `idx_products_tenant_menu_visibility` — (tenant_id, menu_visibility)
+- Verified 3 indexes already exist (no duplicates created):
+  - `idx_marketplace_order_items_order` — order_items(order_id)
+  - `idx_customers_tenant_phone` — customers(tenant_id, phone) WHERE phone IS NOT NULL
+  - `unique_store_slug` constraint — marketplace_stores(slug) UNIQUE
+- Files changed: `supabase/migrations/20260228000011_performance_indexes.sql`
+- **Learnings:**
+  - `marketplace_orders` has no `tenant_id` column — uses `seller_tenant_id` and `buyer_tenant_id` for the two sides of a B2B order. For storefront/admin queries, `seller_tenant_id` is the tenant identifier.
+  - The PRD says "visible_on_storefront" but the actual column is `menu_visibility` (BOOLEAN). Always verify column names in existing migrations before creating indexes.
+  - `marketplace_stores.slug` already has a UNIQUE constraint (`unique_store_slug`) from the CREATE TABLE definition, which implicitly creates a unique index. The additional `idx_marketplace_stores_slug` regular index is redundant but harmless.
+  - `customers` already had both `idx_customers_phone_tenant(phone, tenant_id)` and `idx_customers_tenant_phone(tenant_id, phone)` — two separate indexes with opposite column order for different query patterns.
+---
+
+## 2026-02-28 - floraiq-dy9 (epic closure)
+- All 22 tasks verified complete — bead closed
+- Quality gates: `npx tsc --noEmit` clean, no `console.log` in edge functions, tenant_id filtering confirmed
+- Key deliverables:
+  - `storefront-checkout` edge function: full server-side checkout flow (price validation, stock checks, customer upsert, order numbers, inventory deduction, Telegram fire-and-forget, Stripe sessions, comprehensive error handling)
+  - `forward-order-telegram` edge function: sends order notifications to tenant's configured Telegram chat
+  - Client-side fallback when edge function unavailable (dy9.12)
+  - DB migrations: sequential order numbers, inventory deduction safety, performance indexes, payment_method/Telegram config columns, preferred_contact_method
+  - RPCs verified: `get_marketplace_store_by_slug`, `get_marketplace_products`, `create_marketplace_order`, `next_tenant_order_number`
+- **Learnings:**
+  - Bead was completed across iterations dy9.1 through dy9.22 in previous sessions — verification-only closure
+---
