@@ -64,6 +64,8 @@ import Edit from "lucide-react/dist/esm/icons/edit";
 import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import Printer from "lucide-react/dist/esm/icons/printer";
 import Store from "lucide-react/dist/esm/icons/store";
+import Eye from "lucide-react/dist/esm/icons/eye";
+import EyeOff from "lucide-react/dist/esm/icons/eye-off";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import Archive from "lucide-react/dist/esm/icons/archive";
 import ArchiveRestore from "lucide-react/dist/esm/icons/archive-restore";
@@ -609,6 +611,25 @@ export function ProductsListPage() {
       ),
     },
     {
+      header: 'Storefront',
+      accessorKey: 'menu_visibility',
+      className: 'text-center hidden lg:table-cell',
+      cell: (product) => (
+        <Badge
+          variant="outline"
+          className={product.menu_visibility
+            ? "text-green-700 border-green-300 bg-green-50 dark:text-green-400 dark:border-green-700 dark:bg-green-950 gap-1"
+            : "text-muted-foreground border-muted bg-muted/30 gap-1"
+          }
+        >
+          {product.menu_visibility
+            ? <><Eye className="h-3 w-3" /> Listed</>
+            : <><EyeOff className="h-3 w-3" /> Unlisted</>
+          }
+        </Badge>
+      ),
+    },
+    {
       header: 'Actions',
       className: 'text-right',
       cell: (product) => (
@@ -687,6 +708,7 @@ export function ProductsListPage() {
         low_stock_alert: product.low_stock_alert ?? 10,
         wholesale_price: product.wholesale_price ?? 0,
         cost_per_unit: product.cost_per_unit ?? 0,
+        menu_visibility: product.menu_visibility,
       }}
       onEdit={() => handleEdit(product.id)}
       onDelete={() => handleDelete(product.id)}
@@ -996,6 +1018,7 @@ export function ProductsListPage() {
                                 low_stock_alert: product.low_stock_alert ?? 10,
                                 wholesale_price: product.wholesale_price ?? 0,
                                 cost_per_unit: product.cost_per_unit ?? 0,
+                                menu_visibility: product.menu_visibility,
                               }}
                               onEdit={() => handleEdit(product.id)}
                               onDelete={() => handleDelete(product.id)}
