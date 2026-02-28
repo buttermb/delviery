@@ -397,12 +397,12 @@ export function StorefrontLiveOrders() {
     onSuccess: (_, { newStatus: _newStatus }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.storefrontLiveOrders.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
-      if (newStatus === 'cancelled') {
+      if (_newStatus === 'cancelled') {
         setCancelDialogOpen(false);
         setCancelOrderId(null);
         toast.success('Order cancelled and inventory restored');
       } else {
-        toast.success(`Status changed to ${STATUS_LABELS[newStatus] || newStatus}`);
+        toast.success(`Status changed to ${STATUS_LABELS[_newStatus] || _newStatus}`);
       }
     },
     onError: (error) => {

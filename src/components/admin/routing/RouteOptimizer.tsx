@@ -366,7 +366,7 @@ export function RouteOptimizer() {
 
             {/* Route Line */}
             {optimizedRoute?.geometry && (
-              <Source id="route" type="geojson" data={optimizedRoute.geometry}>
+              <Source id="route" type="geojson" data={optimizedRoute.geometry as unknown as GeoJSON.GeoJSON}>
                 <Layer
                   id="route-line"
                   type="line"

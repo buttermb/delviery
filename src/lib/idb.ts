@@ -120,7 +120,7 @@ export const db = {
 
         if (record.encrypted && clientEncryption.isReady()) {
             try {
-                const decryptedData = clientEncryption.decrypt(record.data) as Record<string, unknown>;
+                const decryptedData = clientEncryption.decrypt(record.data as string) as Record<string, unknown>;
                 return {
                     id: record.id,
                     ...decryptedData,
@@ -149,7 +149,7 @@ export const db = {
         return records.map(record => {
             if (record.encrypted) {
                 try {
-                    const decryptedData = clientEncryption.decrypt(record.data) as Record<string, unknown>;
+                    const decryptedData = clientEncryption.decrypt(record.data as string) as Record<string, unknown>;
                     return {
                         id: record.id,
                         ...decryptedData,

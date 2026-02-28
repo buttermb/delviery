@@ -31,6 +31,7 @@ interface Client {
 interface ClientFilters {
     q: string;
     status: string;
+    [key: string]: unknown;
 }
 
 const CLIENTS_FILTER_CONFIG: Array<{ key: keyof ClientFilters; defaultValue: string }> = [

@@ -463,7 +463,7 @@ export default function CustomerCRMPage() {
         <TabsContent value="overview" className="space-y-4">
           <AdminDataTable
             data={filteredCustomers}
-            columns={crmColumns}
+            columns={crmColumns as any}
             keyExtractor={(customer: EnrichedCustomer) => customer.id as string}
             isLoading={isLoading}
             emptyStateIcon={Users}

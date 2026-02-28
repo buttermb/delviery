@@ -453,32 +453,6 @@ export function MenuProductOrdering({
     }
   }, []);
 
-  const handleCategoryDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
-      setActiveId(null);
-      setActiveType(null);
-
-      if (over && active.id !== over.id) {
-        const activeCategory = (active.id as string).replace('category-', '');
-        const overCategory = (over.id as string).replace('category-', '');
-
-        const oldIndex = categoryOrder.indexOf(activeCategory);
-        const newIndex = categoryOrder.indexOf(overCategory);
-
-        if (oldIndex !== -1 && newIndex !== -1) {
-          const newOrder = arrayMove(categoryOrder, oldIndex, newIndex);
-          setCategoryOrder(newOrder);
-          setHasChanges(true);
-
-          // Update product display orders based on new category order
-          updateProductOrders(newOrder);
-        }
-      }
-    },
-    [categoryOrder, updateProductOrders]
-  );
-
   // Update product display orders when category order changes
   const updateProductOrders = useCallback((newCategoryOrder: string[]) => {
     let globalOrder = 0;
@@ -500,6 +474,30 @@ export function MenuProductOrdering({
     setOrderedProducts(updatedProducts);
     onOrderChange?.(updatedProducts);
   }, [orderedProducts, onOrderChange]);
+
+  const handleCategoryDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      setActiveId(null);
+      setActiveType(null);
+
+      if (over && active.id !== over.id) {
+        const activeCategory = (active.id as string).replace('category-', '');
+        const overCategory = (over.id as string).replace('category-', '');
+
+        const oldIndex = categoryOrder.indexOf(activeCategory);
+        const newIndex = categoryOrder.indexOf(overCategory);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const newOrder = arrayMove(categoryOrder, oldIndex, newIndex);
+          setCategoryOrder(newOrder);
+          setHasChanges(true);
+          updateProductOrders(newOrder);
+        }
+      }
+    },
+    [categoryOrder, updateProductOrders]
+  );
 
   // Handle product reorder within category
   const handleProductReorder = useCallback(

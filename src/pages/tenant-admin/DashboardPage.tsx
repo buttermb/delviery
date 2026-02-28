@@ -247,7 +247,7 @@ export default function TenantAdminDashboardPage() {
         }
 
         const DEFAULT_LOW_STOCK_THRESHOLD = 10;
-        const lowStock = (inventory as DashboardInventoryRow[] ?? []).map((item) => {
+        const lowStock = (inventory as unknown as DashboardInventoryRow[] ?? []).map((item) => {
           // Use product's low_stock_alert if set, otherwise use default threshold
           const threshold = item.low_stock_alert ?? DEFAULT_LOW_STOCK_THRESHOLD;
           const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;

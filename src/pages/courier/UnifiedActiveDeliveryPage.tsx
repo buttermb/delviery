@@ -139,7 +139,7 @@ export default function UnifiedActiveDeliveryPage() {
     // Extract tenantId for isolation check
     const tenantId = role === 'courier' ? data?.tenant_id : data?.seller_tenant_id;
 
-    const success = await updateStatus(id!, newStatus, role, tenantId);
+    const success = await updateStatus(id!, newStatus, role, tenantId as string);
     if (success && newStatus === 'delivered') {
       navigate('/courier/dashboard');
     }

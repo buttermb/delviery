@@ -371,7 +371,7 @@ export default function SuperAdminDashboard() {
         </div>
 
         <DataTable
-          columns={columns as ColumnDef<TenantWithHealth>[]}
+          columns={columns as any}
           data={filteredTenants ?? []}
           loading={isLoading}
           emptyMessage="No tenants found"
