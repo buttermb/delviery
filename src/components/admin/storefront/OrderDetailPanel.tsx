@@ -34,13 +34,20 @@ import {
   CreditCard,
   Banknote,
   Printer,
-  MessageCircle,
+  MessageSquare,
+  Send,
   Loader2,
   Clock,
   StickyNote,
   ChevronRight,
   XCircle,
 } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { LiveOrderStatusBadge } from '@/components/admin/live-orders/LiveOrderStatusBadge';
 import type { LiveOrder } from '@/pages/admin/storefront/StorefrontLiveOrders';
 import { getValidNextStatuses } from '@/pages/admin/storefront/StorefrontLiveOrders';
@@ -73,6 +80,7 @@ interface OrderDetailPanelProps {
   onOpenChange: (open: boolean) => void;
   onStatusChange: (orderId: string, newStatus: string) => void;
   updatingOrderId?: string | null;
+  telegramLink?: string | null;
 }
 
 /** Extract raw DB fields from order cast as unknown */
@@ -223,6 +231,7 @@ export function OrderDetailPanel({
   onOpenChange,
   onStatusChange,
   updatingOrderId,
+  telegramLink,
 }: OrderDetailPanelProps) {
   const items = useMemo(() => {
     if (!order) return [];
@@ -338,6 +347,67 @@ export function OrderDetailPanel({
               </div>
             )}
           </div>
+
+          {/* One-click contact shortcuts */}
+          {(order.customer_phone || order.customer_email || telegramLink) && (
+            <TooltipProvider delayDuration={200}>
+              <div className="flex items-center gap-1.5 pt-1">
+                {order.customer_phone && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+                        <a href={`tel:${order.customer_phone}`} aria-label="Call customer">
+                          <Phone className="h-3.5 w-3.5" />
+                        </a>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Call</TooltipContent>
+                  </Tooltip>
+                )}
+                {order.customer_phone && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+                        <a href={`sms:${order.customer_phone}`} aria-label="Send SMS to customer">
+                          <MessageSquare className="h-3.5 w-3.5" />
+                        </a>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>SMS</TooltipContent>
+                  </Tooltip>
+                )}
+                {order.customer_email && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+                        <a href={`mailto:${order.customer_email}`} aria-label="Email customer">
+                          <Mail className="h-3.5 w-3.5" />
+                        </a>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Email</TooltipContent>
+                  </Tooltip>
+                )}
+                {telegramLink && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+                        <a
+                          href={telegramLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="Open Telegram"
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                        </a>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Telegram</TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            </TooltipProvider>
+          )}
         </div>
 
         <Separator />
@@ -547,22 +617,6 @@ export function OrderDetailPanel({
         {/* Footer Actions */}
         <Separator />
         <div className="px-6 py-4 flex gap-2">
-          {order.customer_phone && (
-            <Button variant="outline" size="sm" className="flex-1" asChild>
-              <a href={`tel:${order.customer_phone}`}>
-                <Phone className="h-4 w-4 mr-1.5" />
-                Contact Customer
-              </a>
-            </Button>
-          )}
-          {order.customer_email && !order.customer_phone && (
-            <Button variant="outline" size="sm" className="flex-1" asChild>
-              <a href={`mailto:${order.customer_email}`}>
-                <MessageCircle className="h-4 w-4 mr-1.5" />
-                Contact Customer
-              </a>
-            </Button>
-          )}
           <Button variant="outline" size="sm" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-1.5" />
             Print

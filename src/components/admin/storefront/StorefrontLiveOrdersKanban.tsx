@@ -18,10 +18,18 @@ import {
     ChevronRight,
     Bell,
     MessageSquare,
+    Mail,
+    Send,
     Loader2,
     Store,
     XCircle,
 } from 'lucide-react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { getValidNextStatuses } from '@/pages/admin/storefront/StorefrontLiveOrders';
 
 // Types
@@ -50,6 +58,7 @@ interface StorefrontKanbanProps {
     isLoading?: boolean;
     /** ID of order currently being updated (for loading state) */
     updatingOrderId?: string | null;
+    telegramLink?: string | null;
 }
 
 // Column Configuration — action buttons now use getValidNextStatuses() instead of nextStatus
@@ -126,6 +135,7 @@ function KanbanCard({
     onViewDetails,
     onNotifyCustomer,
     isUpdating,
+    telegramLink,
 }: {
     order: StorefrontOrder;
     column: typeof COLUMNS[0];
@@ -133,6 +143,7 @@ function KanbanCard({
     onViewDetails: StorefrontKanbanProps['onViewDetails'];
     onNotifyCustomer?: StorefrontKanbanProps['onNotifyCustomer'];
     isUpdating?: boolean;
+    telegramLink?: string | null;
 }) {
     const items = Array.isArray(order.items) ? order.items : [];
     const itemCount = items.length;
@@ -213,13 +224,63 @@ function KanbanCard({
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <User className="h-3 w-3" />
                     <span className="truncate">{order.customer_name || 'Guest'}</span>
-                    {order.customer_phone && (
-                        <>
-                            <Phone className="h-3 w-3 ml-2" />
-                            <span className="text-xs">{order.customer_phone}</span>
-                        </>
-                    )}
                 </div>
+
+                {/* Contact shortcuts */}
+                {(order.customer_phone || order.customer_email || telegramLink) && (
+                    <TooltipProvider delayDuration={200}>
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            {order.customer_phone && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6" asChild>
+                                            <a href={`tel:${order.customer_phone}`} aria-label="Call">
+                                                <Phone className="h-3 w-3" />
+                                            </a>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom" className="text-xs">Call</TooltipContent>
+                                </Tooltip>
+                            )}
+                            {order.customer_phone && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6" asChild>
+                                            <a href={`sms:${order.customer_phone}`} aria-label="SMS">
+                                                <MessageSquare className="h-3 w-3" />
+                                            </a>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom" className="text-xs">SMS</TooltipContent>
+                                </Tooltip>
+                            )}
+                            {order.customer_email && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6" asChild>
+                                            <a href={`mailto:${order.customer_email}`} aria-label="Email">
+                                                <Mail className="h-3 w-3" />
+                                            </a>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom" className="text-xs">Email</TooltipContent>
+                                </Tooltip>
+                            )}
+                            {telegramLink && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6" asChild>
+                                            <a href={telegramLink} target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+                                                <Send className="h-3 w-3" />
+                                            </a>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom" className="text-xs">Telegram</TooltipContent>
+                                </Tooltip>
+                            )}
+                        </div>
+                    </TooltipProvider>
+                )}
 
                 {/* Items */}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -330,6 +391,7 @@ export function StorefrontLiveOrdersKanban({
     onNotifyCustomer,
     isLoading,
     updatingOrderId,
+    telegramLink,
 }: StorefrontKanbanProps) {
     // Group orders by column
     const ordersByColumn = useMemo(() => {
@@ -400,6 +462,7 @@ export function StorefrontLiveOrdersKanban({
                                         onViewDetails={onViewDetails}
                                         onNotifyCustomer={onNotifyCustomer}
                                         isUpdating={updatingOrderId === order.id}
+                                        telegramLink={telegramLink}
                                     />
                                 ))
                             )}

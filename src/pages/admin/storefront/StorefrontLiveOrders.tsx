@@ -204,6 +204,22 @@ export function StorefrontLiveOrders() {
     enabled: !!tenantId,
   });
 
+  // Fetch Telegram link from account_settings for contact shortcuts
+  const { data: telegramLink } = useQuery({
+    queryKey: [...queryKeys.accountSettings.byTenant(tenantId), 'telegram-link'] as const,
+    queryFn: async () => {
+      if (!tenantId) return null;
+      const { data } = await supabase
+        .from('account_settings')
+        .select('telegram_video_link')
+        .eq('account_id', tenantId)
+        .maybeSingle();
+      return (data?.telegram_video_link as string) ?? null;
+    },
+    enabled: !!tenantId,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Fetch live orders
   const { data: orders = [], isLoading, refetch } = useQuery({
     queryKey: queryKeys.storefrontLiveOrders.byStore(store?.id, statusFilter),
@@ -608,6 +624,7 @@ export function StorefrontLiveOrders() {
           onViewDetails={handleViewDetails}
           isLoading={isLoading}
           updatingOrderId={updatingOrderId}
+          telegramLink={telegramLink}
         />
       ) : (
         <StorefrontLiveOrdersTable
@@ -616,6 +633,7 @@ export function StorefrontLiveOrders() {
           onViewDetails={handleViewDetails}
           isLoading={isLoading}
           updatingOrderId={updatingOrderId}
+          telegramLink={telegramLink}
         />
       )}
 
@@ -626,6 +644,7 @@ export function StorefrontLiveOrders() {
         onOpenChange={setDetailPanelOpen}
         onStatusChange={handleStatusChange}
         updatingOrderId={updatingOrderId}
+        telegramLink={telegramLink}
       />
 
       {/* Cancel Order Dialog */}

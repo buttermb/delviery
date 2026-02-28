@@ -40,6 +40,9 @@ import {
   MoreHorizontal,
   Eye,
   Phone,
+  MessageSquare,
+  Mail,
+  Send,
   Package,
   XCircle,
 } from 'lucide-react';
@@ -74,6 +77,7 @@ interface StorefrontLiveOrdersTableProps {
   onViewDetails: (orderId: string) => void;
   isLoading?: boolean;
   updatingOrderId?: string | null;
+  telegramLink?: string | null;
 }
 
 /** Derive payment method from order fields */
@@ -158,6 +162,7 @@ export function StorefrontLiveOrdersTable({
   onViewDetails,
   isLoading,
   updatingOrderId,
+  telegramLink,
 }: StorefrontLiveOrdersTableProps) {
   const sortedOrders = useMemo(
     () =>
@@ -355,12 +360,36 @@ export function StorefrontLiveOrdersTable({
                         View Details
                       </DropdownMenuItem>
 
-                      {/* Contact Customer */}
+                      {/* Contact shortcuts */}
                       {order.customer_phone && (
                         <DropdownMenuItem asChild>
                           <a href={`tel:${order.customer_phone}`}>
                             <Phone className="h-4 w-4 mr-2" />
-                            Contact Customer
+                            Call
+                          </a>
+                        </DropdownMenuItem>
+                      )}
+                      {order.customer_phone && (
+                        <DropdownMenuItem asChild>
+                          <a href={`sms:${order.customer_phone}`}>
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            SMS
+                          </a>
+                        </DropdownMenuItem>
+                      )}
+                      {order.customer_email && (
+                        <DropdownMenuItem asChild>
+                          <a href={`mailto:${order.customer_email}`}>
+                            <Mail className="h-4 w-4 mr-2" />
+                            Email
+                          </a>
+                        </DropdownMenuItem>
+                      )}
+                      {telegramLink && (
+                        <DropdownMenuItem asChild>
+                          <a href={telegramLink} target="_blank" rel="noopener noreferrer">
+                            <Send className="h-4 w-4 mr-2" />
+                            Telegram
                           </a>
                         </DropdownMenuItem>
                       )}
