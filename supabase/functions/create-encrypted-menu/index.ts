@@ -7,6 +7,8 @@ const CreateMenuSchema = z.object({
   tenant_id: z.string().uuid(),
   name: z.string().min(1).max(255),
   description: z.string().optional(),
+  custom_message: z.string().max(500).optional(),
+  show_product_images: z.boolean().optional(),
   security_settings: z.object({}).passthrough().optional(),
   appearance_settings: z.object({}).passthrough().optional(),
   min_order_quantity: z.number().positive().optional(),
@@ -74,6 +76,8 @@ serve(withZenProtection(async (req) => {
         tenant_id: menuData.tenant_id,
         name: menuData.name,
         description: menuData.description,
+        custom_message: menuData.custom_message,
+        show_product_images: menuData.show_product_images,
         encrypted_url_token: urlToken,
         access_code: menuData.access_code, // Store plaintext for sharing (will be encrypted later)
         access_code_hash: accessCodeHash,

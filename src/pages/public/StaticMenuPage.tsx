@@ -11,13 +11,37 @@ interface MenuProduct {
   category: string;
 }
 
+interface ColorConfig {
+  bg: string;
+  text: string;
+  accent: string;
+  cardBg: string;
+  border: string;
+}
+
+interface AppearanceSettings {
+  colors?: Partial<ColorConfig>;
+  show_prices?: boolean;
+  show_descriptions?: boolean;
+  contact_info?: string;
+}
+
 interface MenuData {
   name: string;
   description: string;
   custom_message: string;
   show_product_images: boolean;
   products: MenuProduct[];
+  appearance: AppearanceSettings;
 }
+
+const DEFAULT_COLORS: ColorConfig = {
+  bg: '#f8f9fa',
+  text: '#1a1a2e',
+  accent: '#059669',
+  cardBg: '#ffffff',
+  border: '#e5e7eb',
+};
 
 type PageState = 'loading' | 'ready' | 'error' | 'not_found';
 
@@ -113,26 +137,36 @@ export default function StaticMenuPage() {
   }
 
   const showImages = menu.show_product_images !== false;
+  const showPrices = menu.appearance?.show_prices !== false;
+  const showDescriptions = menu.appearance?.show_descriptions !== false;
+  const contactInfo = menu.appearance?.contact_info ?? '';
+  const colors: ColorConfig = { ...DEFAULT_COLORS, ...(menu.appearance?.colors ?? {}) };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: colors.bg, color: colors.text }}>
       <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
         {/* Header */}
-        <div className="text-center pb-6 mb-6 border-b border-gray-200">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
+        <div className="text-center pb-6 mb-6" style={{ borderBottom: `1px solid ${colors.border}` }}>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: colors.text }}>
             {menu.name}
           </h1>
           {menu.description && (
-            <p className="mt-2 text-gray-500 text-sm sm:text-base">{menu.description}</p>
+            <p className="mt-2 text-sm sm:text-base" style={{ color: `${colors.text}99` }}>{menu.description}</p>
           )}
-          <div className="mt-3 text-xs uppercase tracking-wider text-gray-400 font-medium">
+          <div className="mt-3 text-xs uppercase tracking-wider font-medium" style={{ color: `${colors.text}66` }}>
             {menu.products.length} {menu.products.length === 1 ? 'item' : 'items'}
           </div>
         </div>
 
         {/* Custom message */}
         {menu.custom_message && (
-          <div className="mb-6 px-4 py-3 bg-blue-50 border-l-3 border-blue-500 rounded-r-lg text-sm text-blue-800">
+          <div className="mb-6 px-4 py-3 rounded-r-lg text-sm"
+            style={{
+              backgroundColor: `${colors.accent}15`,
+              borderLeft: `3px solid ${colors.accent}`,
+              color: colors.text,
+            }}
+          >
             {menu.custom_message}
           </div>
         )}
@@ -142,42 +176,59 @@ export default function StaticMenuPage() {
           {menu.products.map((product, idx) => (
             <div
               key={idx}
-              className="bg-white border border-gray-200 rounded-xl overflow-hidden flex hover:shadow-sm transition-shadow"
+              className="rounded-xl overflow-hidden flex hover:shadow-sm transition-shadow"
+              style={{ backgroundColor: colors.cardBg, border: `1px solid ${colors.border}` }}
             >
               {showImages && product.image_url && (
                 <img
                   src={product.image_url}
                   alt={product.name}
-                  className="w-20 h-20 sm:w-24 sm:h-24 object-cover flex-shrink-0 bg-gray-100"
+                  className="w-20 h-20 sm:w-24 sm:h-24 object-cover flex-shrink-0"
+                  style={{ backgroundColor: `${colors.border}` }}
                   loading="lazy"
                 />
               )}
               <div className="p-3 sm:p-4 flex-1 min-w-0 flex flex-col gap-1">
                 <div className="flex justify-between items-start gap-3">
-                  <h3 className="font-semibold text-sm sm:text-base text-gray-900 leading-tight">
+                  <h3 className="font-semibold text-sm sm:text-base leading-tight" style={{ color: colors.text }}>
                     {product.name}
                   </h3>
-                  {product.price > 0 && (
-                    <span className="text-sm sm:text-base font-bold text-emerald-600 shrink-0">
+                  {showPrices && product.price > 0 && (
+                    <span className="text-sm sm:text-base font-bold shrink-0" style={{ color: colors.accent }}>
                       ${product.price.toFixed(2)}
                     </span>
                   )}
                 </div>
                 {product.category && (
-                  <span className="inline-block w-fit text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full uppercase tracking-wide font-medium">
+                  <span
+                    className="inline-block w-fit text-[11px] px-2 py-0.5 rounded-full uppercase tracking-wide font-medium"
+                    style={{ backgroundColor: `${colors.border}`, color: `${colors.text}99` }}
+                  >
                     {product.category}
                   </span>
                 )}
-                {product.description && (
-                  <p className="text-xs sm:text-sm text-gray-500 line-clamp-2">{product.description}</p>
+                {showDescriptions && product.description && (
+                  <p className="text-xs sm:text-sm line-clamp-2" style={{ color: `${colors.text}99` }}>
+                    {product.description}
+                  </p>
                 )}
               </div>
             </div>
           ))}
         </div>
 
+        {/* Contact info */}
+        {contactInfo && (
+          <div
+            className="text-center mt-6 p-4 rounded-xl text-sm font-medium"
+            style={{ backgroundColor: colors.cardBg, border: `1px solid ${colors.border}`, color: colors.text }}
+          >
+            {contactInfo}
+          </div>
+        )}
+
         {/* Footer */}
-        <div className="text-center mt-8 pt-6 border-t border-gray-200 text-xs text-gray-400">
+        <div className="text-center mt-8 pt-6 text-xs" style={{ borderTop: `1px solid ${colors.border}`, color: `${colors.text}66` }}>
           Generated by FloraIQ
         </div>
       </div>
@@ -190,7 +241,7 @@ async function loadMenuDirect(token: string): Promise<MenuData | null> {
   try {
     const { data: menu, error: menuError } = await supabase
       .from('disposable_menus')
-      .select('id, name, description, custom_message, show_product_images, tenant_id')
+      .select('id, name, description, custom_message, show_product_images, appearance_settings, tenant_id')
       .eq('encrypted_url_token', token)
       .eq('status', 'active')
       .maybeSingle();
@@ -225,12 +276,15 @@ async function loadMenuDirect(token: string): Promise<MenuData | null> {
       };
     });
 
+    const appearance = (menu.appearance_settings ?? {}) as AppearanceSettings;
+
     return {
       name: menu.name ?? 'Menu',
       description: typeof menu.description === 'string' ? menu.description : '',
       custom_message: (menu.custom_message as string) ?? '',
       show_product_images: menu.show_product_images !== false,
       products,
+      appearance,
     };
   } catch (err: unknown) {
     logger.error('Failed to load menu directly', { token, error: String(err) });
