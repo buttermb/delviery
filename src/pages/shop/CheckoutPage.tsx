@@ -746,7 +746,34 @@ export function CheckoutPage() {
       if (edgeResult) return edgeResult;
 
       logger.warn('Edge function unavailable, using client-side fallback', null, { component: 'CheckoutPage' });
-      return await attemptOrder(1);
+      const fallbackResult = await attemptOrder(1);
+
+      // Telegram fallback: edge function checkout handles Telegram server-side,
+      // but the RPC fallback path skips it. Fire-and-forget call to the Telegram
+      // edge function so the seller still gets notified.
+      if (store?.tenant_id) {
+        supabase.functions.invoke('forward-order-telegram', {
+          body: {
+            orderId: fallbackResult.order_id,
+            tenantId: store.tenant_id,
+            orderNumber: fallbackResult.order_number,
+            customerName: `${formData.firstName} ${formData.lastName}`,
+            customerPhone: formData.phone || null,
+            orderTotal: fallbackResult.total ?? total,
+            items: cartItems.map((item) => ({
+              productName: item.name,
+              quantity: item.quantity,
+              price: item.price * item.quantity,
+            })),
+            storeName: store.store_name || 'Store',
+            fulfillmentMethod: formData.fulfillmentMethod,
+          },
+        }).catch((err) => {
+          logger.warn('Telegram fallback notification failed — skipping', err, { component: 'CheckoutPage' });
+        });
+      }
+
+      return fallbackResult;
     },
     onSuccess: async (data) => {
       setOrderRetryCount(0);
