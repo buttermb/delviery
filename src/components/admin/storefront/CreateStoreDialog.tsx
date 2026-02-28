@@ -27,7 +27,7 @@ function generateSlug(name: string): string {
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .trim();
+    .replace(/^-+|-+$/g, '');
 }
 
 export function CreateStoreDialog({
@@ -121,9 +121,15 @@ export function CreateStoreDialog({
             {submitted && !slug.trim() && (
               <p className="text-sm text-destructive">Store URL is required</p>
             )}
-            <p className="text-xs text-muted-foreground">
-              This will be your store's unique URL path
-            </p>
+            {slug.trim() ? (
+              <p className="text-xs text-muted-foreground">
+                Your store URL: <span className="font-medium text-foreground">/shop/{slug}</span>
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Type a store name to auto-generate the URL
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="store-tagline">Tagline (Optional)</Label>
