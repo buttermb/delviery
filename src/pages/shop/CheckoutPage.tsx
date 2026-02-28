@@ -33,7 +33,8 @@ import {
   ShoppingCart,
   Loader2,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Copy
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
@@ -148,6 +149,7 @@ export function CheckoutPage() {
     paymentMethod: 'cash',
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [venmoConfirmed, setVenmoConfirmed] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [, setOrderRetryCount] = useState(0);
 
@@ -384,6 +386,10 @@ export function CheckoutPage() {
       case 3:
         if (!formData.paymentMethod) {
           toast.error('Please select a payment method');
+          return false;
+        }
+        if (formData.paymentMethod === 'venmo' && !venmoConfirmed) {
+          toast.error('Please confirm you\'ve sent payment via Venmo');
           return false;
         }
         return true;
@@ -716,6 +722,10 @@ export function CheckoutPage() {
       // Show confirmation toast based on payment method
       if (formData.paymentMethod === 'cash') {
         toast.success("Thanks! You'll be contacted.", {
+          description: `Order #${data.order_number} placed successfully.`,
+        });
+      } else if (formData.paymentMethod === 'venmo') {
+        toast.success('Venmo payment received!', {
           description: `Order #${data.order_number} placed successfully.`,
         });
       } else if (formData.paymentMethod === 'card') {
@@ -1206,14 +1216,20 @@ export function CheckoutPage() {
                     {/* Standard Payment Methods */}
                     <RadioGroup
                       value={formData.paymentMethod}
-                      onValueChange={(value) => updateField('paymentMethod', value)}
+                      onValueChange={(value) => {
+                        updateField('paymentMethod', value);
+                        if (value !== 'venmo') setVenmoConfirmed(false);
+                      }}
                       className="space-y-3"
                     >
                       {(store.payment_methods || ['cash']).map((method: string) => (
                         <div
                           key={method}
                           className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50"
-                          onClick={() => updateField('paymentMethod', method)}
+                          onClick={() => {
+                            updateField('paymentMethod', method);
+                            if (method !== 'venmo') setVenmoConfirmed(false);
+                          }}
                         >
                           <RadioGroupItem value={method} id={method} />
                           <Label htmlFor={method} className="flex-1 cursor-pointer capitalize">
@@ -1228,6 +1244,43 @@ export function CheckoutPage() {
                         </div>
                       ))}
                     </RadioGroup>
+
+                    {/* Venmo payment details */}
+                    {formData.paymentMethod === 'venmo' && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                        {store.checkout_settings?.venmo_handle && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">
+                              Send payment to{' '}
+                              <span className="font-bold">{store.checkout_settings.venmo_handle}</span>
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="gap-2"
+                              onClick={() => {
+                                navigator.clipboard.writeText(store.checkout_settings?.venmo_handle || '');
+                                toast.success('Venmo handle copied!');
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                              Copy Venmo handle
+                            </Button>
+                          </div>
+                        )}
+                        <div className="flex items-start gap-2 pt-2">
+                          <Checkbox
+                            id="venmo-confirmed"
+                            checked={venmoConfirmed}
+                            onCheckedChange={(checked) => setVenmoConfirmed(checked as boolean)}
+                          />
+                          <Label htmlFor="venmo-confirmed" className="text-sm cursor-pointer">
+                            I&apos;ve sent payment via Venmo
+                          </Label>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
@@ -1297,7 +1350,10 @@ export function CheckoutPage() {
                         </Button>
                       </div>
                       <p className="text-sm text-muted-foreground capitalize">
-                        {formData.paymentMethod === 'cash' ? 'Cash on Delivery' : formData.paymentMethod}
+                        {formData.paymentMethod === 'cash' && 'Cash on Delivery'}
+                        {formData.paymentMethod === 'venmo' && 'Venmo'}
+                        {formData.paymentMethod === 'card' && 'Credit/Debit Card'}
+                        {!['cash', 'venmo', 'card'].includes(formData.paymentMethod) && formData.paymentMethod}
                       </p>
                     </div>
 

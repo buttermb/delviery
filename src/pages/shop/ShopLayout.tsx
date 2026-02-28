@@ -66,6 +66,7 @@ interface StoreInfo {
   checkout_settings?: {
     require_phone?: boolean;
     show_delivery_notes?: boolean;
+    venmo_handle?: string;
   };
   payment_methods?: string[];
   // Analytics

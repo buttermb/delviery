@@ -107,6 +107,7 @@ interface StoreSettings {
     show_delivery_notes: boolean;
     enable_coupons: boolean;
     enable_tips: boolean;
+    venmo_handle?: string;
   };
   operating_hours: Record<string, { open: string; close: string; closed: boolean }>;
   // Purchase limits for compliance
@@ -235,7 +236,7 @@ export default function StorefrontSettings() {
   };
 
   // Update checkout settings
-  const updateCheckoutSetting = (key: string, value: boolean) => {
+  const updateCheckoutSetting = (key: string, value: boolean | string) => {
     setFormData((prev) => ({
       ...prev,
       checkout_settings: {
@@ -1081,21 +1082,37 @@ export default function StorefrontSettings() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {PAYMENT_METHOD_OPTIONS.map((method) => (
-                  <div key={method.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{method.icon}</span>
-                      <Label>{method.label}</Label>
+                  <div key={method.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{method.icon}</span>
+                        <Label>{method.label}</Label>
+                      </div>
+                      <Switch
+                        checked={(formData.payment_methods || ['cash', 'card']).includes(method.id)}
+                        onCheckedChange={(checked) => {
+                          const current = formData.payment_methods || ['cash', 'card'];
+                          const updated = checked
+                            ? [...current, method.id]
+                            : current.filter((m) => m !== method.id);
+                          updateField('payment_methods', updated);
+                        }}
+                      />
                     </div>
-                    <Switch
-                      checked={(formData.payment_methods || ['cash', 'card']).includes(method.id)}
-                      onCheckedChange={(checked) => {
-                        const current = formData.payment_methods || ['cash', 'card'];
-                        const updated = checked
-                          ? [...current, method.id]
-                          : current.filter((m) => m !== method.id);
-                        updateField('payment_methods', updated);
-                      }}
-                    />
+                    {method.id === 'venmo' && (formData.payment_methods || []).includes('venmo') && (
+                      <div className="ml-11">
+                        <Label htmlFor="venmo_handle" className="text-sm text-muted-foreground">
+                          Venmo Handle (e.g. @your-store)
+                        </Label>
+                        <Input
+                          id="venmo_handle"
+                          className="mt-1 max-w-xs"
+                          placeholder="@your-store"
+                          value={formData.checkout_settings?.venmo_handle || ''}
+                          onChange={(e) => updateCheckoutSetting('venmo_handle', e.target.value)}
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
                 <p className="text-xs text-muted-foreground mt-4">
