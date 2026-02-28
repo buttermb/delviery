@@ -52,6 +52,7 @@ import { logger } from '@/lib/logger';
 import type { StorefrontOrder, StorefrontOrderItem } from '@/hooks/useStorefrontOrders';
 import { queryKeys } from '@/lib/queryKeys';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import ProductImage from '@/components/ProductImage';
 
 const STATUS_STEPS = [
   { status: 'pending', label: 'Order Placed', icon: Package },
@@ -401,13 +402,11 @@ export function OrderDetailPage() {
                 {(order.items ?? []).map((item: StorefrontOrderItem, index: number) => (
                   <div key={index} className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
                     <div className="w-14 h-14 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                      {item.image_url ? (
-                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-6 h-6 text-muted-foreground" />
-                        </div>
-                      )}
+                      <ProductImage
+                        src={item.image_url}
+                        alt={item.name}
+                        className="w-full h-full"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm">{item.name}</p>

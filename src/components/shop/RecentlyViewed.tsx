@@ -9,8 +9,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Package } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import ProductImage from '@/components/ProductImage';
 import { queryKeys } from '@/lib/queryKeys';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 
@@ -86,18 +86,11 @@ export function RecentlyViewed({
             >
               <Card className="overflow-hidden hover:shadow-md transition-shadow">
                 <div className="aspect-square bg-muted">
-                  {product.image_url ? (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Package className="w-10 h-10 text-muted-foreground" />
-                    </div>
-                  )}
+                  <ProductImage
+                    src={product.image_url}
+                    alt={product.name}
+                    className="w-full h-full"
+                  />
                 </div>
                 <CardContent className="p-3">
                   <p className="text-sm font-medium truncate">{product.name}</p>

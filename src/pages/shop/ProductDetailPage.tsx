@@ -59,6 +59,7 @@ import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { EnhancedStickyAddToCart } from '@/components/shop/EnhancedStickyAddToCart';
 import { ScrollProgress } from '@/components/shop/ScrollProgress';
 import { CartPreviewPopup } from '@/components/shop/CartPreviewPopup';
+import ProductImage from '@/components/ProductImage';
 
 interface RpcProduct {
   product_id: string;
@@ -604,16 +605,24 @@ export function ProductDetailPage() {
                 onTouchEnd={handleTouchEnd}
               >
                 <AnimatePresence mode="wait">
-                  <motion.img
-                    key={selectedImage}
-                    src={allImages[selectedImage] || '/placeholder.png'}
-                    alt={product.name}
-                    className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isHovering ? 'scale-110' : 'scale-100'}`}
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: isHovering ? 1.1 : 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                  />
+                  {allImages[selectedImage] ? (
+                    <motion.img
+                      key={selectedImage}
+                      src={allImages[selectedImage]}
+                      alt={product.name}
+                      className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isHovering ? 'scale-110' : 'scale-100'}`}
+                      initial={{ opacity: 0, scale: 1.1 }}
+                      animate={{ opacity: 1, scale: isHovering ? 1.1 : 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.4 }}
+                    />
+                  ) : (
+                    <ProductImage
+                      src={null}
+                      alt={product.name}
+                      className="w-full h-full"
+                    />
+                  )}
                 </AnimatePresence>
 
                 {/* Luxury overlay gradient */}
@@ -1050,18 +1059,11 @@ export function ProductDetailPage() {
                     >
                       <div className="group relative rounded-2xl overflow-hidden bg-white/5 border border-white/5 hover:border-emerald-500/50 transition-all duration-300 h-full hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-900/20">
                         <div className="aspect-[4/5] relative overflow-hidden">
-                          {relatedProduct.image_url ? (
-                            <img
-                              src={relatedProduct.image_url}
-                              alt={relatedProduct.name}
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[0.2] group-hover:grayscale-0"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-white/5">
-                              <Package className="w-12 h-12 text-white/10" />
-                            </div>
-                          )}
+                          <ProductImage
+                            src={relatedProduct.image_url}
+                            alt={relatedProduct.name}
+                            className="w-full h-full transition-transform duration-700 group-hover:scale-110"
+                          />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 pointer-events-none" />
                           <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                             <Button size="sm" className="w-full bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-lg shadow-emerald-900/50">

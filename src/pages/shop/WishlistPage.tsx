@@ -8,8 +8,9 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { Heart, ShoppingCart, Trash2, Package } from 'lucide-react';
+import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
 import { WishlistButton } from '@/components/shop/WishlistButton';
+import ProductImage from '@/components/ProductImage';
 
 export default function WishlistPage() {
     const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -59,18 +60,11 @@ export default function WishlistPage() {
                     <Card key={item.productId} className="group hover:shadow-lg transition-all overflow-hidden h-full">
                         <Link to={`/shop/${storeSlug}/products/${item.productId}`}>
                             <div className="aspect-square relative overflow-hidden bg-muted">
-                                {item.imageUrl ? (
-                                    <img
-                                        src={item.imageUrl}
-                                        alt={item.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                        loading="lazy"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <Package className="w-16 h-16 text-muted-foreground" />
-                                    </div>
-                                )}
+                                <ProductImage
+                                    src={item.imageUrl}
+                                    alt={item.name}
+                                    className="w-full h-full group-hover:scale-105 transition-transform duration-300"
+                                />
 
                                 {/* Wishlist Button */}
                                 <div className="absolute top-2 right-2">
