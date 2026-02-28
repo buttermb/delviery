@@ -347,6 +347,40 @@ serve(secureHeadersMiddleware(async (req) => {
       }
     }
 
+    // ------------------------------------------------------------------
+    // 7. Fire-and-forget Telegram notification (non-blocking)
+    // ------------------------------------------------------------------
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+    fetch(`${supabaseUrl}/functions/v1/forward-order-telegram`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${supabaseServiceKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        orderId,
+        tenantId: store.tenant_id,
+        orderNumber: orderRecord?.order_number ?? null,
+        customerName,
+        customerPhone: body.customerInfo.phone ?? null,
+        orderTotal: total,
+        items: orderItems.map((item) => {
+          const product = productMap.get(item.product_id as string);
+          return {
+            productName: product?.name ?? "Unknown",
+            quantity: item.quantity,
+            price: (item.price as number) * (item.quantity as number),
+          };
+        }),
+        storeName: store.store_name,
+        fulfillmentMethod: body.fulfillmentMethod,
+      }),
+    }).catch(() => {
+      // Intentionally swallowed — Telegram failures must never block checkout
+    });
+
     const result: Record<string, unknown> = {
       orderId,
       orderNumber: orderRecord?.order_number ?? null,
@@ -367,7 +401,7 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     // ------------------------------------------------------------------
-    // 7. If card payment, create Stripe Checkout session
+    // 8. If card payment, create Stripe Checkout session
     // ------------------------------------------------------------------
     if (body.paymentMethod === "card") {
       if (!tenantAccount) {
