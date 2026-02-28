@@ -45,10 +45,10 @@ export function EnhancedStickyAddToCart({
   
   const { checkProductStock } = useInventoryCheck();
 
-  // Check stock on mount
+  // Check stock on mount (use quantity=1 to get total availability)
   useEffect(() => {
     const checkStock = async () => {
-      const status = await checkProductStock(product.product_id, quantity);
+      const status = await checkProductStock(product.product_id, 1);
       if (status) {
         setStockStatus({
           available: status.available,
