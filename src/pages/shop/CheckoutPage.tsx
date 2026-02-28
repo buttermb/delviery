@@ -799,14 +799,20 @@ export function CheckoutPage() {
       setOrderRetryCount(0);
       logger.error('Failed to place order', error, { component: 'CheckoutPage' });
 
-      const errorMessage = error.message || 'Something went wrong. Please try again.';
-      const isNetworkError = errorMessage.toLowerCase().includes('network') ||
-        errorMessage.toLowerCase().includes('fetch') ||
-        errorMessage.toLowerCase().includes('timeout');
+      const errorMessage = error.message || '';
+      const lowerMsg = errorMessage.toLowerCase();
+      const isRetryableError =
+        lowerMsg.includes('network') ||
+        lowerMsg.includes('fetch') ||
+        lowerMsg.includes('timeout') ||
+        lowerMsg.includes('internal server error') ||
+        lowerMsg.includes('500') ||
+        lowerMsg.includes('failed to create order') ||
+        errorMessage === '';
 
       toast.error('Order failed', {
-        description: isNetworkError
-          ? 'Network connection issue. Check your connection and try again.'
+        description: isRetryableError
+          ? 'Something went wrong. Please try again.'
           : errorMessage,
         action: {
           label: 'Retry',
