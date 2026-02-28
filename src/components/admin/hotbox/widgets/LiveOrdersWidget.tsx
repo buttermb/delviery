@@ -161,7 +161,7 @@ export function LiveOrdersWidget() {
         }));
 
         // Transform menu orders
-        const normMenuOrders: LiveOrderItem[] = ((menuOrdersRes.data as unknown as MenuOrderRaw[]) ?? []).map((mo) => ({
+        const normMenuOrders: LiveOrderItem[] = ((menuOrdersRes.data ?? []) as unknown as MenuOrderRaw[]).map((mo) => ({
           id: mo.id,
           order_number: 'MENU-' + mo.id.slice(0, 5).toUpperCase(),
           status: mo.status === 'completed' ? 'delivered' : mo.status,
