@@ -167,7 +167,7 @@ export function ProductDetailPage() {
   const { isLuxuryTheme, accentColor } = useLuxuryTheme();
 
   // Use unified cart hook
-  const { addItem, cartCount, subtotal } = useShopCart({
+  const { addItem, cartCount, subtotal, MAX_QUANTITY_PER_ITEM } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
   });
@@ -467,9 +467,12 @@ export function ProductDetailPage() {
     }
   };
 
+  // Compute max quantity based on stock and cart limit
+  const maxQuantity = product ? Math.min(product.stock_quantity, MAX_QUANTITY_PER_ITEM) : MAX_QUANTITY_PER_ITEM;
+
   // Add to cart using the unified hook
   const handleAddToCart = () => {
-    if (!store?.id || !product) return;
+    if (!store?.id || !product || !product.in_stock) return;
 
     setIsAddingToCart(true);
 
@@ -487,6 +490,11 @@ export function ProductDetailPage() {
       minExpiryDays: product.min_expiry_days,
     });
 
+    toast.success('Added to cart', {
+      description: `${quantity}x ${product.name}`,
+      duration: 2000,
+    });
+
     // Show premium cart popup
     setLastAddedItem({
       name: product.name,
@@ -497,6 +505,7 @@ export function ProductDetailPage() {
 
     setTimeout(() => {
       setIsAddingToCart(false);
+      setQuantity(1);
     }, 1500);
   };
 
@@ -817,16 +826,26 @@ export function ProductDetailPage() {
                       <div className={`flex items-center rounded-xl border p-1 ${isLuxuryTheme ? 'bg-black/30 border-white/10' : 'bg-muted'}`}>
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${isLuxuryTheme ? 'hover:bg-white/10 text-white' : 'hover:bg-background'
-                            }`}
+                          disabled={quantity <= 1 || !product.in_stock}
+                          aria-label="Decrease quantity"
+                          className={cn(
+                            'w-10 h-10 flex items-center justify-center rounded-lg transition-colors',
+                            isLuxuryTheme ? 'hover:bg-white/10 text-white' : 'hover:bg-background',
+                            (quantity <= 1 || !product.in_stock) && 'opacity-30 cursor-not-allowed'
+                          )}
                         >
                           <Minus className="w-4 h-4" />
                         </button>
-                        <span className={`w-12 text-center text-lg font-medium ${isLuxuryTheme ? 'text-white' : ''}`}>{quantity}</span>
+                        <span className={`w-12 text-center text-lg font-medium tabular-nums ${isLuxuryTheme ? 'text-white' : ''}`}>{quantity}</span>
                         <button
-                          onClick={() => setQuantity(quantity + 1)}
-                          className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${isLuxuryTheme ? 'hover:bg-white/10 text-white' : 'hover:bg-background'
-                            }`}
+                          onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
+                          disabled={quantity >= maxQuantity || !product.in_stock}
+                          aria-label="Increase quantity"
+                          className={cn(
+                            'w-10 h-10 flex items-center justify-center rounded-lg transition-colors',
+                            isLuxuryTheme ? 'hover:bg-white/10 text-white' : 'hover:bg-background',
+                            (quantity >= maxQuantity || !product.in_stock) && 'opacity-30 cursor-not-allowed'
+                          )}
                         >
                           <Plus className="w-4 h-4" />
                         </button>
