@@ -81,8 +81,8 @@ export type TemplateKey = keyof typeof TEMPLATES;
 // Helper to get defaults dynamically so we don't crash on new props
 export function sectionDefaults(type: string): { content: Record<string, unknown>; styles: Record<string, unknown> } {
     if (type === 'hero') return {
-        content: { heading_line_1: 'Premium', heading_line_2: 'Flower', heading_line_3: 'Delivered', subheading: 'Premium delivery service.' },
-        styles: { background_gradient_start: '#000000', background_gradient_end: '#022c22', text_color: '#ffffff', accent_color: '#34d399' }
+        content: { heading_line_1: 'Premium', heading_line_2: 'Flower', heading_line_3: 'Delivered', subheading: 'Premium delivery service.', background_image: '', cta_primary_text: 'Shop Now', cta_primary_link: '/shop' },
+        styles: { background_gradient_start: '#000000', background_gradient_end: '#022c22', text_color: '#ffffff', accent_color: '#34d399', overlay_opacity: 0.6 }
     };
     if (type === 'features') return {
         content: { heading_small: 'The Difference', heading_large: 'Excellence' },
