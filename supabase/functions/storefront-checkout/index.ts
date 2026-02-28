@@ -81,7 +81,13 @@ serve(secureHeadersMiddleware(async (req) => {
 
   try {
     // Parse & validate request body
-    const rawBody = await req.json();
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return jsonResponse({ error: "Invalid JSON in request body" }, 400);
+    }
+
     const parseResult = CheckoutRequestSchema.safeParse(rawBody);
 
     if (!parseResult.success) {
@@ -103,13 +109,20 @@ serve(secureHeadersMiddleware(async (req) => {
     // ------------------------------------------------------------------
     const { data: store, error: storeError } = await supabase
       .from("marketplace_stores")
-      .select("id, store_name, tenant_id, default_delivery_fee, free_delivery_threshold")
+      .select("id, store_name, tenant_id, is_active, default_delivery_fee, free_delivery_threshold")
       .eq("slug", body.storeSlug)
-      .eq("is_active", true)
       .maybeSingle();
 
-    if (storeError || !store) {
+    if (storeError) {
+      return jsonResponse({ error: "Unable to resolve store" }, 500);
+    }
+
+    if (!store) {
       return jsonResponse({ error: "Store not found" }, 404);
+    }
+
+    if (!store.is_active) {
+      return jsonResponse({ error: "This store is not currently accepting orders" }, 403);
     }
 
     // ------------------------------------------------------------------
@@ -261,12 +274,13 @@ serve(secureHeadersMiddleware(async (req) => {
     );
 
     if (orderError || !orderId) {
-      const errorMsg = orderError?.message ?? "Failed to create order";
-      // 409 Conflict for stock-related failures (validation or deduction race condition)
-      const isStockError =
-        errorMsg.includes("Insufficient stock") ||
-        errorMsg.includes("Inventory deduction failed");
-      return jsonResponse({ error: errorMsg }, isStockError ? 409 : 500);
+      const rawMsg = orderError?.message ?? "";
+      // Stock-related RPC errors get specific responses
+      if (rawMsg.includes("Insufficient stock") || rawMsg.includes("Inventory deduction failed")) {
+        return jsonResponse({ error: "Insufficient stock for one or more items. Please refresh and try again." }, 409);
+      }
+      // All other DB errors get a generic message — never leak internals
+      return jsonResponse({ error: "Failed to create order. Please try again later." }, 500);
     }
 
     // Fetch the generated order number
@@ -424,88 +438,98 @@ serve(secureHeadersMiddleware(async (req) => {
         );
       }
 
-      const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
+      try {
+        const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
 
-      // Build Stripe line items from server-side product data
-      const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = body.items.map((item) => {
-        const product = productMap.get(item.product_id)!;
-        return {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: product.name,
-              ...(product.image_url ? { images: [product.image_url] } : {}),
+        // Build Stripe line items from server-side product data
+        const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = body.items.map((item) => {
+          const product = productMap.get(item.product_id)!;
+          return {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: product.name,
+                ...(product.image_url ? { images: [product.image_url] } : {}),
+              },
+              unit_amount: Math.round(Number(product.price) * 100),
             },
-            unit_amount: Math.round(Number(product.price) * 100),
-          },
-          quantity: item.quantity,
-        };
-      });
+            quantity: item.quantity,
+          };
+        });
 
-      if (deliveryFee > 0) {
-        lineItems.push({
-          price_data: {
+        if (deliveryFee > 0) {
+          lineItems.push({
+            price_data: {
+              currency: "usd",
+              product_data: { name: "Delivery Fee" },
+              unit_amount: Math.round(deliveryFee * 100),
+            },
+            quantity: 1,
+          });
+        }
+
+        // Handle discount coupon if applicable
+        let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
+        if (body.discountAmount && body.discountAmount > 0) {
+          const cappedDiscount = Math.min(body.discountAmount, subtotal);
+          const coupon = await stripe.coupons.create({
+            amount_off: Math.round(cappedDiscount * 100),
             currency: "usd",
-            product_data: { name: "Delivery Fee" },
-            unit_amount: Math.round(deliveryFee * 100),
-          },
-          quantity: 1,
-        });
-      }
+            name: "Order Discount",
+            duration: "once",
+          });
+          discounts = [{ coupon: coupon.id }];
+        }
 
-      // Handle discount coupon if applicable
-      let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
-      if (body.discountAmount && body.discountAmount > 0) {
-        const cappedDiscount = Math.min(body.discountAmount, subtotal);
-        const coupon = await stripe.coupons.create({
-          amount_off: Math.round(cappedDiscount * 100),
-          currency: "usd",
-          name: "Order Discount",
-          duration: "once",
-        });
-        discounts = [{ coupon: coupon.id }];
-      }
-
-      const session = await stripe.checkout.sessions.create({
-        customer_email: body.customerInfo.email,
-        line_items: lineItems,
-        mode: "payment",
-        success_url:
-          body.successUrl ??
-          `${req.headers.get("origin")}/order-confirmation/${orderId}`,
-        cancel_url:
-          body.cancelUrl ?? `${req.headers.get("origin")}/checkout`,
-        ...(discounts ? { discounts } : {}),
-        metadata: {
-          store_id: store.id,
-          order_id: orderId,
-          customer_name: customerName,
-          tenant_id: store.tenant_id,
-        },
-        payment_intent_data: {
+        const session = await stripe.checkout.sessions.create({
+          customer_email: body.customerInfo.email,
+          line_items: lineItems,
+          mode: "payment",
+          success_url:
+            body.successUrl ??
+            `${req.headers.get("origin")}/order-confirmation/${orderId}`,
+          cancel_url:
+            body.cancelUrl ?? `${req.headers.get("origin")}/checkout`,
+          ...(discounts ? { discounts } : {}),
           metadata: {
             store_id: store.id,
             order_id: orderId,
+            customer_name: customerName,
             tenant_id: store.tenant_id,
           },
-        },
-      });
+          payment_intent_data: {
+            metadata: {
+              store_id: store.id,
+              order_id: orderId,
+              tenant_id: store.tenant_id,
+            },
+          },
+        });
 
-      // Persist Stripe session reference on the order
-      await supabase
-        .from("marketplace_orders")
-        .update({
-          stripe_session_id: session.id,
-          payment_status: "awaiting_payment",
-        })
-        .eq("id", orderId);
+        // Persist Stripe session reference on the order
+        await supabase
+          .from("marketplace_orders")
+          .update({
+            stripe_session_id: session.id,
+            payment_status: "awaiting_payment",
+          })
+          .eq("id", orderId);
 
-      result.checkoutUrl = session.url;
+        result.checkoutUrl = session.url;
+      } catch (stripeErr: unknown) {
+        // Return 402 Payment Required with the Stripe error message
+        const stripeMessage =
+          stripeErr instanceof Error ? stripeErr.message : "Payment processing failed";
+        return jsonResponse(
+          { error: stripeMessage, details: { orderId, orderNumber: orderRecord?.order_number ?? null } },
+          402,
+        );
+      }
     }
 
     return jsonResponse(result, 200);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return jsonResponse({ error: message }, 500);
+  } catch (_err: unknown) {
+    // Generic 500 — never leak internal error details to the client
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 }));
