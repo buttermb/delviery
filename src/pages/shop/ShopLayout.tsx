@@ -67,6 +67,7 @@ interface StoreInfo {
     require_phone?: boolean;
     show_delivery_notes?: boolean;
     venmo_handle?: string;
+    zelle_email?: string;
   };
   payment_methods?: string[];
   // Analytics

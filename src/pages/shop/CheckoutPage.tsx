@@ -150,6 +150,7 @@ export function CheckoutPage() {
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [venmoConfirmed, setVenmoConfirmed] = useState(false);
+  const [zelleConfirmed, setZelleConfirmed] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [, setOrderRetryCount] = useState(0);
 
@@ -390,6 +391,10 @@ export function CheckoutPage() {
         }
         if (formData.paymentMethod === 'venmo' && !venmoConfirmed) {
           toast.error('Please confirm you\'ve sent payment via Venmo');
+          return false;
+        }
+        if (formData.paymentMethod === 'zelle' && !zelleConfirmed) {
+          toast.error('Please confirm you\'ve sent payment via Zelle');
           return false;
         }
         return true;
@@ -726,6 +731,10 @@ export function CheckoutPage() {
         });
       } else if (formData.paymentMethod === 'venmo') {
         toast.success('Venmo payment received!', {
+          description: `Order #${data.order_number} placed successfully.`,
+        });
+      } else if (formData.paymentMethod === 'zelle') {
+        toast.success('Zelle payment received!', {
           description: `Order #${data.order_number} placed successfully.`,
         });
       } else if (formData.paymentMethod === 'card') {
@@ -1219,6 +1228,7 @@ export function CheckoutPage() {
                       onValueChange={(value) => {
                         updateField('paymentMethod', value);
                         if (value !== 'venmo') setVenmoConfirmed(false);
+                        if (value !== 'zelle') setZelleConfirmed(false);
                       }}
                       className="space-y-3"
                     >
@@ -1229,6 +1239,7 @@ export function CheckoutPage() {
                           onClick={() => {
                             updateField('paymentMethod', method);
                             if (method !== 'venmo') setVenmoConfirmed(false);
+                            if (method !== 'zelle') setZelleConfirmed(false);
                           }}
                         >
                           <RadioGroupItem value={method} id={method} />
@@ -1277,6 +1288,43 @@ export function CheckoutPage() {
                           />
                           <Label htmlFor="venmo-confirmed" className="text-sm cursor-pointer">
                             I&apos;ve sent payment via Venmo
+                          </Label>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Zelle payment details */}
+                    {formData.paymentMethod === 'zelle' && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                        {store.checkout_settings?.zelle_email && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">
+                              Send Zelle payment to{' '}
+                              <span className="font-bold">{store.checkout_settings.zelle_email}</span>
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="gap-2"
+                              onClick={() => {
+                                navigator.clipboard.writeText(store.checkout_settings?.zelle_email || '');
+                                toast.success('Zelle contact copied!');
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                              Copy Zelle contact
+                            </Button>
+                          </div>
+                        )}
+                        <div className="flex items-start gap-2 pt-2">
+                          <Checkbox
+                            id="zelle-confirmed"
+                            checked={zelleConfirmed}
+                            onCheckedChange={(checked) => setZelleConfirmed(checked as boolean)}
+                          />
+                          <Label htmlFor="zelle-confirmed" className="text-sm cursor-pointer">
+                            I&apos;ve sent payment via Zelle
                           </Label>
                         </div>
                       </div>
@@ -1352,8 +1400,9 @@ export function CheckoutPage() {
                       <p className="text-sm text-muted-foreground capitalize">
                         {formData.paymentMethod === 'cash' && 'Cash on Delivery'}
                         {formData.paymentMethod === 'venmo' && 'Venmo'}
+                        {formData.paymentMethod === 'zelle' && 'Zelle'}
                         {formData.paymentMethod === 'card' && 'Credit/Debit Card'}
-                        {!['cash', 'venmo', 'card'].includes(formData.paymentMethod) && formData.paymentMethod}
+                        {!['cash', 'venmo', 'zelle', 'card'].includes(formData.paymentMethod) && formData.paymentMethod}
                       </p>
                     </div>
 

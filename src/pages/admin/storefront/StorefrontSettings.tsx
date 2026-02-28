@@ -108,6 +108,7 @@ interface StoreSettings {
     enable_coupons: boolean;
     enable_tips: boolean;
     venmo_handle?: string;
+    zelle_email?: string;
   };
   operating_hours: Record<string, { open: string; close: string; closed: boolean }>;
   // Purchase limits for compliance
@@ -1110,6 +1111,20 @@ export default function StorefrontSettings() {
                           placeholder="@your-store"
                           value={formData.checkout_settings?.venmo_handle || ''}
                           onChange={(e) => updateCheckoutSetting('venmo_handle', e.target.value)}
+                        />
+                      </div>
+                    )}
+                    {method.id === 'zelle' && (formData.payment_methods || []).includes('zelle') && (
+                      <div className="ml-11">
+                        <Label htmlFor="zelle_email" className="text-sm text-muted-foreground">
+                          Zelle Email or Phone (shown to customers)
+                        </Label>
+                        <Input
+                          id="zelle_email"
+                          className="mt-1 max-w-xs"
+                          placeholder="store@example.com or (555) 123-4567"
+                          value={formData.checkout_settings?.zelle_email || ''}
+                          onChange={(e) => updateCheckoutSetting('zelle_email', e.target.value)}
                         />
                       </div>
                     )}
