@@ -211,7 +211,13 @@ export default function ShopLayout() {
     if (store?.id) {
       // Initial load
       const loadCart = () => {
-        const cart = localStorage.getItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
+        let cart: string | null = null;
+        try {
+          cart = localStorage.getItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
+        } catch {
+          // localStorage unavailable (private browsing)
+          return;
+        }
         if (cart) {
           try {
             const items = JSON.parse(cart);

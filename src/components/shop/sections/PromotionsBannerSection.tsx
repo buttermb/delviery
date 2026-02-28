@@ -201,9 +201,9 @@ export function PromotionsBannerSection({ content, styles, storeId }: Promotions
             {/* Indicators */}
             {show_indicators && banners.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-                    {banners.map((_, index) => (
+                    {banners.map((banner, index) => (
                         <button
-                            key={index}
+                            key={banner.id}
                             onClick={() => setCurrentIndex(index)}
                             className={cn(
                                 'w-2 h-2 rounded-full transition-all',

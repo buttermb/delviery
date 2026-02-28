@@ -83,7 +83,7 @@ export function FeaturesSection({ content, styles }: FeaturesSectionProps) {
                         const Icon = ICON_MAP[feature.icon] || Star;
                         return (
                             <motion.div
-                                key={index}
+                                key={feature.title}
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}

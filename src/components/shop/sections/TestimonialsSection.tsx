@@ -77,7 +77,7 @@ export function TestimonialsSection({ content, styles }: TestimonialsSectionProp
                 <div className="grid md:grid-cols-3 gap-6">
                     {testimonials.map((testimonial, index) => (
                         <motion.div
-                            key={index}
+                            key={`${testimonial.name}-${testimonial.role}`}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}

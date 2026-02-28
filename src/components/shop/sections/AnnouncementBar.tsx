@@ -74,14 +74,22 @@ export function AnnouncementBar({
 
     // Check dismissal from session storage
     useEffect(() => {
-        const dismissed = sessionStorage.getItem(`announcement-dismissed-${storeId}`);
-        if (dismissed) {
-            setIsDismissed(true);
+        try {
+            const dismissed = sessionStorage.getItem(`announcement-dismissed-${storeId}`);
+            if (dismissed) {
+                setIsDismissed(true);
+            }
+        } catch {
+            // sessionStorage unavailable (private browsing)
         }
     }, [storeId]);
 
     const handleDismiss = () => {
-        sessionStorage.setItem(`announcement-dismissed-${storeId}`, 'true');
+        try {
+            sessionStorage.setItem(`announcement-dismissed-${storeId}`, 'true');
+        } catch {
+            // sessionStorage unavailable (private browsing)
+        }
         setIsDismissed(true);
     };
 
@@ -137,9 +145,9 @@ export function AnnouncementBar({
             {/* Progress Indicators */}
             {announcements.length > 1 && (
                 <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-1">
-                    {announcements.map((_, index) => (
+                    {announcements.map((announcement, index) => (
                         <div
-                            key={index}
+                            key={announcement.id}
                             className={`w-1 h-1 rounded-full transition-all ${
                                 index === safeIndex ? 'bg-white' : 'bg-white/40'
                             }`}
