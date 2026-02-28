@@ -266,12 +266,13 @@ export function useAdminOrdersRealtime({
               event: 'INSERT',
               schema: 'public',
               table: 'marketplace_orders',
+              filter: `seller_tenant_id=eq.${tenant.id}`,
             },
             (payload) => {
               const order = payload.new as Record<string, unknown>;
               const storeId = order.store_id as string || order.seller_profile_id as string;
 
-              // Only process orders for our stores
+              // Only process orders for our stores (secondary client-side check)
               if (!storeIdsRef.current.includes(storeId)) return;
 
               const storeName = storeNameMap[storeId] || 'Storefront';
