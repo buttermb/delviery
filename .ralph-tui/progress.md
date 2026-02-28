@@ -1033,3 +1033,34 @@ after each iteration and it's included in prompts for context.
   - Venmo/Zelle details stored in `checkout_settings` JSONB alongside other checkout config (guest checkout, phone required, coupons, tips)
   - Multiple overlapping migrations created `marketplace_stores` schema (20251209, 20251210, 20251211) — the final state is governed by `20251209181425` as the canonical create table
 ---
+
+## 2026-02-28 - floraiq-dy9.20
+- Added Telegram config migration to consolidate all 6 Telegram fields into `account_settings.notification_settings` JSONB
+- Fields: telegram_bot_token, telegram_chat_id, telegram_auto_forward (existing), telegram_customer_link, telegram_button_label, show_telegram_on_confirmation (new)
+- Migration backfills existing rows with sensible defaults (preserves existing values)
+- Migrates `crm_settings.telegram_video_link` into `notification_settings.telegram_customer_link`
+- Updated column default to include all Telegram fields for new rows
+- Files changed: `supabase/migrations/20260228000009_add_telegram_config.sql`
+- **Learnings:**
+  - `telegram_video_link` column exists on `crm_settings` but NOT on `account_settings` — the edge function `storefront-checkout` reads it from `account_settings` as a direct column (line 405), which returns null since the column doesn't exist. Future bead should update edge function to read from `notification_settings` JSONB instead.
+  - JSONB `||` operator merges keys at top level — using COALESCE on individual keys before merge preserves existing non-null values while setting defaults for missing keys
+  - The column default uses `jsonb_build_object()` function (not a literal `'{}'::jsonb`) for readability and type safety
+---
+
+## 2026-02-28 - floraiq-dy9.21
+- Added `preferred_contact_method` TEXT column to `marketplace_orders` table
+- Updated `create_marketplace_order` RPC to accept `p_preferred_contact_method` parameter (14th param, DEFAULT NULL)
+- Updated `storefront_orders` view to expose `preferred_contact_method`
+- Updated `storefront-checkout` edge function to accept `preferredContactMethod` in request schema (enum: phone/email/text/telegram) and pass it to the RPC
+- Updated `CheckoutPage.tsx` to send `preferredContactMethod` as a dedicated field to both the edge function and fallback RPC, instead of concatenating it into delivery notes
+- Also added `preferredContactMethod` to the Telegram notification payload
+- Files changed:
+  - `supabase/migrations/20260228000010_add_preferred_contact_method.sql`
+  - `supabase/functions/storefront-checkout/index.ts`
+  - `src/pages/shop/CheckoutPage.tsx`
+- **Learnings:**
+  - The CheckoutPage form already had `preferredContact` field with values `text|call|email` — the DB column uses `phone|email|text|telegram` (slightly different naming: "call" in form vs "phone" in DB). The form sends the value as-is; the edge function Zod schema validates the enum.
+  - The generated `types.ts` is missing `p_idempotency_key` from the RPC Args (added in a later migration) but TypeScript still passes — Supabase client's `.rpc()` type checking may be loose on extra properties. Same approach works for `p_preferred_contact_method`.
+  - When updating `create_marketplace_order`, must re-issue GRANT with the new parameter count (14 params: UUID, TEXT×6, JSONB, NUMERIC×4, TEXT×2) or anon/authenticated users can't call it.
+  - The `storefront_orders` view must be DROP+CREATE'd when adding columns since views don't support ALTER ADD COLUMN.
+---

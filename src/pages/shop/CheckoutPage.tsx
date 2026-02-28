@@ -60,7 +60,7 @@ interface CheckoutData {
   lastName: string;
   email: string;
   phone: string;
-  preferredContact: 'text' | 'call' | 'email';
+  preferredContact: 'text' | 'phone' | 'email' | 'telegram';
   // Delivery
   street: string;
   apartment: string;
@@ -583,10 +583,8 @@ export function CheckoutPage() {
               fulfillmentMethod: formData.street ? 'delivery' : 'pickup',
               paymentMethod: formData.paymentMethod,
               deliveryAddress: edgeDeliveryAddress,
-              notes: [
-                formData.preferredContact ? `Preferred contact: ${formData.preferredContact}` : '',
-                formData.deliveryNotes || '',
-              ].filter(Boolean).join(' | ') || undefined,
+              preferredContactMethod: formData.preferredContact || undefined,
+              notes: formData.deliveryNotes || undefined,
               discountAmount: totalDiscountAmount > 0 ? totalDiscountAmount : undefined,
               successUrl: formData.paymentMethod === 'card'
                 ? `${edgeOrigin}/shop/${storeSlug}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`
@@ -667,10 +665,7 @@ export function CheckoutPage() {
               p_customer_email: formData.email,
               p_customer_phone: formData.phone || undefined,
               p_delivery_address: deliveryAddress,
-              p_delivery_notes: [
-                formData.preferredContact ? `Preferred contact: ${formData.preferredContact}` : '',
-                formData.deliveryNotes || '',
-              ].filter(Boolean).join(' | ') || undefined,
+              p_delivery_notes: formData.deliveryNotes || undefined,
               p_items: cartItems.map(item => ({
                 product_id: item.productId,
                 quantity: item.quantity,
@@ -682,7 +677,8 @@ export function CheckoutPage() {
               p_delivery_fee: effectiveDeliveryFee,
               p_total: total,
               p_payment_method: formData.paymentMethod,
-              p_idempotency_key: idempotencyKey // Prevent double orders on retry
+              p_idempotency_key: idempotencyKey, // Prevent double orders on retry
+              p_preferred_contact_method: formData.preferredContact || undefined,
             });
 
           if (orderError) {
@@ -1256,12 +1252,16 @@ export function CheckoutPage() {
                           <Label htmlFor="contact-text" className="cursor-pointer">Text</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="call" id="contact-call" />
-                          <Label htmlFor="contact-call" className="cursor-pointer">Call</Label>
+                          <RadioGroupItem value="phone" id="contact-phone" />
+                          <Label htmlFor="contact-phone" className="cursor-pointer">Call</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="email" id="contact-email" />
                           <Label htmlFor="contact-email" className="cursor-pointer">Email</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="telegram" id="contact-telegram" />
+                          <Label htmlFor="contact-telegram" className="cursor-pointer">Telegram</Label>
                         </div>
                       </RadioGroup>
                     </div>

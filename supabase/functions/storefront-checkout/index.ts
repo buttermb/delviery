@@ -47,6 +47,7 @@ const CheckoutRequestSchema = z.object({
   // Optional fields
   deliveryAddress: z.string().optional(),
   notes: z.string().optional(),
+  preferredContactMethod: z.enum(["phone", "email", "text", "telegram"]).optional(),
   discountAmount: z.number().min(0).optional(),
   successUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
@@ -270,6 +271,7 @@ serve(secureHeadersMiddleware(async (req) => {
         p_total: total,
         p_payment_method: body.paymentMethod,
         p_idempotency_key: body.idempotencyKey ?? null,
+        p_preferred_contact_method: body.preferredContactMethod ?? null,
       },
     );
 
@@ -390,6 +392,7 @@ serve(secureHeadersMiddleware(async (req) => {
         }),
         storeName: store.store_name,
         fulfillmentMethod: body.fulfillmentMethod,
+        preferredContactMethod: body.preferredContactMethod ?? null,
       }),
     }).catch(() => {
       // Intentionally swallowed — Telegram failures must never block checkout
