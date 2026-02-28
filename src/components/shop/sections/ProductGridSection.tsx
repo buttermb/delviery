@@ -156,24 +156,9 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                     return [];
                 }
             } else {
-                // Admin Builder Preview (uses generic products)
-                const { data, error } = await supabase
-                    .from("products")
-                    .select("*")
-                    .eq("in_stock", true)
-                    .limit(20);
-                if (error) throw error;
-                // Map generic products to LocalProduct shape
-                return (data ?? []).map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    price: p.price,
-                    description: p.description,
-                    images: p.images,
-                    category: p.category,
-                    in_stock: p.in_stock,
-                    strain_type: p.strain_type ?? '',
-                })) as LocalProduct[];
+                // Admin Builder Preview — return empty so the preview shows the
+                // "Coming soon" empty state instead of hitting RLS errors.
+                return [];
             }
         },
         retry: 1,
