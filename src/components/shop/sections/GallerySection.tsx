@@ -64,7 +64,7 @@ export function GallerySection({ content, styles }: GallerySectionProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {images.map((image, index) => (
                         <motion.div
-                            key={index}
+                            key={`${image.url}-${index}`}
                             initial={{ opacity: 0, scale: 0.9 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
