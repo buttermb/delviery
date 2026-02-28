@@ -1701,6 +1701,19 @@ export function CheckoutPage() {
                         </div>
                       </div>
                     )}
+
+                    {/* Card payment info */}
+                    {formData.paymentMethod === 'card' && (
+                      <div className="flex items-start gap-3 p-4 border rounded-lg bg-muted/30">
+                        <CreditCard className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Secure card payment</p>
+                          <p className="text-xs text-muted-foreground">
+                            You&apos;ll be redirected to Stripe&apos;s secure checkout to complete your payment after reviewing your order.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
@@ -1844,21 +1857,22 @@ export function CheckoutPage() {
                     {placeOrderMutation.isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
+                        {formData.paymentMethod === 'card' ? 'Redirecting to payment...' : 'Processing...'}
+                      </>
+                    ) : isStoreClosed ? (
+                      <>
+                        <Clock className="w-4 h-4 mr-2" />
+                        Place Pre-Order
+                      </>
+                    ) : formData.paymentMethod === 'card' ? (
+                      <>
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        Pay with Card
                       </>
                     ) : (
                       <>
-                        {isStoreClosed ? (
-                          <>
-                            <Clock className="w-4 h-4 mr-2" />
-                            Place Pre-Order
-                          </>
-                        ) : (
-                          <>
-                            <Check className="w-4 h-4 mr-2" />
-                            Place Order
-                          </>
-                        )}
+                        <Check className="w-4 h-4 mr-2" />
+                        Place Order
                       </>
                     )}
                   </Button>
@@ -2147,12 +2161,17 @@ export function CheckoutPage() {
               {placeOrderMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Processing...
+                  {formData.paymentMethod === 'card' ? 'Redirecting to payment...' : 'Processing...'}
                 </>
               ) : isStoreClosed ? (
                 <>
                   <Clock className="w-4 h-4 mr-2" />
                   Place Pre-Order — {formatCurrency(total)}
+                </>
+              ) : formData.paymentMethod === 'card' ? (
+                <>
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Pay with Card — {formatCurrency(total)}
                 </>
               ) : (
                 <>
