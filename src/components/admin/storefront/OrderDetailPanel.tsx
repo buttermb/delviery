@@ -61,6 +61,8 @@ interface OrderRawFields {
   out_for_delivery_at?: string | null;
   shipped_at?: string | null;
   delivered_at?: string | null;
+  cancelled_at?: string | null;
+  cancellation_reason?: string | null;
   updated_at?: string | null;
   paid_at?: string | null;
 }
@@ -205,6 +207,9 @@ function buildTimeline(order: LiveOrder): TimelineEntry[] {
   }
   if (raw.delivered_at) {
     entries.push({ label: 'Delivered', timestamp: raw.delivered_at });
+  }
+  if (raw.cancelled_at) {
+    entries.push({ label: 'Cancelled', timestamp: raw.cancelled_at });
   }
 
   // Sort by timestamp ascending
@@ -468,6 +473,19 @@ export function OrderDetailPanel({
             )}
           </div>
         </div>
+
+        {/* Cancellation Reason */}
+        {order.status === 'cancelled' && raw.cancellation_reason && (
+          <>
+            <Separator />
+            <div className="px-6 py-4 space-y-2">
+              <h3 className="text-sm font-semibold text-destructive uppercase tracking-wider">
+                Cancellation Reason
+              </h3>
+              <p className="text-sm">{raw.cancellation_reason}</p>
+            </div>
+          </>
+        )}
 
         {/* Notes */}
         {notes.length > 0 && (

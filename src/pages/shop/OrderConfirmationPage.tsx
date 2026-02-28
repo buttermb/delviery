@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check, Loader2, ShoppingBag, Truck, MessageCircle } from 'lucide-react';
+import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check, Loader2, ShoppingBag, Truck, MessageCircle, XCircle } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useShopCart } from '@/hooks/useShopCart';
 import { supabase } from '@/integrations/supabase/client';
@@ -189,23 +189,38 @@ export function OrderConfirmationPage() {
     ? `${window.location.origin}/shop/${storeSlug}/track/${trackingToken}`
     : null;
   const telegramLink = stateData.telegramLink || null;
+  const isCancelled = orderDetails?.status === 'cancelled';
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 md:py-16 max-w-2xl">
       <div className="text-center mb-6 sm:mb-8">
-        <div
-          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center"
-          style={{ backgroundColor: `${store.primary_color}20` }}
-        >
-          <CheckCircle
-            className="w-10 h-10 sm:w-12 sm:h-12"
-            style={{ color: store.primary_color }}
-          />
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Order Confirmed!</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          Thank you for your order. We&apos;ll send you updates on your delivery.
-        </p>
+        {isCancelled ? (
+          <>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center bg-red-50">
+              <XCircle className="w-10 h-10 sm:w-12 sm:h-12 text-red-500" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 text-red-600">Order Cancelled</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              This order has been cancelled. Please contact us if you have any questions.
+            </p>
+          </>
+        ) : (
+          <>
+            <div
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center"
+              style={{ backgroundColor: `${store.primary_color}20` }}
+            >
+              <CheckCircle
+                className="w-10 h-10 sm:w-12 sm:h-12"
+                style={{ color: store.primary_color }}
+              />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Order Confirmed!</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Thank you for your order. We&apos;ll send you updates on your delivery.
+            </p>
+          </>
+        )}
       </div>
 
       <Card className="mb-4 sm:mb-6">
@@ -222,77 +237,82 @@ export function OrderConfirmationPage() {
             )}
           </div>
 
-          {/* Mobile: vertical left-aligned timeline */}
-          <div className="hidden md:grid md:grid-cols-3 gap-6 py-6 border-t border-b">
-            <div className="flex flex-col items-center text-center">
-              <Mail className="w-8 h-8 mb-2" style={{ color: store.primary_color }} />
-              <p className="font-medium">Email Confirmation</p>
-              <p className="text-sm text-muted-foreground">
-                Check your inbox for order details
-              </p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <Clock className="w-8 h-8 mb-2" style={{ color: store.primary_color }} />
-              <p className="font-medium">Order Processing</p>
-              <p className="text-sm text-muted-foreground">
-                We&apos;re preparing your order
-              </p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <MapPin className="w-8 h-8 mb-2" style={{ color: store.primary_color }} />
-              <p className="font-medium">Track Delivery</p>
-              <p className="text-sm text-muted-foreground">
-                Get real-time updates
-              </p>
-            </div>
-          </div>
+          {/* Next Steps Timeline (hidden when cancelled) */}
+          {!isCancelled && (
+            <>
+              {/* Desktop timeline */}
+              <div className="hidden md:grid md:grid-cols-3 gap-6 py-6 border-t border-b">
+                <div className="flex flex-col items-center text-center">
+                  <Mail className="w-8 h-8 mb-2" style={{ color: store.primary_color }} />
+                  <p className="font-medium">Email Confirmation</p>
+                  <p className="text-sm text-muted-foreground">
+                    Check your inbox for order details
+                  </p>
+                </div>
+                <div className="flex flex-col items-center text-center">
+                  <Clock className="w-8 h-8 mb-2" style={{ color: store.primary_color }} />
+                  <p className="font-medium">Order Processing</p>
+                  <p className="text-sm text-muted-foreground">
+                    We&apos;re preparing your order
+                  </p>
+                </div>
+                <div className="flex flex-col items-center text-center">
+                  <MapPin className="w-8 h-8 mb-2" style={{ color: store.primary_color }} />
+                  <p className="font-medium">Track Delivery</p>
+                  <p className="text-sm text-muted-foreground">
+                    Get real-time updates
+                  </p>
+                </div>
+              </div>
 
-          {/* Mobile: vertical left-aligned timeline with connector */}
-          <div className="md:hidden py-4 border-t border-b">
-            <div className="relative pl-8 space-y-4">
-              {/* Vertical connector line */}
-              <div
-                className="absolute left-[11px] top-1 bottom-1 w-0.5 rounded-full"
-                style={{ backgroundColor: `${store.primary_color}30` }}
-              />
-              <div className="relative flex items-start gap-3">
-                <div
-                  className="absolute -left-8 top-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: `${store.primary_color}20` }}
-                >
-                  <Mail className="w-3.5 h-3.5" style={{ color: store.primary_color }} />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Email Confirmation</p>
-                  <p className="text-xs text-muted-foreground">Check your inbox for order details</p>
+              {/* Mobile: vertical left-aligned timeline with connector */}
+              <div className="md:hidden py-4 border-t border-b">
+                <div className="relative pl-8 space-y-4">
+                  {/* Vertical connector line */}
+                  <div
+                    className="absolute left-[11px] top-1 bottom-1 w-0.5 rounded-full"
+                    style={{ backgroundColor: `${store.primary_color}30` }}
+                  />
+                  <div className="relative flex items-start gap-3">
+                    <div
+                      className="absolute -left-8 top-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: `${store.primary_color}20` }}
+                    >
+                      <Mail className="w-3.5 h-3.5" style={{ color: store.primary_color }} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Email Confirmation</p>
+                      <p className="text-xs text-muted-foreground">Check your inbox for order details</p>
+                    </div>
+                  </div>
+                  <div className="relative flex items-start gap-3">
+                    <div
+                      className="absolute -left-8 top-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: `${store.primary_color}20` }}
+                    >
+                      <Clock className="w-3.5 h-3.5" style={{ color: store.primary_color }} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Order Processing</p>
+                      <p className="text-xs text-muted-foreground">We&apos;re preparing your order</p>
+                    </div>
+                  </div>
+                  <div className="relative flex items-start gap-3">
+                    <div
+                      className="absolute -left-8 top-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: `${store.primary_color}20` }}
+                    >
+                      <MapPin className="w-3.5 h-3.5" style={{ color: store.primary_color }} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Track Delivery</p>
+                      <p className="text-xs text-muted-foreground">Get real-time updates</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="relative flex items-start gap-3">
-                <div
-                  className="absolute -left-8 top-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: `${store.primary_color}20` }}
-                >
-                  <Clock className="w-3.5 h-3.5" style={{ color: store.primary_color }} />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Order Processing</p>
-                  <p className="text-xs text-muted-foreground">We&apos;re preparing your order</p>
-                </div>
-              </div>
-              <div className="relative flex items-start gap-3">
-                <div
-                  className="absolute -left-8 top-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: `${store.primary_color}20` }}
-                >
-                  <MapPin className="w-3.5 h-3.5" style={{ color: store.primary_color }} />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Track Delivery</p>
-                  <p className="text-xs text-muted-foreground">Get real-time updates</p>
-                </div>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
 
           {/* Tracking URL section */}
           {trackingUrl && (
@@ -367,8 +387,8 @@ export function OrderConfirmationPage() {
         </CardContent>
       </Card>
 
-      {/* Estimated Delivery */}
-      {orderDetails && (
+      {/* Estimated Delivery (hidden when cancelled) */}
+      {orderDetails && !isCancelled && (
         <Card className="mb-4 sm:mb-6">
           <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
             <div className="flex items-center gap-2 mb-3 sm:mb-4">

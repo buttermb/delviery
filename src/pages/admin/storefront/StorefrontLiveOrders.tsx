@@ -39,6 +39,7 @@ import {
 import { StorefrontLiveOrdersKanban } from '@/components/admin/storefront/StorefrontLiveOrdersKanban';
 import { StorefrontLiveOrdersTable } from '@/components/admin/storefront/StorefrontLiveOrdersTable';
 import { OrderDetailPanel } from '@/components/admin/storefront/OrderDetailPanel';
+import { CancelOrderDialog } from '@/components/admin/storefront/CancelOrderDialog';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
 
@@ -177,6 +178,8 @@ export function StorefrontLiveOrders() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [detailPanelOpen, setDetailPanelOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
   const previousOrderCountRef = useRef<number>(0);
   const isInitialLoadRef = useRef(true);
 
@@ -302,7 +305,12 @@ export function StorefrontLiveOrders() {
 
   // Update order status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ orderId, newStatus, previousStatus }: { orderId: string; newStatus: string; previousStatus: string }) => {
+    mutationFn: async ({ orderId, newStatus, previousStatus, cancellationReason }: {
+      orderId: string;
+      newStatus: string;
+      previousStatus: string;
+      cancellationReason?: string;
+    }) => {
       if (!store?.id || !tenantId) throw new Error('No store or tenant context');
 
       const now = new Date().toISOString();
@@ -319,10 +327,15 @@ export function StorefrontLiveOrders() {
         out_for_delivery: 'out_for_delivery_at',
         delivered: 'delivered_at',
         completed: 'delivered_at',
+        cancelled: 'cancelled_at',
       };
       const tsField = timestampMap[newStatus];
       if (tsField) {
         updateData[tsField] = now;
+      }
+
+      if (newStatus === 'cancelled' && cancellationReason) {
+        updateData.cancellation_reason = cancellationReason;
       }
 
       const { error } = await supabase
@@ -333,6 +346,32 @@ export function StorefrontLiveOrders() {
         .eq('seller_tenant_id', tenantId);
 
       if (error) throw error;
+
+      // Restore inventory when cancelling
+      if (newStatus === 'cancelled') {
+        const order = orders.find(o => o.id === orderId);
+        const items = Array.isArray(order?.items) ? order.items : [];
+        const restoreItems = items
+          .map((item) => {
+            const i = item as Record<string, unknown>;
+            return {
+              product_id: i.product_id as string,
+              quantity: typeof i.quantity === 'number' ? i.quantity : 0,
+            };
+          })
+          .filter((i) => i.product_id && i.quantity > 0);
+
+        if (restoreItems.length > 0) {
+          const { data: restoreResult, error: restoreError } = await supabase
+            .rpc('restore_storefront_inventory', { p_items: restoreItems });
+
+          if (restoreError) {
+            logger.error('Failed to restore inventory on cancel', restoreError, { component: 'StorefrontLiveOrders', orderId });
+          } else {
+            logger.info('Inventory restored for cancelled order', { orderId, result: restoreResult }, { component: 'StorefrontLiveOrders' });
+          }
+        }
+      }
 
       // Log activity for the timeline (fire-and-forget)
       const userId = admin?.userId;
@@ -347,6 +386,7 @@ export function StorefrontLiveOrders() {
             previous_status: previousStatus,
             new_status: newStatus,
             user_name: admin?.name || admin?.email,
+            ...(cancellationReason ? { cancellation_reason: cancellationReason } : {}),
           }
         );
       }
@@ -356,7 +396,14 @@ export function StorefrontLiveOrders() {
     },
     onSuccess: (_, { newStatus }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.storefrontLiveOrders.all });
-      toast.success(`Status changed to ${STATUS_LABELS[newStatus] || newStatus}`);
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      if (newStatus === 'cancelled') {
+        setCancelDialogOpen(false);
+        setCancelOrderId(null);
+        toast.success('Order cancelled and inventory restored');
+      } else {
+        toast.success(`Status changed to ${STATUS_LABELS[newStatus] || newStatus}`);
+      }
     },
     onError: (error) => {
       logger.error('Failed to update order status', error, { component: 'StorefrontLiveOrders' });
@@ -368,10 +415,32 @@ export function StorefrontLiveOrders() {
   });
 
   const handleStatusChange = (orderId: string, newStatus: string) => {
+    if (newStatus === 'cancelled') {
+      setCancelOrderId(orderId);
+      setCancelDialogOpen(true);
+      return;
+    }
     const order = orders.find(o => o.id === orderId);
     const previousStatus = order?.status ?? 'unknown';
     updateStatusMutation.mutate({ orderId, newStatus, previousStatus });
   };
+
+  const handleCancelConfirm = (reason: string) => {
+    if (!cancelOrderId) return;
+    const order = orders.find(o => o.id === cancelOrderId);
+    const previousStatus = order?.status ?? 'unknown';
+    updateStatusMutation.mutate({
+      orderId: cancelOrderId,
+      newStatus: 'cancelled',
+      previousStatus,
+      cancellationReason: reason,
+    });
+  };
+
+  const cancelOrder = useMemo(
+    () => orders.find(o => o.id === cancelOrderId) ?? null,
+    [orders, cancelOrderId]
+  );
 
   const handleViewDetails = (orderId: string) => {
     setSelectedOrderId(orderId);
@@ -558,6 +627,18 @@ export function StorefrontLiveOrders() {
         onOpenChange={setDetailPanelOpen}
         onStatusChange={handleStatusChange}
         updatingOrderId={updatingOrderId}
+      />
+
+      {/* Cancel Order Dialog */}
+      <CancelOrderDialog
+        open={cancelDialogOpen}
+        onOpenChange={(open) => {
+          setCancelDialogOpen(open);
+          if (!open) setCancelOrderId(null);
+        }}
+        orderNumber={cancelOrder?.order_number ?? ''}
+        onConfirm={handleCancelConfirm}
+        isPending={updateStatusMutation.isPending}
       />
     </div>
   );
