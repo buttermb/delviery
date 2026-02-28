@@ -1,82 +1,48 @@
 
 
-# Fix Remaining Build Errors for Live Deployment
+# Fix Build Errors: CheckoutPage + Storefront Checkout Edge Function
 
 ## Problem
 
-The live site fails to build because of TypeScript compilation errors. The preview works in development (Vite skips type checking), but the production build runs `tsc --noEmit` which catches these errors.
+Two separate build errors:
 
-## Root Causes Identified
+1. **`src/pages/shop/CheckoutPage.tsx`** -- Lines 491, 505, 511, 514, 2167 all show "Declaration or statement expected". Root cause: `case 2:` in the `validateStep` switch statement (around line 460) declares `const deliveryZones` and `const matchingZone` without wrapping the case body in block braces `{}`. TypeScript does not allow lexical declarations (`const`/`let`) in bare case clauses.
 
-### 1. Missing Module: `storefrontSettingsSchema` (CRITICAL - Hard Build Failure)
+2. **`supabase/functions/storefront-checkout/index.ts`** -- Deno's type checker cannot narrow `parseResult.error` inside the `if (!parseResult.success)` block. The `SafeParseReturnType` union is not being narrowed correctly.
 
-`src/lib/utils/validation.ts` line 10 has:
-```typescript
-export * from './storefrontSettingsSchema';
-```
+## Fix 1: CheckoutPage.tsx (wrap case 2 in braces)
 
-But the file `src/lib/utils/storefrontSettingsSchema.ts` does not exist in the filesystem. This causes an immediate compilation failure.
-
-**Fix:** Create `src/lib/utils/storefrontSettingsSchema.ts` with a basic Zod schema for storefront settings, or remove the re-export line if it's not used elsewhere.
-
-### 2. Any Remaining `supabase.from()` / `supabase.rpc()` Type Errors
-
-The global type augmentation in `src/supabase-override.d.ts` should handle most of these. However, some files may have been edited with manual `(supabase as any)` casts that could create double-casting or other issues. Need to verify no files still have the old verbose cast patterns.
-
-### 3. IDB / Encryption Type Mismatches
-
-Files like `src/lib/idb.ts` use the `clientEncryption` module. If the encryption functions return types that don't match what IDB expects (e.g., returning `string | null` where `string` is expected), this could cause build errors.
-
----
-
-## Implementation Plan
-
-### Step 1: Create the missing `storefrontSettingsSchema` module
-
-Create `src/lib/utils/storefrontSettingsSchema.ts` with a Zod schema covering common storefront settings fields (theme, colors, logo, etc.). This file is re-exported from `validation.ts`.
-
-### Step 2: Search for and fix any remaining type errors
-
-Scan all files for patterns that would cause build failures:
-- Verbose `supabase as unknown as { from: ... }` casts (simplify to `(supabase as any)`)
-- Property access on `unknown` types without proper casting
-- Any other missing module imports
-
-### Step 3: Verify with type check
-
-Run `npx tsc --noEmit` equivalent to confirm zero errors remain.
-
----
-
-## Technical Details
-
-### `storefrontSettingsSchema.ts` contents:
+Wrap the body of `case 2:` (lines 460-489) in curly braces so the `const` declarations are in a proper block scope:
 
 ```typescript
-import { z } from 'zod';
-
-export const storefrontSettingsSchema = z.object({
-  storeName: z.string().min(1).max(100).optional(),
-  tagline: z.string().max(200).optional(),
-  logoUrl: z.string().url().optional().or(z.literal('')),
-  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-  accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-  heroImageUrl: z.string().url().optional().or(z.literal('')),
-  showCategories: z.boolean().optional(),
-  showSearch: z.boolean().optional(),
-  minimumOrderAmount: z.number().min(0).optional(),
-  deliveryEnabled: z.boolean().optional(),
-  pickupEnabled: z.boolean().optional(),
-});
-
-export type StorefrontSettings = z.infer<typeof storefrontSettingsSchema>;
+case 2: {
+  if (!formData.fulfillmentMethod) { ... }
+  if (formData.fulfillmentMethod === 'pickup') return true;
+  ...
+  const deliveryZones = ...;
+  const matchingZone = ...;
+  ...
+  return true;
+}
 ```
 
-### Files to check for remaining verbose casts:
-- `src/components/admin/vendors/POReceiving.tsx` (previously had `supabase as unknown as { from: ... }`)
-- `src/components/admin/storefront/AnnouncementBar.tsx`
-- Any other component with similar patterns
+This is a single-character addition (`{` after `case 2:` and `}` before `case 3:`).
 
-### Expected Outcome
-After these fixes, `tsc --noEmit` should pass with zero errors, allowing the production build to succeed and the live site to load.
+## Fix 2: storefront-checkout/index.ts (Zod type narrowing)
+
+Change the error access to use a type guard pattern that Deno respects:
+
+```typescript
+if (!parseResult.success) {
+  const errorResult = parseResult as z.SafeParseError<unknown>;
+  return jsonResponse(
+    { error: "Validation failed", details: errorResult.error.flatten().fieldErrors },
+    400,
+  );
+}
+```
+
+## Files Changed
+- `src/pages/shop/CheckoutPage.tsx` -- Add block braces around case 2 body
+- `supabase/functions/storefront-checkout/index.ts` -- Fix Zod type narrowing for Deno
 
