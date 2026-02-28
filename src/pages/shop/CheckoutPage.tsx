@@ -94,6 +94,7 @@ interface OrderResult {
   order_number: string;
   tracking_token?: string;
   total?: number;
+  checkoutUrl?: string;
 }
 
 // Helper type for calling untyped Supabase RPCs
@@ -509,9 +510,84 @@ export function CheckoutPage() {
         }
       }
 
-      // Calculate gift card usage for RPC
-      // Attempt to place order with retries
-      // Attempt to place order with retries
+      // Primary path: edge function checkout (handles order, customer, stock, Telegram, Stripe)
+      const tryEdgeFunction = async (): Promise<OrderResult | null> => {
+        try {
+          const edgeDeliveryAddress = `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
+          const edgeOrigin = window.location.origin;
+          const totalDiscountAmount = couponDiscount + loyaltyDiscount + dealsDiscount;
+
+          const { data, error } = await supabase.functions.invoke('storefront-checkout', {
+            body: {
+              storeSlug,
+              items: cartItems.map(item => ({
+                product_id: item.productId,
+                quantity: item.quantity,
+                variant: item.variant,
+                price: item.price,
+              })),
+              customerInfo: {
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                phone: formData.phone || undefined,
+              },
+              fulfillmentMethod: formData.street ? 'delivery' : 'pickup',
+              paymentMethod: formData.paymentMethod,
+              deliveryAddress: edgeDeliveryAddress,
+              notes: formData.deliveryNotes || undefined,
+              discountAmount: totalDiscountAmount > 0 ? totalDiscountAmount : undefined,
+              successUrl: formData.paymentMethod === 'card'
+                ? `${edgeOrigin}/shop/${storeSlug}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`
+                : undefined,
+              cancelUrl: formData.paymentMethod === 'card'
+                ? `${edgeOrigin}/shop/${storeSlug}/checkout?cancelled=true`
+                : undefined,
+              idempotencyKey,
+              clientTotal: total,
+            },
+          });
+
+          if (error) {
+            const errorName = (error as { name?: string }).name || '';
+            const isFetchError = errorName === 'FunctionsFetchError' || errorName === 'FunctionsRelayError';
+
+            if (isFetchError) {
+              return null; // Trigger fallback
+            }
+
+            const errorBody = data as Record<string, unknown> | null;
+            const errorMessage = (errorBody?.error as string) || error.message || 'Checkout failed';
+
+            if (errorMessage === 'Internal server error') {
+              return null; // Trigger fallback
+            }
+
+            throw new Error(errorMessage); // Business error — propagate
+          }
+
+          const responseData = data as Record<string, unknown>;
+
+          // Redeem coupon client-side (edge function doesn't handle coupons)
+          if (appliedCoupon?.coupon_id) {
+            await (supabase.rpc as unknown as SupabaseRpc)('redeem_coupon', { p_coupon_id: appliedCoupon.coupon_id });
+          }
+
+          return {
+            order_id: responseData.orderId as string,
+            order_number: (responseData.orderNumber as string) || (responseData.orderId as string),
+            total: responseData.serverTotal as number,
+            checkoutUrl: responseData.checkoutUrl as string | undefined,
+          };
+        } catch (err: unknown) {
+          // Re-throw known Error instances (business errors from edge function)
+          if (err instanceof Error) throw err;
+          // Unknown errors — trigger fallback
+          return null;
+        }
+      };
+
+      // Fallback path: direct RPC (if edge function is unavailable)
       const attemptOrder = async (attempt: number): Promise<OrderResult> => {
         try {
           if (!store?.id) throw new Error('Store ID missing');
@@ -579,7 +655,7 @@ export function CheckoutPage() {
             order_id: orderId as string,
             order_number: (orderRow?.order_number as string) || (orderId as string),
             tracking_token: (orderRow?.tracking_token as string) || undefined,
-            total: (orderRow?.total as number) || undefined,
+            total: (orderRow?.total as number) ?? undefined,
           };
 
         } catch (err: unknown) {
@@ -603,71 +679,33 @@ export function CheckoutPage() {
         }
       };
 
-      return attemptOrder(1);
+      // Try edge function first, fallback to direct RPC if unavailable
+      const edgeResult = await tryEdgeFunction();
+      if (edgeResult) return edgeResult;
+
+      logger.warn('Edge function unavailable, using client-side fallback', null, { component: 'CheckoutPage' });
+      return await attemptOrder(1);
     },
     onSuccess: async (data) => {
       setOrderRetryCount(0);
 
-      // For card payments, redirect to Stripe checkout
-      if (formData.paymentMethod === 'card' && store?.id) {
-        try {
-          const checkoutItems = cartItems.map((item) => ({
-            product_id: item.productId,
-            name: item.name,
-            quantity: item.quantity,
-            image_url: item.imageUrl,
-          }));
-
-          const origin = window.location.origin;
-          const trackingParam = data.tracking_token ? `&token=${data.tracking_token}` : '';
-          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_id}${trackingParam}&total=${total}&session_id={CHECKOUT_SESSION_ID}`;
-          const cancelUrl = `${origin}/shop/${storeSlug}/checkout?cancelled=true`;
-
-          // Calculate total discount applied (coupon + loyalty + deals)
-          const totalDiscountAmount = couponDiscount + loyaltyDiscount + dealsDiscount;
-
-          const response = await supabase.functions.invoke('storefront-checkout', {
-            body: {
-              store_id: store.id,
-              order_id: data.order_id,
-              items: checkoutItems,
-              customer_email: formData.email,
-              customer_name: `${formData.firstName} ${formData.lastName}`,
-              subtotal,
-              delivery_fee: effectiveDeliveryFee,
-              discount_amount: totalDiscountAmount,
-              success_url: successUrl,
-              cancel_url: cancelUrl,
-            },
-          });
-
-          if (response.error) {
-            throw new Error(response.error.message || 'Payment initialization failed');
+      // If edge function returned a Stripe checkout URL, redirect directly
+      if (data.checkoutUrl) {
+        if (store?.id) {
+          localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
+          if (formStorageKey) {
+            localStorage.removeItem(formStorageKey);
           }
-
-          const { url } = response.data;
-          if (url) {
-            // Clear cart before redirecting to Stripe (order already created)
-            localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
-            if (formStorageKey) {
-              localStorage.removeItem(formStorageKey);
-            }
-            setCartItemCount(0);
-            // Redirect to Stripe checkout
-            window.location.href = url;
-            return;
-          }
-        } catch (stripeError: unknown) {
-          logger.error('Stripe checkout error', stripeError, { component: 'CheckoutPage' });
-          const stripeErrMsg = stripeError instanceof Error ? stripeError.message : 'Unable to initialize payment. Please try again or choose a different payment method.';
-          toast.error('Payment setup failed', {
-            description: stripeErrMsg,
-          });
-          return;
+          setCartItemCount(0);
         }
+        window.location.href = data.checkoutUrl;
+        return;
       }
 
-      // For cash/other payments, go directly to confirmation
+      // Card payment via fallback path (edge function was unavailable for Stripe)
+      if (formData.paymentMethod === 'card') {
+        toast.info('Order placed! The store will follow up regarding payment.');
+      }
       // Clear cart and saved form data
       if (store?.id) {
         localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
