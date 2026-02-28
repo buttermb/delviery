@@ -126,7 +126,7 @@
 - [x] Task 110: Create PageTransition wrapper component -- Created PageTransition component using framer-motion with fade+slide animations (opacity 0→1, y 8→0→-8), 200ms easeOut transition, className support via cn().
 - [x] Task 111: Add optimistic update to product mutations -- Wired useOptimisticList's updateOptimistic into handleInlineUpdate and deleteOptimistic into confirmDelete for instant UI feedback with automatic rollback on failure.
 - [x] Task 112: Add optimistic update to order status mutations -- Converted updateStatusMutation to use onMutate for immediate UI update before server confirms, with snapshot rollback in onError and onSettled invalidation for server consistency.
-- [ ] Task 113: Add optimistic update to customer mutations -- 
+- [x] Task 113: Add optimistic update to customer mutations -- Added optimistic updates to useDeleteTag, useAssignTag, and useRemoveTag in useCustomerTags.ts with rollback on error. 
 - [ ] Task 114: Add retry logic to product queries -- In useProduct.ts add retry: 2 and retryDelay: 1000 to useQuery options.
 - [ ] Task 115: Add retry logic to order queries -- In order list query hook add retry: 2 and retryDelay: 1000 to
       useQuery options.
