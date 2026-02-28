@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 // Valid endpoints for the admin dashboard

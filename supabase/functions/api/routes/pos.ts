@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * POS Route Handlers
  *
@@ -163,7 +162,7 @@ async function createTransaction(req: Request, params: Record<string, string>): 
     if (!result.success) {
       // Handle insufficient stock with detailed info
       if (result.error_code === 'INSUFFICIENT_STOCK' && result.insufficient_items) {
-        const stockDetails = result.insufficient_items.map((item: any) =>
+        const stockDetails = result.insufficient_items.map((item: { product_name: string; requested: number; available: number }) =>
           `${item.product_name}: need ${item.requested}, have ${item.available}`
         ).join('; ');
         return errorResponse(`Insufficient stock: ${stockDetails}`, 400);

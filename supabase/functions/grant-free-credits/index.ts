@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Grant Free Credits
  * 
@@ -135,7 +134,7 @@ serve(async (req) => {
     for (const record of eligibleTenants || []) {
       results.processed++;
       const tenantId = record.tenant_id;
-      const tenant = record.tenants as any;
+      const tenant = record.tenants as Record<string, unknown> | null;
 
       try {
         // Get the plan-based credit amount

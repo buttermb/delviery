@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Staff Management Edge Function
  * Handles CRUD operations for tenant_users with proper authentication
@@ -43,7 +42,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    let requestBody: any = {};
+    let requestBody: Record<string, unknown> = {};
     try {
       requestBody = await req.json();
     } catch {
@@ -209,7 +208,7 @@ serve(async (req) => {
         );
       }
 
-      const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
       if (role) updateData.role = role;
       if (name !== undefined) updateData.name = name;
 
@@ -274,9 +273,9 @@ serve(async (req) => {
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

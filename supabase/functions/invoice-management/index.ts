@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Invoice Management Edge Function
  * Handles CRUD operations for invoices with proper authentication
@@ -216,8 +215,8 @@ serve(async (req) => {
       const total = invoice_data.total || (subtotal + tax);
       const amountDue = total - (invoice_data.amount_paid || 0);
 
-      let createdInvoice: any = null;
-      let lastError: any = null;
+      let createdInvoice: Record<string, unknown> | null = null;
+      let lastError: { message: string; code?: string } | null = null;
 
       for (let attempt = 0; attempt < 2; attempt++) {
         const newInvoice = {
@@ -251,8 +250,8 @@ serve(async (req) => {
         }
 
         lastError = error;
-        const code = (error as any)?.code || '';
-        const msg = (error as any)?.message || '';
+        const code = error?.code || '';
+        const msg = error?.message || '';
         const isUnique = code === '23505' || /duplicate key value|unique constraint/i.test(msg);
 
         if (attempt === 0 && isUnique) {
@@ -295,7 +294,7 @@ serve(async (req) => {
       }
 
       // Recalculate amounts if relevant fields are updated
-      const updateData: any = { ...invoice_data };
+      const updateData: Record<string, unknown> = { ...invoice_data };
       if (updateData.subtotal !== undefined || updateData.tax !== undefined) {
         const subtotal = updateData.subtotal || 0;
         const tax = updateData.tax || 0;
@@ -418,9 +417,9 @@ serve(async (req) => {
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

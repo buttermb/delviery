@@ -9,7 +9,6 @@
  * in IDE but the script runs correctly with tsx which handles Node.js types.
  */
 
-// @ts-nocheck - Node.js built-in modules work with tsx runtime
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
