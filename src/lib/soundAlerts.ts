@@ -34,6 +34,8 @@ let audioContext: AudioContext | null = null;
 let audioEnabled = true;
 let defaultVolume = 0.7;
 const audioCache: Map<string, AudioBuffer> = new Map();
+// Track which sound URLs have been verified as unavailable to avoid repeated 404s
+const unavailableSounds: Set<string> = new Set();
 
 /**
  * Initialize the audio context (should be called after user interaction)
@@ -57,17 +59,20 @@ export async function preloadSounds(sounds: SoundType[] = Object.keys(SOUND_FILE
 
     const loadPromises = sounds.map(async (soundType) => {
         const url = SOUND_FILES[soundType];
-        if (audioCache.has(url)) return;
+        if (audioCache.has(url) || unavailableSounds.has(url)) return;
 
         try {
             const response = await fetch(url);
-            if (!response.ok) return;
+            if (!response.ok) {
+                unavailableSounds.add(url);
+                return;
+            }
 
             const arrayBuffer = await response.arrayBuffer();
             const audioBuffer = await audioContext!.decodeAudioData(arrayBuffer);
             audioCache.set(url, audioBuffer);
-        } catch (error) {
-            logger.warn(`Failed to preload sound ${soundType}`, error);
+        } catch {
+            unavailableSounds.add(url);
         }
     });
 
@@ -82,6 +87,11 @@ export async function playSound(
     options: SoundAlertOptions = {}
 ): Promise<void> {
     if (!audioEnabled) return;
+
+    const url = SOUND_FILES[type];
+
+    // Skip if this sound file was already found to be unavailable
+    if (unavailableSounds.has(url)) return;
 
     const {
         volume = defaultVolume,
@@ -103,22 +113,22 @@ export async function playSound(
 
     // Try Web Audio API first
     if (audioContext) {
-        const url = SOUND_FILES[type];
-
         // Check cache
         let buffer = audioCache.get(url);
 
         if (!buffer) {
             try {
                 const response = await fetch(url);
-                if (!response.ok) throw new Error('Sound not found');
+                if (!response.ok) {
+                    unavailableSounds.add(url);
+                    return;
+                }
 
                 const arrayBuffer = await response.arrayBuffer();
                 buffer = await audioContext.decodeAudioData(arrayBuffer);
                 audioCache.set(url, buffer);
-            } catch (error) {
-                logger.warn(`Failed to load sound ${type}`, error);
-                fallbackPlay(type, volume);
+            } catch {
+                unavailableSounds.add(url);
                 return;
             }
         }
@@ -149,14 +159,20 @@ export async function playSound(
  * Fallback to HTML5 Audio element
  */
 function fallbackPlay(type: SoundType, volume: number): void {
+    const url = SOUND_FILES[type];
+    if (unavailableSounds.has(url)) return;
+
     try {
-        const audio = new Audio(SOUND_FILES[type]);
+        const audio = new Audio(url);
         audio.volume = volume;
-        audio.play().catch((error) => {
-            logger.warn('Audio playback failed', error);
+        audio.addEventListener('error', () => {
+            unavailableSounds.add(url);
+        }, { once: true });
+        audio.play().catch(() => {
+            unavailableSounds.add(url);
         });
-    } catch (error) {
-        logger.warn('Failed to create audio element', error);
+    } catch {
+        unavailableSounds.add(url);
     }
 }
 
@@ -200,8 +216,10 @@ export function playErrorSound(options?: SoundAlertOptions): Promise<void> {
  */
 export function setSoundEnabled(enabled: boolean): void {
     audioEnabled = enabled;
-    if (typeof window !== 'undefined') {
+    try {
         localStorage.setItem(STORAGE_KEYS.SOUND_ALERTS_ENABLED, String(enabled));
+    } catch {
+        // localStorage unavailable (private browsing, quota exceeded)
     }
 }
 
@@ -217,8 +235,10 @@ export function isSoundEnabled(): boolean {
  */
 export function setDefaultVolume(volume: number): void {
     defaultVolume = Math.max(0, Math.min(1, volume));
-    if (typeof window !== 'undefined') {
+    try {
         localStorage.setItem(STORAGE_KEYS.SOUND_ALERTS_VOLUME, String(defaultVolume));
+    } catch {
+        // localStorage unavailable (private browsing, quota exceeded)
     }
 }
 
@@ -235,14 +255,18 @@ export function getDefaultVolume(): number {
 export function loadSoundPreferences(): void {
     if (typeof window === 'undefined') return;
 
-    const saved = localStorage.getItem(STORAGE_KEYS.SOUND_ALERTS_ENABLED);
-    if (saved !== null) {
-        audioEnabled = saved === 'true';
-    }
+    try {
+        const saved = localStorage.getItem(STORAGE_KEYS.SOUND_ALERTS_ENABLED);
+        if (saved !== null) {
+            audioEnabled = saved === 'true';
+        }
 
-    const savedVolume = localStorage.getItem(STORAGE_KEYS.SOUND_ALERTS_VOLUME);
-    if (savedVolume !== null) {
-        defaultVolume = parseFloat(savedVolume);
+        const savedVolume = localStorage.getItem(STORAGE_KEYS.SOUND_ALERTS_VOLUME);
+        if (savedVolume !== null) {
+            defaultVolume = parseFloat(savedVolume);
+        }
+    } catch {
+        // localStorage unavailable (private browsing, quota exceeded)
     }
 }
 

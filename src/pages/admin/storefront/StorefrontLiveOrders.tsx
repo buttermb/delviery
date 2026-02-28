@@ -4,7 +4,7 @@
  * Features: realtime subscription, sound/browser notifications, status progression, delivery/pickup badges
  */
 
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,6 +42,7 @@ import { OrderDetailPanel } from '@/components/admin/storefront/OrderDetailPanel
 import { CancelOrderDialog } from '@/components/admin/storefront/CancelOrderDialog';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
+import { playNewOrderSound as playSoundAlert, initAudio } from '@/lib/soundAlerts';
 
 /** Status progression order */
 const STATUS_PROGRESSION = [
@@ -231,19 +232,15 @@ export function StorefrontLiveOrders() {
     refetchInterval: autoRefresh ? 10000 : false,
   });
 
-  // Play sound on new order
-  const playNewOrderSound = useCallback(() => {
-    if (!soundEnabled || typeof window === 'undefined') return;
-    try {
-      const audio = new Audio('/sounds/new-order.mp3');
-      audio.volume = 0.5;
-      audio.play().catch(() => {
-        // Autoplay blocked, ignore
-      });
-    } catch {
-      // No sound file, ignore
-    }
-  }, [soundEnabled]);
+  // Initialize audio on first user interaction
+  useEffect(() => {
+    const handleInteraction = () => {
+      initAudio();
+      window.removeEventListener('click', handleInteraction);
+    };
+    window.addEventListener('click', handleInteraction);
+    return () => window.removeEventListener('click', handleInteraction);
+  }, []);
 
   // Detect new orders and trigger notifications
   useEffect(() => {
@@ -256,7 +253,9 @@ export function StorefrontLiveOrders() {
     }
 
     if (pendingOrders > previousOrderCountRef.current) {
-      playNewOrderSound();
+      if (soundEnabled) {
+        playSoundAlert();
+      }
 
       const newCount = pendingOrders - previousOrderCountRef.current;
       const message = newCount === 1
@@ -269,7 +268,7 @@ export function StorefrontLiveOrders() {
     }
 
     previousOrderCountRef.current = pendingOrders;
-  }, [orders, playNewOrderSound]);
+  }, [orders, soundEnabled]);
 
   // Set up realtime subscription on storefront_orders (marketplace_orders) table
   useEffect(() => {
