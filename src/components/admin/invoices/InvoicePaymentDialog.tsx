@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -14,7 +14,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CurrencyInput } from '@/components/ui/currency-input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -23,6 +22,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { DatePickerWithPresets } from '@/components/ui/date-picker-with-presets';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -79,14 +86,7 @@ export function InvoicePaymentDialog({
 
   const schema = createPaymentSchema(remaining);
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors, isDirty },
-    setValue,
-    watch,
-  } = useForm<PaymentFormValues>({
+  const form = useForm<PaymentFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       amount: undefined,
@@ -100,7 +100,7 @@ export function InvoicePaymentDialog({
   // Reset form when dialog opens/closes
   useEffect(() => {
     if (open) {
-      reset({
+      form.reset({
         amount: undefined,
         payment_method: undefined,
         payment_date: new Date(),
@@ -108,13 +108,13 @@ export function InvoicePaymentDialog({
         notes: '',
       });
     }
-  }, [open, reset]);
+  }, [open, form]);
 
   const handleClose = useCallback(() => {
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(isDirty, handleClose);
+  const { guardedOnOpenChange, dialogContentProps, DiscardAlert } = useDirtyFormGuard(form.formState.isDirty, handleClose);
 
   const recordPayment = useMutation({
     mutationFn: async (values: PaymentFormValues) => {
@@ -177,11 +177,11 @@ export function InvoicePaymentDialog({
           customerId: (data as Record<string, unknown>)?.client_id as string,
         });
       }
-      const newPaid = (amountPaid ?? 0) + (watch('amount') ?? 0);
+      const newPaid = (amountPaid ?? 0) + (form.watch('amount') ?? 0);
       const isPaidInFull = newPaid >= amountDue;
       toast.success(
         isPaidInFull ? 'Invoice paid in full' : 'Payment recorded',
-        { description: `${formatCurrency(watch('amount') ?? 0)} recorded` }
+        { description: `${formatCurrency(form.watch('amount') ?? 0)} recorded` }
       );
       onOpenChange(false);
       onSuccess?.();
@@ -196,7 +196,7 @@ export function InvoicePaymentDialog({
     recordPayment.mutate(values);
   };
 
-  const watchAmount = watch('amount');
+  const watchAmount = form.watch('amount');
 
   return (
     <>
@@ -212,160 +212,162 @@ export function InvoicePaymentDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Amount */}
-          <div className="space-y-2">
-            <Label htmlFor="payment-amount">Amount <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-            <Controller
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Amount */}
+            <FormField
+              control={form.control}
               name="amount"
-              control={control}
               render={({ field }) => (
-                <CurrencyInput
-                  id="payment-amount"
-                  placeholder="0.00"
-                  value={field.value !== undefined ? String(field.value) : ''}
-                  onValueChange={(val) => field.onChange(val)}
-                  className={errors.amount ? 'border-destructive' : ''}
-                />
+                <FormItem>
+                  <FormLabel required>Amount</FormLabel>
+                  <FormControl>
+                    <CurrencyInput
+                      placeholder="0.00"
+                      value={field.value !== undefined ? String(field.value) : ''}
+                      onValueChange={(val) => field.onChange(val)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  {remaining > 0 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-muted-foreground h-auto p-0"
+                      onClick={() => form.setValue('amount', remaining, { shouldValidate: true })}
+                    >
+                      Pay full balance: {formatCurrency(remaining)}
+                    </Button>
+                  )}
+                </FormItem>
               )}
             />
-            {errors.amount && (
-              <p className="text-sm text-destructive">{errors.amount.message}</p>
+
+            {/* Payment Method */}
+            <FormField
+              control={form.control}
+              name="payment_method"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel required>Payment Method</FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value ?? ''}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INVOICE_PAYMENT_METHODS.map((m) => (
+                          <SelectItem key={m.value} value={m.value}>
+                            {m.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Payment Date */}
+            <FormField
+              control={form.control}
+              name="payment_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel required>Payment Date</FormLabel>
+                  <FormControl>
+                    <DatePickerWithPresets
+                      date={field.value}
+                      onDateChange={(date) => field.onChange(date)}
+                      showPastPresets
+                      placeholder="Select date"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Reference */}
+            <FormField
+              control={form.control}
+              name="reference"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Reference (optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Check #, transaction ID, etc."
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* Notes */}
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes (optional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Additional notes..."
+                      rows={2}
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* Summary */}
+            {watchAmount !== undefined && watchAmount > 0 && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Recording {formatCurrency(watchAmount)} payment.{' '}
+                  {(amountPaid ?? 0) + watchAmount >= amountDue
+                    ? 'This will mark the invoice as paid in full.'
+                    : `Remaining after: ${formatCurrency(remaining - watchAmount)}`}
+                </AlertDescription>
+              </Alert>
             )}
-            {remaining > 0 && (
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-2">
               <Button
                 type="button"
-                variant="ghost"
-                size="sm"
-                className="text-xs text-muted-foreground h-auto p-0"
-                onClick={() => setValue('amount', remaining, { shouldValidate: true })}
+                variant="outline"
+                onClick={() => guardedOnOpenChange(false)}
+                disabled={recordPayment.isPending}
               >
-                Pay full balance: {formatCurrency(remaining)}
+                Cancel
               </Button>
-            )}
-          </div>
-
-          {/* Payment Method */}
-          <div className="space-y-2">
-            <Label>Payment Method <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-            <Controller
-              name="payment_method"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value ?? ''}
-                  onValueChange={field.onChange}
-                >
-                  <SelectTrigger className={errors.payment_method ? 'border-destructive' : ''}>
-                    <SelectValue placeholder="Select method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INVOICE_PAYMENT_METHODS.map((m) => (
-                      <SelectItem key={m.value} value={m.value}>
-                        {m.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.payment_method && (
-              <p className="text-sm text-destructive">{errors.payment_method.message}</p>
-            )}
-          </div>
-
-          {/* Payment Date */}
-          <div className="space-y-2">
-            <Label>Payment Date <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-            <Controller
-              name="payment_date"
-              control={control}
-              render={({ field }) => (
-                <DatePickerWithPresets
-                  date={field.value}
-                  onDateChange={(date) => field.onChange(date)}
-                  showPastPresets
-                  placeholder="Select date"
-                />
-              )}
-            />
-            {errors.payment_date && (
-              <p className="text-sm text-destructive">{errors.payment_date.message}</p>
-            )}
-          </div>
-
-          {/* Reference */}
-          <div className="space-y-2">
-            <Label htmlFor="payment-reference">Reference (optional)</Label>
-            <Controller
-              name="reference"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  id="payment-reference"
-                  placeholder="Check #, transaction ID, etc."
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="payment-notes">Notes (optional)</Label>
-            <Controller
-              name="notes"
-              control={control}
-              render={({ field }) => (
-                <Textarea
-                  id="payment-notes"
-                  placeholder="Additional notes..."
-                  rows={2}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* Summary */}
-          {watchAmount !== undefined && watchAmount > 0 && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Recording {formatCurrency(watchAmount)} payment.{' '}
-                {(amountPaid ?? 0) + watchAmount >= amountDue
-                  ? 'This will mark the invoice as paid in full.'
-                  : `Remaining after: ${formatCurrency(remaining - watchAmount)}`}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Actions */}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => guardedOnOpenChange(false)}
-              disabled={recordPayment.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={recordPayment.isPending}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {recordPayment.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Recording...
-                </>
-              ) : (
-                'Record Payment'
-              )}
-            </Button>
-          </div>
-        </form>
+              <Button
+                type="submit"
+                disabled={recordPayment.isPending}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {recordPayment.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Recording...
+                  </>
+                ) : (
+                  'Record Payment'
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
     <DiscardAlert />

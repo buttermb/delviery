@@ -256,7 +256,7 @@ export function ProductForm({
                     <TabsContent value="details" className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Product Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
+                                <Label required>Product Name</Label>
                                 <Input
                                     required
                                     maxLength={200}
@@ -267,7 +267,7 @@ export function ProductForm({
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Category <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
+                                <Label required>Category</Label>
                                 <Select
                                     value={formData.category}
                                     onValueChange={(value) => setFormData({ ...formData, category: value })}
@@ -355,7 +355,7 @@ export function ProductForm({
                     <TabsContent value="pricing" className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Cost per Unit <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
+                                <Label required>Cost per Unit</Label>
                                 <CurrencyInput
                                     required
                                     value={formData.cost_per_unit}
@@ -364,7 +364,7 @@ export function ProductForm({
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Wholesale Price <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
+                                <Label required>Wholesale Price</Label>
                                 <CurrencyInput
                                     required
                                     value={formData.wholesale_price}
