@@ -78,16 +78,22 @@ export function CashFlowProjection() {
           <CardDescription>Revenue trends over the last 90 days</CardDescription>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={cashFlowData?.chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip formatter={(value: number | string) => formatCurrency(value)} />
-              <Legend />
-              <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
+          {cashFlowData?.chartData && cashFlowData.chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={cashFlowData.chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value: number | string) => formatCurrency(value)} />
+                <Legend />
+                <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+              No cash flow data available
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

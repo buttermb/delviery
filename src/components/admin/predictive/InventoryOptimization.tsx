@@ -44,7 +44,7 @@ export function InventoryOptimization() {
         };
       }).sort((a, b) => {
         const priority: Record<string, number> = { critical: 0, low: 1, excess: 2, optimal: 3 };
-        return priority[a.status] - priority[b.status];
+        return (priority[a.status] ?? 3) - (priority[b.status] ?? 3);
       });
     },
     enabled: !!tenant?.id,
