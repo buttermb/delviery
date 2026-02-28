@@ -3,7 +3,7 @@
  * Full product view with gallery, variants, reviews, and add-to-cart
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -184,6 +184,30 @@ export function ProductDetailPage() {
     imageUrl: string | null;
     quantity: number;
   } | null>(null);
+
+  // Touch swipe state for mobile image carousel
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    const delta = touchStartX.current - touchEndX.current;
+    const threshold = 50;
+    if (Math.abs(delta) > threshold) {
+      setSelectedImage((prev) => {
+        const max = (allImages?.length ?? 1) - 1;
+        if (delta > 0) return Math.min(prev + 1, max); // swipe left = next
+        return Math.max(prev - 1, 0); // swipe right = prev
+      });
+    }
+  }, []);
 
   // Track recently viewed products
   const { addToRecentlyViewed } = useRecentlyViewed();
@@ -458,7 +482,7 @@ export function ProductDetailPage() {
       variant: selectedVariant || undefined,
       metrcRetailId: product.metrc_retail_id,
       excludeFromDiscounts: product.exclude_from_discounts,
-      minimumPrice: product.minimum_price || undefined,
+      minimumPrice: product.minimum_price ?? undefined,
       minExpiryDays: product.min_expiry_days,
     });
 
@@ -498,12 +522,12 @@ export function ProductDetailPage() {
 
   if (productLoading) {
     return (
-      <div className="min-h-dvh bg-neutral-950 pt-24 pb-12">
+      <div className="min-h-dvh bg-neutral-950 pt-16 sm:pt-24 pb-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <Skeleton className="h-[600px] w-full rounded-3xl bg-white/5" />
-            <div className="space-y-8">
-              <Skeleton className="h-12 w-3/4 bg-white/5" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12">
+            <Skeleton className="h-[300px] sm:h-[600px] w-full rounded-2xl sm:rounded-3xl bg-white/5" />
+            <div className="space-y-6 sm:space-y-8">
+              <Skeleton className="h-8 sm:h-12 w-3/4 bg-white/5" />
               <Skeleton className="h-6 w-1/4 bg-white/5" />
               <Skeleton className="h-24 w-full bg-white/5" />
             </div>
@@ -536,7 +560,7 @@ export function ProductDetailPage() {
     : 0;
 
   return (
-    <div className={`min-h-dvh ${isLuxuryTheme ? 'bg-zinc-950 text-white selection:bg-white/20' : 'bg-background'}`}>
+    <div className={`min-h-dvh overflow-x-hidden ${isLuxuryTheme ? 'bg-zinc-950 text-white selection:bg-white/20' : 'bg-background'}`}>
       {/* Ambient Background Effects */}
       {isLuxuryTheme && (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
@@ -555,25 +579,28 @@ export function ProductDetailPage() {
         onClose={() => setLastAddedItem(null)}
       />
 
-      <div className="relative z-10 pt-24 pb-20">
+      <div className="relative z-10 pt-16 sm:pt-24 pb-20">
         <div className="container mx-auto px-4 max-w-7xl">
           {/* Breadcrumbs */}
-          <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-8">
-            <Link to={`/shop/${storeSlug}`} className="hover:text-primary transition-colors">Home</Link>
-            <ChevronRight className="w-4 h-4" />
-            <Link to={`/shop/${storeSlug}/products`} className="hover:text-primary transition-colors">Shop</Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className={isLuxuryTheme ? "text-white/60" : "text-foreground"}>{product.name}</span>
+          <nav className="flex items-center space-x-2 text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
+            <Link to={`/shop/${storeSlug}`} className="hover:text-primary transition-colors flex-shrink-0">Home</Link>
+            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+            <Link to={`/shop/${storeSlug}/products`} className="hover:text-primary transition-colors flex-shrink-0">Shop</Link>
+            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className={cn("truncate max-w-[180px] sm:max-w-none", isLuxuryTheme ? "text-white/60" : "text-foreground")}>{product.name}</span>
           </nav>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-12 lg:gap-20">
             {/* Left Column: Image Gallery (Span 7) */}
             <div className="lg:col-span-7 space-y-6">
               <div
-                className="relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden bg-white/5 group border border-white/5 cursor-zoom-in"
+                className="relative aspect-square md:aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-white/5 group border border-white/5 cursor-zoom-in"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
                 onClick={() => setShowZoom(true)}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               >
                 <AnimatePresence mode="wait">
                   <motion.img
@@ -631,9 +658,28 @@ export function ProductDetailPage() {
                 </div>
               </div>
 
-              {/* Thumbnails */}
+              {/* Mobile dot indicators */}
               {allImages.length > 1 && (
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                <div className="flex sm:hidden justify-center gap-2 mt-3">
+                  {allImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImage(idx)}
+                      aria-label={`View image ${idx + 1}`}
+                      className={cn(
+                        'rounded-full transition-all duration-300',
+                        selectedImage === idx
+                          ? 'w-6 h-2 bg-emerald-400'
+                          : 'w-2 h-2 bg-white/30'
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Desktop thumbnails */}
+              {allImages.length > 1 && (
+                <div className="hidden sm:flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                   {allImages.map((img, idx) => (
                     <button
                       key={img}
@@ -688,18 +734,18 @@ export function ProductDetailPage() {
 
                   {/* Short Description */}
                   {product.short_description && (
-                    <p className={`text-lg leading-relaxed mb-6 ${isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}`}>
+                    <p className={`text-sm sm:text-lg leading-relaxed mb-4 sm:mb-6 ${isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}`}>
                       {product.short_description}
                     </p>
                   )}
 
                   {/* Price */}
-                  <div className="flex items-baseline gap-4 mb-6">
-                    <span className="text-3xl font-medium text-emerald-400">
+                  <div className="flex items-baseline gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <span className="text-2xl sm:text-3xl font-medium text-emerald-400">
                       {formatCurrency(product.display_price)}
                     </span>
                     {product.compare_at_price && (
-                      <span className={`text-lg line-through ${isLuxuryTheme ? 'text-white/30 decoration-white/30' : 'text-muted-foreground'}`}>
+                      <span className={`text-base sm:text-lg line-through ${isLuxuryTheme ? 'text-white/30 decoration-white/30' : 'text-muted-foreground'}`}>
                         {formatCurrency(product.compare_at_price)}
                       </span>
                     )}
@@ -765,8 +811,8 @@ export function ProductDetailPage() {
                   )}
 
                   {/* Add To Cart Actions */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-4">
+                  <div className="space-y-4 sm:space-y-6">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <div className={`flex items-center rounded-xl border p-1 ${isLuxuryTheme ? 'bg-black/30 border-white/10' : 'bg-muted'}`}>
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -790,7 +836,7 @@ export function ProductDetailPage() {
                           whileTap={{ scale: 0.98 }}
                           onClick={handleAddToCart}
                           disabled={!product.in_stock || isAddingToCart}
-                          className={`w-full py-4 rounded-xl font-medium text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group ${!product.in_stock
+                          className={`w-full py-3 sm:py-4 rounded-xl font-medium text-base sm:text-lg flex items-center justify-center gap-2 sm:gap-3 transition-all relative overflow-hidden group ${!product.in_stock
                             ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                             : isLuxuryTheme
                               ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white shadow-[0_0_30px_rgba(16,185,129,0.3)]'
@@ -869,7 +915,7 @@ export function ProductDetailPage() {
           </div>
 
           {/* Full Width Sections Below Main Grid */}
-          <div className="mt-24 space-y-24">
+          <div className="mt-12 sm:mt-24 space-y-12 sm:space-y-24">
 
             {/* Description & Reviews Tabs Overlay */}
             <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-12 ${isLuxuryTheme ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-card border'}`}>
@@ -988,17 +1034,18 @@ export function ProductDetailPage() {
             {/* Related Products */}
             {relatedProducts.length > 0 && (
               <div className="relative">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-3xl font-light text-white">You May Also Like</h2>
-                  <Link to={`/shop/${storeSlug}/products`} className="text-white/50 hover:text-white transition-colors">
+                <div className="flex items-center justify-between mb-6 sm:mb-8">
+                  <h2 className="text-2xl sm:text-3xl font-light text-white">You May Also Like</h2>
+                  <Link to={`/shop/${storeSlug}/products`} className="text-sm sm:text-base text-white/50 hover:text-white transition-colors">
                     View All
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="flex overflow-x-auto gap-4 snap-x snap-mandatory pb-4 scrollbar-hide sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0">
                   {relatedProducts.map((relatedProduct) => (
                     <Link
                       key={relatedProduct.product_id}
                       to={`/shop/${storeSlug}/products/${relatedProduct.product_id}`}
+                      className="flex-shrink-0 w-[65vw] snap-start sm:w-auto"
                     >
                       <div className="group relative rounded-2xl overflow-hidden bg-white/5 border border-white/5 hover:border-emerald-500/50 transition-all duration-300 h-full hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-900/20">
                         <div className="aspect-[4/5] relative overflow-hidden">
@@ -1021,13 +1068,13 @@ export function ProductDetailPage() {
                             </Button>
                           </div>
                         </div>
-                        <div className="p-5">
-                          <h3 className="font-medium text-white line-clamp-1 mb-1 group-hover:text-emerald-400 transition-colors">
+                        <div className="p-3 sm:p-5">
+                          <h3 className="font-medium text-sm sm:text-base text-white line-clamp-1 mb-1 group-hover:text-emerald-400 transition-colors">
                             {relatedProduct.name}
                           </h3>
                           <div className="flex items-center justify-between">
-                            <span className="text-white/60 text-sm">{relatedProduct.category}</span>
-                            <span className="font-bold text-emerald-400">
+                            <span className="text-white/60 text-xs sm:text-sm">{relatedProduct.category}</span>
+                            <span className="font-bold text-sm sm:text-base text-emerald-400">
                               {formatCurrency(relatedProduct.display_price)}
                             </span>
                           </div>
