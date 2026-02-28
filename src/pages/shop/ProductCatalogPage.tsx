@@ -662,11 +662,11 @@ export function ProductCatalogPage() {
           </Button>
         </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-16">
+        <div className="text-center py-16" data-testid="empty-catalog">
           <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-xl font-semibold mb-2">This store doesn&apos;t have any products yet</h2>
+          <h2 className="text-xl font-semibold mb-2">No products yet</h2>
           <p className="text-muted-foreground mb-4">
-            Check back soon for new arrivals
+            Check back later.
           </p>
         </div>
       ) : filteredProducts.length === 0 ? (
