@@ -3,7 +3,7 @@
  * Multi-step checkout flow
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,7 +36,9 @@ import {
   ChevronDown,
   Copy,
   Truck,
-  Store
+  Store,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
@@ -51,6 +53,7 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
 import { queryKeys } from '@/lib/queryKeys';
 import { useReturningCustomerLookup } from '@/hooks/useReturningCustomerLookup';
+import type { DeliveryZone } from '@/types/delivery-zone';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -78,11 +81,13 @@ interface CheckoutData {
   paymentMethod: string;
 }
 
-// Extended store properties beyond base StoreInfo type
-interface DeliveryZone {
-  zip_code: string;
-  fee?: number;
-  min_order?: number;
+/** Result of matching a customer ZIP against delivery zones */
+interface ZoneMatchInfo {
+  zone_name: string;
+  delivery_fee: number;
+  minimum_order: number;
+  estimated_time_min: number;
+  estimated_time_max: number;
 }
 
 interface PurchaseLimits {
@@ -143,6 +148,93 @@ export function CheckoutPage() {
   // Check store status
   const { data: storeStatus } = useStoreStatus(store?.id);
   const isStoreClosed = storeStatus?.isOpen === false;
+
+  // Fetch delivery zones for the store's tenant
+  const { data: deliveryZones = [] } = useQuery({
+    queryKey: queryKeys.deliveryZones.byTenant(store?.tenant_id),
+    queryFn: async () => {
+      if (!store?.tenant_id) return [];
+      const { data, error } = await supabase
+        .from('delivery_zones')
+        .select('*')
+        .eq('tenant_id', store.tenant_id)
+        .eq('is_active', true)
+        .order('priority', { ascending: false });
+      if (error) {
+        logger.warn('Failed to fetch delivery zones', error, { component: 'CheckoutPage' });
+        return [];
+      }
+      return (data ?? []) as DeliveryZone[];
+    },
+    enabled: !!store?.tenant_id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // ZIP code zone validation state
+  const [matchedZone, setMatchedZone] = useState<ZoneMatchInfo | null>(null);
+  const [zipValidationStatus, setZipValidationStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const zipCheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced ZIP zone validation
+  const validateZipAgainstZones = useCallback((zip: string) => {
+    if (zipCheckTimerRef.current) {
+      clearTimeout(zipCheckTimerRef.current);
+    }
+
+    // Reset if empty or too short
+    if (!zip || zip.length < 5) {
+      setZipValidationStatus('idle');
+      setMatchedZone(null);
+      return;
+    }
+
+    setZipValidationStatus('checking');
+
+    zipCheckTimerRef.current = setTimeout(() => {
+      // First check against delivery_zones table via client-side ZIP match
+      const normalizedZip = zip.trim();
+      const match = deliveryZones.find(zone =>
+        zone.zip_codes.some(zc => zc === normalizedZip)
+      );
+
+      if (match) {
+        setMatchedZone({
+          zone_name: match.name,
+          delivery_fee: match.delivery_fee,
+          minimum_order: match.minimum_order,
+          estimated_time_min: match.estimated_time_min,
+          estimated_time_max: match.estimated_time_max,
+        });
+        setZipValidationStatus('valid');
+      } else if (deliveryZones.length > 0) {
+        // Zones exist but no match — ZIP not in any zone
+        setMatchedZone(null);
+        setZipValidationStatus('invalid');
+      } else {
+        // No zones configured — allow all ZIPs
+        setMatchedZone(null);
+        setZipValidationStatus('idle');
+      }
+    }, 400);
+  }, [deliveryZones]);
+
+  // Trigger ZIP validation when zip changes
+  useEffect(() => {
+    if (formData.fulfillmentMethod === 'delivery') {
+      validateZipAgainstZones(formData.zip);
+    }
+    return () => {
+      if (zipCheckTimerRef.current) clearTimeout(zipCheckTimerRef.current);
+    };
+  }, [formData.zip, formData.fulfillmentMethod, validateZipAgainstZones]);
+
+  // Reset zone validation when switching to pickup
+  useEffect(() => {
+    if (formData.fulfillmentMethod === 'pickup') {
+      setZipValidationStatus('idle');
+      setMatchedZone(null);
+    }
+  }, [formData.fulfillmentMethod]);
 
   // Check if Stripe is configured — hide card option if not
   const { data: isStripeConfigured } = useQuery({
@@ -397,20 +489,17 @@ export function CheckoutPage() {
     }
   };
 
-  // Get delivery fee based on zip code (from delivery zones or default)
+  // Get delivery fee based on matched zone or store default
   const getDeliveryFee = () => {
-    if (subtotal >= (store?.free_delivery_threshold || 100)) return 0;
+    if (subtotal >= (store?.free_delivery_threshold || Infinity)) return 0;
 
-    // Check if zip matches a delivery zone
-    const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) ?? [];
-    const matchingZone = deliveryZones.find((zone) => zone.zip_code === formData.zip);
-
-    if (matchingZone) {
-      return matchingZone.fee || store?.default_delivery_fee || 5;
+    // Use matched zone fee if available
+    if (matchedZone) {
+      return matchedZone.delivery_fee;
     }
 
     // Fall back to default delivery fee
-    return store?.default_delivery_fee || 5;
+    return store?.default_delivery_fee || 0;
   };
 
   // Calculate totals
@@ -474,19 +563,21 @@ export function CheckoutPage() {
           return false;
         }
         // Validate delivery zone if zones are configured
-        const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) ?? [];
         if (deliveryZones.length > 0) {
-          const matchingZone = deliveryZones.find((zone) => zone.zip_code === formData.zip);
-          if (!matchingZone) {
+          if (zipValidationStatus === 'checking') {
+            toast.error('Please wait while we verify your delivery area');
+            return false;
+          }
+          if (zipValidationStatus === 'invalid' || !matchedZone) {
             toast.error('Delivery not available', {
-              description: `We don't currently deliver to zip code ${formData.zip}. Please try a different address.`,
+              description: `We don't currently deliver to ZIP code ${formData.zip}. Please try a different address or choose pickup.`,
             });
             return false;
           }
-          // Check minimum order if zone has one
-          if (matchingZone.min_order && subtotal < matchingZone.min_order) {
+          // Check minimum order for the matched zone
+          if (matchedZone.minimum_order > 0 && subtotal < matchedZone.minimum_order) {
             toast.error('Minimum order not met', {
-              description: `This delivery zone requires a minimum order of $${matchingZone.min_order}.`,
+              description: `Delivery to ${matchedZone.zone_name} requires a minimum order of ${formatCurrency(matchedZone.minimum_order)}.`,
             });
             return false;
           }
@@ -1447,7 +1538,7 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-4"
                   >
-                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">How would you like to receive your order?</h2>
+                    <h2 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>How would you like to receive your order?</h2>
 
                     {/* Fulfillment Method Selector */}
                     <div className="grid grid-cols-2 gap-3">
@@ -1455,39 +1546,57 @@ export function CheckoutPage() {
                         type="button"
                         className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
                           formData.fulfillmentMethod === 'delivery'
-                            ? 'border-primary bg-primary/5 ring-2 ring-primary'
-                            : 'border-border hover:border-primary/50'
+                            ? isLuxuryTheme
+                              ? 'border-white/30 bg-white/10 ring-1 ring-white/20'
+                              : 'ring-2 ring-offset-1'
+                            : isLuxuryTheme
+                              ? 'border-white/10 hover:border-white/20 text-white/60'
+                              : 'border-border hover:border-primary/50'
                         }`}
+                        style={formData.fulfillmentMethod === 'delivery' ? {
+                          borderColor: themeColor,
+                          backgroundColor: isLuxuryTheme ? undefined : `${themeColor}10`,
+                          ringColor: themeColor,
+                        } : undefined}
                         onClick={() => updateField('fulfillmentMethod', 'delivery')}
                       >
-                        <Truck className="h-6 w-6" />
-                        <span className="font-semibold">Delivery</span>
-                        <span className="text-xs text-muted-foreground">We deliver to you</span>
+                        <Truck className="h-6 w-6" style={formData.fulfillmentMethod === 'delivery' ? { color: themeColor } : undefined} />
+                        <span className={`font-semibold ${isLuxuryTheme ? 'text-white' : ''}`}>Delivery</span>
+                        <span className={`text-xs ${isLuxuryTheme ? 'text-white/40' : 'text-muted-foreground'}`}>We deliver to you</span>
                       </button>
                       <button
                         type="button"
                         className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
                           formData.fulfillmentMethod === 'pickup'
-                            ? 'border-primary bg-primary/5 ring-2 ring-primary'
-                            : 'border-border hover:border-primary/50'
+                            ? isLuxuryTheme
+                              ? 'border-white/30 bg-white/10 ring-1 ring-white/20'
+                              : 'ring-2 ring-offset-1'
+                            : isLuxuryTheme
+                              ? 'border-white/10 hover:border-white/20 text-white/60'
+                              : 'border-border hover:border-primary/50'
                         }`}
+                        style={formData.fulfillmentMethod === 'pickup' ? {
+                          borderColor: themeColor,
+                          backgroundColor: isLuxuryTheme ? undefined : `${themeColor}10`,
+                          ringColor: themeColor,
+                        } : undefined}
                         onClick={() => updateField('fulfillmentMethod', 'pickup')}
                       >
-                        <Store className="h-6 w-6" />
-                        <span className="font-semibold">Pickup</span>
-                        <span className="text-xs text-muted-foreground">Pick up at store</span>
+                        <Store className="h-6 w-6" style={formData.fulfillmentMethod === 'pickup' ? { color: themeColor } : undefined} />
+                        <span className={`font-semibold ${isLuxuryTheme ? 'text-white' : ''}`}>Pickup</span>
+                        <span className={`text-xs ${isLuxuryTheme ? 'text-white/40' : 'text-muted-foreground'}`}>Pick up at store</span>
                       </button>
                     </div>
 
                     {/* Pickup Info */}
                     {formData.fulfillmentMethod === 'pickup' && (
-                      <Card className="bg-muted/50">
+                      <Card className={isLuxuryTheme ? 'bg-white/5 border-white/10' : 'bg-muted/50'}>
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
-                            <Store className="h-5 w-5 text-primary mt-0.5" />
+                            <Store className="h-5 w-5 mt-0.5" style={{ color: themeColor }} />
                             <div>
-                              <p className="font-semibold">Pickup at {store?.store_name || 'our store'}</p>
-                              <p className="text-sm text-muted-foreground mt-1">
+                              <p className={`font-semibold ${isLuxuryTheme ? 'text-white' : ''}`}>Pickup at {store?.store_name || 'our store'}</p>
+                              <p className={`text-sm mt-1 ${isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}`}>
                                 You will receive pickup details after your order is confirmed.
                               </p>
                             </div>
@@ -1547,13 +1656,80 @@ export function CheckoutPage() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="zip">ZIP Code *</Label>
-                          <Input
-                            id="zip"
-                            name="zip"
-                            value={formData.zip}
-                            onChange={(e) => updateField('zip', e.target.value)}
-                            placeholder="10001"
-                          />
+                          <div className="relative">
+                            <Input
+                              id="zip"
+                              name="zip"
+                              value={formData.zip}
+                              onChange={(e) => updateField('zip', e.target.value)}
+                              placeholder="10001"
+                              maxLength={10}
+                              className={
+                                zipValidationStatus === 'invalid'
+                                  ? 'border-red-500 focus-visible:ring-red-500 pr-10'
+                                  : zipValidationStatus === 'valid'
+                                    ? 'border-green-500 focus-visible:ring-green-500 pr-10'
+                                    : zipValidationStatus === 'checking'
+                                      ? 'pr-10'
+                                      : ''
+                              }
+                            />
+                            {zipValidationStatus === 'checking' && (
+                              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                            )}
+                            {zipValidationStatus === 'valid' && (
+                              <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                            )}
+                            {zipValidationStatus === 'invalid' && (
+                              <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
+                            )}
+                          </div>
+
+                          {/* Zone match info */}
+                          {zipValidationStatus === 'valid' && matchedZone && (
+                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-green-500/10 border border-green-500/20' : 'bg-green-50 border border-green-200'}`}>
+                              <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                              <div className={isLuxuryTheme ? 'text-green-400' : 'text-green-700'}>
+                                <p className="font-medium">Delivery available — {matchedZone.zone_name}</p>
+                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-green-400/70' : 'text-green-600'}`}>
+                                  {matchedZone.delivery_fee > 0
+                                    ? `${formatCurrency(matchedZone.delivery_fee)} delivery fee`
+                                    : 'Free delivery'}
+                                  {' · '}
+                                  Est. {matchedZone.estimated_time_min}–{matchedZone.estimated_time_max} min
+                                  {matchedZone.minimum_order > 0 && ` · ${formatCurrency(matchedZone.minimum_order)} minimum`}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* No match error */}
+                          {zipValidationStatus === 'invalid' && (
+                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-red-500/10 border border-red-500/20' : 'bg-red-50 border border-red-200'}`}>
+                              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                              <div className={isLuxuryTheme ? 'text-red-400' : 'text-red-700'}>
+                                <p className="font-medium">Sorry, we don&apos;t deliver to this area</p>
+                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-red-400/70' : 'text-red-600'}`}>
+                                  Try a different ZIP code or choose pickup instead.
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Minimum order warning */}
+                          {zipValidationStatus === 'valid' && matchedZone && matchedZone.minimum_order > 0 && subtotal < matchedZone.minimum_order && (
+                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-yellow-50 border border-yellow-200'}`}>
+                              <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                              <div className={isLuxuryTheme ? 'text-yellow-400' : 'text-yellow-700'}>
+                                <p className="font-medium">
+                                  Minimum order of {formatCurrency(matchedZone.minimum_order)} required
+                                </p>
+                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-yellow-400/70' : 'text-yellow-600'}`}>
+                                  Add {formatCurrency(matchedZone.minimum_order - subtotal)} more to qualify for delivery to this area.
+                                </p>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         {store.checkout_settings?.show_delivery_notes && (
                           <div className="space-y-2">
