@@ -12,7 +12,7 @@ import CustomerRow from '../CustomerRow';
 
 // Mock dependencies
 vi.mock('@/components/CopyButton', () => ({
-  default: ({ text, label }: any) => (
+  default: ({ text, label }: { text: string; label: string }) => (
     <button data-testid="copy-button" data-text={text} aria-label={`Copy ${label}`}>
       Copy
     </button>
@@ -20,7 +20,7 @@ vi.mock('@/components/CopyButton', () => ({
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-  Badge: ({ children, variant, className }: any) => (
+  Badge: ({ children, variant, className }: { children: React.ReactNode; variant?: string; className?: string }) => (
     <span data-testid="badge" data-variant={variant} className={className}>
       {children}
     </span>
@@ -28,7 +28,7 @@ vi.mock('@/components/ui/badge', () => ({
 }));
 
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, className, size, variant, asChild: _asChild, ...props }: any) => (
+  Button: ({ children, onClick, className, size, variant, asChild: _asChild, ...props }: { children: React.ReactNode; onClick?: () => void; className?: string; size?: string; variant?: string; asChild?: boolean; [key: string]: unknown }) => (
     <button
       onClick={onClick}
       className={className}
@@ -42,18 +42,18 @@ vi.mock('@/components/ui/button', () => ({
 }));
 
 vi.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: any) => (
+  DropdownMenu: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="dropdown-menu">{children}</div>
   ),
-  DropdownMenuTrigger: ({ children, asChild: _asChild, ...props }: any) => (
+  DropdownMenuTrigger: ({ children, asChild: _asChild, ...props }: { children: React.ReactNode; asChild?: boolean; [key: string]: unknown }) => (
     <div data-testid="dropdown-trigger" {...props}>
       {children}
     </div>
   ),
-  DropdownMenuContent: ({ children }: any) => (
+  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="dropdown-content">{children}</div>
   ),
-  DropdownMenuItem: ({ children, onClick, className }: any) => (
+  DropdownMenuItem: ({ children, onClick, className }: { children: React.ReactNode; onClick?: () => void; className?: string }) => (
     <div
       data-testid="dropdown-item"
       onClick={onClick}

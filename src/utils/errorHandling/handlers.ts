@@ -18,7 +18,7 @@ interface ErrorHandlerOptions {
     /**
      * Additional context to log with the error
      */
-    context?: Record<string, any>;
+    context?: Record<string, unknown>;
 }
 
 /**

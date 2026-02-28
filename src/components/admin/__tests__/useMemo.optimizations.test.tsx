@@ -384,7 +384,7 @@ describe('useMemo Optimizations', () => {
     it('should handle empty arrays efficiently', () => {
       const { result } = renderHook(() => {
         const filtered = useMemo(() => {
-          return [].filter((item: any) => item.category === 'test');
+          return [].filter((item: unknown) => (item as Record<string, unknown>).category === 'test');
         }, []);
         return filtered;
       });

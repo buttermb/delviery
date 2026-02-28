@@ -9,7 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
 // Cast for tables not in auto-generated types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- tables not in generated types
 const sb = supabase as unknown as Record<string, (...args: unknown[]) => unknown> & typeof supabase;
 
 // ============================================================================

@@ -228,7 +228,7 @@ export default function CustomerSignUpPage() {
   }
 
   const businessName = tenant.business_name || tenantSlug;
-  const whiteLabel = tenant.white_label as Record<string, any> | null;
+  const whiteLabel = tenant.white_label as Record<string, unknown> | null;
   const logo = whiteLabel?.logo;
 
   return (

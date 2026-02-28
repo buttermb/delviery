@@ -14,11 +14,11 @@ import type { DecryptedCustomer } from '../encryption/types';
 /**
  * Encrypt customer data for database storage
  */
-export async function encryptCustomerData(customer: Partial<DecryptedCustomer>): Promise<Record<string, any>> {
+export async function encryptCustomerData(customer: Partial<DecryptedCustomer>): Promise<Record<string, unknown>> {
   const fieldsToEncrypt = getEncryptedFields('customers');
   const searchableFields = getSearchableFields('customers');
   
-  const encrypted: Record<string, any> = {
+  const encrypted: Record<string, unknown> = {
     // Preserve non-encrypted fields
     tenant_id: customer.tenant_id,
     account_id: customer.account_id,
@@ -142,7 +142,7 @@ export async function logPHIAccess(
 /**
  * Search encrypted customers by email
  */
-export async function searchCustomerByEmail(email: string, tenantId: string): Promise<any[]> {
+export async function searchCustomerByEmail(email: string, tenantId: string): Promise<DecryptedCustomer[]> {
   const emailHash = clientEncryption.createSearchHash(email);
   
   const { data, error } = await supabase
@@ -169,7 +169,7 @@ export async function searchCustomerByEmail(email: string, tenantId: string): Pr
 /**
  * Search encrypted customers by phone
  */
-export async function searchCustomerByPhone(phone: string, tenantId: string): Promise<any[]> {
+export async function searchCustomerByPhone(phone: string, tenantId: string): Promise<DecryptedCustomer[]> {
   const phoneHash = clientEncryption.createSearchHash(phone);
   
   const { data, error } = await supabase
@@ -196,7 +196,7 @@ export async function searchCustomerByPhone(phone: string, tenantId: string): Pr
 /**
  * Search encrypted customers by medical card number
  */
-export async function searchCustomerByMedicalCard(cardNumber: string, tenantId: string): Promise<any[]> {
+export async function searchCustomerByMedicalCard(cardNumber: string, tenantId: string): Promise<DecryptedCustomer[]> {
   const cardHash = clientEncryption.createSearchHash(cardNumber);
   
   const { data, error } = await supabase

@@ -9,7 +9,7 @@ interface TurnstileWrapperProps {
   onSuccess: (token: string) => void;
   onError: () => void;
   onExpire: () => void;
-  turnstileRef: React.RefObject<any>;
+  turnstileRef: React.RefObject<HTMLElement | null>;
 }
 
 interface TurnstileWrapperState {

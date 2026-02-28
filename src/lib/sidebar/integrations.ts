@@ -44,7 +44,7 @@ export async function checkIntegrationConnection(integrationId: string): Promise
           .eq('account_id', account.id)
           .maybeSingle();
 
-        const integrationSettings = settings?.integration_settings as Record<string, any> | null;
+        const integrationSettings = settings?.integration_settings as Record<string, unknown> | null;
         return !!(integrationSettings && typeof integrationSettings === 'object' && integrationSettings.mapbox_token);
       } catch (error) {
         logger.error('Mapbox connection check error', error, { component: 'integrations' });
@@ -80,7 +80,7 @@ export async function checkIntegrationConnection(integrationId: string): Promise
           .eq('account_id', account.id)
           .maybeSingle();
 
-        const integrationSettings = settings?.integration_settings as Record<string, any> | null;
+        const integrationSettings = settings?.integration_settings as Record<string, unknown> | null;
         return !!(integrationSettings?.stripe_secret_key && integrationSettings?.stripe_publishable_key);
       } catch (error) {
         logger.error('Stripe connection check error', error, { component: 'integrations' });

@@ -80,7 +80,7 @@ export interface AttentionItem {
   score?: number; // Calculated weighted score
   actionUrl: string;
   actionLabel: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AttentionQueue {

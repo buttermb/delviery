@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedClient } from '@/lib/supabaseUntyped';
 import { useShop } from './ShopLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -70,8 +71,8 @@ export default function OrderTrackingPage() {
       if (!trackingToken) return null;
 
       try {
-        const { data, error } = await supabase
-          .rpc('get_marketplace_order_by_token' as any, { p_tracking_token: trackingToken }); // Supabase type limitation
+        const { data, error } = await untypedClient
+          .rpc('get_marketplace_order_by_token', { p_tracking_token: trackingToken });
 
         if (error) {
           logger.error('Order tracking fetch failed', error, { trackingToken });

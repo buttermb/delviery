@@ -83,7 +83,7 @@ export function DynamicBackground({
   const uniqueId = useId().replace(/:/g, '');
   const containerId = `dynamic-bg-${uniqueId}`;
   const containerRef = useRef<HTMLDivElement>(null);
-  const bgInstanceRef = useRef<any>(null);
+  const bgInstanceRef = useRef<{ start?: () => void; stop?: () => void; destroy?: () => void } | null>(null);
   const [useFallback, setUseFallback] = useState(false);
 
   // Generate fallback gradient from colors

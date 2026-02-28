@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedClient } from '@/lib/supabaseUntyped';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,8 +27,8 @@ export default function CustomDomain() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await supabase
-          .from('custom_domains' as any) // Supabase type limitation
+        const { data, error } = await untypedClient
+          .from('custom_domains')
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -48,8 +48,8 @@ export default function CustomDomain() {
     mutationFn: async (domainName: string) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await supabase
-        .from('custom_domains' as any) // Supabase type limitation
+      const { data, error } = await untypedClient
+        .from('custom_domains')
         .insert({
           tenant_id: tenantId,
           domain: domainName,

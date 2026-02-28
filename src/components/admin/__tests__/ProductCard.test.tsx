@@ -22,12 +22,12 @@ vi.mock('@/hooks/useOptimizedImage', () => ({
 }));
 
 vi.mock('@/components/ui/card', () => ({
-  Card: ({ children, className, ...props }: any) => (
+  Card: ({ children, className, ...props }: { children: React.ReactNode; className?: string; [key: string]: unknown }) => (
     <div data-testid="card" className={className} {...props}>
       {children}
     </div>
   ),
-  CardContent: ({ children, className, ...props }: any) => (
+  CardContent: ({ children, className, ...props }: { children: React.ReactNode; className?: string; [key: string]: unknown }) => (
     <div data-testid="card-content" className={className} {...props}>
       {children}
     </div>
@@ -35,7 +35,7 @@ vi.mock('@/components/ui/card', () => ({
 }));
 
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, className, variant, size, ...props }: any) => (
+  Button: ({ children, onClick, className, variant, size, ...props }: { children: React.ReactNode; onClick?: () => void; className?: string; variant?: string; size?: string; [key: string]: unknown }) => (
     <button
       onClick={onClick}
       className={className}
@@ -49,7 +49,7 @@ vi.mock('@/components/ui/button', () => ({
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-  Badge: ({ children, className, variant, ...props }: any) => (
+  Badge: ({ children, className, variant, ...props }: { children: React.ReactNode; className?: string; variant?: string; [key: string]: unknown }) => (
     <span data-testid="badge" className={className} data-variant={variant} {...props}>
       {children}
     </span>
@@ -57,18 +57,18 @@ vi.mock('@/components/ui/badge', () => ({
 }));
 
 vi.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: any) => <div data-testid="dropdown-menu">{children}</div>,
-  DropdownMenuTrigger: ({ children, onClick, ...props }: any) => (
+  DropdownMenu: ({ children }: { children: React.ReactNode }) => <div data-testid="dropdown-menu">{children}</div>,
+  DropdownMenuTrigger: ({ children, onClick, ...props }: { children: React.ReactNode; onClick?: () => void; [key: string]: unknown }) => (
     <div data-testid="dropdown-trigger" onClick={onClick} {...props}>
       {children}
     </div>
   ),
-  DropdownMenuContent: ({ children, ...props }: any) => (
+  DropdownMenuContent: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
     <div data-testid="dropdown-content" {...props}>
       {children}
     </div>
   ),
-  DropdownMenuItem: ({ children, onClick, className, ...props }: any) => (
+  DropdownMenuItem: ({ children, onClick, className, ...props }: { children: React.ReactNode; onClick?: () => void; className?: string; [key: string]: unknown }) => (
     <div data-testid="dropdown-item" onClick={onClick} className={className} {...props}>
       {children}
     </div>
@@ -76,7 +76,7 @@ vi.mock('@/components/ui/dropdown-menu', () => ({
 }));
 
 vi.mock('@/components/admin/InventoryStatusBadge', () => ({
-  InventoryStatusBadge: ({ quantity, lowStockThreshold }: any) => (
+  InventoryStatusBadge: ({ quantity, lowStockThreshold }: { quantity: number; lowStockThreshold: number }) => (
     <span data-testid="inventory-status-badge">
       {quantity <= lowStockThreshold ? 'Low Stock' : 'In Stock'}
     </span>
@@ -84,7 +84,7 @@ vi.mock('@/components/admin/InventoryStatusBadge', () => ({
 }));
 
 vi.mock('@/components/mobile/LongPressMenu', () => ({
-  default: ({ children, items }: any) => (
+  default: ({ children, items }: { children: React.ReactNode; items: unknown[] }) => (
     <div data-testid="long-press-menu" data-items={items.length}>
       {children}
     </div>
@@ -320,7 +320,7 @@ describe('ProductCard', () => {
     it('should not re-render when props remain the same', () => {
       const renderSpy = vi.fn();
 
-      const TestWrapper = ({ product, ...handlers }: any) => {
+      const TestWrapper = ({ product, ...handlers }: { product: typeof mockProduct; [key: string]: unknown }) => {
         renderSpy();
         return <ProductCard product={product} {...handlers} />;
       };
