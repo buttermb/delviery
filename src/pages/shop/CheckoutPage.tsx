@@ -51,6 +51,7 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
 import { queryKeys } from '@/lib/queryKeys';
 import { useReturningCustomerLookup } from '@/hooks/useReturningCustomerLookup';
+import { PostCheckoutConfirmationDialog } from '@/components/shop/PostCheckoutConfirmationDialog';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -195,6 +196,15 @@ export function CheckoutPage() {
   const [accountPassword, setAccountPassword] = useState('');
   const [showErrors, setShowErrors] = useState(false);
   const [, setOrderRetryCount] = useState(0);
+
+  // Post-checkout confirmation popup state
+  const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
+  const [completedOrderData, setCompletedOrderData] = useState<{
+    orderNumber: string;
+    trackingToken?: string;
+    total?: number;
+    telegramLink?: string | null;
+  } | null>(null);
 
   // Fast double-click guard — ref updates synchronously, before React re-renders with isPending
   const isSubmittingRef = useRef(false);
@@ -956,15 +966,14 @@ export function CheckoutPage() {
         });
       }
 
-      // Navigate to confirmation
-      navigate(`/shop/${storeSlug}/order-confirmation`, {
-        state: {
-          orderNumber: data.order_number,
-          trackingToken: data.tracking_token,
-          total: data.total,
-          telegramLink: data.telegramLink,
-        },
+      // Show confirmation popup before navigating
+      setCompletedOrderData({
+        orderNumber: data.order_number,
+        trackingToken: data.tracking_token,
+        total: data.total,
+        telegramLink: data.telegramLink,
       });
+      setShowConfirmationPopup(true);
     },
     onError: (error: Error) => {
       setOrderRetryCount(0);
@@ -2166,6 +2175,26 @@ export function CheckoutPage() {
       </div>
       {/* Spacer for mobile sticky bar */}
       <div className="h-28 lg:hidden" />
+
+      {/* Post-checkout confirmation popup */}
+      <PostCheckoutConfirmationDialog
+        open={showConfirmationPopup}
+        orderNumber={completedOrderData?.orderNumber ?? ''}
+        telegramLink={completedOrderData?.telegramLink}
+        storePrimaryColor={store?.primary_color ?? '#22c55e'}
+        storeName={store?.store_name ?? ''}
+        onViewOrderDetails={() => {
+          setShowConfirmationPopup(false);
+          navigate(`/shop/${storeSlug}/order-confirmation`, {
+            state: {
+              orderNumber: completedOrderData?.orderNumber,
+              trackingToken: completedOrderData?.trackingToken,
+              total: completedOrderData?.total,
+              telegramLink: completedOrderData?.telegramLink,
+            },
+          });
+        }}
+      />
     </div>
   );
 }

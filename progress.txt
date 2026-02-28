@@ -115,3 +115,12 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Updated ProductGridSectionProps interface with new fields: columns, max_products, sort_order, show_view_all_link, category_filter
 - Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
 - TypeScript compilation passes with zero errors
+
+## Post-checkout confirmation popup before navigation
+- Created `src/components/shop/PostCheckoutConfirmationDialog.tsx` — modal shown immediately after successful order placement
+- Dialog displays: success checkmark icon, "Order Confirmed!" title, thank-you message with order number, tenant Telegram link button (if configured), and "View Order Details" button
+- Auto-closes after 10 seconds with visible countdown, then navigates to order confirmation page
+- Integrated into `src/pages/shop/CheckoutPage.tsx` — onSuccess stores order data in state and shows popup instead of navigating immediately
+- Integrated into `src/components/shop/SinglePageCheckout.tsx` — same pattern, shows popup before navigation
+- Uses store primary color for theming, shadcn Dialog component
+- TypeScript compilation passes with zero errors

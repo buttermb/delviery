@@ -35,6 +35,7 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { humanizeError } from '@/lib/humanizeError';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { PostCheckoutConfirmationDialog } from '@/components/shop/PostCheckoutConfirmationDialog';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -76,6 +77,10 @@ export function SinglePageCheckout() {
   const [stockIssues, setStockIssues] = useState<Array<{ productName: string; available: number; requested: number }>>([]);
   const [isCheckingStock, setIsCheckingStock] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormData, string>>>({});
+
+  // Post-checkout confirmation popup state
+  const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
+  const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
 
   // Cart hook
   const { cartItems, subtotal, clearCart: _clearCart, isInitialized } = useShopCart({
@@ -238,9 +243,9 @@ export function SinglePageCheckout() {
         setCartItemCount(0);
       }
 
-      navigate(`/shop/${storeSlug}/order-confirmation`, {
-        state: { orderId: data.order_id },
-      });
+      // Show confirmation popup before navigating
+      setCompletedOrderId(data.order_id);
+      setShowConfirmationPopup(true);
     },
     onError: (error: Error) => {
       logger.error('Order failed', error);
@@ -649,6 +654,20 @@ export function SinglePageCheckout() {
       </div>
       {/* Spacer for mobile sticky bar */}
       <div className="h-24 lg:hidden" />
+
+      {/* Post-checkout confirmation popup */}
+      <PostCheckoutConfirmationDialog
+        open={showConfirmationPopup}
+        orderNumber={completedOrderId ?? ''}
+        storePrimaryColor={store?.primary_color ?? '#22c55e'}
+        storeName={store?.store_name ?? ''}
+        onViewOrderDetails={() => {
+          setShowConfirmationPopup(false);
+          navigate(`/shop/${storeSlug}/order-confirmation`, {
+            state: { orderId: completedOrderId },
+          });
+        }}
+      />
     </div>
   );
 }
