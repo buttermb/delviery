@@ -1,26 +1,28 @@
 /**
  * BuilderPropertyEditor
- * Right sidebar panel for editing content and styles of the selected section
+ * Right sidebar panel for editing content and styles of the selected section.
+ * Delegates to the rich SectionEditor which provides specialised UIs per section type
+ * (FAQ add/remove, gallery image management, HTML preview, star ratings, etc.).
  */
 
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { type SectionConfig, SECTION_TYPES, sectionDefaults } from './storefront-builder.config';
+import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
+import { type SectionConfig, SECTION_TYPES } from './storefront-builder.config';
 
 interface BuilderPropertyEditorProps {
     selectedSection: SectionConfig;
     onClose: () => void;
     onUpdateSection: (id: string, field: 'content' | 'styles', key: string, value: unknown) => void;
+    onUpdateResponsive?: (id: string, device: 'mobile' | 'tablet' | 'desktop', key: string, value: unknown) => void;
 }
 
 export function BuilderPropertyEditor({
     selectedSection,
     onClose,
     onUpdateSection,
+    onUpdateResponsive,
 }: BuilderPropertyEditorProps) {
     return (
         <div className="w-72 bg-background border-l flex flex-col shrink-0 z-10 animate-in slide-in-from-right-10 duration-200">
@@ -34,56 +36,16 @@ export function BuilderPropertyEditor({
                 </Button>
             </div>
             <ScrollArea className="flex-1 p-4">
-                <Accordion type="single" collapsible defaultValue="content" className="w-full">
-                    <AccordionItem value="content">
-                        <AccordionTrigger>Content</AccordionTrigger>
-                        <AccordionContent className="space-y-4 pt-2">
-                            {Object.keys(sectionDefaults(selectedSection.type).content).map((key) => (
-                                <div key={key} className="space-y-2">
-                                    <Label className="capitalize text-xs">{key.replace(/_/g, ' ')}</Label>
-                                    <Input
-                                        value={(selectedSection.content[key] as string) ?? ''}
-                                        onChange={(e) => onUpdateSection(selectedSection.id, 'content', key, e.target.value)}
-                                    />
-                                </div>
-                            ))}
-                        </AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="styles">
-                        <AccordionTrigger>Styles</AccordionTrigger>
-                        <AccordionContent className="space-y-4 pt-2">
-                            {Object.keys(sectionDefaults(selectedSection.type).styles).map((key) => {
-                                const isColor = key.includes('color') || key.includes('gradient');
-                                return (
-                                    <div key={key} className="space-y-2">
-                                        <Label className="capitalize text-xs">{key.replace(/_/g, ' ')}</Label>
-                                        {isColor ? (
-                                            <div className="flex gap-2">
-                                                <Input
-                                                    type="color"
-                                                    className="w-10 h-10 p-0"
-                                                    value={(selectedSection.styles[key] as string) ?? '#ffffff'}
-                                                    onChange={(e) => onUpdateSection(selectedSection.id, 'styles', key, e.target.value)}
-                                                />
-                                                <Input
-                                                    type="text"
-                                                    value={(selectedSection.styles[key] as string) ?? ''}
-                                                    onChange={(e) => onUpdateSection(selectedSection.id, 'styles', key, e.target.value)}
-                                                    className="flex-1"
-                                                />
-                                            </div>
-                                        ) : (
-                                            <Input
-                                                value={(selectedSection.styles[key] as string) ?? ''}
-                                                onChange={(e) => onUpdateSection(selectedSection.id, 'styles', key, e.target.value)}
-                                            />
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
+                <SectionEditor
+                    section={selectedSection}
+                    onUpdateContent={(key, value) => onUpdateSection(selectedSection.id, 'content', key, value)}
+                    onUpdateStyles={(key, value) => onUpdateSection(selectedSection.id, 'styles', key, value)}
+                    onUpdateResponsive={(device, key, value) => {
+                        if (onUpdateResponsive) {
+                            onUpdateResponsive(selectedSection.id, device, key, value);
+                        }
+                    }}
+                />
             </ScrollArea>
         </div>
     );
