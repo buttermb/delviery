@@ -39,6 +39,11 @@ import {
   Star,
   PanelRightClose,
   PanelRightOpen,
+  Banknote,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  ExternalLink,
 } from 'lucide-react';
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';
@@ -130,12 +135,10 @@ const DEFAULT_TIME_SLOTS: TimeSlot[] = [
 ];
 
 const PAYMENT_METHOD_OPTIONS = [
-  { id: 'cash', label: 'Cash', icon: '' },
-  { id: 'card', label: 'Credit/Debit Card', icon: '' },
-  { id: 'apple_pay', label: 'Apple Pay', icon: '' },
-  { id: 'google_pay', label: 'Google Pay', icon: '' },
-  { id: 'venmo', label: 'Venmo', icon: '' },
-  { id: 'zelle', label: 'Zelle', icon: '' },
+  { id: 'cash', label: 'Cash', description: 'Accept cash on delivery' },
+  { id: 'venmo', label: 'Venmo', description: 'Accept Venmo payments' },
+  { id: 'zelle', label: 'Zelle', description: 'Accept Zelle transfers' },
+  { id: 'stripe', label: 'Stripe', description: 'Accept credit cards via Stripe' },
 ];
 
 export default function StorefrontSettings() {
@@ -149,6 +152,12 @@ export default function StorefrontSettings() {
   const [isDirty, setIsDirty] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
+  const [stripeStatus, setStripeStatus] = useState<{
+    connected: boolean;
+    charges_enabled: boolean;
+    payouts_enabled: boolean;
+  } | null>(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
 
   // Fetch store data
   const { data: store, isLoading } = useQuery({
@@ -181,6 +190,27 @@ export default function StorefrontSettings() {
       });
     }
   }, [store]);
+
+  // Check Stripe connection status
+  useEffect(() => {
+    if (!tenantId) return;
+    const checkStripe = async () => {
+      try {
+        setStripeLoading(true);
+        const { data, error } = await supabase.functions.invoke('check-stripe-config', {
+          body: { tenant_id: tenantId },
+        });
+        if (error) throw error;
+        setStripeStatus(data);
+      } catch (err: unknown) {
+        logger.error('Failed to check Stripe status', err, { component: 'StorefrontSettings' });
+        setStripeStatus(null);
+      } finally {
+        setStripeLoading(false);
+      }
+    };
+    checkStripe();
+  }, [tenantId]);
 
   // Fetch featured products for preview
   const { data: featuredProducts } = useQuery({
@@ -1078,61 +1108,124 @@ export default function StorefrontSettings() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5" />
+                  <Banknote className="w-5 h-5" />
                   Payment Methods
                 </CardTitle>
-                <CardDescription>Select which payment methods to accept</CardDescription>
+                <CardDescription>Choose which payment methods your customers can use at checkout</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {PAYMENT_METHOD_OPTIONS.map((method) => (
-                  <div key={method.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{method.icon}</span>
-                        <Label>{method.label}</Label>
+              <CardContent className="space-y-6">
+                {PAYMENT_METHOD_OPTIONS.map((method) => {
+                  const isEnabled = (formData.payment_methods || ['cash']).includes(method.id);
+                  return (
+                    <div key={method.id} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label className="text-base">{method.label}</Label>
+                          <p className="text-sm text-muted-foreground">{method.description}</p>
+                        </div>
+                        <Switch
+                          checked={isEnabled}
+                          onCheckedChange={(checked) => {
+                            const current = formData.payment_methods || ['cash'];
+                            const updated = checked
+                              ? [...current, method.id]
+                              : current.filter((m) => m !== method.id);
+                            updateField('payment_methods', updated);
+                          }}
+                        />
                       </div>
-                      <Switch
-                        checked={(formData.payment_methods || ['cash', 'card']).includes(method.id)}
-                        onCheckedChange={(checked) => {
-                          const current = formData.payment_methods || ['cash', 'card'];
-                          const updated = checked
-                            ? [...current, method.id]
-                            : current.filter((m) => m !== method.id);
-                          updateField('payment_methods', updated);
-                        }}
-                      />
+
+                      {/* Venmo handle input */}
+                      {method.id === 'venmo' && isEnabled && (
+                        <div className="pl-4 border-l-2 border-muted">
+                          <Label htmlFor="venmo_handle" className="text-sm text-muted-foreground">
+                            Venmo Handle
+                          </Label>
+                          <Input
+                            id="venmo_handle"
+                            className="mt-1 max-w-xs"
+                            placeholder="@your-store"
+                            value={formData.checkout_settings?.venmo_handle || ''}
+                            onChange={(e) => updateCheckoutSetting('venmo_handle', e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Shown to customers so they can send payment
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Zelle info input */}
+                      {method.id === 'zelle' && isEnabled && (
+                        <div className="pl-4 border-l-2 border-muted">
+                          <Label htmlFor="zelle_email" className="text-sm text-muted-foreground">
+                            Zelle Email or Phone
+                          </Label>
+                          <Input
+                            id="zelle_email"
+                            className="mt-1 max-w-xs"
+                            placeholder="store@example.com or (555) 123-4567"
+                            value={formData.checkout_settings?.zelle_email || ''}
+                            onChange={(e) => updateCheckoutSetting('zelle_email', e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Shown to customers so they can send payment
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Stripe connection status */}
+                      {method.id === 'stripe' && isEnabled && (
+                        <div className="pl-4 border-l-2 border-muted space-y-3">
+                          {stripeLoading ? (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Checking Stripe connection...
+                            </div>
+                          ) : stripeStatus?.connected ? (
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900 rounded-md">
+                                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
+                                <div className="text-sm">
+                                  <span className="font-medium text-green-900 dark:text-green-100">Stripe Connected</span>
+                                  <span className="text-green-700 dark:text-green-300 ml-1">
+                                    {stripeStatus.charges_enabled ? '— accepting payments' : '— setup incomplete'}
+                                  </span>
+                                </div>
+                              </div>
+                              <Button variant="outline" size="sm" asChild>
+                                <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
+                                  Stripe Dashboard <ExternalLink className="ml-1 h-3 w-3" />
+                                </a>
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900 rounded-md">
+                                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                                <span className="text-sm text-amber-800 dark:text-amber-200">
+                                  Stripe not connected — set up in Settings to accept card payments
+                                </span>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(`/${tenantSlug}/admin/settings`)}
+                              >
+                                <CreditCard className="mr-2 h-4 w-4" />
+                                Configure Stripe
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {method.id !== PAYMENT_METHOD_OPTIONS[PAYMENT_METHOD_OPTIONS.length - 1].id && (
+                        <Separator />
+                      )}
                     </div>
-                    {method.id === 'venmo' && (formData.payment_methods || []).includes('venmo') && (
-                      <div className="ml-11">
-                        <Label htmlFor="venmo_handle" className="text-sm text-muted-foreground">
-                          Venmo Handle (e.g. @your-store)
-                        </Label>
-                        <Input
-                          id="venmo_handle"
-                          className="mt-1 max-w-xs"
-                          placeholder="@your-store"
-                          value={formData.checkout_settings?.venmo_handle || ''}
-                          onChange={(e) => updateCheckoutSetting('venmo_handle', e.target.value)}
-                        />
-                      </div>
-                    )}
-                    {method.id === 'zelle' && (formData.payment_methods || []).includes('zelle') && (
-                      <div className="ml-11">
-                        <Label htmlFor="zelle_email" className="text-sm text-muted-foreground">
-                          Zelle Email or Phone (shown to customers)
-                        </Label>
-                        <Input
-                          id="zelle_email"
-                          className="mt-1 max-w-xs"
-                          placeholder="store@example.com or (555) 123-4567"
-                          value={formData.checkout_settings?.zelle_email || ''}
-                          onChange={(e) => updateCheckoutSetting('zelle_email', e.target.value)}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
-                <p className="text-xs text-muted-foreground mt-4">
+                  );
+                })}
+                <p className="text-xs text-muted-foreground">
                   At least one payment method must be enabled.
                 </p>
               </CardContent>
