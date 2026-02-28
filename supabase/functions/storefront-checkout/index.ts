@@ -13,7 +13,10 @@
 
 import { serve, createClient, corsHeaders, z } from "../_shared/deps.ts";
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
+import { createLogger } from '../_shared/logger.ts';
 import Stripe from "https://esm.sh/stripe@14.21.0";
+
+const logger = createLogger('storefront-checkout');
 
 // ---------------------------------------------------------------------------
 // Input validation schemas
@@ -192,6 +195,11 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     if (outOfStockItems.length > 0) {
+      logger.warn("Pre-check: insufficient stock", {
+        tenantId: store.tenant_id,
+        storeId: store.id,
+        outOfStockItems,
+      });
       return jsonResponse(
         {
           error: "Insufficient stock",
@@ -253,9 +261,28 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     // ------------------------------------------------------------------
-    // 5. Create order via existing RPC (handles inventory & idempotency)
+    // 5. Create order + deduct inventory via RPC (atomic transaction)
+    // ------------------------------------------------------------------
+    // The create_marketplace_order RPC performs these steps atomically:
+    //   a) Validates stock with FOR UPDATE row locks (prevents concurrent depletion)
+    //   b) Creates the order in marketplace_orders
+    //   c) Deducts stock: UPDATE products SET stock_quantity = stock_quantity - qty
+    //      WHERE stock_quantity >= qty (checked pattern — never goes negative)
+    //   d) Checks affected rows — if 0, a race condition occurred and the
+    //      entire transaction (order + prior decrements) is rolled back
     // ------------------------------------------------------------------
     const customerName = `${body.customerInfo.firstName} ${body.customerInfo.lastName}`;
+
+    const itemSummary = orderItems.map((item) => ({
+      product_id: item.product_id,
+      quantity: item.quantity,
+    }));
+    logger.info("Creating order with inventory deduction", {
+      tenantId: store.tenant_id,
+      storeId: store.id,
+      itemCount: orderItems.length,
+      items: itemSummary,
+    });
 
     const { data: orderId, error: orderError } = await supabase.rpc(
       "create_marketplace_order",
@@ -280,13 +307,35 @@ serve(secureHeadersMiddleware(async (req) => {
 
     if (orderError || !orderId) {
       const rawMsg = orderError?.message ?? "";
-      // Stock-related RPC errors get specific responses
+
+      // Stock-related RPC errors: the RPC raises exceptions for insufficient
+      // stock (pre-validation) and for race-condition deduction failures.
       if (rawMsg.includes("Insufficient stock") || rawMsg.includes("Inventory deduction failed")) {
-        return jsonResponse({ error: "Insufficient stock for one or more items. Please refresh and try again." }, 409);
+        logger.warn("Inventory deduction failed — order not created", {
+          tenantId: store.tenant_id,
+          storeId: store.id,
+          reason: rawMsg,
+        });
+        return jsonResponse(
+          { error: "Insufficient stock for one or more items. Please refresh and try again." },
+          409,
+        );
       }
+
       // All other DB errors get a generic message — never leak internals
+      logger.error("Order creation failed", {
+        tenantId: store.tenant_id,
+        storeId: store.id,
+        errorMessage: rawMsg,
+      });
       return jsonResponse({ error: "Failed to create order. Please try again later." }, 500);
     }
+
+    logger.info("Order created with inventory deducted", {
+      tenantId: store.tenant_id,
+      orderId,
+      itemCount: orderItems.length,
+    });
 
     // Fetch the generated order number and tracking token
     const { data: orderRecord } = await supabase
