@@ -115,3 +115,21 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Updated ProductGridSectionProps interface with new fields: columns, max_products, sort_order, show_view_all_link, category_filter
 - Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
 - TypeScript compilation passes with zero errors
+
+## Static menu page URL management with list view regenerate and delete
+- Created `src/hooks/useStaticMenuPages.ts` with:
+  - `useStaticMenuPages(tenantId)`: Fetches active disposable menus where security_settings.menu_type === 'static_page', returns id, name, encrypted_url_token, created_at, status, product_count
+  - `useDeleteStaticMenuPage()`: Mutation to soft-delete (burn) a static page by setting status to 'burned'
+  - Queries filter by tenant_id, uses queryKeys.menus.all base key
+- Created `src/components/admin/disposable-menus/StaticMenuPagesList.tsx`:
+  - List view showing each generated page: title, URL (truncated), product count badge, created date (relative)
+  - Copy URL button with clipboard API and visual feedback (check icon)
+  - Open page button (opens in new tab)
+  - Regenerate button (opens GenerateMenuPageDialog with pre-filled menu name)
+  - Delete button with ConfirmDeleteDialog confirmation
+  - Empty state with call-to-action to generate first page
+  - Loading state with skeletons
+  - Tooltips on all action buttons
+- Integrated into SmartDashboard as new "Pages" tab between Analytics and Setup
+- Wired regenerate action to open GenerateMenuPageDialog with preselectedMenuName prop
+- TypeScript compilation passes with zero errors
