@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
 

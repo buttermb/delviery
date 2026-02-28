@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Send Verification SMS
  * 

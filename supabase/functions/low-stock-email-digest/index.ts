@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Low Stock Email Digest
 //
 // Daily scheduled edge function that sends email digests to tenant admins

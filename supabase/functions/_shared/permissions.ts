@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Permission Check Utilities for Edge Functions
  * PHASE 4: Updated to use user_roles table for role-based access control
@@ -38,10 +37,10 @@ export async function hasRole(
   role: string
 ): Promise<boolean> {
   try {
-    const { data, error } = await supabase.rpc('has_role' as any, {
+    const { data, error } = await supabase.rpc('has_role', {
       _user_id: userId,
       _role: role,
-    } as any);
+    });
 
     if (error) {
       console.error('has_role RPC error:', error);

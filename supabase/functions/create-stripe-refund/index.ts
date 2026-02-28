@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { serve, createClient, z, corsHeaders } from "../_shared/deps.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 

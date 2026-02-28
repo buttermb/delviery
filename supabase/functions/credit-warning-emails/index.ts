@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Credit Warning Emails
 // 
 // Cron job that sends warning emails when credits are low.
@@ -85,7 +84,7 @@ serve(async (req) => {
 
       for (const record of tenants || []) {
         results.checked++;
-        const tenant = record.tenants as any;
+        const tenant = record.tenants as Record<string, unknown> | null;
 
         if (!tenant?.owner_email) {
           console.log(`[CREDIT_WARNINGS] No email for tenant ${record.tenant_id}`);

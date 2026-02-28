@@ -1,4 +1,3 @@
-// @ts-nocheck - Type checking suppressed due to Supabase client type issues
 // Edge runtime types omitted to avoid OpenAI dependency
 import { serve, createClient, corsHeaders, z } from "../_shared/deps.ts";
 import { withZenProtection } from "../_shared/zen-firewall.ts";

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 import { checkUserPermission } from '../_shared/permissions.ts';
 import { validateTenantInvite, type TenantInviteInput } from './validation.ts';
@@ -174,7 +173,8 @@ serve(async (req) => {
           // Don't block on count error, but log it
         } else {
           // Get user limit from tenant.limits (supports both 'users' and 'team_members')
-          const userLimit = (tenant.limits as any)?.users || (tenant.limits as any)?.team_members || 3;
+          const limits = tenant.limits as Record<string, unknown> | null;
+          const userLimit = (limits?.users as number) || (limits?.team_members as number) || 3;
 
           if (activeUsers !== null && activeUsers >= userLimit) {
             return new Response(

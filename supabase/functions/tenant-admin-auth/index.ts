@@ -1,4 +1,3 @@
-// @ts-nocheck - Disable type checking for Deno/Supabase client compatibility
 // Edge Function: tenant-admin-auth
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
@@ -90,7 +89,7 @@ serve(secureHeadersMiddleware(async (req) => {
     );
 
     // Only parse JSON body for actions that need it
-    let requestBody: any = {};
+    let requestBody: Record<string, unknown> = {};
     if (action !== 'verify' && action !== 'logout' && req.method === 'POST') {
       try {
         requestBody = await req.json();
@@ -935,7 +934,7 @@ serve(secureHeadersMiddleware(async (req) => {
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in tenant-admin-auth:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),

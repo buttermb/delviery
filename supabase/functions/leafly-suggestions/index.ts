@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Leafly Suggestions Edge Function
  * Provides strain/brand suggestions from Leafly API (when available)

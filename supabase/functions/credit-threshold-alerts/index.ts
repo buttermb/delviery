@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Credit Threshold Alerts
 // 
 // Sends email and SMS notifications when credits reach certain thresholds.
@@ -136,7 +135,7 @@ serve(async (req) => {
           supabase,
           record.tenant_id,
           record.balance,
-          record.tenants as any,
+          record.tenants as Record<string, unknown>,
           record.alerts_sent
         );
         if (result) {
