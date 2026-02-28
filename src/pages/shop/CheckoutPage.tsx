@@ -46,6 +46,7 @@ import { Clock, Tag } from 'lucide-react';
 import { isCustomerBlockedByEmail, FLAG_REASON_LABELS } from '@/hooks/useCustomerFlags';
 import { humanizeError } from '@/lib/humanizeError';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { safeStorage } from '@/utils/safeStorage';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -201,7 +202,7 @@ export function CheckoutPage() {
   useEffect(() => {
     if (formStorageKey) {
       try {
-        const saved = localStorage.getItem(formStorageKey);
+        const saved = safeStorage.getItem(formStorageKey);
         if (saved) {
           const parsed = JSON.parse(saved);
           setFormData((prev) => ({ ...prev, ...parsed }));
@@ -220,7 +221,7 @@ export function CheckoutPage() {
   useEffect(() => {
     if (formStorageKey && formData.email) {
       try {
-        localStorage.setItem(formStorageKey, JSON.stringify(formData));
+        safeStorage.setItem(formStorageKey, JSON.stringify(formData));
       } catch {
         // Ignore storage errors
       }
@@ -755,9 +756,9 @@ export function CheckoutPage() {
       // If edge function returned a Stripe checkout URL, redirect directly
       if (data.checkoutUrl) {
         if (store?.id) {
-          localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
+          safeStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
           if (formStorageKey) {
-            localStorage.removeItem(formStorageKey);
+            safeStorage.removeItem(formStorageKey);
           }
           setCartItemCount(0);
         }
@@ -783,9 +784,9 @@ export function CheckoutPage() {
       }
       // Clear cart and saved form data
       if (store?.id) {
-        localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
+        safeStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
         if (formStorageKey) {
-          localStorage.removeItem(formStorageKey);
+          safeStorage.removeItem(formStorageKey);
         }
         setCartItemCount(0);
       }
