@@ -1019,3 +1019,17 @@ after each iteration and it's included in prompts for context.
   - `is_primary` uses a partial index `WHERE is_primary = TRUE` for fast primary lookups
   - Geocoding columns (latitude/longitude) are pre-provisioned for future map/routing features
 ---
+
+## 2026-02-28 - floraiq-dy9.19
+- Verified payment method settings already exist on `marketplace_stores` table
+- `payment_methods` JSONB column (default `["cash", "card"]`) stores enabled methods as an array — functionally equivalent to individual `cash_enabled`, `venmo_enabled`, etc. booleans
+- `checkout_settings` JSONB column stores `venmo_handle` and `zelle_email` — covers `venmo_handle` and `zelle_info` requirements
+- Admin UI fully implemented in `StorefrontSettings.tsx` Payment Methods tab with toggles for cash, venmo, zelle, card/stripe plus input fields
+- Checkout UI in `CheckoutPage.tsx` reads store's payment_methods and renders appropriate payment flows
+- All quality gates pass: `npx tsc --noEmit` clean, no console.log, tenant_id filtering via store resolution
+- No new code needed — task was verification only
+- **Learnings:**
+  - Payment methods use JSONB array pattern (`["cash", "venmo", "card"]`) rather than individual boolean columns — more extensible, easier to add new methods
+  - Venmo/Zelle details stored in `checkout_settings` JSONB alongside other checkout config (guest checkout, phone required, coupons, tips)
+  - Multiple overlapping migrations created `marketplace_stores` schema (20251209, 20251210, 20251211) — the final state is governed by `20251209181425` as the canonical create table
+---
