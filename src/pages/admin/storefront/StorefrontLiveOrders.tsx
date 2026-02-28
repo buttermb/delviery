@@ -27,12 +27,7 @@ import {
   List,
   Volume2,
   VolumeX,
-  Truck,
-  Store,
-  User,
-  Clock,
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
 import {
   Select,
   SelectContent,
@@ -41,6 +36,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StorefrontLiveOrdersKanban } from '@/components/admin/storefront/StorefrontLiveOrdersKanban';
+import { StorefrontLiveOrdersTable } from '@/components/admin/storefront/StorefrontLiveOrdersTable';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
 
@@ -63,15 +59,6 @@ const STATUS_LABELS: Record<string, string> = {
   delivered: 'Delivered',
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-amber-500',
-  confirmed: 'bg-cyan-500',
-  preparing: 'bg-blue-500',
-  ready: 'bg-green-500',
-  out_for_delivery: 'bg-purple-500',
-  delivered: 'bg-gray-500 dark:bg-gray-600',
-};
-
 export interface LiveOrder {
   id: string;
   order_number: string;
@@ -88,6 +75,9 @@ export interface LiveOrder {
   shipping_method: string | null;
   created_at: string;
   items: unknown[];
+  payment_status: string | null;
+  payment_terms: string | null;
+  stripe_payment_intent_id: string | null;
 }
 
 /** Request browser notification permission */
@@ -293,18 +283,6 @@ export function StorefrontLiveOrders() {
     navigate(`/${tenantSlug}/admin/storefront-hub?tab=orders&order=${orderId}`);
   };
 
-  /** Determine if order is delivery or pickup based on shipping_method/delivery_address */
-  const getOrderFulfillmentType = (order: LiveOrder): 'delivery' | 'pickup' => {
-    if (order.shipping_method) {
-      const method = order.shipping_method.toLowerCase();
-      if (method.includes('pickup') || method.includes('collect')) return 'pickup';
-      return 'delivery';
-    }
-    // Fallback: if no delivery address, assume pickup
-    if (!order.delivery_address) return 'pickup';
-    return 'delivery';
-  };
-
   // Filter orders by search
   const filteredOrders = useMemo(() => orders.filter((order) => {
     if (!searchQuery) return true;
@@ -464,126 +442,16 @@ export function StorefrontLiveOrders() {
           updatingOrderId={updatingOrderId}
         />
       ) : (
-        /* List View with full order details */
-        <div className="space-y-3">
-          {filteredOrders.map((order) => {
-            const fulfillmentType = getOrderFulfillmentType(order);
-            const items = Array.isArray(order.items) ? order.items : [];
-            const orderTotal = order.total || order.total_amount || 0;
-
-            return (
-              <Card
-                key={order.id}
-                className="hover:shadow-md transition-shadow"
-              >
-                <CardContent className="p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    {/* Left: order info */}
-                    <div className="flex items-start gap-4 flex-1 min-w-0">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p
-                            className="font-semibold cursor-pointer hover:underline"
-                            onClick={() => handleViewDetails(order.id)}
-                          >
-                            #{order.order_number}
-                          </p>
-                          {/* Delivery vs Pickup Badge */}
-                          <Badge
-                            variant="outline"
-                            className={fulfillmentType === 'delivery'
-                              ? 'border-blue-300 text-blue-700 bg-blue-50'
-                              : 'border-orange-300 text-orange-700 bg-orange-50'
-                            }
-                          >
-                            {fulfillmentType === 'delivery' ? (
-                              <><Truck className="h-3 w-3 mr-1" /> Delivery</>
-                            ) : (
-                              <><Store className="h-3 w-3 mr-1" /> Pickup</>
-                            )}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                          <User className="h-3 w-3" />
-                          <span>{order.customer_name || 'Guest'}</span>
-                          {order.customer_phone && (
-                            <span className="text-xs">• {order.customer_phone}</span>
-                          )}
-                        </div>
-                        {/* Items summary */}
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                          <Package className="h-3 w-3" />
-                          <span>
-                            {items.length} item{items.length !== 1 ? 's' : ''}
-                            {items.length > 0 && items.length <= 3 && (
-                              <span className="ml-1">
-                                ({items.map((item: unknown) => {
-                                  const i = item as Record<string, unknown>;
-                                  return i.name || i.product_name || 'Item';
-                                }).join(', ')})
-                              </span>
-                            )}
-                          </span>
-                        </div>
-                        {order.delivery_notes && (
-                          <p className="text-xs text-muted-foreground italic mt-1 truncate max-w-[300px]">
-                            Note: {order.delivery_notes}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Right: status, amount, time, dropdown */}
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span>{getTimeSince(order.created_at)}</span>
-                      </div>
-                      <Badge className={STATUS_COLORS[order.status] || 'bg-gray-500 dark:bg-gray-600'}>
-                        {STATUS_LABELS[order.status] || order.status}
-                      </Badge>
-                      <span className="font-semibold text-sm">{formatCurrency(orderTotal)}</span>
-                      {/* Status update dropdown */}
-                      <Select
-                        value={order.status}
-                        onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        <SelectTrigger className="w-[140px] h-8 text-xs">
-                          <SelectValue placeholder="Update status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {STATUS_PROGRESSION.map((s) => (
-                            <SelectItem key={s} value={s}>
-                              {STATUS_LABELS[s]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        <StorefrontLiveOrdersTable
+          orders={filteredOrders}
+          onStatusChange={handleStatusChange}
+          onViewDetails={handleViewDetails}
+          isLoading={isLoading}
+          updatingOrderId={updatingOrderId}
+        />
       )}
     </div>
   );
-}
-
-/** Calculate time since order creation */
-function getTimeSince(createdAt: string): string {
-  const created = new Date(createdAt);
-  const now = new Date();
-  const diffMs = now.getTime() - created.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  const hours = Math.floor(diffMins / 60);
-  if (hours < 24) return `${hours}h ${diffMins % 60}m ago`;
-  return `${Math.floor(hours / 24)}d ago`;
 }
 
 export default StorefrontLiveOrders;
