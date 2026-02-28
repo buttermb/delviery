@@ -20,7 +20,9 @@ import {
   Search,
   ShoppingCart,
   Download,
-  RefreshCw
+  RefreshCw,
+  Truck,
+  Store
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { TruncatedText } from '@/components/shared/TruncatedText';
@@ -70,6 +72,7 @@ interface MarketplaceOrder {
   store_id: string | null;
   created_at: string;
   updated_at: string;
+  fulfillment_method?: string | null;
   // Optional fields not present in storefront_orders view
   discount_amount?: number;
   tip_amount?: number;
@@ -214,6 +217,23 @@ export default function StorefrontOrders() {
     return (
       <Badge variant="outline" className={colors[status] ?? ''}>
         {status}
+      </Badge>
+    );
+  };
+
+  const getFulfillmentBadge = (method: string | null | undefined) => {
+    if (method === 'pickup') {
+      return (
+        <Badge variant="outline" className="bg-blue-500/10 text-blue-700 dark:text-blue-400">
+          <Store className="h-3 w-3 mr-1" />
+          Pickup
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="bg-orange-500/10 text-orange-700 dark:text-orange-400">
+        <Truck className="h-3 w-3 mr-1" />
+        Delivery
       </Badge>
     );
   };
@@ -380,6 +400,7 @@ export default function StorefrontOrders() {
                     <div className="flex items-center justify-between mt-2 pt-2 border-t">
                       <div className="flex items-center gap-2">
                         {getStatusBadge(order.status)}
+                        {getFulfillmentBadge(order.fulfillment_method)}
                         <span className="text-xs text-muted-foreground">
                           {order.items.length} item{order.items.length !== 1 ? 's' : ''}
                         </span>
@@ -400,6 +421,7 @@ export default function StorefrontOrders() {
                       <TableHead>Items</TableHead>
                       <TableHead>Total</TableHead>
                       <TableHead>Payment</TableHead>
+                      <TableHead>Fulfillment</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -433,6 +455,9 @@ export default function StorefrontOrders() {
                         </TableCell>
                         <TableCell onClick={() => setSelectedOrder(order)}>
                           {getPaymentBadge(order.payment_status)}
+                        </TableCell>
+                        <TableCell onClick={() => setSelectedOrder(order)}>
+                          {getFulfillmentBadge(order.fulfillment_method)}
                         </TableCell>
                         <TableCell onClick={() => setSelectedOrder(order)}>
                           {getStatusBadge(order.status)}
@@ -533,15 +558,24 @@ export default function StorefrontOrders() {
 
                 <Separator />
 
-                {/* Delivery Info */}
+                {/* Fulfillment Info */}
                 <div>
-                  <h3 className="font-medium mb-3">Delivery</h3>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h3 className="font-medium">Fulfillment</h3>
+                    {getFulfillmentBadge(selectedOrder.fulfillment_method)}
+                  </div>
                   <div className="space-y-2 text-sm">
-                    {selectedOrder.delivery_address && typeof selectedOrder.delivery_address === 'object' && (
-                      <p>
-                        {String(selectedOrder.delivery_address.street ?? '')}
-                        {selectedOrder.delivery_address.city ? `, ${String(selectedOrder.delivery_address.city)}` : ''}
-                      </p>
+                    {selectedOrder.fulfillment_method === 'pickup' ? (
+                      <p className="text-muted-foreground">Customer will pick up at store</p>
+                    ) : (
+                      <>
+                        {selectedOrder.delivery_address && typeof selectedOrder.delivery_address === 'object' && (
+                          <p>
+                            {String(selectedOrder.delivery_address.street ?? selectedOrder.delivery_address.address ?? '')}
+                            {selectedOrder.delivery_address.city ? `, ${String(selectedOrder.delivery_address.city)}` : ''}
+                          </p>
+                        )}
+                      </>
                     )}
                     {selectedOrder.delivery_notes && (
                       <p className="text-muted-foreground">Notes: {selectedOrder.delivery_notes}</p>

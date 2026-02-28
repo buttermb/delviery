@@ -34,7 +34,9 @@ import {
   Loader2,
   ChevronUp,
   ChevronDown,
-  Copy
+  Copy,
+  Truck,
+  Store
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
@@ -62,6 +64,8 @@ interface CheckoutData {
   email: string;
   phone: string;
   preferredContact: 'text' | 'phone' | 'email' | 'telegram';
+  // Fulfillment
+  fulfillmentMethod: 'delivery' | 'pickup';
   // Delivery
   street: string;
   apartment: string;
@@ -174,6 +178,7 @@ export function CheckoutPage() {
     email: '',
     phone: '',
     preferredContact: 'text',
+    fulfillmentMethod: 'delivery',
     street: '',
     apartment: '',
     city: '',
@@ -365,7 +370,7 @@ export function CheckoutPage() {
   const deliveryFee = getDeliveryFee();
   const couponDiscount = getCouponDiscount(subtotal);
   const freeShipping = appliedCoupon?.free_shipping === true;
-  const effectiveDeliveryFee = freeShipping ? 0 : deliveryFee;
+  const effectiveDeliveryFee = formData.fulfillmentMethod === 'pickup' ? 0 : (freeShipping ? 0 : deliveryFee);
   const rawTotal = Math.max(0, subtotal + effectiveDeliveryFee - loyaltyDiscount - dealsDiscount - couponDiscount);
 
   // Cart rounding: round to nearest dollar if enabled
@@ -406,6 +411,12 @@ export function CheckoutPage() {
         }
         return true;
       case 2:
+        if (!formData.fulfillmentMethod) {
+          toast.error('Please select a fulfillment method');
+          return false;
+        }
+        // Pickup doesn't need address validation
+        if (formData.fulfillmentMethod === 'pickup') return true;
         if (!formData.street || !formData.city || !formData.zip) {
           toast.error('Please fill in your delivery address');
           return false;
@@ -577,7 +588,9 @@ export function CheckoutPage() {
       // Primary path: edge function checkout (handles order, customer, stock, Telegram, Stripe)
       const tryEdgeFunction = async (): Promise<OrderResult | null> => {
         try {
-          const edgeDeliveryAddress = `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
+          const edgeDeliveryAddress = formData.fulfillmentMethod === 'pickup'
+            ? undefined
+            : `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
           const edgeOrigin = window.location.origin;
           const totalDiscountAmount = couponDiscount + loyaltyDiscount + dealsDiscount;
 
@@ -596,7 +609,7 @@ export function CheckoutPage() {
                 email: formData.email,
                 phone: formData.phone || undefined,
               },
-              fulfillmentMethod: formData.street ? 'delivery' : 'pickup',
+              fulfillmentMethod: formData.fulfillmentMethod,
               paymentMethod: formData.paymentMethod,
               deliveryAddress: edgeDeliveryAddress,
               preferredContactMethod: formData.preferredContact || undefined,
@@ -672,7 +685,9 @@ export function CheckoutPage() {
           // The existing reserve_inventory uses (p_menu_id, p_items) not per-product calls
 
           // 1. Create Order using the actual function signature
-          const deliveryAddress = `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
+          const deliveryAddress = formData.fulfillmentMethod === 'pickup'
+            ? null
+            : `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
 
           const { data: orderId, error: orderError } = await supabase
             .rpc('create_marketplace_order', {
@@ -695,6 +710,7 @@ export function CheckoutPage() {
               p_payment_method: formData.paymentMethod,
               p_idempotency_key: idempotencyKey, // Prevent double orders on retry
               p_preferred_contact_method: formData.preferredContact || undefined,
+              p_fulfillment_method: formData.fulfillmentMethod,
             });
 
           if (orderError) {
@@ -1284,7 +1300,7 @@ export function CheckoutPage() {
                   </motion.div>
                 )}
 
-                {/* Step 2: Delivery Address */}
+                {/* Step 2: Fulfillment Method & Delivery Address */}
                 {currentStep === 2 && (
                   <motion.div
                     key="step2"
@@ -1294,75 +1310,127 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-4"
                   >
-                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Delivery Address</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">How would you like to receive your order?</h2>
 
-                    {/* Address Autocomplete */}
-                    <div className="space-y-2">
-                      <Label htmlFor="street">Street Address *</Label>
-                      <CheckoutAddressAutocomplete
-                        defaultValue={formData.street}
-                        placeholder="Start typing your address..."
-                        onAddressSelect={(address) => {
-                          updateField('street', address.street);
-                          updateField('city', address.city);
-                          updateField('state', address.state);
-                          updateField('zip', address.zip);
-                        }}
-                      />
+                    {/* Fulfillment Method Selector */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                          formData.fulfillmentMethod === 'delivery'
+                            ? 'border-primary bg-primary/5 ring-2 ring-primary'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => updateField('fulfillmentMethod', 'delivery')}
+                      >
+                        <Truck className="h-6 w-6" />
+                        <span className="font-semibold">Delivery</span>
+                        <span className="text-xs text-muted-foreground">We deliver to you</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                          formData.fulfillmentMethod === 'pickup'
+                            ? 'border-primary bg-primary/5 ring-2 ring-primary'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => updateField('fulfillmentMethod', 'pickup')}
+                      >
+                        <Store className="h-6 w-6" />
+                        <span className="font-semibold">Pickup</span>
+                        <span className="text-xs text-muted-foreground">Pick up at store</span>
+                      </button>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="apartment">Apartment, Suite, etc. (Optional)</Label>
-                      <Input
-                        id="apartment"
-                        name="apartment"
-                        value={formData.apartment}
-                        onChange={(e) => updateField('apartment', e.target.value)}
-                        placeholder="Apt 4B"
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="city">City *</Label>
-                        <Input
-                          id="city"
-                          name="city"
-                          value={formData.city}
-                          onChange={(e) => updateField('city', e.target.value)}
-                          placeholder="New York"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="state">State</Label>
-                        <Input
-                          id="state"
-                          name="state"
-                          value={formData.state}
-                          onChange={(e) => updateField('state', e.target.value)}
-                          placeholder="NY"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="zip">ZIP Code *</Label>
-                      <Input
-                        id="zip"
-                        name="zip"
-                        value={formData.zip}
-                        onChange={(e) => updateField('zip', e.target.value)}
-                        placeholder="10001"
-                      />
-                    </div>
-                    {store.checkout_settings?.show_delivery_notes && (
-                      <div className="space-y-2">
-                        <Label htmlFor="deliveryNotes">Delivery Instructions (Optional)</Label>
-                        <Textarea
-                          id="deliveryNotes"
-                          value={formData.deliveryNotes}
-                          onChange={(e) => updateField('deliveryNotes', e.target.value)}
-                          placeholder="Ring doorbell, leave at door, etc."
-                          rows={3}
-                        />
-                      </div>
+
+                    {/* Pickup Info */}
+                    {formData.fulfillmentMethod === 'pickup' && (
+                      <Card className="bg-muted/50">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            <Store className="h-5 w-5 text-primary mt-0.5" />
+                            <div>
+                              <p className="font-semibold">Pickup at {store?.store_name || 'our store'}</p>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                You will receive pickup details after your order is confirmed.
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Address fields — only shown for delivery */}
+                    {formData.fulfillmentMethod === 'delivery' && (
+                      <>
+                        {/* Address Autocomplete */}
+                        <div className="space-y-2">
+                          <Label htmlFor="street">Street Address *</Label>
+                          <CheckoutAddressAutocomplete
+                            defaultValue={formData.street}
+                            placeholder="Start typing your address..."
+                            onAddressSelect={(address) => {
+                              updateField('street', address.street);
+                              updateField('city', address.city);
+                              updateField('state', address.state);
+                              updateField('zip', address.zip);
+                            }}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="apartment">Apartment, Suite, etc. (Optional)</Label>
+                          <Input
+                            id="apartment"
+                            name="apartment"
+                            value={formData.apartment}
+                            onChange={(e) => updateField('apartment', e.target.value)}
+                            placeholder="Apt 4B"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="city">City *</Label>
+                            <Input
+                              id="city"
+                              name="city"
+                              value={formData.city}
+                              onChange={(e) => updateField('city', e.target.value)}
+                              placeholder="New York"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="state">State</Label>
+                            <Input
+                              id="state"
+                              name="state"
+                              value={formData.state}
+                              onChange={(e) => updateField('state', e.target.value)}
+                              placeholder="NY"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="zip">ZIP Code *</Label>
+                          <Input
+                            id="zip"
+                            name="zip"
+                            value={formData.zip}
+                            onChange={(e) => updateField('zip', e.target.value)}
+                            placeholder="10001"
+                          />
+                        </div>
+                        {store.checkout_settings?.show_delivery_notes && (
+                          <div className="space-y-2">
+                            <Label htmlFor="deliveryNotes">Delivery Instructions (Optional)</Label>
+                            <Textarea
+                              id="deliveryNotes"
+                              value={formData.deliveryNotes}
+                              onChange={(e) => updateField('deliveryNotes', e.target.value)}
+                              placeholder="Ring doorbell, leave at door, etc."
+                              rows={3}
+                            />
+                          </div>
+                        )}
+                      </>
                     )}
                   </motion.div>
                 )}
@@ -1534,23 +1602,33 @@ export function CheckoutPage() {
 
                     <Separator />
 
-                    {/* Delivery Summary */}
+                    {/* Fulfillment Summary */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">Delivery Address</h3>
+                        <h3 className="font-medium">
+                          {formData.fulfillmentMethod === 'pickup' ? 'Pickup' : 'Delivery Address'}
+                        </h3>
                         <Button variant="ghost" size="sm" onClick={() => setCurrentStep(2)}>
                           Edit
                         </Button>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {formData.street}
-                        {formData.apartment && `, ${formData.apartment}`}<br />
-                        {formData.city}, {formData.state} {formData.zip}
-                      </p>
-                      {formData.deliveryNotes && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Notes: {formData.deliveryNotes}
+                      {formData.fulfillmentMethod === 'pickup' ? (
+                        <p className="text-sm text-muted-foreground">
+                          Pickup at {store?.store_name || 'store'}
                         </p>
+                      ) : (
+                        <>
+                          <p className="text-sm text-muted-foreground">
+                            {formData.street}
+                            {formData.apartment && `, ${formData.apartment}`}<br />
+                            {formData.city}, {formData.state} {formData.zip}
+                          </p>
+                          {formData.deliveryNotes && (
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Notes: {formData.deliveryNotes}
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
 
@@ -1833,10 +1911,16 @@ export function CheckoutPage() {
                   <span className={textMuted}>Subtotal</span>
                   <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(subtotal)}</span>
                 </div>
-                {deliveryFee > 0 && (
+                {formData.fulfillmentMethod === 'delivery' && effectiveDeliveryFee > 0 && (
                   <div className="flex justify-between">
                     <span className={textMuted}>Delivery</span>
-                    <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(deliveryFee)}</span>
+                    <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(effectiveDeliveryFee)}</span>
+                  </div>
+                )}
+                {formData.fulfillmentMethod === 'pickup' && (
+                  <div className="flex justify-between">
+                    <span className={textMuted}>Pickup</span>
+                    <span className="text-green-600">FREE</span>
                   </div>
                 )}
                 {dealsDiscount > 0 && (

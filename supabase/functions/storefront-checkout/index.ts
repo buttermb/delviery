@@ -272,6 +272,7 @@ serve(secureHeadersMiddleware(async (req) => {
         p_payment_method: body.paymentMethod,
         p_idempotency_key: body.idempotencyKey ?? null,
         p_preferred_contact_method: body.preferredContactMethod ?? null,
+        p_fulfillment_method: body.fulfillmentMethod ?? "delivery",
       },
     );
 
