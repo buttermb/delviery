@@ -16,6 +16,7 @@ import { UndoToast } from '@/components/ui/undo-toast';
 import { queryKeys } from '@/lib/queryKeys';
 import { EmptyState } from '@/components/admin/shared/EmptyState';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
+import { LiveOrdersStatsBar } from '@/components/admin/live-orders/LiveOrdersStatsBar';
 
 // Type Definitions matching Supabase response
 interface MenuOrderRaw {
@@ -335,6 +336,9 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           </div>
         </div>
       </div>
+
+      {/* Stats Bar */}
+      <LiveOrdersStatsBar />
 
       {/* Kanban Board Container */}
       <div className="flex-1 overflow-auto p-3">
