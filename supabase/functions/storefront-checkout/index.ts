@@ -369,10 +369,11 @@ serve(secureHeadersMiddleware(async (req) => {
     if (tenantAccount) {
       const { data: acctSettings } = await supabase
         .from("account_settings")
-        .select("telegram_video_link")
+        .select("notification_settings")
         .eq("account_id", tenantAccount.id)
         .maybeSingle();
-      telegramLink = (acctSettings?.telegram_video_link as string) ?? null;
+      const notifSettings = acctSettings?.notification_settings as Record<string, unknown> | null;
+      telegramLink = (notifSettings?.telegram_customer_link as string) || null;
     }
 
     const result: Record<string, unknown> = {
