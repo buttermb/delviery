@@ -20,7 +20,28 @@ after each iteration and it's included in prompts for context.
 - **Storefront order reads vs writes**: READ from `storefront_orders` view (aliased columns: `total`, `delivery_fee`, `delivery_address`). WRITE to `marketplace_orders` table (raw columns: `total_amount`, `shipping_cost`, `shipping_address`). Filter by `store_id` + `seller_tenant_id`, NOT `seller_profile_id` (that's for B2B marketplace orders).
 - **Stale carousel index crash**: Carousel/rotator components using `useState` index into a reactive TanStack Query array can crash when refetches shrink the array. Fix: add a `useEffect` clamping index when length changes + safe guard (`array[safeIndex]` with fallback).
 - **safeStorage for storefront**: Always use `safeStorage` from `@/utils/safeStorage` instead of raw `localStorage` in storefront components — handles private browsing mode gracefully.
+- **Hiding Sheet/Dialog default close button**: Use `[&>button:last-child]:hidden` on SheetContent/DialogContent className to hide the auto-rendered close button when using custom close buttons. The default close is always the last direct child.
+- **Sheet width overrides**: SheetContent variants include both base `max-w-sm` and `sm:max-w-sm`. To override width, pass both (e.g., `max-w-md sm:max-w-md`) so twMerge resolves both breakpoints.
+- **Full-screen Dialog pattern**: Override DialogContent with `left-0 top-0 translate-x-0 translate-y-0 w-screen h-screen max-w-none max-h-screen p-0 border-0 rounded-none` + zero-effect animation classes (`zoom-out-100`, `slide-out-to-left-0` etc.) for full-screen takeover while keeping Radix's focus trap and escape handling.
 
+---
+
+- **Form label consistency**: Use `<FormLabel required>` inside `FormField` contexts, `<Label required>` for state-based forms. Both render identical asterisk markup. Never use manual `<span className="text-destructive">*</span>`.
+
+- **Chart colors**: Import from `@/lib/chartColors` — never hardcode hex colors in chart components. Use `CHART_COLORS[N]` for indexed palette, `chartSemanticColors.revenue/cost/danger` for semantic meaning, `CATEGORY_CHART_COLORS` for credit/category breakdowns. CSS vars `--chart-1` through `--chart-10` defined in `index.css`.
+
+## 2026-02-28 - floraiq-jwn.2
+- Converted all custom modal implementations to shadcn Dialog/Sheet
+- Files changed:
+  - `src/components/admin/storefront/FullScreenEditorPortal.tsx` — createPortal+Framer Motion → shadcn Dialog (full-screen)
+  - `src/components/shop/FilterDrawer.tsx` — custom Framer Motion drawer → shadcn Sheet (side=left)
+  - `src/components/shop/CartDrawer.tsx` — custom Framer Motion drawer → shadcn Sheet (side=right)
+  - `src/pages/admin/storefront/StorefrontDesignPage.tsx` — pass onRequestClose to FullScreenEditorPortal for escape key support
+- **Learnings:**
+  - FilterDrawer had `lg:relative lg:z-auto` for desktop sidebar mode, but the trigger is `md:hidden` so this was unreachable dead code — safe to drop
+  - CartDrawer's item-level `motion.div` animations (layout, initial/animate) work fine inside SheetContent since Radix mounts content on open
+  - FilterSection collapse animations (AnimatePresence in child component) are NOT modals — keep framer-motion for these
+  - SafeModal (`src/components/ui/safe-modal.tsx`) already correctly wraps shadcn Dialog — good pattern, no changes needed
 ---
 
 ## 2026-02-27 - floraiq-dy9.1
@@ -860,4 +881,68 @@ after each iteration and it's included in prompts for context.
 - **Learnings:**
   - Pure SQL migration tasks don't affect TypeScript compilation — tsc passes without changes
   - Composite indexes on (tenant_id, period_type, period_start, period_end) useful for period-based goal queries
+---
+
+## 2026-02-28 - floraiq-jwn.1
+- Verified all toasts already use Sonner — no code changes needed
+- No files changed
+- **Learnings:**
+  - Codebase has 541+ files importing `toast` from `"sonner"` — fully standardized
+  - No `useToast`/`use-toast` (shadcn old toast), `window.alert()`, or third-party toast libs exist
+  - Toast infrastructure is well-layered: `sonner.tsx` wrapper → `toastUtils.ts` (deduplication) → `toastActions.ts` (undo/progress/navigation) → `notifications/toast.ts` (domain-specific) → `toastHelpers.ts` (re-exports + storefront-specific)
+  - `alert()` references only exist in `sanitize.test.ts` XSS test data — not actual UI calls
+  - `console.log` in `logger.ts` and `ConsoleMonitor.tsx` are expected/valid uses
+---
+
+## 2026-02-28 - floraiq-jwn.3
+- Replaced raw HTML table elements (`<table>`, `<thead>`, `<tbody>`, `<tr>`, `<th>`, `<td>`) with shadcn Table components in CustomerManagement.tsx and Orders.tsx skeleton
+- Files changed: `src/pages/admin/CustomerManagement.tsx`, `src/pages/admin/Orders.tsx`
+- **Learnings:**
+  - CustomerManagement.tsx was the only admin page using fully raw HTML tables for its data display — all other major pages (Orders, Products, Clients) already used ResponsiveTable or shadcn Table
+  - Orders.tsx had a raw HTML table only in its skeleton loading state, while main data used ResponsiveTable
+  - shadcn Table components provide built-in hover (`hover:bg-muted/50`), border (`border-b`), sticky headers, dark mode, and scroll gradient effects — no custom styling needed
+  - AdminPricingPage.tsx also has raw HTML tables but is a secondary page outside the core three (Orders/Products/Customers)
+---
+
+## 2026-02-28 - floraiq-jwn.4
+- Added `required` prop to base `Label` component (`label.tsx`) to render asterisks consistently without needing `FormField` context
+- Converted `RecurringInvoiceForm.tsx` from `register()` pattern to `Form`/`FormField`/`FormLabel`/`FormMessage` pattern
+- Converted `InvoicePaymentDialog.tsx` from manual `Controller` + `Label` to `Form`/`FormField`/`FormLabel`/`FormMessage` pattern
+- Replaced manual `<span className="text-destructive">*</span>` asterisks with `<Label required>` in ProductForm, BasicInfoStep, BatchCategoryEditor, OrderDetailsPage
+- Standardized error text classes to `text-sm font-medium text-destructive` (matching `FormMessage`)
+- Files changed: `label.tsx`, `RecurringInvoiceForm.tsx`, `InvoicePaymentDialog.tsx`, `ProductForm.tsx`, `BasicInfoStep.tsx`, `BatchCategoryEditor.tsx`, `OrderDetailsPage.tsx`
+- **Learnings:**
+  - `FormLabel` uses `useFormField()` which requires `FormFieldContext` — it can ONLY be used inside `FormField`. For state-based forms that don't use react-hook-form, the base `Label` component with `required` prop is the correct approach
+  - Adding `required` prop to the base `Label` component gives a single consistent API for all form types (react-hook-form and useState-based)
+  - Forms using `register()` can be converted to `FormField` pattern by wrapping with `<Form {...form}>` and replacing `register("field")` with `FormField` + `control={form.control}` + render prop
+  - `FormControl` uses Radix `Slot` to compose aria attributes onto the child input — important for accessibility
+---
+
+## 2026-02-28 - floraiq-jwn.5
+- Replaced hardcoded hex colors in chart/visualization components with centralized CSS variable references
+- Created `src/lib/chartColors.ts` — exports `CHART_COLORS` (10-slot array), `chartSemanticColors` (named semantic colors), and `CATEGORY_CHART_COLORS` (credit usage categories)
+- Added CSS custom properties `--chart-6` through `--chart-10` in `src/index.css` for emerald, red, amber, pink, green
+- 39 files updated to import from `@/lib/chartColors` instead of hardcoding hex values
+- Files changed: `src/lib/chartColors.ts` (new), `src/index.css`, 20+ chart components across admin/analytics, delivery, products, tv-dashboard, super-admin, credits, financial, and 14 admin/tenant-admin pages
+- **Learnings:**
+  - Status badge colors were already centralized in `src/constants/statusColors.ts` and `src/lib/utils/statusColors.ts` — no changes needed there
+  - Chart color replacement is safe for Recharts `fill`/`stroke` props — they accept `hsl(var(--chart-N))` CSS variable references
+  - Legitimate hex color exemptions: Google brand logos, dynamic storefront theme colors (user-configurable), Leaflet map HTML strings (no CSS class support), PDF generation (react-pdf), Mapbox GL JS paint properties
+  - `src/lib/utils/colorConversion.ts` provides `getCSSVarColor()` for runtime resolution of CSS vars to inline-safe `hsl()` strings — useful for map/PDF contexts
+  - Some files had local `COLORS` arrays that were already using CSS vars — consolidated those to import from the central file too
+---
+
+## 2026-02-28 - floraiq-jwn (Storefront: Final Polish & Testing)
+- Verified all 68 tasks in the bead — TypeScript check zero errors, Vite build clean
+- Fixed `any` types in production files: `src/lib/idb.ts` (3 instances → `unknown`), `src/lib/encryption/types.ts` (1 instance → typed `DecryptedOrderItem` interface), `src/types/marketplace-extended.ts` (2 instances → `SectionConfig[]` and `ExtendedThemeConfig`)
+- Verified: no `console.log` in production code (only in logger.ts and test files)
+- Verified: no unused imports in storefront files
+- Verified storefront code patterns: cart persistence (safeStorage), store-scoped cart (keyed by storeId), 404 handling (stores + products), out-of-stock prevention (triple check: UI + cart + checkout), double-click prevention (ref + isPending + disabled), network error handling (retry with exponential backoff), tenant slug in all routes
+- Security audit: no service_role key in client code, no hardcoded secrets, anon key used correctly. Pre-existing concerns noted (Stripe secret key in client-accessible DB, regex-based HTML sanitization) but out of scope for this polish bead.
+- Files changed: `src/lib/idb.ts`, `src/lib/encryption/types.ts`, `src/types/marketplace-extended.ts`
+- **Learnings:**
+  - The storefront codebase is production-ready with robust patterns for cart, checkout, error handling
+  - `DecryptedOrder.items` was the only truly untyped data structure — created `DecryptedOrderItem` interface
+  - `MarketplaceProfile` had `any` for `layout_config` and `theme_config` but proper types (`SectionConfig`, `ExtendedThemeConfig`) already existed in the same file
+  - Stripe secret keys stored in `account_settings.integration_settings` are readable by any admin user via `AccountContext` — this is a real security concern for production but architectural, not a polish task
 ---

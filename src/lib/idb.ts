@@ -119,7 +119,7 @@ export const db = {
 
         if (record.encrypted && clientEncryption.isReady()) {
             try {
-                const decryptedData = clientEncryption.decrypt(record.data) as Record<string, any>;
+                const decryptedData = clientEncryption.decrypt(record.data) as Record<string, unknown>;
                 return {
                     id: record.id,
                     ...decryptedData,
@@ -147,7 +147,7 @@ export const db = {
         return records.map(record => {
             if (record.encrypted) {
                 try {
-                    const decryptedData = clientEncryption.decrypt(record.data) as Record<string, any>;
+                    const decryptedData = clientEncryption.decrypt(record.data) as Record<string, unknown>;
                     return {
                         id: record.id,
                         ...decryptedData,
@@ -163,7 +163,7 @@ export const db = {
         }).filter(Boolean);
     },
 
-    async addToSyncQueue(request: { url: string; method: string; body: any }) {
+    async addToSyncQueue(request: { url: string; method: string; body: unknown }) {
         const db = await initDB();
         return db.add('syncQueue', {
             ...request,
