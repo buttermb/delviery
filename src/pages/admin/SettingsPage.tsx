@@ -67,6 +67,8 @@ const notificationSchema = z.object({
   telegram_bot_token: z.string().optional().or(z.literal('')),
   telegram_chat_id: z.string().optional().or(z.literal('')),
   telegram_customer_link: z.string().url("Must be a valid URL").optional().or(z.literal('')),
+  telegram_button_label: z.string().optional().or(z.literal('')),
+  show_telegram_on_confirmation: z.boolean(),
 });
 
 type GeneralFormValues = z.infer<typeof generalSchema>;
@@ -86,6 +88,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
   const [loading, setLoading] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [formsInitialized, setFormsInitialized] = useState(false);
+  const [testingSending, setTestingSending] = useState(false);
 
   // --- General Form ---
   const generalForm = useForm<GeneralFormValues>({
@@ -122,6 +125,8 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       telegram_bot_token: '',
       telegram_chat_id: '',
       telegram_customer_link: '',
+      telegram_button_label: 'Chat with us on Telegram',
+      show_telegram_on_confirmation: false,
     }
   });
 
@@ -160,6 +165,8 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
         telegram_bot_token: (notifSettings.telegram_bot_token as string) ?? '',
         telegram_chat_id: (notifSettings.telegram_chat_id as string) ?? '',
         telegram_customer_link: (notifSettings.telegram_customer_link as string) ?? '',
+        telegram_button_label: (notifSettings.telegram_button_label as string) ?? 'Chat with us on Telegram',
+        show_telegram_on_confirmation: (notifSettings.show_telegram_on_confirmation as boolean) ?? false,
       });
     }
   }, [account, accountSettings, generalForm, securityForm, notificationForm]);
@@ -285,6 +292,37 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
     }
   };
 
+  // --- Telegram Test ---
+  const onTestTelegram = async () => {
+    const botToken = notificationForm.getValues("telegram_bot_token");
+    const chatId = notificationForm.getValues("telegram_chat_id");
+
+    if (!botToken || !chatId) {
+      toast.error("Please enter both Bot Token and Chat ID before testing.");
+      return;
+    }
+
+    setTestingSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("test-telegram", {
+        body: { bot_token: botToken, chat_id: chatId },
+      });
+
+      if (error) throw error;
+
+      if (data?.sent) {
+        toast.success("Test message sent! Check your Telegram chat.");
+      } else {
+        toast.error(data?.reason ?? "Failed to send test message.");
+      }
+    } catch (err) {
+      logger.error("Telegram test failed", err);
+      toast.error("Failed to send test message. Check your credentials.");
+    } finally {
+      setTestingSending(false);
+    }
+  };
+
   // --- Import Handler ---
   const handleImportSettings = async (settings: ImportedSettings) => {
     if (!account) {
@@ -389,6 +427,8 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
           telegram_bot_token: notificationForm.getValues('telegram_bot_token'),
           telegram_chat_id: notificationForm.getValues('telegram_chat_id'),
           telegram_customer_link: notificationForm.getValues('telegram_customer_link'),
+          telegram_button_label: notificationForm.getValues('telegram_button_label'),
+          show_telegram_on_confirmation: notificationForm.getValues('show_telegram_on_confirmation'),
         });
       }
 
@@ -729,19 +769,58 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                           The group or channel ID where order notifications will be sent
                         </p>
                       </div>
-                      <div className="space-y-1">
-                        <Label>Customer Telegram Link</Label>
-                        <Input
-                          type="url"
-                          placeholder="https://t.me/yourstorename"
-                          {...notificationForm.register("telegram_customer_link")}
-                        />
-                        {notificationForm.formState.errors.telegram_customer_link && (
-                          <p className="text-sm text-destructive">{notificationForm.formState.errors.telegram_customer_link.message}</p>
+                      <div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={testingSending}
+                          onClick={onTestTelegram}
+                        >
+                          {testingSending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                          Send Test Message
+                        </Button>
+                      </div>
+                      <div className="pt-3 border-t space-y-3">
+                        <h5 className="text-sm font-medium">Customer-Facing Settings</h5>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label>Show on Confirmation Page</Label>
+                            <p className="text-sm text-muted-foreground">Display a Telegram button on the order confirmation page</p>
+                          </div>
+                          <Switch
+                            checked={notificationForm.watch("show_telegram_on_confirmation")}
+                            onCheckedChange={(c) => notificationForm.setValue("show_telegram_on_confirmation", c, { shouldDirty: true })}
+                          />
+                        </div>
+                        {notificationForm.watch("show_telegram_on_confirmation") && (
+                          <div className="space-y-3 pl-1">
+                            <div className="space-y-1">
+                              <Label>Customer Telegram Link</Label>
+                              <Input
+                                type="url"
+                                placeholder="https://t.me/yourstorename"
+                                {...notificationForm.register("telegram_customer_link")}
+                              />
+                              {notificationForm.formState.errors.telegram_customer_link && (
+                                <p className="text-sm text-destructive">{notificationForm.formState.errors.telegram_customer_link.message}</p>
+                              )}
+                              <p className="text-xs text-muted-foreground">
+                                Shown on the order confirmation page so customers can reach you
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <Label>Button Label</Label>
+                              <Input
+                                placeholder="Chat with us on Telegram"
+                                {...notificationForm.register("telegram_button_label")}
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                The text displayed on the Telegram button
+                              </p>
+                            </div>
+                          </div>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          Shown on the order confirmation page so customers can reach you
-                        </p>
                       </div>
                     </div>
                   )}
