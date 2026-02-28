@@ -12,14 +12,8 @@ import {
     MapPin,
     AlertCircle,
     ChevronRight,
-    MoreHorizontal
+    XCircle,
 } from 'lucide-react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AssignToFleetDialog } from '@/components/admin/AssignToFleetDialog';
 import { OrderLink } from '@/components/admin/cross-links';
@@ -113,24 +107,65 @@ function SLATimer({ createdAt }: { createdAt: string }) {
     );
 }
 
+/**
+ * Returns valid next statuses for an order based on its current status.
+ * Follows the defined progression: pending → confirmed → preparing → ready_for_pickup → in_transit → delivered
+ * Cancel is available at every non-terminal step. Reject is only valid for pending orders.
+ */
+export function getValidNextStatuses(
+    currentStatus: string
+): Array<{ status: string; label: string; variant: 'default' | 'destructive' }> {
+    switch (currentStatus) {
+        case 'pending':
+            return [
+                { status: 'confirmed', label: 'Confirm', variant: 'default' },
+                { status: 'rejected', label: 'Reject', variant: 'destructive' },
+                { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+            ];
+        case 'confirmed':
+            return [
+                { status: 'preparing', label: 'Start Preparing', variant: 'default' },
+                { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+            ];
+        case 'processing':
+            return [
+                { status: 'preparing', label: 'Start Preparing', variant: 'default' },
+                { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+            ];
+        case 'preparing':
+            return [
+                { status: 'ready_for_pickup', label: 'Mark Ready', variant: 'default' },
+                { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+            ];
+        case 'ready_for_pickup':
+        case 'ready':
+            return [
+                { status: 'in_transit', label: 'Out for Delivery', variant: 'default' },
+                { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+            ];
+        case 'in_transit':
+        case 'picked_up':
+            return [
+                { status: 'delivered', label: 'Mark Delivered', variant: 'default' },
+            ];
+        case 'delivered':
+        case 'completed':
+        case 'cancelled':
+        case 'rejected':
+            return [];
+        default:
+            return [];
+    }
+}
+
 function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChange: LiveOrdersKanbanProps['onStatusChange'] }) {
     const [fleetDialogOpen, setFleetDialogOpen] = useState(false);
     const { isEnabled } = useTenantFeatureToggles();
     const deliveryEnabled = isEnabled('delivery_tracking');
 
-    // Determine next logical status
-    const getNextStatus = (current: string) => {
-        switch (current) {
-            case 'pending': return 'confirmed';
-            case 'confirmed': return 'preparing';
-            case 'preparing': return 'ready_for_pickup';
-            case 'ready_for_pickup': return 'in_transit'; // Or courier assignment
-            case 'in_transit': return 'delivered';
-            default: return null;
-        }
-    };
-
-    const nextStatus = getNextStatus(order.status);
+    const validActions = getValidNextStatuses(order.status);
+    const primaryAction = validActions.find(a => a.variant === 'default');
+    const cancelAction = validActions.find(a => a.status === 'cancelled');
 
     // Show "Assign to Fleet" button for orders that are ready for pickup and don't have a courier assigned
     const showAssignToFleet = (order.status === 'ready_for_pickup' || order.status === 'ready') && !order.courier_id;
@@ -165,21 +200,19 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
 
                     {/* Actions */}
                     <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Order actions">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start">
-                                <DropdownMenuItem onClick={() => onStatusChange(order.id, 'rejected', order.source || 'app')}>
-                                    Reject Order
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => onStatusChange(order.id, 'cancelled', order.source || 'app')}>
-                                    Cancel Order
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        {/* Cancel / Reject button */}
+                        {cancelAction && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => onStatusChange(order.id, cancelAction.status, order.source || 'app')}
+                                title="Cancel order"
+                            >
+                                <XCircle className="h-3.5 w-3.5" />
+                            </Button>
+                        )}
+                        {!cancelAction && <div />}
 
                         <div className="flex items-center gap-2">
                             {showAssignToFleet && (
@@ -205,13 +238,13 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
                                     </Tooltip>
                                 </TooltipProvider>
                             )}
-                            {nextStatus && (
+                            {primaryAction && (
                                 <Button
                                     size="sm"
                                     className="h-7 text-xs gap-1"
-                                    onClick={() => onStatusChange(order.id, nextStatus, order.source || 'app')}
+                                    onClick={() => onStatusChange(order.id, primaryAction.status, order.source || 'app')}
                                 >
-                                    Next Stage
+                                    {primaryAction.label}
                                     <ChevronRight className="h-3 w-3" />
                                 </Button>
                             )}
