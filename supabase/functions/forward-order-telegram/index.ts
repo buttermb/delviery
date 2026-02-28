@@ -6,8 +6,10 @@
  * never block the order response.
  *
  * POST /forward-order-telegram
- * Receives: { orderId, tenantId, orderNumber, customerName, orderTotal, items, storeName }
- * Returns:  { sent: true } or { sent: false, reason: string }
+ * Accepts either:
+ *   1. Full data: { orderId, tenantId, customerName, orderTotal, items, ... }
+ *   2. Minimal:   { orderId, tenantId } — fetches order data from DB
+ * Returns: { sent: true } or { sent: false, reason: string }
  */
 
 import { serve, createClient, corsHeaders, z } from "../_shared/deps.ts";
@@ -26,14 +28,30 @@ const OrderItemSchema = z.object({
 const RequestSchema = z.object({
   orderId: z.string().uuid(),
   tenantId: z.string().uuid(),
+  // Optional — if omitted, function fetches from DB
   orderNumber: z.string().nullable().optional(),
-  customerName: z.string(),
+  customerName: z.string().optional(),
   customerPhone: z.string().nullable().optional(),
-  orderTotal: z.number(),
-  items: z.array(OrderItemSchema).min(1),
+  orderTotal: z.number().optional(),
+  items: z.array(OrderItemSchema).min(1).optional(),
   storeName: z.string().optional(),
-  fulfillmentMethod: z.string().optional(),
+  fulfillmentMethod: z.string().nullable().optional(),
+  preferredContactMethod: z.string().nullable().optional(),
 });
+
+/** Resolved order data after validation + optional DB fetch */
+interface OrderData {
+  orderId: string;
+  tenantId: string;
+  orderNumber: string | null;
+  customerName: string;
+  customerPhone: string | null;
+  orderTotal: number;
+  items: Array<{ productName: string; quantity: number; price: number }>;
+  storeName: string;
+  fulfillmentMethod: string | null;
+  preferredContactMethod: string | null;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -45,12 +63,12 @@ const jsonResponse = (body: Record<string, unknown>, status: number) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-function formatOrderMessage(data: z.infer<typeof RequestSchema>, storeName: string): string {
+function formatOrderMessage(data: OrderData): string {
   const lines: string[] = [];
 
   lines.push(`\u{1F4E6} *New Order #${data.orderNumber ?? data.orderId.slice(0, 8)}*`);
   lines.push("");
-  lines.push(`*Store:* ${escapeMarkdown(storeName)}`);
+  lines.push(`*Store:* ${escapeMarkdown(data.storeName)}`);
   lines.push(`*Customer:* ${escapeMarkdown(data.customerName)}`);
 
   if (data.customerPhone) {
@@ -58,8 +76,12 @@ function formatOrderMessage(data: z.infer<typeof RequestSchema>, storeName: stri
   }
 
   if (data.fulfillmentMethod) {
-    const method = data.fulfillmentMethod === "delivery" ? "Delivery" : "Pickup";
-    lines.push(`*Fulfillment:* ${method}`);
+    const method = data.fulfillmentMethod === "delivery" ? "\u{1F69A} Delivery" : "\u{1F3EA} Pickup";
+    lines.push(`*Fulfillment:* ${escapeMarkdown(method)}`);
+  }
+
+  if (data.preferredContactMethod) {
+    lines.push(`*Contact Preference:* ${escapeMarkdown(data.preferredContactMethod)}`);
   }
 
   lines.push("");
@@ -103,7 +125,7 @@ serve(secureHeadersMiddleware(async (req) => {
       );
     }
 
-    const data = parseResult.data;
+    const input = parseResult.data;
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -111,12 +133,78 @@ serve(secureHeadersMiddleware(async (req) => {
     );
 
     // ------------------------------------------------------------------
-    // 1. Resolve account_id for this tenant
+    // 1. Resolve order data — use provided data or fetch from DB
+    // ------------------------------------------------------------------
+    let orderData: OrderData;
+
+    const hasFullData = input.customerName && input.orderTotal !== undefined && input.items && input.items.length > 0;
+
+    if (hasFullData) {
+      orderData = {
+        orderId: input.orderId,
+        tenantId: input.tenantId,
+        orderNumber: input.orderNumber ?? null,
+        customerName: input.customerName!,
+        customerPhone: input.customerPhone ?? null,
+        orderTotal: input.orderTotal!,
+        items: input.items!,
+        storeName: input.storeName ?? "Store",
+        fulfillmentMethod: input.fulfillmentMethod ?? null,
+        preferredContactMethod: input.preferredContactMethod ?? null,
+      };
+    } else {
+      // Fetch order + items from DB
+      const { data: order } = await supabase
+        .from("unified_orders")
+        .select("id, order_number, customer_name, customer_phone, total_amount, fulfillment_method, preferred_contact_method")
+        .eq("id", input.orderId)
+        .eq("tenant_id", input.tenantId)
+        .maybeSingle();
+
+      if (!order) {
+        return jsonResponse({ sent: false, reason: "Order not found" }, 200);
+      }
+
+      const { data: orderItems } = await supabase
+        .from("order_items")
+        .select("product_name, quantity, unit_price")
+        .eq("order_id", input.orderId);
+
+      const { data: store } = await supabase
+        .from("marketplace_stores")
+        .select("store_name")
+        .eq("tenant_id", input.tenantId)
+        .maybeSingle();
+
+      orderData = {
+        orderId: input.orderId,
+        tenantId: input.tenantId,
+        orderNumber: order.order_number ?? null,
+        customerName: order.customer_name ?? "Unknown Customer",
+        customerPhone: order.customer_phone ?? null,
+        orderTotal: Number(order.total_amount) || 0,
+        items: (orderItems ?? []).map((item: Record<string, unknown>) => ({
+          productName: (item.product_name as string) ?? "Unknown",
+          quantity: Number(item.quantity) || 1,
+          price: (Number(item.unit_price) || 0) * (Number(item.quantity) || 1),
+        })),
+        storeName: store?.store_name ?? input.storeName ?? "Store",
+        fulfillmentMethod: order.fulfillment_method ?? null,
+        preferredContactMethod: order.preferred_contact_method ?? null,
+      };
+
+      if (orderData.items.length === 0) {
+        return jsonResponse({ sent: false, reason: "Order has no items" }, 200);
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // 2. Resolve account_id for this tenant
     // ------------------------------------------------------------------
     const { data: account } = await supabase
       .from("accounts")
       .select("id")
-      .eq("tenant_id", data.tenantId)
+      .eq("tenant_id", input.tenantId)
       .maybeSingle();
 
     if (!account) {
@@ -124,7 +212,7 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     // ------------------------------------------------------------------
-    // 2. Fetch notification_settings from account_settings
+    // 3. Fetch notification_settings from account_settings
     // ------------------------------------------------------------------
     const { data: settings } = await supabase
       .from("account_settings")
@@ -151,9 +239,9 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     // ------------------------------------------------------------------
-    // 3. Send message via Telegram Bot API
+    // 4. Send message via Telegram Bot API
     // ------------------------------------------------------------------
-    const message = formatOrderMessage(data, data.storeName ?? "Store");
+    const message = formatOrderMessage(orderData);
 
     const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
     const telegramResponse = await fetch(telegramUrl, {
