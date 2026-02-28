@@ -404,6 +404,139 @@ describe('StorefrontBuilder', () => {
   });
 });
 
+describe('StorefrontBuilder Section Order Persistence', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    (useTenantAdminAuth as ReturnType<typeof vi.fn>).mockReturnValue({
+      tenant: { id: 'tenant-123', slug: 'test-tenant', business_name: 'Test Business' },
+      loading: false,
+      admin: { id: 'admin-123', email: 'admin@test.com' },
+      tenantSlug: 'test-tenant',
+    });
+  });
+
+  it('should persist layout_config section order when saving draft', async () => {
+    const orderedSections = [
+      { id: 'sec-faq', type: 'faq', content: { heading: 'FAQ' }, styles: {}, visible: true },
+      { id: 'sec-hero', type: 'hero', content: { heading_line_1: 'Hello' }, styles: {}, visible: true },
+      { id: 'sec-features', type: 'features', content: { heading_small: 'Features' }, styles: {}, visible: true },
+    ];
+
+    const mockStore = {
+      id: 'store-123',
+      tenant_id: 'tenant-123',
+      store_name: 'Test Store',
+      slug: 'test-store',
+      is_public: false,
+      layout_config: orderedSections,
+      theme_config: { colors: { primary: '#000', background: '#fff' } },
+    };
+
+    const updateMock = vi.fn().mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    });
+
+    (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: mockStore, error: null }),
+      update: updateMock,
+    });
+
+    (useCreditGatedAction as ReturnType<typeof vi.fn>).mockReturnValue({
+      execute: vi.fn().mockResolvedValue({ success: true }),
+      showOutOfCreditsModal: false,
+      closeOutOfCreditsModal: vi.fn(),
+      blockedAction: null,
+      isExecuting: false,
+    });
+
+    const user = userEvent.setup();
+    render(<StorefrontBuilder />, { wrapper });
+
+    // Wait for store to load and builder to render
+    await waitFor(() => {
+      expect(screen.getByText('Store Builder')).toBeInTheDocument();
+    });
+
+    // Switch to advanced mode to use the drag-and-drop builder
+    const advancedButton = screen.getByRole('button', { name: /Advanced/i });
+    await user.click(advancedButton);
+
+    // Click Save Draft
+    const saveButton = screen.getByRole('button', { name: /Save Draft/i });
+    await user.click(saveButton);
+
+    // Verify Supabase update was called with layout_config preserving section order
+    await waitFor(() => {
+      expect(updateMock).toHaveBeenCalled();
+      const updatePayload = updateMock.mock.calls[0][0] as Record<string, unknown>;
+      const savedConfig = updatePayload.layout_config as Array<{ id: string; type: string }>;
+
+      // layout_config should be an array with sections in the same order
+      expect(Array.isArray(savedConfig)).toBe(true);
+      expect(savedConfig.length).toBe(3);
+      expect(savedConfig[0].type).toBe('faq');
+      expect(savedConfig[1].type).toBe('hero');
+      expect(savedConfig[2].type).toBe('features');
+    });
+  });
+
+  it('should render builder sections in layout_config order', async () => {
+    const orderedSections = [
+      { id: 'sec-testimonials', type: 'testimonials', content: {}, styles: {}, visible: true },
+      { id: 'sec-hero', type: 'hero', content: {}, styles: {}, visible: true },
+      { id: 'sec-faq', type: 'faq', content: {}, styles: {}, visible: true },
+    ];
+
+    const mockStore = {
+      id: 'store-123',
+      tenant_id: 'tenant-123',
+      store_name: 'Order Test Store',
+      slug: 'order-test',
+      is_public: false,
+      layout_config: orderedSections,
+      theme_config: {},
+    };
+
+    (supabase.from as ReturnType<typeof vi.fn>).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: mockStore, error: null }),
+      update: vi.fn().mockReturnThis(),
+    });
+
+    (useCreditGatedAction as ReturnType<typeof vi.fn>).mockReturnValue({
+      execute: vi.fn().mockResolvedValue({ success: true }),
+      showOutOfCreditsModal: false,
+      closeOutOfCreditsModal: vi.fn(),
+      blockedAction: null,
+      isExecuting: false,
+    });
+
+    const user = userEvent.setup();
+    render(<StorefrontBuilder />, { wrapper });
+
+    await waitFor(() => {
+      expect(screen.getByText('Store Builder')).toBeInTheDocument();
+    });
+
+    // Switch to advanced mode
+    const advancedButton = screen.getByRole('button', { name: /Advanced/i });
+    await user.click(advancedButton);
+
+    // Verify section items appear in DOM order matching layout_config
+    await waitFor(() => {
+      const sectionItems = screen.getAllByTestId(/^builder-section-/);
+      expect(sectionItems.length).toBe(3);
+      expect(sectionItems[0].getAttribute('data-section-type')).toBe('testimonials');
+      expect(sectionItems[1].getAttribute('data-section-type')).toBe('hero');
+      expect(sectionItems[2].getAttribute('data-section-type')).toBe('faq');
+    });
+  });
+});
+
 describe('StorefrontBuilder Credit Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
