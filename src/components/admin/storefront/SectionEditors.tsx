@@ -7,8 +7,9 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, Star, Monitor, Tablet, Smartphone } from 'lucide-react';
+import { Plus, Trash2, Star, Monitor, Tablet, Smartphone, Pencil } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/utils/sanitize';
+import { TestimonialsSectionEditDialog } from '@/components/admin/storefront/TestimonialsSectionEditDialog';
 
 interface SectionConfig {
     id: string;
@@ -420,6 +421,7 @@ function TestimonialsEditor({ section, onUpdateContent, onUpdateStyles }: Sectio
     const content = section.content as Record<string, unknown>;
     const styles = section.styles as Record<string, unknown>;
     const testimonials = (content.testimonials as TestimonialItem[]) ?? [];
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
 
     const updateTestimonial = (index: number, key: keyof TestimonialItem, value: string | number) => {
         const updated = [...testimonials];
@@ -438,8 +440,31 @@ function TestimonialsEditor({ section, onUpdateContent, onUpdateStyles }: Sectio
         onUpdateContent('testimonials', testimonials.filter((_, i) => i !== index));
     };
 
+    const handleDialogSave = (saved: { heading: string; subheading: string; testimonials: TestimonialItem[] }) => {
+        onUpdateContent('heading', saved.heading);
+        onUpdateContent('subheading', saved.subheading);
+        onUpdateContent('testimonials', saved.testimonials);
+    };
+
     return (
         <div className="space-y-4">
+            <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => setEditDialogOpen(true)}
+            >
+                <Pencil className="w-3.5 h-3.5 mr-1.5" />
+                Edit in Dialog
+            </Button>
+
+            <TestimonialsSectionEditDialog
+                open={editDialogOpen}
+                onOpenChange={setEditDialogOpen}
+                content={content}
+                onSave={handleDialogSave}
+            />
+
             <Accordion type="multiple" defaultValue={['content', 'items', 'styles']} className="w-full">
                 <AccordionItem value="content">
                     <AccordionTrigger className="text-sm font-medium">Heading</AccordionTrigger>
