@@ -722,4 +722,129 @@ describe('useShopCart', () => {
       expect(result.current.isInitialized).toBe(true);
     });
   });
+
+  describe('Store Switching', () => {
+    it('should reload cart when storeId changes', () => {
+      // Pre-populate carts for two stores
+      const store1Items = [{ ...mockItem, quantity: 2 }];
+      const store2Items = [{ ...mockItemWithVariant, quantity: 3 }];
+      mockStorage.set('shop_cart_store-1', JSON.stringify(store1Items));
+      mockStorage.set('shop_cart_store-2', JSON.stringify(store2Items));
+
+      let storeId = 'store-1';
+      const { result, rerender } = renderHook(() =>
+        useShopCart({ storeId })
+      );
+
+      expect(result.current.cartItems).toHaveLength(1);
+      expect(result.current.cartItems[0].productId).toBe('prod-1');
+
+      // Switch store
+      storeId = 'store-2';
+      rerender();
+
+      expect(result.current.cartItems).toHaveLength(1);
+      expect(result.current.cartItems[0].productId).toBe('prod-2');
+    });
+
+    it('should reset gift cards and coupons when storeId changes', () => {
+      let storeId = 'store-1';
+      const { result, rerender } = renderHook(() =>
+        useShopCart({ storeId })
+      );
+
+      act(() => {
+        result.current.applyGiftCard({ code: 'GIFT50', balance: 50 });
+      });
+      expect(result.current.appliedGiftCards).toHaveLength(1);
+
+      // Switch store
+      storeId = 'store-2';
+      rerender();
+
+      expect(result.current.appliedGiftCards).toHaveLength(0);
+    });
+  });
+
+  describe('Cross-Tab Persistence', () => {
+    it('should update cart when storage event fires for matching key', () => {
+      const { result } = renderHook(() =>
+        useShopCart({ storeId: TEST_STORE_ID })
+      );
+
+      expect(result.current.cartItems).toHaveLength(0);
+
+      // Simulate another tab updating localStorage
+      const newItems = [{ ...mockItem, quantity: 4 }];
+      act(() => {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: CART_KEY,
+          newValue: JSON.stringify(newItems),
+        }));
+      });
+
+      expect(result.current.cartItems).toHaveLength(1);
+      expect(result.current.cartItems[0].quantity).toBe(4);
+    });
+
+    it('should clear cart when storage event has null newValue', () => {
+      const savedItems = [{ ...mockItem, quantity: 2 }];
+      mockStorage.set(CART_KEY, JSON.stringify(savedItems));
+
+      const { result } = renderHook(() =>
+        useShopCart({ storeId: TEST_STORE_ID })
+      );
+
+      expect(result.current.cartItems).toHaveLength(1);
+
+      // Simulate another tab clearing the cart key
+      act(() => {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: CART_KEY,
+          newValue: null,
+        }));
+      });
+
+      expect(result.current.cartItems).toHaveLength(0);
+      expect(result.current.cartCount).toBe(0);
+    });
+
+    it('should ignore storage events for other keys', () => {
+      const savedItems = [{ ...mockItem, quantity: 2 }];
+      mockStorage.set(CART_KEY, JSON.stringify(savedItems));
+
+      const { result } = renderHook(() =>
+        useShopCart({ storeId: TEST_STORE_ID })
+      );
+
+      // Simulate storage event for a different store's cart
+      act(() => {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'shop_cart_other-store',
+          newValue: JSON.stringify([{ ...mockItem, quantity: 99 }]),
+        }));
+      });
+
+      // Should be unchanged
+      expect(result.current.cartItems).toHaveLength(1);
+      expect(result.current.cartItems[0].quantity).toBe(2);
+    });
+
+    it('should call onCartChange when cross-tab update occurs', () => {
+      const onCartChange = vi.fn();
+      renderHook(() =>
+        useShopCart({ storeId: TEST_STORE_ID, onCartChange })
+      );
+
+      const newItems = [{ ...mockItem, quantity: 5 }];
+      act(() => {
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: CART_KEY,
+          newValue: JSON.stringify(newItems),
+        }));
+      });
+
+      expect(onCartChange).toHaveBeenCalledWith(5);
+    });
+  });
 });
