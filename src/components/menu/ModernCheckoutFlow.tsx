@@ -963,8 +963,69 @@ function LocationStep({
   );
 }
 
+// Order Summary Recap (read-only, shown on Payment step)
+function OrderSummaryRecap() {
+  const cartItems = useMenuCartStore((state) => state.items);
+  const getTotal = useMenuCartStore((state) => state.getTotal);
+  const getItemCount = useMenuCartStore((state) => state.getItemCount);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const subtotal = getTotal();
+  const itemCount = getItemCount();
+  const serviceFee = subtotal * 0.05;
+  const total = subtotal + serviceFee;
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card className="bg-muted/30 border-dashed">
+        <CollapsibleTrigger className="w-full">
+          <CardHeader className="py-3 px-4 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">
+                Order Summary ({itemCount} {itemCount === 1 ? 'item' : 'items'})
+              </CardTitle>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-primary text-sm">${total.toFixed(2)}</span>
+              <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
+            </div>
+          </CardHeader>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent className="pt-0 pb-3 px-4 space-y-2">
+            {cartItems.map((item) => (
+              <div key={`${item.productId}-${item.weight}`} className="flex justify-between text-sm">
+                <span className="text-muted-foreground truncate mr-2">
+                  {item.quantity}x {item.productName}
+                  {item.weight && ` (${formatWeight(item.weight)})`}
+                </span>
+                <span className="shrink-0">${(item.price * item.quantity).toFixed(2)}</span>
+              </div>
+            ))}
+            <div className="pt-2 border-t space-y-1">
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>Service fee (5%)</span>
+                <span>${serviceFee.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm font-semibold pt-1 border-t">
+                <span>Total</span>
+                <span className="text-primary">${total.toFixed(2)}</span>
+              </div>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
+  );
+}
+
 // Payment Step with Crypto
-function PaymentStep({ 
+function PaymentStep({
   formData,
   totalAmount,
   onUpdate,
@@ -972,7 +1033,7 @@ function PaymentStep({
   onBack,
   paymentMethods,
   isLoadingSettings
-}: { 
+}: {
   formData: { paymentMethod: string };
   totalAmount: number;
   onUpdate: (field: string, value: string) => void;
@@ -984,7 +1045,7 @@ function PaymentStep({
   const [copiedAddress, setCopiedAddress] = useState(false);
   const selectedMethod = paymentMethods.find(m => m.id === formData.paymentMethod);
   const isValid = !!formData.paymentMethod;
-  
+
   const traditionalMethods = paymentMethods.filter(m => m.category === 'traditional');
   const cryptoMethods = paymentMethods.filter(m => m.category === 'crypto');
 
@@ -1002,13 +1063,16 @@ function PaymentStep({
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
             <CreditCard className="h-8 w-8 text-primary" />
           </div>
           <h2 className="text-xl font-bold">Payment Method</h2>
           <p className="text-sm text-muted-foreground">Choose how you'd like to pay</p>
         </div>
+
+        {/* Order Summary Recap */}
+        <OrderSummaryRecap />
 
         {/* Loading state */}
         {isLoadingSettings && (
