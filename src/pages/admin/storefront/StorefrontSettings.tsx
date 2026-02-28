@@ -29,7 +29,6 @@ import {
   CreditCard,
   Clock,
   Globe,
-  Save,
   Eye,
   Share2,
   MapPin,
@@ -48,7 +47,6 @@ import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedP
 import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
-// Skeleton already imported above
 
 interface DeliveryZone {
   zip_code: string;
