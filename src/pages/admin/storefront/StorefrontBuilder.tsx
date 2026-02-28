@@ -42,7 +42,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ThemePresetStrip } from '@/components/admin/storefront/ThemePresetSelector';
+import { ThemePresetStrip, ThemePresetGrid } from '@/components/admin/storefront/ThemePresetSelector';
 import { type ThemePreset } from '@/lib/storefrontThemes';
 import { useEasyModeBuilder } from '@/hooks/useEasyModeBuilder';
 import { detectAdvancedCustomizations } from '@/lib/storefrontPresets';
@@ -254,6 +254,7 @@ export function StorefrontBuilder({
         setSelectedThemeId(theme.id);
         setThemeConfig(prevConfig => ({
             ...prevConfig,
+            theme_id: theme.id,
             colors: {
                 primary: theme.colors.primary,
                 secondary: theme.colors.secondary,
@@ -324,7 +325,13 @@ export function StorefrontBuilder({
             const rawConfig = store.layout_config;
             const config: SectionConfig[] = Array.isArray(rawConfig) ? rawConfig : [];
             setLayoutConfig(config);
-            if (store.theme_config) setThemeConfig(store.theme_config as ExtendedThemeConfig);
+            if (store.theme_config) {
+                const savedTheme = store.theme_config as ExtendedThemeConfig;
+                setThemeConfig(savedTheme);
+                if (savedTheme.theme_id) {
+                    setSelectedThemeId(savedTheme.theme_id);
+                }
+            }
 
             // Initialize history
             setHistory([config]);
@@ -1074,7 +1081,7 @@ export function StorefrontBuilder({
                                 <ScrollArea className="h-full">
                                     <div className="p-3 space-y-3">
                                         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Theme Presets</p>
-                                        <ThemePresetStrip
+                                        <ThemePresetGrid
                                             selectedThemeId={selectedThemeId}
                                             onSelectTheme={handleThemeSelect}
                                         />
