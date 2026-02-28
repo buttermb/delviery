@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   Leaf,
   Store,
+  Share2,
 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { getThemeById } from '@/lib/storefrontThemes';
@@ -32,6 +33,7 @@ import { LuxuryAgeVerification } from '@/components/shop/LuxuryAgeVerification';
 import { StorefrontAgeGate } from '@/components/shop/StorefrontAgeGate';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 import { CartDrawer } from '@/components/shop/CartDrawer';
+import { StorefrontShareDialog } from '@/components/shop/StorefrontShareDialog';
 import { useShopCart } from '@/hooks/useShopCart';
 import { queryKeys } from '@/lib/queryKeys';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
@@ -111,6 +113,7 @@ export default function ShopLayout() {
   const [cartItemCount, setCartItemCount] = useState(0);
   const [ageVerified, setAgeVerified] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   // Check if in preview mode
   const isPreviewMode = searchParams.get('preview') === 'true';
@@ -555,6 +558,14 @@ export default function ShopLayout() {
             freeDeliveryThreshold={store.free_delivery_threshold}
           />
 
+          {/* Share Dialog */}
+          <StorefrontShareDialog
+            open={shareDialogOpen}
+            onOpenChange={setShareDialogOpen}
+            storeName={store.store_name}
+            storeSlug={store.slug}
+          />
+
           {/* Offline Indicator */}
           <OfflineIndicator position="top" showSyncStatus />
 
@@ -643,6 +654,15 @@ export default function ShopLayout() {
                 <Button variant="ghost" size="icon" className={`hidden md:flex ${isLuxuryTheme ? 'text-white/70 hover:text-white hover:bg-white/10' : ''}`} aria-label="Search products">
                   <Search className="w-5 h-5" />
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`hidden md:flex ${isLuxuryTheme ? 'text-white/70 hover:text-white hover:bg-white/10' : ''}`}
+                  onClick={() => setShareDialogOpen(true)}
+                  aria-label="Share store"
+                >
+                  <Share2 className="w-5 h-5" />
+                </Button>
                 {!isPreviewMode && (
                   <>
                     <Button
@@ -703,6 +723,16 @@ export default function ShopLayout() {
                   >
                     Deals & Promos
                   </Link>
+                  <button
+                    className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center gap-2 touch-manipulation active:scale-[0.98] text-left"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setShareDialogOpen(true);
+                    }}
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Share Store
+                  </button>
                   {!isPreviewMode && (
                     <>
                       <button
@@ -796,6 +826,14 @@ export default function ShopLayout() {
           accentColor={store.primary_color}
           deliveryFee={store.default_delivery_fee}
           freeDeliveryThreshold={store.free_delivery_threshold}
+        />
+
+        {/* Share Dialog */}
+        <StorefrontShareDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          storeName={store.store_name}
+          storeSlug={store.slug}
         />
 
         {/* Offline Indicator */}
