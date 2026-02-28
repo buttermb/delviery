@@ -118,7 +118,7 @@ serve(secureHeadersMiddleware(async (req) => {
     const productIds = body.items.map((item) => item.product_id);
     const { data: products, error: productsError } = await supabase
       .from("products")
-      .select("id, name, price, image_url")
+      .select("id, name, price, image_url, stock_quantity")
       .in("id", productIds)
       .eq("tenant_id", store.tenant_id);
 
@@ -151,7 +151,42 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     // ------------------------------------------------------------------
-    // 3. Calculate delivery fee from store settings (server-side)
+    // 3. Stock validation — all or nothing
+    // ------------------------------------------------------------------
+    const outOfStockItems: Array<{
+      productId: string;
+      productName: string;
+      requested: number;
+      available: number;
+    }> = [];
+
+    for (const item of body.items) {
+      const product = productMap.get(item.product_id);
+      if (product) {
+        const available = product.stock_quantity ?? 0;
+        if (available < item.quantity) {
+          outOfStockItems.push({
+            productId: item.product_id,
+            productName: product.name,
+            requested: item.quantity,
+            available,
+          });
+        }
+      }
+    }
+
+    if (outOfStockItems.length > 0) {
+      return jsonResponse(
+        {
+          error: "Insufficient stock",
+          unavailableProducts: outOfStockItems,
+        },
+        400,
+      );
+    }
+
+    // ------------------------------------------------------------------
+    // 4. Calculate delivery fee from store settings (server-side)
     // ------------------------------------------------------------------
     const storeDeliveryFee = Number(store.default_delivery_fee || 0);
     const freeThreshold = Number(store.free_delivery_threshold || 0);
@@ -165,7 +200,7 @@ serve(secureHeadersMiddleware(async (req) => {
     const total = subtotal + tax + deliveryFee;
 
     // ------------------------------------------------------------------
-    // 3b. SECURITY — Detect client/server price discrepancy
+    // 4b. SECURITY — Detect client/server price discrepancy
     // ------------------------------------------------------------------
     let priceDiscrepancy: { clientTotal: number; serverTotal: number } | null = null;
     if (body.clientTotal !== undefined) {
@@ -202,7 +237,7 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     // ------------------------------------------------------------------
-    // 4. Create order via existing RPC (handles inventory & idempotency)
+    // 5. Create order via existing RPC (handles inventory & idempotency)
     // ------------------------------------------------------------------
     const customerName = `${body.customerInfo.firstName} ${body.customerInfo.lastName}`;
 
@@ -257,7 +292,7 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     // ------------------------------------------------------------------
-    // 5. If card payment, create Stripe Checkout session
+    // 6. If card payment, create Stripe Checkout session
     // ------------------------------------------------------------------
     if (body.paymentMethod === "card") {
       const { data: account } = await supabase
