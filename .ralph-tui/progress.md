@@ -13,6 +13,7 @@ after each iteration and it's included in prompts for context.
 - **Stripe in edge functions**: Tenant Stripe keys are in `account_settings.integration_settings->stripe_secret_key`. Resolve via `accounts` table using `tenant_id`.
 - **No console.log in edge functions**: Use structured error responses instead of console.log/error. The quality gate checks for this.
 - **Customer upsert pattern**: Two customer tables exist — `customers` (CRM, uses `account_id` + `tenant_id`) and `marketplace_customers` (storefront, uses `store_id` + `email`). The `customers` table requires `account_id` (from `accounts` table via `tenant_id`). Lookup by phone + tenant_id, fallback to email + tenant_id.
+- **Telegram notification**: `forward-order-telegram` edge function. Telegram settings stored in `account_settings.notification_settings` JSONB (`telegram_bot_token`, `telegram_chat_id`, `telegram_auto_forward`). Called fire-and-forget from `storefront-checkout` via bare `fetch()` without `await`.
 
 ---
 
@@ -103,3 +104,75 @@ after each iteration and it's included in prompts for context.
   - `payment_status` uses 'awaiting_payment' in the RPC but the original CHECK constraint only has `('pending', 'paid', 'failed', 'refunded')` — likely relaxed in a later migration
 ---
 
+## 2026-02-27 - floraiq-dy9.7
+- Created `forward-order-telegram` edge function that sends order notifications to a tenant's configured Telegram chat
+- Function fetches `notification_settings` from `account_settings` (via `accounts.tenant_id`), checks `telegram_auto_forward`, `telegram_bot_token`, and `telegram_chat_id`
+- Formats a rich MarkdownV2 message with order number, customer info, items, and total
+- Calls the Telegram Bot API `sendMessage` endpoint; returns 200 with `{ sent: false, reason }` on any failure (never errors out)
+- Added fire-and-forget call in `storefront-checkout` (step 7) using bare `fetch()` without `await`, following the `tenant-invite` pattern
+- `.catch(() => {})` swallows errors so Telegram failures never block the checkout response
+- Files changed: `supabase/functions/forward-order-telegram/index.ts` (new), `supabase/functions/storefront-checkout/index.ts`
+- **Learnings:**
+  - Telegram settings live in `account_settings.notification_settings` JSONB: `telegram_bot_token`, `telegram_chat_id`, `telegram_auto_forward`
+  - Fire-and-forget in Deno edge functions: call `fetch()` without `await` + `.catch(() => {})` — Deno does NOT abort pending promises when the handler returns
+  - The `tenant-invite` function uses this same pattern for async email sending
+  - Telegram MarkdownV2 requires escaping special characters: `_*[]()~>#+\-=|{}.!`
+  - `account_settings` is keyed by `account_id` (not `tenant_id`), so you must resolve `accounts.id` from `tenant_id` first
+---
+
+## 2026-02-27 - floraiq-dy9.8
+- Added comprehensive error handling to `storefront-checkout` edge function
+- Separated store 404 (not found) from 403 (not published/inactive) by removing `is_active` from the initial query and checking it separately
+- Added JSON body parse error handling — returns 400 instead of falling through to generic 500
+- Sanitized database errors from `create_marketplace_order` RPC — stock errors get specific 409 responses, all other DB errors get a generic "Failed to create order" message (never leaks raw error strings)
+- Wrapped Stripe section in try/catch — Stripe failures return 402 Payment Required with the Stripe error message plus `orderId`/`orderNumber` in details (order was already created)
+- Changed outer catch from leaking `err.message` to always returning generic "Internal server error"
+- Files changed: `supabase/functions/storefront-checkout/index.ts`
+- **Learnings:**
+  - For store resolution, querying without `is_active` filter and checking separately allows distinguishing "store doesn't exist" (404) from "store exists but not published" (403)
+  - Stripe errors should return 402 (Payment Required) — the order still exists, so include orderId in the error response so the client can retry payment
+  - The outer catch should NEVER pass through `err.message` — it could contain stack traces, SQL errors, or other internals
+  - JSON parse errors from `req.json()` in Deno throw generic errors — catch them in an inner try/catch to return 400 instead of 500
+---
+
+## 2026-02-27 - floraiq-dy9.9
+- Verified `forward-order-telegram` edge function already fully implemented in dy9.7
+- Quality gates confirmed: `npx tsc --noEmit` passes, no `console.log`, tenant_id filtering via accounts table lookup
+- Fire-and-forget integration from `storefront-checkout` confirmed at line 370
+- No changes needed — bead closed as already complete
+- Files changed: none
+- **Learnings:**
+  - When a bead's work was already done in an earlier iteration (dy9.7 implemented both the edge function AND checkout integration), verify quality gates and close immediately rather than re-implementing
+---
+
+## 2026-02-27 - floraiq-dy9.10
+- Verified `get_marketplace_store_by_slug` RPC function already exists (migration `20251210164902`)
+- Function takes `p_slug TEXT`, returns 23-column TABLE with layout_config, theme_config, checkout_settings, operating_hours, payment_methods
+- Published-store filtering: `is_public = true` for public access; tenant members (via `tenant_users` subquery) bypass for admin preview
+- SECURITY DEFINER with `SET search_path = public`, permissions granted to anon/authenticated/service_role
+- Used by 4 React components: ShopLayout, StoreLandingPage, StoreMenuPage, StoreProductPage
+- Quality gates confirmed: `npx tsc --noEmit` passes, no `console.log`, tenant_id filtering via tenant_users subquery
+- No changes needed — bead closed as already complete
+- Files changed: none
+- **Learnings:**
+  - The `is_active` vs `is_public` separation in the RPC is intentional — the function returns `is_active` in the result set so components can show different UI states (maintenance page vs not found), rather than filtering it out at the DB level
+  - Multiple migrations evolved this function (20251209 initial → 20251210 with correct types + search_path) — always check the latest migration version
+  - Pattern: RPC functions that return TABLE type require `data[0]` access in TypeScript since Supabase returns an array
+---
+
+## 2026-02-27 - floraiq-dy9.11
+- Verified `get_marketplace_products` RPC function already exists (latest migration: `20260112000001_fix_rpc_product_settings.sql`)
+- Function takes `p_store_id UUID`, resolves `tenant_id` internally from `marketplace_stores`, returns 21-column TABLE
+- Filters: only visible products (`COALESCE(mps.is_visible, true) = true`), tenant-isolated (`p.tenant_id = v_tenant_id`)
+- Returns products with images, categories, prices (including custom prices from `marketplace_product_settings`), stock, THC/CBD, effects, slugs
+- SECURITY DEFINER with grants to anon/authenticated/service_role
+- Frontend filtering (category, search, sort, limit/offset pagination) handled client-side in `ProductCatalogPage.tsx` via `useMemo` — appropriate for typical catalog sizes
+- 14 frontend consumers already using the RPC
+- Quality gates confirmed: `npx tsc --noEmit` passes, no `console.log`, tenant_id filtering via internal resolution
+- No changes needed — bead closed as already complete
+- Files changed: none
+- **Learnings:**
+  - The bead spec mentioned `tenant_id` as input, but the actual design uses `store_id` and resolves tenant internally — this is correct because storefront consumers only know the store, not the tenant
+  - Client-side filtering is the chosen pattern for storefront product catalogs; the RPC returns all visible products and the frontend handles search/sort/pagination
+  - The function has a B2B fallback path via `marketplace_listings` when the store is a marketplace profile rather than a D2C storefront
+---
