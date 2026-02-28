@@ -1,24 +1,25 @@
 /**
  * Order Confirmation Page
- * Success page after placing an order (cash payments and Stripe redirects)
+ * Success page after placing an order with real-time status tracking timeline
  */
 
 import { useEffect, useState } from 'react';
 import { Link, useParams, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import confetti from 'canvas-confetti';
+import { CheckCircle, Package, Clock, Copy, Check, Loader2, ShoppingBag, Truck, MessageCircle, XCircle, MapPin, Mail } from 'lucide-react';
+
 import { useShop } from './ShopLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check, Loader2, ShoppingBag, Truck, MessageCircle, XCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useShopCart } from '@/hooks/useShopCart';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
-
-import confetti from 'canvas-confetti';
 import { queryKeys } from '@/lib/queryKeys';
 
 interface OrderItem {
@@ -28,12 +29,22 @@ interface OrderItem {
   image_url?: string;
 }
 
+const STATUS_STEPS = [
+  { status: 'pending', label: 'Order Placed', description: 'Your order has been received', icon: Package },
+  { status: 'confirmed', label: 'Confirmed', description: 'Store confirmed your order', icon: CheckCircle },
+  { status: 'preparing', label: 'Preparing', description: 'Your order is being prepared', icon: Clock },
+  { status: 'ready', label: 'Ready', description: 'Ready for pickup or delivery', icon: Package },
+  { status: 'out_for_delivery', label: 'Out for Delivery', description: 'On the way to you', icon: Truck },
+  { status: 'delivered', label: 'Delivered', description: 'Order has been delivered', icon: CheckCircle },
+];
+
 export function OrderConfirmationPage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { store } = useShop();
+  const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [cartCleared, setCartCleared] = useState(false);
   const [paymentVerified, setPaymentVerified] = useState(false);
@@ -58,21 +69,19 @@ export function OrderConfirmationPage() {
   const total = stateData.total || (totalParam ? parseFloat(totalParam) : undefined);
   const sessionId = searchParams.get('session_id');
 
-  // Fetch order details to show items ordered
+  // Fetch order details with id for realtime subscription
   const { data: orderDetails, isLoading: orderLoading } = useQuery({
     queryKey: queryKeys.shopPages.orderConfirmation(trackingToken || orderNumber),
     queryFn: async () => {
       if (!trackingToken && !orderNumber) return null;
 
-      // Try fetching by tracking_token first, then by order_number/id
       let query = supabase
         .from('storefront_orders')
-        .select('order_number, items, subtotal, delivery_fee, total, status, created_at, delivery_address, customer_name');
+        .select('id, order_number, items, subtotal, delivery_fee, total, status, created_at, delivery_address, customer_name');
 
       if (trackingToken) {
         query = query.eq('tracking_token', trackingToken);
       } else if (orderNumber) {
-        // orderNumber could be UUID (card) or human-readable (cash)
         query = query.or(`id.eq.${orderNumber},order_number.eq.${orderNumber}`);
       }
 
@@ -86,8 +95,44 @@ export function OrderConfirmationPage() {
       return data;
     },
     enabled: !!(trackingToken || orderNumber),
-    staleTime: 5 * 60 * 1000,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      if (!data?.status) return false;
+      const activeStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery'];
+      return activeStatuses.includes(data.status) ? 30000 : false;
+    },
   });
+
+  // Realtime subscription for instant order status updates
+  useEffect(() => {
+    const orderId = orderDetails?.id;
+    if (!orderId) return;
+
+    const channel = supabase
+      .channel(`order-confirmation-${orderId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'marketplace_orders',
+          filter: `id=eq.${orderId}`,
+        },
+        (payload) => {
+          logger.debug('Order status update received', payload.new, 'OrderConfirmationPage');
+          queryClient.invalidateQueries({ queryKey: queryKeys.shopPages.orderConfirmation(trackingToken || orderNumber) });
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.debug('Realtime subscribed for order confirmation', { orderId }, 'OrderConfirmationPage');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderDetails?.id, trackingToken, orderNumber, queryClient]);
 
   // Verify Stripe payment session if session_id is present (redirect from Stripe)
   useEffect(() => {
@@ -105,11 +150,9 @@ export function OrderConfirmationPage() {
             logger.warn('Failed to verify payment status', error, { component: 'OrderConfirmationPage' });
           }
 
-          // Payment is verified if status is 'paid' or if session matches (webhook may arrive later)
           if (order?.payment_status === 'paid' || order?.stripe_session_id === sessionId) {
             setPaymentVerified(true);
           } else {
-            // Webhook might not have arrived yet - still show confirmation
             setPaymentVerified(true);
             logger.info('Payment pending webhook confirmation', { orderId: orderNumber, sessionId }, { component: 'OrderConfirmationPage' });
           }
@@ -139,10 +182,9 @@ export function OrderConfirmationPage() {
       clearCart();
       setCartCleared(true);
 
-      // Fire confetti
       const duration = 3000;
       const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }; // matches --z-base token
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
 
       const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
@@ -171,7 +213,6 @@ export function OrderConfirmationPage() {
 
   if (!store || !orderNumber) return null;
 
-  // Show loading state while verifying Stripe payment
   if (verifying) {
     return (
       <div className="container mx-auto px-3 sm:px-4 py-12 sm:py-16 max-w-2xl text-center">
@@ -190,6 +231,8 @@ export function OrderConfirmationPage() {
     : null;
   const telegramLink = stateData.telegramLink || null;
   const isCancelled = orderDetails?.status === 'cancelled';
+  const currentStatus = orderDetails?.status ?? 'pending';
+  const currentStepIndex = STATUS_STEPS.findIndex((s) => s.status === currentStatus);
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 md:py-16 max-w-2xl">
@@ -237,81 +280,75 @@ export function OrderConfirmationPage() {
             )}
           </div>
 
-          {/* Next Steps Timeline (hidden when cancelled) */}
+          {/* Real-time Status Tracking Timeline (hidden when cancelled) */}
           {!isCancelled && (
-            <>
-              {/* Desktop timeline */}
-              <div className="hidden md:grid md:grid-cols-3 gap-6 py-6 border-t border-b">
-                <div className="flex flex-col items-center text-center">
-                  <Mail className="w-8 h-8 mb-2" style={{ color: store.primary_color }} />
-                  <p className="font-medium">Email Confirmation</p>
-                  <p className="text-sm text-muted-foreground">
-                    Check your inbox for order details
-                  </p>
-                </div>
-                <div className="flex flex-col items-center text-center">
-                  <Clock className="w-8 h-8 mb-2" style={{ color: store.primary_color }} />
-                  <p className="font-medium">Order Processing</p>
-                  <p className="text-sm text-muted-foreground">
-                    We&apos;re preparing your order
-                  </p>
-                </div>
-                <div className="flex flex-col items-center text-center">
-                  <MapPin className="w-8 h-8 mb-2" style={{ color: store.primary_color }} />
-                  <p className="font-medium">Track Delivery</p>
-                  <p className="text-sm text-muted-foreground">
-                    Get real-time updates
-                  </p>
-                </div>
-              </div>
+            <div className="py-4 sm:py-6 border-t border-b">
+              <p className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                Order Status
+              </p>
+              <div className="relative pl-10 sm:pl-12 space-y-1">
+                {STATUS_STEPS.map((step, index) => {
+                  const isComplete = index <= currentStepIndex;
+                  const isCurrent = index === currentStepIndex;
+                  const Icon = step.icon;
+                  const isLast = index === STATUS_STEPS.length - 1;
 
-              {/* Mobile: vertical left-aligned timeline with connector */}
-              <div className="md:hidden py-4 border-t border-b">
-                <div className="relative pl-8 space-y-4">
-                  {/* Vertical connector line */}
-                  <div
-                    className="absolute left-[11px] top-1 bottom-1 w-0.5 rounded-full"
-                    style={{ backgroundColor: `${store.primary_color}30` }}
-                  />
-                  <div className="relative flex items-start gap-3">
-                    <div
-                      className="absolute -left-8 top-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${store.primary_color}20` }}
-                    >
-                      <Mail className="w-3.5 h-3.5" style={{ color: store.primary_color }} />
+                  return (
+                    <div key={step.status} className="relative pb-5 last:pb-0">
+                      {/* Vertical connector line */}
+                      {!isLast && (
+                        <div
+                          className="absolute -left-10 sm:-left-12 top-8 w-0.5 h-[calc(100%-8px)]"
+                          style={{
+                            backgroundColor: isComplete && index < currentStepIndex
+                              ? store.primary_color
+                              : '#e5e7eb',
+                          }}
+                        />
+                      )}
+
+                      {/* Icon circle */}
+                      <div
+                        className={`absolute -left-10 sm:-left-12 top-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-500 ${isCurrent ? 'ring-4 ring-offset-2' : ''}`}
+                        style={{
+                          backgroundColor: isComplete ? store.primary_color : '#e5e7eb',
+                          '--tw-ring-color': isCurrent ? `${store.primary_color}30` : 'transparent',
+                        } as React.CSSProperties}
+                      >
+                        <Icon
+                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isComplete ? 'text-white' : 'text-gray-400'}`}
+                        />
+                      </div>
+
+                      {/* Content */}
+                      <div className="min-h-[28px] flex items-start justify-between gap-2">
+                        <div>
+                          <p
+                            className={`text-sm font-medium leading-7 sm:leading-8 ${isComplete ? '' : 'text-muted-foreground'}`}
+                            style={{ color: isCurrent ? store.primary_color : undefined }}
+                          >
+                            {step.label}
+                          </p>
+                          {isCurrent && (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {step.description}
+                            </p>
+                          )}
+                        </div>
+                        {isCurrent && (
+                          <Badge
+                            className="shrink-0 mt-1 text-white text-[10px]"
+                            style={{ backgroundColor: store.primary_color }}
+                          >
+                            Current
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">Email Confirmation</p>
-                      <p className="text-xs text-muted-foreground">Check your inbox for order details</p>
-                    </div>
-                  </div>
-                  <div className="relative flex items-start gap-3">
-                    <div
-                      className="absolute -left-8 top-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${store.primary_color}20` }}
-                    >
-                      <Clock className="w-3.5 h-3.5" style={{ color: store.primary_color }} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Order Processing</p>
-                      <p className="text-xs text-muted-foreground">We&apos;re preparing your order</p>
-                    </div>
-                  </div>
-                  <div className="relative flex items-start gap-3">
-                    <div
-                      className="absolute -left-8 top-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${store.primary_color}20` }}
-                    >
-                      <MapPin className="w-3.5 h-3.5" style={{ color: store.primary_color }} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Track Delivery</p>
-                      <p className="text-xs text-muted-foreground">Get real-time updates</p>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-            </>
+            </div>
           )}
 
           {/* Tracking URL section */}
@@ -336,7 +373,6 @@ export function OrderConfirmationPage() {
                       toast.success('Tracking link copied!');
                       setTimeout(() => setCopied(false), 2000);
                     } catch {
-                      // Fallback for browsers without clipboard API
                       const textarea = document.createElement('textarea');
                       textarea.value = trackingUrl;
                       document.body.appendChild(textarea);
@@ -365,7 +401,7 @@ export function OrderConfirmationPage() {
             </div>
           )}
 
-          {/* Telegram contact link — large, prominent, full-width */}
+          {/* Telegram contact link */}
           {telegramLink && (
             <div className="mt-4">
               <a
@@ -387,7 +423,7 @@ export function OrderConfirmationPage() {
         </CardContent>
       </Card>
 
-      {/* Estimated Delivery (hidden when cancelled) */}
+      {/* Delivery Details (hidden when cancelled) */}
       {orderDetails && !isCancelled && (
         <Card className="mb-4 sm:mb-6">
           <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
@@ -421,7 +457,7 @@ export function OrderConfirmationPage() {
                       ? 'Delivered'
                       : orderDetails.status === 'out_for_delivery'
                         ? 'Out for delivery — arriving soon'
-                        : 'Within 30–60 minutes'}
+                        : 'Within 30\u201360 minutes'}
                   </p>
                 </div>
               </div>
