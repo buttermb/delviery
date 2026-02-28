@@ -208,7 +208,7 @@ export function ProductDetailPage() {
         return Math.max(prev - 1, 0); // swipe right = prev
       });
     }
-  }, []);
+  }, [allImages]);
 
   // Track recently viewed products
   const { addToRecentlyViewed } = useRecentlyViewed();
@@ -439,7 +439,7 @@ export function ProductDetailPage() {
         }
       };
     }
-  }, [product, store, productId, addToRecentlyViewed, allImages, reviews, averageRating]);
+  }, [product, store, storeSlug, productId, addToRecentlyViewed, allImages, reviews, averageRating]);
 
 
   // Toggle wishlist with error handling
