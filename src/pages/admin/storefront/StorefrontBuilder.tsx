@@ -239,6 +239,9 @@ export function StorefrontBuilder({
     // Delete Confirmation Dialog State
     const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
 
+    // Advanced mode dirty tracking
+    const [advancedIsDirty, setAdvancedIsDirty] = useState(false);
+
     // Builder State
     const [layoutConfig, setLayoutConfig] = useState<SectionConfig[]>([]);
     const [themeConfig, setThemeConfig] = useState<ExtendedThemeConfig>({
@@ -265,6 +268,7 @@ export function StorefrontBuilder({
                 fontFamily: theme.typography.fontFamily.split(',')[0].trim(),
             }
         }));
+        setAdvancedIsDirty(true);
         toast.success('Theme Applied', {
             description: `${theme.name} theme has been applied to your storefront`,
         });
@@ -577,6 +581,7 @@ export function StorefrontBuilder({
             queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.shopStore.all });
             easyModeBuilder.markClean();
+            setAdvancedIsDirty(false);
         },
         onError: (err) => {
             toast.error('Save failed', { description: humanizeError(err) });
@@ -617,6 +622,7 @@ export function StorefrontBuilder({
             queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceSettings.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.shopStore.all });
             easyModeBuilder.markClean();
+            setAdvancedIsDirty(false);
         },
         onError: (err) => {
             toast.error('Publish failed', { description: humanizeError(err) });
@@ -636,6 +642,7 @@ export function StorefrontBuilder({
         setLayoutConfig(newConfig);
         saveToHistory(newConfig);
         setSelectedSectionId(newSection.id);
+        setAdvancedIsDirty(true);
     };
 
     const requestRemoveSection = (id: string, e: React.MouseEvent) => {
@@ -650,6 +657,7 @@ export function StorefrontBuilder({
         saveToHistory(newConfig);
         if (selectedSectionId === sectionToDelete) setSelectedSectionId(null);
         setSectionToDelete(null);
+        setAdvancedIsDirty(true);
         toast.success('Section deleted');
     };
 
@@ -674,6 +682,7 @@ export function StorefrontBuilder({
         setLayoutConfig(newConfig);
         saveToHistory(newConfig);
         setSelectedSectionId(duplicated.id);
+        setAdvancedIsDirty(true);
         toast.success('Section duplicated');
     };
 
@@ -684,6 +693,7 @@ export function StorefrontBuilder({
         );
         setLayoutConfig(newConfig);
         saveToHistory(newConfig);
+        setAdvancedIsDirty(true);
     };
 
     const updateSection = (id: string, field: 'content' | 'styles', key: string, value: unknown) => {
@@ -695,6 +705,7 @@ export function StorefrontBuilder({
             };
         });
         setLayoutConfig(newConfig);
+        setAdvancedIsDirty(true);
     };
 
     const updateSectionResponsive = (id: string, device: 'mobile' | 'tablet' | 'desktop', key: string, value: unknown) => {
@@ -712,6 +723,7 @@ export function StorefrontBuilder({
             };
         });
         setLayoutConfig(newConfig);
+        setAdvancedIsDirty(true);
     };
 
     const applyTemplate = (templateKey: keyof typeof TEMPLATES) => {
@@ -725,6 +737,7 @@ export function StorefrontBuilder({
         }));
         setLayoutConfig(newSections);
         saveToHistory(newSections);
+        setAdvancedIsDirty(true);
         toast.success(`Applied "${template.name}" template`);
     };
 
@@ -736,6 +749,7 @@ export function StorefrontBuilder({
             const newConfig = arrayMove(layoutConfig, oldIndex, newIndex);
             setLayoutConfig(newConfig);
             saveToHistory(newConfig);
+            setAdvancedIsDirty(true);
         }
     };
 
@@ -754,12 +768,13 @@ export function StorefrontBuilder({
         if (!rightPanelOpen) setRightPanelOpen(true);
     };
 
-    // Notify parent of dirty state changes
+    // Notify parent of dirty state changes (both simple and advanced mode)
     useEffect(() => {
         if (onDirtyChange) {
-            onDirtyChange(easyModeBuilder.isDirty);
+            const isDirty = builderMode === 'simple' ? easyModeBuilder.isDirty : advancedIsDirty;
+            onDirtyChange(isDirty);
         }
-    }, [easyModeBuilder.isDirty, onDirtyChange]);
+    }, [easyModeBuilder.isDirty, advancedIsDirty, builderMode, onDirtyChange]);
 
     // Handle close/back
     const handleClose = useCallback(() => {
