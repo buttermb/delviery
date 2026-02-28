@@ -3,7 +3,7 @@
  * Left sidebar with Sections, Theme, and Templates tabs
  */
 
-import { Plus, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -93,16 +93,16 @@ export function BuilderLeftPanel({
                             <div className="space-y-2">
                                 <Label>Add Section</Label>
                                 <div className="grid grid-cols-2 gap-2">
-                                    {Object.entries(SECTION_TYPES).map(([key, { label, icon: _Icon }]) => (
+                                    {Object.entries(SECTION_TYPES).map(([key, { label, icon: Icon }]) => (
                                         <Button
                                             key={key}
                                             variant="outline"
                                             size="sm"
                                             onClick={() => onAddSection(key)}
-                                            className="justify-start text-xs"
+                                            className="justify-start text-xs gap-1.5"
                                         >
-                                            <Plus className="w-3 h-3 mr-1" />
-                                            {label.split(' ')[0]}
+                                            <Icon className="w-3.5 h-3.5 shrink-0" />
+                                            <span className="truncate">{label}</span>
                                         </Button>
                                     ))}
                                 </div>

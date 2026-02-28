@@ -3,7 +3,7 @@
  * Section types, templates, defaults, and shared types
  */
 
-import { Layout, Sparkles, MessageSquare, Mail, Image, HelpCircle, Code } from 'lucide-react';
+import { Layout, LayoutGrid, Sparkles, MessageSquare, Mail, Image, HelpCircle, Code } from 'lucide-react';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
 import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
 import { ProductGridSection } from '@/components/shop/sections/ProductGridSection';
@@ -42,7 +42,7 @@ export const DEFAULT_THEME: ThemeConfig = {
 export const SECTION_TYPES: Record<string, SectionTypeDefinition> = {
     hero: { label: 'Hero Section', icon: Layout, component: HeroSection },
     features: { label: 'Features Grid', icon: Sparkles, component: FeaturesSection },
-    product_grid: { label: 'Product Grid', icon: Layout, component: ProductGridSection },
+    product_grid: { label: 'Product Grid', icon: LayoutGrid, component: ProductGridSection },
     testimonials: { label: 'Testimonials', icon: MessageSquare, component: TestimonialsSection },
     newsletter: { label: 'Newsletter', icon: Mail, component: NewsletterSection },
     gallery: { label: 'Gallery', icon: Image, component: GallerySection },
