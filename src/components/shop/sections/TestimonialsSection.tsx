@@ -45,8 +45,10 @@ export function TestimonialsSection({ content, styles }: TestimonialsSectionProp
     const {
         heading = "What Our Customers Say",
         subheading = "Join thousands of satisfied customers",
-        testimonials = defaultTestimonials
+        testimonials: rawTestimonials,
     } = content || {};
+
+    const testimonials = rawTestimonials && rawTestimonials.length > 0 ? rawTestimonials : defaultTestimonials;
 
     const {
         background_color = "#ffffff",

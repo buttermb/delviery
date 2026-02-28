@@ -43,6 +43,7 @@ vi.mock('@/lib/logger', () => ({
 // Mock sanitize utility
 vi.mock('@/lib/utils/sanitize', () => ({
   sanitizeBasicHtml: (html: string) => html,
+  sanitizeWithLineBreaks: (html: string) => html,
 }));
 
 // Mock framer-motion to avoid animation issues in tests
@@ -137,6 +138,9 @@ vi.mock('@/components/pwa/OfflineIndicator', () => ({
 import ShopLayout from '@/pages/shop/ShopLayout';
 import StorefrontPage from '@/pages/shop/StorefrontPage';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
+import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
+import { TestimonialsSection } from '@/components/shop/sections/TestimonialsSection';
+import { FAQSection } from '@/components/shop/sections/FAQSection';
 
 // Sample store data - ID must be >= 32 chars for product RPC to fire
 const mockStore = {
@@ -435,6 +439,103 @@ describe('Storefront Route /shop/:storeSlug', () => {
         expect(screen.getByText('Cannabis')).toBeInTheDocument();
         expect(screen.getByText('Delivered')).toBeInTheDocument();
       });
+    });
+
+    it('should render FeaturesSection TestimonialsSection and FAQSection from layout_config', async () => {
+      const storeWithAllSections = {
+        ...mockStore,
+        layout_config: [
+          {
+            id: 'hero-section',
+            type: 'hero',
+            content: {
+              heading_line_1: 'Premium',
+              heading_line_2: 'Cannabis',
+              heading_line_3: 'Delivered',
+              subheading: 'Same-day delivery available',
+              cta_primary_text: 'Shop Now',
+              cta_primary_link: '/shop/test-store/products',
+            },
+            styles: {
+              background_gradient_start: '#000000',
+              background_gradient_end: '#022c22',
+              text_color: '#ffffff',
+              accent_color: '#34d399',
+            },
+          },
+          {
+            id: 'features-section',
+            type: 'features',
+            content: {
+              heading_small: 'Why Us',
+              heading_large: 'Top Quality',
+              features: [
+                { icon: 'shield', title: 'Lab Tested', description: 'Every product verified' },
+              ],
+            },
+            styles: { background_color: '#171717', text_color: '#ffffff', icon_color: '#34d399' },
+          },
+          {
+            id: 'testimonials-section',
+            type: 'testimonials',
+            content: {
+              heading: 'Reviews',
+              subheading: 'Trusted by thousands',
+              testimonials: [
+                { name: 'Jane D.', role: 'Customer', quote: 'Amazing quality!', rating: 5 },
+              ],
+            },
+            styles: { background_color: '#ffffff', text_color: '#000000', accent_color: '#10b981', card_background: '#f9fafb' },
+          },
+          {
+            id: 'faq-section',
+            type: 'faq',
+            content: {
+              heading: 'FAQ',
+              subheading: 'Quick answers',
+              faqs: [
+                { question: 'Is delivery free?', answer: 'Free for orders over $100.' },
+              ],
+            },
+            styles: { background_color: '#f9fafb', text_color: '#000000', accent_color: '#10b981', border_color: '#e5e7eb' },
+          },
+        ],
+      };
+
+      mockRpc.mockImplementation((fnName: string) => {
+        if (fnName === 'get_marketplace_store_by_slug') {
+          return Promise.resolve({ data: [storeWithAllSections], error: null });
+        }
+        if (fnName === 'get_marketplace_products') {
+          return Promise.resolve({ data: [], error: null });
+        }
+        return Promise.resolve({ data: [], error: null });
+      });
+
+      render(<TestWrapper />);
+
+      await waitFor(() => {
+        // Features section
+        expect(screen.getByText('Why Us')).toBeInTheDocument();
+        expect(screen.getByText('Top Quality')).toBeInTheDocument();
+        expect(screen.getByText('Lab Tested')).toBeInTheDocument();
+
+        // Testimonials section
+        expect(screen.getByText('Reviews')).toBeInTheDocument();
+        expect(screen.getByText('Jane D.')).toBeInTheDocument();
+
+        // FAQ section
+        expect(screen.getByText('FAQ')).toBeInTheDocument();
+        expect(screen.getByText('Is delivery free?')).toBeInTheDocument();
+      });
+
+      // Verify data-testid attributes for section types
+      const featuresSection = screen.getByTestId('storefront-section-features');
+      expect(featuresSection).toBeInTheDocument();
+      const testimonialsSection = screen.getByTestId('storefront-section-testimonials');
+      expect(testimonialsSection).toBeInTheDocument();
+      const faqSection = screen.getByTestId('storefront-section-faq');
+      expect(faqSection).toBeInTheDocument();
     });
 
     it('should render default layout when layout_config is empty', async () => {
@@ -799,5 +900,203 @@ describe('HeroSection Component', () => {
     expect(screen.getByText('Premium')).toBeInTheDocument();
     expect(screen.getByText('Flower')).toBeInTheDocument();
     expect(screen.getByText('Delivered')).toBeInTheDocument();
+  });
+});
+
+describe('FeaturesSection Component', () => {
+  const defaultContent = {
+    heading_small: 'Why Choose Us',
+    heading_large: 'Our Advantages',
+    features: [
+      { icon: 'clock', title: 'Fast Delivery', description: 'Same-day service' },
+      { icon: 'shield', title: 'Lab Tested', description: 'Quality guaranteed' },
+    ],
+  };
+
+  const defaultStyles = {
+    background_color: '#171717',
+    text_color: '#ffffff',
+    icon_color: '#34d399',
+  };
+
+  it('should render heading text', () => {
+    render(<FeaturesSection content={defaultContent} styles={defaultStyles} />);
+
+    expect(screen.getByText('Why Choose Us')).toBeInTheDocument();
+    expect(screen.getByText('Our Advantages')).toBeInTheDocument();
+  });
+
+  it('should render feature items with titles and descriptions', () => {
+    render(<FeaturesSection content={defaultContent} styles={defaultStyles} />);
+
+    expect(screen.getByText('Fast Delivery')).toBeInTheDocument();
+    expect(screen.getByText('Same-day service')).toBeInTheDocument();
+    expect(screen.getByText('Lab Tested')).toBeInTheDocument();
+    expect(screen.getByText('Quality guaranteed')).toBeInTheDocument();
+  });
+
+  it('should apply background and text color styles', () => {
+    const { container } = render(<FeaturesSection content={defaultContent} styles={defaultStyles} />);
+
+    const section = container.querySelector('section');
+    expect(section).toHaveStyle({ backgroundColor: '#171717' });
+  });
+
+  it('should use default values when content/styles are undefined', () => {
+    render(
+      <FeaturesSection
+        content={undefined as unknown as typeof defaultContent}
+        styles={undefined as unknown as typeof defaultStyles}
+      />
+    );
+
+    expect(screen.getByText('The Difference')).toBeInTheDocument();
+    expect(screen.getByText('Excellence in Every Detail')).toBeInTheDocument();
+    expect(screen.getByText('Same-Day Delivery')).toBeInTheDocument();
+  });
+
+  it('should fall back to defaults when features array is empty', () => {
+    render(
+      <FeaturesSection
+        content={{ ...defaultContent, features: [] }}
+        styles={defaultStyles}
+      />
+    );
+
+    // Should render default features instead of empty grid
+    expect(screen.getByText('Same-Day Delivery')).toBeInTheDocument();
+    expect(screen.getByText('Lab Verified')).toBeInTheDocument();
+  });
+});
+
+describe('TestimonialsSection Component', () => {
+  const defaultContent = {
+    heading: 'Customer Reviews',
+    subheading: 'Hear from our community',
+    testimonials: [
+      { name: 'Alice B.', role: 'VIP Member', quote: 'Absolutely fantastic service!', rating: 5 },
+      { name: 'Bob C.', role: 'First-Timer', quote: 'Will definitely order again.', rating: 4 },
+    ],
+  };
+
+  const defaultStyles = {
+    background_color: '#ffffff',
+    text_color: '#000000',
+    accent_color: '#10b981',
+    card_background: '#f9fafb',
+  };
+
+  it('should render heading and subheading', () => {
+    render(<TestimonialsSection content={defaultContent} styles={defaultStyles} />);
+
+    expect(screen.getByText('Customer Reviews')).toBeInTheDocument();
+    expect(screen.getByText('Hear from our community')).toBeInTheDocument();
+  });
+
+  it('should render testimonial quotes and author info', () => {
+    render(<TestimonialsSection content={defaultContent} styles={defaultStyles} />);
+
+    expect(screen.getByText(/"Absolutely fantastic service!"/)).toBeInTheDocument();
+    expect(screen.getByText('Alice B.')).toBeInTheDocument();
+    expect(screen.getByText('VIP Member')).toBeInTheDocument();
+    expect(screen.getByText(/"Will definitely order again."/)).toBeInTheDocument();
+    expect(screen.getByText('Bob C.')).toBeInTheDocument();
+  });
+
+  it('should render star ratings', () => {
+    const { container } = render(<TestimonialsSection content={defaultContent} styles={defaultStyles} />);
+
+    // 2 testimonials x 5 stars each = 10 star SVGs
+    const stars = container.querySelectorAll('.lucide-star');
+    expect(stars.length).toBe(10);
+  });
+
+  it('should use default values when content/styles are undefined', () => {
+    render(
+      <TestimonialsSection
+        content={undefined as unknown as typeof defaultContent}
+        styles={undefined as unknown as typeof defaultStyles}
+      />
+    );
+
+    expect(screen.getByText('What Our Customers Say')).toBeInTheDocument();
+    expect(screen.getByText('Sarah M.')).toBeInTheDocument();
+  });
+
+  it('should fall back to defaults when testimonials array is empty', () => {
+    render(
+      <TestimonialsSection
+        content={{ ...defaultContent, testimonials: [] }}
+        styles={defaultStyles}
+      />
+    );
+
+    // Should render default testimonials instead of empty grid
+    expect(screen.getByText('Sarah M.')).toBeInTheDocument();
+    expect(screen.getByText('Michael R.')).toBeInTheDocument();
+  });
+});
+
+describe('FAQSection Component', () => {
+  const defaultContent = {
+    heading: 'Common Questions',
+    subheading: 'Find your answers here',
+    faqs: [
+      { question: 'Do you deliver on weekends?', answer: 'Yes, we deliver 7 days a week.' },
+      { question: 'What is the return policy?', answer: 'Full refund within 24 hours.' },
+    ],
+  };
+
+  const defaultStyles = {
+    background_color: '#f9fafb',
+    text_color: '#000000',
+    accent_color: '#10b981',
+    border_color: '#e5e7eb',
+  };
+
+  it('should render heading and subheading', () => {
+    render(<FAQSection content={defaultContent} styles={defaultStyles} />);
+
+    expect(screen.getByText('Common Questions')).toBeInTheDocument();
+    expect(screen.getByText('Find your answers here')).toBeInTheDocument();
+  });
+
+  it('should render FAQ questions as accordion triggers', () => {
+    render(<FAQSection content={defaultContent} styles={defaultStyles} />);
+
+    expect(screen.getByText('Do you deliver on weekends?')).toBeInTheDocument();
+    expect(screen.getByText('What is the return policy?')).toBeInTheDocument();
+  });
+
+  it('should apply background color style', () => {
+    const { container } = render(<FAQSection content={defaultContent} styles={defaultStyles} />);
+
+    const section = container.querySelector('section');
+    expect(section).toHaveStyle({ backgroundColor: '#f9fafb' });
+  });
+
+  it('should use default values when content/styles are undefined', () => {
+    render(
+      <FAQSection
+        content={undefined as unknown as typeof defaultContent}
+        styles={undefined as unknown as typeof defaultStyles}
+      />
+    );
+
+    expect(screen.getByText('Frequently Asked Questions')).toBeInTheDocument();
+    expect(screen.getByText('What are your delivery hours?')).toBeInTheDocument();
+  });
+
+  it('should fall back to defaults when faqs array is empty', () => {
+    render(
+      <FAQSection
+        content={{ ...defaultContent, faqs: [] }}
+        styles={defaultStyles}
+      />
+    );
+
+    // Should render default FAQs instead of empty accordion
+    expect(screen.getByText('What are your delivery hours?')).toBeInTheDocument();
+    expect(screen.getByText('How do I track my order?')).toBeInTheDocument();
   });
 });

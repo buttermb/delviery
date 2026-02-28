@@ -25,33 +25,37 @@ const ICON_MAP: Record<string, LucideIcon> = {
     star: Star,
 };
 
+const defaultFeatures = [
+    {
+        icon: 'clock',
+        title: 'Same-Day Delivery',
+        description: 'Order before 9 PM for delivery within the hour. Real-time tracking included.',
+    },
+    {
+        icon: 'shield',
+        title: 'Lab Verified',
+        description: 'Every strain tested for purity, potency, and quality. Certificates available.',
+    },
+    {
+        icon: 'lock',
+        title: 'Discreet Service',
+        description: 'Unmarked packaging. Professional couriers. Your privacy is our priority.',
+    },
+    {
+        icon: 'star',
+        title: 'Premium Selection',
+        description: 'Hand-picked strains. Indoor cultivation. Top-shelf quality guaranteed.',
+    },
+];
+
 export function FeaturesSection({ content, styles }: FeaturesSectionProps) {
     const {
         heading_small = "The Difference",
         heading_large = "Excellence in Every Detail",
-        features = [
-            {
-                icon: 'clock',
-                title: 'Same-Day Delivery',
-                description: 'Order before 9 PM for delivery within the hour. Real-time tracking included.',
-            },
-            {
-                icon: 'shield',
-                title: 'Lab Verified',
-                description: 'Every strain tested for purity, potency, and quality. Certificates available.',
-            },
-            {
-                icon: 'lock',
-                title: 'Discreet Service',
-                description: 'Unmarked packaging. Professional couriers. Your privacy is our priority.',
-            },
-            {
-                icon: 'star',
-                title: 'Premium Selection',
-                description: 'Hand-picked strains. Indoor cultivation. Top-shelf quality guaranteed.',
-            },
-        ]
+        features: rawFeatures,
     } = content || {};
+
+    const features = rawFeatures && rawFeatures.length > 0 ? rawFeatures : defaultFeatures;
 
     const {
         background_color = "#171717", // neutral-900

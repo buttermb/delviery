@@ -45,8 +45,10 @@ export function FAQSection({ content, styles }: FAQSectionProps) {
     const {
         heading = "Frequently Asked Questions",
         subheading = "Got questions? We've got answers.",
-        faqs = defaultFAQs
+        faqs: rawFaqs,
     } = content || {};
+
+    const faqs = rawFaqs && rawFaqs.length > 0 ? rawFaqs : defaultFAQs;
 
     const {
         background_color = "#f9fafb",
