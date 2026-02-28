@@ -115,3 +115,13 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Updated ProductGridSectionProps interface with new fields: columns, max_products, sort_order, show_view_all_link, category_filter
 - Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
 - TypeScript compilation passes with zero errors
+
+## CartPage stock validation before proceeding to checkout
+- Enhanced CartPage.tsx with proactive stock validation using useCartStockCheck hook
+- Checkout buttons (desktop + mobile sticky bar) now disabled when stock issues detected
+- Button text changes to "Fix Stock Issues to Checkout" with warning icon when stock insufficient
+- Express payment buttons also disabled when stock issues exist
+- handleCheckout() has dual-layer validation: fast check from cached useCartStockCheck + fresh server-side checkInventoryAvailability() at click time
+- Low stock items show info toast but don't block checkout; insufficient stock blocks with item names listed
+- Added data-testid attributes to checkout buttons for testability
+- TypeScript compilation passes with zero errors
