@@ -160,12 +160,13 @@ export function StorefrontLiveOrders() {
   const { data: orders = [], isLoading, refetch } = useQuery({
     queryKey: queryKeys.storefrontLiveOrders.byStore(store?.id, statusFilter),
     queryFn: async () => {
-      if (!store?.id) return [];
+      if (!store?.id || !tenantId) return [];
 
       let query = supabase
         .from('marketplace_orders')
         .select('*')
         .eq('store_id', store.id)
+        .eq('seller_tenant_id', tenantId)
         .order('created_at', { ascending: false });
 
       // Filter by active statuses if 'all', otherwise specific status
@@ -448,9 +449,9 @@ export function StorefrontLiveOrders() {
         <Card>
           <CardContent className="py-16 text-center">
             <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-            <p className="text-lg font-semibold">No active orders</p>
+            <p className="text-lg font-semibold">No orders yet</p>
             <p className="text-sm text-muted-foreground mt-1">
-              New orders will appear here in real-time
+              Share your store link to start getting orders!
             </p>
           </CardContent>
         </Card>
