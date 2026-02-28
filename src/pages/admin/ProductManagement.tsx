@@ -463,7 +463,7 @@ export default function ProductManagement() {
   };
 
   // Handlers
-  const handleProductSubmit = async (data: ProductFormData) => {
+  const handleProductSubmit = async (data: ProductFormData, imageFile: File | null) => {
     // Validate tenant context first
     if (!tenant?.id) {
       toast.error('Tenant not found. Please refresh.');
@@ -499,6 +499,29 @@ export default function ProductManagement() {
         }
       }
 
+      // Upload image file to Supabase Storage if provided
+      let imageUrl = data.image_url;
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop() || 'png';
+        const fileName = `${tenant.id}/${crypto.randomUUID()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, imageFile, {
+            contentType: imageFile.type,
+            upsert: true,
+          });
+
+        if (uploadError) {
+          logger.error('Failed to upload product image', { error: uploadError });
+          toast.error('Failed to upload image. Product will be saved without it.');
+        } else {
+          const { data: urlData } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(fileName);
+          imageUrl = urlData.publicUrl;
+        }
+      }
+
       // Ensure all required fields for DB are present
       const productData = {
         tenant_id: tenant.id,
@@ -516,7 +539,7 @@ export default function ProductManagement() {
         retail_price: data.retail_price ? parseFloat(data.retail_price) : null,
         available_quantity: data.available_quantity ? Math.floor(parseFloat(data.available_quantity)) : 0,
         description: data.description,
-        image_url: data.image_url,
+        image_url: imageUrl,
         low_stock_alert: data.low_stock_alert ? parseInt(data.low_stock_alert) : 10,
         // Add missing required fields with defaults
         price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
