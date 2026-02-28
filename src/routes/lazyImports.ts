@@ -291,6 +291,7 @@ export const CheckoutPage = lazy(() => import("@/pages/customer/CheckoutPage"));
 export const OrderTrackingPage = lazy(() => import("@/pages/customer/OrderTrackingPage"));
 export const SecureMenuAccess = lazy(() => import("@/pages/customer/SecureMenuAccess").then(m => ({ default: m.SecureMenuAccess })));
 export const SecureMenuView = lazy(() => import("@/pages/customer/SecureMenuView"));
+export const StaticMenuPage = lazy(() => import("@/pages/public/StaticMenuPage"));
 export const WholesaleMarketplacePage = lazy(() => import("@/pages/customer/WholesaleMarketplacePage"));
 export const WholesaleCartPage = lazy(() => import("@/pages/customer/WholesaleCartPage"));
 export const WholesaleCheckoutPage = lazy(() => import("@/pages/customer/WholesaleCheckoutPage"));
