@@ -1,15 +1,22 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
+
+import type { DateRangeValue } from '@/components/admin/shared/FilterBar';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { LiveOrdersKanban, type LiveOrder } from '@/components/admin/live-orders/LiveOrdersKanban';
+import {
+  LiveOrdersFilters,
+  useLiveOrderFilters,
+  parseLiveOrderFilters,
+} from '@/components/admin/live-orders/LiveOrdersFilters';
 import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { useUndo } from '@/hooks/useUndo';
 import { UndoToast } from '@/components/ui/undo-toast';
@@ -34,6 +41,12 @@ interface LiveOrdersProps {
   statusFilter?: string;
 }
 
+/** Determine fulfillment type from order data */
+function getFulfillmentType(order: LiveOrder): 'delivery' | 'pickup' {
+  if (!order.delivery_address) return 'pickup';
+  return 'delivery';
+}
+
 export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
@@ -41,6 +54,9 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
   const [soundEnabled, setSoundEnabledState] = useState(isSoundEnabled);
   const previousOrderCountRef = useRef<number>(0);
   const isFirstLoadRef = useRef(true);
+
+  // Filter state
+  const { filters, setFilters, clearFilters, searchValue, setSearchValue } = useLiveOrderFilters();
 
   // Undo hook for status changes
   const { pendingAction, timeRemaining, executeWithUndo, undo, commit } = useUndo<{
@@ -84,7 +100,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
   });
 
   // Fetch Orders Query
-  const { data: orders = [], isLoading, refetch } = useQuery({
+  const { data: allOrders = [], isLoading, refetch } = useQuery({
     queryKey: queryKeys.orders.live(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -133,7 +149,11 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           created_at: o.created_at,
           user_id: o.user_id,
           source: 'app',
-          total_amount: Number(o.total_amount ?? 0)
+          total_amount: Number(o.total_amount ?? 0),
+          delivery_address: o.delivery_address || undefined,
+          payment_status: o.payment_status || undefined,
+          payment_method: o.payment_method || undefined,
+          customer_name: o.customer_name || undefined,
         }));
 
         // Transform Menu Orders
@@ -153,7 +173,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
 
-        // Apply status filter if provided
+        // Apply status filter if provided via prop
         if (statusFilter === 'pending') {
           combined = combined.filter(o =>
             ['pending', 'confirmed', 'preparing', 'ready_for_pickup'].includes(o.status)
@@ -175,11 +195,63 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
     refetchInterval: 30000 // Fallback poll every 30s
   });
 
-  // Play sound when new orders arrive
+  // Apply client-side filters
+  const filteredOrders = useMemo(() => {
+    const parsed = parseLiveOrderFilters(filters, searchValue);
+    let result = allOrders;
+
+    // Status filter
+    if (parsed.status) {
+      result = result.filter(o => o.status === parsed.status);
+    }
+
+    // Payment status filter
+    if (parsed.paymentStatus) {
+      result = result.filter(o => o.payment_status === parsed.paymentStatus);
+    }
+
+    // Fulfillment filter (delivery vs pickup)
+    if (parsed.fulfillment) {
+      result = result.filter(o => getFulfillmentType(o) === parsed.fulfillment);
+    }
+
+    // Source filter (app vs menu)
+    if (parsed.source) {
+      result = result.filter(o => o.source === parsed.source);
+    }
+
+    // Date range filter
+    if (parsed.dateRange) {
+      const dateRange = parsed.dateRange as DateRangeValue;
+      if (dateRange.from) {
+        const fromDate = new Date(dateRange.from);
+        fromDate.setHours(0, 0, 0, 0);
+        result = result.filter(o => new Date(o.created_at) >= fromDate);
+      }
+      if (dateRange.to) {
+        const toDate = new Date(dateRange.to);
+        toDate.setHours(23, 59, 59, 999);
+        result = result.filter(o => new Date(o.created_at) <= toDate);
+      }
+    }
+
+    // Search filter (order number)
+    if (parsed.search) {
+      const searchLower = parsed.search.toLowerCase();
+      result = result.filter(o =>
+        o.order_number.toLowerCase().includes(searchLower) ||
+        (o.customer_name && o.customer_name.toLowerCase().includes(searchLower))
+      );
+    }
+
+    return result;
+  }, [allOrders, filters, searchValue]);
+
+  // Play sound when new orders arrive (based on all orders, not filtered)
   useEffect(() => {
     if (isLoading) return;
 
-    const currentCount = orders.length;
+    const currentCount = allOrders.length;
 
     // Skip first load - don't play sound when page opens
     if (isFirstLoadRef.current) {
@@ -197,7 +269,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
     }
 
     previousOrderCountRef.current = currentCount;
-  }, [orders.length, isLoading, soundEnabled]);
+  }, [allOrders.length, isLoading, soundEnabled]);
 
   // Helper function to update status in database
   const updateStatusInDb = async (
@@ -224,7 +296,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
     source: 'menu' | 'app'
   ) => {
     // Find the order to get previous status
-    const order = orders.find((o) => o.id === orderId);
+    const order = allOrders.find((o) => o.id === orderId);
     if (!order) return;
 
     const previousStatus = order.status;
@@ -266,6 +338,8 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
     setIsRefreshing(false);
   };
 
+  const hasActiveFilters = Object.keys(filters).length > 0 || searchValue.length > 0;
+
   return (
     <div className="flex flex-col h-dvh overflow-hidden bg-slate-50 dark:bg-zinc-950">
       <SEOHead
@@ -285,7 +359,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
               </span>
             </h1>
             <p className="text-muted-foreground text-sm">
-              {orders.length} active orders • Swimlane View
+              {filteredOrders.length}{hasActiveFilters ? ` of ${allOrders.length}` : ''} active orders • Swimlane View
             </p>
           </div>
 
@@ -336,19 +410,30 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
         </div>
       </div>
 
+      {/* Filters */}
+      <div className="flex-none px-6 py-3 border-b bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+        <LiveOrdersFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          onClear={clearFilters}
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+        />
+      </div>
+
       {/* Kanban Board Container */}
       <div className="flex-1 overflow-auto p-3">
         <PullToRefresh onRefresh={async () => { await refetch(); }}>
           <div className="h-full">
-            {!isLoading && orders.length === 0 ? (
+            {!isLoading && filteredOrders.length === 0 ? (
               <EmptyState
                 icon={Radio}
-                title="No active orders right now"
-                description="Live orders appear here in real-time when customers place orders"
+                title={hasActiveFilters ? 'No orders match your filters' : 'No active orders right now'}
+                description={hasActiveFilters ? 'Try adjusting your filters to see more orders' : 'Live orders appear here in real-time when customers place orders'}
               />
             ) : (
               <LiveOrdersKanban
-                orders={orders}
+                orders={filteredOrders}
                 isLoading={isLoading}
                 onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
               />
