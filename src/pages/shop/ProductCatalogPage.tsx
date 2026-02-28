@@ -22,6 +22,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
   Search,
   Package,
   Grid3X3,
@@ -30,6 +36,7 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
@@ -146,7 +153,10 @@ export function ProductCatalogPage() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? '');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'name');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') ?? '');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
+    const cat = searchParams.get('category');
+    return cat ? [cat] : [];
+  });
   const [selectedStrainTypes, setSelectedStrainTypes] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
@@ -307,12 +317,12 @@ export function ProductCatalogPage() {
       );
     }
 
-    // Category filter
-    if (selectedCategory) {
+    // Category filter (multi-select)
+    if (selectedCategories.length > 0) {
       result = result.filter(
         (p) =>
-          p.marketplace_category_name === selectedCategory ||
-          p.category === selectedCategory
+          selectedCategories.includes(p.marketplace_category_name ?? '') ||
+          selectedCategories.includes(p.category ?? '')
       );
     }
 
@@ -377,7 +387,7 @@ export function ProductCatalogPage() {
     }
 
     return result;
-  }, [products, searchQuery, selectedCategory, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]);
+  }, [products, searchQuery, selectedCategories, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]);
 
   // Pagination
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -389,7 +399,7 @@ export function ProductCatalogPage() {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]);
+  }, [searchQuery, selectedCategories, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]);
 
   // Get unique categories from products
   const productCategories = useMemo(() => {
@@ -404,7 +414,7 @@ export function ProductCatalogPage() {
   // Clear all filters
   const clearFilters = () => {
     setSearchQuery('');
-    setSelectedCategory('');
+    setSelectedCategories([]);
     setSelectedStrainTypes([]);
     setInStockOnly(false);
     setPriceRange([0, 1000]);
@@ -415,7 +425,7 @@ export function ProductCatalogPage() {
     setSearchParams({});
   };
 
-  const hasActiveFilters = searchQuery || selectedCategory || selectedStrainTypes.length > 0 || inStockOnly || thcRange[0] > 0 || thcRange[1] < 100 || cbdRange[0] > 0 || cbdRange[1] < 100;
+  const hasActiveFilters = searchQuery || selectedCategories.length > 0 || selectedStrainTypes.length > 0 || inStockOnly || thcRange[0] > 0 || thcRange[1] < 100 || cbdRange[0] > 0 || cbdRange[1] < 100;
 
   // Get unique strain types from products
   const strainTypes = useMemo(() => {
@@ -435,17 +445,25 @@ export function ProductCatalogPage() {
 
   // Filter state for FilterDrawer
   const filterState: FilterState = {
-    categories: selectedCategory ? [selectedCategory] : [],
+    categories: selectedCategories,
     strainTypes: selectedStrainTypes,
     priceRange,
     sortBy,
   };
 
   const handleFiltersChange = (newFilters: FilterState) => {
-    setSelectedCategory(newFilters.categories[0] ?? '');
+    setSelectedCategories(newFilters.categories);
     setSelectedStrainTypes(newFilters.strainTypes);
     setPriceRange(newFilters.priceRange);
     setSortBy(newFilters.sortBy);
+  };
+
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
   };
 
   return (
@@ -485,20 +503,43 @@ export function ProductCatalogPage() {
 
         {/* Mobile: Category + Sort in a 2-col row */}
         <div className="grid grid-cols-2 gap-2 md:contents">
-          {/* Category Filter */}
-          <Select value={selectedCategory || "all"} onValueChange={(val) => setSelectedCategory(val === "all" ? "" : val)}>
-            <SelectTrigger className="w-full md:w-[180px]">
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {productCategories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Category Filter (Checkbox Popover) */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full md:w-[180px] justify-between font-normal"
+              >
+                <span className="truncate">
+                  {selectedCategories.length === 0
+                    ? 'All Categories'
+                    : selectedCategories.length === 1
+                      ? selectedCategories[0]
+                      : `${selectedCategories.length} categories`}
+                </span>
+                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-2" align="start">
+              <div className="space-y-1 max-h-[240px] overflow-y-auto">
+                {productCategories.map((cat) => (
+                  <label
+                    key={cat}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent cursor-pointer text-sm"
+                  >
+                    <Checkbox
+                      checked={selectedCategories.includes(cat)}
+                      onCheckedChange={() => toggleCategory(cat)}
+                    />
+                    <span className="truncate">{cat}</span>
+                  </label>
+                ))}
+                {productCategories.length === 0 && (
+                  <p className="text-sm text-muted-foreground px-2 py-1">No categories</p>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
 
           {/* Sort */}
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -537,7 +578,7 @@ export function ProductCatalogPage() {
           {/* Advanced Filter Button */}
           <FilterTriggerButton
             onClick={() => setFilterDrawerOpen(true)}
-            activeCount={selectedCategory || inStockOnly ? 1 : 0}
+            activeCount={selectedCategories.length + (inStockOnly ? 1 : 0)}
             className="md:hidden"
           />
         </div>
@@ -573,15 +614,15 @@ export function ProductCatalogPage() {
               />
             </Badge>
           )}
-          {selectedCategory && (
-            <Badge variant="secondary" className="gap-1">
-              {selectedCategory}
+          {selectedCategories.map((cat) => (
+            <Badge key={cat} variant="secondary" className="gap-1">
+              {cat}
               <X
                 className="w-3 h-3 cursor-pointer"
-                onClick={() => setSelectedCategory('')}
+                onClick={() => toggleCategory(cat)}
               />
             </Badge>
-          )}
+          ))}
           {selectedStrainTypes.length > 0 && (
             <Badge variant="secondary" className="gap-1">
               {selectedStrainTypes.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')}
