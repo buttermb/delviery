@@ -5,7 +5,7 @@
  * Includes inventory validation for real-time stock checking
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { logger } from '@/lib/logger';
 import { safeStorage } from '@/utils/safeStorage';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,6 +74,24 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
     const [isInitialized, setIsInitialized] = useState(false);
     const [lastValidation, setLastValidation] = useState<CartValidationResult | null>(null);
 
+    // Stable ref for onCartChange to avoid re-triggering effects
+    const onCartChangeRef = useRef(onCartChange);
+    onCartChangeRef.current = onCartChange;
+
+    // Track previous storeId to detect changes
+    const prevStoreIdRef = useRef(storeId);
+
+    // Reset initialization when storeId changes
+    useEffect(() => {
+        if (prevStoreIdRef.current !== storeId) {
+            prevStoreIdRef.current = storeId;
+            setIsInitialized(false);
+            setCartItems([]);
+            setAppliedCoupon(null);
+            setAppliedGiftCards([]);
+        }
+    }, [storeId]);
+
     // Load cart from localStorage
     const loadCart = useCallback((): ShopCartItem[] => {
         if (!storeId) return [];
@@ -130,7 +148,7 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
             setCartItems(items);
 
             const count = items.reduce((sum, item) => sum + item.quantity, 0);
-            onCartChange?.(count);
+            onCartChangeRef.current?.(count);
 
             // Dispatch event for cross-component sync
             window.dispatchEvent(new CustomEvent('cartUpdated', {
@@ -139,18 +157,18 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         } catch (e) {
             logger.error('Failed to save cart', e);
         }
-    }, [storeId, onCartChange]);
+    }, [storeId]);
 
-    // Initialize cart on mount
+    // Initialize cart on mount or when storeId changes
     useEffect(() => {
         if (storeId && !isInitialized) {
             const items = loadCart();
             setCartItems(items);
             const count = items.reduce((sum, item) => sum + item.quantity, 0);
-            onCartChange?.(count);
+            onCartChangeRef.current?.(count);
             setIsInitialized(true);
         }
-    }, [storeId, loadCart, onCartChange, isInitialized]);
+    }, [storeId, loadCart, isInitialized]);
 
     // Listen for cart updates from other components
     useEffect(() => {
@@ -162,6 +180,35 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
 
         window.addEventListener('cartUpdated', handleCartUpdate as EventListener);
         return () => window.removeEventListener('cartUpdated', handleCartUpdate as EventListener);
+    }, [storeId]);
+
+    // Listen for localStorage changes from other tabs
+    useEffect(() => {
+        if (!storeId) return;
+
+        const cartKey = getCartKey(storeId);
+
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key !== cartKey) return;
+
+            try {
+                if (!event.newValue) {
+                    setCartItems([]);
+                    onCartChangeRef.current?.(0);
+                    return;
+                }
+                const parsed = JSON.parse(event.newValue);
+                const items: ShopCartItem[] = Array.isArray(parsed) ? parsed : [];
+                setCartItems(items);
+                const count = items.reduce((sum, item) => sum + item.quantity, 0);
+                onCartChangeRef.current?.(count);
+            } catch (e) {
+                logger.error('Failed to handle cross-tab cart update', e);
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, [storeId]);
 
     // Load saved coupon from localStorage
