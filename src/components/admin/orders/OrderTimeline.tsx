@@ -70,6 +70,20 @@ const EVENT_CONFIG: Record<string, {
     bgClass: 'bg-green-100',
     borderClass: 'border-green-200',
   },
+  preparing: {
+    label: 'Preparing Order',
+    icon: Package,
+    colorClass: 'text-orange-600',
+    bgClass: 'bg-orange-100',
+    borderClass: 'border-orange-200',
+  },
+  ready: {
+    label: 'Order Ready',
+    icon: CheckCircle,
+    colorClass: 'text-purple-600',
+    bgClass: 'bg-purple-100',
+    borderClass: 'border-purple-200',
+  },
   payment_received: {
     label: 'Payment Received',
     icon: CreditCard,
@@ -93,6 +107,13 @@ const EVENT_CONFIG: Record<string, {
   },
   delivered: {
     label: 'Delivered',
+    icon: CheckCircle,
+    colorClass: 'text-green-700',
+    bgClass: 'bg-green-100',
+    borderClass: 'border-green-300',
+  },
+  completed: {
+    label: 'Order Completed',
     icon: CheckCircle,
     colorClass: 'text-green-700',
     bgClass: 'bg-green-100',

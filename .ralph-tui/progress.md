@@ -31,6 +31,34 @@ after each iteration and it's included in prompts for context.
 
 - **Chart colors**: Import from `@/lib/chartColors` — never hardcode hex colors in chart components. Use `CHART_COLORS[N]` for indexed palette, `chartSemanticColors.revenue/cost/danger` for semantic meaning, `CATEGORY_CHART_COLORS` for credit/category breakdowns. CSS vars `--chart-1` through `--chart-10` defined in `index.css`.
 
+## 2026-02-28 - floraiq-khy.10
+- Admin order status lifecycle: pending → confirmed → preparing → ready → out_for_delivery → delivered
+- Core UI was already built (StorefrontLiveOrders Kanban/table, OrderDetailPanel, OrderTrackingPage with realtime)
+- Added: status timestamps (preparing_at, ready_at, out_for_delivery_at), activity logging on status changes, timeline event types
+- Files changed:
+  - `supabase/migrations/20260228000015_storefront_order_status_lifecycle.sql` (new) — relaxed CHECK constraint, added timestamp columns
+  - `src/pages/admin/storefront/StorefrontLiveOrders.tsx` — mutation now sets timestamp fields + logs to activity_log
+  - `src/components/admin/storefront/OrderDetailPanel.tsx` — buildTimeline includes preparing, ready, out_for_delivery steps
+  - `src/components/admin/orders/OrderTimeline.tsx` — added preparing, ready, completed event types to EVENT_CONFIG
+- **Learnings:**
+  - The original `marketplace_orders.status` CHECK constraint was `('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled')` — missing storefront statuses. Need migration to relax it.
+  - `marketplace_orders` table only had `confirmed_at`, `shipped_at`, `delivered_at` timestamp columns — added `preparing_at`, `ready_at`, `out_for_delivery_at` via migration
+  - OrderDetailPanel builds its timeline from raw timestamp fields, not from activity_log — both approaches coexist (timestamps for DetailPanel, activity_log for OrderTimeline)
+  - `logActivity` is fire-and-forget (catches its own errors) — safe to call without await in the mutation
+  - The `admin` object from `useTenantAdminAuth()` has `.userId` (Supabase auth user ID) needed for activity logging
+---
+
+## 2026-02-28 - floraiq-khy.9
+- Added Telegram configuration UI to admin Settings > Notifications tab
+- Backend was already fully implemented: `forward-order-telegram` edge function, fire-and-forget call from `storefront-checkout`, DB migration for JSONB fields
+- Files changed: `src/pages/admin/SettingsPage.tsx`
+- **Learnings:**
+  - The `onSaveNotifications` handler was overwriting entire `notification_settings` JSONB with only form data — fixed by merging with existing settings to preserve non-form fields
+  - Telegram fields (`telegram_auto_forward`, `telegram_bot_token`, `telegram_chat_id`, `telegram_customer_link`) live in `account_settings.notification_settings` JSONB alongside regular notification prefs
+  - Use `shouldDirty: true` in `setValue` for Switch components so unsaved-changes detection works correctly
+  - The edge function returns 200 even on failure (with `sent: false`) — this is intentional so checkout never sees an error from Telegram
+---
+
 ## 2026-02-28 - floraiq-jwn.2
 - Converted all custom modal implementations to shadcn Dialog/Sheet
 - Files changed:

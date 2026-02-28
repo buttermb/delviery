@@ -56,6 +56,9 @@ interface OrderRawFields {
   buyer_notes?: string | null;
   seller_notes?: string | null;
   confirmed_at?: string | null;
+  preparing_at?: string | null;
+  ready_at?: string | null;
+  out_for_delivery_at?: string | null;
   shipped_at?: string | null;
   delivered_at?: string | null;
   updated_at?: string | null;
@@ -188,8 +191,17 @@ function buildTimeline(order: LiveOrder): TimelineEntry[] {
   if (raw.paid_at) {
     entries.push({ label: 'Payment received', timestamp: raw.paid_at });
   }
-  if (raw.shipped_at) {
-    entries.push({ label: 'Shipped / Out for delivery', timestamp: raw.shipped_at });
+  if (raw.preparing_at) {
+    entries.push({ label: 'Preparing', timestamp: raw.preparing_at });
+  }
+  if (raw.ready_at) {
+    entries.push({ label: 'Ready', timestamp: raw.ready_at });
+  }
+  if (raw.out_for_delivery_at) {
+    entries.push({ label: 'Out for delivery', timestamp: raw.out_for_delivery_at });
+  }
+  if (raw.shipped_at && !raw.out_for_delivery_at) {
+    entries.push({ label: 'Shipped', timestamp: raw.shipped_at });
   }
   if (raw.delivered_at) {
     entries.push({ label: 'Delivered', timestamp: raw.delivered_at });

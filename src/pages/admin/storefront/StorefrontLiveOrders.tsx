@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logActivity } from '@/lib/activityLog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -162,7 +163,7 @@ function showBrowserNotification(title: string, body: string): void {
 }
 
 export function StorefrontLiveOrders() {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -301,17 +302,54 @@ export function StorefrontLiveOrders() {
 
   // Update order status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
+    mutationFn: async ({ orderId, newStatus, previousStatus }: { orderId: string; newStatus: string; previousStatus: string }) => {
       if (!store?.id || !tenantId) throw new Error('No store or tenant context');
+
+      const now = new Date().toISOString();
+      const updateData: Record<string, unknown> = {
+        status: newStatus,
+        updated_at: now,
+      };
+
+      // Set the corresponding timestamp for each status transition
+      const timestampMap: Record<string, string> = {
+        confirmed: 'confirmed_at',
+        preparing: 'preparing_at',
+        ready: 'ready_at',
+        out_for_delivery: 'out_for_delivery_at',
+        delivered: 'delivered_at',
+        completed: 'delivered_at',
+      };
+      const tsField = timestampMap[newStatus];
+      if (tsField) {
+        updateData[tsField] = now;
+      }
 
       const { error } = await supabase
         .from('marketplace_orders')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq('id', orderId)
         .eq('store_id', store.id)
         .eq('seller_tenant_id', tenantId);
 
       if (error) throw error;
+
+      // Log activity for the timeline (fire-and-forget)
+      const userId = admin?.userId;
+      if (tenantId && userId) {
+        logActivity(
+          tenantId,
+          userId,
+          newStatus,
+          'order',
+          orderId,
+          {
+            previous_status: previousStatus,
+            new_status: newStatus,
+            user_name: admin?.name || admin?.email,
+          }
+        );
+      }
     },
     onMutate: ({ orderId }) => {
       setUpdatingOrderId(orderId);
@@ -330,7 +368,9 @@ export function StorefrontLiveOrders() {
   });
 
   const handleStatusChange = (orderId: string, newStatus: string) => {
-    updateStatusMutation.mutate({ orderId, newStatus });
+    const order = orders.find(o => o.id === orderId);
+    const previousStatus = order?.status ?? 'unknown';
+    updateStatusMutation.mutate({ orderId, newStatus, previousStatus });
   };
 
   const handleViewDetails = (orderId: string) => {
