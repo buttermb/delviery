@@ -30,6 +30,11 @@ export interface ProductGridSectionProps {
     content: {
         heading: string;
         subheading: string;
+        columns: number;
+        max_products: number;
+        sort_order: string;
+        show_view_all_link: boolean;
+        category_filter: string;
         show_search: boolean;
         show_categories: boolean;
         initial_categories_shown: number;
@@ -52,6 +57,11 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
     const {
         heading = "Shop Premium Flower",
         subheading = "Premium indoor-grown flower from licensed NYC cultivators",
+        columns = 4,
+        max_products = 20,
+        sort_order = 'newest',
+        show_view_all_link = true,
+        category_filter = 'all',
         show_search = true,
         show_categories: _show_categories = true,
         initial_categories_shown = 2,
@@ -203,15 +213,19 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         desc: "" // Could map descriptions if needed
     }));
 
-    let filteredProducts: LocalProduct[] = searchQuery
-        ? allProducts.filter((p) => {
-            const query = searchQuery.toLowerCase();
-            return (
-                (p.name ?? '').toLowerCase().includes(query) ||
-                (p.description ?? '').toLowerCase().includes(query)
-            );
-        })
+    // Apply category filter from section config
+    let filteredProducts: LocalProduct[] = category_filter && category_filter !== 'all'
+        ? allProducts.filter((p) => (p.category ?? '').toLowerCase() === category_filter.toLowerCase())
         : allProducts;
+
+    // Apply search filter
+    if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        filteredProducts = filteredProducts.filter((p) =>
+            (p.name ?? '').toLowerCase().includes(query) ||
+            (p.description ?? '').toLowerCase().includes(query)
+        );
+    }
 
     if (premiumFilter) {
         filteredProducts = filteredProducts.filter((p) => {
@@ -219,6 +233,28 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
             return price >= 40 || p.description?.toLowerCase().includes('premium');
         });
     }
+
+    // Apply sort order
+    filteredProducts = [...filteredProducts].sort((a, b) => {
+        switch (sort_order) {
+            case 'price_asc': return (a.price ?? 0) - (b.price ?? 0);
+            case 'price_desc': return (b.price ?? 0) - (a.price ?? 0);
+            case 'name_asc': return (a.name ?? '').localeCompare(b.name ?? '');
+            case 'name_desc': return (b.name ?? '').localeCompare(a.name ?? '');
+            case 'newest':
+            default: return 0; // Keep original order (newest from DB)
+        }
+    });
+
+    // Apply max products limit
+    const limitedProducts = filteredProducts.slice(0, max_products);
+
+    // Grid column class mapping
+    const gridColsClass = columns === 2
+        ? 'grid-cols-1 md:grid-cols-2'
+        : columns === 3
+            ? 'grid-cols-2 md:grid-cols-3'
+            : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
 
 
     return (
@@ -277,7 +313,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                         <h3 className="text-xl font-semibold mb-2 opacity-70">Coming soon</h3>
                         <p className="opacity-50">Check back soon for new arrivals</p>
                     </div>
-                ) : filteredProducts.length === 0 ? (
+                ) : limitedProducts.length === 0 ? (
                     <div className="text-center py-20 opacity-50">
                         <p>No products match your search.</p>
                     </div>
@@ -286,7 +322,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                         {categories
                             .slice(0, showAllCategories ? categories.length : (initial_categories_shown || 2))
                             .map((category) => {
-                                const products = filteredProducts.filter(p => p.category === category.key);
+                                const products = limitedProducts.filter(p => p.category === category.key);
                                 if (products.length === 0) return null;
 
                                 const Icon = category.icon;
@@ -305,7 +341,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                         </div>
 
                                         {/* Responsive Product Grid */}
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                                        <div className={`grid ${gridColsClass} gap-3 md:gap-6`}>
                                                 {products.map((product, index) => (
                                                     <div key={product.id || index}>
                                                         <StorefrontProductCard
@@ -347,6 +383,17 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                         {!showAllCategories && categories.length > (initial_categories_shown || 2) && (
                             <div className="flex justify-center pt-8">
                                 <Button size="lg" onClick={() => setShowAllCategories(true)}>Show More Categories</Button>
+                            </div>
+                        )}
+                        {show_view_all_link && filteredProducts.length > max_products && (
+                            <div className="flex justify-center pt-8">
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    style={{ borderColor: accent_color, color: accent_color }}
+                                >
+                                    View All Products
+                                </Button>
                             </div>
                         )}
                     </div>

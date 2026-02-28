@@ -89,7 +89,7 @@ export function sectionDefaults(type: string): { content: Record<string, unknown
         styles: { background_color: '#171717', text_color: '#ffffff', icon_color: '#34d399' }
     };
     if (type === 'product_grid') return {
-        content: { heading: 'Shop Collection', subheading: 'Curated selection.' },
+        content: { heading: 'Shop Collection', subheading: 'Curated selection.', columns: 4, max_products: 20, sort_order: 'newest', show_view_all_link: true, category_filter: 'all', show_search: true, show_categories: true, show_premium_filter: true, initial_categories_shown: 2 },
         styles: { background_color: '#f4f4f5', text_color: '#000000', accent_color: '#10b981' }
     };
     if (type === 'testimonials') return {

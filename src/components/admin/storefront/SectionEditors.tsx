@@ -324,12 +324,12 @@ function ProductGridEditor({ section, onUpdateContent, onUpdateStyles }: Section
 
     return (
         <div className="space-y-4">
-            <Accordion type="multiple" defaultValue={['content', 'options', 'styles']} className="w-full">
+            <Accordion type="multiple" defaultValue={['content', 'grid', 'options', 'styles']} className="w-full">
                 <AccordionItem value="content">
                     <AccordionTrigger className="text-sm font-medium">Heading</AccordionTrigger>
                     <AccordionContent className="space-y-3 pt-2">
                         <div className="space-y-1.5">
-                            <Label className="text-xs">Heading</Label>
+                            <Label className="text-xs">Title</Label>
                             <Input
                                 value={(content.heading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('heading', e.target.value)}
@@ -342,6 +342,92 @@ function ProductGridEditor({ section, onUpdateContent, onUpdateStyles }: Section
                                 value={(content.subheading as string) ?? ''}
                                 onChange={(e) => onUpdateContent('subheading', e.target.value)}
                                 placeholder="Curated selection."
+                            />
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="grid">
+                    <AccordionTrigger className="text-sm font-medium">Grid Settings</AccordionTrigger>
+                    <AccordionContent className="space-y-3 pt-2">
+                        <div className="space-y-1.5">
+                            <Label className="text-xs">Columns</Label>
+                            <Select
+                                value={String((content.columns as number) || 4)}
+                                onValueChange={(v) => onUpdateContent('columns', Number(v))}
+                            >
+                                <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue placeholder="Select columns" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="2">2 columns</SelectItem>
+                                    <SelectItem value="3">3 columns</SelectItem>
+                                    <SelectItem value="4">4 columns</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-xs">Max Products</Label>
+                            <Select
+                                value={String((content.max_products as number) || 20)}
+                                onValueChange={(v) => onUpdateContent('max_products', Number(v))}
+                            >
+                                <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue placeholder="Select max" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="4">4 products</SelectItem>
+                                    <SelectItem value="8">8 products</SelectItem>
+                                    <SelectItem value="12">12 products</SelectItem>
+                                    <SelectItem value="16">16 products</SelectItem>
+                                    <SelectItem value="20">20 products</SelectItem>
+                                    <SelectItem value="50">50 products</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-xs">Sort Order</Label>
+                            <Select
+                                value={(content.sort_order as string) || 'newest'}
+                                onValueChange={(v) => onUpdateContent('sort_order', v)}
+                            >
+                                <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue placeholder="Select sort" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="newest">Newest First</SelectItem>
+                                    <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                                    <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                                    <SelectItem value="name_asc">Name: A to Z</SelectItem>
+                                    <SelectItem value="name_desc">Name: Z to A</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-xs">Category Filter</Label>
+                            <Select
+                                value={(content.category_filter as string) || 'all'}
+                                onValueChange={(v) => onUpdateContent('category_filter', v)}
+                            >
+                                <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue placeholder="All categories" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Categories</SelectItem>
+                                    <SelectItem value="flower">Flower</SelectItem>
+                                    <SelectItem value="edibles">Edibles</SelectItem>
+                                    <SelectItem value="pre-rolls">Pre-Rolls</SelectItem>
+                                    <SelectItem value="concentrates">Concentrates</SelectItem>
+                                    <SelectItem value="vapes">Vapes</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">Show only products from a specific category</p>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <Label className="text-xs">Show &quot;View All&quot; Link</Label>
+                            <Switch
+                                checked={(content.show_view_all_link as boolean) ?? true}
+                                onCheckedChange={(v) => onUpdateContent('show_view_all_link', v)}
                             />
                         </div>
                     </AccordionContent>

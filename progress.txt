@@ -107,3 +107,11 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Exported DeliveryComplianceChecklist from delivery barrel file (index.ts)
 - TypeScript compilation passes with no errors
 - Marked as passes: true
+
+## Product Grid section edit dialog has all fields and saves correctly
+- Updated ProductGridEditor in SectionEditors.tsx with new "Grid Settings" accordion section
+- Added fields: columns (2/3/4), max_products (4-50), sort_order (newest/price/name), category_filter (all/flower/edibles/pre-rolls/concentrates/vapes), show_view_all_link toggle
+- Updated sectionDefaults() in storefront-builder.config.ts to include new default values for all product grid content fields
+- Updated ProductGridSectionProps interface with new fields: columns, max_products, sort_order, show_view_all_link, category_filter
+- Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
+- TypeScript compilation passes with zero errors
