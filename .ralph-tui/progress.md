@@ -946,3 +946,76 @@ after each iteration and it's included in prompts for context.
   - `MarketplaceProfile` had `any` for `layout_config` and `theme_config` but proper types (`SectionConfig`, `ExtendedThemeConfig`) already existed in the same file
   - Stripe secret keys stored in `account_settings.integration_settings` are readable by any admin user via `AccountContext` — this is a real security concern for production but architectural, not a polish task
 ---
+
+## 2026-02-28 - floraiq-dy9.13
+- Added Telegram notification fallback for the client-side RPC checkout path
+- When `storefront-checkout` edge function is unavailable and client falls back to direct `create_marketplace_order` RPC, the RPC path was missing Telegram notification
+- Added fire-and-forget call to `forward-order-telegram` edge function after RPC order creation succeeds
+- If the Telegram edge function also fails, logs a warning via `logger.warn` and skips — never blocks checkout
+- Files changed: `src/pages/shop/CheckoutPage.tsx`
+- **Learnings:**
+  - The `forward-order-telegram` edge function is reusable from client-side — it handles its own auth (service role key from env), settings lookup, and Telegram API call
+  - `telegramLink` (contact link for confirmation page) is fetched by `storefront-checkout` from `crm_settings.telegram_video_link` — not available in the RPC fallback path, but the confirmation page degrades gracefully without it
+  - The fire-and-forget pattern for non-critical notifications is: `supabase.functions.invoke(...).catch(() => {})` — same pattern used for email confirmations
+---
+
+## 2026-02-28 - floraiq-dy9.14
+- Created `deduct_stock(p_product_id UUID, p_quantity INTEGER) RETURNS BOOLEAN` RPC function
+- Atomic check-and-deduct: only deducts when `stock_quantity >= p_quantity`, returns false if insufficient
+- Uses `SECURITY DEFINER` + `SET search_path = public` for safe RLS bypass
+- Files changed: `supabase/migrations/20260228000005_create_deduct_stock_rpc.sql`
+- **Learnings:**
+  - Existing `decrement_stock` (from `20251128000001_inventory_rpcs.sql`) blindly clamps to 0 with `GREATEST(0, ...)` — no sufficiency check, returns VOID
+  - `deduct_stock` is the safe alternative: uses `WHERE stock_quantity >= p_quantity` in the UPDATE + `GET DIAGNOSTICS ROW_COUNT` to return success/failure boolean
+  - Three layers of stock safety now exist: (1) edge function pre-validation, (2) `deduct_stock` atomic check, (3) `create_marketplace_order` RPC with FOR UPDATE locks
+---
+
+## 2026-02-28 - floraiq-dy9.15
+- Created `upsert_customer_on_checkout` RPC function for customer upsert during checkout
+- Added `total_orders` (INTEGER DEFAULT 0) and `preferred_contact` (TEXT) columns to `customers` table
+- Added composite index `idx_customers_phone_tenant` on (phone, tenant_id) for fast lookup
+- Function: resolves `account_id` from `accounts` table, parses name into first/last, looks up by phone+tenant_id then email+tenant_id, updates or inserts accordingly
+- Files changed: `supabase/migrations/20260228000006_create_upsert_customer_rpc.sql`
+- **Learnings:**
+  - `customers` table originally lacked `total_orders` and `preferred_contact` — had to ALTER TABLE to add them
+  - `customers.account_id` is NOT NULL FK to `accounts` — RPC must resolve it internally from `tenant_id` since callers don't have it
+  - `customers.first_name` and `last_name` are NOT NULL — must provide defaults for edge cases (empty name → "Unknown")
+  - Column naming: `customers` uses `last_purchase_at` (not `last_order_at` as the bead spec suggested) and `total_spent` (exists) — adapt to actual column names
+  - The `contacts` table (unified CRM) has `total_orders`/`preferred_contact_method`/`last_order_at` but is a separate system from `customers` (checkout CRM)
+---
+
+## 2026-02-28 - floraiq-dy9.16
+- Created `next_order_number(p_tenant_id UUID)` RPC function for the `orders` table
+- Migration: `supabase/migrations/20260228000007_create_next_order_number_rpc.sql`
+- **Learnings:**
+  - The `orders` table has `order_number` as TEXT with legacy format `ORD-{epoch}-{uuid_prefix}` — filter with `~ '^\d+$'` to only consider numeric order_numbers when computing MAX
+  - Two separate order number generators exist: `next_tenant_order_number` (for `marketplace_orders` via sequence table) and `next_order_number` (for `orders` via MAX query)
+  - Used `pg_advisory_xact_lock(hashtext('orders_' || p_tenant_id::text))` — different key from `next_tenant_order_number` which uses `hashtext(p_tenant_id::text)` to avoid lock collisions between the two functions
+---
+
+## 2026-02-28 - floraiq-dy9.17
+- Verified customers table columns against storefront checkout requirements
+- Added migration with missing columns: `name` (GENERATED from first_name+last_name), `source`, `type`, `first_order_at`, `last_order_at`, `admin_notes`
+- Added `(tenant_id, phone)` index for tenant-first queries
+- Migration: `supabase/migrations/20260228000008_verify_customers_columns.sql`
+- **Learnings:**
+  - `customers` table has `first_name`/`last_name` (NOT NULL) — added `name` as a `GENERATED ALWAYS AS ... STORED` column to satisfy requirements without duplicating data
+  - `customer_type` (recreational/medical) is different from `type` (guest/registered) — both columns needed
+  - `preferred_contact` (from 20260228000006) covers `preferred_contact_method` requirement
+  - `last_purchase_at` exists but `last_order_at` was still needed as a separate column (different semantics possible)
+  - Two indexes now cover phone lookups: `idx_customers_phone_tenant(phone, tenant_id)` and `idx_customers_tenant_phone(tenant_id, phone)` — column order matters for queries filtering on just one column
+---
+
+## 2026-02-28 - floraiq-dy9.18
+- Verified `customer_delivery_addresses` table — already exists (migration `20260210000001`)
+- Table structure: id, tenant_id, customer_id, label, street_address, apartment, city, state, zip_code, country, latitude, longitude, is_primary, delivery_instructions, created_at, updated_at
+- RLS enabled with tenant_users-based isolation policy
+- Trigger `ensure_single_primary_address` ensures only one primary per customer
+- Admin CRUD component exists: `src/components/admin/customers/CustomerDeliveryAddressesTab.tsx`
+- All quality gates pass: no console.log, tenant_id filtered, tsc clean
+- No new code needed — task was verification only
+- **Learnings:**
+  - The project chose dedicated table over JSONB column — better for querying, indexing, and RLS
+  - `is_primary` uses a partial index `WHERE is_primary = TRUE` for fast primary lookups
+  - Geocoding columns (latitude/longitude) are pre-provisioned for future map/routing features
+---
