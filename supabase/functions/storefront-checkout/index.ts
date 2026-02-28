@@ -262,8 +262,11 @@ serve(secureHeadersMiddleware(async (req) => {
 
     if (orderError || !orderId) {
       const errorMsg = orderError?.message ?? "Failed to create order";
-      const status = errorMsg.includes("Insufficient stock") ? 409 : 500;
-      return jsonResponse({ error: errorMsg }, status);
+      // 409 Conflict for stock-related failures (validation or deduction race condition)
+      const isStockError =
+        errorMsg.includes("Insufficient stock") ||
+        errorMsg.includes("Inventory deduction failed");
+      return jsonResponse({ error: errorMsg }, isStockError ? 409 : 500);
     }
 
     // Fetch the generated order number

@@ -89,3 +89,17 @@ after each iteration and it's included in prompts for context.
   - The `order_number` column is TEXT with a UNIQUE constraint, so sequential integers as text work without schema changes
 ---
 
+## 2026-02-27 - floraiq-dy9.6
+- Upgraded inventory deduction in `create_marketplace_order` RPC from `GREATEST(0, ...)` to checked `WHERE stock_quantity >= qty` pattern
+- Uses `GET DIAGNOSTICS v_affected_rows = ROW_COUNT` to detect race conditions where stock changed between validation and deduction
+- If 0 rows affected (race condition), raises exception to rollback entire transaction (order + prior decrements)
+- Updated edge function to detect "Inventory deduction failed" errors and return 409 Conflict (alongside existing "Insufficient stock" handling)
+- Files changed: `supabase/migrations/20260227000002_inventory_deduction_safety.sql`, `supabase/functions/storefront-checkout/index.ts`
+- **Learnings:**
+  - `marketplace_orders.status` has a CHECK constraint: `('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled')` — can't use arbitrary status values without altering the constraint
+  - Rolling back via RAISE EXCEPTION is cleaner than marking orders as 'needs_attention' when the status CHECK constraint is restrictive
+  - `FOR UPDATE` locks during validation already prevent the race condition in practice; the `WHERE stock_quantity >= qty` pattern is defense-in-depth
+  - `GET DIAGNOSTICS v_affected_rows = ROW_COUNT` is the PL/pgSQL way to check affected rows from an UPDATE (not `FOUND`, which only works for SELECT INTO)
+  - `payment_status` uses 'awaiting_payment' in the RPC but the original CHECK constraint only has `('pending', 'paid', 'failed', 'refunded')` — likely relaxed in a later migration
+---
+
