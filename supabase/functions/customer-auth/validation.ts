@@ -8,7 +8,8 @@ export const signupSchema = z.object({
   lastName: z.string().max(100).optional().nullable(),
   phone: z.string().max(20).optional().nullable(),
   dateOfBirth: z.string().optional().nullable(), // Format: YYYY-MM-DD
-  tenantSlug: z.string().min(1, 'Tenant slug is required').max(100).regex(/^[a-z0-9-]+$/, 'Invalid tenant slug format'),
+  tenantSlug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Invalid tenant slug format').optional().nullable(),
+  tenantId: z.string().uuid('Invalid tenant ID format').optional().nullable(),
   isBusinessBuyer: z.boolean().optional().nullable().default(false),
   businessName: z.string().max(255).optional().nullable(),
   businessLicenseNumber: z.string().max(100).optional().nullable(),

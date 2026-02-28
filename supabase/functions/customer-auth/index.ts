@@ -135,17 +135,23 @@ serve(secureHeadersMiddleware(async (req) => {
         );
       }
 
-      const { email, password, firstName, lastName, phone, dateOfBirth, tenantSlug, isBusinessBuyer, businessName, businessLicenseNumber } = validationResult.data;
+      const { email, password, firstName, lastName, phone, dateOfBirth, tenantSlug, tenantId, isBusinessBuyer, businessName, businessLicenseNumber } = validationResult.data;
 
-      console.log('Customer signup attempt:', { email, tenantSlug });
+      if (!tenantSlug && !tenantId) {
+        return new Response(
+          JSON.stringify({ error: "Either tenantSlug or tenantId is required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
-      // Find tenant by slug
-      const { data: tenant, error: tenantError } = await supabase
-        .from("tenants")
-        .select("*")
-        .eq("slug", tenantSlug.toLowerCase())
-        .eq("status", "active")
-        .maybeSingle();
+      // Find tenant by slug or ID
+      let tenantQuery = supabase.from("tenants").select("*").eq("status", "active");
+      if (tenantId) {
+        tenantQuery = tenantQuery.eq("id", tenantId);
+      } else if (tenantSlug) {
+        tenantQuery = tenantQuery.eq("slug", tenantSlug.toLowerCase());
+      }
+      const { data: tenant, error: tenantError } = await tenantQuery.maybeSingle();
 
       if (tenantError || !tenant) {
         return new Response(

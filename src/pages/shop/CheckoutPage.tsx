@@ -190,6 +190,8 @@ export function CheckoutPage() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [venmoConfirmed, setVenmoConfirmed] = useState(false);
   const [zelleConfirmed, setZelleConfirmed] = useState(false);
+  const [createAccount, setCreateAccount] = useState(false);
+  const [accountPassword, setAccountPassword] = useState('');
   const [showErrors, setShowErrors] = useState(false);
   const [, setOrderRetryCount] = useState(0);
 
@@ -407,6 +409,11 @@ export function CheckoutPage() {
         // Validate phone format if provided
         if (formData.phone && !PHONE_REGEX.test(formData.phone.replace(/\s/g, ''))) {
           toast.error('Invalid phone number', { description: 'Please enter a valid phone number.' });
+          return false;
+        }
+        // Validate password if creating account
+        if (createAccount && accountPassword.length < 8) {
+          toast.error('Password too short', { description: 'Password must be at least 8 characters.' });
           return false;
         }
         return true;
@@ -870,6 +877,40 @@ export function CheckoutPage() {
         toast.warning('Order placed, but confirmation email could not be sent');
       });
 
+      // Create customer account if opted in (fire and forget — order already placed)
+      if (createAccount && accountPassword && store?.tenant_id) {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        fetch(`${supabaseUrl}/functions/v1/customer-auth?action=signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'apikey': supabaseAnonKey,
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: accountPassword,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone || null,
+            tenantId: store.tenant_id,
+          }),
+        }).then(async (response) => {
+          if (response.status === 409) {
+            // Email already exists — order already completed, just inform the user
+            toast.info('An account with this email already exists. You can log in to view your orders.');
+          } else if (!response.ok) {
+            const errBody = await response.json().catch(() => ({}));
+            logger.warn('Account creation failed', errBody, { component: 'CheckoutPage' });
+          } else {
+            toast.success('Account created! You can now log in to view your order history.');
+          }
+        }).catch((err) => {
+          logger.warn('Account creation failed', err, { component: 'CheckoutPage' });
+        });
+      }
+
       // Navigate to confirmation
       navigate(`/shop/${storeSlug}/order-confirmation`, {
         state: {
@@ -1297,6 +1338,46 @@ export function CheckoutPage() {
                         </div>
                       </RadioGroup>
                     </div>
+
+                    {/* Create Account Option */}
+                    <Separator />
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <Checkbox
+                          id="create-account"
+                          checked={createAccount}
+                          onCheckedChange={(checked) => {
+                            setCreateAccount(checked as boolean);
+                            if (!checked) setAccountPassword('');
+                          }}
+                        />
+                        <div>
+                          <Label htmlFor="create-account" className="cursor-pointer font-medium">
+                            Create an account
+                          </Label>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Save your info and view order history
+                          </p>
+                        </div>
+                      </div>
+                      {createAccount && (
+                        <div className="space-y-2 pl-6">
+                          <Label htmlFor="account-password">Password *</Label>
+                          <Input
+                            id="account-password"
+                            type="password"
+                            value={accountPassword}
+                            onChange={(e) => setAccountPassword(e.target.value)}
+                            placeholder="At least 8 characters"
+                            minLength={8}
+                            className={showErrors && createAccount && accountPassword.length < 8 ? "border-red-500 focus-visible:ring-red-500" : ""}
+                          />
+                          {showErrors && createAccount && accountPassword.length < 8 && (
+                            <p className="text-xs text-red-500">Password must be at least 8 characters</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </motion.div>
                 )}
 
@@ -1595,6 +1676,12 @@ export function CheckoutPage() {
                           <>
                             <br />
                             Preferred contact: {formData.preferredContact.charAt(0).toUpperCase() + formData.preferredContact.slice(1)}
+                          </>
+                        )}
+                        {createAccount && (
+                          <>
+                            <br />
+                            <span className="text-primary">Creating account with this email</span>
                           </>
                         )}
                       </p>
