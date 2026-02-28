@@ -39,6 +39,7 @@ export const queryKeys = {
     reviews: (storeId?: string, productId?: string) =>
       ['shop-product-reviews', storeId, productId] as const,
     carousels: (storeId?: string) => ['marketplace-products-map', storeId] as const,
+    variants: (productId?: string) => ['shop-product-variants', productId] as const,
   },
 
   // Orders
