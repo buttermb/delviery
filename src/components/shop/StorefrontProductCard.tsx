@@ -97,7 +97,7 @@ export function StorefrontProductCard({
             <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-neutral-100 dark:border-neutral-800 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-neutral-200/50 transition-all duration-500 h-full flex flex-col relative transform hover:-translate-y-2 backface-hidden">
 
                 {/* Image Container */}
-                <Link to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="block relative aspect-square overflow-hidden bg-neutral-50 cursor-pointer">
+                <Link to={`/shop/${storeSlug}/products/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="block relative aspect-square overflow-hidden bg-neutral-50 cursor-pointer">
                     <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-105">
                         <ProductImage
                             src={displayImage}
@@ -169,7 +169,7 @@ export function StorefrontProductCard({
                 {/* Content */}
                 <div className="p-3 sm:p-5 flex flex-col flex-1">
                     <div className="flex-1 space-y-2">
-                        <Link to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="group-hover:opacity-80 transition-colors block">
+                        <Link to={`/shop/${storeSlug}/products/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="group-hover:opacity-80 transition-colors block">
                             <h3 className="font-bold text-sm sm:text-lg leading-snug line-clamp-2" style={{ color: accentColor }} title={cleanedName}>
                                 {cleanedName}
                             </h3>
