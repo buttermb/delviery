@@ -9,6 +9,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useActiveStore } from '@/hooks/useActiveStore';
+import { useCreateStorefront } from '@/hooks/useCreditGatedAction';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,7 @@ import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
+import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
 import {
   Store,
   ShoppingCart,
@@ -276,7 +278,16 @@ export default function StorefrontDashboard() {
     },
   });
 
-  // Create new store mutation
+  // Credit-gated store creation
+  const {
+    createStorefront,
+    isCreating: isCreditGateCreating,
+    showOutOfCreditsModal,
+    closeOutOfCreditsModal,
+    blockedAction,
+  } = useCreateStorefront();
+
+  // Create new store mutation (used inside credit gate)
   const createNewStoreMutation = useMutation({
     mutationFn: async (data: { storeName: string; slug: string; tagline: string }) => {
       if (!tenantId) throw new Error('No tenant');
@@ -309,6 +320,29 @@ export default function StorefrontDashboard() {
       toast.error('Failed to create store', { description: humanizeError(error) });
     },
   });
+
+  // Wrap store creation with credit gating + graceful fallback
+  const handleCreateStore = async (data: { storeName: string; slug: string; tagline: string }) => {
+    try {
+      await createStorefront(
+        () => createNewStoreMutation.mutateAsync(data),
+        {
+          onError: (error) => {
+            logger.error('Credit-gated store creation failed', error, { component: 'StorefrontDashboard' });
+          },
+        }
+      );
+    } catch (err) {
+      // Graceful fallback: if credit system itself throws, create store without credits
+      logger.warn('Credit system unavailable, creating store without credit deduction', {
+        component: 'StorefrontDashboard',
+        error: err instanceof Error ? err.message : String(err),
+      });
+      createNewStoreMutation.mutate(data);
+    }
+  };
+
+  const isCreatingStore = createNewStoreMutation.isPending || isCreditGateCreating;
 
   // Handlers
   const handleSelectStore = (storeId: string) => {
@@ -409,9 +443,15 @@ export default function StorefrontDashboard() {
         <CreateStoreDialog
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
-          onSubmit={(data) => createNewStoreMutation.mutate(data)}
-          isCreating={createNewStoreMutation.isPending}
+          onSubmit={handleCreateStore}
+          isCreating={isCreatingStore}
           defaultStoreName={tenant?.business_name ?? ''}
+        />
+
+        <OutOfCreditsModal
+          open={showOutOfCreditsModal}
+          onOpenChange={closeOutOfCreditsModal}
+          actionAttempted={blockedAction ?? undefined}
         />
       </div>
     );
@@ -454,9 +494,15 @@ export default function StorefrontDashboard() {
         <CreateStoreDialog
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
-          onSubmit={(data) => createNewStoreMutation.mutate(data)}
-          isCreating={createNewStoreMutation.isPending}
+          onSubmit={handleCreateStore}
+          isCreating={isCreatingStore}
           defaultStoreName={tenant?.business_name ?? ''}
+        />
+
+        <OutOfCreditsModal
+          open={showOutOfCreditsModal}
+          onOpenChange={closeOutOfCreditsModal}
+          actionAttempted={blockedAction ?? undefined}
         />
       </div>
     );
@@ -798,9 +844,15 @@ export default function StorefrontDashboard() {
       <CreateStoreDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
-        onSubmit={(data) => createNewStoreMutation.mutate(data)}
-        isCreating={createNewStoreMutation.isPending}
+        onSubmit={handleCreateStore}
+        isCreating={isCreatingStore}
         defaultStoreName={tenant?.business_name ?? ''}
+      />
+
+      <OutOfCreditsModal
+        open={showOutOfCreditsModal}
+        onOpenChange={closeOutOfCreditsModal}
+        actionAttempted={blockedAction ?? undefined}
       />
     </div>
   );
