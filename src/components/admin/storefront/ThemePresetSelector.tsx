@@ -208,6 +208,7 @@ export function ThemePresetStrip({
                 return (
                     <button
                         key={theme.id}
+                        data-testid={`theme-preset-${theme.id}`}
                         onClick={() => onSelectTheme(theme)}
                         className={cn(
                             'flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all',

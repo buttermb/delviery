@@ -31,6 +31,124 @@ after each iteration and it's included in prompts for context.
 
 - **Chart colors**: Import from `@/lib/chartColors` — never hardcode hex colors in chart components. Use `CHART_COLORS[N]` for indexed palette, `chartSemanticColors.revenue/cost/danger` for semantic meaning, `CATEGORY_CHART_COLORS` for credit/category breakdowns. CSS vars `--chart-1` through `--chart-10` defined in `index.css`.
 
+- **Realtime subscription isolation**: Always add server-side `filter` to Supabase realtime subscriptions (e.g., `filter: \`seller_tenant_id=eq.${tenant.id}\``). Client-side filtering alone is not enough — events from other tenants still arrive at the client. Use server-side filter as primary guard, client-side as secondary.
+
+## 2026-02-28 - floraiq-khy.15
+- E2E test for theme change reflected on storefront
+- Added `data-testid="storefront-wrapper"` and `data-theme` attributes to ShopLayout for E2E targeting
+- Added `data-testid="theme-preset-{id}"` to ThemePresetStrip buttons for admin builder E2E interaction
+- Created `tests/e2e/theme-change.spec.ts` — 16 Playwright tests across 5 suites:
+  - **Storefront Theme Application** (4 tests): wrapper attributes, CSS custom properties, header/footer rendering
+  - **Admin Theme Change Flow** (3 tests): builder navigation, Dark Mode preset selection (advanced + easy mode), save/publish with success toast
+  - **Theme Reflected on Storefront** (4 tests): primary color application, sections render without errors, hero colors, product grid rendering
+  - **Theme Consistency — No Remnant Styles** (4 tests): consistent background throughout, text readability, no conflicting inline styles, themed navigation links
+  - **Dark Mode Theme Verification** (2 tests): dark background for dark theme stores, green accent colors for interactive elements
+  - **Theme Change Contrast** (3 tests): multi-store theme isolation, hard-refresh persistence, sub-page theme inheritance
+- Files changed:
+  - `tests/e2e/theme-change.spec.ts` (new) — comprehensive theme change E2E test suite
+  - `src/pages/shop/ShopLayout.tsx` — added `data-testid="storefront-wrapper"` + `data-theme` attribute to both luxury and default layout wrappers
+  - `src/components/admin/storefront/ThemePresetSelector.tsx` — added `data-testid="theme-preset-{id}"` to ThemePresetStrip buttons
+- **Learnings:**
+  - Theme storage is split: `marketplace_stores.theme_config` JSONB (admin writes) + `marketplace_profiles.theme_config` (storefront reads via RPC)
+  - Builder syncs to both tables via `syncToMarketplaceProfiles()` — if only one is updated, storefront won't reflect changes
+  - Two builder modes: Easy Mode uses PresetPackSelector (6 preset packs mapping to 4 themes), Advanced Mode uses ThemePresetStrip with direct theme selection
+  - ShopLayout applies theme via CSS custom properties (`--store-primary`, `--store-secondary`, `--store-accent`) from top-level store columns, NOT from theme_config.colors directly
+  - The builder's publish mutation syncs `theme_config.colors.primary` → `primary_color` top-level column so the shop shell header/footer picks up changes
+  - `data-theme="luxury"` vs `data-theme="default"` is derived from `theme_config.theme === 'luxury'` — this only applies when using StorefrontSettings (standard/luxury toggle), NOT the builder's theme presets
+  - Color verification in Playwright requires parsing both hex (`#0a0a0a`) and computed rgb (`rgb(10, 10, 10)`) formats — helper functions for isDarkColor/isLightColor needed
+---
+
+## 2026-02-28 - floraiq-khy.14
+- E2E test for empty store published (store with 0 products)
+- Updated empty state messages to match spec:
+  - ProductGridSection + LuxuryProductGridSection: "Coming soon" (was "This store doesn't have any products yet")
+  - ProductCatalogPage: "No products yet" / "Check back later." (was "This store doesn't have any products yet" / "Check back soon for new arrivals")
+- Added `data-testid` attributes: `empty-product-grid`, `empty-catalog` for E2E targeting
+- Created `tests/e2e/empty-store.spec.ts` — 11 Playwright tests covering:
+  - Storefront home: hero renders, product grid shows "Coming soon", no product cards, no add-to-cart buttons
+  - Product catalog: "No products yet" message, "Check back later" subtitle, no product cards
+  - Cart/checkout: empty cart state, checkout redirects away, cart badge shows 0 or hidden
+  - Contrast test: populated store has products, empty store does not
+- Tests use `test.skip()` when empty store slug is not accessible (env-configurable via `TEST_EMPTY_STORE_SLUG`)
+- Files changed:
+  - `tests/e2e/empty-store.spec.ts` (new) — comprehensive empty store E2E test suite
+  - `src/components/shop/sections/ProductGridSection.tsx` — updated empty state text + added data-testid
+  - `src/components/shop/sections/LuxuryProductGridSection.tsx` — updated empty state text + added data-testid
+  - `src/pages/shop/ProductCatalogPage.tsx` — updated empty state text + added data-testid
+- **Learnings:**
+  - Three separate components handle empty product states: `ProductGridSection` (default theme), `LuxuryProductGridSection` (premium theme), `ProductCatalogPage` (dedicated catalog route) — all need consistent messaging
+  - CheckoutPage already handles empty cart via `useEffect` redirect to cart page with `toast.warning`
+  - CartPage has a rich empty state with animated ShoppingBag icon and "Continue Shopping" CTA
+  - Empty state visibility depends on products query resolving (need `waitForTimeout` in tests after `networkidle`)
+  - `data-testid` attributes on empty state containers make E2E targeting much more reliable than text matching
+---
+
+## 2026-02-28 - floraiq-khy.13
+- E2E test for out-of-stock during shopping race condition
+- Created `tests/e2e/out-of-stock.spec.ts` — 7 Playwright tests covering:
+  - Cart stock warning badges rendering (Out of stock / Only X left / Low stock)
+  - Checkout blocked when out-of-stock item in cart (toast error at cart level)
+  - Customer can remove out-of-stock items and proceed with remaining items
+  - Empty cart shows empty state after clearing all items
+  - Checkout page renders correctly with stock check
+  - Stock warning badge formatting verification
+  - Concurrent shopping race condition: two customers, one depletes stock, other gets blocked
+- Uses two browser contexts (`browser.newContext()`) for race condition simulation
+- Files changed:
+  - `tests/e2e/out-of-stock.spec.ts` (new) — comprehensive out-of-stock E2E test suite
+- **Learnings:**
+  - Stock validation is multi-layered: CartPage `checkInventoryAvailability()` → edge function pre-check → `create_marketplace_order` RPC with `FOR UPDATE` locks
+  - `CartItemStockWarning` queries `products.stock_quantity` and `available_quantity` independently per item
+  - `CartStockSummary` uses `useCartStockCheck()` hook that checks all cart items at once
+  - Cart-level validation blocks navigation to checkout with toast; checkout-level catches `OutOfStockError` from edge function/RPC
+  - On `OutOfStockError`, items are automatically removed from cart and user stays on review step if remaining items exist
+  - Tests must be resilient — real database stock levels are unpredictable, so use `test.skip()` when preconditions can't be met
+---
+
+## 2026-02-28 - floraiq-khy.12
+- Multi-store isolation test: verified and fixed tenant isolation across storefronts
+- **Fixed**: `useAdminOrdersRealtime.ts` — marketplace_orders realtime subscription had NO server-side filter, receiving ALL tenants' order events. Added `seller_tenant_id=eq.${tenant.id}` filter.
+- **Verified safe** (no changes needed):
+  - Product loading via `get_marketplace_products` RPC — filters by tenant_id derived from store_id
+  - StorefrontLiveOrders — double filter: `store_id` + `seller_tenant_id`
+  - StorefrontOrders — uses `storefront_orders` VIEW with `security_invoker = true`
+  - StorefrontCustomers — aggregates from marketplace_orders filtered by `store_id`
+  - marketplace_orders RLS policies enforce `seller_tenant_id` via `tenant_users` table
+  - Cart isolation uses store-slug-keyed localStorage via `safeStorage`
+- **Created**: `tests/e2e/store-isolation.spec.ts` — 11 Playwright tests covering product catalog isolation, admin order/customer isolation, cross-tenant route blocking, independent carts, invalid store slug handling
+- Files changed:
+  - `src/hooks/useAdminOrdersRealtime.ts` — added `seller_tenant_id` server-side filter to marketplace_orders subscription
+  - `tests/e2e/store-isolation.spec.ts` (new) — comprehensive multi-store isolation E2E test suite
+- **Learnings:**
+  - Each tenant has exactly ONE storefront store (UNIQUE constraint on `marketplace_stores.tenant_id`)
+  - Isolation chain: URL slug → `marketplace_stores.slug` → `store.tenant_id` → `products.tenant_id`
+  - `get_marketplace_products` RPC derives `tenant_id` from `store_id` internally — safe even if caller only knows `store_id`
+  - `storefront_orders` is a VIEW with `security_invoker = true` — RLS of the calling user applies automatically
+  - `marketplace_orders` RLS uses `tenant_users` table with role enforcement (owner/admin only for write ops)
+  - Realtime subscriptions without server-side filters are a silent isolation leak — events arrive but get dropped client-side, wasting bandwidth and creating theoretical timing attack surface
+---
+
+## 2026-02-28 - floraiq-khy.11
+- Admin cancels order: cancel reason dialog, inventory restoration, customer-facing cancelled state
+- Created `CancelOrderDialog` component with radio button reasons (out of stock, customer request, unable to deliver, payment issue, other) + optional notes
+- Modified `StorefrontLiveOrders.handleStatusChange` to intercept 'cancelled' status and show dialog before proceeding
+- Mutation now: sets `cancelled_at` timestamp + `cancellation_reason`, calls `restore_storefront_inventory` RPC, invalidates product queries
+- `OrderDetailPanel`: added `cancelled_at`/`cancellation_reason` to raw fields, cancelled entry in timeline, cancellation reason section
+- `OrderConfirmationPage`: shows red XCircle + "Order Cancelled" when `status === 'cancelled'`, hides next-steps timeline and delivery details
+- `OrderTrackingPage` already handled cancelled state (XCircle + "Order cancelled" in red)
+- Files changed:
+  - `src/components/admin/storefront/CancelOrderDialog.tsx` (new) — cancellation reason dialog
+  - `src/pages/admin/storefront/StorefrontLiveOrders.tsx` — cancel dialog integration, stock restoration, cancelled_at/reason in mutation
+  - `src/components/admin/storefront/OrderDetailPanel.tsx` — cancelled timeline entry, cancellation reason display
+  - `src/pages/shop/OrderConfirmationPage.tsx` — cancelled state rendering
+- **Learnings:**
+  - `restore_storefront_inventory` RPC already existed in migration `20260128000001` — accepts `[{product_id, quantity}]` JSONB, increments `stock_quantity` and `available_quantity`
+  - Items stored in `marketplace_orders.items` JSONB have `product_id` and `quantity` fields — can be extracted directly for restore RPC
+  - `cancelled_at` and `cancellation_reason` columns already exist on `marketplace_orders` — no migration needed
+  - The `getValidNextStatuses` function already returned cancel actions for all active statuses — just needed to intercept and show dialog
+  - `OrderTrackingPage` already checks `isCancelled = status === 'cancelled' || status === 'refunded'` — no changes needed there
+---
+
 ## 2026-02-28 - floraiq-khy.10
 - Admin order status lifecycle: pending → confirmed → preparing → ready → out_for_delivery → delivered
 - Core UI was already built (StorefrontLiveOrders Kanban/table, OrderDetailPanel, OrderTrackingPage with realtime)
