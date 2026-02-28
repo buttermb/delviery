@@ -12,6 +12,7 @@ import { parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
+import { useDeliveryETA } from '@/hooks/useDeliveryETA';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
@@ -27,6 +28,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
+import { DeliveryETACell } from '@/components/admin/orders/DeliveryETACell';
 import { OrderFilters, useOrderFilters } from '@/components/admin/orders/OrderFilters';
 import type { ActiveFilters, DateRangeValue } from '@/components/admin/shared/FilterBar';
 import {
@@ -336,6 +338,15 @@ export function OrdersListPage() {
     });
   }, [orders, activeFilters, searchValue]);
 
+  // Get delivery ETAs for orders that are in delivery-related statuses
+  const deliveryOrderIds = useMemo(
+    () => filteredOrders
+      .filter((o) => ['in_transit', 'out_for_delivery', 'confirmed', 'preparing'].includes(o.status) || o.delivery_status === 'in_transit')
+      .map((o) => o.id),
+    [filteredOrders]
+  );
+  const { etaMap } = useDeliveryETA(deliveryOrderIds);
+
   // Handle filter changes
   const handleFiltersChange = useCallback(
     (newFilters: ActiveFilters) => {
@@ -456,12 +467,22 @@ export function OrdersListPage() {
       ),
     },
     {
+      id: 'delivery_eta',
+      header: 'Delivery ETA',
+      cell: ({ original }: { original: Order }) => (
+        <DeliveryETACell
+          eta={etaMap[original.id]}
+          orderStatus={original.status}
+        />
+      ),
+    },
+    {
       id: 'actions',
       header: 'Actions',
       cell: ({ original }: { original: Order }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-11 w-11 p-0">
+            <Button size="sm" variant="ghost" className="h-11 w-11 p-0" aria-label="Order actions">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -505,7 +526,7 @@ export function OrdersListPage() {
         </DropdownMenu>
       ),
     },
-  ], [navigate, updateStatusMutation, deleteMutation]);
+  ], [navigate, updateStatusMutation, deleteMutation, etaMap]);
 
   // Print handler
   const handlePrint = (order: Order) => {
