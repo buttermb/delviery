@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { TrendingDown, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface ChurnData {
   month: string;
@@ -35,7 +36,7 @@ export function ChurnAnalysisWidget() {
       // Group by month
       const monthlyData: Record<string, ChurnData> = {};
       const now = new Date();
-      
+
       // Analyze last 12 months
       for (let i = 11; i >= 0; i--) {
         const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -81,7 +82,7 @@ export function ChurnAnalysisWidget() {
       const totalRevenueLost = tenants
         ?.filter((t) => t.cancelled_at)
         .reduce((sum, t) => sum + (t.mrr ?? 0), 0) ?? 0;
-      
+
       const avgChurnRate =
         Object.values(monthlyData).reduce((sum, d) => sum + d.churnRate, 0) /
         Object.values(monthlyData).length;
@@ -145,7 +146,7 @@ export function ChurnAnalysisWidget() {
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={churnData.monthlyData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis 
+            <XAxis
               dataKey="month"
               tick={{ fontSize: 12 }}
               className="text-muted-foreground"
@@ -153,12 +154,12 @@ export function ChurnAnalysisWidget() {
               textAnchor="end"
               height={80}
             />
-            <YAxis 
+            <YAxis
               yAxisId="left"
               tick={{ fontSize: 12 }}
               className="text-muted-foreground"
             />
-            <YAxis 
+            <YAxis
               yAxisId="right"
               orientation="right"
               tick={{ fontSize: 12 }}
@@ -173,17 +174,17 @@ export function ChurnAnalysisWidget() {
               labelStyle={{ color: 'hsl(var(--foreground))' }}
             />
             <Legend />
-            <Bar 
+            <Bar
               yAxisId="left"
-              dataKey="churnRate" 
-              fill="#ef4444" 
+              dataKey="churnRate"
+              fill={chartSemanticColors.danger}
               name="Churn Rate %"
               radius={[8, 8, 0, 0]}
             />
-            <Bar 
+            <Bar
               yAxisId="right"
-              dataKey="churned" 
-              fill="#f59e0b" 
+              dataKey="churned"
+              fill={chartSemanticColors.warning}
               name="Churned Tenants"
               radius={[8, 8, 0, 0]}
             />
@@ -206,4 +207,3 @@ export function ChurnAnalysisWidget() {
     </Card>
   );
 }
-

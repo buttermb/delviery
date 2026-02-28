@@ -151,7 +151,7 @@ import {
   CustomerLoginPage, CustomerSignUpPage, CustomerVerifyEmailPage,
   CustomerForgotPasswordPage, CustomerResetPasswordPage, CustomerLoginLanding,
   CustomerProtectedRoute, CustomerPortal, CustomerDashboardPage, CustomerSettingsPage,
-  ShoppingCartPage, CheckoutPage, OrderTrackingPage, SecureMenuAccess, SecureMenuView,
+  ShoppingCartPage, CheckoutPage, OrderTrackingPage, SecureMenuAccess, SecureMenuView, StaticMenuPage,
   WholesaleMarketplacePage, WholesaleCartPage, WholesaleCheckoutPage,
   CustomerWholesaleOrdersPage, WholesaleOrderDetailPage,
   BusinessFinderPage, BusinessMenuPage, UnifiedOrdersPage,
@@ -366,6 +366,9 @@ const App = () => {
                                       <Route path="/m/:token" element={<SecureMenuAccess />} />
                                       <Route path="/m/:token/view" element={<SecureMenuView />} />
                                       <Route path="/menu/:token" element={<MenuAccess />} />
+
+                                      {/* Static Menu Page (no auth, clean HTML view) */}
+                                      <Route path="/page/:token" element={<StaticMenuPage />} />
 
                                       {/* Debug Routes - Development Only */}
                                       {import.meta.env.DEV && (

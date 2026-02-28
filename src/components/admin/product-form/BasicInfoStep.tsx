@@ -57,7 +57,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
 
       <div className="space-y-4">
         <div>
-          <Label htmlFor="name">Product Name <span className="text-destructive">*</span></Label>
+          <Label htmlFor="name" required>Product Name</Label>
           <Input
             id="name"
             maxLength={200}
@@ -69,7 +69,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
             aria-invalid={!!nameError}
           />
           {nameError ? (
-            <p className="text-sm text-destructive mt-1">{nameError}</p>
+            <p className="text-sm font-medium text-destructive mt-1">{nameError}</p>
           ) : (
             <p className="text-xs text-muted-foreground mt-1">
               Example: &quot;Blue Dream - Sativa&quot;
@@ -95,7 +95,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
         </div>
 
         <div>
-          <Label>Category <span className="text-destructive">*</span></Label>
+          <Label required>Category</Label>
           <RadioGroup
             value={formData.category || ""}
             onValueChange={(value) => {
@@ -116,7 +116,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
             )}
           </RadioGroup>
           {categoryError ? (
-            <p className="text-sm text-destructive mt-1">{categoryError}</p>
+            <p className="text-sm font-medium text-destructive mt-1">{categoryError}</p>
           ) : (
             <p className="text-xs text-muted-foreground mt-1">
               Choose the product category
@@ -155,7 +155,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="thca">Cannabinoid Percentage <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
+            <Label htmlFor="thca" required>Cannabinoid Percentage</Label>
             <div className="flex items-center mt-1.5">
               <Input
                 id="thca"
@@ -194,7 +194,7 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
         </div>
 
         <div>
-          <Label htmlFor="weight">Weight/Size <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
+          <Label htmlFor="weight" required>Weight/Size</Label>
           <div className="flex gap-2 mt-1.5">
             <Input
               id="weight"

@@ -1,0 +1,2802 @@
+[
+  {
+    "id": "task-001",
+    "title": "Run TypeScript check — zero errors",
+    "priority": "P0",
+    "description": "Run `npx tsc --noEmit` from project root.\nFix ALL TypeScript errors. Do not use @ts-ignore or @ts-nocheck.\nIf there are type mismatches in Supabase auto-generated types, \ncast carefully with `as` only when truly needed.\nLog the count of errors before and after.",
+    "passes": false
+  },
+  {
+    "id": "task-002",
+    "title": "Run Vite build — zero errors",
+    "priority": "P0",
+    "description": "Run `npx vite build`. Fix any build errors.\nCommon issues: missing imports, circular dependencies, \nunresolved aliases. Fix them all.\nThe build must complete with zero errors.",
+    "passes": false
+  },
+  {
+    "id": "task-003",
+    "title": "Audit console for runtime errors on admin dashboard",
+    "priority": "P0",
+    "description": "Start dev server. Navigate to /:tenantSlug/admin/dashboard.\nOpen browser console. Report and fix any:\n- Red errors (not warnings)\n- Failed network requests\n- React key warnings\n- Unhandled promise rejections\nFix each one at the source.",
+    "passes": false
+  },
+  {
+    "id": "task-004",
+    "title": "Audit console for runtime errors on storefront builder",
+    "priority": "P0",
+    "description": "Navigate to /:tenantSlug/admin/storefront.\nCheck console for errors. Fix all red errors.\nEnsure the builder page loads without crashing.\nIf it shows a blank page or error boundary, trace and fix.",
+    "passes": false
+  },
+  {
+    "id": "task-005",
+    "title": "Audit console for runtime errors on storefront settings",
+    "priority": "P0",
+    "description": "Navigate to /:tenantSlug/admin/storefront/settings.\nFix all console errors. Ensure all tabs render.",
+    "passes": false
+  },
+  {
+    "id": "task-006",
+    "title": "Audit console for runtime errors on live orders",
+    "priority": "P0",
+    "description": "Navigate to /:tenantSlug/admin/storefront/orders.\nFix console errors. Ensure realtime subscription connects.",
+    "passes": false
+  },
+  {
+    "id": "task-007",
+    "title": "Audit console for runtime errors on analytics",
+    "priority": "P0",
+    "description": "Navigate to /:tenantSlug/admin/storefront/analytics.\nFix console errors. Ensure charts render (even with no data).",
+    "passes": false
+  },
+  {
+    "id": "task-008",
+    "title": "Audit console on public storefront homepage",
+    "priority": "P0",
+    "description": "Navigate to /shop/:storeSlug (use any existing store slug).\nIf no store exists, create one first via admin.\nFix all console errors on the public storefront.",
+    "passes": false
+  },
+  {
+    "id": "task-009",
+    "title": "Audit console on product catalog page",
+    "priority": "P0",
+    "description": "Navigate to /shop/:storeSlug/products.\nFix all errors. Ensure products load or empty state shows.",
+    "passes": false
+  },
+  {
+    "id": "task-010",
+    "title": "Audit console on product detail page",
+    "priority": "P0",
+    "description": "Navigate to /shop/:storeSlug/products/:productId.\nFix errors. If no products exist, create test data first.",
+    "passes": false
+  },
+  {
+    "id": "task-011",
+    "title": "Audit console on cart page",
+    "priority": "P0",
+    "description": "Navigate to /shop/:storeSlug/cart.\nFix errors. Ensure empty cart state renders cleanly.",
+    "passes": false
+  },
+  {
+    "id": "task-012",
+    "title": "Audit console on checkout page",
+    "priority": "P0",
+    "description": "Navigate to /shop/:storeSlug/checkout.\nFix errors. If cart is empty, it should redirect to cart or show message.",
+    "passes": false
+  },
+  {
+    "id": "task-013",
+    "title": "Remove all console.log statements",
+    "priority": "P1",
+    "description": "Search entire src/ for console.log, console.warn, console.error.\nReplace with logger.debug, logger.warn, logger.error from @/lib/logger.\nException: keep console.error in error boundaries only.\nRun: grep -rn \"console\\.\" src/ --include=\"*.ts\" --include=\"*.tsx\" | grep -v node_modules",
+    "passes": false
+  },
+  {
+    "id": "task-014",
+    "title": "Remove all @ts-ignore and @ts-nocheck",
+    "priority": "P1",
+    "description": "Search for @ts-ignore, @ts-nocheck, @ts-expect-error.\nFix the underlying type issue instead.\nRun: grep -rn \"@ts-\" src/ --include=\"*.ts\" --include=\"*.tsx\"",
+    "passes": false
+  },
+  {
+    "id": "task-015",
+    "title": "Remove all 'any' types",
+    "priority": "P1",
+    "description": "Search for \": any\" and \"as any\" in all .ts/.tsx files.\nReplace with proper types or 'unknown' with type guards.\nRun: grep -rn \": any\\b\" src/ --include=\"*.ts\" --include=\"*.tsx\"",
+    "passes": false
+  },
+  {
+    "id": "task-016",
+    "title": "Verify all storefront routes exist in App.tsx",
+    "priority": "P0",
+    "description": "Open src/App.tsx and verify these routes exist:\nADMIN (protected):\n- /:tenantSlug/admin/storefront → StorefrontBuilder\n- /:tenantSlug/admin/storefront/settings → StorefrontSettings\n- /:tenantSlug/admin/storefront/orders → StorefrontLiveOrders\n- /:tenantSlug/admin/storefront/analytics → StorefrontAnalytics\nPUBLIC (no auth):\n- /shop/:storeSlug → StorefrontPage (nested layout)\n- /shop/:storeSlug/products → ProductCatalogPage\n- /shop/:storeSlug/products/:productId → ProductDetailPage\n- /shop/:storeSlug/cart → CartPage\n- /shop/:storeSlug/checkout → CheckoutPage\n- /shop/:storeSlug/order/:orderId → OrderConfirmationPage\nAdd any missing routes. Ensure public routes do NOT have auth guards.",
+    "passes": false
+  },
+  {
+    "id": "task-017",
+    "title": "Verify storefront nav items in admin sidebar",
+    "priority": "P1",
+    "description": "Check src/lib/constants/navigation.ts (or wherever sidebar nav is defined).\nEnsure \"Storefront\" group exists with sub-items:\n- Builder (links to /:tenantSlug/admin/storefront)\n- Settings (links to /:tenantSlug/admin/storefront/settings)\n- Live Orders (links to /:tenantSlug/admin/storefront/orders)\n- Analytics (links to /:tenantSlug/admin/storefront/analytics)\nUse appropriate Lucide icons (Store, Settings, ShoppingBag, BarChart3).\nWrap in FeatureGate if feature flag system exists.",
+    "passes": false
+  },
+  {
+    "id": "task-018",
+    "title": "Verify Supabase connection works",
+    "priority": "P0",
+    "description": "Test that Supabase client connects successfully.\nRun a simple query: supabase.from('marketplace_stores').select('count').\nIf connection fails, check .env has VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.\nDo NOT edit .env — just verify it exists and is loaded.",
+    "passes": false
+  },
+  {
+    "id": "task-019",
+    "title": "Verify marketplace_stores table schema",
+    "priority": "P0",
+    "description": "Query the marketplace_stores table structure.\nEnsure these columns exist:\nid, tenant_id, name, slug, description, logo_url, theme, theme_config,\nlayout_config (JSONB), status (draft/published), published_at,\ndelivery_enabled, pickup_enabled, tax_rate, delivery_zones (JSONB),\nseo_title, seo_description, custom_domain, created_at, updated_at.\nIf any critical columns are missing, create a migration to add them.\nEnsure RLS is enabled with tenant_id policy.",
+    "passes": false
+  },
+  {
+    "id": "task-020",
+    "title": "Verify orders + order_items table schema",
+    "priority": "P0",
+    "description": "Verify orders table has:\nid, tenant_id, store_id, order_number, customer_name, customer_email,\ncustomer_phone, delivery_address (JSONB), fulfillment_method,\nstatus, subtotal, tax_amount, delivery_fee, total, notes,\npayment_method, source (storefront/pos/wholesale), customer_id (FK nullable),\ncreated_at, updated_at.\nVerify order_items has:\nid, order_id (FK), product_id (FK), product_name, variant, quantity,\nunit_price, line_total.\nAdd missing columns via migration. Ensure RLS on both tables.",
+    "passes": false
+  },
+  {
+    "id": "task-021",
+    "title": "Store creation — no-store empty state",
+    "priority": "P0",
+    "description": "When tenant has no store in marketplace_stores, the builder page should show \na \"Create Your Store\" card — NOT a blank page or error.\nCheck StorefrontBuilder.tsx for the empty state.\nIf missing, add: centered card with store name input, slug input, \ntheme selector thumbnails, and \"Create Store\" button.\nQuery: marketplace_stores where tenant_id = current tenant, if 0 rows → show create card.",
+    "passes": false
+  },
+  {
+    "id": "task-022",
+    "title": "Store creation — slug auto-generation",
+    "priority": "P1",
+    "description": "When user types store name, auto-generate slug (lowercase, hyphens, no special chars).\nExample: \"Snak Station LES\" → \"snak-station-les\"\nSlug field should be editable after auto-generation.\nShow live preview: \"Your store URL: /shop/snak-station-les\"",
+    "passes": false
+  },
+  {
+    "id": "task-023",
+    "title": "Store creation — slug uniqueness validation",
+    "priority": "P1",
+    "description": "Before saving, check if slug already exists in marketplace_stores.\nIf duplicate, show inline error: \"This URL is already taken. Try another.\"\nDebounce the check (300ms) as user types in the slug field.",
+    "passes": false
+  },
+  {
+    "id": "task-024",
+    "title": "Store creation — credit gating",
+    "priority": "P1",
+    "description": "Store creation should cost 500 credits (if credits system is active).\nUse useCreditGatedAction hook. If insufficient credits, show \nOutOfCreditsModal. If credits system is not active or not found,\nallow store creation without credits (don't crash).\nWrap in try-catch. Graceful fallback if credits tables don't exist.",
+    "passes": false
+  },
+  {
+    "id": "task-025",
+    "title": "Store creation — successful insert",
+    "priority": "P0",
+    "description": "On \"Create Store\" click:\n1. Validate name (required, min 2 chars)\n2. Validate slug (required, unique, URL-safe)\n3. Insert into marketplace_stores with tenant_id, name, slug, \n   theme (selected or default 'minimalist'), status 'draft',\n   layout_config [] (empty array)\n4. On success: toast \"Store created!\" and transition to the editor view\n5. On error: toast with error message, don't navigate away\n6. Invalidate TanStack query for marketplace_stores",
+    "passes": false
+  },
+  {
+    "id": "task-026",
+    "title": "Store creation — theme selection during creation",
+    "priority": "P2",
+    "description": "Show 4 theme preview thumbnail cards on the create store card.\nEach shows a small visual preview + theme name.\nDefault to 'minimalist'. User clicks to select. Selected gets a \ncheckmark/ring highlight. Pass selected theme to the insert.",
+    "passes": false
+  },
+  {
+    "id": "task-027",
+    "title": "Add Section dropdown — all 8 types",
+    "priority": "P0",
+    "description": "The \"Add Section\" button/dropdown must list all section types:\n1. Hero Banner\n2. Product Grid\n3. Features\n4. Testimonials\n5. Newsletter Signup\n6. Image Gallery\n7. FAQ\n8. Custom HTML\nEach option should have an icon and label.\nOn click: adds a new section object to the sections array with \ndefault config for that type. Section appears in the left panel list.",
+    "passes": false
+  },
+  {
+    "id": "task-028",
+    "title": "Hero section edit dialog",
+    "priority": "P0",
+    "description": "Hero section edit dialog fields:\n- Headline (text input, default \"Welcome to Our Store\")\n- Subheadline (text input)\n- CTA button text (text input, default \"Shop Now\")\n- CTA button link (text input, default \"/shop/:slug/products\")\n- Background image (file upload to Supabase Storage bucket storefront-assets)\n- Overlay opacity (slider 0-100%, default 40%)\n- Text alignment (left/center/right radio buttons)\n- Text color (white/dark toggle)\nSave button saves to the section's config in layout_config.\nCancel button discards changes.",
+    "passes": false
+  },
+  {
+    "id": "task-029",
+    "title": "Product Grid section edit dialog",
+    "priority": "P0",
+    "description": "Product Grid section edit dialog fields:\n- Section title (text, default \"Our Products\")\n- Number of columns (select: 2/3/4, default 3)\n- Max products to display (number input, default 12)\n- Filter by category (dropdown populated from product_categories for this tenant)\n- Sort order (select: newest/price-low/price-high/name/thc-high)\n- Show \"View All\" link (toggle, links to catalog page)\nSave persists to section config.",
+    "passes": false
+  },
+  {
+    "id": "task-030",
+    "title": "Features section edit dialog",
+    "priority": "P1",
+    "description": "Features section edit dialog:\n- Section title (text)\n- Array of feature items (min 1, max 6):\n  Each item: icon picker (Lucide icons), title (text), description (textarea)\n- Add Feature button / Remove button per item\nDefault: 3 empty feature items.",
+    "passes": false
+  },
+  {
+    "id": "task-031",
+    "title": "Testimonials section edit dialog",
+    "priority": "P1",
+    "description": "Testimonials edit dialog:\n- Section title (text)\n- Array of testimonials:\n  Each: quote text (textarea), customer name (text), rating (1-5 stars)\n- Add/Remove testimonial buttons\nDefault: 2 empty testimonial items.",
+    "passes": false
+  },
+  {
+    "id": "task-032",
+    "title": "Newsletter section edit dialog",
+    "priority": "P2",
+    "description": "Newsletter edit dialog:\n- Section title (text, default \"Stay Updated\")\n- Description text (textarea)\n- Button text (text, default \"Subscribe\")\n- Placeholder text (text, default \"Enter your email\")\nNote: actual email collection saves to a newsletter_subscribers table \nor just stores in tenant's customer list.",
+    "passes": false
+  },
+  {
+    "id": "task-033",
+    "title": "Gallery section edit dialog",
+    "priority": "P2",
+    "description": "Gallery edit dialog:\n- Section title (text)\n- Image uploads (multi-file upload to Supabase Storage)\n- Layout style (select: grid/masonry/carousel)\n- Max images to display (number)\nImages stored as array of URLs in section config.",
+    "passes": false
+  },
+  {
+    "id": "task-034",
+    "title": "FAQ section edit dialog",
+    "priority": "P1",
+    "description": "FAQ edit dialog:\n- Section title (text, default \"Frequently Asked Questions\")\n- Array of Q&A pairs:\n  Each: question (text input), answer (textarea)\n- Add/Remove buttons\nDefault: 3 empty Q&A items.\nRenders as shadcn Accordion on the storefront.",
+    "passes": false
+  },
+  {
+    "id": "task-035",
+    "title": "Custom HTML section edit dialog",
+    "priority": "P2",
+    "description": "Custom HTML edit dialog:\n- Code editor textarea (monospace font, dark background)\n- Optional CSS textarea\n- Preview toggle to see rendered result\nContent sanitized with DOMPurify before rendering on storefront.\nIf DOMPurify not installed: npm install dompurify @types/dompurify",
+    "passes": false
+  },
+  {
+    "id": "task-036",
+    "title": "Section edit dialogs — save functionality",
+    "priority": "P0",
+    "description": "ALL section edit dialogs must:\n1. Open pre-filled with current section config\n2. Have Save and Cancel buttons\n3. Save updates the section in the local sections array state\n4. Mark the builder as having unsaved changes\n5. NOT auto-save to database (user must click Save Draft or Publish)\n6. Close the dialog on save\nVerify every section type's dialog actually saves properly.",
+    "passes": false
+  },
+  {
+    "id": "task-037",
+    "title": "Section delete with confirmation",
+    "priority": "P1",
+    "description": "Each section card has a delete button (trash icon).\nOn click: show confirmation dialog \"Delete this section? This cannot be undone.\"\nConfirm: removes section from array, marks unsaved changes.\nCancel: closes dialog, no change.",
+    "passes": false
+  },
+  {
+    "id": "task-038",
+    "title": "Section collapse/expand",
+    "priority": "P2",
+    "description": "Each section card in the left panel should be collapsible.\nCollapsed: shows only section type icon + title + drag handle.\nExpanded: shows full config summary + edit/delete buttons.\nToggle via chevron icon.",
+    "passes": false
+  },
+  {
+    "id": "task-039",
+    "title": "Drag and drop — sections reorder correctly",
+    "priority": "P0",
+    "description": "Verify @dnd-kit is properly configured in the builder:\n- DndContext with closestCenter strategy\n- SortableContext with verticalListSortingStrategy\n- Each section wrapped in useSortable\n- Drag handle (GripVertical icon) on left edge of each card\n- On dragEnd: arrayMove to reorder sections array\n- Visual feedback during drag (opacity change, placeholder)\nTest: drag section 3 above section 1 → verify order changes.",
+    "passes": false
+  },
+  {
+    "id": "task-040",
+    "title": "Drag and drop — order persists to layout_config",
+    "priority": "P0",
+    "description": "After drag reorder, the new section order must be saved when user \nclicks Save Draft or Publish. The layout_config JSONB column stores \nthe ordered array of sections.\nVerify: reorder → save → refresh page → sections still in new order.",
+    "passes": false
+  },
+  {
+    "id": "task-041",
+    "title": "Drag and drop — no crash with single section",
+    "priority": "P1",
+    "description": "Edge case: if only 1 section exists, drag should not crash.\nIf 0 sections exist, drag context should still be stable (no errors).",
+    "passes": false
+  },
+  {
+    "id": "task-042",
+    "title": "Theme selector — 4 themes with previews",
+    "priority": "P0",
+    "description": "Verify storefrontThemes.ts exports 4 themes:\n1. Dark Mode (#0a0a0a bg, #22c55e primary, neon green)\n2. Minimalist (#ffffff bg, #0f172a primary, clean slate)\n3. Strain Focused (#fefce8 bg, #65a30d primary, earthy warm)\n4. Luxury (#1a1a2e bg, #d4af37 primary, gold/champagne)\nEach theme defines: colors (bg, primary, secondary, accent, muted, text),\nfonts, border radius, and CSS variables.\nTheme selector shows preview cards. Selected theme gets checkmark.",
+    "passes": false
+  },
+  {
+    "id": "task-043",
+    "title": "Theme — CSS variables apply to preview",
+    "priority": "P0",
+    "description": "When theme is selected in the builder, CSS variables should update \non the preview panel immediately (no save needed).\nVariables set on wrapper div via inline style or CSS custom properties.\nVerify: select Luxury theme → preview panel shows dark bg with gold accents.",
+    "passes": false
+  },
+  {
+    "id": "task-044",
+    "title": "Theme — persists to database",
+    "priority": "P0",
+    "description": "Selected theme saves to marketplace_stores.theme (string: 'dark'/'minimalist'/\n'strain_focused'/'luxury') and optionally theme_config (JSONB for overrides).\nVerify: save → refresh → correct theme still selected.",
+    "passes": false
+  },
+  {
+    "id": "task-045",
+    "title": "Theme — applies on public storefront",
+    "priority": "P0",
+    "description": "When customer visits /shop/:storeSlug, the store's theme CSS variables \nmust be applied to the ShopLayout wrapper.\nFetch theme from marketplace_stores, apply CSS vars to root div.\nVerify: store set to Dark theme → customer sees dark background, green accents.",
+    "passes": false
+  },
+  {
+    "id": "task-046",
+    "title": "Preview panel — renders sections live",
+    "priority": "P0",
+    "description": "Right side of builder shows a scaled preview of the storefront.\nAs sections are added/edited, preview updates in real-time.\nEach section type has a preview renderer.\nIf preview is blank or shows errors, trace and fix.",
+    "passes": false
+  },
+  {
+    "id": "task-047",
+    "title": "Preview panel — viewport toggle",
+    "priority": "P1",
+    "description": "Preview toolbar has Desktop/Tablet/Mobile toggle buttons.\nDesktop: preview at 1280px width.\nTablet: preview at 768px width.\nMobile: preview at 375px width.\nContainer resizes smoothly with transition.",
+    "passes": false
+  },
+  {
+    "id": "task-048",
+    "title": "Preview panel — scroll sync",
+    "priority": "P2",
+    "description": "Clicking a section in the left panel scrolls the preview to that section.\nEach section in preview has an id attribute matching the section id.\nUse scrollIntoView with smooth behavior.",
+    "passes": false
+  },
+  {
+    "id": "task-049",
+    "title": "Full-screen editor — entry card",
+    "priority": "P1",
+    "description": "When user first lands on the builder, show EditorEntryCard:\n\"Open Storefront Studio in full screen for the best editing experience\"\nwith a \"Launch Studio\" button.\nAlso show a \"Continue in compact mode\" text link below.\nIf store doesn't exist yet, show Create Store card instead.",
+    "passes": false
+  },
+  {
+    "id": "task-050",
+    "title": "Full-screen editor — portal opens",
+    "priority": "P1",
+    "description": "Clicking \"Launch Studio\" opens the builder in a full-screen portal.\nUses ReactDOM.createPortal to document.body.\nFull-screen has: top toolbar (store name, viewport toggle, Save Draft, \nPublish, Close X), left panel (sections), right panel (preview).\nESC key closes full-screen. Close button closes full-screen.\nAll state preserved (no remount, no data loss).",
+    "passes": false
+  },
+  {
+    "id": "task-051",
+    "title": "Full-screen editor — exit preserves state",
+    "priority": "P1",
+    "description": "Exiting full-screen returns to the compact builder view.\nAll section changes made in full-screen are preserved.\nUnsaved changes flag still active if changes were made.",
+    "passes": false
+  },
+  {
+    "id": "task-052",
+    "title": "Save Draft — persists all data",
+    "priority": "P0",
+    "description": "\"Save Draft\" button:\n1. Serializes sections array to JSON → layout_config column\n2. Saves theme selection → theme column\n3. Status stays 'draft'\n4. Toast: \"Draft saved successfully\"\n5. Clears unsaved changes flag\n6. Invalidates marketplace_stores query\nVerify: add 3 sections, save draft, refresh → all 3 sections still there.",
+    "passes": false
+  },
+  {
+    "id": "task-053",
+    "title": "Publish — makes store live",
+    "priority": "P0",
+    "description": "\"Publish\" button:\n1. Same as Save Draft PLUS:\n2. Sets status to 'published'\n3. Sets published_at to now()\n4. Toast: \"Store published! Live at /shop/{slug}\" with clickable link\n5. Store is now accessible at /shop/:storeSlug\nVerify: publish → visit /shop/:slug → store loads with sections.",
+    "passes": false
+  },
+  {
+    "id": "task-054",
+    "title": "Unpublish — takes store offline",
+    "priority": "P1",
+    "description": "If store is published, show \"Unpublish\" option (in dropdown or as button).\nOn click: confirmation dialog → sets status to 'draft'.\nPublic storefront returns 404 or \"Store not available\" page.\nToast: \"Store unpublished\"",
+    "passes": false
+  },
+  {
+    "id": "task-055",
+    "title": "Unsaved changes — warn before leaving",
+    "priority": "P1",
+    "description": "If user has unsaved changes and tries to navigate away:\nShow UnsavedChangesDialog: \"You have unsaved changes. Save before leaving?\"\nOptions: Save & Leave, Leave Without Saving, Cancel.\nAlso hook into beforeunload browser event for tab close.",
+    "passes": false
+  },
+  {
+    "id": "task-056",
+    "title": "Easy Mode editor — simplified interface",
+    "priority": "P1",
+    "description": "Verify EasyModeEditor.tsx works:\nSimplified builder for non-technical tenants.\nShows: store name, logo upload, color picker, product toggle.\nAuto-generates a layout with Hero + ProductGrid + FAQ.\nToggle between Easy Mode and Advanced Mode (full builder).",
+    "passes": false
+  },
+  {
+    "id": "task-057",
+    "title": "Mode toggle — state preserved between modes",
+    "priority": "P1",
+    "description": "Switching from Easy to Advanced should preserve the sections \ncreated in Easy mode. Switching back should show the simplified view.\nNo data loss on toggle.",
+    "passes": false
+  },
+  {
+    "id": "task-058",
+    "title": "Settings — General tab works",
+    "priority": "P0",
+    "description": "StorefrontSettings.tsx General tab:\n- Store name (loads current, saves on change)\n- Store slug (editable with uniqueness check)\n- Store description (textarea)\n- Logo upload (Supabase Storage, shows preview after upload)\n- Favicon upload\nSave button at bottom. All fields use React Hook Form + Zod.\nVerify: change name → save → refresh → name persists.",
+    "passes": false
+  },
+  {
+    "id": "task-059",
+    "title": "Settings — SEO tab works",
+    "priority": "P2",
+    "description": "SEO tab:\n- Meta title (text input)\n- Meta description (textarea, char count)\n- OG image upload\n- Keywords (tag input)\nValues save to marketplace_stores seo columns.",
+    "passes": false
+  },
+  {
+    "id": "task-060",
+    "title": "Settings — Delivery & Fulfillment tab",
+    "priority": "P0",
+    "description": "Delivery tab:\n- Enable delivery toggle\n- Enable pickup toggle\n- Tax rate input (percentage)\n- Delivery zones manager:\n  List of zones, each with: zone name, zip codes (comma-separated),\n  delivery fee ($), minimum order ($), estimated delivery time (minutes).\n  Add Zone / Remove Zone buttons.\nValues save to marketplace_stores delivery columns + delivery_zones JSONB.\nThis directly affects checkout pricing.",
+    "passes": false
+  },
+  {
+    "id": "task-061",
+    "title": "Settings — Payment Methods tab",
+    "priority": "P0",
+    "description": "Add a Payment Methods tab to StorefrontSettings if it doesn't exist:\n- Cash on Delivery toggle (default: on)\n- Venmo toggle + Venmo handle input (e.g., @snak-station)\n- Zelle toggle + Zelle email/phone input\n- Stripe toggle + connection status (if Stripe keys configured)\nSave to marketplace_stores or tenant_settings.\nThese options appear as payment choices during checkout.",
+    "passes": false
+  },
+  {
+    "id": "task-062",
+    "title": "Settings — Notification & Links tab",
+    "priority": "P1",
+    "description": "Add a Notifications/Links tab:\n- Telegram bot token input (for auto-forwarding orders)\n- Telegram chat ID input (group/channel to forward to)\n- \"Test Telegram\" button (sends a test message)\n- Custom link label (e.g., \"Message us on Telegram\")\n- Custom link URL (e.g., \"https://t.me/snakstation\")\n- Show link on checkout confirmation toggle\n- Enable email notifications for new orders toggle\n- Notification email address\nSave to tenant_settings or marketplace_stores.",
+    "passes": false
+  },
+  {
+    "id": "task-063",
+    "title": "Settings — Store Hours tab",
+    "priority": "P2",
+    "description": "Store hours:\nDay-by-day schedule (Mon-Sun), each with:\n- Open toggle\n- Open time (time input)\n- Close time (time input)\nShows \"Currently Open\" or \"Currently Closed\" badge based on hours.\nOptionally hide products or disable checkout outside hours.",
+    "passes": false
+  },
+  {
+    "id": "task-064",
+    "title": "Settings — all tabs save independently",
+    "priority": "P0",
+    "description": "Each settings tab has its own Save button.\nSaving one tab doesn't affect others.\nLoading states on save buttons.\nError handling with toast messages.\nVerify: change something in Delivery tab → save → go to General tab → \nGeneral tab still shows original values (not affected by Delivery save).",
+    "passes": false
+  },
+  {
+    "id": "task-065",
+    "title": "Store preview button — opens in modal",
+    "priority": "P1",
+    "description": "StorePreviewButton in the builder toolbar:\n- \"Preview\" button with Eye icon\n- Opens store in a modal/dialog at near-full-screen\n- OR opens in new tab: window.open('/shop/' + storeSlug, '_blank')\n- Viewport toggle in modal (desktop/tablet/mobile)",
+    "passes": false
+  },
+  {
+    "id": "task-066",
+    "title": "Store preview — works even when draft",
+    "priority": "P1",
+    "description": "Preview should work even when store is in 'draft' status.\nOption A: add ?preview=true query param that bypasses status check.\nOption B: preview uses local sections state, not database.\nThe admin should always be able to preview their work.",
+    "passes": false
+  },
+  {
+    "id": "task-067",
+    "title": "Products sync to storefront",
+    "priority": "P0",
+    "description": "Products from the admin's products table should appear on the storefront.\nProductGridSection fetches from products where tenant_id = store's tenant_id.\nProductCatalogPage does the same with filters.\nIf products have a 'published' or 'visible' flag, respect it.\nIf products have stock_quantity, show \"Out of Stock\" when 0.",
+    "passes": false
+  },
+  {
+    "id": "task-068",
+    "title": "Product visibility toggle for storefront",
+    "priority": "P1",
+    "description": "In the admin products list, each product should have a toggle or checkbox:\n\"Show on Storefront\" (visible_on_storefront boolean column).\nOnly products with this enabled appear on the public storefront.\nDefault: true for new products.\nIf column doesn't exist, add migration.",
+    "passes": false
+  },
+  {
+    "id": "task-069",
+    "title": "Product images on storefront",
+    "priority": "P0",
+    "description": "Products must display their images on the storefront.\nCheck that products.image_url or products.images (JSONB array) \nis populated and renders correctly on:\n- ProductCard component\n- ProductGridSection\n- ProductCatalogPage\n- ProductDetailPage (gallery)\nIf no image: show a clean placeholder (not broken img icon).",
+    "passes": false
+  },
+  {
+    "id": "task-070",
+    "title": "Product categories for storefront filters",
+    "priority": "P1",
+    "description": "ProductCatalogPage sidebar filter needs categories.\nQuery product_categories for this tenant_id.\nIf product_categories table is empty or doesn't exist, \nfall back to reading distinct category values from products table.\nCategories should show as checkboxes in the filter sidebar.",
+    "passes": false
+  },
+  {
+    "id": "task-071",
+    "title": "ShopLayout — loads store data by slug",
+    "priority": "P0",
+    "description": "ShopLayout.tsx wraps all /shop/:storeSlug/* routes.\nOn mount: fetch marketplace_stores where slug = :storeSlug AND status = 'published'.\nUse get_marketplace_store_by_slug RPC if it exists, otherwise direct query.\nIf not found or not published: render a styled \"Store Not Found\" page.\nIf found: set theme CSS variables, render header + children + footer.",
+    "passes": false
+  },
+  {
+    "id": "task-072",
+    "title": "ShopLayout — sticky header",
+    "priority": "P1",
+    "description": "Store header shows: logo (left), store name, nav links \n(Home, Products, Cart), cart icon with item count badge.\nHeader is sticky on scroll. Transparent on hero section, \nsolid background when scrolled past hero.\nMobile: hamburger menu for nav, cart icon always visible.",
+    "passes": false
+  },
+  {
+    "id": "task-073",
+    "title": "ShopLayout — footer",
+    "priority": "P2",
+    "description": "Store footer: store name, description, store hours (if configured),\ncontact info, custom links (from settings), \n\"Powered by FloraIQ\" text with link.",
+    "passes": false
+  },
+  {
+    "id": "task-074",
+    "title": "ShopLayout — age verification gate",
+    "priority": "P1",
+    "description": "If tenant has age verification enabled (cannabis products):\nFirst visit shows a full-page overlay: \"Are you 21 or older?\"\nYes → sets localStorage flag, shows store.\nNo → redirects to a \"Sorry, you must be 21+\" page.\nVerification persists in localStorage per store slug.",
+    "passes": false
+  },
+  {
+    "id": "task-075",
+    "title": "ShopLayout — mobile bottom nav",
+    "priority": "P1",
+    "description": "On mobile (< 768px), show a fixed bottom navigation bar:\nHome, Products, Cart (with badge), Account/Menu.\nThis replaces the hamburger menu for better mobile UX.\nIcons from Lucide. Active state highlighting.",
+    "passes": false
+  },
+  {
+    "id": "task-076",
+    "title": "ShopLayout — cart drawer",
+    "priority": "P1",
+    "description": "Clicking the cart icon in the header opens a slide-over drawer (Sheet)\nfrom the right showing cart items, quantities, subtotal, and \n\"View Cart\" + \"Checkout\" buttons.\nQuick add/remove quantity controls in the drawer.",
+    "passes": false
+  },
+  {
+    "id": "task-077",
+    "title": "StorefrontPage — renders all sections from layout_config",
+    "priority": "P0",
+    "description": "StorefrontPage.tsx reads layout_config from the store data.\nFor each section in the array, renders the corresponding component:\n- type: 'hero' → HeroSection\n- type: 'product_grid' → ProductGridSection\n- type: 'features' → FeaturesSection\n- type: 'testimonials' → TestimonialsSection\n- type: 'newsletter' → NewsletterSection\n- type: 'gallery' → GallerySection\n- type: 'faq' → FAQSection\n- type: 'custom_html' → CustomHTMLSection\nEach section receives its config as props.\nIf layout_config is empty: show a \"Coming Soon\" page with store name.",
+    "passes": false
+  },
+  {
+    "id": "task-078",
+    "title": "HeroSection — renders correctly",
+    "priority": "P0",
+    "description": "HeroSection renders:\n- Full-width background image (from config)\n- Gradient overlay (opacity from config)\n- Headline text (large, themed)\n- Subheadline text\n- CTA button (links to products page or custom URL)\n- Text alignment from config\nIf no background image: use a themed gradient as fallback.\nResponsive: text scales down on mobile, CTA button full-width on mobile.",
+    "passes": false
+  },
+  {
+    "id": "task-079",
+    "title": "ProductGridSection — fetches and renders products",
+    "priority": "P0",
+    "description": "ProductGridSection fetches products from the tenant's products table.\nRespects section config: column count, max products, category filter, sort.\nRenders ProductCard components in a responsive grid.\n\"View All Products\" link at bottom if configured.\nIf no products: show \"Products coming soon\" message.\nLoading state: show skeleton cards.",
+    "passes": false
+  },
+  {
+    "id": "task-080",
+    "title": "FeaturesSection — renders feature cards",
+    "priority": "P1",
+    "description": "Renders a grid of feature cards from config.\nEach card: Lucide icon (resolve by name string), title, description.\n3 columns on desktop, 2 on tablet, 1 on mobile.\nIf features array is empty: don't render the section at all.",
+    "passes": false
+  },
+  {
+    "id": "task-081",
+    "title": "TestimonialsSection — renders testimonials",
+    "priority": "P1",
+    "description": "Renders testimonial cards from config.\nEach: quote text in quotes, customer name, star rating (filled/empty stars).\nDisplay as: horizontal carousel (swipeable on mobile) or grid.\nIf no testimonials: don't render section.",
+    "passes": false
+  },
+  {
+    "id": "task-082",
+    "title": "NewsletterSection — email capture form",
+    "priority": "P2",
+    "description": "Renders: title, description, email input, subscribe button.\nOn submit: save email to a newsletter_subscribers table or customers table \nwith source='newsletter'. Toast: \"Thanks for subscribing!\"\nIf table doesn't exist, create it or just show the UI without backend save \n(log the email for now).",
+    "passes": false
+  },
+  {
+    "id": "task-083",
+    "title": "GallerySection — renders images",
+    "priority": "P2",
+    "description": "Renders image grid from config.\nImages loaded from URLs in config array.\nLayout based on config: grid (CSS grid), masonry, or carousel.\nClick image: open lightbox (full-screen with close button).\nLazy loading with loading=\"lazy\" on images.",
+    "passes": false
+  },
+  {
+    "id": "task-084",
+    "title": "FAQSection — renders accordion",
+    "priority": "P1",
+    "description": "Renders shadcn/ui Accordion with Q&A items from config.\nEach item: question as trigger, answer as content.\nSingle or multiple items expandable.\nClean typography, good spacing.",
+    "passes": false
+  },
+  {
+    "id": "task-085",
+    "title": "CustomHTMLSection — renders sanitized HTML",
+    "priority": "P2",
+    "description": "Renders HTML from config, sanitized with DOMPurify.\nInstall if needed: npm install dompurify @types/dompurify.\nUse dangerouslySetInnerHTML with sanitized content.\nAlso apply optional CSS from config (scoped to section).",
+    "passes": false
+  },
+  {
+    "id": "task-086",
+    "title": "ProductCatalogPage — loads all products",
+    "priority": "P0",
+    "description": "Fetches products from products table where tenant_id = store's tenant.\nUses get_marketplace_products RPC if available, or direct query.\nOnly show products where visible_on_storefront = true (or is_active = true).\nExclude products with stock_quantity = 0 or show them as \"Out of Stock\".\nLoading: show skeleton cards grid.\nError: show error message with retry button.",
+    "passes": false
+  },
+  {
+    "id": "task-087",
+    "title": "Product catalog — category filter",
+    "priority": "P0",
+    "description": "Sidebar (desktop) or filter drawer (mobile) has category checkboxes.\nPopulated from product_categories or distinct product.category values.\nChecking a category filters the grid to only show matching products.\nMultiple categories can be selected (OR logic).\n\"All\" option clears category filter.",
+    "passes": false
+  },
+  {
+    "id": "task-088",
+    "title": "Product catalog — strain type filter",
+    "priority": "P1",
+    "description": "Filter checkboxes for: Indica, Sativa, Hybrid, CBD.\nFilters products by strain_type column.\nIf products don't have strain_type (non-cannabis store), \nhide this filter section entirely.",
+    "passes": false
+  },
+  {
+    "id": "task-089",
+    "title": "Product catalog — price range filter",
+    "priority": "P1",
+    "description": "Dual-handle range slider for price.\nMin/max auto-detected from product prices.\nAlso allow manual number inputs for min and max.\nFilter products where price >= min AND price <= max.",
+    "passes": false
+  },
+  {
+    "id": "task-090",
+    "title": "Product catalog — search",
+    "priority": "P0",
+    "description": "Search input at top of catalog.\nFilters products by name (case-insensitive contains).\nAlso searches description if possible.\nDebounced input (300ms).\nShows \"No products found for '{query}'\" if no results.\nClear search button (X icon in input).",
+    "passes": false
+  },
+  {
+    "id": "task-091",
+    "title": "Product catalog — sort options",
+    "priority": "P1",
+    "description": "Sort dropdown with options:\n- Most Popular (default — by sales count or rating)\n- Price: Low to High\n- Price: High to Low\n- Newest First\n- Name A-Z\nSort applies client-side for current page or via query param.",
+    "passes": false
+  },
+  {
+    "id": "task-092",
+    "title": "Product catalog — grid/list view toggle",
+    "priority": "P2",
+    "description": "Toggle between Grid View and List View.\nGrid: product cards in responsive grid (4 col desktop, 2 mobile).\nList: horizontal cards with more description text visible.\nPersist view preference in localStorage.",
+    "passes": false
+  },
+  {
+    "id": "task-093",
+    "title": "Product catalog — pagination",
+    "priority": "P1",
+    "description": "If more than 20 products, paginate.\nOptions: infinite scroll with \"Load More\" button, or numbered pages.\nShow product count: \"Showing 1-20 of 156 products\".",
+    "passes": false
+  },
+  {
+    "id": "task-094",
+    "title": "Product catalog — mobile filter drawer",
+    "priority": "P0",
+    "description": "On mobile (< 768px), sidebar filters become a slide-up drawer/sheet.\n\"Filters\" button at top of page opens drawer.\nFilter drawer shows all filter options.\n\"Apply Filters\" button closes drawer and filters products.\nBadge on Filters button showing active filter count.",
+    "passes": false
+  },
+  {
+    "id": "task-095",
+    "title": "Product catalog — empty state",
+    "priority": "P1",
+    "description": "If no products match filters: \nShow illustration + \"No products found\" + \"Clear Filters\" button.\nIf store has zero products entirely:\nShow \"Products coming soon! Check back later.\" with store branding.",
+    "passes": false
+  },
+  {
+    "id": "task-096",
+    "title": "ProductCard — displays all key info",
+    "priority": "P0",
+    "description": "Each product card shows:\n- Product image (with placeholder if none)\n- Product name\n- Price (bold, themed color)\n- Category/strain type badge (if applicable)\n- Quick \"Add to Cart\" button\n- Stock status (\"In Stock\" / \"Out of Stock\" / \"Low Stock: X left\")\nHover: subtle scale-up + shadow.\nClick card (not add-to-cart button): navigate to product detail page.",
+    "passes": false
+  },
+  {
+    "id": "task-097",
+    "title": "ProductDetailPage — loads product data",
+    "priority": "P0",
+    "description": "Fetches single product by ID from URL param.\nIf product not found: show 404 page.\nIf product belongs to different tenant: show 404 (security).\nLoading: show skeleton layout.",
+    "passes": false
+  },
+  {
+    "id": "task-098",
+    "title": "Product detail — image gallery",
+    "priority": "P0",
+    "description": "Left column: main large image + thumbnail strip below.\nClick thumbnail: swaps main image.\nClick main image: opens lightbox/zoom.\nMobile: images as horizontal swipeable carousel.\nIf only 1 image: show it large, no thumbnails.\nIf no images: show themed placeholder.",
+    "passes": false
+  },
+  {
+    "id": "task-099",
+    "title": "Product detail — info section",
+    "priority": "P0",
+    "description": "Right column shows:\n- Breadcrumb (Home > Products > Category > Product Name)\n- Product name (large heading)\n- Price (large, bold)\n- Description (expandable if long)\n- Category badge\n- Stock indicator (In Stock green / Out of Stock red)",
+    "passes": false
+  },
+  {
+    "id": "task-100",
+    "title": "Product detail — variants (weight options)",
+    "priority": "P1",
+    "description": "If product has variants (e.g., 1g, 3.5g, 7g, 14g, 28g or Small, Medium, Large):\nShow as selectable pill buttons.\nEach variant can have different price.\nSelecting variant updates displayed price.\nSelected variant passes to cart when added.\nIf no variants: skip this UI section.",
+    "passes": false
+  },
+  {
+    "id": "task-101",
+    "title": "Product detail — quantity selector",
+    "priority": "P0",
+    "description": "Minus/Plus buttons with number display between them.\nMin: 1, Max: stock_quantity (or 99 if unlimited).\nDisabled at min/max boundaries.\nQuantity passes to addToCart.",
+    "passes": false
+  },
+  {
+    "id": "task-102",
+    "title": "Product detail — Add to Cart button",
+    "priority": "P0",
+    "description": "Large \"Add to Cart\" button.\nOn click: calls addItem from useShopCart with product info + quantity + variant.\nShows toast: \"Added to cart!\"\nButton text changes to \"Added ✓\" for 2 seconds then back.\nIf out of stock: button disabled, shows \"Out of Stock\".\nIf already in cart: button says \"Update Cart\" and updates quantity.",
+    "passes": false
+  },
+  {
+    "id": "task-103",
+    "title": "Product detail — related products",
+    "priority": "P2",
+    "description": "Below the main product info, show \"You May Also Like\" section.\nQuery 4 products from same category (excluding current product).\nDisplay as horizontal scrollable card row.\nIf no related products: hide the section.",
+    "passes": false
+  },
+  {
+    "id": "task-104",
+    "title": "Product detail — strain/terpene info",
+    "priority": "P2",
+    "description": "If product has strain_type, thc_percentage, cbd_percentage, terpenes:\nShow in a styled info card:\n- Strain type badge (Indica/Sativa/Hybrid with color)\n- THC% and CBD% as progress bars or bold numbers\n- Terpene list with names and flavor descriptions\nIf these fields don't exist on the product: skip this section entirely.",
+    "passes": false
+  },
+  {
+    "id": "task-105",
+    "title": "useShopCart — works correctly",
+    "priority": "P0",
+    "description": "Verify useShopCart.ts hook:\n- addItem: adds product to items array, increments if already exists\n- updateQuantity: changes quantity, clamps to 1-maxQuantity\n- removeItem: removes from array\n- clearCart: empties array\n- subtotal: computed sum of price * quantity\n- itemCount: computed sum of quantities\nCart state persists in localStorage (wrapped in try-catch).\nCart is scoped to storeSlug (different stores have separate carts).",
+    "passes": false
+  },
+  {
+    "id": "task-106",
+    "title": "CartPage — displays items",
+    "priority": "P0",
+    "description": "Shows list of cart items, each with:\n- Product image thumbnail\n- Product name + variant (if selected)\n- Unit price\n- Quantity controls (minus/number/plus)\n- Line total (price × quantity)\n- Remove button (X)\nQuantity changes update totals instantly.",
+    "passes": false
+  },
+  {
+    "id": "task-107",
+    "title": "CartPage — empty state",
+    "priority": "P0",
+    "description": "If cart is empty:\nShow illustration/icon + \"Your cart is empty\" text +\n\"Continue Shopping\" button (links to /shop/:storeSlug/products).\nDon't show checkout button when cart is empty.",
+    "passes": false
+  },
+  {
+    "id": "task-108",
+    "title": "CartPage — order summary",
+    "priority": "P0",
+    "description": "Right column (desktop) / bottom section (mobile):\n- Subtotal\n- Estimated tax (store's tax_rate × subtotal)\n- Delivery fee (from store delivery_zones or \"TBD based on address\")\n- Promo code input with \"Apply\" button\n- **Order Total** (bold, large)\n- \"Proceed to Checkout\" button (primary, full-width)\n- \"Continue Shopping\" text link",
+    "passes": false
+  },
+  {
+    "id": "task-109",
+    "title": "CartPage — promo code",
+    "priority": "P2",
+    "description": "Promo code input + Apply button.\nOn apply: check against coupons table for this tenant.\nIf valid: apply discount to subtotal, show discount line item.\nIf invalid: show error \"Invalid promo code\".\nIf coupons table doesn't exist: hide promo code input entirely \nor show it as non-functional placeholder.",
+    "passes": false
+  },
+  {
+    "id": "task-110",
+    "title": "CartPage — stock validation",
+    "priority": "P1",
+    "description": "Before proceeding to checkout, validate that cart items are still in stock.\nIf a product went out of stock since it was added:\nShow warning on that item: \"This item is no longer available\"\nDisable checkout until out-of-stock items are removed.",
+    "passes": false
+  },
+  {
+    "id": "task-111",
+    "title": "CheckoutPage — step indicator",
+    "priority": "P0",
+    "description": "Multi-step checkout with visual progress:\nStep 1: Your Info → Step 2: Payment → Step 3: Confirmation\nStep indicator at top shows current step highlighted.\nSteps are numbered circles connected by lines.",
+    "passes": false
+  },
+  {
+    "id": "task-112",
+    "title": "Checkout Step 1 — customer info form",
+    "priority": "P0",
+    "description": "Form fields:\n- Full name (required)\n- Phone number (required, validated format)\n- Email (optional but recommended, validated format)\n- Preferred contact method: Phone / Email / Text / Telegram (radio buttons)\nAll validated with React Hook Form + Zod.\n\"Continue to Payment\" button at bottom.\nOn continue: validate form, if valid advance to step 2.",
+    "passes": false
+  },
+  {
+    "id": "task-113",
+    "title": "Checkout Step 1 — fulfillment method",
+    "priority": "P0",
+    "description": "Toggle/tabs: Delivery / Pickup\nOnly show options that are enabled in store settings.\nIf Delivery:\n- Street address, Apt/Suite, City, State, ZIP (all required)\n- Delivery zone validation: check if ZIP is in one of store's delivery_zones\n- If ZIP not in zone: show \"Sorry, we don't deliver to this area\"\n- If in zone: show delivery fee and estimated time\nIf Pickup:\n- Show store address and pickup hours\n- \"Your order will be ready for pickup at {address}\"",
+    "passes": false
+  },
+  {
+    "id": "task-114",
+    "title": "Checkout Step 1 — guest vs account toggle",
+    "priority": "P0",
+    "description": "Below the customer info form, show:\n\"Already have an account? Sign in\" link → opens login modal/form\n\"Or continue as guest\" (default, no account needed)\n\nAlso show: \"Create an account to track your orders\" checkbox.\nIf checked: show password field + confirm password field.\nThis creates a real Supabase auth account after order.\nIf unchecked: guest checkout, lead/profile created in customers table.",
+    "passes": false
+  },
+  {
+    "id": "task-115",
+    "title": "Checkout Step 1 — order notes",
+    "priority": "P1",
+    "description": "Optional \"Order Notes\" textarea below the form.\nPlaceholder: \"Any special instructions?\"\nSaves to orders.notes column.",
+    "passes": false
+  },
+  {
+    "id": "task-116",
+    "title": "Checkout Step 2 — payment method selection",
+    "priority": "P0",
+    "description": "Show available payment methods (from store settings):\n\n1. **Cash** (if enabled):\n   Radio button: \"Cash on Delivery\" or \"Cash on Pickup\"\n   No additional fields needed.\n\n2. **Venmo** (if enabled):\n   Radio button: \"Venmo\"\n   Show: \"Send payment to {venmoHandle}\" with copy button\n   QR code if possible (generate from Venmo URL)\n   Checkbox: \"I've sent payment via Venmo\" (required before placing order)\n\n3. **Zelle** (if enabled):\n   Radio button: \"Zelle\"\n   Show: \"Send payment to {zelleInfo}\" with copy button\n   Checkbox: \"I've sent payment via Zelle\" (required)\n\n4. **Stripe** (if enabled):\n   Radio button: \"Credit/Debit Card\"\n   Embed Stripe Elements card form\n   Card number, expiry, CVC\n\nIf only one payment method enabled: auto-select it, no radio buttons.\nShow order summary alongside payment form.",
+    "passes": false
+  },
+  {
+    "id": "task-117",
+    "title": "Checkout Step 2 — order summary recap",
+    "priority": "P0",
+    "description": "Show on the right side (or above payment on mobile):\n- List of items with names, quantities, line totals\n- Subtotal\n- Tax\n- Delivery fee (or \"Pickup - Free\")\n- Discount (if promo applied)\n- **Total**\nThis is read-only, just a recap.",
+    "passes": false
+  },
+  {
+    "id": "task-118",
+    "title": "Checkout Step 2 — age verification",
+    "priority": "P1",
+    "description": "Checkbox: \"I confirm I am 21 years of age or older\" (required for cannabis).\nIf store doesn't sell age-restricted products, hide this.\nMust be checked before \"Place Order\" button is enabled.",
+    "passes": false
+  },
+  {
+    "id": "task-119",
+    "title": "Checkout Step 2 — Place Order button",
+    "priority": "P0",
+    "description": "\"Place Order\" button at bottom of Step 2.\nDisabled until:\n- Payment method selected\n- If Venmo/Zelle: \"I've sent payment\" checked\n- If Stripe: card form valid\n- Age verification checked (if shown)\nOn click: show loading spinner, disable button (prevent double-click).\nCalls the checkout handler (see next tasks).",
+    "passes": false
+  },
+  {
+    "id": "task-120",
+    "title": "Checkout handler — create order in database",
+    "priority": "P0",
+    "description": "When \"Place Order\" is clicked:\n\n1. Call storefront-checkout edge function (or client-side if edge function doesn't work):\n   Payload: {\n     storeSlug, items (productId, quantity, variant, unitPrice),\n     customerInfo (name, phone, email, preferredContact),\n     fulfillmentMethod (delivery/pickup), deliveryAddress,\n     paymentMethod (cash/venmo/zelle/stripe),\n     notes, createAccount (boolean), promoCode\n   }\n\n2. Server-side validation:\n   - Verify store exists and is published\n   - Verify all products exist and are in stock\n   - Recalculate prices server-side (prevent client-side price manipulation)\n   - Calculate tax and delivery fee server-side\n   - Validate delivery ZIP is in zone (if delivery)\n\n3. Insert into orders table:\n   - tenant_id from store\n   - store_id\n   - order_number (auto-increment per tenant)\n   - customer_name, customer_email, customer_phone\n   - delivery_address (JSONB)\n   - fulfillment_method\n   - status: 'pending'\n   - subtotal, tax_amount, delivery_fee, total\n   - payment_method\n   - source: 'storefront'\n   - notes\n\n4. Insert order_items for each cart item\n\n5. Decrement product stock_quantity for each item\n\n6. Return { orderId, orderNumber }",
+    "passes": false
+  },
+  {
+    "id": "task-121",
+    "title": "Checkout handler — create customer profile (guest)",
+    "priority": "P0",
+    "description": "If guest checkout (no account creation):\n\n1. Check customers table for existing customer with same phone OR email\n   for this tenant_id\n2. If exists: link order to existing customer_id, update their info\n3. If not exists: INSERT into customers table:\n   - tenant_id\n   - name, phone, email\n   - preferred_contact_method\n   - source: 'storefront'\n   - type: 'guest' or 'lead'\n   - first_order_at: now()\n   - last_order_at: now()\n   - total_orders: 1\n   - total_spent: order total\n   - delivery_address (save for future)\n4. Set orders.customer_id = new/existing customer ID\n\nThis automatically creates a customer profile in the admin panel's \ncustomer management section.",
+    "passes": false
+  },
+  {
+    "id": "task-122",
+    "title": "Checkout handler — create customer account (registered)",
+    "priority": "P1",
+    "description": "If \"Create an account\" was checked:\n1. Create Supabase auth user with email + password\n2. Create customer profile (same as guest above but type: 'registered')\n3. Link auth user to customer profile\n4. Auto-login the user after order\n5. If auth creation fails (e.g., email already exists): \n   still complete the order as guest, show message \n   \"Order placed! Account creation failed - email may already exist\"",
+    "passes": false
+  },
+  {
+    "id": "task-123",
+    "title": "Checkout handler — Stripe payment processing",
+    "priority": "P1",
+    "description": "If payment_method is 'stripe':\n1. Create Stripe PaymentIntent via edge function with amount = total in cents\n2. Confirm payment on client with Stripe Elements\n3. If payment succeeds: create order with paid_at = now()\n4. If payment fails: show error, don't create order\n5. Stripe webhook for async payment confirmation (optional but recommended)\n\nIf Stripe keys not configured: hide Stripe option in payment selection.",
+    "passes": false
+  },
+  {
+    "id": "task-124",
+    "title": "Checkout handler — inventory deduction",
+    "priority": "P0",
+    "description": "After order is created:\nFor each order item: UPDATE products SET stock_quantity = stock_quantity - ordered_quantity\nWHERE id = product_id AND tenant_id = tenant_id.\nIf stock goes below 0: the server-side validation in task-120 should \nhave caught this. Add a check: stock_quantity >= ordered_quantity before deducting.\nIf race condition occurs: rollback order and show \"Item went out of stock\".",
+    "passes": false
+  },
+  {
+    "id": "task-125",
+    "title": "Checkout handler — order number generation",
+    "priority": "P1",
+    "description": "Each tenant has their own order number sequence.\nFormat: #1001, #1002, #1003... (starting at 1001).\nOptions:\nA) PostgreSQL sequence per tenant\nB) Query MAX(order_number) for tenant + 1\nC) Use a counter in tenant_settings\nMust be unique per tenant. Include in order confirmation.",
+    "passes": false
+  },
+  {
+    "id": "task-126",
+    "title": "OrderConfirmationPage — success state",
+    "priority": "P0",
+    "description": "After successful order:\nNavigate to /shop/:storeSlug/order/:orderId\nShow:\n- Success checkmark animation (or confetti)\n- \"Thank you for your order!\"\n- \"Order #{orderNumber} confirmed\"\n- \"You will be contacted via {preferredContactMethod}\"\n\nCustom message from tenant (from settings): \ne.g., \"Thanks for the order! Your order is saved and you will be contacted shortly.\"",
+    "passes": false
+  },
+  {
+    "id": "task-127",
+    "title": "OrderConfirmationPage — order details",
+    "priority": "P0",
+    "description": "Show order summary:\n- Items ordered with quantities and prices\n- Subtotal, tax, delivery fee, total\n- Payment method chosen\n- Delivery address or pickup info\n- Fulfillment method\n- Estimated time (if configured)",
+    "passes": false
+  },
+  {
+    "id": "task-128",
+    "title": "OrderConfirmationPage — custom tenant links",
+    "priority": "P0",
+    "description": "Below the order summary, show tenant's custom link(s):\nIf Telegram link configured: show button \"Message us on Telegram\" → opens link\nIf WhatsApp configured: show button \"Chat on WhatsApp\" → opens link\nIf custom URL configured: show button with custom label → opens link\nThese come from store settings / tenant_settings.\nStyled as prominent buttons, not just text links.",
+    "passes": false
+  },
+  {
+    "id": "task-129",
+    "title": "OrderConfirmationPage — real-time status tracking",
+    "priority": "P1",
+    "description": "Status timeline showing order progress:\nConfirmed → Preparing → Ready → [Out for Delivery OR Ready for Pickup] → Completed\nCurrent step highlighted, completed steps checked.\nUses Supabase Realtime subscription on orders table for this order ID.\nWhen admin changes status, customer sees it update live.",
+    "passes": false
+  },
+  {
+    "id": "task-130",
+    "title": "OrderConfirmationPage — continue shopping button",
+    "priority": "P1",
+    "description": "\"Continue Shopping\" button → navigates to /shop/:storeSlug/products.\nClear the cart after successful order (should already be cleared in checkout handler).",
+    "passes": false
+  },
+  {
+    "id": "task-131",
+    "title": "Post-checkout — confirmation popup/modal",
+    "priority": "P0",
+    "description": "Immediately after order is placed (before navigating to confirmation page),\nshow a brief modal/popup:\n\nTitle: \"🎉 Order Confirmed!\"\nBody: \"Thanks for your order! Your order is saved and you will be contacted.\"\n+ Tenant's Telegram/WhatsApp/custom link as a prominent button\n+ \"View Order Details\" button (closes modal, goes to confirmation page)\n\nAuto-closes after 10 seconds if no action.\nThis ensures the customer sees the message even if the page transition is slow.",
+    "passes": false
+  },
+  {
+    "id": "task-132",
+    "title": "Post-checkout — send email confirmation",
+    "priority": "P1",
+    "description": "If customer provided email:\nSend order confirmation email via Supabase Edge Function.\nEmail contains: order number, items, total, delivery/pickup info,\ntenant's contact link, \"Track your order\" link.\nUse a clean HTML email template.\nIf email sending fails: log error, don't fail the order.",
+    "passes": false
+  },
+  {
+    "id": "task-133",
+    "title": "Post-checkout — send SMS confirmation",
+    "priority": "P1",
+    "description": "If customer provided phone and preferred contact is Phone or Text:\nSend SMS via edge function (Twilio or similar).\nSMS: \"Thanks for your order #{orderNumber} from {storeName}! \nTotal: ${total}. You'll be contacted when it's ready.\"\nIf SMS service not configured: skip silently. Don't block the order.",
+    "passes": false
+  },
+  {
+    "id": "task-134",
+    "title": "Post-checkout — Telegram auto-forward",
+    "priority": "P0",
+    "description": "If tenant has Telegram bot configured (bot token + chat ID in settings):\n\nAfter order is created, call Telegram Bot API via edge function:\nPOST https://api.telegram.org/bot{token}/sendMessage\nchat_id: {chatId}\ntext: formatted order details:\n\n\"🛒 New Order #{orderNumber}\nCustomer: {name}\nPhone: {phone}\nContact via: {preferredMethod}\n\nItems:\n- {productName} x{qty} — ${lineTotal}\n\nSubtotal: ${subtotal}\nTax: ${tax}\nDelivery: ${deliveryFee}\nTotal: ${total}\n\nPayment: {paymentMethod}\nFulfillment: {delivery/pickup}\nAddress: {address}\nNotes: {notes}\"\n\nCreate edge function: forward-order-telegram/index.ts\nIf bot token not set: skip. If API fails: log error, don't fail order.",
+    "passes": false
+  },
+  {
+    "id": "task-135",
+    "title": "Telegram integration — edge function",
+    "priority": "P0",
+    "description": "Create or verify edge function: supabase/functions/forward-order-telegram/index.ts\n\nInput: { orderId, tenantId }\nLogic:\n1. Fetch order + order_items + customer from database\n2. Fetch tenant's Telegram config from tenant_settings\n3. If bot_token and chat_id exist: send formatted message\n4. Return success/failure\n\nHandle CORS. Use Deno.env or the function params for secrets.\nBot token should be stored securely (tenant_settings or vault).",
+    "passes": false
+  },
+  {
+    "id": "task-136",
+    "title": "Telegram integration — test button in settings",
+    "priority": "P1",
+    "description": "In StorefrontSettings Notifications tab:\n\"Test Telegram\" button next to bot token input.\nOn click: calls edge function with a test message:\n\"✅ FloraIQ Telegram integration is working!\"\nShows toast: \"Test message sent!\" or \"Failed: {error}\"",
+    "passes": false
+  },
+  {
+    "id": "task-137",
+    "title": "Telegram integration — settings UI",
+    "priority": "P0",
+    "description": "In StorefrontSettings, ensure Telegram section has:\n- Telegram Bot Token (password input, with show/hide toggle)\n- Telegram Chat ID (text input, with help text: \"Get this from @userinfobot\")\n- Auto-forward new orders to Telegram (toggle)\n- Customer-facing Telegram link (text input, e.g., \"https://t.me/snakstation\")\n- Custom button label (text, default \"Message us on Telegram\")\n- Show on order confirmation (toggle, default true)\nAll save to tenant_settings.",
+    "passes": false
+  },
+  {
+    "id": "task-138",
+    "title": "Admin notification — new order alert",
+    "priority": "P0",
+    "description": "When a new storefront order comes in:\n1. Supabase Realtime triggers on admin side (Live Orders page)\n2. If admin has browser notification permissions: show browser notification\n   Title: \"New Order!\", Body: \"Order #{number} from {customerName}\"\n3. Optional sound effect on new order\n4. Notification bell in admin header updates count",
+    "passes": false
+  },
+  {
+    "id": "task-139",
+    "title": "Admin notification — email for new orders",
+    "priority": "P1",
+    "description": "If tenant has email notifications enabled in settings:\nSend email to configured admin email when new order arrives.\nEmail: order summary, customer info, link to admin order detail.\nSent via edge function triggered after order creation.",
+    "passes": false
+  },
+  {
+    "id": "task-140",
+    "title": "Admin notification — low stock alert",
+    "priority": "P2",
+    "description": "After inventory deduction, check if product stock_quantity\nfalls below threshold (from settings, default 5).\nIf yes: create notification in admin notifications system.\n\"⚠️ {ProductName} is low on stock ({remaining} left)\"",
+    "passes": false
+  },
+  {
+    "id": "task-141",
+    "title": "Live Orders — page loads with data",
+    "priority": "P0",
+    "description": "StorefrontLiveOrders.tsx:\nFetches orders where tenant_id = current and source = 'storefront'.\nOrders sorted by created_at descending (newest first).\nShows in table format with all columns (see task-142).\nIf no orders: show \"No orders yet. Share your store link to start getting orders!\"",
+    "passes": false
+  },
+  {
+    "id": "task-142",
+    "title": "Live Orders — table columns",
+    "priority": "P0",
+    "description": "Orders table columns:\n1. Order # (clickable → opens detail panel)\n2. Customer name\n3. Phone\n4. Items count (with tooltip showing item names)\n5. Total ($)\n6. Payment method (icon + label)\n7. Fulfillment (Delivery/Pickup badge)\n8. Status (colored badge)\n9. Time (relative: \"3 min ago\")\n10. Actions (dropdown: change status, view, contact)",
+    "passes": false
+  },
+  {
+    "id": "task-143",
+    "title": "Live Orders — status badges with colors",
+    "priority": "P0",
+    "description": "Status badges:\n- pending: yellow/amber\n- confirmed: blue\n- preparing: orange\n- ready: purple\n- out_for_delivery: indigo\n- delivered / completed: green\n- cancelled: red\nUse shadcn Badge component with appropriate variant/className.",
+    "passes": false
+  },
+  {
+    "id": "task-144",
+    "title": "Live Orders — status change actions",
+    "priority": "P0",
+    "description": "Each order has a status progression.\nActions dropdown shows ONLY the valid next statuses:\n- pending → Confirm, Cancel\n- confirmed → Start Preparing, Cancel\n- preparing → Mark Ready, Cancel\n- ready → Out for Delivery (if delivery) / Mark Completed (if pickup), Cancel\n- out_for_delivery → Mark Delivered, Cancel\n- delivered/completed → (no further actions)\n- cancelled → (no further actions)\n\nOn status change: update order in database, show toast, \ntrigger Realtime for customer's confirmation page.",
+    "passes": false
+  },
+  {
+    "id": "task-145",
+    "title": "Live Orders — order detail slide-over panel",
+    "priority": "P0",
+    "description": "Clicking an order # opens a slide-over panel from the right.\nPanel shows:\n- Order #{number} heading\n- Status badge with change buttons\n- Customer info: name, phone, email, preferred contact\n- Delivery address or \"Pickup\"\n- Line items table: product name, variant, qty, unit price, line total\n- Price breakdown: subtotal, tax, delivery, total\n- Payment method\n- Order notes (if any)\n- Order timeline (status changes with timestamps)\n- \"Contact Customer\" button (opens phone dialer or Telegram link)\n- Print button (prints receipt view)\nClose panel: click outside or X button.",
+    "passes": false
+  },
+  {
+    "id": "task-146",
+    "title": "Live Orders — Kanban view",
+    "priority": "P1",
+    "description": "Toggle between Table view and Kanban view.\nKanban: columns for each status (Pending | Confirmed | Preparing | Ready | Delivering | Completed).\nOrders as cards in each column.\nDrag card between columns to change status.\nVisual feedback during drag.",
+    "passes": false
+  },
+  {
+    "id": "task-147",
+    "title": "Live Orders — realtime subscription",
+    "priority": "P0",
+    "description": "Subscribe to Supabase Realtime on orders table:\npostgres_changes, event: INSERT, filter: tenant_id=eq.{tenantId}\nOn new order: \n- Add to orders list at top with slide-in animation\n- Update stats bar counts\n- Optional: play notification sound\n- Optional: browser notification\nAlso subscribe to UPDATE for status changes from other admin sessions.",
+    "passes": false
+  },
+  {
+    "id": "task-148",
+    "title": "Live Orders — stats bar",
+    "priority": "P1",
+    "description": "Top of Live Orders page shows stats cards:\n- Orders Today (count)\n- Revenue Today ($)\n- Pending Orders (count, pulsing if > 0)\n- Average Order Value ($)\nStats update when new orders come in via realtime.\nCalculate from orders where created_at >= today midnight.",
+    "passes": false
+  },
+  {
+    "id": "task-149",
+    "title": "Live Orders — filters",
+    "priority": "P1",
+    "description": "Filter bar above orders table:\n- Status filter tabs: All | Pending | In Progress | Completed | Cancelled\n- Date range picker (from date / to date)\n- Search by order # or customer name\n- Fulfillment filter: All | Delivery | Pickup\n- Payment filter: All | Cash | Venmo | Zelle | Stripe\nFilters combine with AND logic.",
+    "passes": false
+  },
+  {
+    "id": "task-150",
+    "title": "Live Orders — bulk actions",
+    "priority": "P2",
+    "description": "Checkbox on each order row.\n\"Select All\" checkbox in header.\nBulk actions dropdown when items selected:\n- Confirm All\n- Mark All Preparing\n- Export Selected (CSV)\nConfirmation dialog before bulk status changes.",
+    "passes": false
+  },
+  {
+    "id": "task-151",
+    "title": "Live Orders — contact customer shortcuts",
+    "priority": "P1",
+    "description": "In order detail panel and in table actions:\n\"Contact\" dropdown with:\n- Call (tel: link to phone number)\n- Text/SMS (sms: link)\n- Email (mailto: link)\n- Telegram (open Telegram link if configured)\n- WhatsApp (wa.me link with pre-filled message about their order)",
+    "passes": false
+  },
+  {
+    "id": "task-152",
+    "title": "Customers page — storefront customers appear",
+    "priority": "P0",
+    "description": "Admin's Customers page (/:tenantSlug/admin/customers) should show \nall customers including those auto-created from storefront orders.\nVerify customers created in task-121 appear in the list.\nCustomer list columns: name, phone, email, total orders, total spent,\nsource (storefront/pos/wholesale), last order date.",
+    "passes": false
+  },
+  {
+    "id": "task-153",
+    "title": "Customer profile — order history",
+    "priority": "P0",
+    "description": "Clicking a customer in the list opens their profile.\nProfile shows: name, phone, email, preferred contact, address.\nBelow: table of all their orders with order #, date, total, status.\nClicking an order opens the order detail.\nShows total lifetime value (sum of all orders).",
+    "passes": false
+  },
+  {
+    "id": "task-154",
+    "title": "Customer profile — what they ordered (inventory preferences)",
+    "priority": "P0",
+    "description": "In the customer profile, add a \"Preferences\" or \"Order History\" section:\n- Most ordered products (aggregated from order_items)\n- Product preferences (categories they buy most)\n- Average order value\n- First order date and last order date\nThis helps the admin know what the customer likes.",
+    "passes": false
+  },
+  {
+    "id": "task-155",
+    "title": "Customer profile — contact info and preferred method",
+    "priority": "P0",
+    "description": "Customer profile clearly shows:\n- Full name\n- Phone number (clickable to call)\n- Email (clickable to email)\n- Preferred contact method (badge: Phone / Text / Email / Telegram)\n- Saved delivery address(es)\nEditable by admin if they need to update.",
+    "passes": false
+  },
+  {
+    "id": "task-156",
+    "title": "Customer profile — notes field",
+    "priority": "P2",
+    "description": "Admin can add private notes about a customer.\nTextarea that saves to customers.admin_notes column.\nOnly visible to admin, never to the customer.",
+    "passes": false
+  },
+  {
+    "id": "task-157",
+    "title": "Customers — search and filter",
+    "priority": "P1",
+    "description": "Customers list has:\n- Search by name, phone, or email\n- Filter by source (storefront/pos/wholesale/all)\n- Sort by: name, total orders, total spent, last order, newest\n- Pagination for large customer lists",
+    "passes": false
+  },
+  {
+    "id": "task-158",
+    "title": "Customers — export",
+    "priority": "P2",
+    "description": "\"Export Customers\" button → downloads CSV.\nColumns: name, phone, email, preferred_contact, total_orders, \ntotal_spent, source, first_order_at, last_order_at.\nFilter export by current filter selection.",
+    "passes": false
+  },
+  {
+    "id": "task-159",
+    "title": "Products page — view all products",
+    "priority": "P0",
+    "description": "Admin Products page shows all products for this tenant.\nTable: image, name, category, price, stock quantity, status (active/draft),\nvisible on storefront toggle, actions (edit/delete).\nIf products page doesn't exist or is broken, fix it.",
+    "passes": false
+  },
+  {
+    "id": "task-160",
+    "title": "Products — add new product",
+    "priority": "P0",
+    "description": "\"Add Product\" button opens form:\n- Name (required)\n- Description (textarea)\n- Category (dropdown from product_categories + \"Add New\")\n- Price (number, required)\n- Stock quantity (number, default 0)\n- Images (multi-file upload to Supabase Storage)\n- Variants (optional: add variant name + variant price)\n- Visible on storefront (toggle, default true)\nSave creates product in products table with tenant_id.\nToast: \"Product added!\"",
+    "passes": false
+  },
+  {
+    "id": "task-161",
+    "title": "Products — edit product",
+    "priority": "P0",
+    "description": "Click edit on a product → opens same form pre-filled.\nCan update all fields.\nSave updates the product.\nChanges immediately reflect on storefront (no separate sync needed).",
+    "passes": false
+  },
+  {
+    "id": "task-162",
+    "title": "Products — delete product",
+    "priority": "P1",
+    "description": "Delete button with confirmation: \"Delete {product name}? This cannot be undone.\"\nSoft delete preferred (set is_deleted = true) so order_items references don't break.\nOr hard delete if no order_items reference it.\nProduct disappears from storefront immediately.",
+    "passes": false
+  },
+  {
+    "id": "task-163",
+    "title": "Products — stock management",
+    "priority": "P0",
+    "description": "Each product shows stock quantity.\nQuick edit: click stock number → inline edit → save.\nColor coding: green (> 10), yellow (1-10), red (0).\nWhen stock hits 0: product shows \"Out of Stock\" on storefront.\nAdmin can set stock back to replenish.",
+    "passes": false
+  },
+  {
+    "id": "task-164",
+    "title": "Products — bulk stock update",
+    "priority": "P2",
+    "description": "\"Update Stock\" bulk action:\nSelect multiple products → set quantities in a quick modal.\nUseful for restocking after deliveries.",
+    "passes": false
+  },
+  {
+    "id": "task-165",
+    "title": "Products — categories management",
+    "priority": "P1",
+    "description": "Manage product categories:\n- View all categories\n- Add new category (name, optional icon, optional description)\n- Edit category name\n- Delete category (reassign products or set to \"Uncategorized\")\nCategories appear in storefront filters.",
+    "passes": false
+  },
+  {
+    "id": "task-166",
+    "title": "Analytics — KPI cards",
+    "priority": "P1",
+    "description": "Top row KPI cards:\n1. Total Revenue (sum of orders.total for this period)\n2. Total Orders (count)\n3. Average Order Value (revenue / orders)\n4. Unique Customers (count distinct customer_id or phone)\nEach shows % change vs previous period (if data available).\nPeriod selector: Today / 7 days / 30 days / 90 days / All time.",
+    "passes": false
+  },
+  {
+    "id": "task-167",
+    "title": "Analytics — revenue chart",
+    "priority": "P1",
+    "description": "Line chart (Recharts) showing revenue over time.\nX-axis: dates. Y-axis: revenue $.\nData grouped by day for 7/30 day, by week for 90 day.\nSmooth curve with area fill.",
+    "passes": false
+  },
+  {
+    "id": "task-168",
+    "title": "Analytics — top products chart",
+    "priority": "P1",
+    "description": "Horizontal bar chart: top 10 products by revenue.\nProduct name on Y-axis, revenue on X-axis.\nData from order_items aggregated by product.",
+    "passes": false
+  },
+  {
+    "id": "task-169",
+    "title": "Analytics — orders by status",
+    "priority": "P2",
+    "description": "Donut/pie chart showing order distribution by status.\nPending, Confirmed, Preparing, Ready, Completed, Cancelled.\nColors matching status badge colors.",
+    "passes": false
+  },
+  {
+    "id": "task-170",
+    "title": "Analytics — empty state",
+    "priority": "P1",
+    "description": "If no orders yet, analytics page shows:\n\"No sales data yet. Share your store link to start getting orders!\"\n+ store URL with copy button\n+ share buttons (copy link, generate QR code)\nCharts show empty state (not errors or blank space).",
+    "passes": false
+  },
+  {
+    "id": "task-171",
+    "title": "Static menu generator — feature overview",
+    "priority": "P1",
+    "description": "Add a \"Generate Menu Page\" feature in admin storefront:\nCreates a simple, fast-loading, static HTML page with the tenant's \nproducts/prices. Think digital flyer — no login, no cart, just a clean \nproduct list that can be shared anywhere.\n\nDifferent from disposable menus: this is PERMANENT (doesn't self-destruct),\nsimple HTML, hosted at a unique URL.\n\nAdd a \"Menu Pages\" section in storefront settings or as a sub-page.",
+    "passes": false
+  },
+  {
+    "id": "task-172",
+    "title": "Static menu generator — UI in admin",
+    "priority": "P1",
+    "description": "Admin UI for generating static menu pages:\n- \"Generate Menu Page\" button in storefront section\n- Options: title, which products to include (all or selected),\n  show prices toggle, show descriptions toggle, show images toggle,\n  color scheme (match store theme or simple black/white)\n- Custom message at top (e.g., \"Text us to order!\")\n- Contact info to show on page\n- Slug input for URL (e.g., \"weekly-menu\" → /menu/weekly-menu.html)",
+    "passes": false
+  },
+  {
+    "id": "task-173",
+    "title": "Static menu generator — generates HTML",
+    "priority": "P1",
+    "description": "On \"Generate\" click:\nBuild a self-contained HTML file with inline CSS (no external deps).\nContent: title, products grid with names/prices/images, contact info.\nMobile-responsive. Fast-loading. Clean design.\nSave the HTML to Supabase Storage or a dedicated bucket.\nReturn the URL.\n\nFormat: https://{domain}/menu/{slug}.html or served via edge function.",
+    "passes": false
+  },
+  {
+    "id": "task-174",
+    "title": "Static menu generator — URL management",
+    "priority": "P1",
+    "description": "Admin can see list of all generated menu pages.\nEach shows: title, URL (clickable + copy button), created date, \nproducts count.\nActions: view, regenerate (update with current products), delete.\nTable in a MenuPages component.",
+    "passes": false
+  },
+  {
+    "id": "task-175",
+    "title": "Static menu generator — auto-regenerate",
+    "priority": "P2",
+    "description": "Option to auto-regenerate the static page whenever products or \nprices change. Toggle per menu page.\nOr a \"Sync Now\" button to manually regenerate with latest data.",
+    "passes": false
+  },
+  {
+    "id": "task-176",
+    "title": "Store sharing — share dialog",
+    "priority": "P1",
+    "description": "\"Share Store\" button in admin storefront section.\nOpens dialog with:\n- Store URL with copy button\n- QR code generated for the URL (use a QR code library or API)\n- Social share buttons (copy link, share to WhatsApp, SMS, email)\n- Download QR code as PNG button",
+    "passes": false
+  },
+  {
+    "id": "task-177",
+    "title": "Store sharing — QR code generation",
+    "priority": "P1",
+    "description": "Generate QR code for store URL and static menu pages.\nUse qrcode library (npm install qrcode) or a React QR component.\nQR code displayed in share dialog and downloadable.\nTenant can print QR code on receipts, flyers, business cards.",
+    "passes": false
+  },
+  {
+    "id": "task-178",
+    "title": "Checkout — prevent double order submission",
+    "priority": "P0",
+    "description": "Disable \"Place Order\" button immediately on click.\nShow loading spinner. Don't re-enable until response.\nIf user clicks again (fast click): second click is no-op.\nIf browser refreshes during submission: order should not duplicate.\nUse idempotency key if possible.",
+    "passes": false
+  },
+  {
+    "id": "task-179",
+    "title": "Checkout — handle network errors",
+    "priority": "P0",
+    "description": "If the checkout API call fails (network error, 500, timeout):\nShow clear error: \"Something went wrong. Please try again.\"\nRe-enable the Place Order button.\nDon't navigate to confirmation page.\nDon't clear the cart (so user can retry).",
+    "passes": false
+  },
+  {
+    "id": "task-180",
+    "title": "Checkout — handle out-of-stock during checkout",
+    "priority": "P0",
+    "description": "If between adding to cart and placing order, a product goes out of stock:\nServer validates stock → returns error for specific items.\nShow: \"Sorry, {product name} is no longer available.\"\nRemove that item from cart or show it as unavailable.\nLet user continue with remaining items.",
+    "passes": false
+  },
+  {
+    "id": "task-181",
+    "title": "Store not found — styled 404 page",
+    "priority": "P0",
+    "description": "Visiting /shop/nonexistent-slug shows a styled 404 page:\n- Store illustration or icon\n- \"Store Not Found\"\n- \"The store you're looking for doesn't exist or has been taken offline.\"\n- \"Check the URL and try again.\"\nNot a raw white page or React error boundary.",
+    "passes": false
+  },
+  {
+    "id": "task-182",
+    "title": "Product not found — 404 page",
+    "priority": "P1",
+    "description": "Visiting /shop/:slug/products/nonexistent-id shows:\n\"Product Not Found\" with a \"Browse Products\" button.\nDon't crash or show blank page.",
+    "passes": false
+  },
+  {
+    "id": "task-183",
+    "title": "Empty store — no products state",
+    "priority": "P0",
+    "description": "If store is published but has zero visible products:\nProductCatalogPage shows: \"Products coming soon! Check back later.\"\nProductGridSection on homepage shows nothing or a \"Coming Soon\" message.\nCheckout should not be reachable (no add to cart possible).",
+    "passes": false
+  },
+  {
+    "id": "task-184",
+    "title": "Cart — validate cart on checkout page load",
+    "priority": "P0",
+    "description": "When CheckoutPage loads:\n1. Verify all cart items still exist in the database\n2. Verify all cart items are still in stock\n3. Verify prices haven't changed\nIf prices changed: update cart to new prices, show notice.\nIf item removed: remove from cart, show notice.\nIf all items gone: redirect to empty cart page.",
+    "passes": false
+  },
+  {
+    "id": "task-185",
+    "title": "Cart — max quantity enforcement",
+    "priority": "P1",
+    "description": "Can't add more than stock_quantity of a product.\nIf user tries: show toast \"Only {X} available\".\nQuantity selector capped at stock level.",
+    "passes": false
+  },
+  {
+    "id": "task-186",
+    "title": "Delivery zone — ZIP code validation",
+    "priority": "P0",
+    "description": "On checkout with delivery:\nCustomer enters ZIP code → validate against store's delivery_zones.\nIf ZIP is in a zone: show that zone's delivery fee and estimated time.\nIf ZIP is not in any zone: \"Sorry, we don't deliver to this area.\"\nDisable \"Continue\" until a valid delivery address is entered.",
+    "passes": false
+  },
+  {
+    "id": "task-187",
+    "title": "Phone number — validation and formatting",
+    "priority": "P1",
+    "description": "Phone field on checkout:\nAccept common formats: (555) 123-4567, 555-123-4567, 5551234567, +15551234567.\nNormalize to a standard format before saving.\nValidate it's a real-looking US phone (10 digits).\nShow formatted display after entry.",
+    "passes": false
+  },
+  {
+    "id": "task-188",
+    "title": "Email — validation",
+    "priority": "P1",
+    "description": "If email is entered on checkout:\nValidate with Zod email schema.\nShow inline error for invalid format.\nEmail is optional for guest checkout (phone is primary).",
+    "passes": false
+  },
+  {
+    "id": "task-189",
+    "title": "Price display — consistent formatting",
+    "priority": "P1",
+    "description": "All prices throughout the app display as $XX.XX format.\nUse a formatPrice utility: (cents or dollars) → \"$12.99\"\nCheck: cart, checkout, order confirmation, admin orders, analytics.\nNo floating point weirdness ($12.989999999).",
+    "passes": false
+  },
+  {
+    "id": "task-190",
+    "title": "Long product names — truncation",
+    "priority": "P1",
+    "description": "Product names that are very long (50+ chars) should truncate with \nellipsis on cards, table rows, cart items.\nFull name visible on product detail page.\nUse CSS: text-overflow: ellipsis; overflow: hidden; white-space: nowrap;\nOr line-clamp for multi-line truncation.",
+    "passes": false
+  },
+  {
+    "id": "task-191",
+    "title": "Image loading — lazy load and placeholders",
+    "priority": "P1",
+    "description": "All product images use loading=\"lazy\" attribute.\nShow a skeleton placeholder while image loads.\nIf image fails to load (broken URL): show a styled placeholder \n(store icon or product icon), not broken image icon.\nUse onError handler on img tags.",
+    "passes": false
+  },
+  {
+    "id": "task-192",
+    "title": "Special characters in names",
+    "priority": "P1",
+    "description": "Test with special characters in:\n- Product names: \"Gee's Smoke Shop™ — OG Kush (28g)\"\n- Customer names: \"José García-López\"\n- Store names: \"Snak Station #1 (LES)\"\nNo XSS vulnerabilities (sanitize all user input).\nNo display issues or encoding problems.",
+    "passes": false
+  },
+  {
+    "id": "task-193",
+    "title": "Search sanitization",
+    "priority": "P1",
+    "description": "Product search input on catalog page:\nSanitize input to prevent SQL injection or XSS.\nIf using Supabase .ilike() or .textSearch(): input is parameterized (safe).\nIf using raw SQL: use parameterized queries.\nAlso sanitize before displaying search term in \"No results for '{term}'\"",
+    "passes": false
+  },
+  {
+    "id": "task-194",
+    "title": "Session expiry — admin doesn't lose work",
+    "priority": "P1",
+    "description": "If admin's Supabase auth session expires while editing the builder:\nShow a \"Session expired\" modal with re-login form.\nDon't lose the current builder state.\nAfter re-login: resume where they left off.",
+    "passes": false
+  },
+  {
+    "id": "task-195",
+    "title": "Concurrent admin editing — last write wins",
+    "priority": "P2",
+    "description": "If two admins edit the same store simultaneously:\nAdd updated_at check before saving.\nIf store.updated_at > last fetched: show warning \n\"This store was modified by another user. Reload or overwrite?\"",
+    "passes": false
+  },
+  {
+    "id": "task-196",
+    "title": "Large layout_config — performance",
+    "priority": "P2",
+    "description": "If tenant creates 20+ sections:\nBuilder should still scroll smoothly.\nPreview shouldn't lag.\nJSON serialization of large layout_config shouldn't be slow.\nTest with 20 sections of various types.",
+    "passes": false
+  },
+  {
+    "id": "task-197",
+    "title": "Image upload — size limits and validation",
+    "priority": "P1",
+    "description": "Hero image, product images, gallery images, logo:\nMax file size: 5MB (show error if exceeded).\nAccepted formats: jpg, jpeg, png, webp, gif.\nValidate MIME type, not just extension.\nCompress/resize large images before upload if possible.\nShow upload progress indicator.",
+    "passes": false
+  },
+  {
+    "id": "task-198",
+    "title": "Cart persistence — localStorage",
+    "priority": "P0",
+    "description": "Verify cart persists when:\n- User refreshes the page\n- User navigates between store pages\n- User closes and reopens browser tab\nCart stored in localStorage with STORAGE_KEYS constant.\nWrapped in try-catch (some browsers block localStorage).\nCart scoped to store slug (different stores = different carts).",
+    "passes": false
+  },
+  {
+    "id": "task-199",
+    "title": "Cart — clear after successful order",
+    "priority": "P0",
+    "description": "After order is successfully placed:\nCall clearCart() to empty the cart.\nVerify: place order → cart badge goes to 0 → cart page shows empty.\nCart should NOT be cleared if order fails.",
+    "passes": false
+  },
+  {
+    "id": "task-200",
+    "title": "Checkout — back button handling",
+    "priority": "P1",
+    "description": "On checkout page, user clicks browser back button:\nShould go back to previous step (Step 2 → Step 1).\nIf on Step 1: back goes to cart page.\nDon't lose form data when going back within steps.",
+    "passes": false
+  },
+  {
+    "id": "task-201",
+    "title": "All forms use React Hook Form + Zod",
+    "priority": "P1",
+    "description": "Verify that ALL forms in storefront feature use React Hook Form + Zod:\n- Store creation form\n- Section edit dialogs\n- Settings forms (all tabs)\n- Checkout customer info form\n- Checkout address form\n- Product create/edit form\nIf any form uses uncontrolled inputs or manual validation, \nrefactor to React Hook Form + Zod.",
+    "passes": false
+  },
+  {
+    "id": "task-202",
+    "title": "Form errors — inline display",
+    "priority": "P1",
+    "description": "All form validation errors show inline below the field.\nRed text, small font, with error icon.\nField border turns red on error.\nErrors clear when user fixes the input.\nDon't show all errors at once — show on blur or submit.",
+    "passes": false
+  },
+  {
+    "id": "task-203",
+    "title": "Required fields — asterisk indicator",
+    "priority": "P2",
+    "description": "All required form fields show a red asterisk (*) next to the label.\nConsistent across all forms.",
+    "passes": false
+  },
+  {
+    "id": "task-204",
+    "title": "Every page has loading state",
+    "priority": "P0",
+    "description": "Audit every storefront page for loading states:\n- StorefrontBuilder: skeleton for section list + preview\n- StorefrontSettings: skeleton for form fields\n- StorefrontLiveOrders: skeleton for table rows\n- StorefrontAnalytics: skeleton for chart areas + KPI cards\n- StorefrontPage: skeleton for sections\n- ProductCatalogPage: skeleton card grid\n- ProductDetailPage: skeleton for image + info\n- CartPage: skeleton for item rows\n- CheckoutPage: skeleton for form\nUse shadcn Skeleton component. No spinner-only states for content areas.",
+    "passes": false
+  },
+  {
+    "id": "task-205",
+    "title": "Every page has empty state",
+    "priority": "P0",
+    "description": "Audit every page for empty states (when there's no data):\n- Builder: \"Create Your Store\" card\n- Live Orders: \"No orders yet\" with share store link\n- Analytics: \"No data yet\" with helpful message\n- Product Catalog: \"No products found\" with clear filters\n- Cart: \"Your cart is empty\" with continue shopping link\nEach empty state has an illustration/icon, helpful message, \nand a primary action button.",
+    "passes": false
+  },
+  {
+    "id": "task-206",
+    "title": "Every page has error state",
+    "priority": "P0",
+    "description": "Audit every page for error states (when query fails):\nEach should show: error icon, message, \"Try Again\" button that refetches.\nNOT a blank page or unhandled error.\nUse React Error Boundary as a catch-all fallback.",
+    "passes": false
+  },
+  {
+    "id": "task-207",
+    "title": "Storefront homepage — mobile layout",
+    "priority": "P0",
+    "description": "Test /shop/:slug at 375px width (iPhone SE).\nHero section: text scales, CTA button full-width.\nProduct grid: 2 columns or 1 column depending on card size.\nFeatures: stack vertically.\nAll sections must not overflow horizontally (no horizontal scroll).",
+    "passes": false
+  },
+  {
+    "id": "task-208",
+    "title": "Product catalog — mobile layout",
+    "priority": "P0",
+    "description": "At 375px width:\n- Filters hidden, \"Filters\" button shows drawer\n- Product grid: 2 columns\n- Sort dropdown accessible\n- Search input full-width\n- Product cards: image, name, price, add to cart — all visible",
+    "passes": false
+  },
+  {
+    "id": "task-209",
+    "title": "Product detail — mobile layout",
+    "priority": "P0",
+    "description": "At 375px:\n- Image gallery: horizontal swipe carousel\n- Info section stacks below images\n- Add to Cart button: fixed bottom bar or large button\n- Related products: horizontal scroll\n- All text readable, no overflow",
+    "passes": false
+  },
+  {
+    "id": "task-210",
+    "title": "Cart — mobile layout",
+    "priority": "P0",
+    "description": "At 375px:\n- Cart items stack vertically\n- Quantity controls accessible (44px touch targets)\n- Order summary below items\n- Checkout button: full-width, bottom of page\n- Remove item: swipe to delete or clear X button",
+    "passes": false
+  },
+  {
+    "id": "task-211",
+    "title": "Checkout — mobile layout",
+    "priority": "P0",
+    "description": "At 375px:\n- Step indicator: compact, horizontal pills\n- Form fields: full-width, stacked\n- Payment options: full-width cards/buttons\n- Order summary: collapsible section at top\n- Place Order: full-width button, fixed at bottom",
+    "passes": false
+  },
+  {
+    "id": "task-212",
+    "title": "Order confirmation — mobile layout",
+    "priority": "P0",
+    "description": "At 375px:\n- Success animation visible\n- Order details readable\n- Telegram/custom link button: large, prominent, full-width\n- Status timeline: vertical, left-aligned",
+    "passes": false
+  },
+  {
+    "id": "task-213",
+    "title": "Admin builder — mobile handling",
+    "priority": "P1",
+    "description": "Admin builder is primarily a desktop tool, but if accessed on mobile:\nShow message: \"Storefront Builder works best on desktop. \nOpen on a computer for the full editing experience.\"\nAlternatively, show only Easy Mode on mobile.",
+    "passes": false
+  },
+  {
+    "id": "task-214",
+    "title": "Admin live orders — mobile layout",
+    "priority": "P1",
+    "description": "On mobile: orders table becomes card list.\nEach card: order #, customer name, total, status badge, time.\nTap card: opens detail panel (full-screen on mobile).",
+    "passes": false
+  },
+  {
+    "id": "task-215",
+    "title": "Touch targets — minimum 44px",
+    "priority": "P0",
+    "description": "Audit all interactive elements on mobile:\n- Buttons: min height 44px\n- Links in nav: min height 44px\n- Quantity +/- buttons: min 44px × 44px\n- Filter checkboxes: min 44px touch area\n- Cart item remove button: min 44px\nFix any elements smaller than 44px.",
+    "passes": false
+  },
+  {
+    "id": "task-216",
+    "title": "No horizontal scroll anywhere",
+    "priority": "P0",
+    "description": "On mobile (375px), no page should have horizontal scroll.\nCommon causes: images without max-width, tables without overflow,\nabsolute positioned elements extending beyond viewport.\nTest every storefront page. Add overflow-x: hidden on body or \nfix the actual overflowing elements.",
+    "passes": false
+  },
+  {
+    "id": "task-217",
+    "title": "Mobile — font sizes readable",
+    "priority": "P1",
+    "description": "Minimum font size on mobile: 14px for body text, 12px for labels.\nHeadings scale appropriately (not too large on small screens).\nProduct prices always readable (not truncated or tiny).",
+    "passes": false
+  },
+  {
+    "id": "task-218",
+    "title": "Mobile — image sizing",
+    "priority": "P1",
+    "description": "All images responsive (max-width: 100%, height: auto).\nProduct images in catalog: equal aspect ratio (use object-fit: cover).\nHero background image: covers viewport width.\nGallery images: don't stretch or distort.",
+    "passes": false
+  },
+  {
+    "id": "task-219",
+    "title": "Mobile — keyboard handling",
+    "priority": "P1",
+    "description": "When mobile keyboard opens (focusing input field):\nForm should scroll up so the focused field is visible.\nFixed bottom bars shouldn't cover the input.\n\"Place Order\" button accessible after filling form.",
+    "passes": false
+  },
+  {
+    "id": "task-220",
+    "title": "Mobile — bottom nav z-index",
+    "priority": "P1",
+    "description": "Bottom navigation bar (if exists) must:\n- Be above page content (z-index)\n- Not cover the last item in scrollable lists (add padding-bottom)\n- Not overlap with fixed checkout button\n- Hide when keyboard is open (optional)",
+    "passes": false
+  },
+  {
+    "id": "task-221",
+    "title": "Tablet layout — 768px breakpoint",
+    "priority": "P1",
+    "description": "Test all storefront pages at 768px (iPad):\n- Product grid: 2-3 columns\n- Sidebar filters: visible but narrower\n- Checkout: still side-by-side layout\n- Builder: compact but usable\nEnsure no layout breaks between mobile and desktop.",
+    "passes": false
+  },
+  {
+    "id": "task-222",
+    "title": "Offline indicator",
+    "priority": "P2",
+    "description": "If customer loses internet connection while browsing:\nShow a non-intrusive banner: \"You're offline. Some features may not work.\"\nCart should still work (local state).\nCheckout should show error if attempted offline.",
+    "passes": false
+  },
+  {
+    "id": "task-223",
+    "title": "Slow connection handling",
+    "priority": "P1",
+    "description": "On slow 3G connections:\n- Images lazy load (don't block page render)\n- Skeleton states visible during loading\n- Checkout has timeout handling (30 second timeout)\n- User sees progress, not blank pages",
+    "passes": false
+  },
+  {
+    "id": "task-224",
+    "title": "RLS — marketplace_stores",
+    "priority": "P0",
+    "description": "Verify RLS policies on marketplace_stores:\n- SELECT: anyone can read published stores (for public storefront)\n- SELECT: authenticated users can read their tenant's stores (any status)\n- INSERT/UPDATE/DELETE: only tenant admins\nTest: one tenant cannot see or modify another tenant's store.",
+    "passes": false
+  },
+  {
+    "id": "task-225",
+    "title": "RLS — orders",
+    "priority": "P0",
+    "description": "Verify RLS on orders:\n- INSERT: edge function (service role) can create orders for any tenant\n- SELECT: tenant admins can only see their orders\n- UPDATE: tenant admins can only update their orders\n- Customer can see their own order (by order ID, for tracking)\nTest: tenant A cannot see tenant B's orders.",
+    "passes": false
+  },
+  {
+    "id": "task-226",
+    "title": "RLS — customers",
+    "priority": "P0",
+    "description": "Verify RLS on customers:\n- SELECT/UPDATE: only tenant admins for their tenant's customers\n- INSERT: edge function can create for any tenant\nTest: tenant isolation.",
+    "passes": false
+  },
+  {
+    "id": "task-227",
+    "title": "RLS — products",
+    "priority": "P0",
+    "description": "Verify RLS on products:\n- SELECT: public can read active/published products (for storefront)\n- INSERT/UPDATE/DELETE: only tenant admins\nTest: public can browse products, can't modify them.",
+    "passes": false
+  },
+  {
+    "id": "task-228",
+    "title": "Server-side price validation",
+    "priority": "P0",
+    "description": "The storefront-checkout edge function MUST validate prices server-side.\nDon't trust client-sent prices.\nFetch product prices from database, calculate totals server-side.\nIf client total doesn't match server total: use server total.\nThis prevents customers from manipulating prices via devtools.",
+    "passes": false
+  },
+  {
+    "id": "task-229",
+    "title": "Rate limiting — checkout",
+    "priority": "P1",
+    "description": "Prevent spam orders:\nRate limit the checkout endpoint.\nMax 5 orders per IP per hour.\nMax 3 orders per phone number per hour.\nReturn 429 if rate limited.",
+    "passes": false
+  },
+  {
+    "id": "task-230",
+    "title": "Input sanitization — all user inputs",
+    "priority": "P0",
+    "description": "All text inputs from customers (name, address, notes, search) must be:\n- Trimmed of leading/trailing whitespace\n- Sanitized for XSS (no script injection)\n- Validated against expected format (phone, email, ZIP)\n- Stored as plain text (no HTML in database)\nUse DOMPurify for any HTML rendering.\nUse Zod schemas for all input validation.",
+    "passes": false
+  },
+  {
+    "id": "task-231",
+    "title": "CORS — edge functions",
+    "priority": "P0",
+    "description": "All edge functions must return proper CORS headers:\nAccess-Control-Allow-Origin (configured for your domain)\nAccess-Control-Allow-Methods: POST, OPTIONS\nAccess-Control-Allow-Headers: Content-Type, Authorization\nHandle OPTIONS preflight requests.",
+    "passes": false
+  },
+  {
+    "id": "task-232",
+    "title": "Stripe keys — not exposed client-side",
+    "priority": "P0",
+    "description": "Stripe SECRET key must ONLY be in edge functions (server-side).\nStripe PUBLISHABLE key is fine client-side.\nCheck: no sk_test_ or sk_live_ strings in any src/ files.\nRun: grep -rn \"sk_test\\|sk_live\" src/",
+    "passes": false
+  },
+  {
+    "id": "task-233",
+    "title": "Telegram bot token — not exposed client-side",
+    "priority": "P0",
+    "description": "Bot token must ONLY be in edge functions.\nFrontend sends orderId + tenantId to edge function.\nEdge function reads bot token from tenant_settings using service role.\nCheck: no bot token strings in src/ files.",
+    "passes": false
+  },
+  {
+    "id": "task-234",
+    "title": "Customer data — no cross-tenant leakage",
+    "priority": "P0",
+    "description": "Verify: visiting /shop/store-a shows ONLY store-a's products.\n/shop/store-b shows ONLY store-b's products.\nOrders from store-a only visible to store-a's admin.\nCustomer profiles from store-a only in store-a's admin.\nRun manual test with 2 different stores.",
+    "passes": false
+  },
+  {
+    "id": "task-235",
+    "title": "XSS — Custom HTML section",
+    "priority": "P0",
+    "description": "CustomHTMLSection sanitizes content with DOMPurify.\nTest with script injection: <script>alert('xss')</script>\nShould be stripped out, not executed.\nTest with image onerror: <img onerror=\"alert('xss')\">\nShould be stripped.",
+    "passes": false
+  },
+  {
+    "id": "task-236",
+    "title": "Order access — customer can only see their order",
+    "priority": "P1",
+    "description": "OrderConfirmationPage at /shop/:slug/order/:orderId\nCustomer should only see their own order (by the orderId they received).\nThey should NOT be able to enumerate other order IDs.\nUse UUID for orderId (not sequential numbers) for the URL.\nOrder number (sequential) is for display only.",
+    "passes": false
+  },
+  {
+    "id": "task-237",
+    "title": "Product images — optimize loading",
+    "priority": "P1",
+    "description": "All product images on catalog page: loading=\"lazy\".\nFirst 4 images (above fold): eager loading.\nUse appropriate image sizes (don't load 4000px images for thumbnails).\nIf Supabase Storage supports transforms: use width/height params.",
+    "passes": false
+  },
+  {
+    "id": "task-238",
+    "title": "TanStack Query — stale times",
+    "priority": "P1",
+    "description": "Set appropriate staleTime for storefront queries:\n- Store data: 5 minutes (stores don't change often)\n- Products: 2 minutes (stock can change)\n- Orders (admin): 30 seconds (need to see new orders quickly)\n- Analytics: 5 minutes\nDon't refetch on every component mount.",
+    "passes": false
+  },
+  {
+    "id": "task-239",
+    "title": "TanStack Query — prefetching",
+    "priority": "P2",
+    "description": "Prefetch product detail data when hovering over a product card.\nUse queryClient.prefetchQuery on hover.\nResult: instant page load when clicking the product.",
+    "passes": false
+  },
+  {
+    "id": "task-240",
+    "title": "Bundle size — code splitting",
+    "priority": "P2",
+    "description": "Storefront pages should be code-split from admin pages.\nUse React.lazy + Suspense for route-level code splitting:\nconst StorefrontPage = lazy(() => import('./pages/shop/StorefrontPage'));\nAdmin users don't need to download storefront code and vice versa.\nVerify: build output shows separate chunks for shop/ and admin/.",
+    "passes": false
+  },
+  {
+    "id": "task-241",
+    "title": "Product catalog — query optimization",
+    "priority": "P1",
+    "description": "Product catalog queries should:\n- Select only needed columns (not SELECT *)\n- Use pagination (limit/offset or cursor)\n- Use database indexes on: tenant_id, category, price, created_at\n- Filter server-side, not client-side\nIf loading 1000+ products: must paginate, not load all at once.",
+    "passes": false
+  },
+  {
+    "id": "task-242",
+    "title": "Realtime subscriptions — cleanup",
+    "priority": "P1",
+    "description": "Supabase Realtime subscriptions in Live Orders must be properly cleaned up.\nuseEffect cleanup: unsubscribe on unmount.\nDon't create multiple subscriptions on re-renders.\nVerify: navigate away from live orders → subscription removed.\nNavigate back → new subscription created (no duplicates).",
+    "passes": false
+  },
+  {
+    "id": "task-243",
+    "title": "Admin analytics — memoize expensive calculations",
+    "priority": "P2",
+    "description": "Analytics dashboard aggregations (sums, averages, groupings):\nUse useMemo to avoid recalculating on every render.\nCharts should only re-render when data changes.",
+    "passes": false
+  },
+  {
+    "id": "task-244",
+    "title": "Keyboard navigation — all interactive elements",
+    "priority": "P1",
+    "description": "All buttons, links, inputs, toggles, cards:\nMust be reachable via Tab key.\nMust show visible focus ring (outline) when focused.\nMust be activatable with Enter or Space.\nTab order should follow visual order.",
+    "passes": false
+  },
+  {
+    "id": "task-245",
+    "title": "ARIA labels — icon buttons",
+    "priority": "P1",
+    "description": "All icon-only buttons must have aria-label:\n- Cart icon: aria-label=\"Shopping cart, {N} items\"\n- Delete button: aria-label=\"Delete {item name}\"\n- Edit button: aria-label=\"Edit {section name}\"\n- Close button: aria-label=\"Close\"\n- Search: aria-label=\"Search products\"\nAudit all icon buttons across storefront pages.",
+    "passes": false
+  },
+  {
+    "id": "task-246",
+    "title": "Color contrast — WCAG AA",
+    "priority": "P1",
+    "description": "Verify text color contrast against backgrounds meets WCAG AA (4.5:1).\nEspecially check:\n- Light themes: gray text on white backgrounds\n- Dark themes: gray text on dark backgrounds\n- Status badges: text readable on colored backgrounds\n- Buttons: text readable on primary color backgrounds",
+    "passes": false
+  },
+  {
+    "id": "task-247",
+    "title": "Alt text — all images",
+    "priority": "P1",
+    "description": "All product images: alt=\"{product name}\"\nHero background images: alt=\"\" (decorative) with aria-hidden=\"true\"\nLogo: alt=\"{store name} logo\"\nGallery images: alt=\"{store name} gallery image {N}\" or custom alt\nNo broken or missing alt attributes.",
+    "passes": false
+  },
+  {
+    "id": "task-248",
+    "title": "Screen reader — checkout flow",
+    "priority": "P1",
+    "description": "Checkout step changes must announce to screen readers.\nUse aria-live=\"polite\" on step content area.\nForm errors must be announced.\nSuccess/error toasts must have role=\"alert\".\nOrder confirmation must be announced.",
+    "passes": false
+  },
+  {
+    "id": "task-249",
+    "title": "Semantic HTML — headings hierarchy",
+    "priority": "P2",
+    "description": "Each page has exactly one h1.\nHeadings follow hierarchy: h1 > h2 > h3 (no skipping).\nSections use proper semantic elements (<section>, <nav>, <main>, <footer>).\nProduct catalog: page title is h1, product names are h2 or h3.",
+    "passes": false
+  },
+  {
+    "id": "task-250",
+    "title": "Focus management — modals and dialogs",
+    "priority": "P1",
+    "description": "When a dialog/modal opens: focus moves to the dialog.\nWhen it closes: focus returns to the trigger element.\nTab cannot escape the dialog while open (focus trap).\nshadcn Dialog component handles this, but verify custom dialogs too.",
+    "passes": false
+  },
+  {
+    "id": "task-251",
+    "title": "Toast notifications — consistent usage",
+    "priority": "P1",
+    "description": "Use Sonner for all toasts. Consistent patterns:\n- Success (green): save, publish, add to cart, place order\n- Error (red): validation errors, network errors, stock errors\n- Info (blue): informational messages\n- Warning (yellow): unsaved changes, low stock\nToasts appear bottom-right (desktop) or top-center (mobile).\nMax 3 visible at once.",
+    "passes": false
+  },
+  {
+    "id": "task-252",
+    "title": "Button loading states",
+    "priority": "P0",
+    "description": "All action buttons show loading state during async operations:\n- \"Save Draft\" → spinner + \"Saving...\"\n- \"Publish\" → spinner + \"Publishing...\"\n- \"Place Order\" → spinner + \"Processing...\"\n- \"Add to Cart\" → brief spinner → \"Added ✓\"\nUse shadcn Button with disabled state + Loader2 spinner icon.",
+    "passes": false
+  },
+  {
+    "id": "task-253",
+    "title": "Hover and interaction feedback",
+    "priority": "P1",
+    "description": "All interactive elements have hover/active states:\n- Buttons: slight color darken on hover, scale down on click\n- Product cards: subtle shadow elevation on hover\n- Links: underline on hover or color change\n- Table rows: background highlight on hover\n- Drag handles: cursor changes to grab/grabbing",
+    "passes": false
+  },
+  {
+    "id": "task-254",
+    "title": "Theme consistency — colors match throughout",
+    "priority": "P0",
+    "description": "For each theme (Dark, Minimalist, Strain, Luxury):\nVerify ALL storefront pages use theme CSS variables for:\n- Background color\n- Text color\n- Primary button color\n- Card background\n- Border colors\n- Link colors\nNo hardcoded colors that break theme consistency.",
+    "passes": false
+  },
+  {
+    "id": "task-255",
+    "title": "Animations — subtle and purposeful",
+    "priority": "P2",
+    "description": "Add subtle animations where they enhance UX:\n- Page transitions: fade-in on route change\n- Cart badge: bounce when item count changes\n- Order confirmation: confetti or checkmark animation\n- Skeleton loading: pulse animation\n- Slide-over panels: slide-in from right\n- Toasts: slide-in from bottom\nUse CSS transitions or Framer Motion. Don't overdo it.",
+    "passes": false
+  },
+  {
+    "id": "task-256",
+    "title": "Hero section — responsive background",
+    "priority": "P1",
+    "description": "Hero section background image:\n- object-fit: cover\n- Centered\n- Gradient overlay applied correctly\n- On mobile: image still looks good (consider mobile crop)\n- Fallback: themed gradient if no image set",
+    "passes": false
+  },
+  {
+    "id": "task-257",
+    "title": "Product cards — uniform height",
+    "priority": "P1",
+    "description": "In product grid, all cards should be same height in each row.\nImage area: fixed aspect ratio (e.g., 1:1 or 4:3).\nProduct name: max 2 lines with line-clamp.\nPrice: aligned at bottom of card.\nAdd to Cart button: always at bottom.",
+    "passes": false
+  },
+  {
+    "id": "task-258",
+    "title": "Dark theme — all elements readable",
+    "priority": "P0",
+    "description": "In Dark theme: verify all text is readable against dark backgrounds.\nInput fields: visible border or lighter background.\nModals: proper contrast.\nDropdowns: visible options.\nCommon issue: white text on light input background in dark theme.",
+    "passes": false
+  },
+  {
+    "id": "task-259",
+    "title": "Luxury theme — gold accents applied",
+    "priority": "P1",
+    "description": "Luxury theme should feel premium:\n- Dark background (#1a1a2e)\n- Gold primary (#d4af37)\n- Gold borders and accents\n- Serif font for headings\n- Subtle gradients\nVerify: buttons gold, links gold, badges have gold tint.",
+    "passes": false
+  },
+  {
+    "id": "task-260",
+    "title": "Print stylesheet — order receipt",
+    "priority": "P2",
+    "description": "In admin order detail, \"Print\" button should print a clean receipt.\nPrint CSS: hide nav, sidebar, buttons.\nShow: store name, order #, items, totals, customer info.\nA4 paper-friendly layout.\nTest: Ctrl+P on order detail → clean output.",
+    "passes": false
+  },
+  {
+    "id": "task-261",
+    "title": "Confirmation — prominent Telegram/contact button",
+    "priority": "P0",
+    "description": "The tenant's Telegram/WhatsApp/custom link button on the confirmation page\nmust be visually prominent:\n- Large button (not a text link)\n- Brand-colored or store-themed\n- Icon + label (e.g., Telegram paper plane icon + \"Message us on Telegram\")\n- Opens in new tab\nThis is the primary CTA on the confirmation page after the success message.",
+    "passes": false
+  },
+  {
+    "id": "task-262",
+    "title": "Confirmation — store branding",
+    "priority": "P1",
+    "description": "Confirmation page shows store name and logo.\nUses store's theme colors.\nFeels like part of the store experience, not a generic page.",
+    "passes": false
+  },
+  {
+    "id": "task-263",
+    "title": "Admin dashboard — storefront widget",
+    "priority": "P1",
+    "description": "On the main admin dashboard, add a \"Storefront\" widget/card showing:\n- Store status (Published/Draft)\n- Today's orders count\n- Today's revenue\n- Link to \"Manage Store\"\n- Link to \"View Live Orders\"\nQuick overview without navigating to storefront sub-pages.",
+    "passes": false
+  },
+  {
+    "id": "task-264",
+    "title": "Getting started guide — for new tenants",
+    "priority": "P1",
+    "description": "For new tenants with no store and no products:\nShow a \"Getting Started\" checklist in the storefront section:\n1. ✅ Create your store\n2. ⬜ Add products (with link to products page)\n3. ⬜ Customize your storefront\n4. ⬜ Configure delivery/pickup\n5. ⬜ Set up payment methods\n6. ⬜ Publish your store\n7. ⬜ Share your store link\nItems check off as completed. Dismissible once all done.",
+    "passes": false
+  },
+  {
+    "id": "task-265",
+    "title": "Quick actions — from admin header",
+    "priority": "P2",
+    "description": "Admin header quick action buttons:\n- \"View Store\" → opens public store in new tab\n- \"Share\" → opens share dialog\n- Notification bell → shows new order alerts\nAccessible from any admin page.",
+    "passes": false
+  },
+  {
+    "id": "task-266",
+    "title": "Settings — simple language",
+    "priority": "P1",
+    "description": "All settings labels should be plain English:\nInstead of \"Enable CORS\" → \"Allow your store to be embedded on other websites\"\nInstead of \"Tax Rate\" → \"Sales Tax (%)\" with placeholder \"e.g., 8.875 for NYC\"\nHelp text below complex fields explaining what they do.",
+    "passes": false
+  },
+  {
+    "id": "task-267",
+    "title": "Builder — section type descriptions",
+    "priority": "P1",
+    "description": "In the \"Add Section\" dropdown, each option has a brief description:\n- Hero Banner: \"A full-width image banner with headline and call-to-action\"\n- Product Grid: \"Showcase your products in a grid layout\"\n- Features: \"Highlight what makes your store special\"\netc.\nHelps non-technical users understand what each section type does.",
+    "passes": false
+  },
+  {
+    "id": "task-268",
+    "title": "Builder — real product data in preview",
+    "priority": "P0",
+    "description": "The Product Grid section in the builder preview should show \nACTUAL products from the tenant's inventory, not placeholder data.\nIf no products exist: show \"Add products to see them here\" in preview.",
+    "passes": false
+  },
+  {
+    "id": "task-269",
+    "title": "Live Orders — one-click contact",
+    "priority": "P1",
+    "description": "In the order detail panel, customer contact shortcuts:\n- Phone icon → opens tel: link (calls on mobile, shows number on desktop)\n- SMS icon → opens sms: link with pre-filled message\n- Email icon → opens mailto: with subject \"Order #{number}\"\n- Telegram icon → opens Telegram link (if configured)\nOne click, no copy-pasting.",
+    "passes": false
+  },
+  {
+    "id": "task-270",
+    "title": "Live Orders — sound on new order",
+    "priority": "P1",
+    "description": "When a new order comes in via Realtime:\nPlay a short notification sound (bell or ding).\nUse Audio API. Sound file: host a small MP3 in public/ folder.\nToggle in settings: \"Play sound for new orders\"\nDon't play if tab is in background and browser blocks audio.",
+    "passes": false
+  },
+  {
+    "id": "task-271",
+    "title": "Live Orders — order timestamp formatting",
+    "priority": "P1",
+    "description": "Order times display as relative for recent orders:\n- < 1 min: \"Just now\"\n- < 60 min: \"X min ago\"\n- < 24 hours: \"X hours ago\"\n- >= 24 hours: \"Jan 15 at 3:30 PM\"\nUpdate the relative time periodically (every 30 seconds).",
+    "passes": false
+  },
+  {
+    "id": "task-272",
+    "title": "Products — quick add flow",
+    "priority": "P1",
+    "description": "Simplify adding a product:\n\"Quick Add Product\" shows a compact form:\nName, Price, Stock Quantity, Image upload.\nThat's it — minimum fields for speed.\n\"Advanced\" link expands to show all fields.\nFor a smoke shop / convenience store, quick add is essential.",
+    "passes": false
+  },
+  {
+    "id": "task-273",
+    "title": "Products — bulk import",
+    "priority": "P2",
+    "description": "\"Import Products\" button → upload CSV.\nExpected columns: name, description, price, category, stock_quantity, image_url.\nParse CSV, show preview table, confirm import.\nUseful for tenants with many products (e.g., 100+ items).",
+    "passes": false
+  },
+  {
+    "id": "task-274",
+    "title": "Products — sort and filter in admin",
+    "priority": "P1",
+    "description": "Admin products table should be sortable by:\nName, Price, Stock, Category, Created Date.\nFilterable by: category, in stock / out of stock, visible on storefront.\nSearchable by name.",
+    "passes": false
+  },
+  {
+    "id": "task-275",
+    "title": "Orders — export to CSV",
+    "priority": "P2",
+    "description": "\"Export Orders\" button in Live Orders page.\nDownloads CSV with: order #, date, customer name, phone, email,\nitems (concatenated), subtotal, tax, delivery, total, status, payment method.\nFilter export by current filters (date range, status).",
+    "passes": false
+  },
+  {
+    "id": "task-276",
+    "title": "Order detail — edit order",
+    "priority": "P2",
+    "description": "Admin can edit an order (before it's completed):\n- Change quantities\n- Remove items\n- Add notes\n- Adjust delivery fee\n- Recalculate total\nSave changes. Helpful for phone orders or corrections.",
+    "passes": false
+  },
+  {
+    "id": "task-277",
+    "title": "Order detail — cancel with reason",
+    "priority": "P1",
+    "description": "\"Cancel Order\" prompts for a reason:\nDropdown: \"Customer requested\", \"Out of stock\", \"Unable to deliver\", \"Other\"\nReason saved to order. Status set to 'cancelled'.\nIf customer email: send cancellation email.\nRestore stock quantities for cancelled items.",
+    "passes": false
+  },
+  {
+    "id": "task-278",
+    "title": "Dashboard — revenue period comparison",
+    "priority": "P2",
+    "description": "KPI cards show comparison to previous period:\n\"Revenue: $1,234 (+15% vs last week)\"\nGreen arrow up for increase, red arrow down for decrease.\nPrevious period = same length, immediately prior.",
+    "passes": false
+  },
+  {
+    "id": "task-279",
+    "title": "Settings — payment method save and load",
+    "priority": "P0",
+    "description": "Verify payment method settings round-trip:\n1. Set Cash = enabled, Venmo = enabled with handle \"@snak\", Zelle = enabled, Stripe = disabled\n2. Save\n3. Refresh page\n4. Settings show exactly what was saved\n5. Checkout page shows only Cash, Venmo, Zelle (not Stripe)",
+    "passes": false
+  },
+  {
+    "id": "task-280",
+    "title": "Settings — delivery zone save and load",
+    "priority": "P0",
+    "description": "Verify delivery zones round-trip:\n1. Add zone: \"Lower East Side\", ZIPs \"10002,10003,10009\", fee $3, min order $20\n2. Add zone: \"Brooklyn\", ZIPs \"11201,11217,11215\", fee $5, min order $30\n3. Save\n4. Refresh → zones still there\n5. Customer in ZIP 10002 → sees $3 delivery, $20 minimum\n6. Customer in ZIP 99999 → \"We don't deliver to this area\"",
+    "passes": false
+  },
+  {
+    "id": "task-281",
+    "title": "Settings — Telegram config save and load",
+    "priority": "P0",
+    "description": "1. Enter bot token, chat ID, enable auto-forward, set customer link\n2. Save\n3. Refresh → all fields populated correctly\n4. Place test order → order appears in Telegram\n5. Customer sees Telegram link on confirmation",
+    "passes": false
+  },
+  {
+    "id": "task-282",
+    "title": "Settings — all saves show success toast",
+    "priority": "P1",
+    "description": "Every Save button in settings, when clicked:\n- Shows loading state\n- On success: green toast \"Settings saved\"\n- On error: red toast with error message\n- Disables while saving (prevent double-click)",
+    "passes": false
+  },
+  {
+    "id": "task-283",
+    "title": "Sidebar — storefront group expanded by default",
+    "priority": "P2",
+    "description": "When navigating to any storefront admin page:\nThe Storefront nav group in sidebar should be expanded.\nActive page highlighted.",
+    "passes": false
+  },
+  {
+    "id": "task-284",
+    "title": "Sidebar — order count badge",
+    "priority": "P1",
+    "description": "\"Live Orders\" nav item shows a badge with pending order count.\nBadge updates in real-time.\nIf 0 pending: no badge.\nRed pulsing badge if > 0.",
+    "passes": false
+  },
+  {
+    "id": "task-285",
+    "title": "E2E: Admin creates store → customer shops → order arrives",
+    "priority": "P0",
+    "description": "Full end-to-end flow:\n1. Admin navigates to storefront builder\n2. Creates a new store: \"Test Store\" / \"test-store\"\n3. Adds Hero section with title\n4. Adds Product Grid section\n5. Saves draft\n6. Publishes store\n7. Visits /shop/test-store\n8. Sees hero and product grid\n9. Clicks a product → product detail\n10. Adds to cart\n11. Goes to cart → checkout\n12. Fills info (guest), selects Cash\n13. Places order\n14. Sees confirmation page with order # and Telegram link\n15. Admin sees order in Live Orders (via realtime)\n16. Admin sees customer profile in Customers\n\nEVERY step must work. Fix any breaks.",
+    "passes": false
+  },
+  {
+    "id": "task-286",
+    "title": "E2E: Guest checkout with cash — full flow",
+    "priority": "P0",
+    "description": "1. Customer visits /shop/:slug/products\n2. Browses products, uses filters\n3. Adds 3 items to cart\n4. Goes to cart, adjusts quantity of 1 item\n5. Proceeds to checkout\n6. Enters: name, phone, preferred contact = Text\n7. Selects Delivery, enters address in delivery zone\n8. Selects Cash payment\n9. Places order\n10. Sees confirmation popup: \"Thanks! You'll be contacted.\"\n11. Sees confirmation page with order details\n12. Customer profile created in admin with name, phone, items ordered\n13. Order appears in admin Live Orders as \"pending\"\nVerify every step.",
+    "passes": false
+  },
+  {
+    "id": "task-287",
+    "title": "E2E: Guest checkout with Venmo — full flow",
+    "priority": "P0",
+    "description": "Same as task-286 but:\nStep 8: Selects Venmo → sees \"Send payment to @snak-station\" with copy button\nStep 8b: Checks \"I've sent payment via Venmo\"\nStep 9: Places order\nOrder created with payment_method = 'venmo'.\nAdmin sees payment method in order detail.",
+    "passes": false
+  },
+  {
+    "id": "task-288",
+    "title": "E2E: Guest checkout with Zelle — full flow",
+    "priority": "P0",
+    "description": "Same flow but with Zelle:\nShows Zelle email/phone to send to.\n\"I've sent payment via Zelle\" checkbox.\nOrder saved with payment_method = 'zelle'.",
+    "passes": false
+  },
+  {
+    "id": "task-289",
+    "title": "E2E: Guest checkout with Stripe — full flow",
+    "priority": "P1",
+    "description": "Same flow but with Stripe card:\nStripe Elements form appears.\nEnter test card: 4242 4242 4242 4242.\nPayment processes → order created with paid_at timestamp.\nIf Stripe not configured: this option shouldn't appear.",
+    "passes": false
+  },
+  {
+    "id": "task-290",
+    "title": "E2E: Pickup order — full flow",
+    "priority": "P0",
+    "description": "Customer selects Pickup (not delivery):\nNo address form shown.\nShows store address for pickup.\nNo delivery fee.\nOrder created with fulfillment_method = 'pickup'.\nAdmin sees \"Pickup\" badge on order.",
+    "passes": false
+  },
+  {
+    "id": "task-291",
+    "title": "E2E: Account creation during checkout",
+    "priority": "P1",
+    "description": "Customer checks \"Create an account\":\nPassword field appears.\nOrder placed successfully.\nSupabase auth user created.\nCustomer can now log in and see order history.\nIf email already exists: order still completes, account not created, \nmessage shown.",
+    "passes": false
+  },
+  {
+    "id": "task-292",
+    "title": "E2E: Returning customer — recognized by phone",
+    "priority": "P1",
+    "description": "Customer with previous order enters same phone number at checkout.\nSystem recognizes them (matches customers table by phone + tenant_id).\nAuto-fills name and address if available.\nLinks new order to existing customer profile.\nAdmin sees updated total_orders and total_spent on customer profile.",
+    "passes": false
+  },
+  {
+    "id": "task-293",
+    "title": "E2E: Telegram auto-forward — order posts to group",
+    "priority": "P0",
+    "description": "1. Admin configures Telegram in settings (bot token + chat ID)\n2. Customer places order\n3. Verify: order details appear in the Telegram chat\n4. Message includes: order #, customer name, phone, items, total, payment method\n5. If Telegram fails: order still saves (no failure for customer)",
+    "passes": false
+  },
+  {
+    "id": "task-294",
+    "title": "E2E: Admin processes order through all statuses",
+    "priority": "P0",
+    "description": "1. Order arrives as \"pending\"\n2. Admin clicks \"Confirm\" → status = confirmed\n3. Admin clicks \"Start Preparing\" → status = preparing\n4. Admin clicks \"Mark Ready\" → status = ready\n5. Admin clicks \"Out for Delivery\" → status = out_for_delivery\n6. Admin clicks \"Mark Delivered\" → status = delivered/completed\n\nAt each step:\n- Status badge updates\n- Customer's confirmation page updates (realtime)\n- Order timeline shows the change",
+    "passes": false
+  },
+  {
+    "id": "task-295",
+    "title": "E2E: Admin cancels order",
+    "priority": "P1",
+    "description": "1. Order is \"pending\" or \"confirmed\"\n2. Admin clicks \"Cancel\" → selects reason\n3. Order status = cancelled\n4. Stock quantities restored\n5. Customer sees \"Order Cancelled\" on confirmation page\n6. If email: cancellation email sent",
+    "passes": false
+  },
+  {
+    "id": "task-296",
+    "title": "E2E: Multiple stores — isolation test",
+    "priority": "P0",
+    "description": "If platform has 2 tenants with 2 different stores:\n1. Store A shows only Store A's products\n2. Store B shows only Store B's products\n3. Order placed on Store A: visible only in Tenant A's admin\n4. Customer from Store A: visible only in Tenant A's customers\nComplete isolation.",
+    "passes": false
+  },
+  {
+    "id": "task-297",
+    "title": "E2E: Out of stock during shopping",
+    "priority": "P1",
+    "description": "1. Product X has 2 in stock\n2. Customer adds 2 of Product X to cart\n3. Another customer buys 2 of Product X (stock → 0)\n4. First customer tries to checkout\n5. Checkout validation catches it: \"Product X is out of stock\"\n6. Customer can remove it and proceed with other items",
+    "passes": false
+  },
+  {
+    "id": "task-298",
+    "title": "E2E: Empty store published",
+    "priority": "P1",
+    "description": "Admin publishes store with 0 products.\nCustomer visits: sees hero/sections but product grid says \"Coming soon\".\nProduct catalog page: \"No products yet. Check back later.\"\nCart/checkout: not reachable (nothing to add to cart).",
+    "passes": false
+  },
+  {
+    "id": "task-299",
+    "title": "E2E: Theme change — reflected on storefront",
+    "priority": "P0",
+    "description": "1. Admin changes theme from Minimalist to Dark Mode\n2. Saves/publishes\n3. Customer refreshes storefront\n4. Dark background, green accents now visible\n5. All sections render correctly in new theme\n6. No remnant styling from old theme",
+    "passes": false
+  },
+  {
+    "id": "task-300",
+    "title": "E2E: Section reorder — reflected on storefront",
+    "priority": "P0",
+    "description": "1. Admin reorders: FAQ above Hero (drag and drop)\n2. Saves\n3. Customer visits: FAQ appears first, then Hero\n4. Order matches what admin set in builder",
+    "passes": false
+  },
+  {
+    "id": "task-301",
+    "title": "E2E: Product price change — reflected immediately",
+    "priority": "P0",
+    "description": "1. Admin changes product price from $10 to $15\n2. Customer refreshes catalog: sees $15\n3. If product was in cart at $10: cart shows $15 on next checkout validation\n4. Server-side price validation uses $15 (current price)",
+    "passes": false
+  },
+  {
+    "id": "task-302",
+    "title": "E2E: Customer adds to cart → leaves → comes back",
+    "priority": "P0",
+    "description": "1. Customer adds items to cart\n2. Closes browser tab\n3. Reopens /shop/:slug\n4. Cart still has items (localStorage persistence)\n5. Proceeds to checkout normally",
+    "passes": false
+  },
+  {
+    "id": "task-303",
+    "title": "E2E: Admin inventory update → stock reflected on storefront",
+    "priority": "P0",
+    "description": "1. Admin sets product stock to 0\n2. Customer sees \"Out of Stock\" on that product\n3. Add to Cart is disabled\n4. Admin sets stock to 10\n5. Customer refreshes: product is available again",
+    "passes": false
+  },
+  {
+    "id": "task-304",
+    "title": "E2E: Static menu page — generate and view",
+    "priority": "P1",
+    "description": "1. Admin clicks \"Generate Menu Page\"\n2. Selects products, enters title\n3. Generates page → gets URL\n4. Visits URL → sees clean HTML page with products and prices\n5. Page loads fast (no JS framework needed, just HTML)\n6. Mobile responsive",
+    "passes": false
+  },
+  {
+    "id": "task-305",
+    "title": "E2E: Builder → Settings → Orders integration",
+    "priority": "P0",
+    "description": "Verify data flows between builder, settings, and orders:\n1. Store name set in Settings → shows on storefront header\n2. Logo set in Settings → shows on storefront header\n3. Delivery zones set in Settings → enforced at checkout\n4. Payment methods set in Settings → shown at checkout\n5. Telegram configured in Settings → fires on new order\n6. Tax rate set in Settings → calculated in checkout totals",
+    "passes": false
+  },
+  {
+    "id": "task-306",
+    "title": "Customer profile completeness after order",
+    "priority": "P0",
+    "description": "After a guest places an order, verify customer profile in admin has:\n- Name ✓\n- Phone ✓\n- Email (if provided) ✓\n- Preferred contact method ✓\n- Delivery address (if delivery) ✓\n- Order history (at least 1 order) ✓\n- Items they ordered (visible in order details) ✓\n- Total spent ✓\n- Source: \"storefront\" ✓\nAll fields populated, no nulls for required data.",
+    "passes": false
+  },
+  {
+    "id": "task-307",
+    "title": "Order line items match cart",
+    "priority": "P0",
+    "description": "Verify: what customer adds to cart = exactly what's in order_items.\nProduct names, quantities, prices all match.\nNo extra items, no missing items.\nVariant selection preserved in order_items.",
+    "passes": false
+  },
+  {
+    "id": "task-308",
+    "title": "Order totals are mathematically correct",
+    "priority": "P0",
+    "description": "Verify totals at every stage:\nCart subtotal = sum of (price × quantity) for all items ✓\nTax = subtotal × tax_rate ✓\nDelivery fee from matching zone ✓\nTotal = subtotal + tax + delivery_fee - discount ✓\nThese match between: cart page, checkout page, order confirmation,\nadmin order detail, and database record.",
+    "passes": false
+  },
+  {
+    "id": "task-309",
+    "title": "Multi-item order — all items tracked",
+    "priority": "P0",
+    "description": "Place order with 5 different products.\nVerify all 5 appear in:\n- Order confirmation page\n- Admin order detail\n- order_items table (5 rows)\n- Customer profile order history",
+    "passes": false
+  },
+  {
+    "id": "task-310",
+    "title": "Order source correctly tagged",
+    "priority": "P1",
+    "description": "Orders from storefront have source = 'storefront' in database.\nThis distinguishes from POS orders, wholesale orders, etc.\nAdmin can filter orders by source if needed.\nAnalytics should be able to separate storefront revenue from other sources.",
+    "passes": false
+  },
+  {
+    "id": "task-311",
+    "title": "storefront-checkout edge function — exists and deploys",
+    "priority": "P0",
+    "description": "Verify supabase/functions/storefront-checkout/index.ts exists.\nFunction handles POST with CORS.\nReceives: storeSlug, items, customerInfo, fulfillmentMethod, paymentMethod, etc.\nReturns: { orderId, orderNumber } on success.\nReturns: { error: string } with appropriate HTTP status on failure.\nIf function doesn't exist: CREATE IT.",
+    "passes": false
+  },
+  {
+    "id": "task-312",
+    "title": "storefront-checkout — server-side price validation",
+    "priority": "P0",
+    "description": "Inside the checkout function:\nFor each item in the order, fetch the product from database.\nUse the DATABASE price, not the client-sent price.\nCalculate subtotal, tax, delivery fee, total server-side.\nIf client total differs: use server total (log the discrepancy).",
+    "passes": false
+  },
+  {
+    "id": "task-313",
+    "title": "storefront-checkout — stock validation",
+    "priority": "P0",
+    "description": "Check stock_quantity >= ordered quantity for each item.\nIf any item is out of stock: return 400 with specific error \nidentifying which products are unavailable.\nDon't create a partial order — it's all or nothing.",
+    "passes": false
+  },
+  {
+    "id": "task-314",
+    "title": "storefront-checkout — customer upsert",
+    "priority": "P0",
+    "description": "In the checkout function:\nAfter creating the order, upsert the customer:\n- Find existing customer by phone + tenant_id\n- If exists: update last_order_at, increment total_orders, add to total_spent\n- If not: create new customer with all info\n- Set orders.customer_id = customer.id",
+    "passes": false
+  },
+  {
+    "id": "task-315",
+    "title": "storefront-checkout — order number generation",
+    "priority": "P0",
+    "description": "Generate sequential order number per tenant.\nQuery: SELECT COALESCE(MAX(order_number), 1000) + 1 FROM orders WHERE tenant_id = X\nThis gives the next number.\nHandle race condition: use a PostgreSQL advisory lock or \nUNIQUE constraint + retry on conflict.",
+    "passes": false
+  },
+  {
+    "id": "task-316",
+    "title": "storefront-checkout — inventory deduction",
+    "priority": "P0",
+    "description": "After order creation:\nUPDATE products SET stock_quantity = stock_quantity - {qty}\nWHERE id = {productId} AND stock_quantity >= {qty}\nCheck affected rows. If 0 rows affected: product went out of stock \nbetween validation and deduction (race condition).\nHandle: rollback order or mark as needing attention.",
+    "passes": false
+  },
+  {
+    "id": "task-317",
+    "title": "storefront-checkout — trigger Telegram notification",
+    "priority": "P0",
+    "description": "After order is saved:\nFetch tenant's Telegram settings.\nIf auto-forward enabled and bot_token + chat_id configured:\nCall forward-order-telegram function or inline the Telegram API call.\nDon't block the order response on Telegram success/failure.\nUse a non-blocking approach (fire and forget or edge function invoke).",
+    "passes": false
+  },
+  {
+    "id": "task-318",
+    "title": "storefront-checkout — error handling",
+    "priority": "P0",
+    "description": "The checkout function must handle all error cases:\n- Invalid/missing required fields → 400 with field-specific errors\n- Store not found → 404\n- Store not published → 403\n- Products not found → 400\n- Out of stock → 400 with product details\n- Database error → 500 with generic error (don't leak DB details)\n- Stripe error → 402 with Stripe error message\nEvery error returns JSON { error: string, details?: object }",
+    "passes": false
+  },
+  {
+    "id": "task-319",
+    "title": "forward-order-telegram — edge function",
+    "priority": "P0",
+    "description": "Create or verify: supabase/functions/forward-order-telegram/index.ts\nInput: { orderId, tenantId } or full order data\nFetches: order, order_items, customer, tenant Telegram config\nSends formatted message to Telegram via Bot API\nReturns: success/failure\nCORS headers. Error handling.",
+    "passes": false
+  },
+  {
+    "id": "task-320",
+    "title": "get_marketplace_store_by_slug — RPC function",
+    "priority": "P0",
+    "description": "Verify this RPC function exists and works:\nInput: store slug\nReturns: full store data including layout_config, theme, settings\nOnly returns published stores (unless called by admin with preview flag)\nIf missing: create as a SQL function or replace with direct query.",
+    "passes": false
+  },
+  {
+    "id": "task-321",
+    "title": "get_marketplace_products — RPC function",
+    "priority": "P0",
+    "description": "Verify this RPC function exists:\nInput: tenant_id, optional filters (category, search, sort, limit, offset)\nReturns: products with images, categories\nOnly active/visible products\nIf missing: replace with direct query in the frontend.",
+    "passes": false
+  },
+  {
+    "id": "task-322",
+    "title": "Checkout — client-side fallback if edge function fails",
+    "priority": "P0",
+    "description": "If storefront-checkout edge function is not deployed or returns 500:\nImplement a client-side fallback that directly inserts into Supabase:\n\n1. Insert order via supabase.from('orders').insert(...)\n2. Insert order_items via supabase.from('order_items').insert(...)\n3. Insert/update customer via supabase.from('customers').upsert(...)\n4. Deduct stock via supabase.rpc('deduct_stock', ...) or direct update\n\nThis ensures checkout works even if edge functions are down.\nThe frontend should TRY the edge function first, then fallback.\nBoth paths should produce identical results.",
+    "passes": false
+  },
+  {
+    "id": "task-323",
+    "title": "Telegram — client-side fallback",
+    "priority": "P1",
+    "description": "If Telegram edge function fails:\nFrontend can call Telegram Bot API directly (less secure but functional).\nOnly as last resort — bot token would be fetched server-side and \npassed to a thin client helper. Or just log the failure and skip.",
+    "passes": false
+  },
+  {
+    "id": "task-324",
+    "title": "Create deduct_stock RPC function",
+    "priority": "P0",
+    "description": "Create PostgreSQL function if it doesn't exist:\n\nCREATE OR REPLACE FUNCTION deduct_stock(\n  p_product_id UUID,\n  p_quantity INTEGER\n) RETURNS BOOLEAN\nLANGUAGE plpgsql\nSECURITY DEFINER\nSET search_path = public\nAS $$\nDECLARE\n  affected INTEGER;\nBEGIN\n  UPDATE products \n  SET stock_quantity = stock_quantity - p_quantity\n  WHERE id = p_product_id \n  AND stock_quantity >= p_quantity;\n  \n  GET DIAGNOSTICS affected = ROW_COUNT;\n  RETURN affected > 0;\nEND;\n$$;\n\nThis atomically deducts stock and returns false if insufficient.",
+    "passes": false
+  },
+  {
+    "id": "task-325",
+    "title": "Create customer upsert RPC function",
+    "priority": "P1",
+    "description": "Create function to upsert customer on checkout:\n\nTakes: tenant_id, name, phone, email, preferred_contact, address, order_total\nLogic:\n- Find by phone + tenant_id\n- If exists: update name, email, last_order_at, increment total_orders, add to total_spent\n- If not: insert with all fields, total_orders = 1, total_spent = order_total\n- Returns: customer_id\n\nSECURITY DEFINER with search_path = public.",
+    "passes": false
+  },
+  {
+    "id": "task-326",
+    "title": "Create next_order_number RPC function",
+    "priority": "P1",
+    "description": "Atomic order number generation:\n\nCREATE OR REPLACE FUNCTION next_order_number(p_tenant_id UUID)\nRETURNS INTEGER\nLANGUAGE plpgsql\nSECURITY DEFINER SET search_path = public AS $$\nDECLARE\n  next_num INTEGER;\nBEGIN\n  SELECT COALESCE(MAX(order_number), 1000) + 1\n  INTO next_num\n  FROM orders\n  WHERE tenant_id = p_tenant_id;\n  RETURN next_num;\nEND;\n$$;",
+    "passes": false
+  },
+  {
+    "id": "task-327",
+    "title": "Verify customers table has all needed columns",
+    "priority": "P0",
+    "description": "Ensure customers table has:\nid, tenant_id, name, phone, email, preferred_contact_method,\nsource (storefront/pos/manual/wholesale), type (guest/registered),\ntotal_orders (int default 0), total_spent (numeric default 0),\nfirst_order_at, last_order_at, admin_notes,\ncreated_at, updated_at.\nAdd missing columns via migration. Add index on (tenant_id, phone).",
+    "passes": false
+  },
+  {
+    "id": "task-328",
+    "title": "Verify customer_addresses table",
+    "priority": "P1",
+    "description": "Ensure a way to store customer delivery addresses:\nEither: JSONB column on customers table (simpler)\nOr: separate customer_addresses table with:\nid, customer_id (FK), label, street, apt, city, state, zip, is_default\nCustomer's addresses saved from checkout for future use.",
+    "passes": false
+  },
+  {
+    "id": "task-329",
+    "title": "Add payment_method columns to marketplace_stores",
+    "priority": "P0",
+    "description": "Ensure marketplace_stores or tenant_settings has:\n- cash_enabled (boolean, default true)\n- venmo_enabled (boolean, default false)\n- venmo_handle (text)\n- zelle_enabled (boolean, default false)\n- zelle_info (text)\n- stripe_enabled (boolean, default false)\nIf in tenant_settings: store as JSONB under key 'payment_methods'.",
+    "passes": false
+  },
+  {
+    "id": "task-330",
+    "title": "Add Telegram config columns",
+    "priority": "P0",
+    "description": "Ensure tenant_settings has Telegram config:\nEither columns or JSONB:\n- telegram_bot_token (text, encrypted ideally)\n- telegram_chat_id (text)\n- telegram_auto_forward (boolean)\n- telegram_customer_link (text)\n- telegram_button_label (text)\n- show_telegram_on_confirmation (boolean)",
+    "passes": false
+  },
+  {
+    "id": "task-331",
+    "title": "Add preferred_contact_method to checkout and orders",
+    "priority": "P0",
+    "description": "Ensure orders table has:\n- preferred_contact_method (text: phone/email/text/telegram)\nThis comes from the checkout form and helps admin know \nhow the customer wants to be contacted.",
+    "passes": false
+  },
+  {
+    "id": "task-332",
+    "title": "Indexes for performance",
+    "priority": "P1",
+    "description": "Ensure database indexes exist:\n- orders: (tenant_id, created_at DESC)\n- orders: (tenant_id, status)\n- orders: (tenant_id, customer_id)\n- order_items: (order_id)\n- products: (tenant_id, visible_on_storefront)\n- customers: (tenant_id, phone)\n- marketplace_stores: (slug) UNIQUE\nCreate missing indexes via migration.",
+    "passes": false
+  },
+  {
+    "id": "task-333",
+    "title": "All toasts use Sonner",
+    "priority": "P1",
+    "description": "Search for any non-Sonner toast usage (alert(), window.alert, \ncustom toast implementations).\nReplace with Sonner: toast.success(), toast.error(), toast.info().\nConsistent positioning and styling.",
+    "passes": false
+  },
+  {
+    "id": "task-334",
+    "title": "All modals use shadcn Dialog or Sheet",
+    "priority": "P1",
+    "description": "No custom modal implementations.\nAll modals: shadcn Dialog component.\nAll slide-overs: shadcn Sheet component.\nConsistent open/close animations, backdrop, escape to close.",
+    "passes": false
+  },
+  {
+    "id": "task-335",
+    "title": "All tables use consistent component",
+    "priority": "P1",
+    "description": "Orders table, products table, customers table:\nUse shadcn Table component or a consistent DataTable component.\nSame styling: hover rows, header styling, border style.",
+    "passes": false
+  },
+  {
+    "id": "task-336",
+    "title": "All forms have consistent layout",
+    "priority": "P1",
+    "description": "Form styling consistency:\n- Label above input\n- Consistent spacing between fields\n- Error text below field in red\n- Required asterisk on labels\n- Save button aligned right or full-width",
+    "passes": false
+  },
+  {
+    "id": "task-337",
+    "title": "Color palette — no rogue colors",
+    "priority": "P1",
+    "description": "All colors should come from Tailwind theme or CSS variables.\nNo hardcoded hex values in component files.\nStatus badge colors should be from a constants file.\nSearch for hardcoded #hex in tsx files and replace with Tailwind classes.",
+    "passes": false
+  },
+  {
+    "id": "task-338",
+    "title": "README — storefront setup guide",
+    "priority": "P2",
+    "description": "Add a section to README or create STOREFRONT_SETUP.md:\n1. How to create a store\n2. How to add products\n3. How to configure delivery zones\n4. How to set up payment methods\n5. How to set up Telegram notifications\n6. How to publish and share the store\nWritten for non-technical tenant admins.",
+    "passes": false
+  },
+  {
+    "id": "task-339",
+    "title": "ENV variables — document required ones",
+    "priority": "P1",
+    "description": "Document all environment variables needed for storefront:\n- VITE_SUPABASE_URL\n- VITE_SUPABASE_ANON_KEY\n- STRIPE_SECRET_KEY (in edge functions)\n- STRIPE_PUBLISHABLE_KEY (in frontend)\nIn .env.example or README.",
+    "passes": false
+  },
+  {
+    "id": "task-340",
+    "title": "Final TypeScript check — zero errors",
+    "priority": "P0",
+    "description": "After all changes: run npx tsc --noEmit.\nMust be zero errors.\nFix any new type errors introduced during this sprint.",
+    "passes": false
+  },
+  {
+    "id": "task-341",
+    "title": "Final Vite build — zero errors",
+    "priority": "P0",
+    "description": "Run npx vite build.\nMust complete with zero errors.\nCheck for warnings too (fix any critical ones).",
+    "passes": false
+  },
+  {
+    "id": "task-342",
+    "title": "Final console audit — all pages clean",
+    "priority": "P0",
+    "description": "Navigate to every storefront page (admin and customer).\nConsole must be clean: no red errors, no unhandled rejections.\nWarnings are acceptable if not critical.",
+    "passes": false
+  },
+  {
+    "id": "task-343",
+    "title": "Remove dead code — unused imports",
+    "priority": "P2",
+    "description": "Run ESLint or manually check for:\n- Unused imports\n- Unused variables\n- Unused components\n- Commented-out code blocks (remove or document)\nClean up storefront-related files.",
+    "passes": false
+  },
+  {
+    "id": "task-344",
+    "title": "Test with zero data — new tenant",
+    "priority": "P0",
+    "description": "Simulate a brand new tenant with zero data:\n- No store\n- No products\n- No customers\n- No orders\nEvery page should show appropriate empty state, never crash.\nStore creation flow should work from scratch.",
+    "passes": false
+  },
+  {
+    "id": "task-345",
+    "title": "Test with lots of data",
+    "priority": "P1",
+    "description": "Simulate a busy store:\n- 100+ products\n- 50+ orders\n- 30+ customers\nCatalog page: pagination works, doesn't load everything at once.\nOrders page: scrollable, filterable, not slow.\nAnalytics: charts render without lag.",
+    "passes": false
+  },
+  {
+    "id": "task-346",
+    "title": "Test all 4 themes end-to-end",
+    "priority": "P0",
+    "description": "For each theme (Dark, Minimalist, Strain, Luxury):\n1. Set theme in builder\n2. Save\n3. Visit public storefront\n4. Verify: correct colors, fonts, feel\n5. Navigate: homepage → catalog → detail → cart → checkout → confirmation\n6. No visual bugs, no unreadable text, no broken layouts",
+    "passes": false
+  },
+  {
+    "id": "task-347",
+    "title": "Test on Chrome, Firefox, Safari",
+    "priority": "P1",
+    "description": "Verify storefront works on:\n- Chrome (desktop + mobile)\n- Firefox (desktop)\n- Safari (iOS)\nCheck for: CSS issues, JS errors, form behavior, payment forms.\nFix any browser-specific bugs.",
+    "passes": false
+  },
+  {
+    "id": "task-348",
+    "title": "Test Stripe test mode",
+    "priority": "P1",
+    "description": "If Stripe is configured:\n- Use Stripe test mode keys\n- Test card: 4242 4242 4242 4242, any future date, any CVC\n- Verify payment goes through\n- Verify PaymentIntent created in Stripe dashboard\n- Verify order saved with payment confirmation\nIf not configured: ensure Stripe option is hidden.",
+    "passes": false
+  },
+  {
+    "id": "task-349",
+    "title": "Verify no sensitive data in client bundle",
+    "priority": "P0",
+    "description": "After build, inspect the output:\n- No Stripe secret keys\n- No Telegram bot tokens\n- No Supabase service role key\n- No database credentials\nOnly VITE_* prefixed env vars are in the client bundle.\ngrep -rn \"sk_test\\|sk_live\\|service_role\\|bot_token\" dist/",
+    "passes": false
+  },
+  {
+    "id": "task-350",
+    "title": "Performance — page load under 3 seconds",
+    "priority": "P1",
+    "description": "Public storefront pages should load in under 3 seconds on 4G.\nCheck: initial bundle size, number of API calls on page load,\nimage sizes, unnecessary re-renders.\nOptimize the worst offenders.",
+    "passes": false
+  },
+  {
+    "id": "task-351",
+    "title": "Wishlist — save for later",
+    "priority": "P2",
+    "description": "\"Save for Later\" button on product cards.\nSaves to localStorage per store.\nWishlist icon in header with count.\nWishlist page lists saved products with \"Add to Cart\" buttons.",
+    "passes": false
+  },
+  {
+    "id": "task-352",
+    "title": "Recently viewed — product carousel",
+    "priority": "P2",
+    "description": "Track recently viewed products in localStorage.\nShow on product detail page: \"Recently Viewed\" carousel.\nMax 8 recent products.",
+    "passes": false
+  },
+  {
+    "id": "task-353",
+    "title": "Product quick view — modal from catalog",
+    "priority": "P2",
+    "description": "On product catalog, \"Quick View\" button on hover.\nOpens a modal with: image, name, price, description, add to cart.\nFaster than navigating to product detail page.",
+    "passes": false
+  },
+  {
+    "id": "task-354",
+    "title": "Cart upsells — suggested add-ons",
+    "priority": "P2",
+    "description": "On cart page, \"You might also like\" section.\nShows products frequently bought together or from same category.\nQuick \"Add\" button on each suggestion.",
+    "passes": false
+  },
+  {
+    "id": "task-355",
+    "title": "Order tracking page — public access",
+    "priority": "P1",
+    "description": "Allow customers to check order status without the full confirmation URL.\n/shop/:slug/track → form: enter order # + phone number\nShows current order status and timeline.\nSimple and clean.",
+    "passes": false
+  },
+  {
+    "id": "task-356",
+    "title": "Product reviews — customer can review",
+    "priority": "P2",
+    "description": "After order delivered: customer can rate products (1-5 stars) + text review.\nReviews show on product detail page.\nAdmin can moderate reviews (approve/hide).",
+    "passes": false
+  },
+  {
+    "id": "task-357",
+    "title": "Store announcement bar",
+    "priority": "P2",
+    "description": "Optional announcement bar at top of storefront:\nConfigurable in settings: text, background color, link.\nE.g., \"🔥 Free delivery on orders over $50!\" \nDismissible by customer (X button, remembers in localStorage).",
+    "passes": false
+  },
+  {
+    "id": "task-358",
+    "title": "Cookie/privacy notice",
+    "priority": "P2",
+    "description": "If store uses localStorage/analytics:\nShow a cookie notice banner on first visit.\n\"This site uses cookies for your shopping experience.\"\nAccept button. Link to privacy policy (if configured).",
+    "passes": false
+  },
+  {
+    "id": "task-359",
+    "title": "Social media links — in footer",
+    "priority": "P2",
+    "description": "Admin can add social media links in settings:\nInstagram, Twitter/X, Telegram, TikTok, Facebook.\nShows as icons in store footer.\nOpens in new tab.",
+    "passes": false
+  },
+  {
+    "id": "task-360",
+    "title": "Copy store link — one-click",
+    "priority": "P1",
+    "description": "Throughout admin storefront section:\n\"Copy Store Link\" button that copies the full public URL to clipboard.\nToast: \"Link copied!\"\nAvailable in: builder toolbar, settings, share dialog, getting started.",
+    "passes": false
+  },
+  {
+    "id": "task-361",
+    "title": "Verify: StorefrontBuilder renders without crash",
+    "priority": "P0",
+    "description": "Run a final check that StorefrontBuilder page loads cleanly with zero console errors.",
+    "passes": false
+  },
+  {
+    "id": "task-362",
+    "title": "Verify: StorefrontSettings all tabs render",
+    "priority": "P0",
+    "description": "Click through every tab in StorefrontSettings. All render, no crashes.",
+    "passes": false
+  },
+  {
+    "id": "task-363",
+    "title": "Verify: StorefrontLiveOrders renders with realtime",
+    "priority": "P0",
+    "description": "Live Orders page loads, subscription connects, no errors.",
+    "passes": false
+  },
+  {
+    "id": "task-364",
+    "title": "Verify: StorefrontAnalytics renders charts",
+    "priority": "P0",
+    "description": "Analytics page loads, charts render (or show empty state), no errors.",
+    "passes": false
+  },
+  {
+    "id": "task-365",
+    "title": "Verify: /shop/:slug renders published store",
+    "priority": "P0",
+    "description": "Public storefront homepage loads with correct theme and sections.",
+    "passes": false
+  },
+  {
+    "id": "task-366",
+    "title": "Verify: /shop/:slug/products shows product grid",
+    "priority": "P0",
+    "description": "Product catalog loads with products and working filters.",
+    "passes": false
+  },
+  {
+    "id": "task-367",
+    "title": "Verify: /shop/:slug/products/:id shows product",
+    "priority": "P0",
+    "description": "Product detail page loads with image, info, add to cart.",
+    "passes": false
+  },
+  {
+    "id": "task-368",
+    "title": "Verify: /shop/:slug/cart works",
+    "priority": "P0",
+    "description": "Cart page shows items, quantity controls work, checkout button works.",
+    "passes": false
+  },
+  {
+    "id": "task-369",
+    "title": "Verify: /shop/:slug/checkout completes",
+    "priority": "P0",
+    "description": "Checkout flow completes from info to payment to order creation.",
+    "passes": false
+  },
+  {
+    "id": "task-370",
+    "title": "Verify: /shop/:slug/order/:id shows confirmation",
+    "priority": "P0",
+    "description": "Order confirmation shows success, details, and Telegram link.",
+    "passes": false
+  },
+  {
+    "id": "task-371",
+    "title": "Verify: guest order creates customer in admin",
+    "priority": "P0",
+    "description": "After guest checkout, customer profile visible in admin customers list.",
+    "passes": false
+  },
+  {
+    "id": "task-372",
+    "title": "Verify: Telegram notification fires",
+    "priority": "P0",
+    "description": "After order, Telegram message appears in configured chat.",
+    "passes": false
+  },
+  {
+    "id": "task-373",
+    "title": "Verify: all payment methods work",
+    "priority": "P0",
+    "description": "Cash, Venmo, Zelle, and Stripe (if configured) all complete checkout.",
+    "passes": false
+  },
+  {
+    "id": "task-374",
+    "title": "Verify: delivery zone enforcement",
+    "priority": "P0",
+    "description": "Valid ZIP shows fee, invalid ZIP shows \"not in delivery area\".",
+    "passes": false
+  },
+  {
+    "id": "task-375",
+    "title": "Verify: stock deducts on order",
+    "priority": "P0",
+    "description": "Order placed → product stock decreases by ordered quantity.",
+    "passes": false
+  },
+  {
+    "id": "task-376",
+    "title": "Verify: mobile checkout works",
+    "priority": "P0",
+    "description": "Complete checkout flow on 375px width. All steps accessible.",
+    "passes": false
+  },
+  {
+    "id": "task-377",
+    "title": "Verify: admin can change order status",
+    "priority": "P0",
+    "description": "Status progression works through all states in admin.",
+    "passes": false
+  },
+  {
+    "id": "task-378",
+    "title": "Verify: customer sees status update in real-time",
+    "priority": "P1",
+    "description": "Admin changes status → customer confirmation page updates.",
+    "passes": false
+  },
+  {
+    "id": "task-379",
+    "title": "Verify: order totals match everywhere",
+    "priority": "P0",
+    "description": "Cart total = checkout total = confirmation total = admin total = DB total.",
+    "passes": false
+  },
+  {
+    "id": "task-380",
+    "title": "Verify: multiple themes render correctly",
+    "priority": "P0",
+    "description": "Switch through all 4 themes, verify each applies correctly on storefront.",
+    "passes": false
+  },
+  {
+    "id": "task-381",
+    "title": "Verify: drag and drop reorder persists",
+    "priority": "P0",
+    "description": "Reorder sections → save → refresh → order maintained.",
+    "passes": false
+  },
+  {
+    "id": "task-382",
+    "title": "Verify: store creation from scratch works",
+    "priority": "P0",
+    "description": "New store created, sections added, published, accessible to customers.",
+    "passes": false
+  },
+  {
+    "id": "task-383",
+    "title": "Verify: product visibility toggle",
+    "priority": "P1",
+    "description": "Toggle product off → doesn't appear on storefront. Toggle on → appears.",
+    "passes": false
+  },
+  {
+    "id": "task-384",
+    "title": "Verify: empty states on all pages",
+    "priority": "P0",
+    "description": "Every page with no data shows proper empty state, not blank or error.",
+    "passes": false
+  },
+  {
+    "id": "task-385",
+    "title": "Verify: all section types render on storefront",
+    "priority": "P0",
+    "description": "Add one of each section type → save → storefront shows all 8.",
+    "passes": false
+  },
+  {
+    "id": "task-386",
+    "title": "Verify: cart persistence across page navigations",
+    "priority": "P0",
+    "description": "Add items → navigate around → cart still has items.",
+    "passes": false
+  },
+  {
+    "id": "task-387",
+    "title": "Verify: cart persistence across browser restart",
+    "priority": "P0",
+    "description": "Add items → close tab → reopen → cart still has items.",
+    "passes": false
+  },
+  {
+    "id": "task-388",
+    "title": "Verify: cart scoped to store",
+    "priority": "P1",
+    "description": "Items in Store A's cart don't appear in Store B's cart.",
+    "passes": false
+  },
+  {
+    "id": "task-389",
+    "title": "Verify: no console.log in production code",
+    "priority": "P1",
+    "description": "grep -rn \"console\\.\" src/ shows only logger usage.",
+    "passes": false
+  },
+  {
+    "id": "task-390",
+    "title": "Verify: no any types in storefront files",
+    "priority": "P1",
+    "description": "grep -rn \":any\\b\" in storefront-related files shows zero results.",
+    "passes": false
+  },
+  {
+    "id": "task-391",
+    "title": "Verify: all routes use tenant slug",
+    "priority": "P0",
+    "description": "No hardcoded /admin/ in storefront admin pages. All use tenantSlug.",
+    "passes": false
+  },
+  {
+    "id": "task-392",
+    "title": "Verify: RLS prevents cross-tenant data access",
+    "priority": "P0",
+    "description": "Attempt to query another tenant's data. Should return empty results.",
+    "passes": false
+  },
+  {
+    "id": "task-393",
+    "title": "Verify: no sensitive data in client bundle",
+    "priority": "P0",
+    "description": "Build → inspect dist/ → no secret keys or tokens.",
+    "passes": false
+  },
+  {
+    "id": "task-394",
+    "title": "Verify: 404 for non-existent store slug",
+    "priority": "P0",
+    "description": "/shop/fake-store shows styled 404, not crash.",
+    "passes": false
+  },
+  {
+    "id": "task-395",
+    "title": "Verify: 404 for non-existent product",
+    "priority": "P0",
+    "description": "/shop/:slug/products/fake-id shows styled 404.",
+    "passes": false
+  },
+  {
+    "id": "task-396",
+    "title": "Verify: out of stock prevents add to cart",
+    "priority": "P0",
+    "description": "Stock = 0 product → Add to Cart disabled → shows \"Out of Stock\".",
+    "passes": false
+  },
+  {
+    "id": "task-397",
+    "title": "Verify: double-click prevention on Place Order",
+    "priority": "P0",
+    "description": "Rapidly click Place Order → only 1 order created.",
+    "passes": false
+  },
+  {
+    "id": "task-398",
+    "title": "Verify: network error on checkout shows error",
+    "priority": "P0",
+    "description": "Simulate network failure → shows error message → cart not cleared.",
+    "passes": false
+  },
+  {
+    "id": "task-399",
+    "title": "Final TypeScript check — zero errors",
+    "priority": "P0",
+    "description": "npx tsc --noEmit → 0 errors. This is the final gate.",
+    "passes": false
+  },
+  {
+    "id": "task-400",
+    "title": "Final Vite build — production ready",
+    "priority": "P0",
+    "description": "npx vite build → completes successfully.\nOutput: dist/ folder with optimized bundle.\nThe storefront is production-ready.\n\nCongratulations — ship it! 🚀",
+    "passes": false
+  }
+]

@@ -32,6 +32,7 @@ import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { AnalyticsDateRangePicker } from '@/components/admin/disposable-menus/AnalyticsDateRangePicker';
 import { queryKeys } from '@/lib/queryKeys';
+import { CHART_COLORS, chartSemanticColors } from '@/lib/chartColors';
 
 interface MenuAnalyticsProps {
   menuId?: string;
@@ -262,10 +263,10 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
 
     // Conversion funnel
     const conversionFunnel = [
-      { name: 'Views', value: viewsCount, fill: '#8b5cf6' },
-      { name: 'Add to Cart', value: addToCartCount, fill: '#3b82f6' },
-      { name: 'Checkout Started', value: checkoutStarted, fill: '#f59e0b' },
-      { name: 'Orders Completed', value: ordersCompleted, fill: '#22c55e' },
+      { name: 'Views', value: viewsCount, fill: CHART_COLORS[4] },
+      { name: 'Add to Cart', value: addToCartCount, fill: CHART_COLORS[3] },
+      { name: 'Checkout Started', value: checkoutStarted, fill: CHART_COLORS[7] },
+      { name: 'Orders Completed', value: ordersCompleted, fill: CHART_COLORS[5] },
     ];
 
     return {
@@ -517,8 +518,8 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
                     <AreaChart data={formattedViewsData}>
                       <defs>
                         <linearGradient id="viewsGradientMenu" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                          <stop offset="5%" stopColor={CHART_COLORS[4]} stopOpacity={0.3} />
+                          <stop offset="95%" stopColor={CHART_COLORS[4]} stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -535,7 +536,7 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
                       <Area
                         type="monotone"
                         dataKey="views"
-                        stroke="#8b5cf6"
+                        stroke={CHART_COLORS[4]}
                         strokeWidth={2}
                         fill="url(#viewsGradientMenu)"
                         name="Views"
@@ -631,18 +632,18 @@ export function MenuAnalytics({ menuId: propMenuId, className }: MenuAnalyticsPr
                         yAxisId="left"
                         type="monotone"
                         dataKey="orders"
-                        stroke="#22c55e"
+                        stroke={chartSemanticColors.success}
                         strokeWidth={2}
-                        dot={{ fill: '#22c55e', r: 3 }}
+                        dot={{ fill: chartSemanticColors.success, r: 3 }}
                         name="Orders"
                       />
                       <Line
                         yAxisId="right"
                         type="monotone"
                         dataKey="revenue"
-                        stroke="#f59e0b"
+                        stroke={chartSemanticColors.cost}
                         strokeWidth={2}
-                        dot={{ fill: '#f59e0b', r: 3 }}
+                        dot={{ fill: chartSemanticColors.cost, r: 3 }}
                         name="Revenue"
                       />
                     </LineChart>

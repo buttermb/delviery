@@ -1,6 +1,6 @@
 /**
  * TVRevenueChartWidget Component
- * 
+ *
  * Hourly revenue bar chart for TV display:
  * - Shows sales by hour for today
  * - Current hour highlighted
@@ -9,6 +9,7 @@
 
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 export interface HourlyRevenue {
     hour: number;
@@ -75,7 +76,7 @@ export function TVRevenueChartWidget({ data }: TVRevenueChartWidgetProps) {
                             {chartData.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
-                                    fill={entry.isCurrent ? '#10b981' : '#3f3f46'}
+                                    fill={entry.isCurrent ? chartSemanticColors.revenue : chartSemanticColors.muted}
                                     fillOpacity={entry.isCurrent ? 1 : 0.8}
                                 />
                             ))}

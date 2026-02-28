@@ -24,7 +24,7 @@ import {
     GripVertical, Trash2, ArrowLeft, Layout,
     Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
     Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
-    Code, Globe, GlobeLock, AlertCircle, Settings2, Wand2, Loader2
+    Code, Globe, GlobeLock, AlertCircle, Settings2, Wand2, Loader2, Store
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EasyModeEditor } from '@/components/admin/storefront/EasyModeEditor';
@@ -130,6 +130,8 @@ function SortableSectionItem({
             ref={setNodeRef}
             style={style}
             onClick={onSelect}
+            data-testid={`builder-section-${section.type}`}
+            data-section-type={section.type}
             className={`flex items-center justify-between p-3 rounded-md border cursor-pointer transition-colors ${isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted'
                 } ${isHidden ? 'opacity-50' : ''}`}
         >
@@ -283,7 +285,7 @@ export function StorefrontBuilder({
     );
 
     // Fetch Store Config
-    const { data: store } = useQuery({
+    const { data: store, isLoading: isLoadingStore } = useQuery({
         queryKey: queryKeys.marketplaceSettings.byTenant(tenant?.id),
         queryFn: async (): Promise<MarketplaceStore> => {
             try {
@@ -772,7 +774,94 @@ export function StorefrontBuilder({
                 width: isFullScreen ? '100%' : 'calc(100% + 1.5rem)'
             }}
         >
-            {/* Header */}
+            {/* Loading state */}
+            {isLoadingStore && (
+                <div className="flex-1 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            )}
+
+            {/* No-store empty state */}
+            {!isLoadingStore && !store && (
+                <div className="flex-1 flex items-center justify-center p-6">
+                    <Card className="w-full max-w-md">
+                        <CardContent className="pt-6 space-y-6">
+                            <div className="flex flex-col items-center text-center space-y-2">
+                                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <Store className="h-6 w-6 text-primary" />
+                                </div>
+                                <h2 className="text-xl font-semibold">Create Your Store</h2>
+                                <p className="text-sm text-muted-foreground">
+                                    Set up your white-label storefront to start selling to customers.
+                                </p>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="empty-store-name">Store Name</Label>
+                                    <Input
+                                        id="empty-store-name"
+                                        placeholder="My Awesome Store"
+                                        value={newStoreName}
+                                        onChange={(e) => {
+                                            setNewStoreName(e.target.value);
+                                            setNewStoreSlug(generateSlug(e.target.value));
+                                            setSlugError(null);
+                                        }}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="empty-store-slug">Store URL Slug</Label>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-muted-foreground">/shop/</span>
+                                        <Input
+                                            id="empty-store-slug"
+                                            placeholder="my-awesome-store"
+                                            value={newStoreSlug}
+                                            onChange={(e) => {
+                                                setNewStoreSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''));
+                                                setSlugError(null);
+                                            }}
+                                            onBlur={() => {
+                                                if (newStoreSlug) {
+                                                    validateSlug(newStoreSlug);
+                                                }
+                                            }}
+                                            className="flex-1"
+                                        />
+                                    </div>
+                                    {slugError && (
+                                        <p className="text-sm text-destructive flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {slugError}
+                                        </p>
+                                    )}
+                                    {isValidatingSlug && (
+                                        <p className="text-sm text-muted-foreground">Checking availability...</p>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Theme</Label>
+                                    <ThemePresetStrip
+                                        onSelectTheme={handleThemeSelect}
+                                        selectedThemeId={selectedThemeId}
+                                    />
+                                </div>
+                            </div>
+                            <Button
+                                className="w-full"
+                                onClick={handleCreateStore}
+                                disabled={!newStoreName || !newStoreSlug || isValidatingSlug || isCreatingWithCredits || createStoreMutation.isPending}
+                            >
+                                {(isCreatingWithCredits || createStoreMutation.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                {isCreatingWithCredits || createStoreMutation.isPending ? 'Creating...' : 'Create Store (500 credits)'}
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {/* Header + Builder (only when store exists) */}
+            {!isLoadingStore && store && (<>
             <div className="flex items-center justify-between px-4 py-3 bg-background border-b shrink-0 z-20">
                 <div className="flex items-center gap-3">
                     <Button variant="ghost" size="icon" onClick={handleClose} aria-label={isFullScreen ? 'Close editor' : 'Back'}>
@@ -1154,6 +1243,7 @@ export function StorefrontBuilder({
                 )}
             </div>
             )}
+            </>)}
 
             {/* Create Store Dialog */}
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

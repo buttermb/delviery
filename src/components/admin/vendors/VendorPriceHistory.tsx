@@ -61,6 +61,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface VendorPriceHistoryProps {
   vendorId: string;
@@ -502,10 +503,10 @@ export function VendorPriceHistory({ vendorId, vendorName }: VendorPriceHistoryP
                   <Line
                     type="stepAfter"
                     dataKey="cost"
-                    stroke="#f59e0b"
+                    stroke={chartSemanticColors.warning}
                     strokeWidth={2}
-                    dot={{ r: 4, fill: '#f59e0b' }}
-                    activeDot={{ r: 6, fill: '#f59e0b' }}
+                    dot={{ r: 4, fill: chartSemanticColors.warning }}
+                    activeDot={{ r: 6, fill: chartSemanticColors.warning }}
                     name="Cost"
                     connectNulls
                   />

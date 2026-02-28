@@ -506,21 +506,21 @@ export function CustomerManagement() {
         {/* Table skeleton */}
         <Card>
           <CardContent className="p-0">
-            <table className="w-full">
-              <thead className="bg-muted/50 border-b">
-                <tr>
+            <Table>
+              <TableHeader>
+                <TableRow>
                   {["", "Customer", "Type", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
-                    <th key={i} scope="col" className="px-4 py-2.5 text-left">
+                    <TableHead key={i}>
                       <Skeleton className="h-3 w-16" />
-                    </th>
+                    </TableHead>
                   ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y">
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {Array.from({ length: 6 }).map((_, rowIdx) => (
-                  <tr key={rowIdx}>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-4" /></td>
-                    <td className="px-4 py-2.5">
+                  <TableRow key={rowIdx}>
+                    <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-3">
                         <Skeleton className="h-10 w-10 rounded-full" />
                         <div className="space-y-1">
@@ -528,18 +528,18 @@ export function CustomerManagement() {
                           <Skeleton className="h-3 w-36" />
                         </div>
                       </div>
-                    </td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-16 rounded-full" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-16" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-12" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-14 rounded-full" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-16 rounded-full" /></td>
-                    <td className="px-4 py-2.5 text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></td>
-                  </tr>
+                    </TableCell>
+                    <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-14 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>

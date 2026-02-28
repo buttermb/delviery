@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
+import { logActivity } from '@/lib/activityLog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,12 +28,7 @@ import {
   List,
   Volume2,
   VolumeX,
-  Truck,
-  Store,
-  User,
-  Clock,
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils/formatCurrency';
 import {
   Select,
   SelectContent,
@@ -41,6 +37,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StorefrontLiveOrdersKanban } from '@/components/admin/storefront/StorefrontLiveOrdersKanban';
+import { StorefrontLiveOrdersTable } from '@/components/admin/storefront/StorefrontLiveOrdersTable';
+import { OrderDetailPanel } from '@/components/admin/storefront/OrderDetailPanel';
+import { CancelOrderDialog } from '@/components/admin/storefront/CancelOrderDialog';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
 
@@ -61,16 +60,57 @@ const STATUS_LABELS: Record<string, string> = {
   ready: 'Ready',
   out_for_delivery: 'Out for Delivery',
   delivered: 'Delivered',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-amber-500',
-  confirmed: 'bg-cyan-500',
-  preparing: 'bg-blue-500',
-  ready: 'bg-green-500',
-  out_for_delivery: 'bg-purple-500',
-  delivered: 'bg-gray-500 dark:bg-gray-600',
-};
+/**
+ * Returns valid next statuses for an order based on its current status and fulfillment type.
+ * Follows the defined progression: pending → confirmed → preparing → ready → out_for_delivery/completed → delivered
+ */
+export function getValidNextStatuses(
+  currentStatus: string,
+  fulfillmentType: 'delivery' | 'pickup'
+): Array<{ status: string; label: string; variant: 'default' | 'destructive' }> {
+  switch (currentStatus) {
+    case 'pending':
+      return [
+        { status: 'confirmed', label: 'Confirm', variant: 'default' },
+        { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+      ];
+    case 'confirmed':
+      return [
+        { status: 'preparing', label: 'Start Preparing', variant: 'default' },
+        { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+      ];
+    case 'preparing':
+      return [
+        { status: 'ready', label: 'Mark Ready', variant: 'default' },
+        { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+      ];
+    case 'ready':
+      return fulfillmentType === 'delivery'
+        ? [
+            { status: 'out_for_delivery', label: 'Out for Delivery', variant: 'default' },
+            { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+          ]
+        : [
+            { status: 'completed', label: 'Mark Completed', variant: 'default' },
+            { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+          ];
+    case 'out_for_delivery':
+      return [
+        { status: 'delivered', label: 'Mark Delivered', variant: 'default' },
+        { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+      ];
+    case 'delivered':
+    case 'completed':
+    case 'cancelled':
+      return [];
+    default:
+      return [];
+  }
+}
 
 export interface LiveOrder {
   id: string;
@@ -88,6 +128,9 @@ export interface LiveOrder {
   shipping_method: string | null;
   created_at: string;
   items: unknown[];
+  payment_status: string | null;
+  payment_terms: string | null;
+  stripe_payment_intent_id: string | null;
 }
 
 /** Request browser notification permission */
@@ -121,7 +164,7 @@ function showBrowserNotification(title: string, body: string): void {
 }
 
 export function StorefrontLiveOrders() {
-  const { tenant } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -133,6 +176,10 @@ export function StorefrontLiveOrders() {
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
   const previousOrderCountRef = useRef<number>(0);
   const isInitialLoadRef = useRef(true);
 
@@ -160,12 +207,13 @@ export function StorefrontLiveOrders() {
   const { data: orders = [], isLoading, refetch } = useQuery({
     queryKey: queryKeys.storefrontLiveOrders.byStore(store?.id, statusFilter),
     queryFn: async () => {
-      if (!store?.id) return [];
+      if (!store?.id || !tenantId) return [];
 
       let query = supabase
         .from('marketplace_orders')
         .select('*')
         .eq('store_id', store.id)
+        .eq('seller_tenant_id', tenantId)
         .order('created_at', { ascending: false });
 
       // Filter by active statuses if 'all', otherwise specific status
@@ -257,27 +305,109 @@ export function StorefrontLiveOrders() {
 
   // Update order status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
-      if (!store?.id) throw new Error('No store context');
+    mutationFn: async ({ orderId, newStatus, previousStatus, cancellationReason }: {
+      orderId: string;
+      newStatus: string;
+      previousStatus: string;
+      cancellationReason?: string;
+    }) => {
+      if (!store?.id || !tenantId) throw new Error('No store or tenant context');
+
+      const now = new Date().toISOString();
+      const updateData: Record<string, unknown> = {
+        status: newStatus,
+        updated_at: now,
+      };
+
+      // Set the corresponding timestamp for each status transition
+      const timestampMap: Record<string, string> = {
+        confirmed: 'confirmed_at',
+        preparing: 'preparing_at',
+        ready: 'ready_at',
+        out_for_delivery: 'out_for_delivery_at',
+        delivered: 'delivered_at',
+        completed: 'delivered_at',
+        cancelled: 'cancelled_at',
+      };
+      const tsField = timestampMap[newStatus];
+      if (tsField) {
+        updateData[tsField] = now;
+      }
+
+      if (newStatus === 'cancelled' && cancellationReason) {
+        updateData.cancellation_reason = cancellationReason;
+      }
 
       const { error } = await supabase
         .from('marketplace_orders')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq('id', orderId)
-        .eq('store_id', store.id);
+        .eq('store_id', store.id)
+        .eq('seller_tenant_id', tenantId);
 
       if (error) throw error;
+
+      // Restore inventory when cancelling
+      if (newStatus === 'cancelled') {
+        const order = orders.find(o => o.id === orderId);
+        const items = Array.isArray(order?.items) ? order.items : [];
+        const restoreItems = items
+          .map((item) => {
+            const i = item as Record<string, unknown>;
+            return {
+              product_id: i.product_id as string,
+              quantity: typeof i.quantity === 'number' ? i.quantity : 0,
+            };
+          })
+          .filter((i) => i.product_id && i.quantity > 0);
+
+        if (restoreItems.length > 0) {
+          const { data: restoreResult, error: restoreError } = await supabase
+            .rpc('restore_storefront_inventory', { p_items: restoreItems });
+
+          if (restoreError) {
+            logger.error('Failed to restore inventory on cancel', restoreError, { component: 'StorefrontLiveOrders', orderId });
+          } else {
+            logger.info('Inventory restored for cancelled order', { orderId, result: restoreResult }, { component: 'StorefrontLiveOrders' });
+          }
+        }
+      }
+
+      // Log activity for the timeline (fire-and-forget)
+      const userId = admin?.userId;
+      if (tenantId && userId) {
+        logActivity(
+          tenantId,
+          userId,
+          newStatus,
+          'order',
+          orderId,
+          {
+            previous_status: previousStatus,
+            new_status: newStatus,
+            user_name: admin?.name || admin?.email,
+            ...(cancellationReason ? { cancellation_reason: cancellationReason } : {}),
+          }
+        );
+      }
     },
     onMutate: ({ orderId }) => {
       setUpdatingOrderId(orderId);
     },
     onSuccess: (_, { newStatus: _newStatus }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.storefrontLiveOrders.all });
-      toast.success("Status changed to ${STATUS_LABELS[newStatus] || newStatus}");
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      if (newStatus === 'cancelled') {
+        setCancelDialogOpen(false);
+        setCancelOrderId(null);
+        toast.success('Order cancelled and inventory restored');
+      } else {
+        toast.success(`Status changed to ${STATUS_LABELS[newStatus] || newStatus}`);
+      }
     },
     onError: (error) => {
       logger.error('Failed to update order status', error, { component: 'StorefrontLiveOrders' });
-      toast.error("Failed to update order status", { description: humanizeError(error) });
+      toast.error('Failed to update order status', { description: humanizeError(error) });
     },
     onSettled: () => {
       setUpdatingOrderId(null);
@@ -285,24 +415,42 @@ export function StorefrontLiveOrders() {
   });
 
   const handleStatusChange = (orderId: string, newStatus: string) => {
-    updateStatusMutation.mutate({ orderId, newStatus });
+    if (newStatus === 'cancelled') {
+      setCancelOrderId(orderId);
+      setCancelDialogOpen(true);
+      return;
+    }
+    const order = orders.find(o => o.id === orderId);
+    const previousStatus = order?.status ?? 'unknown';
+    updateStatusMutation.mutate({ orderId, newStatus, previousStatus });
   };
+
+  const handleCancelConfirm = (reason: string) => {
+    if (!cancelOrderId) return;
+    const order = orders.find(o => o.id === cancelOrderId);
+    const previousStatus = order?.status ?? 'unknown';
+    updateStatusMutation.mutate({
+      orderId: cancelOrderId,
+      newStatus: 'cancelled',
+      previousStatus,
+      cancellationReason: reason,
+    });
+  };
+
+  const cancelOrder = useMemo(
+    () => orders.find(o => o.id === cancelOrderId) ?? null,
+    [orders, cancelOrderId]
+  );
 
   const handleViewDetails = (orderId: string) => {
-    navigate(`/${tenantSlug}/admin/storefront-hub?tab=orders&order=${orderId}`);
+    setSelectedOrderId(orderId);
+    setDetailPanelOpen(true);
   };
 
-  /** Determine if order is delivery or pickup based on shipping_method/delivery_address */
-  const getOrderFulfillmentType = (order: LiveOrder): 'delivery' | 'pickup' => {
-    if (order.shipping_method) {
-      const method = order.shipping_method.toLowerCase();
-      if (method.includes('pickup') || method.includes('collect')) return 'pickup';
-      return 'delivery';
-    }
-    // Fallback: if no delivery address, assume pickup
-    if (!order.delivery_address) return 'pickup';
-    return 'delivery';
-  };
+  const selectedOrder = useMemo(
+    () => orders.find(o => o.id === selectedOrderId) ?? null,
+    [orders, selectedOrderId]
+  );
 
   // Filter orders by search
   const filteredOrders = useMemo(() => orders.filter((order) => {
@@ -448,9 +596,9 @@ export function StorefrontLiveOrders() {
         <Card>
           <CardContent className="py-16 text-center">
             <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-            <p className="text-lg font-semibold">No active orders</p>
+            <p className="text-lg font-semibold">No orders yet</p>
             <p className="text-sm text-muted-foreground mt-1">
-              New orders will appear here in real-time
+              Share your store link to start getting orders!
             </p>
           </CardContent>
         </Card>
@@ -463,126 +611,37 @@ export function StorefrontLiveOrders() {
           updatingOrderId={updatingOrderId}
         />
       ) : (
-        /* List View with full order details */
-        <div className="space-y-3">
-          {filteredOrders.map((order) => {
-            const fulfillmentType = getOrderFulfillmentType(order);
-            const items = Array.isArray(order.items) ? order.items : [];
-            const orderTotal = order.total || order.total_amount || 0;
-
-            return (
-              <Card
-                key={order.id}
-                className="hover:shadow-md transition-shadow"
-              >
-                <CardContent className="p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    {/* Left: order info */}
-                    <div className="flex items-start gap-4 flex-1 min-w-0">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p
-                            className="font-semibold cursor-pointer hover:underline"
-                            onClick={() => handleViewDetails(order.id)}
-                          >
-                            #{order.order_number}
-                          </p>
-                          {/* Delivery vs Pickup Badge */}
-                          <Badge
-                            variant="outline"
-                            className={fulfillmentType === 'delivery'
-                              ? 'border-blue-300 text-blue-700 bg-blue-50'
-                              : 'border-orange-300 text-orange-700 bg-orange-50'
-                            }
-                          >
-                            {fulfillmentType === 'delivery' ? (
-                              <><Truck className="h-3 w-3 mr-1" /> Delivery</>
-                            ) : (
-                              <><Store className="h-3 w-3 mr-1" /> Pickup</>
-                            )}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                          <User className="h-3 w-3" />
-                          <span>{order.customer_name || 'Guest'}</span>
-                          {order.customer_phone && (
-                            <span className="text-xs">• {order.customer_phone}</span>
-                          )}
-                        </div>
-                        {/* Items summary */}
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                          <Package className="h-3 w-3" />
-                          <span>
-                            {items.length} item{items.length !== 1 ? 's' : ''}
-                            {items.length > 0 && items.length <= 3 && (
-                              <span className="ml-1">
-                                ({items.map((item: unknown) => {
-                                  const i = item as Record<string, unknown>;
-                                  return i.name || i.product_name || 'Item';
-                                }).join(', ')})
-                              </span>
-                            )}
-                          </span>
-                        </div>
-                        {order.delivery_notes && (
-                          <p className="text-xs text-muted-foreground italic mt-1 truncate max-w-[300px]">
-                            Note: {order.delivery_notes}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Right: status, amount, time, dropdown */}
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span>{getTimeSince(order.created_at)}</span>
-                      </div>
-                      <Badge className={STATUS_COLORS[order.status] || 'bg-gray-500 dark:bg-gray-600'}>
-                        {STATUS_LABELS[order.status] || order.status}
-                      </Badge>
-                      <span className="font-semibold text-sm">{formatCurrency(orderTotal)}</span>
-                      {/* Status update dropdown */}
-                      <Select
-                        value={order.status}
-                        onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        <SelectTrigger className="w-[140px] h-8 text-xs">
-                          <SelectValue placeholder="Update status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {STATUS_PROGRESSION.map((s) => (
-                            <SelectItem key={s} value={s}>
-                              {STATUS_LABELS[s]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        <StorefrontLiveOrdersTable
+          orders={filteredOrders}
+          onStatusChange={handleStatusChange}
+          onViewDetails={handleViewDetails}
+          isLoading={isLoading}
+          updatingOrderId={updatingOrderId}
+        />
       )}
+
+      {/* Order Detail Slide-Over */}
+      <OrderDetailPanel
+        order={selectedOrder}
+        open={detailPanelOpen}
+        onOpenChange={setDetailPanelOpen}
+        onStatusChange={handleStatusChange}
+        updatingOrderId={updatingOrderId}
+      />
+
+      {/* Cancel Order Dialog */}
+      <CancelOrderDialog
+        open={cancelDialogOpen}
+        onOpenChange={(open) => {
+          setCancelDialogOpen(open);
+          if (!open) setCancelOrderId(null);
+        }}
+        orderNumber={cancelOrder?.order_number ?? ''}
+        onConfirm={handleCancelConfirm}
+        isPending={updateStatusMutation.isPending}
+      />
     </div>
   );
-}
-
-/** Calculate time since order creation */
-function getTimeSince(createdAt: string): string {
-  const created = new Date(createdAt);
-  const now = new Date();
-  const diffMs = now.getTime() - created.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  const hours = Math.floor(diffMins / 60);
-  if (hours < 24) return `${hours}h ${diffMins % 60}m ago`;
-  return `${Math.floor(hours / 24)}d ago`;
 }
 
 export default StorefrontLiveOrders;

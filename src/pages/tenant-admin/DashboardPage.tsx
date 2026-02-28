@@ -483,20 +483,23 @@ export default function TenantAdminDashboardPage() {
 
     const checkIfEmpty = async () => {
       try {
-        // Check if account has ANY data
+        // Check if account has ANY data (must filter by tenant_id)
         const { data: clients } = await supabase
           .from("wholesale_clients")
           .select("id")
+          .eq("tenant_id", tenantId)
           .limit(1);
 
         const { data: products } = await supabase
           .from("products")
           .select("id")
+          .eq("tenant_id", tenantId)
           .limit(1);
 
         const { data: menus } = await supabase
           .from("disposable_menus")
           .select("id")
+          .eq("tenant_id", tenantId)
           .limit(1);
 
         const isEmpty = (!clients || clients.length === 0) &&
@@ -1261,9 +1264,9 @@ export default function TenantAdminDashboardPage() {
           <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
             {recentActivity && recentActivity.length > 0 ? (
               <div className="space-y-2 sm:space-y-3">
-                {recentActivity.map((activity) => (
+                {recentActivity.map((activity, index) => (
                   <div
-                    key={`${activity.timestamp}-${activity.type}`}
+                    key={`${index}-${activity.timestamp}-${activity.type}`}
                     className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 border border-[hsl(var(--tenant-border))] rounded-lg hover:bg-[hsl(var(--tenant-surface))] transition-colors"
                   >
                     <div className="mt-0.5">

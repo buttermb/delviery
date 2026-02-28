@@ -237,9 +237,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
         }
 
         const runnerName = delivery.runner?.full_name || 'Runner';
-        const rawAddr = (delivery as unknown as Record<string, unknown>).delivery_address;
-        const rawOrderAddr = (delivery.order as unknown as Record<string, unknown> | null)?.delivery_address;
-        const clientName = (typeof rawAddr === 'string' ? rawAddr.split(',')[0] : null) || (typeof rawOrderAddr === 'string' ? rawOrderAddr.split(',')[0] : null) || 'Client';
+        const clientName = ((delivery as unknown as Record<string, unknown>).delivery_address as string | undefined)?.split(',')[0] || ((delivery.order as unknown as Record<string, unknown> | null)?.delivery_address as string | undefined)?.split(',')[0] || 'Client';
         const orderNumber = delivery.order?.order_number || 'N/A';
 
         // Destination (offset for demo)
@@ -529,9 +527,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
         <div className="max-h-48 overflow-y-auto border-b">
         {activeDeliveries.map((delivery) => {
             const runnerName = delivery.runner?.full_name || 'Runner';
-            const rawAddr2 = (delivery as unknown as Record<string, unknown>).delivery_address;
-            const rawOrderAddr2 = (delivery.order as unknown as Record<string, unknown> | null)?.delivery_address;
-            const clientName = (typeof rawAddr2 === 'string' ? rawAddr2.split(',')[0] : null) || (typeof rawOrderAddr2 === 'string' ? rawOrderAddr2.split(',')[0] : null) || 'Client';
+            const clientName = ((delivery as unknown as Record<string, unknown>).delivery_address as string | undefined)?.split(',')[0] || ((delivery.order as unknown as Record<string, unknown> | null)?.delivery_address as string | undefined)?.split(',')[0] || 'Client';
             const orderNumber = delivery.order?.order_number || 'N/A';
             const eta = etasRef.current.get(delivery.id);
 

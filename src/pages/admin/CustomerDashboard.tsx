@@ -55,14 +55,15 @@ import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { displayName } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 // Segment color palette for charts
 const SEGMENT_COLORS: Record<CustomerSegment, string> = {
-  vip: '#f59e0b',      // amber
-  active: '#10b981',   // emerald
-  new: '#3b82f6',      // blue
-  at_risk: '#f97316',  // orange
-  churned: '#ef4444',  // red
+  vip: 'hsl(var(--chart-8))',
+  active: 'hsl(var(--chart-6))',
+  new: 'hsl(var(--chart-4))',
+  at_risk: 'hsl(var(--chart-7))',
+  churned: 'hsl(var(--chart-7))',
 };
 
 interface CustomerGrowthPoint {
@@ -561,7 +562,7 @@ export default function CustomerDashboard() {
                         <Line
                           type="monotone"
                           dataKey="new"
-                          stroke="#10b981"
+                          stroke={chartSemanticColors.revenue}
                           strokeWidth={2}
                           dot={false}
                           strokeDasharray="5 5"

@@ -5,7 +5,7 @@ import {
   Plus, Settings, LayoutGrid, ShoppingBag, Users, DollarSign,
   RefreshCw, Filter, TrendingUp, Flame, Clock, Shield, ChevronRight,
   Zap, Target, AlertCircle, CheckCircle, BarChart3,
-  Download, Activity, Link, Loader2
+  Download, Activity, Link, Loader2, FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MenuCreationWizard } from './MenuCreationWizard';
+import { GenerateMenuPageDialog } from './GenerateMenuPageDialog';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useDisposableMenus, useMenuOrders, useUpdateOrderStatus } from '@/hooks/useDisposableMenus';
 import { MenuCard } from './MenuCard';
@@ -639,6 +640,7 @@ export function SmartDashboard() {
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [generatePageOpen, setGeneratePageOpen] = useState(false);
 
   // Auto-open wizard if query param present
   useEffect(() => {
@@ -782,10 +784,23 @@ export function SmartDashboard() {
                 size="sm"
                 onClick={handleExportCsv}
                 title="Export analytics to CSV"
+                aria-label="Export analytics to CSV"
               >
                 <Download className="h-4 w-4" />
               </Button>
               <PanicModeButton />
+
+              {/* Generate Menu Page Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGeneratePageOpen(true)}
+                title="Generate a shareable static menu page"
+                aria-label="Generate Menu Page"
+              >
+                <FileText className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Menu Page</span>
+              </Button>
 
               {/* Desktop Create Button */}
               <Button
@@ -989,6 +1004,9 @@ export function SmartDashboard() {
 
       {/* Menu Creation Wizard */}
       <MenuCreationWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+
+      {/* Generate Menu Page Dialog */}
+      <GenerateMenuPageDialog open={generatePageOpen} onOpenChange={setGeneratePageOpen} />
     </div>
   );
 }

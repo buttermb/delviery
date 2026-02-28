@@ -19,7 +19,8 @@ import {
   Search,
   Clock,
   AlertTriangle,
-  Leaf
+  Leaf,
+  Store,
 } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { MobileBottomNav } from '@/components/shop/MobileBottomNav';
@@ -66,6 +67,8 @@ interface StoreInfo {
   checkout_settings?: {
     require_phone?: boolean;
     show_delivery_notes?: boolean;
+    venmo_handle?: string;
+    zelle_email?: string;
   };
   payment_methods?: string[];
   // Analytics
@@ -294,16 +297,24 @@ export default function ShopLayout() {
     );
   }
 
-  // Store not found
+  // Store not found — styled 404 page
   if (error || !store) {
     return (
-      <div className="min-h-dvh bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Store Not Found</h1>
-          <p className="text-muted-foreground mb-4">
-            The store you're looking for doesn't exist or is no longer available.
+      <div className="min-h-dvh bg-gradient-to-b from-muted/40 to-background flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-muted">
+            <Store className="h-12 w-12 text-muted-foreground" />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight mb-3">Store Not Found</h1>
+          <p className="text-muted-foreground mb-2">
+            The store you&apos;re looking for doesn&apos;t exist or has been taken offline.
           </p>
-          <Button onClick={() => navigate('/')}>Go Home</Button>
+          <p className="text-sm text-muted-foreground mb-8">
+            Check the URL and try again.
+          </p>
+          <Button onClick={() => navigate('/')} size="lg">
+            Go Home
+          </Button>
         </div>
       </div>
     );
@@ -399,7 +410,7 @@ export default function ShopLayout() {
   if (isLuxuryTheme) {
     return (
       <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
-        <div className="min-h-dvh bg-shop-bg text-neutral-900" style={themeStyles}>
+        <div className="min-h-dvh bg-shop-bg text-neutral-900" style={themeStyles} data-testid="storefront-wrapper" data-theme="luxury">
           {/* Admin Preview Banner */}
           {isPreviewMode && (
             <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
@@ -479,6 +490,8 @@ export default function ShopLayout() {
       <div
         className={`min-h-dvh ${isLuxuryTheme ? 'bg-black' : 'bg-background'}`}
         style={themeStyles}
+        data-testid="storefront-wrapper"
+        data-theme={isLuxuryTheme ? 'luxury' : 'default'}
       >
         {/* Admin Preview Banner */}
         {isPreviewMode && (

@@ -612,7 +612,7 @@ export default function TenantsListPage() {
                 <Download className="h-4 w-4" />
                 Export
               </Button>
-              <Button variant="ghost" size="sm" onClick={clearSelection}>
+              <Button variant="ghost" size="sm" onClick={clearSelection} aria-label="Clear selection">
                 <X className="h-4 w-4" />
               </Button>
             </CardContent>

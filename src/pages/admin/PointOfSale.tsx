@@ -621,7 +621,7 @@ export default function PointOfSale() {
                             <span className="text-xs text-muted-foreground">{product.stock_quantity} left</span>
                             <span className="text-lg font-bold text-primary">${product.price}</span>
                           </div>
-                          <Button size="sm" variant="secondary" className="h-8 w-8 rounded-full p-0">
+                          <Button size="sm" variant="secondary" className="h-8 w-8 rounded-full p-0" aria-label="Add to cart">
                             <Plus className="h-4 w-4" />
                           </Button>
                         </div>

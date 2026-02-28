@@ -376,6 +376,16 @@ body.keyboard-open [data-radix-dialog-content] {
     /* Blue */
     --chart-5: 271 91% 65%;
     /* Purple */
+    --chart-6: 160 84% 39%;
+    /* Emerald */
+    --chart-7: 0 84% 60%;
+    /* Red */
+    --chart-8: 38 92% 50%;
+    /* Amber */
+    --chart-9: 330 81% 60%;
+    /* Pink */
+    --chart-10: 142 71% 45%;
+    /* Green */
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(254 70% 28%), hsl(254 60% 40%));

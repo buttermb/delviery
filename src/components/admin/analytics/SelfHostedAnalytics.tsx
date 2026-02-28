@@ -52,8 +52,7 @@ import {
 import { useAnalyticsData, type UnifiedAnalyticsData } from '@/hooks/useAnalyticsData';
 import { format } from 'date-fns';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
-
-const CHART_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+import { CHART_COLORS } from '@/lib/chartColors';
 
 interface MetricCardProps {
   title: string;
@@ -237,7 +236,7 @@ function OrdersTab({ data }: { data: UnifiedAnalyticsData }) {
                     cy="50%"
                     labelLine={false}
                     outerRadius={100}
-                    fill="#8884d8"
+                    fill={CHART_COLORS[0]}
                     dataKey="value"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
@@ -696,7 +695,7 @@ export function SelfHostedAnalytics() {
   // Export handler
   const handleExport = (format: 'csv' | 'pdf') => {
     if (!analytics) return;
-    
+
     setIsExporting(true);
     try {
       const thirtyDaysAgo = new Date();

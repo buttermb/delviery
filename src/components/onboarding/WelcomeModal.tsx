@@ -116,6 +116,7 @@ export const WelcomeModal = ({ open, onClose }: WelcomeModalProps) => {
               size="icon"
               onClick={handleSkip}
               className="h-8 w-8"
+              aria-label="Close"
             >
               <X className="h-4 w-4" />
             </Button>

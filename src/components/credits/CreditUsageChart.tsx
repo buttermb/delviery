@@ -1,6 +1,6 @@
 /**
  * CreditUsageChart Component
- * 
+ *
  * Displays credit usage analytics with a chart and breakdown by category.
  */
 
@@ -23,22 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getCategoryDisplayName, type CreditCategory } from '@/lib/credits';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
-
-const CATEGORY_COLORS: Record<string, string> = {
-  orders: '#3b82f6',
-  inventory: '#10b981',
-  customers: '#8b5cf6',
-  invoices: '#f59e0b',
-  crm: '#ec4899',
-  reports: '#6366f1',
-  exports: '#14b8a6',
-  ai: '#f97316',
-  api: '#64748b',
-  menus: '#06b6d4',
-  marketplace: '#d946ef',
-  pos: '#0ea5e9',
-  operations: '#84cc16',
-};
+import { CATEGORY_CHART_COLORS } from '@/lib/chartColors';
 
 export interface CreditUsageChartProps {
   className?: string;
@@ -90,7 +75,7 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
         .map(([category, credits]) => ({
           category: getCategoryDisplayName(category as CreditCategory) || category,
           credits,
-          color: CATEGORY_COLORS[category as CreditCategory] || '#64748b',
+          color: CATEGORY_CHART_COLORS[category as CreditCategory] || CATEGORY_CHART_COLORS['other'] || 'hsl(var(--muted-foreground))',
         }))
         .sort((a, b) => b.credits - a.credits);
 
@@ -272,10 +257,3 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
     </Card>
   );
 }
-
-
-
-
-
-
-

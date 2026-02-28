@@ -90,7 +90,7 @@ export function BatchCategoryEditor({ open, onOpenChange, products, onApply }: B
 
           {/* New Category Selection */}
           <div className="space-y-2">
-            <Label>New Category <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
+            <Label required>New Category</Label>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />

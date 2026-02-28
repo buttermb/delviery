@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/lib/logger';
+import { safeStorage } from '@/utils/safeStorage';
 
 export interface WishlistItem {
   productId: string;
@@ -27,7 +28,7 @@ export function useWishlist({ storeId }: UseWishlistOptions = {}) {
   // Load wishlist from localStorage on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(storageKey);
+      const saved = safeStorage.getItem(storageKey);
       if (saved) {
         setItems(JSON.parse(saved));
       }
@@ -41,7 +42,7 @@ export function useWishlist({ storeId }: UseWishlistOptions = {}) {
   useEffect(() => {
     if (isLoaded) {
       try {
-        localStorage.setItem(storageKey, JSON.stringify(items));
+        safeStorage.setItem(storageKey, JSON.stringify(items));
       } catch (error) {
         logger.warn('Failed to save wishlist', error);
       }

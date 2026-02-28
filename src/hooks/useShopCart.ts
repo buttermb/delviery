@@ -347,6 +347,58 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         }
     }, [storeId, cartItems]);
 
+    // Sync cart prices with server — returns list of items that had price changes
+    const syncCartPrices = useCallback(async (): Promise<{
+        changed: boolean;
+        priceChanges: Array<{ productId: string; name: string; oldPrice: number; newPrice: number }>;
+    }> => {
+        if (!storeId || cartItems.length === 0) {
+            return { changed: false, priceChanges: [] };
+        }
+
+        try {
+            const productIds = cartItems.map(item => item.productId);
+            const { data, error } = await supabase
+                .from('products')
+                .select('id, price')
+                .in('id', productIds);
+
+            if (error || !data) {
+                logger.warn('Failed to fetch current prices for cart sync', error);
+                return { changed: false, priceChanges: [] };
+            }
+
+            const priceMap = new Map(data.map(p => [p.id, Number(p.price)]));
+            const priceChanges: Array<{ productId: string; name: string; oldPrice: number; newPrice: number }> = [];
+            let hasChanges = false;
+
+            const updatedCart = cartItems.map(item => {
+                const currentPrice = priceMap.get(item.productId);
+                if (currentPrice !== undefined && Math.abs(currentPrice - item.price) > 0.01) {
+                    priceChanges.push({
+                        productId: item.productId,
+                        name: item.name,
+                        oldPrice: item.price,
+                        newPrice: currentPrice,
+                    });
+                    hasChanges = true;
+                    return { ...item, price: currentPrice };
+                }
+                return item;
+            });
+
+            if (hasChanges) {
+                saveCart(updatedCart);
+                logger.info('Cart prices synced with server', { priceChanges });
+            }
+
+            return { changed: hasChanges, priceChanges };
+        } catch (e) {
+            logger.error('Error syncing cart prices', e);
+            return { changed: false, priceChanges: [] };
+        }
+    }, [storeId, cartItems, saveCart]);
+
     // Quick inventory check - validates stock availability without full cart validation
     const checkInventoryAvailability = useCallback(async (): Promise<{
         valid: boolean;
@@ -499,6 +551,7 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         validateCart,
         lastValidation,
         checkInventoryAvailability,
+        syncCartPrices,
         // Constants
         MAX_QUANTITY_PER_ITEM
     };

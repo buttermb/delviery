@@ -9,6 +9,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface RevenueChartProps {
   storeId: string;
@@ -176,7 +177,7 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
                 }}
                 itemStyle={{ color: 'hsl(var(--foreground))' }}
               />
-              <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="revenue" fill={chartSemanticColors.revenue} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

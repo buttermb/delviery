@@ -25,6 +25,7 @@ export function BarcodeScanner({ onScan, onClose, open }: BarcodeScannerProps) {
                     size="icon"
                     onClick={onClose}
                     className="text-white hover:bg-white/20"
+                    aria-label="Close scanner"
                 >
                     <X className="w-6 h-6" />
                 </Button>

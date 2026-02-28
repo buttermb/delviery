@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +33,7 @@ import { useMenuPaymentSettings, type PaymentSettings } from '@/hooks/usePayment
 import { publish } from '@/lib/eventBus';
 import { queryKeys } from '@/lib/queryKeys';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { useReturningCustomerLookup } from '@/hooks/useReturningCustomerLookup';
 
 interface CheckoutFlowProps {
   open: boolean;
@@ -555,13 +556,16 @@ function CartStep({
 }
 
 // Customer Details Step
-function DetailsStep({ 
+function DetailsStep({
   formData,
   onUpdate,
   onNext,
   onBack,
-  errors
-}: { 
+  errors,
+  isRecognized,
+  isLookingUp,
+  recognizedName,
+}: {
   formData: {
     firstName: string;
     lastName: string;
@@ -573,6 +577,9 @@ function DetailsStep({
   onNext: () => void;
   onBack: () => void;
   errors: Record<string, string>;
+  isRecognized?: boolean;
+  isLookingUp?: boolean;
+  recognizedName?: string;
 }) {
   const isValid = formData.firstName.trim() && formData.lastName.trim() && 
                   formData.phone.replace(/\D/g, '').length >= 10 &&
@@ -642,12 +649,20 @@ function DetailsStep({
               placeholder="(555) 123-4567"
               value={formData.phone}
               onChange={(e) => onUpdate('phone', formatPhoneNumber(e.target.value))}
-              className={cn("h-12 pl-10", errors.phone && "border-red-500")}
+              className={cn("h-12 pl-10 pr-10", errors.phone && "border-red-500")}
               maxLength={14}
             />
+            {isLookingUp && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+            {isRecognized && !isLookingUp && (
+              <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+            )}
           </div>
           {errors.phone ? (
             <p className="text-xs text-red-500">{errors.phone}</p>
+          ) : isRecognized ? (
+            <p className="text-xs text-green-600">Welcome back, {recognizedName}!</p>
           ) : (
             <p className="text-xs text-muted-foreground">We'll text you order updates</p>
           )}
@@ -688,7 +703,7 @@ function DetailsStep({
 
       {/* Bottom buttons */}
       <div className="border-t bg-card px-4 py-4 flex gap-3">
-        <Button variant="outline" onClick={onBack} className="h-12 px-6">
+        <Button variant="outline" onClick={onBack} className="h-12 px-6" aria-label="Go back">
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <Button 
@@ -932,7 +947,7 @@ function LocationStep({
 
       {/* Bottom buttons */}
       <div className="border-t bg-card px-4 py-4 flex gap-3">
-        <Button variant="outline" onClick={onBack} className="h-12 px-6">
+        <Button variant="outline" onClick={onBack} className="h-12 px-6" aria-label="Go back">
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <Button 
@@ -1190,7 +1205,7 @@ function PaymentStep({
 
       {/* Bottom buttons */}
       <div className="border-t bg-card px-4 py-4 flex gap-3">
-        <Button variant="outline" onClick={onBack} className="h-12 px-6">
+        <Button variant="outline" onClick={onBack} className="h-12 px-6" aria-label="Go back">
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <Button 
@@ -1416,7 +1431,7 @@ function ConfirmStep({
           <span className="text-primary">${finalTotal.toFixed(2)}</span>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={onBack} disabled={isSubmitting} className="h-14 px-6">
+          <Button variant="outline" onClick={onBack} disabled={isSubmitting} className="h-14 px-6" aria-label="Go back">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <Button 
@@ -1707,6 +1722,35 @@ export function ModernCheckoutFlow({
     }
   }, [formData]);
 
+  // Returning customer recognition by phone
+  const {
+    customer: returningCustomer,
+    isRecognized,
+    isSearching: isLookingUpCustomer,
+  } = useReturningCustomerLookup({
+    phone: formData.phone,
+    tenantId: tenantIdProp,
+    enabled: currentStep === 'details',
+  });
+
+  // Auto-fill form when returning customer is recognized
+  const lastRecognizedIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (returningCustomer && returningCustomer.customerId !== lastRecognizedIdRef.current) {
+      lastRecognizedIdRef.current = returningCustomer.customerId;
+      setFormData((prev) => ({
+        ...prev,
+        firstName: prev.firstName || returningCustomer.firstName,
+        lastName: prev.lastName || returningCustomer.lastName,
+        email: prev.email || returningCustomer.email || '',
+        address: prev.address || returningCustomer.address || '',
+      }));
+      toast.success('Welcome back!', {
+        description: `We recognized your phone number, ${returningCustomer.firstName}.`,
+      });
+    }
+  }, [returningCustomer]);
+
   const updateFormData = useCallback((field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setErrors(prev => ({ ...prev, [field]: '' }));
@@ -1925,6 +1969,9 @@ export function ModernCheckoutFlow({
                     }}
                     onBack={() => goToStep('cart')}
                     errors={errors}
+                    isRecognized={isRecognized}
+                    isLookingUp={isLookingUpCustomer}
+                    recognizedName={returningCustomer?.firstName}
                   />
                 )}
                 {currentStep === 'location' && (

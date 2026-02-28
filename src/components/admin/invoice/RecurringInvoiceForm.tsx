@@ -15,6 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { SafeModal } from "@/components/ui/safe-modal";
 import { DialogFooterActions } from "@/components/ui/dialog-footer-actions";
 import { Card, CardContent } from "@/components/ui/card";
@@ -48,7 +56,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
 
   const { data: clients = [], isLoading: clientsLoading, isError: clientsError, refetch: refetchClients } = useClients();
 
-  const { register, handleSubmit, watch, setValue, formState: { errors, isDirty } } = useForm<FormData>({
+  const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: editSchedule ? {
       name: editSchedule.name,
@@ -65,7 +73,7 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
     }
   });
 
-  const frequency = watch("frequency");
+  const frequency = form.watch("frequency");
   const isSubmitting = createSchedule.isPending || updateSchedule.isPending;
 
   const addLineItem = () => {
@@ -115,182 +123,242 @@ export function RecurringInvoiceForm({ open, onOpenChange, editSchedule }: Recur
     <SafeModal
       open={open}
       onOpenChange={onOpenChange}
-      isDirty={isDirty}
+      isDirty={form.formState.isDirty}
       title={editSchedule ? "Edit Recurring Invoice" : "Create Recurring Invoice"}
       className="max-w-2xl max-h-[90vh] overflow-y-auto"
     >
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Schedule Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-              <Input {...register("name")} placeholder="Monthly Retainer" maxLength={200} />
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label>Client <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-              {clientsLoading ? (
-                <div className="flex items-center gap-2 py-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Loading clients...</span>
-                </div>
-              ) : clientsError ? (
-                <div className="flex items-center gap-2 py-2">
-                  <AlertTriangle className="h-4 w-4 text-destructive" />
-                  <span className="text-sm text-destructive">Failed to load clients</span>
-                  <Button type="button" variant="outline" size="sm" onClick={() => refetchClients()}>
-                    <RefreshCw className="mr-1 h-3 w-3" /> Retry
-                  </Button>
-                </div>
-              ) : clients.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-2">No clients found. Create a client first.</p>
-              ) : (
-                <Select
-                  value={watch("client_id")}
-                  onValueChange={(v) => setValue("client_id", v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {errors.client_id && <p className="text-sm text-destructive">{errors.client_id.message}</p>}
-            </div>
-          </div>
-
-          {/* Schedule */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Frequency <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-              <Select
-                value={frequency}
-                onValueChange={(v) => setValue("frequency", v as FormData["frequency"])}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select frequency" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="biweekly">Every 2 Weeks</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="quarterly">Quarterly</SelectItem>
-                  <SelectItem value="yearly">Yearly</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.frequency && <p className="text-sm text-destructive">{errors.frequency.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label>First Invoice Date <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-              <Input type="date" {...register("next_run_date")} />
-              {errors.next_run_date && <p className="text-sm text-destructive">{errors.next_run_date.message}</p>}
-            </div>
-          </div>
-
-          {frequency === "monthly" && (
-            <div className="space-y-2">
-              <Label>Day of Month (optional)</Label>
-              <Input
-                type="number"
-                min={1}
-                max={28}
-                placeholder="e.g., 1 for 1st of month"
-                onChange={(e) => setValue("day_of_month", parseInt(e.target.value) || undefined)}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Basic Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Schedule Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Monthly Retainer" maxLength={200} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="client_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Client</FormLabel>
+                    {clientsLoading ? (
+                      <div className="flex items-center gap-2 py-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Loading clients...</span>
+                      </div>
+                    ) : clientsError ? (
+                      <div className="flex items-center gap-2 py-2">
+                        <AlertTriangle className="h-4 w-4 text-destructive" />
+                        <span className="text-sm text-destructive">Failed to load clients</span>
+                        <Button type="button" variant="outline" size="sm" onClick={() => refetchClients()}>
+                          <RefreshCw className="mr-1 h-3 w-3" /> Retry
+                        </Button>
+                      </div>
+                    ) : clients.length === 0 ? (
+                      <p className="text-sm text-muted-foreground py-2">No clients found. Create a client first.</p>
+                    ) : (
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select client" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {clients.map((client) => (
+                              <SelectItem key={client.id} value={client.id}>
+                                {client.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-          )}
 
-          {/* Line Items */}
-          <div className="space-y-3">
-            <Label>Line Items</Label>
-            {lineItems.map((item, index) => (
-              <Card key={index}>
-                <CardContent className="p-3">
-                  <div className="grid grid-cols-12 gap-2 items-center">
-                    <div className="col-span-6">
-                      <Input
-                        placeholder="Description"
-                        value={item.description}
-                        onChange={(e) => updateLineItem(index, "description", e.target.value)}
-                      />
-                    </div>
-                    <div className="col-span-2">
+            {/* Schedule */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="frequency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>Frequency</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select frequency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="weekly">Weekly</SelectItem>
+                          <SelectItem value="biweekly">Every 2 Weeks</SelectItem>
+                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value="quarterly">Quarterly</SelectItem>
+                          <SelectItem value="yearly">Yearly</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="next_run_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel required>First Invoice Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {frequency === "monthly" && (
+              <FormField
+                control={form.control}
+                name="day_of_month"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Day of Month (optional)</FormLabel>
+                    <FormControl>
                       <Input
                         type="number"
                         min={1}
-                        placeholder="Qty"
-                        value={item.quantity}
-                        onChange={(e) => updateLineItem(index, "quantity", parseInt(e.target.value) || 1)}
+                        max={28}
+                        placeholder="e.g., 1 for 1st of month"
+                        value={field.value ?? ""}
+                        onChange={(e) => { const parsed = parseInt(e.target.value, 10); field.onChange(Number.isNaN(parsed) ? undefined : parsed); }}
                       />
-                    </div>
-                    <div className="col-span-3">
-                      <Input
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        placeholder="Price"
-                        value={item.unit_price}
-                        onChange={(e) => updateLineItem(index, "unit_price", parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="col-span-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeLineItem(index)}
-                        disabled={lineItems.length === 1}
-                        aria-label="Remove line item"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            <Button type="button" variant="outline" size="sm" onClick={addLineItem}>
-              <Plus className="h-4 w-4 mr-1" /> Add Item
-            </Button>
-            <div className="text-right font-semibold">
-              Total per Invoice: {formatCurrency(total)}
-            </div>
-          </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
-          {/* Options */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Auto-send Email</Label>
-                <p className="text-sm text-muted-foreground">Automatically email invoice when generated</p>
+            {/* Line Items */}
+            <div className="space-y-3">
+              <Label>Line Items</Label>
+              {lineItems.map((item, index) => (
+                <Card key={index}>
+                  <CardContent className="p-3">
+                    <div className="grid grid-cols-12 gap-2 items-center">
+                      <div className="col-span-6">
+                        <Input
+                          placeholder="Description"
+                          value={item.description}
+                          onChange={(e) => updateLineItem(index, "description", e.target.value)}
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Input
+                          type="number"
+                          min={1}
+                          placeholder="Qty"
+                          value={item.quantity}
+                          onChange={(e) => updateLineItem(index, "quantity", parseInt(e.target.value) || 1)}
+                        />
+                      </div>
+                      <div className="col-span-3">
+                        <Input
+                          type="number"
+                          min={0}
+                          step={0.01}
+                          placeholder="Price"
+                          value={item.unit_price}
+                          onChange={(e) => updateLineItem(index, "unit_price", parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                      <div className="col-span-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeLineItem(index)}
+                          disabled={lineItems.length === 1}
+                          aria-label="Remove line item"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={addLineItem}>
+                <Plus className="h-4 w-4 mr-1" /> Add Item
+              </Button>
+              <div className="text-right font-semibold">
+                Total per Invoice: {formatCurrency(total)}
               </div>
-              <Switch
-                checked={watch("auto_send_email")}
-                onCheckedChange={(v) => setValue("auto_send_email", v)}
+            </div>
+
+            {/* Options */}
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="auto_send_email"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between space-y-0">
+                    <div>
+                      <FormLabel>Auto-send Email</FormLabel>
+                      <p className="text-sm text-muted-foreground">Automatically email invoice when generated</p>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes (optional)</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Internal notes about this schedule..." maxLength={1000} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-            <div className="space-y-2">
-              <Label>Notes (optional)</Label>
-              <Textarea {...register("notes")} placeholder="Internal notes about this schedule..." maxLength={1000} />
-              {errors.notes && <p className="text-sm text-destructive">{errors.notes.message}</p>}
-            </div>
-          </div>
 
-          <DialogFooterActions
-            primaryLabel={editSchedule ? "Update Schedule" : "Create Schedule"}
-            onPrimary={() => {}}
-            primaryLoading={isSubmitting}
-            secondaryLabel="Cancel"
-            onSecondary={() => onOpenChange(false)}
-          />
-        </form>
+            <DialogFooterActions
+              primaryLabel={editSchedule ? "Update Schedule" : "Create Schedule"}
+              onPrimary={() => {}}
+              primaryLoading={isSubmitting}
+              secondaryLabel="Cancel"
+              onSecondary={() => onOpenChange(false)}
+            />
+          </form>
+        </Form>
     </SafeModal>
   );
 }

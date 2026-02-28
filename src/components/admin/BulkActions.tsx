@@ -109,6 +109,7 @@ export function BulkActions({
             onClick={onClearSelection}
             variant="ghost"
             size="sm"
+            aria-label="Clear selection"
           >
             <X className="h-4 w-4" />
           </Button>

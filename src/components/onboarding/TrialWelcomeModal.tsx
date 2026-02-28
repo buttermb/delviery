@@ -11,11 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { 
-  CheckCircle2, 
-  Sparkles, 
-  Package, 
-  Users, 
+import {
+  CheckCircle2,
+  Sparkles,
+  Package,
+  Users,
   FileSpreadsheet,
   ArrowRight,
   PartyPopper,
@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
+import { CHART_COLORS } from "@/lib/chartColors";
 
 interface TrialWelcomeModalProps {
   tenantSlug?: string;
@@ -45,7 +46,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
 
   // Calculate trial days remaining
   const trialEndsAt = tenant?.trial_ends_at ? new Date(tenant.trial_ends_at) : null;
-  const daysRemaining = trialEndsAt 
+  const daysRemaining = trialEndsAt
     ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : 14;
   const trialProgress = Math.min(100, ((14 - daysRemaining) / 14) * 100);
@@ -69,7 +70,12 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'],
+          colors: [
+            CHART_COLORS[5], // emerald-ish
+            CHART_COLORS[0], // blue-ish
+            CHART_COLORS[4], // purple-ish
+            CHART_COLORS[7], // amber-ish
+          ],
         });
       }, 300);
       return () => clearTimeout(timer);
@@ -132,11 +138,11 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
               </div>
             </div>
           </div>
-          
+
           <DialogTitle className="text-2xl font-bold">
             Welcome to FloraIQ!
           </DialogTitle>
-          
+
           <DialogDescription className="text-base mt-2">
             {businessName && (
               <span className="block font-medium text-foreground mb-1">
@@ -160,7 +166,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
               </Badge>
             )}
           </div>
-          
+
           {isTrial && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
@@ -198,8 +204,8 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
                 <p className="text-sm text-purple-700 dark:text-purple-300 mb-2">
                   Switch to yearly billing and get 2 months free!
                 </p>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   variant="outline"
                   className="border-purple-300 text-purple-700 hover:bg-purple-100 dark:border-purple-700 dark:text-purple-300 dark:hover:bg-purple-900"
                   onClick={() => {
@@ -245,7 +251,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
           <Button variant="outline" className="flex-1" onClick={handleClose}>
             Explore Dashboard
           </Button>
-          <Button 
+          <Button
             className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
             onClick={() => {
               handleClose();

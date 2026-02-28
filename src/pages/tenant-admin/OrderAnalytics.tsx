@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Package, TrendingUp, DollarSign } from "lucide-react";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { queryKeys } from '@/lib/queryKeys';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 export default function OrderAnalytics() {
   const { tenant } = useTenantAdminAuth();
@@ -13,7 +14,7 @@ export default function OrderAnalytics() {
     queryKey: queryKeys.orderAnalyticsAdmin.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
-      
+
       const { data, error } = await supabase
         .from('orders')
         .select('*')
@@ -97,7 +98,7 @@ export default function OrderAnalytics() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="count" fill="#8884d8" name="Orders" />
+              <Bar dataKey="count" fill={CHART_COLORS[0]} name="Orders" />
             </BarChart>
           </ResponsiveContainer>
         ) : (

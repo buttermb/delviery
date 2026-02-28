@@ -204,9 +204,17 @@ export interface EncryptedOrder {
   status: string;
 }
 
+export interface DecryptedOrderItem {
+  productId: string;
+  name: string;
+  quantity: number;
+  price: number;
+  [key: string]: unknown;
+}
+
 export interface DecryptedOrder {
   id: string;
-  items: unknown[];
+  items: DecryptedOrderItem[];
   total: string;
   customer_notes?: string;
   delivery_address: string;

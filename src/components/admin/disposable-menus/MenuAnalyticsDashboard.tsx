@@ -18,9 +18,10 @@ import { useMenuDashboardAnalytics } from '@/hooks/useMenuDashboardAnalytics';
 import { AnalyticsExportButton } from './AnalyticsExportButton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
+import { CHART_COLORS, chartSemanticColors } from '@/lib/chartColors';
 
-const DONUT_COLORS = ['#22c55e', '#f59e0b', '#ef4444', '#6b7280'];
-const BURN_REASON_COLORS = ['#8b5cf6', '#ec4899', '#f97316', '#06b6d4', '#84cc16'];
+const DONUT_COLORS = [CHART_COLORS[5], CHART_COLORS[7], CHART_COLORS[6], CHART_COLORS[9]];
+const BURN_REASON_COLORS = [CHART_COLORS[4], CHART_COLORS[8], CHART_COLORS[7], CHART_COLORS[3], CHART_COLORS[9]];
 
 function StatCard({
   label,
@@ -238,8 +239,8 @@ export function MenuAnalyticsDashboard() {
                 <AreaChart data={viewsChartData}>
                   <defs>
                     <linearGradient id="viewsGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                      <stop offset="5%" stopColor={CHART_COLORS[4]} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={CHART_COLORS[4]} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -256,7 +257,7 @@ export function MenuAnalyticsDashboard() {
                   <Area
                     type="monotone"
                     dataKey="views"
-                    stroke="#8b5cf6"
+                    stroke={CHART_COLORS[4]}
                     strokeWidth={2}
                     fill="url(#viewsGradient)"
                     name="Views"
@@ -307,18 +308,18 @@ export function MenuAnalyticsDashboard() {
                     yAxisId="left"
                     type="monotone"
                     dataKey="orders"
-                    stroke="#22c55e"
+                    stroke={chartSemanticColors.success}
                     strokeWidth={2}
-                    dot={{ fill: '#22c55e', r: 3 }}
+                    dot={{ fill: chartSemanticColors.success, r: 3 }}
                     name="Orders"
                   />
                   <Line
                     yAxisId="right"
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#f59e0b"
+                    stroke={chartSemanticColors.cost}
                     strokeWidth={2}
-                    dot={{ fill: '#f59e0b', r: 3 }}
+                    dot={{ fill: chartSemanticColors.cost, r: 3 }}
                     name="Revenue"
                   />
                 </LineChart>
@@ -520,7 +521,7 @@ export function MenuAnalyticsDashboard() {
                     }}
                     labelFormatter={(label) => `Hour: ${label}`}
                   />
-                  <Bar dataKey="views" fill="#ec4899" radius={[4, 4, 0, 0]} name="Views" />
+                  <Bar dataKey="views" fill={CHART_COLORS[8]} radius={[4, 4, 0, 0]} name="Views" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

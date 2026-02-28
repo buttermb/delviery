@@ -133,7 +133,7 @@ export function StorefrontDesignPage() {
             </div>
 
             {/* Full-Screen Editor Portal */}
-            <FullScreenEditorPortal isOpen={isFullScreen}>
+            <FullScreenEditorPortal isOpen={isFullScreen} onRequestClose={requestClose}>
                 <StorefrontBuilder
                     isFullScreen={true}
                     onRequestClose={requestClose}

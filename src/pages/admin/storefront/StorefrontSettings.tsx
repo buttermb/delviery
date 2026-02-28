@@ -107,6 +107,8 @@ interface StoreSettings {
     show_delivery_notes: boolean;
     enable_coupons: boolean;
     enable_tips: boolean;
+    venmo_handle?: string;
+    zelle_email?: string;
   };
   operating_hours: Record<string, { open: string; close: string; closed: boolean }>;
   // Purchase limits for compliance
@@ -188,9 +190,11 @@ export default function StorefrontSettings() {
     queryFn: async () => {
       const ids = formData.featured_product_ids ?? [];
       if (ids.length === 0) return [];
+      if (!tenantId) return [];
       const { data, error } = await supabase
         .from('products')
         .select('id, name, price, image_url, category')
+        .eq('tenant_id', tenantId)
         .in('id', ids);
 
       if (error) {
@@ -200,7 +204,7 @@ export default function StorefrontSettings() {
       // Sort by the order in featured_product_ids
       return (data ?? []).sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
     },
-    enabled: (formData.featured_product_ids ?? []).length > 0,
+    enabled: !!tenantId && (formData.featured_product_ids ?? []).length > 0,
   });
 
   // Memoize preview settings to avoid unnecessary re-renders
@@ -235,7 +239,7 @@ export default function StorefrontSettings() {
   };
 
   // Update checkout settings
-  const updateCheckoutSetting = (key: string, value: boolean) => {
+  const updateCheckoutSetting = (key: string, value: boolean | string) => {
     setFormData((prev) => ({
       ...prev,
       checkout_settings: {
@@ -300,7 +304,8 @@ export default function StorefrontSettings() {
           purchase_limits: formData.purchase_limits,
           featured_product_ids: formData.featured_product_ids ?? [],
         })
-        .eq('id', store.id);
+        .eq('id', store.id)
+        .eq('tenant_id', tenantId);
 
       if (error) throw error;
     },
@@ -325,7 +330,8 @@ export default function StorefrontSettings() {
       const { error } = await supabase
         .from('marketplace_stores')
         .update({ encrypted_url_token: newToken })
-        .eq('id', store.id);
+        .eq('id', store.id)
+        .eq('tenant_id', tenantId);
 
       if (error) throw error;
       return newToken;
@@ -1081,21 +1087,51 @@ export default function StorefrontSettings() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {PAYMENT_METHOD_OPTIONS.map((method) => (
-                  <div key={method.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{method.icon}</span>
-                      <Label>{method.label}</Label>
+                  <div key={method.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{method.icon}</span>
+                        <Label>{method.label}</Label>
+                      </div>
+                      <Switch
+                        checked={(formData.payment_methods || ['cash', 'card']).includes(method.id)}
+                        onCheckedChange={(checked) => {
+                          const current = formData.payment_methods || ['cash', 'card'];
+                          const updated = checked
+                            ? [...current, method.id]
+                            : current.filter((m) => m !== method.id);
+                          updateField('payment_methods', updated);
+                        }}
+                      />
                     </div>
-                    <Switch
-                      checked={(formData.payment_methods || ['cash', 'card']).includes(method.id)}
-                      onCheckedChange={(checked) => {
-                        const current = formData.payment_methods || ['cash', 'card'];
-                        const updated = checked
-                          ? [...current, method.id]
-                          : current.filter((m) => m !== method.id);
-                        updateField('payment_methods', updated);
-                      }}
-                    />
+                    {method.id === 'venmo' && (formData.payment_methods || []).includes('venmo') && (
+                      <div className="ml-11">
+                        <Label htmlFor="venmo_handle" className="text-sm text-muted-foreground">
+                          Venmo Handle (e.g. @your-store)
+                        </Label>
+                        <Input
+                          id="venmo_handle"
+                          className="mt-1 max-w-xs"
+                          placeholder="@your-store"
+                          value={formData.checkout_settings?.venmo_handle || ''}
+                          onChange={(e) => updateCheckoutSetting('venmo_handle', e.target.value)}
+                        />
+                      </div>
+                    )}
+                    {method.id === 'zelle' && (formData.payment_methods || []).includes('zelle') && (
+                      <div className="ml-11">
+                        <Label htmlFor="zelle_email" className="text-sm text-muted-foreground">
+                          Zelle Email or Phone (shown to customers)
+                        </Label>
+                        <Input
+                          id="zelle_email"
+                          className="mt-1 max-w-xs"
+                          placeholder="store@example.com or (555) 123-4567"
+                          value={formData.checkout_settings?.zelle_email || ''}
+                          onChange={(e) => updateCheckoutSetting('zelle_email', e.target.value)}
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
                 <p className="text-xs text-muted-foreground mt-4">

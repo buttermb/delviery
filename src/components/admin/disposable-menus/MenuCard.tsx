@@ -5,7 +5,7 @@ import {
   Eye, Users, ShoppingCart, Flame, Copy, ExternalLink,
   Share2, Shield, MapPin, Lock, Clock, QrCode, CopyPlus,
   MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store,
-  ArrowUpDown, Pencil
+  ArrowUpDown, Pencil, FileText
 } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -32,6 +32,7 @@ import { CloneMenuDialog } from './CloneMenuDialog';
 import { MenuAccessDetails } from './MenuAccessDetails';
 import { MenuPaymentSettingsDialog } from './MenuPaymentSettingsDialog';
 import { MenuProductOrderingDialog } from './MenuProductOrderingDialog';
+import { GenerateMenuPageDialog } from './GenerateMenuPageDialog';
 import { format, formatDistanceToNow, isPast } from 'date-fns';
 import { showSuccessToast } from '@/utils/toastHelpers';
 import { jsonToString, extractSecuritySetting, jsonToBooleanSafe } from '@/utils/menuTypeHelpers';
@@ -86,6 +87,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const [accessDetailsOpen, setAccessDetailsOpen] = useState(false);
   const [paymentSettingsOpen, setPaymentSettingsOpen] = useState(false);
   const [productOrderingOpen, setProductOrderingOpen] = useState(false);
+  const [generatePageOpen, setGeneratePageOpen] = useState(false);
 
   const viewCount = menu.view_count ?? 0;
   const customerCount = menu.customer_count ?? 0;
@@ -240,6 +242,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                     size="sm"
                     className="h-8 px-2"
                     onClick={copyUrl}
+                    aria-label="Copy link"
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -285,6 +288,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                     size="sm"
                     className="h-8 px-2"
                     onClick={openMenu}
+                    aria-label="Preview menu"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
@@ -298,7 +302,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
               {/* More Actions Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                  <Button variant="ghost" size="sm" className="h-8 px-2" aria-label="More actions">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -325,6 +329,12 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
                     <CreditCard className="h-4 w-4 mr-2" />
                     Payment Settings
                   </DropdownMenuItem>
+                  {isActive && (
+                    <DropdownMenuItem onClick={() => setGeneratePageOpen(true)}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Generate Page
+                    </DropdownMenuItem>
+                  )}
                   {!isForumMenu && productCount > 0 && (
                     <DropdownMenuItem onClick={() => setProductOrderingOpen(true)}>
                       <ArrowUpDown className="h-4 w-4 mr-2" />
@@ -460,6 +470,12 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
           menuName={menu.name}
         />
       )}
+
+      <GenerateMenuPageDialog
+        open={generatePageOpen}
+        onOpenChange={setGeneratePageOpen}
+        preselectedMenuName={menu.name}
+      />
     </>
   );
 };

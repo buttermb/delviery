@@ -1045,7 +1045,7 @@ export function OrderDetailsPage() {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <div className="py-2">
-                    <Label>Reason for cancellation <span className="text-destructive">*</span></Label>
+                    <Label required>Reason for cancellation</Label>
                     <Textarea
                       placeholder="Enter cancellation reason (required)"
                       value={cancellationReason}

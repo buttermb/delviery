@@ -163,6 +163,7 @@ function PasswordSuggestion({ suggestedPassword, copied, onGenerate, onUse, onCo
           className="h-7 w-7 p-0"
           onClick={onCopy}
           title="Copy password"
+          aria-label="Copy password"
         >
           <Copy className="h-3 w-3" />
         </Button>

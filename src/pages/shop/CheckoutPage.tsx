@@ -3,9 +3,9 @@
  * Multi-step checkout flow
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
@@ -33,7 +33,10 @@ import {
   ShoppingCart,
   Loader2,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Copy,
+  Truck,
+  Store
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
@@ -45,6 +48,9 @@ import { Clock, Tag } from 'lucide-react';
 import { isCustomerBlockedByEmail, FLAG_REASON_LABELS } from '@/hooks/useCustomerFlags';
 import { humanizeError } from '@/lib/humanizeError';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { safeStorage } from '@/utils/safeStorage';
+import { queryKeys } from '@/lib/queryKeys';
+import { useReturningCustomerLookup } from '@/hooks/useReturningCustomerLookup';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -58,6 +64,9 @@ interface CheckoutData {
   lastName: string;
   email: string;
   phone: string;
+  preferredContact: 'text' | 'phone' | 'email' | 'telegram';
+  // Fulfillment
+  fulfillmentMethod: 'delivery' | 'pickup';
   // Delivery
   street: string;
   apartment: string;
@@ -94,6 +103,25 @@ interface OrderResult {
   order_number: string;
   tracking_token?: string;
   total?: number;
+  checkoutUrl?: string;
+  telegramLink?: string;
+}
+
+interface UnavailableProduct {
+  productId: string;
+  productName: string;
+  requested: number;
+  available: number;
+}
+
+class OutOfStockError extends Error {
+  unavailableProducts: UnavailableProduct[];
+  constructor(unavailableProducts: UnavailableProduct[]) {
+    const names = unavailableProducts.map(p => p.productName).join(', ');
+    super(`Some items are out of stock: ${names}`);
+    this.name = 'OutOfStockError';
+    this.unavailableProducts = unavailableProducts;
+  }
 }
 
 // Helper type for calling untyped Supabase RPCs
@@ -116,6 +144,21 @@ export function CheckoutPage() {
   const { data: storeStatus } = useStoreStatus(store?.id);
   const isStoreClosed = storeStatus?.isOpen === false;
 
+  // Check if Stripe is configured — hide card option if not
+  const { data: isStripeConfigured } = useQuery({
+    queryKey: queryKeys.marketplaceStores.stripeConfigured(store?.id),
+    queryFn: async () => {
+      const { data, error } = await (supabase.rpc as unknown as SupabaseRpc)(
+        'is_store_stripe_configured',
+        { p_store_id: store!.id }
+      );
+      if (error) return false;
+      return Boolean(data);
+    },
+    enabled: !!store?.id,
+    staleTime: 5 * 60 * 1000, // cache for 5 minutes
+  });
+
   // Handle cancelled Stripe checkout return
   useEffect(() => {
     if (searchParams.get('cancelled') === 'true') {
@@ -135,6 +178,8 @@ export function CheckoutPage() {
     lastName: '',
     email: '',
     phone: '',
+    preferredContact: 'text',
+    fulfillmentMethod: 'delivery',
     street: '',
     apartment: '',
     city: '',
@@ -144,11 +189,25 @@ export function CheckoutPage() {
     paymentMethod: 'cash',
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [venmoConfirmed, setVenmoConfirmed] = useState(false);
+  const [zelleConfirmed, setZelleConfirmed] = useState(false);
+  const [createAccount, setCreateAccount] = useState(false);
+  const [accountPassword, setAccountPassword] = useState('');
   const [showErrors, setShowErrors] = useState(false);
   const [, setOrderRetryCount] = useState(0);
 
-  // Idempotency key to prevent double orders on retry
-  const [idempotencyKey] = useState(() => `order_${crypto.randomUUID()}`);
+  // Fast double-click guard — ref updates synchronously, before React re-renders with isPending
+  const isSubmittingRef = useRef(false);
+
+  // Idempotency key persisted to sessionStorage to survive page refresh during submission
+  const [idempotencyKey] = useState(() => {
+    const storageKey = `checkout_idempotency_${storeSlug || ''}`;
+    const existing = sessionStorage.getItem(storageKey);
+    if (existing) return existing;
+    const newKey = `order_${crypto.randomUUID()}`;
+    sessionStorage.setItem(storageKey, newKey);
+    return newKey;
+  });
 
   // Express Checkout for returning customers
   const [hasSavedData, setHasSavedData] = useState(false);
@@ -167,7 +226,7 @@ export function CheckoutPage() {
   useEffect(() => {
     if (formStorageKey) {
       try {
-        const saved = localStorage.getItem(formStorageKey);
+        const saved = safeStorage.getItem(formStorageKey);
         if (saved) {
           const parsed = JSON.parse(saved);
           setFormData((prev) => ({ ...prev, ...parsed }));
@@ -186,12 +245,42 @@ export function CheckoutPage() {
   useEffect(() => {
     if (formStorageKey && formData.email) {
       try {
-        localStorage.setItem(formStorageKey, JSON.stringify(formData));
+        safeStorage.setItem(formStorageKey, JSON.stringify(formData));
       } catch {
         // Ignore storage errors
       }
     }
   }, [formData, formStorageKey]);
+
+  // Returning customer recognition by phone
+  const {
+    customer: returningCustomer,
+    isRecognized,
+    isSearching: isLookingUpCustomer,
+  } = useReturningCustomerLookup({
+    phone: formData.phone,
+    tenantId: store?.tenant_id,
+    enabled: currentStep === 1,
+  });
+
+  // Auto-fill form when returning customer is recognized
+  const lastRecognizedIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (returningCustomer && returningCustomer.customerId !== lastRecognizedIdRef.current) {
+      lastRecognizedIdRef.current = returningCustomer.customerId;
+      setFormData((prev) => ({
+        ...prev,
+        firstName: prev.firstName || returningCustomer.firstName,
+        lastName: prev.lastName || returningCustomer.lastName,
+        email: prev.email || returningCustomer.email || '',
+        street: prev.street || returningCustomer.address || '',
+        preferredContact: (returningCustomer.preferredContact as CheckoutData['preferredContact']) || prev.preferredContact,
+      }));
+      toast.success('Welcome back!', {
+        description: `We recognized your phone number, ${returningCustomer.firstName}.`,
+      });
+    }
+  }, [returningCustomer]);
 
   // Use unified cart hook with coupon support
   const {
@@ -203,7 +292,9 @@ export function CheckoutPage() {
     appliedCoupon,
     removeCoupon,
     getCouponDiscount,
-    validateCart
+    validateCart,
+    syncCartPrices,
+    removeItem,
   } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
@@ -222,10 +313,17 @@ export function CheckoutPage() {
     }
   }, [isInitialized, cartItems.length, navigate, storeSlug]);
 
-  // Validate cart on mount
+  // Validate cart and sync prices on mount
   useEffect(() => {
     if (isInitialized && cartItems.length > 0 && store?.id) {
       validateCart();
+      syncCartPrices().then(result => {
+        if (result.changed) {
+          toast.warning('Some prices have been updated', {
+            description: 'Your cart has been refreshed with the latest prices.',
+          });
+        }
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- validateCart is defined below; only run when cart/store changes
   }, [isInitialized, cartItems.length, store?.id]);
@@ -314,7 +412,7 @@ export function CheckoutPage() {
   const deliveryFee = getDeliveryFee();
   const couponDiscount = getCouponDiscount(subtotal);
   const freeShipping = appliedCoupon?.free_shipping === true;
-  const effectiveDeliveryFee = freeShipping ? 0 : deliveryFee;
+  const effectiveDeliveryFee = formData.fulfillmentMethod === 'pickup' ? 0 : (freeShipping ? 0 : deliveryFee);
   const rawTotal = Math.max(0, subtotal + effectiveDeliveryFee - loyaltyDiscount - dealsDiscount - couponDiscount);
 
   // Cart rounding: round to nearest dollar if enabled
@@ -353,8 +451,19 @@ export function CheckoutPage() {
           toast.error('Invalid phone number', { description: 'Please enter a valid phone number.' });
           return false;
         }
+        // Validate password if creating account
+        if (createAccount && accountPassword.length < 8) {
+          toast.error('Password too short', { description: 'Password must be at least 8 characters.' });
+          return false;
+        }
         return true;
-      case 2: {
+      case 2:
+        if (!formData.fulfillmentMethod) {
+          toast.error('Please select a fulfillment method');
+          return false;
+        }
+        // Pickup doesn't need address validation
+        if (formData.fulfillmentMethod === 'pickup') return true;
         if (!formData.street || !formData.city || !formData.zip) {
           toast.error('Please fill in your delivery address');
           return false;
@@ -382,6 +491,14 @@ export function CheckoutPage() {
       case 3:
         if (!formData.paymentMethod) {
           toast.error('Please select a payment method');
+          return false;
+        }
+        if (formData.paymentMethod === 'venmo' && !venmoConfirmed) {
+          toast.error('Please confirm you\'ve sent payment via Venmo');
+          return false;
+        }
+        if (formData.paymentMethod === 'zelle' && !zelleConfirmed) {
+          toast.error('Please confirm you\'ve sent payment via Zelle');
           return false;
         }
         return true;
@@ -438,18 +555,23 @@ export function CheckoutPage() {
         logger.warn('Failed to check inventory', stockError, { component: 'CheckoutPage' });
         // Continue anyway - don't block orders on stock check failure
       } else if (products) {
-        const outOfStock: string[] = [];
+        const unavailable: UnavailableProduct[] = [];
         for (const item of cartItems) {
           const product = products.find((p) => p.id === item.productId);
           if (product) {
             const available = product.available_quantity ?? product.stock_quantity ?? 0;
             if (available < item.quantity) {
-              outOfStock.push(`${item.name} (only ${available} available)`);
+              unavailable.push({
+                productId: item.productId,
+                productName: item.name,
+                requested: item.quantity,
+                available,
+              });
             }
           }
         }
-        if (outOfStock.length > 0) {
-          throw new Error(`Some items are out of stock: ${outOfStock.join(', ')}`);
+        if (unavailable.length > 0) {
+          throw new OutOfStockError(unavailable);
         }
       }
 
@@ -511,9 +633,95 @@ export function CheckoutPage() {
         }
       }
 
-      // Calculate gift card usage for RPC
-      // Attempt to place order with retries
-      // Attempt to place order with retries
+      // Primary path: edge function checkout (handles order, customer, stock, Telegram, Stripe)
+      const tryEdgeFunction = async (): Promise<OrderResult | null> => {
+        try {
+          const edgeDeliveryAddress = formData.fulfillmentMethod === 'pickup'
+            ? undefined
+            : `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
+          const edgeOrigin = window.location.origin;
+          const totalDiscountAmount = couponDiscount + loyaltyDiscount + dealsDiscount;
+
+          const { data, error } = await supabase.functions.invoke('storefront-checkout', {
+            body: {
+              storeSlug,
+              items: cartItems.map(item => ({
+                product_id: item.productId,
+                quantity: item.quantity,
+                variant: item.variant,
+                price: item.price,
+              })),
+              customerInfo: {
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                phone: formData.phone || undefined,
+              },
+              fulfillmentMethod: formData.fulfillmentMethod,
+              paymentMethod: formData.paymentMethod,
+              deliveryAddress: edgeDeliveryAddress,
+              preferredContactMethod: formData.preferredContact || undefined,
+              notes: formData.deliveryNotes || undefined,
+              discountAmount: totalDiscountAmount > 0 ? totalDiscountAmount : undefined,
+              successUrl: formData.paymentMethod === 'card'
+                ? `${edgeOrigin}/shop/${storeSlug}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`
+                : undefined,
+              cancelUrl: formData.paymentMethod === 'card'
+                ? `${edgeOrigin}/shop/${storeSlug}/checkout?cancelled=true`
+                : undefined,
+              idempotencyKey,
+              clientTotal: total,
+            },
+          });
+
+          if (error) {
+            const errorName = (error as { name?: string }).name || '';
+            const isFetchError = errorName === 'FunctionsFetchError' || errorName === 'FunctionsRelayError';
+
+            if (isFetchError) {
+              return null; // Trigger fallback
+            }
+
+            const errorBody = data as Record<string, unknown> | null;
+            const errorMessage = (errorBody?.error as string) || error.message || 'Checkout failed';
+
+            if (errorMessage === 'Internal server error') {
+              return null; // Trigger fallback
+            }
+
+            // Parse structured out-of-stock response from edge function
+            if (errorMessage === 'Insufficient stock' && Array.isArray(errorBody?.unavailableProducts)) {
+              const items = errorBody.unavailableProducts as UnavailableProduct[];
+              throw new OutOfStockError(items);
+            }
+
+            throw new Error(errorMessage); // Business error — propagate
+          }
+
+          const responseData = data as Record<string, unknown>;
+
+          // Redeem coupon client-side (edge function doesn't handle coupons)
+          if (appliedCoupon?.coupon_id) {
+            await (supabase.rpc as unknown as SupabaseRpc)('redeem_coupon', { p_coupon_id: appliedCoupon.coupon_id });
+          }
+
+          return {
+            order_id: responseData.orderId as string,
+            order_number: (responseData.orderNumber as string) || (responseData.orderId as string),
+            tracking_token: (responseData.trackingToken as string) || undefined,
+            total: responseData.serverTotal as number,
+            checkoutUrl: responseData.checkoutUrl as string | undefined,
+            telegramLink: (responseData.telegramLink as string) || undefined,
+          };
+        } catch (err: unknown) {
+          // Re-throw known Error instances (business errors from edge function)
+          if (err instanceof Error) throw err;
+          // Unknown errors — trigger fallback
+          return null;
+        }
+      };
+
+      // Fallback path: direct RPC (if edge function is unavailable)
       const attemptOrder = async (attempt: number): Promise<OrderResult> => {
         try {
           if (!store?.id) throw new Error('Store ID missing');
@@ -525,7 +733,9 @@ export function CheckoutPage() {
           // The existing reserve_inventory uses (p_menu_id, p_items) not per-product calls
 
           // 1. Create Order using the actual function signature
-          const deliveryAddress = `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
+          const deliveryAddress = formData.fulfillmentMethod === 'pickup'
+            ? null
+            : `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
 
           const { data: orderId, error: orderError } = await supabase
             .rpc('create_marketplace_order', {
@@ -546,7 +756,9 @@ export function CheckoutPage() {
               p_delivery_fee: effectiveDeliveryFee,
               p_total: total,
               p_payment_method: formData.paymentMethod,
-              p_idempotency_key: idempotencyKey // Prevent double orders on retry
+              p_idempotency_key: idempotencyKey, // Prevent double orders on retry
+              p_preferred_contact_method: formData.preferredContact || undefined,
+              p_fulfillment_method: formData.fulfillmentMethod,
             });
 
           if (orderError) {
@@ -581,7 +793,7 @@ export function CheckoutPage() {
             order_id: orderId as string,
             order_number: (orderRow?.order_number as string) || (orderId as string),
             tracking_token: (orderRow?.tracking_token as string) || undefined,
-            total: (orderRow?.total as number) || undefined,
+            total: (orderRow?.total as number) ?? undefined,
           };
 
         } catch (err: unknown) {
@@ -605,76 +817,79 @@ export function CheckoutPage() {
         }
       };
 
-      return attemptOrder(1);
+      // Try edge function first, fallback to direct RPC if unavailable
+      const edgeResult = await tryEdgeFunction();
+      if (edgeResult) return edgeResult;
+
+      logger.warn('Edge function unavailable, using client-side fallback', null, { component: 'CheckoutPage' });
+      const fallbackResult = await attemptOrder(1);
+
+      // Telegram fallback: edge function checkout handles Telegram server-side,
+      // but the RPC fallback path skips it. Fire-and-forget call to the Telegram
+      // edge function so the seller still gets notified.
+      if (store?.tenant_id) {
+        supabase.functions.invoke('forward-order-telegram', {
+          body: {
+            orderId: fallbackResult.order_id,
+            tenantId: store.tenant_id,
+            orderNumber: fallbackResult.order_number,
+            customerName: `${formData.firstName} ${formData.lastName}`,
+            customerPhone: formData.phone || null,
+            orderTotal: fallbackResult.total ?? total,
+            items: cartItems.map((item) => ({
+              productName: item.name,
+              quantity: item.quantity,
+              price: item.price * item.quantity,
+            })),
+            storeName: store.store_name || 'Store',
+            fulfillmentMethod: formData.fulfillmentMethod,
+          },
+        }).catch((err) => {
+          logger.warn('Telegram fallback notification failed — skipping', err, { component: 'CheckoutPage' });
+        });
+      }
+
+      return fallbackResult;
     },
     onSuccess: async (data) => {
       setOrderRetryCount(0);
+      // Clear idempotency key — order succeeded, future checkouts get a fresh key
+      sessionStorage.removeItem(`checkout_idempotency_${storeSlug || ''}`);
 
-      // For card payments, redirect to Stripe checkout
-      if (formData.paymentMethod === 'card' && store?.id) {
-        try {
-          const checkoutItems = cartItems.map((item) => ({
-            product_id: item.productId,
-            name: item.name,
-            quantity: item.quantity,
-            image_url: item.imageUrl,
-          }));
-
-          const origin = window.location.origin;
-          const trackingParam = data.tracking_token ? `&token=${data.tracking_token}` : '';
-          const successUrl = `${origin}/shop/${storeSlug}/order-confirmation?order=${data.order_id}${trackingParam}&total=${total}&session_id={CHECKOUT_SESSION_ID}`;
-          const cancelUrl = `${origin}/shop/${storeSlug}/checkout?cancelled=true`;
-
-          // Calculate total discount applied (coupon + loyalty + deals)
-          const totalDiscountAmount = couponDiscount + loyaltyDiscount + dealsDiscount;
-
-          const response = await supabase.functions.invoke('storefront-checkout', {
-            body: {
-              store_id: store.id,
-              order_id: data.order_id,
-              items: checkoutItems,
-              customer_email: formData.email,
-              customer_name: `${formData.firstName} ${formData.lastName}`,
-              subtotal,
-              delivery_fee: effectiveDeliveryFee,
-              discount_amount: totalDiscountAmount,
-              success_url: successUrl,
-              cancel_url: cancelUrl,
-            },
-          });
-
-          if (response.error) {
-            throw new Error(response.error.message || 'Payment initialization failed');
+      // If edge function returned a Stripe checkout URL, redirect directly
+      if (data.checkoutUrl) {
+        if (store?.id) {
+          safeStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
+          if (formStorageKey) {
+            safeStorage.removeItem(formStorageKey);
           }
-
-          const { url } = response.data;
-          if (url) {
-            // Clear cart before redirecting to Stripe (order already created)
-            localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
-            if (formStorageKey) {
-              localStorage.removeItem(formStorageKey);
-            }
-            setCartItemCount(0);
-            // Redirect to Stripe checkout
-            window.location.href = url;
-            return;
-          }
-        } catch (stripeError: unknown) {
-          logger.error('Stripe checkout error', stripeError, { component: 'CheckoutPage' });
-          const stripeErrMsg = stripeError instanceof Error ? stripeError.message : 'Unable to initialize payment. Please try again or choose a different payment method.';
-          toast.error('Payment setup failed', {
-            description: stripeErrMsg,
-          });
-          return;
+          setCartItemCount(0);
         }
+        window.location.href = data.checkoutUrl;
+        return;
       }
 
-      // For cash/other payments, go directly to confirmation
+      // Show confirmation toast based on payment method
+      if (formData.paymentMethod === 'cash') {
+        toast.success("Thanks! You'll be contacted.", {
+          description: `Order #${data.order_number} placed successfully.`,
+        });
+      } else if (formData.paymentMethod === 'venmo') {
+        toast.success('Venmo payment received!', {
+          description: `Order #${data.order_number} placed successfully.`,
+        });
+      } else if (formData.paymentMethod === 'zelle') {
+        toast.success('Zelle payment received!', {
+          description: `Order #${data.order_number} placed successfully.`,
+        });
+      } else if (formData.paymentMethod === 'card') {
+        toast.info('Order placed! The store will follow up regarding payment.');
+      }
       // Clear cart and saved form data
       if (store?.id) {
-        localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
+        safeStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
         if (formStorageKey) {
-          localStorage.removeItem(formStorageKey);
+          safeStorage.removeItem(formStorageKey);
         }
         setCartItemCount(0);
       }
@@ -703,12 +918,47 @@ export function CheckoutPage() {
         toast.warning('Order placed, but confirmation email could not be sent');
       });
 
+      // Create customer account if opted in (fire and forget — order already placed)
+      if (createAccount && accountPassword && store?.tenant_id) {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        fetch(`${supabaseUrl}/functions/v1/customer-auth?action=signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'apikey': supabaseAnonKey,
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: accountPassword,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone || null,
+            tenantId: store.tenant_id,
+          }),
+        }).then(async (response) => {
+          if (response.status === 409) {
+            // Email already exists — order already completed, just inform the user
+            toast.info('An account with this email already exists. You can log in to view your orders.');
+          } else if (!response.ok) {
+            const errBody = await response.json().catch(() => ({}));
+            logger.warn('Account creation failed', errBody, { component: 'CheckoutPage' });
+          } else {
+            toast.success('Account created! You can now log in to view your order history.');
+          }
+        }).catch((err) => {
+          logger.warn('Account creation failed', err, { component: 'CheckoutPage' });
+        });
+      }
+
       // Navigate to confirmation
       navigate(`/shop/${storeSlug}/order-confirmation`, {
         state: {
           orderNumber: data.order_number,
           trackingToken: data.tracking_token,
           total: data.total,
+          telegramLink: data.telegramLink,
         },
       });
     },
@@ -716,14 +966,48 @@ export function CheckoutPage() {
       setOrderRetryCount(0);
       logger.error('Failed to place order', error, { component: 'CheckoutPage' });
 
-      const errorMessage = error.message || 'Something went wrong. Please try again.';
-      const isNetworkError = errorMessage.toLowerCase().includes('network') ||
-        errorMessage.toLowerCase().includes('fetch') ||
-        errorMessage.toLowerCase().includes('timeout');
+      // Handle out-of-stock errors — remove unavailable items and let user continue
+      if (error instanceof OutOfStockError) {
+        const { unavailableProducts } = error;
+        for (const product of unavailableProducts) {
+          if (product.available <= 0) {
+            // Completely out of stock — remove from cart
+            removeItem(product.productId);
+            toast.error(`Sorry, ${product.productName} is no longer available.`);
+          } else {
+            // Insufficient quantity — remove and let user re-add with correct quantity
+            removeItem(product.productId);
+            toast.error(
+              `Sorry, ${product.productName} is no longer available in the requested quantity.`,
+              { description: `Only ${product.available} left in stock.` },
+            );
+          }
+        }
+
+        // If cart still has items, stay on checkout for user to continue
+        const remainingCount = cartItems.length - unavailableProducts.length;
+        if (remainingCount > 0) {
+          toast.info('Your cart has been updated. You can continue with the remaining items.');
+          setCurrentStep(4); // Stay on review step
+        }
+        // If cart is now empty, the existing redirect effect (line ~236) will handle navigation
+        return;
+      }
+
+      const errorMessage = error.message || '';
+      const lowerMsg = errorMessage.toLowerCase();
+      const isRetryableError =
+        lowerMsg.includes('network') ||
+        lowerMsg.includes('fetch') ||
+        lowerMsg.includes('timeout') ||
+        lowerMsg.includes('internal server error') ||
+        lowerMsg.includes('500') ||
+        lowerMsg.includes('failed to create order') ||
+        errorMessage === '';
 
       toast.error('Order failed', {
-        description: isNetworkError
-          ? 'Network connection issue. Check your connection and try again.'
+        description: isRetryableError
+          ? 'Something went wrong. Please try again.'
           : errorMessage,
         action: {
           label: 'Retry',
@@ -731,11 +1015,16 @@ export function CheckoutPage() {
         },
       });
     },
+    onSettled: () => {
+      isSubmittingRef.current = false;
+    },
   });
 
-  // Handle place order
+  // Handle place order — ref guard prevents fast double-click
   const handlePlaceOrder = () => {
+    if (isSubmittingRef.current || placeOrderMutation.isPending) return;
     if (validateStep()) {
+      isSubmittingRef.current = true;
       placeOrderMutation.mutate();
     }
   };
@@ -745,10 +1034,51 @@ export function CheckoutPage() {
   const themeColor = isLuxuryTheme ? accentColor : store.primary_color;
 
   return (
-    <div className={`container mx-auto px-4 py-8 max-w-5xl ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
-      {/* Steps */}
-      <div className="mb-8">
-        <nav className="flex justify-between">
+    <div className={`container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-5xl ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
+      {/* Steps — compact horizontal pills on mobile, full icons on sm+ */}
+      <div className="mb-6 sm:mb-8">
+        {/* Mobile: compact pill indicators */}
+        <nav className="flex sm:hidden gap-2 justify-center" aria-label="Checkout steps">
+          {STEPS.map((step) => {
+            const isActive = currentStep === step.id;
+            const isComplete = currentStep > step.id;
+            const isFuture = currentStep < step.id;
+
+            return (
+              <button
+                key={step.id}
+                type="button"
+                onClick={() => {
+                  if (isComplete) setCurrentStep(step.id);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${
+                  isActive
+                    ? 'text-white shadow-md'
+                    : isComplete
+                      ? 'text-white/90'
+                      : isFuture
+                        ? (isLuxuryTheme ? 'bg-white/5 text-white/30' : 'bg-muted text-muted-foreground')
+                        : ''
+                }`}
+                style={{
+                  backgroundColor: isComplete || isActive ? themeColor : undefined,
+                  opacity: isComplete ? 0.7 : undefined,
+                }}
+                disabled={isFuture}
+              >
+                {isComplete ? (
+                  <Check className="w-3 h-3" />
+                ) : (
+                  <span>{step.id}</span>
+                )}
+                <span>{step.name}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Desktop: full icon step indicator */}
+        <nav className="hidden sm:flex justify-between">
           {STEPS.map((step, index) => {
             const Icon = step.icon;
             const isActive = currentStep === step.id;
@@ -762,7 +1092,7 @@ export function CheckoutPage() {
               >
                 {/* Connecting Line */}
                 {index < STEPS.length - 1 && (
-                  <div className={`absolute top-4 sm:top-5 left-[calc(50%+16px)] sm:left-[calc(50%+20px)] w-[calc(100%-32px)] sm:w-[calc(100%-40px)] h-[2px] ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
+                  <div className={`absolute top-5 left-[calc(50%+20px)] w-[calc(100%-40px)] h-[2px] ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
                     <motion.div
                       className="h-full"
                       initial={{ width: "0%" }}
@@ -774,7 +1104,7 @@ export function CheckoutPage() {
                 )}
 
                 <div
-                  className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center z-10 transition-all duration-300 ${isActive ? 'ring-2 ring-offset-2 sm:ring-offset-4 ring-offset-background scale-110' : ''
+                  className={`relative w-10 h-10 rounded-full flex items-center justify-center z-10 transition-all duration-300 ${isActive ? 'ring-2 ring-offset-4 ring-offset-background scale-110' : ''
                     } ${isFuture ? (isLuxuryTheme ? 'bg-white/5 text-white/20' : 'bg-muted text-muted-foreground') : ''
                     }`}
                   style={{
@@ -785,9 +1115,9 @@ export function CheckoutPage() {
                   }}
                 >
                   {isComplete ? (
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Check className="w-5 h-5" />
                   ) : (
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Icon className="w-5 h-5" />
                   )}
 
                   {/* Active Pulse Ring */}
@@ -803,7 +1133,7 @@ export function CheckoutPage() {
                 </div>
 
                 <span
-                  className={`text-[10px] sm:text-xs uppercase tracking-wide sm:tracking-widest mt-2 sm:mt-4 font-semibold transition-colors duration-300 ${isActive ? 'text-primary' : (isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground')
+                  className={`text-xs uppercase tracking-widest mt-4 font-semibold transition-colors duration-300 ${isActive ? 'text-primary' : (isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground')
                     }`}
                   style={{ color: isActive ? themeColor : undefined }}
                 >
@@ -816,28 +1146,28 @@ export function CheckoutPage() {
       </div>
 
       {/* Mobile Order Summary - Collapsible (visible only on mobile) */}
-      <div className="lg:hidden mb-6">
+      <div className="lg:hidden mb-4 sm:mb-6">
         <button
           onClick={() => setMobileSummaryExpanded(!mobileSummaryExpanded)}
-          className={`w-full p-4 rounded-lg border flex items-center justify-between transition-colors ${isLuxuryTheme
+          className={`w-full p-3 sm:p-4 rounded-lg border flex items-center justify-between transition-colors ${isLuxuryTheme
             ? 'bg-white/5 border-white/10 text-white'
             : 'bg-muted/50 border-border'
             }`}
         >
-          <div className="flex items-center gap-3">
-            <ShoppingCart className="w-5 h-5" style={{ color: themeColor }} />
-            <span className="font-medium">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: themeColor }} />
+            <span className="font-medium text-sm sm:text-base">
               {cartCount} {cartCount === 1 ? 'item' : 'items'}
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="font-bold" style={{ color: themeColor }}>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="font-bold text-sm sm:text-base" style={{ color: themeColor }}>
               {formatCurrency(total)}
             </span>
             {mobileSummaryExpanded ? (
-              <ChevronUp className="w-5 h-5 text-muted-foreground" />
+              <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             )}
           </div>
         </button>
@@ -851,7 +1181,7 @@ export function CheckoutPage() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className={`p-4 mt-2 rounded-lg border space-y-3 ${isLuxuryTheme ? 'bg-white/5 border-white/10' : 'bg-card border-border'
+              <div className={`p-3 sm:p-4 mt-2 rounded-lg border space-y-2 sm:space-y-3 ${isLuxuryTheme ? 'bg-white/5 border-white/10' : 'bg-card border-border'
                 }`}>
                 {/* Cart Items */}
                 <div className="space-y-2 max-h-40 overflow-y-auto">
@@ -901,7 +1231,7 @@ export function CheckoutPage() {
         </AnimatePresence>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
         {/* Form */}
         <div className="lg:col-span-2">
 
@@ -953,7 +1283,7 @@ export function CheckoutPage() {
           )}
 
           <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
-            <CardContent className="pt-6 overflow-hidden">
+            <CardContent className="px-3 sm:px-6 pt-4 sm:pt-6 overflow-hidden">
               <AnimatePresence mode="wait">
                 {/* Step 1: Contact Information */}
                 {currentStep === 1 && (
@@ -965,7 +1295,7 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-4"
                   >
-                    <h2 className={`text-xl font-semibold mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
+                    <h2 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name *</Label>
@@ -1015,19 +1345,95 @@ export function CheckoutPage() {
                       <Label htmlFor="phone">
                         Phone {store.checkout_settings?.require_phone ? '*' : '(Optional)'}
                       </Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => updateField('phone', e.target.value)}
-                        placeholder="(555) 123-4567"
-                      />
+                      <div className="relative">
+                        <Input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => updateField('phone', e.target.value)}
+                          placeholder="(555) 123-4567"
+                        />
+                        {isLookingUpCustomer && (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                        )}
+                        {isRecognized && !isLookingUpCustomer && (
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                        )}
+                      </div>
+                      {isRecognized && (
+                        <p className="text-xs text-green-600">Welcome back, {returningCustomer?.firstName}!</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Preferred Contact Method</Label>
+                      <RadioGroup
+                        value={formData.preferredContact}
+                        onValueChange={(value) => updateField('preferredContact', value)}
+                        className="flex gap-4"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="text" id="contact-text" />
+                          <Label htmlFor="contact-text" className="cursor-pointer">Text</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="phone" id="contact-phone" />
+                          <Label htmlFor="contact-phone" className="cursor-pointer">Call</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="email" id="contact-email" />
+                          <Label htmlFor="contact-email" className="cursor-pointer">Email</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="telegram" id="contact-telegram" />
+                          <Label htmlFor="contact-telegram" className="cursor-pointer">Telegram</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
+                    {/* Create Account Option */}
+                    <Separator />
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <Checkbox
+                          id="create-account"
+                          checked={createAccount}
+                          onCheckedChange={(checked) => {
+                            setCreateAccount(checked as boolean);
+                            if (!checked) setAccountPassword('');
+                          }}
+                        />
+                        <div>
+                          <Label htmlFor="create-account" className="cursor-pointer font-medium">
+                            Create an account
+                          </Label>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Save your info and view order history
+                          </p>
+                        </div>
+                      </div>
+                      {createAccount && (
+                        <div className="space-y-2 pl-6">
+                          <Label htmlFor="account-password">Password *</Label>
+                          <Input
+                            id="account-password"
+                            type="password"
+                            value={accountPassword}
+                            onChange={(e) => setAccountPassword(e.target.value)}
+                            placeholder="At least 8 characters"
+                            minLength={8}
+                            className={showErrors && createAccount && accountPassword.length < 8 ? "border-red-500 focus-visible:ring-red-500" : ""}
+                          />
+                          {showErrors && createAccount && accountPassword.length < 8 && (
+                            <p className="text-xs text-red-500">Password must be at least 8 characters</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
 
-                {/* Step 2: Delivery Address */}
+                {/* Step 2: Fulfillment Method & Delivery Address */}
                 {currentStep === 2 && (
                   <motion.div
                     key="step2"
@@ -1037,75 +1443,127 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-4"
                   >
-                    <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">How would you like to receive your order?</h2>
 
-                    {/* Address Autocomplete */}
-                    <div className="space-y-2">
-                      <Label htmlFor="street">Street Address *</Label>
-                      <CheckoutAddressAutocomplete
-                        defaultValue={formData.street}
-                        placeholder="Start typing your address..."
-                        onAddressSelect={(address) => {
-                          updateField('street', address.street);
-                          updateField('city', address.city);
-                          updateField('state', address.state);
-                          updateField('zip', address.zip);
-                        }}
-                      />
+                    {/* Fulfillment Method Selector */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                          formData.fulfillmentMethod === 'delivery'
+                            ? 'border-primary bg-primary/5 ring-2 ring-primary'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => updateField('fulfillmentMethod', 'delivery')}
+                      >
+                        <Truck className="h-6 w-6" />
+                        <span className="font-semibold">Delivery</span>
+                        <span className="text-xs text-muted-foreground">We deliver to you</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                          formData.fulfillmentMethod === 'pickup'
+                            ? 'border-primary bg-primary/5 ring-2 ring-primary'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => updateField('fulfillmentMethod', 'pickup')}
+                      >
+                        <Store className="h-6 w-6" />
+                        <span className="font-semibold">Pickup</span>
+                        <span className="text-xs text-muted-foreground">Pick up at store</span>
+                      </button>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="apartment">Apartment, Suite, etc. (Optional)</Label>
-                      <Input
-                        id="apartment"
-                        name="apartment"
-                        value={formData.apartment}
-                        onChange={(e) => updateField('apartment', e.target.value)}
-                        placeholder="Apt 4B"
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="city">City *</Label>
-                        <Input
-                          id="city"
-                          name="city"
-                          value={formData.city}
-                          onChange={(e) => updateField('city', e.target.value)}
-                          placeholder="New York"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="state">State</Label>
-                        <Input
-                          id="state"
-                          name="state"
-                          value={formData.state}
-                          onChange={(e) => updateField('state', e.target.value)}
-                          placeholder="NY"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="zip">ZIP Code *</Label>
-                      <Input
-                        id="zip"
-                        name="zip"
-                        value={formData.zip}
-                        onChange={(e) => updateField('zip', e.target.value)}
-                        placeholder="10001"
-                      />
-                    </div>
-                    {store.checkout_settings?.show_delivery_notes && (
-                      <div className="space-y-2">
-                        <Label htmlFor="deliveryNotes">Delivery Instructions (Optional)</Label>
-                        <Textarea
-                          id="deliveryNotes"
-                          value={formData.deliveryNotes}
-                          onChange={(e) => updateField('deliveryNotes', e.target.value)}
-                          placeholder="Ring doorbell, leave at door, etc."
-                          rows={3}
-                        />
-                      </div>
+
+                    {/* Pickup Info */}
+                    {formData.fulfillmentMethod === 'pickup' && (
+                      <Card className="bg-muted/50">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            <Store className="h-5 w-5 text-primary mt-0.5" />
+                            <div>
+                              <p className="font-semibold">Pickup at {store?.store_name || 'our store'}</p>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                You will receive pickup details after your order is confirmed.
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Address fields — only shown for delivery */}
+                    {formData.fulfillmentMethod === 'delivery' && (
+                      <>
+                        {/* Address Autocomplete */}
+                        <div className="space-y-2">
+                          <Label htmlFor="street">Street Address *</Label>
+                          <CheckoutAddressAutocomplete
+                            defaultValue={formData.street}
+                            placeholder="Start typing your address..."
+                            onAddressSelect={(address) => {
+                              updateField('street', address.street);
+                              updateField('city', address.city);
+                              updateField('state', address.state);
+                              updateField('zip', address.zip);
+                            }}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="apartment">Apartment, Suite, etc. (Optional)</Label>
+                          <Input
+                            id="apartment"
+                            name="apartment"
+                            value={formData.apartment}
+                            onChange={(e) => updateField('apartment', e.target.value)}
+                            placeholder="Apt 4B"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="city">City *</Label>
+                            <Input
+                              id="city"
+                              name="city"
+                              value={formData.city}
+                              onChange={(e) => updateField('city', e.target.value)}
+                              placeholder="New York"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="state">State</Label>
+                            <Input
+                              id="state"
+                              name="state"
+                              value={formData.state}
+                              onChange={(e) => updateField('state', e.target.value)}
+                              placeholder="NY"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="zip">ZIP Code *</Label>
+                          <Input
+                            id="zip"
+                            name="zip"
+                            value={formData.zip}
+                            onChange={(e) => updateField('zip', e.target.value)}
+                            placeholder="10001"
+                          />
+                        </div>
+                        {store.checkout_settings?.show_delivery_notes && (
+                          <div className="space-y-2">
+                            <Label htmlFor="deliveryNotes">Delivery Instructions (Optional)</Label>
+                            <Textarea
+                              id="deliveryNotes"
+                              value={formData.deliveryNotes}
+                              onChange={(e) => updateField('deliveryNotes', e.target.value)}
+                              placeholder="Ring doorbell, leave at door, etc."
+                              rows={3}
+                            />
+                          </div>
+                        )}
+                      </>
                     )}
                   </motion.div>
                 )}
@@ -1120,7 +1578,7 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-6"
                   >
-                    <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Payment Method</h2>
 
                     {/* Express Payment Options */}
                     <div className="space-y-4">
@@ -1133,14 +1591,24 @@ export function CheckoutPage() {
                     {/* Standard Payment Methods */}
                     <RadioGroup
                       value={formData.paymentMethod}
-                      onValueChange={(value) => updateField('paymentMethod', value)}
-                      className="space-y-3"
+                      onValueChange={(value) => {
+                        updateField('paymentMethod', value);
+                        if (value !== 'venmo') setVenmoConfirmed(false);
+                        if (value !== 'zelle') setZelleConfirmed(false);
+                      }}
+                      className="space-y-2 sm:space-y-3"
                     >
-                      {(store.payment_methods || ['cash']).map((method: string) => (
+                      {(store.payment_methods || ['cash']).filter((method: string) =>
+                        method !== 'card' || isStripeConfigured !== false
+                      ).map((method: string) => (
                         <div
                           key={method}
-                          className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50"
-                          onClick={() => updateField('paymentMethod', method)}
+                          className="flex items-center space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-muted/50 w-full"
+                          onClick={() => {
+                            updateField('paymentMethod', method);
+                            if (method !== 'venmo') setVenmoConfirmed(false);
+                            if (method !== 'zelle') setZelleConfirmed(false);
+                          }}
                         >
                           <RadioGroupItem value={method} id={method} />
                           <Label htmlFor={method} className="flex-1 cursor-pointer capitalize">
@@ -1155,6 +1623,80 @@ export function CheckoutPage() {
                         </div>
                       ))}
                     </RadioGroup>
+
+                    {/* Venmo payment details */}
+                    {formData.paymentMethod === 'venmo' && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                        {store.checkout_settings?.venmo_handle && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">
+                              Send payment to{' '}
+                              <span className="font-bold">{store.checkout_settings.venmo_handle}</span>
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="gap-2"
+                              onClick={() => {
+                                navigator.clipboard.writeText(store.checkout_settings?.venmo_handle || '');
+                                toast.success('Venmo handle copied!');
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                              Copy Venmo handle
+                            </Button>
+                          </div>
+                        )}
+                        <div className="flex items-start gap-2 pt-2">
+                          <Checkbox
+                            id="venmo-confirmed"
+                            checked={venmoConfirmed}
+                            onCheckedChange={(checked) => setVenmoConfirmed(checked as boolean)}
+                          />
+                          <Label htmlFor="venmo-confirmed" className="text-sm cursor-pointer">
+                            I&apos;ve sent payment via Venmo
+                          </Label>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Zelle payment details */}
+                    {formData.paymentMethod === 'zelle' && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                        {store.checkout_settings?.zelle_email && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">
+                              Send Zelle payment to{' '}
+                              <span className="font-bold">{store.checkout_settings.zelle_email}</span>
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="gap-2"
+                              onClick={() => {
+                                navigator.clipboard.writeText(store.checkout_settings?.zelle_email || '');
+                                toast.success('Zelle contact copied!');
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                              Copy Zelle contact
+                            </Button>
+                          </div>
+                        )}
+                        <div className="flex items-start gap-2 pt-2">
+                          <Checkbox
+                            id="zelle-confirmed"
+                            checked={zelleConfirmed}
+                            onCheckedChange={(checked) => setZelleConfirmed(checked as boolean)}
+                          />
+                          <Label htmlFor="zelle-confirmed" className="text-sm cursor-pointer">
+                            I&apos;ve sent payment via Zelle
+                          </Label>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
@@ -1168,7 +1710,7 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-6"
                   >
-                    <h2 className="text-xl font-semibold mb-4">Review Your Order</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Review Your Order</h2>
 
                     {/* Contact Summary */}
                     <div>
@@ -1182,28 +1724,50 @@ export function CheckoutPage() {
                         {formData.firstName} {formData.lastName}<br />
                         {formData.email}<br />
                         {formData.phone}
+                        {formData.preferredContact && (
+                          <>
+                            <br />
+                            Preferred contact: {formData.preferredContact.charAt(0).toUpperCase() + formData.preferredContact.slice(1)}
+                          </>
+                        )}
+                        {createAccount && (
+                          <>
+                            <br />
+                            <span className="text-primary">Creating account with this email</span>
+                          </>
+                        )}
                       </p>
                     </div>
 
                     <Separator />
 
-                    {/* Delivery Summary */}
+                    {/* Fulfillment Summary */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">Delivery Address</h3>
+                        <h3 className="font-medium">
+                          {formData.fulfillmentMethod === 'pickup' ? 'Pickup' : 'Delivery Address'}
+                        </h3>
                         <Button variant="ghost" size="sm" onClick={() => setCurrentStep(2)}>
                           Edit
                         </Button>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {formData.street}
-                        {formData.apartment && `, ${formData.apartment}`}<br />
-                        {formData.city}, {formData.state} {formData.zip}
-                      </p>
-                      {formData.deliveryNotes && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Notes: {formData.deliveryNotes}
+                      {formData.fulfillmentMethod === 'pickup' ? (
+                        <p className="text-sm text-muted-foreground">
+                          Pickup at {store?.store_name || 'store'}
                         </p>
+                      ) : (
+                        <>
+                          <p className="text-sm text-muted-foreground">
+                            {formData.street}
+                            {formData.apartment && `, ${formData.apartment}`}<br />
+                            {formData.city}, {formData.state} {formData.zip}
+                          </p>
+                          {formData.deliveryNotes && (
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Notes: {formData.deliveryNotes}
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
 
@@ -1218,7 +1782,11 @@ export function CheckoutPage() {
                         </Button>
                       </div>
                       <p className="text-sm text-muted-foreground capitalize">
-                        {formData.paymentMethod === 'cash' ? 'Cash on Delivery' : formData.paymentMethod}
+                        {formData.paymentMethod === 'cash' && 'Cash on Delivery'}
+                        {formData.paymentMethod === 'venmo' && 'Venmo'}
+                        {formData.paymentMethod === 'zelle' && 'Zelle'}
+                        {formData.paymentMethod === 'card' && 'Credit/Debit Card'}
+                        {!['cash', 'venmo', 'zelle', 'card'].includes(formData.paymentMethod) && formData.paymentMethod}
                       </p>
                     </div>
 
@@ -1239,16 +1807,16 @@ export function CheckoutPage() {
                 )}
               </AnimatePresence>
 
-              {/* Navigation Buttons */}
-              <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-8">
+              {/* Navigation Buttons — hidden on mobile (sticky bar handles it), visible on sm+ */}
+              <div className="hidden sm:flex flex-row justify-between gap-3 mt-8">
                 {currentStep > 1 ? (
-                  <Button variant="outline" onClick={prevStep} className="w-full sm:w-auto">
+                  <Button variant="outline" onClick={prevStep}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back
                   </Button>
                 ) : (
-                  <Link to={`/shop/${storeSlug}/cart`} className="w-full sm:w-auto">
-                    <Button variant="outline" className="w-full sm:w-auto">
+                  <Link to={`/shop/${storeSlug}/cart`}>
+                    <Button variant="outline">
                       <ArrowLeft className="w-4 h-4 mr-2" />
                       Back to Cart
                     </Button>
@@ -1259,7 +1827,6 @@ export function CheckoutPage() {
                   <Button
                     onClick={nextStep}
                     style={{ backgroundColor: store.primary_color }}
-                    className="w-full sm:w-auto"
                   >
                     Continue
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -1269,7 +1836,6 @@ export function CheckoutPage() {
                     onClick={handlePlaceOrder}
                     disabled={placeOrderMutation.isPending}
                     style={{ backgroundColor: store.primary_color }}
-                    className="w-full sm:w-auto"
                   >
                     {placeOrderMutation.isPending ? (
                       <>
@@ -1278,7 +1844,6 @@ export function CheckoutPage() {
                       </>
                     ) : (
                       <>
-                        {/* Dynamic Button Text based on Status */}
                         {isStoreClosed ? (
                           <>
                             <Clock className="w-4 h-4 mr-2" />
@@ -1293,6 +1858,23 @@ export function CheckoutPage() {
                       </>
                     )}
                   </Button>
+                )}
+              </div>
+
+              {/* Mobile-only back link (above sticky bar) */}
+              <div className="sm:hidden mt-4">
+                {currentStep > 1 ? (
+                  <Button variant="ghost" size="sm" onClick={prevStep} className="text-muted-foreground">
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    Back
+                  </Button>
+                ) : (
+                  <Link to={`/shop/${storeSlug}/cart`}>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                      <ArrowLeft className="w-4 h-4 mr-1" />
+                      Back to Cart
+                    </Button>
+                  </Link>
                 )}
               </div>
             </CardContent>
@@ -1468,10 +2050,16 @@ export function CheckoutPage() {
                   <span className={textMuted}>Subtotal</span>
                   <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(subtotal)}</span>
                 </div>
-                {deliveryFee > 0 && (
+                {formData.fulfillmentMethod === 'delivery' && effectiveDeliveryFee > 0 && (
                   <div className="flex justify-between">
                     <span className={textMuted}>Delivery</span>
-                    <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(deliveryFee)}</span>
+                    <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(effectiveDeliveryFee)}</span>
+                  </div>
+                )}
+                {formData.fulfillmentMethod === 'pickup' && (
+                  <div className="flex justify-between">
+                    <span className={textMuted}>Pickup</span>
+                    <span className="text-green-600">FREE</span>
                   </div>
                 )}
                 {dealsDiscount > 0 && (
@@ -1523,43 +2111,57 @@ export function CheckoutPage() {
       </div>
 
       {/* Sticky Mobile Checkout Bar */}
-      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background/95 backdrop-blur-md border-t p-4 z-50">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-muted-foreground">Order Total</p>
-            <p className="text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
-          </div>
-          {currentStep < 4 ? (
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background/95 backdrop-blur-md border-t px-3 sm:px-4 py-3 sm:py-4 z-50" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+        {currentStep < 4 ? (
+          <div className="flex items-center gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Total</p>
+              <p className="text-base sm:text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
+            </div>
             <Button
               onClick={nextStep}
               disabled={placeOrderMutation.isPending}
               style={{ backgroundColor: themeColor }}
-              className="flex-1 max-w-[180px] text-white"
+              className="flex-1 h-12 text-white text-base"
             >
               Continue
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-          ) : (
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Order Total</span>
+              <span className="font-bold text-base" style={{ color: themeColor }}>{formatCurrency(total)}</span>
+            </div>
             <Button
               onClick={handlePlaceOrder}
               disabled={placeOrderMutation.isPending || !agreeToTerms}
               style={{ backgroundColor: themeColor }}
-              className="flex-1 max-w-[180px] text-white"
+              className="w-full h-12 text-white text-base font-semibold"
             >
               {placeOrderMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Processing...
                 </>
+              ) : isStoreClosed ? (
+                <>
+                  <Clock className="w-4 h-4 mr-2" />
+                  Place Pre-Order — {formatCurrency(total)}
+                </>
               ) : (
-                'Place Order'
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Place Order — {formatCurrency(total)}
+                </>
               )}
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       {/* Spacer for mobile sticky bar */}
-      <div className="h-24 lg:hidden" />
+      <div className="h-28 lg:hidden" />
     </div>
   );
 }

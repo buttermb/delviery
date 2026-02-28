@@ -272,9 +272,9 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                         <p>Unable to load products.</p>
                     </div>
                 ) : allProducts.length === 0 ? (
-                    <div className="text-center py-20">
+                    <div className="text-center py-20" data-testid="empty-product-grid">
                         <Package className="w-16 h-16 mx-auto mb-4 opacity-40" style={{ color: text_color }} />
-                        <h3 className="text-xl font-semibold mb-2 opacity-70">This store doesn&apos;t have any products yet</h3>
+                        <h3 className="text-xl font-semibold mb-2 opacity-70">Coming soon</h3>
                         <p className="opacity-50">Check back soon for new arrivals</p>
                     </div>
                 ) : filteredProducts.length === 0 ? (
@@ -305,7 +305,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                         </div>
 
                                         {/* Responsive Product Grid */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
                                                 {products.map((product, index) => (
                                                     <div key={product.id || index}>
                                                         <StorefrontProductCard

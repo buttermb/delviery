@@ -3,9 +3,6 @@
  * Central export for all admin components
  */
 
-// Dashboard
-export * from './dashboard';
-
 // CRM
 export * from '../crm';
 

@@ -258,7 +258,8 @@ export function PreviewStep({
                         isEditing={editingCell?.index === originalIndex && editingCell?.field === 'thc'}
                         onEdit={() => setEditingCell({ index: originalIndex, field: 'thc' })}
                         onSave={(value) => {
-                          onUpdateProduct(originalIndex, { thcPercentage: parseFloat(value) || undefined });
+                          const parsed = parseFloat(value);
+                          onUpdateProduct(originalIndex, { thcPercentage: Number.isNaN(parsed) ? undefined : parsed });
                           setEditingCell(null);
                         }}
                         onCancel={() => setEditingCell(null)}

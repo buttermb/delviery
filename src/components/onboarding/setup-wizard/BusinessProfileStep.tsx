@@ -226,6 +226,7 @@ export function BusinessProfileStep({ onComplete }: BusinessProfileStepProps) {
                   size="icon"
                   className="absolute -top-2 -right-2 h-6 w-6"
                   onClick={removeLogo}
+                  aria-label="Remove logo"
                 >
                   <X className="h-3 w-3" />
                 </Button>

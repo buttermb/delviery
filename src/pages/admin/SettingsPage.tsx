@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Settings, Shield, Bell, Printer, Plug, Save, Loader2,
-  Building, Layout, Sliders, Users, CreditCard, ArrowLeft, Upload, ToggleRight
+  Building, Layout, Sliders, Users, CreditCard, ArrowLeft, Upload, ToggleRight, Send
 } from 'lucide-react';
 import { useAccount } from '@/contexts/AccountContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,6 +63,10 @@ const notificationSchema = z.object({
   lowStockAlerts: z.boolean(),
   overdueAlerts: z.boolean(),
   orderAlerts: z.boolean(),
+  telegram_auto_forward: z.boolean(),
+  telegram_bot_token: z.string().optional().or(z.literal('')),
+  telegram_chat_id: z.string().optional().or(z.literal('')),
+  telegram_customer_link: z.string().url("Must be a valid URL").optional().or(z.literal('')),
 });
 
 type GeneralFormValues = z.infer<typeof generalSchema>;
@@ -114,6 +118,10 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       lowStockAlerts: true,
       overdueAlerts: true,
       orderAlerts: true,
+      telegram_auto_forward: false,
+      telegram_bot_token: '',
+      telegram_chat_id: '',
+      telegram_customer_link: '',
     }
   });
 
@@ -145,6 +153,10 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
         lowStockAlerts: notifSettings.lowStockAlerts as boolean ?? true,
         overdueAlerts: notifSettings.overdueAlerts as boolean ?? true,
         orderAlerts: notifSettings.orderAlerts as boolean ?? true,
+        telegram_auto_forward: (notifSettings.telegram_auto_forward as boolean) ?? false,
+        telegram_bot_token: (notifSettings.telegram_bot_token as string) ?? '',
+        telegram_chat_id: (notifSettings.telegram_chat_id as string) ?? '',
+        telegram_customer_link: (notifSettings.telegram_customer_link as string) ?? '',
       });
     }
 
@@ -243,22 +255,25 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
     if (!account) return;
     setLoading(true);
     try {
+      const existingNotif = accountSettings
+        ? (accountSettings.notification_settings as Record<string, unknown>) || {}
+        : {};
+      const merged = { ...existingNotif, ...data } as Record<string, unknown>;
+
       if (accountSettings) {
-        // Update existing
         const { error } = await supabase
           .from('account_settings')
           .update({
-            notification_settings: data as Record<string, unknown>
+            notification_settings: merged
           })
           .eq('id', accountSettings.id);
         if (error) throw error;
       } else {
-        // Create new settings record
         const { error } = await supabase
           .from('account_settings')
           .insert({
             account_id: account.id,
-            notification_settings: data as Record<string, unknown>
+            notification_settings: merged
           });
         if (error) throw error;
       }
@@ -373,6 +388,10 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
           lowStockAlerts: notifData.lowStockAlerts ?? notificationForm.getValues('lowStockAlerts'),
           overdueAlerts: notifData.overdueAlerts ?? notificationForm.getValues('overdueAlerts'),
           orderAlerts: notifData.orderAlerts ?? notificationForm.getValues('orderAlerts'),
+          telegram_auto_forward: notificationForm.getValues('telegram_auto_forward'),
+          telegram_bot_token: notificationForm.getValues('telegram_bot_token'),
+          telegram_chat_id: notificationForm.getValues('telegram_chat_id'),
+          telegram_customer_link: notificationForm.getValues('telegram_customer_link'),
         });
       }
 
@@ -675,6 +694,67 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                     />
                   </div>
                 </div>
+
+                {/* Telegram Configuration */}
+                <div className="pt-4 border-t space-y-4">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <Send className="h-4 w-4" />
+                    Telegram Order Notifications
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically forward new orders to a Telegram group or chat.
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Auto-Forward Orders</Label>
+                      <p className="text-sm text-muted-foreground">Send order details to Telegram when a customer places an order</p>
+                    </div>
+                    <Switch
+                      checked={notificationForm.watch("telegram_auto_forward")}
+                      onCheckedChange={(c) => notificationForm.setValue("telegram_auto_forward", c, { shouldDirty: true })}
+                    />
+                  </div>
+                  {notificationForm.watch("telegram_auto_forward") && (
+                    <div className="space-y-3 pl-1">
+                      <div className="space-y-1">
+                        <Label required>Bot Token</Label>
+                        <Input
+                          type="password"
+                          placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+                          {...notificationForm.register("telegram_bot_token")}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Create a bot via @BotFather on Telegram to get this token
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label required>Chat ID</Label>
+                        <Input
+                          placeholder="-1001234567890"
+                          {...notificationForm.register("telegram_chat_id")}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          The group or channel ID where order notifications will be sent
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Customer Telegram Link</Label>
+                        <Input
+                          type="url"
+                          placeholder="https://t.me/yourstorename"
+                          {...notificationForm.register("telegram_customer_link")}
+                        />
+                        {notificationForm.formState.errors.telegram_customer_link && (
+                          <p className="text-sm text-destructive">{notificationForm.formState.errors.telegram_customer_link.message}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Shown on the order confirmation page so customers can reach you
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <ShortcutHint keys={[mod, "S"]} label="Save">
                   <Button type="submit" disabled={loading}>
                     {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}

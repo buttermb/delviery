@@ -137,8 +137,8 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
           commission_rate: courierData.commission_rate || 30,
           current_lat: courierData.current_lat,
           current_lng: courierData.current_lng,
-          rating: courierData.rating || undefined,
-          total_deliveries: courierData.total_deliveries || undefined,
+          rating: courierData.rating ?? undefined,
+          total_deliveries: courierData.total_deliveries ?? undefined,
           role: 'courier',
           tenant_id: courierData.tenant_id || undefined
         });
@@ -166,8 +166,8 @@ export function CourierProvider({ children }: { children: React.ReactNode }) {
           commission_rate: 5,
           current_lat: runnerData.current_lat,
           current_lng: runnerData.current_lng,
-          rating: runnerData.rating || undefined,
-          total_deliveries: runnerData.total_deliveries || undefined,
+          rating: runnerData.rating ?? undefined,
+          total_deliveries: runnerData.total_deliveries ?? undefined,
           role: 'runner',
           tenant_id: runnerData.tenant_id || undefined
         });

@@ -170,7 +170,7 @@ export function StorefrontProductCard({
                 <div className="p-3 sm:p-5 flex flex-col flex-1">
                     <div className="flex-1 space-y-2">
                         <Link to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="group-hover:opacity-80 transition-colors block">
-                            <h3 className="font-bold text-lg leading-snug line-clamp-2" style={{ color: accentColor }} title={cleanedName}>
+                            <h3 className="font-bold text-sm sm:text-lg leading-snug line-clamp-2" style={{ color: accentColor }} title={cleanedName}>
                                 {cleanedName}
                             </h3>
                         </Link>
@@ -205,13 +205,13 @@ export function StorefrontProductCard({
                 </div>
 
                 {/* Footer */}
-                <div className="px-3 pt-3 sm:px-5 sm:pt-5 mt-2 flex items-center justify-between border-t border-neutral-50">
+                <div className="px-3 pt-2 pb-3 sm:px-5 sm:pt-5 sm:pb-0 mt-2 flex items-center justify-between border-t border-neutral-50">
                     <div className="flex flex-col">
                         <div className="flex items-baseline gap-2">
                             {displayPrice === 0 ? (
-                                <span className="text-xl font-extrabold text-emerald-600">Free</span>
+                                <span className="text-base sm:text-xl font-extrabold text-emerald-600">Free</span>
                             ) : (
-                                <span className="text-xl font-extrabold" style={{ color: accentColor }}>${displayPrice?.toFixed(2)}</span>
+                                <span className="text-base sm:text-xl font-extrabold" style={{ color: accentColor }}>${displayPrice?.toFixed(2)}</span>
                             )}
                             {hasSalePrice && (
                                 <span className="text-sm text-neutral-400 line-through">${product.price?.toFixed(2)}</span>
@@ -225,7 +225,7 @@ export function StorefrontProductCard({
                         disabled={isOutStock}
                         size="sm"
                         className={cn(
-                            "rounded-full h-10 px-5 font-bold transition-all duration-300 shadow-md",
+                            "rounded-full h-8 px-2 sm:h-10 sm:px-5 font-bold transition-all duration-300 shadow-md",
                             isAdded
                                 ? "bg-emerald-500 text-white hover:bg-emerald-600 w-auto"
                                 : isOutStock
@@ -242,13 +242,13 @@ export function StorefrontProductCard({
                                     exit={{ scale: 0 }}
                                     className="flex items-center"
                                 >
-                                    <Check className="w-4 h-4 mr-1.5" strokeWidth={3} aria-hidden="true" />
-                                    <span className="text-xs uppercase tracking-wider">Added</span>
+                                    <Check className="w-4 h-4 sm:mr-1.5" strokeWidth={3} aria-hidden="true" />
+                                    <span className="hidden sm:inline text-xs uppercase tracking-wider">Added</span>
                                 </motion.div>
                             ) : (
                                 <div className="flex items-center">
-                                    <Plus className="w-4 h-4 mr-1.5" strokeWidth={3} aria-hidden="true" />
-                                    <span className="text-xs uppercase tracking-wider">Add</span>
+                                    <Plus className="w-4 h-4 sm:mr-1.5" strokeWidth={3} aria-hidden="true" />
+                                    <span className="hidden sm:inline text-xs uppercase tracking-wider">Add</span>
                                 </div>
                             )}
                         </AnimatePresence>

@@ -64,14 +64,14 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
     strainType: (product.strain_type as 'Sativa' | 'Indica' | 'Hybrid') || undefined,
     vendorName: product.vendor_name || undefined,
     batchNumber: product.batch_number || undefined,
-    thcPercent: product.thc_percent || undefined,
-    cbdPercent: product.cbd_percent || undefined,
-    price: product.wholesale_price || undefined, // Keep for backwards compatibility
-    retailPrice: product.retail_price || undefined, // NEW
+    thcPercent: product.thc_percent ?? undefined,
+    cbdPercent: product.cbd_percent ?? undefined,
+    price: product.wholesale_price ?? undefined, // Keep for backwards compatibility
+    retailPrice: product.retail_price ?? undefined, // NEW
     availableQuantity: product.available_quantity ?? undefined, // NEW
     sku: product.sku ?? '',
     barcodeImageUrl: product.barcode_image_url || undefined,
-    barcodeValue: ((product.barcode as string) || product.sku) ?? '',
+    barcodeValue: (product.barcode as string) || (product.sku ?? ''),
   } : null, [
     product.sku,
     product.name,
@@ -93,7 +93,7 @@ export function ProductLabel({ product, open, onOpenChange }: ProductLabelProps)
   useEffect(() => {
     if (open && product.sku) {
       try {
-        const barcodeValue = ((product.barcode as string) || product.sku) ?? '';
+        const barcodeValue = (product.barcode as string) || (product.sku ?? '');
 
         logger.info('Generating barcode preview', {
           component: 'ProductLabel',

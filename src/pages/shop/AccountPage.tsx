@@ -454,7 +454,7 @@ export default function AccountPage() {
                   className="h-12 rounded-lg bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 focus-visible:bg-white dark:focus-visible:bg-zinc-950"
                   aria-label="Order number or tracking code"
                 />
-                <Button variant="secondary" onClick={handleTrackOrder} className="h-12 w-12 rounded-lg shrink-0">
+                <Button variant="secondary" onClick={handleTrackOrder} className="h-12 w-12 rounded-lg shrink-0" aria-label="Track order">
                   <Search className="w-5 h-5" />
                 </Button>
               </div>

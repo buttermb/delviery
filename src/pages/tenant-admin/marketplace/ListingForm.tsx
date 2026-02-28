@@ -197,7 +197,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
         base_price: Number(existingListing.base_price) || 0,
         bulk_pricing: (existingListing.bulk_pricing as Array<{ quantity: number; price: number }>) ?? [],
         min_order_quantity: existingListing.min_order_quantity || 1,
-        max_order_quantity: existingListing.max_order_quantity || undefined,
+        max_order_quantity: existingListing.max_order_quantity ?? undefined,
         quantity_available: Number(existingListing.quantity_available) || 0,
         unit_type: existingListing.unit_type || 'lb',
         images: existingListing.images ?? [],

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Shield } from 'lucide-react';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { safeStorage } from '@/utils/safeStorage';
 
 interface LuxuryAgeVerificationProps {
   storeName?: string;
@@ -23,24 +24,26 @@ export function LuxuryAgeVerification({
 }: LuxuryAgeVerificationProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
+  const onVerifyRef = useRef(onVerify);
+  onVerifyRef.current = onVerify;
 
   // Check if already verified
   useEffect(() => {
     if (storeId) {
-      const verified = localStorage.getItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeId}`);
+      const verified = safeStorage.getItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeId}`);
       if (verified === 'true') {
         setIsVisible(false);
-        onVerify(true);
+        onVerifyRef.current(true);
       }
     }
-  }, [storeId, onVerify]);
+  }, [storeId]);
 
   const handleVerify = (isOfAge: boolean) => {
     setIsExiting(true);
 
     setTimeout(() => {
       if (isOfAge && storeId) {
-        localStorage.setItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeId}`, 'true');
+        safeStorage.setItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeId}`, 'true');
       }
       setIsVisible(false);
       onVerify(isOfAge);

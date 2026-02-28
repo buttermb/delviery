@@ -3,9 +3,9 @@
  * Shopping cart with quantity controls and checkout button
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useShop } from './ShopLayout';
+import { useShop } from '@/pages/shop/ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useDeals } from '@/hooks/useDeals';
@@ -28,12 +28,14 @@ import {
   Tag,
   Loader2,
   Zap,
-  QrCode
+  QrCode,
+  AlertTriangle
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { CartItemStockWarning, CartStockSummary } from '@/components/shop/CartStockWarning';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CartUpsellsSection } from '@/components/shop/CartUpsellsSection';
+import { SwipeableCartItem } from '@/components/SwipeableCartItem';
 
 export default function CartPage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -60,6 +62,7 @@ export default function CartPage() {
     removeItem,
     clearCart,
     checkInventoryAvailability,
+    syncCartPrices,
     appliedCoupon,
     applyCoupon: applySharedCoupon,
     removeCoupon: removeSharedCoupon,
@@ -75,10 +78,58 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [isCheckingStock, setIsCheckingStock] = useState(false);
+  const [priceChanges, setPriceChanges] = useState<Array<{ productId: string; name: string; oldPrice: number; newPrice: number }>>([]);
+
+  // Sync cart prices with server on mount and when returning to cart
+  const checkPrices = useCallback(async () => {
+    if (cartItems.length === 0) return;
+    const result = await syncCartPrices();
+    if (result.changed) {
+      setPriceChanges(result.priceChanges);
+      toast.warning('Some prices have been updated', {
+        description: 'Your cart has been updated with the latest prices.',
+      });
+    }
+  }, [cartItems.length, syncCartPrices]);
+
+  useEffect(() => {
+    checkPrices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Listen for real-time price changes while on cart page
+  useEffect(() => {
+    const handlePriceChange = (event: CustomEvent) => {
+      const { productId, oldPrice, newPrice, productName } = event.detail;
+      const inCart = cartItems.some(item => item.productId === productId);
+      if (inCart) {
+        setPriceChanges(prev => {
+          const existing = prev.find(p => p.productId === productId);
+          if (existing) return prev.map(p => p.productId === productId ? { ...p, newPrice, oldPrice } : p);
+          return [...prev, { productId, name: productName, oldPrice, newPrice }];
+        });
+        // Re-sync cart prices to update stored values
+        syncCartPrices();
+      }
+    };
+
+    window.addEventListener('productPriceChanged', handlePriceChange as EventListener);
+    return () => window.removeEventListener('productPriceChanged', handlePriceChange as EventListener);
+  }, [cartItems, syncCartPrices]);
 
   const handleCheckout = async () => {
     setIsCheckingStock(true);
     try {
+      // Sync prices before checkout
+      const priceResult = await syncCartPrices();
+      if (priceResult.changed) {
+        setPriceChanges(priceResult.priceChanges);
+        toast.warning('Prices updated', {
+          description: 'Some product prices have changed. Please review your cart before proceeding.',
+        });
+        return;
+      }
+
       const { valid, outOfStock } = await checkInventoryAvailability();
 
       if (!valid && outOfStock.length > 0) {
@@ -161,8 +212,8 @@ export default function CartPage() {
   const themeColor = isLuxuryTheme ? accentColor : store.primary_color;
 
   return (
-    <div className={`container mx-auto px-4 py-8 ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
-      <h1 className={`text-3xl font-bold mb-8 ${isLuxuryTheme ? 'text-white font-extralight tracking-wide' : ''}`}>
+    <div className={`container mx-auto px-4 py-4 sm:py-8 ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
+      <h1 className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-8 ${isLuxuryTheme ? 'text-white font-extralight tracking-wide' : ''}`}>
         Shopping Cart
       </h1>
 
@@ -178,7 +229,7 @@ export default function CartPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] via-transparent to-transparent pointer-events-none" />
             )}
 
-            <CardContent className="py-24 text-center relative z-10">
+            <CardContent className="py-12 sm:py-24 text-center relative z-10">
               <motion.div
                 animate={{
                   y: [0, -10, 0],
@@ -213,11 +264,41 @@ export default function CartPage() {
           </Card>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-3 sm:space-y-4">
             {/* Stock Summary */}
             <CartStockSummary cartItems={cartItems} className="mb-4" />
+
+            {/* Price Change Warning */}
+            {priceChanges.length > 0 && (
+              <Card className={`border-amber-300 ${isLuxuryTheme ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50'}`} data-testid="price-change-warning">
+                <CardContent className="py-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isLuxuryTheme ? 'text-amber-400' : 'text-amber-600'}`} />
+                    <div className="flex-1">
+                      <p className={`text-sm font-medium mb-2 ${isLuxuryTheme ? 'text-amber-300' : 'text-amber-800'}`}>
+                        Prices updated
+                      </p>
+                      {priceChanges.map(change => (
+                        <p key={change.productId} className={`text-xs ${isLuxuryTheme ? 'text-amber-400/80' : 'text-amber-700'}`}>
+                          {change.name}: <span className="line-through">{formatCurrency(change.oldPrice)}</span>{' '}
+                          <span className="font-semibold">{formatCurrency(change.newPrice)}</span>
+                        </p>
+                      ))}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`flex-shrink-0 ${isLuxuryTheme ? 'text-amber-400 hover:text-amber-300 hover:bg-white/5' : 'text-amber-700 hover:text-amber-800'}`}
+                      onClick={() => setPriceChanges([])}
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Free Delivery Progress */}
             {deliveryFee > 0 && (
@@ -262,100 +343,147 @@ export default function CartPage() {
                   Clear All
                 </Button>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 px-3 sm:px-6">
                 <AnimatePresence mode="popLayout">
                   {cartItems.map((item, index) => (
-                    <motion.div
+                    <SwipeableCartItem
                       key={`${item.productId}-${item.variant ?? ''}`}
-                      data-testid="cart-item"
-                      className="flex gap-4"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 50, height: 0, marginBottom: 0 }}
-                      transition={{ duration: 0.25, delay: index * 0.05 }}
-                      layout
+                      onDelete={() => handleRemoveItem(item.productId, item.variant)}
                     >
-                      <div className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
-                        {item.imageUrl ? (
-                          <img
-                            src={item.imageUrl}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className={`w-8 h-8 ${isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground'}`} />
+                      <motion.div
+                        data-testid="cart-item"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 50, height: 0, marginBottom: 0 }}
+                        transition={{ duration: 0.25, delay: index * 0.05 }}
+                        layout
+                      >
+                        {/* Top row: image + product info + desktop controls */}
+                        <div className="flex gap-3 sm:gap-4">
+                          <div className={`w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
+                            {item.imageUrl ? (
+                              <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Package className={`w-8 h-8 ${isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground'}`} />
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <Link
-                          to={`/shop/${storeSlug}/products/${item.productId}`}
-                          className={`font-medium hover:underline line-clamp-2 ${isLuxuryTheme ? textPrimary : ''}`}
-                        >
-                          {item.name}
-                        </Link>
-                        {item.metrcRetailId && (
-                          <div className="flex items-center gap-1 mt-1 text-xs text-blue-500">
-                            <QrCode className="w-3 h-3" />
-                            <span>Metrc ID: {item.metrcRetailId}</span>
+                          <div className="flex-1 min-w-0">
+                            <Link
+                              to={`/shop/${storeSlug}/products/${item.productId}`}
+                              className={`text-sm sm:text-base font-medium hover:underline line-clamp-2 ${isLuxuryTheme ? textPrimary : ''}`}
+                            >
+                              {item.name}
+                            </Link>
+                            {item.metrcRetailId && (
+                              <div className="flex items-center gap-1 mt-1 text-xs text-blue-500">
+                                <QrCode className="w-3 h-3" />
+                                <span>Metrc ID: {item.metrcRetailId}</span>
+                              </div>
+                            )}
+                            {item.variant && (
+                              <p className={`text-xs mt-0.5 ${textMuted}`}>{item.variant}</p>
+                            )}
+                            <p className="text-sm font-semibold mt-1" style={{ color: themeColor }}>
+                              {formatCurrency(item.price)}
+                            </p>
+                            <CartItemStockWarning
+                              productId={item.productId}
+                              requestedQuantity={item.quantity}
+                              variant="minimal"
+                              className="mt-1"
+                            />
                           </div>
-                        )}
-                        {item.variant && (
-                          <p className={`text-xs mt-0.5 ${textMuted}`}>{item.variant}</p>
-                        )}
-                        <p className="text-sm font-semibold mt-1" style={{ color: themeColor }}>
-                          {formatCurrency(item.price)}
-                        </p>
-                        {/* Stock Warning for this item */}
-                        <CartItemStockWarning
-                          productId={item.productId}
-                          requestedQuantity={item.quantity}
-                          variant="minimal"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label="Remove item"
-                          className={`h-8 w-8 ${isLuxuryTheme ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
-                          onClick={() => handleRemoveItem(item.productId, item.variant)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                        <div className="flex items-center gap-2">
+                          {/* Desktop controls — hidden on mobile */}
+                          <div className="hidden sm:flex flex-col items-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label="Remove item"
+                              className={`h-8 w-8 ${isLuxuryTheme ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
+                              onClick={() => handleRemoveItem(item.productId, item.variant)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className={`h-8 w-8 ${isLuxuryTheme ? buttonOutline : ''}`}
+                                onClick={() => handleUpdateQuantity(item.productId, -1, item.variant)}
+                                aria-label="Decrease quantity"
+                              >
+                                <Minus className="w-4 h-4" />
+                              </Button>
+                              <motion.span
+                                key={item.quantity}
+                                initial={{ scale: 1.3 }}
+                                animate={{ scale: 1 }}
+                                className={`w-8 text-center font-medium ${isLuxuryTheme ? textPrimary : ''}`}
+                              >
+                                {item.quantity}
+                              </motion.span>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className={`h-8 w-8 ${isLuxuryTheme ? buttonOutline : ''}`}
+                                onClick={() => handleUpdateQuantity(item.productId, 1, item.variant)}
+                                aria-label="Increase quantity"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Mobile controls row — 44px touch targets */}
+                        <div className="flex sm:hidden items-center justify-between mt-3 ml-[76px]">
+                          <div className="flex items-center gap-3">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className={`h-11 w-11 rounded-full ${isLuxuryTheme ? buttonOutline : ''}`}
+                              onClick={() => handleUpdateQuantity(item.productId, -1, item.variant)}
+                              aria-label="Decrease quantity"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                            <motion.span
+                              key={item.quantity}
+                              initial={{ scale: 1.3 }}
+                              animate={{ scale: 1 }}
+                              className={`w-6 text-center font-semibold text-base ${isLuxuryTheme ? textPrimary : ''}`}
+                            >
+                              {item.quantity}
+                            </motion.span>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className={`h-11 w-11 rounded-full ${isLuxuryTheme ? buttonOutline : ''}`}
+                              onClick={() => handleUpdateQuantity(item.productId, 1, item.variant)}
+                              aria-label="Increase quantity"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </div>
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
-                            className={`h-8 w-8 ${isLuxuryTheme ? buttonOutline : ''}`}
-                            onClick={() => handleUpdateQuantity(item.productId, -1, item.variant)}
-                            aria-label="Decrease quantity"
+                            aria-label="Remove item"
+                            className={`h-11 w-11 ${isLuxuryTheme ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
+                            onClick={() => handleRemoveItem(item.productId, item.variant)}
                           >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                          <motion.span
-                            key={item.quantity}
-                            initial={{ scale: 1.3 }}
-                            animate={{ scale: 1 }}
-                            className={`w-8 text-center font-medium ${isLuxuryTheme ? textPrimary : ''}`}
-                          >
-                            {item.quantity}
-                          </motion.span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className={`h-8 w-8 ${isLuxuryTheme ? buttonOutline : ''}`}
-                            onClick={() => handleUpdateQuantity(item.productId, 1, item.variant)}
-                            aria-label="Increase quantity"
-                          >
-                            <Plus className="w-4 h-4" />
+                            <Trash2 className="w-5 h-5" />
                           </Button>
                         </div>
-                      </div>
-                    </motion.div>
+                      </motion.div>
+                    </SwipeableCartItem>
                   ))}
                 </AnimatePresence>
               </CardContent>
@@ -529,36 +657,33 @@ export default function CartPage() {
       {cartItems.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 lg:hidden z-50">
           <div
-            className={`p-4 border-t shadow-lg ${isLuxuryTheme ? 'bg-black/95 border-white/10 backdrop-blur-xl' : 'bg-white border-gray-200'}`}
+            className={`p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t shadow-lg ${isLuxuryTheme ? 'bg-black/95 border-white/10 backdrop-blur-xl' : 'bg-white border-gray-200'}`}
           >
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className={`text-sm ${textMuted}`}>{cartCount} item{cartCount !== 1 ? 's' : ''}</p>
-                <p className="text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
-              </div>
-              <Button
-                size="lg"
-                className="px-8"
-                style={{ backgroundColor: themeColor }}
-                onClick={handleCheckout}
-                disabled={isCheckingStock}
-              >
-                {isCheckingStock ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    Checkout
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </>
-                )}
-              </Button>
+            <div className="flex items-center justify-between mb-2">
+              <p className={`text-sm ${textMuted}`}>{cartCount} item{cartCount !== 1 ? 's' : ''}</p>
+              <p className="text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
             </div>
+            <Button
+              className="w-full h-12 text-base"
+              style={{ backgroundColor: themeColor }}
+              onClick={handleCheckout}
+              disabled={isCheckingStock}
+            >
+              {isCheckingStock ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <>
+                  Checkout
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
+            </Button>
           </div>
         </div>
       )}
 
       {/* Spacer for sticky bar on mobile */}
-      {cartItems.length > 0 && <div className="h-24 lg:hidden" />}
+      {cartItems.length > 0 && <div className="h-28 lg:hidden" />}
     </div>
   );
 }

@@ -41,6 +41,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CustomerOrderHistoryTabProps {
   customerId: string;
+  customerEmail?: string;
+  referralSource?: string;
 }
 
 interface Order {
@@ -50,6 +52,8 @@ interface Order {
   status: string;
   payment_status: string | null;
   order_items: Array<{ id: string; quantity: number }>;
+  source?: 'wholesale' | 'storefront';
+  order_number?: string;
 }
 
 type OrderStatus = 'all' | 'pending' | 'confirmed' | 'processing' | 'ready' | 'out_for_delivery' | 'completed' | 'cancelled';
@@ -96,7 +100,7 @@ function getPaymentStatusStyles(status: string | null): string {
   }
 }
 
-export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabProps) {
+export function CustomerOrderHistoryTab({ customerId, customerEmail, referralSource }: CustomerOrderHistoryTabProps) {
   const { tenant } = useTenantAdminAuth();
   const { navigateToAdmin } = useTenantNavigation();
   const isMobile = useIsMobile();
@@ -110,12 +114,12 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
   });
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
-  // Fetch customer orders
+  // Fetch wholesale orders
   const {
-    data: orders,
-    isLoading,
-    isError,
-    error,
+    data: wholesaleOrders,
+    isLoading: isLoadingWholesale,
+    isError: isWholesaleError,
+    error: wholesaleError,
   } = useQuery({
     queryKey: queryKeys.customerDetail.orders(customerId, tenantId),
     queryFn: async () => {
@@ -142,10 +146,62 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
         throw queryError;
       }
 
-      return data as Order[];
+      return (data ?? []).map((o) => ({ ...o, source: 'wholesale' as const })) as Order[];
     },
     enabled: !!customerId && !!tenantId,
   });
+
+  // Fetch storefront orders from marketplace_orders (by customer email)
+  const {
+    data: storefrontOrders,
+    isLoading: isLoadingStorefront,
+  } = useQuery({
+    queryKey: [...queryKeys.customerDetail.orders(customerId, tenantId), 'storefront', customerEmail],
+    queryFn: async () => {
+      if (!tenantId || !customerEmail) return [];
+
+      const { data, error: queryError } = await supabase
+        .from('marketplace_orders')
+        .select('id, created_at, total_amount, status, payment_status, order_number, items, store_id')
+        .eq('seller_tenant_id', tenantId)
+        .eq('customer_email', customerEmail)
+        .not('store_id', 'is', null)
+        .order('created_at', { ascending: false });
+
+      if (queryError) {
+        logger.error('Failed to fetch storefront orders', queryError, { customerId, tenantId, customerEmail });
+        return [];
+      }
+
+      return (data ?? []).map((o) => {
+        const items = Array.isArray(o.items) ? o.items : [];
+        return {
+          id: o.id,
+          created_at: o.created_at ?? '',
+          total_amount: o.total_amount ?? 0,
+          status: o.status ?? 'pending',
+          payment_status: o.payment_status,
+          order_number: o.order_number,
+          order_items: items.map((item: Record<string, unknown>, idx: number) => ({
+            id: `sf-${o.id}-${idx}`,
+            quantity: Number(item.quantity) || 1,
+          })),
+          source: 'storefront' as const,
+        } satisfies Order;
+      });
+    },
+    enabled: !!customerId && !!tenantId && !!customerEmail,
+  });
+
+  // Merge both order sources
+  const orders = useMemo(() => {
+    const all = [...(wholesaleOrders ?? []), ...(storefrontOrders ?? [])];
+    return all.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [wholesaleOrders, storefrontOrders]);
+
+  const isLoading = isLoadingWholesale || isLoadingStorefront;
+  const isError = isWholesaleError;
+  const error = wholesaleError;
 
   // Filter orders based on status and date range
   const filteredOrders = useMemo(() => {
@@ -207,11 +263,24 @@ export function CustomerOrderHistoryTab({ customerId }: CustomerOrderHistoryTabP
         accessorKey: 'id',
         header: 'Order #',
         cell: ({ original }: { original: Order }) => (
-          <OrderLink
-            orderId={original.id}
-            orderNumber={`#${original.id.slice(0, 8).toUpperCase()}`}
-            className="font-mono text-sm font-medium"
-          />
+          <div className="flex items-center gap-2">
+            {original.source === 'storefront' ? (
+              <span className="font-mono text-sm font-medium text-muted-foreground">
+                #{original.order_number ?? original.id.slice(0, 8).toUpperCase()}
+              </span>
+            ) : (
+              <OrderLink
+                orderId={original.id}
+                orderNumber={`#${original.id.slice(0, 8).toUpperCase()}`}
+                className="font-mono text-sm font-medium"
+              />
+            )}
+            {original.source === 'storefront' && (
+              <Badge variant="outline" className="text-[10px] px-1 py-0 leading-4">
+                Store
+              </Badge>
+            )}
+          </div>
         ),
       },
       {

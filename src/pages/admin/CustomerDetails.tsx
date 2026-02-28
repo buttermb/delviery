@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import {
   ArrowLeft, User, Mail, Phone, Calendar,
-  DollarSign, Star, ShoppingBag, CreditCard, MessageSquare
+  DollarSign, Star, ShoppingBag, CreditCard, MessageSquare, Store, MessageCircle
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -57,9 +57,12 @@ interface Customer {
   medical_card_number?: string;
   medical_card_expiration?: string;
   total_spent: number;
+  total_orders?: number;
   loyalty_points: number;
   last_purchase_at: string;
   created_at: string;
+  preferred_contact?: string;
+  referral_source?: string;
 }
 
 export default function CustomerDetails() {
@@ -70,6 +73,9 @@ export default function CustomerDetails() {
   useEncryption();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [orders, setOrders] = useState<unknown[]>([]);
+  const [storefrontOrderCount, setStorefrontOrderCount] = useState(0);
+  const [storefrontOrderTotal, setStorefrontOrderTotal] = useState(0);
+  const [storefrontFirstOrder, setStorefrontFirstOrder] = useState<string | null>(null);
   const [payments, setPayments] = useState<Array<{ id: string; amount: number; created_at: string; payment_method: string; payment_status: string }>>([]);
   const [notes, setNotes] = useState<Array<{ id: string; created_at: string; note: string; profiles?: { full_name: string } }>>([]);
   const [newNote, setNewNote] = useState('');
@@ -147,6 +153,27 @@ export default function CustomerDetails() {
         setFirstOrderDate((earliest as Record<string, unknown>).created_at as string ?? null);
       } else {
         setFirstOrderDate(null);
+      }
+
+      // Load storefront orders from marketplace_orders if customer has an email
+      if (customerData?.email && tenantId) {
+        const { data: sfOrders, error: sfError } = await supabase
+          .from('marketplace_orders')
+          .select('id, total_amount, created_at')
+          .eq('seller_tenant_id', tenantId)
+          .eq('customer_email', customerData.email)
+          .not('store_id', 'is', null)
+          .order('created_at', { ascending: true });
+
+        if (!sfError && sfOrders && sfOrders.length > 0) {
+          setStorefrontOrderCount(sfOrders.length);
+          setStorefrontOrderTotal(sfOrders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0));
+          setStorefrontFirstOrder(sfOrders[0].created_at);
+        } else {
+          setStorefrontOrderCount(0);
+          setStorefrontOrderTotal(0);
+          setStorefrontFirstOrder(null);
+        }
       }
 
       // Load payments
@@ -299,11 +326,20 @@ export default function CustomerDetails() {
 
   const totalPayments = payments.reduce((sum, p) => sum + (p.amount ?? 0), 0);
 
-  // Customer Lifetime Value: compute from orders for accuracy
-  const totalOrdersCount = orders.length;
-  const totalSpentFromOrders: number = orders.reduce<number>((sum, o) => sum + Number((o as Record<string, unknown>).total_amount ?? 0), 0);
-  const computedTotalSpent: number = totalSpentFromOrders > 0 ? totalSpentFromOrders : Number(customer?.total_spent ?? 0);
+  // Customer Lifetime Value: combine wholesale + storefront orders
+  const wholesaleOrdersCount = orders.length;
+  const wholesaleSpent: number = orders.reduce<number>((sum, o) => sum + (Number((o as Record<string, unknown>).total_amount) ?? 0), 0);
+  const totalOrdersCount = wholesaleOrdersCount + storefrontOrderCount;
+  const totalSpentCombined = wholesaleSpent + storefrontOrderTotal;
+  const computedTotalSpent: number = totalSpentCombined > 0 ? totalSpentCombined : Number(customer?.total_spent ?? 0);
   const averageOrderValue: number = totalOrdersCount > 0 ? computedTotalSpent / totalOrdersCount : 0;
+
+  // Earliest order across both sources
+  const combinedFirstOrder = (() => {
+    const dates = [firstOrderDate, storefrontFirstOrder].filter(Boolean) as string[];
+    if (dates.length === 0) return null;
+    return dates.reduce((earliest, d) => new Date(d) < new Date(earliest) ? d : earliest);
+  })();
 
   return (
     <SwipeBackWrapper onBack={() => navigateToAdmin('customer-management')}>
@@ -337,6 +373,12 @@ export default function CustomerDetails() {
                     >
                       {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
                     </Badge>
+                    {customer.referral_source === 'storefront' && (
+                      <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-300 dark:hover:bg-violet-900/30">
+                        <Store className="w-3 h-3 mr-1" />
+                        Storefront
+                      </Badge>
+                    )}
                   </div>
                   <div className="space-y-1 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2 truncate">
@@ -347,6 +389,12 @@ export default function CustomerDetails() {
                       <Phone className="w-4 h-4 shrink-0" />
                       {displayValue(customer.phone)}
                     </div>
+                    {customer.preferred_contact && (
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4 shrink-0" />
+                        Prefers {customer.preferred_contact}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 shrink-0" />
                       Member since {formatSmartDate(customer.created_at)}
@@ -402,7 +450,7 @@ export default function CustomerDetails() {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs sm:text-sm font-medium text-[hsl(var(--tenant-text-light))] mb-1">First Order</p>
                     <p className="text-base sm:text-xl md:text-2xl font-bold font-mono text-[hsl(var(--tenant-text))] truncate">
-                      {firstOrderDate ? formatSmartDate(firstOrderDate) : 'No orders'}
+                      {combinedFirstOrder ? formatSmartDate(combinedFirstOrder) : 'No orders'}
                     </p>
                   </div>
                   <div className="p-2 sm:p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg shrink-0">
@@ -535,6 +583,14 @@ export default function CustomerDetails() {
                       <label className="text-sm font-medium text-muted-foreground">Customer Type</label>
                       <Badge variant="outline">{customer.customer_type}</Badge>
                     </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Preferred Contact</label>
+                      <p>{customer.preferred_contact || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Source</label>
+                      <p>{customer.referral_source === 'storefront' ? 'Storefront' : customer.referral_source || 'Direct'}</p>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -599,7 +655,11 @@ export default function CustomerDetails() {
             {/* Orders Tab */}
             {customer && (
               <TabsContent value="orders">
-                <CustomerOrderHistoryTab customerId={customer.id} />
+                <CustomerOrderHistoryTab
+                  customerId={customer.id}
+                  customerEmail={customer.email}
+                  referralSource={customer.referral_source}
+                />
               </TabsContent>
             )}
 

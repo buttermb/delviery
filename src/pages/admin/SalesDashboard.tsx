@@ -21,8 +21,7 @@ import { SalesReportDrilldownModal } from '@/components/admin/analytics/SalesRep
 import { format, parseISO } from 'date-fns';
 import { formatCurrency } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
-
-const STATUS_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+import { CHART_COLORS } from '@/lib/chartColors';
 
 interface SalesDataPoint {
   date: string;
@@ -434,7 +433,7 @@ export default function SalesDashboard() {
                           style={{ cursor: 'pointer' }}
                         >
                           {statusData.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />
+                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                           ))}
                         </Pie>
                         <Tooltip

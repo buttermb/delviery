@@ -202,9 +202,25 @@ export function useDeleteTag() {
         throw error;
       }
     },
-    onSuccess: () => {
+    onMutate: async (tagId) => {
+      const listKey = queryKeys.tags.list({ tenantId: tenant?.id });
+      await queryClient.cancelQueries({ queryKey: listKey });
+      const previousTags = queryClient.getQueryData<Tag[]>(listKey);
+      queryClient.setQueryData<Tag[]>(listKey, (old) =>
+        old?.filter((t) => t.id !== tagId)
+      );
+      return { previousTags, listKey };
+    },
+    onError: (_err, _tagId, context) => {
+      if (context?.previousTags) {
+        queryClient.setQueryData(context.listKey, context.previousTags);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.customerTags.all });
+    },
+    onSuccess: () => {
       toast.success('Tag deleted successfully');
     },
   });
@@ -238,10 +254,41 @@ export function useAssignTag() {
 
       return data as CustomerTag;
     },
-    onSuccess: (_data, variables) => {
+    onMutate: async ({ contactId, tagId }) => {
+      const contactKey = queryKeys.customerTags.byContact(contactId);
+      await queryClient.cancelQueries({ queryKey: contactKey });
+      const previousTags = queryClient.getQueryData<CustomerTag[]>(contactKey);
+
+      // Look up the tag from the cached tags list for the optimistic entry
+      const allTags = queryClient.getQueryData<Tag[]>(
+        queryKeys.tags.list({ tenantId: tenant?.id })
+      );
+      const tagData = allTags?.find((t) => t.id === tagId);
+
+      const optimisticEntry: CustomerTag = {
+        id: `optimistic-${tagId}`,
+        tenant_id: tenant?.id ?? '',
+        contact_id: contactId,
+        tag_id: tagId,
+        created_at: new Date().toISOString(),
+        tag: tagData,
+      };
+      queryClient.setQueryData<CustomerTag[]>(contactKey, (old) =>
+        [...(old ?? []), optimisticEntry]
+      );
+      return { previousTags, contactKey };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousTags) {
+        queryClient.setQueryData(context.contactKey, context.previousTags);
+      }
+    },
+    onSettled: (_data, _err, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.customerTags.byContact(variables.contactId),
       });
+    },
+    onSuccess: () => {
       toast.success('Tag assigned successfully');
     },
   });
@@ -270,10 +317,26 @@ export function useRemoveTag() {
         throw error;
       }
     },
-    onSuccess: (_data, variables) => {
+    onMutate: async ({ contactId, tagId }) => {
+      const contactKey = queryKeys.customerTags.byContact(contactId);
+      await queryClient.cancelQueries({ queryKey: contactKey });
+      const previousTags = queryClient.getQueryData<CustomerTag[]>(contactKey);
+      queryClient.setQueryData<CustomerTag[]>(contactKey, (old) =>
+        old?.filter((ct) => ct.tag_id !== tagId)
+      );
+      return { previousTags, contactKey };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousTags) {
+        queryClient.setQueryData(context.contactKey, context.previousTags);
+      }
+    },
+    onSettled: (_data, _err, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.customerTags.byContact(variables.contactId),
       });
+    },
+    onSuccess: () => {
       toast.success('Tag removed successfully');
     },
   });

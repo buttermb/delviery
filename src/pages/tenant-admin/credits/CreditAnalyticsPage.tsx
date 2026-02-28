@@ -65,26 +65,7 @@ import {
 import { AutoTopUpSettings } from '@/components/credits/AutoTopUpSettings';
 import { CreditPurchaseModal } from '@/components/credits/CreditPurchaseModal';
 import { queryKeys } from '@/lib/queryKeys';
-
-// Chart colors
-const CATEGORY_COLORS: Record<string, string> = {
-  orders: '#3b82f6',
-  inventory: '#10b981',
-  customers: '#8b5cf6',
-  invoices: '#f59e0b',
-  crm: '#ec4899',
-  reports: '#6366f1',
-  exports: '#14b8a6',
-  ai: '#f97316',
-  api: '#64748b',
-  menus: '#06b6d4',
-  marketplace: '#d946ef',
-  pos: '#0ea5e9',
-  operations: '#84cc16',
-  other: '#94a3b8',
-};
-
-const PIE_COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#6366f1'];
+import { CHART_COLORS, CATEGORY_CHART_COLORS } from '@/lib/chartColors';
 
 interface UsageByCategory {
   category: string;
@@ -182,7 +163,7 @@ export function CreditAnalyticsPage() {
             displayName: getCategoryDisplayName(category as CreditCategory) || category,
             credits: data.total,
             count: data.count,
-            color: CATEGORY_COLORS[category] || CATEGORY_COLORS.other,
+            color: CATEGORY_CHART_COLORS[category] || CATEGORY_CHART_COLORS.other,
           }))
           .sort((a, b) => b.credits - a.credits);
 
@@ -528,7 +509,7 @@ export function CreditAnalyticsPage() {
                             dataKey="value"
                           >
                             {pieData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color || PIE_COLORS[index % PIE_COLORS.length]} />
+                              <Cell key={`cell-${index}`} fill={entry.color || CHART_COLORS[index % CHART_COLORS.length]} />
                             ))}
                           </Pie>
                           <Tooltip

@@ -949,6 +949,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                                 variant="outline"
                                 size="sm"
                                 onClick={handleAddEmail}
+                                aria-label="Add email"
                               >
                                 <Plus className="h-4 w-4" />
                               </Button>
@@ -991,6 +992,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                                 variant="outline"
                                 size="sm"
                                 onClick={handleAddPhone}
+                                aria-label="Add phone number"
                               >
                                 <Plus className="h-4 w-4" />
                               </Button>

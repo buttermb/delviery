@@ -1,21 +1,22 @@
 import { Badge } from '@/components/ui/badge';
-import { Activity } from 'lucide-react';
 
 interface SystemStatusIndicatorProps {
-  status: 'healthy' | 'degraded' | 'down' | string;
+  status: 'healthy' | 'warning' | 'critical';
 }
 
+const STATUS_CONFIG = {
+  healthy: { variant: 'default' as const, label: 'Operational', dot: 'bg-green-500' },
+  warning: { variant: 'secondary' as const, label: 'Degraded', dot: 'bg-yellow-500' },
+  critical: { variant: 'destructive' as const, label: 'Outage', dot: 'bg-red-500' },
+};
+
 export function SystemStatusIndicator({ status }: SystemStatusIndicatorProps) {
-  const colors: Record<string, string> = {
-    healthy: 'bg-emerald-500/10 text-emerald-600',
-    degraded: 'bg-amber-500/10 text-amber-600',
-    down: 'bg-red-500/10 text-red-600',
-  };
+  const config = STATUS_CONFIG[status];
 
   return (
-    <Badge className={colors[status] ?? colors.healthy} variant="secondary">
-      <Activity className="h-3 w-3 mr-1" />
-      {status === 'healthy' ? 'All Systems Operational' : status}
+    <Badge variant={config.variant} className="gap-1.5">
+      <div className={`h-2 w-2 rounded-full ${config.dot} animate-pulse`} />
+      {config.label}
     </Badge>
   );
 }

@@ -15,6 +15,8 @@ import { useExistingRating, useSubmitDeliveryRating } from '@/hooks/useDeliveryR
 import { logger } from '@/lib/logger';
 import type { CreateDeliveryRatingInput } from '@/types/deliveryRating';
 
+const UNSELECTED_STAR_COLOR = 'hsl(var(--border))';
+
 interface DeliveryRatingFormProps {
   tenantId: string;
   orderId: string;
@@ -80,7 +82,7 @@ export function DeliveryRatingForm({
                 key={star}
                 className="w-6 h-6"
                 fill={star <= existingRating.rating ? primaryColor : 'none'}
-                stroke={star <= existingRating.rating ? primaryColor : '#d1d5db'}
+                stroke={star <= existingRating.rating ? primaryColor : UNSELECTED_STAR_COLOR}
               />
             ))}
           </div>
@@ -110,7 +112,7 @@ export function DeliveryRatingForm({
                 key={star}
                 className="w-6 h-6"
                 fill={star <= selectedRating ? primaryColor : 'none'}
-                stroke={star <= selectedRating ? primaryColor : '#d1d5db'}
+                stroke={star <= selectedRating ? primaryColor : UNSELECTED_STAR_COLOR}
               />
             ))}
           </div>
@@ -146,7 +148,7 @@ export function DeliveryRatingForm({
               <Star
                 className="w-8 h-8 transition-colors"
                 fill={star <= displayRating ? primaryColor : 'none'}
-                stroke={star <= displayRating ? primaryColor : '#d1d5db'}
+                stroke={star <= displayRating ? primaryColor : UNSELECTED_STAR_COLOR}
               />
             </button>
           ))}

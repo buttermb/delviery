@@ -30,6 +30,7 @@ import { formatDateForDisplay, groupOrdersByDate } from '@/lib/utils/revenue-ana
 import { SimpleRevenuePredictor } from '@/lib/ai/simple-revenue-prediction';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface PredictionData {
   predictions: Array<{
@@ -210,7 +211,7 @@ export function RevenuePredictionWidget() {
             <p className="text-sm text-muted-foreground mb-1">Confidence Level</p>
             <div className="flex items-center gap-2">
               <p className="text-2xl font-bold">{Math.round(predictionData.confidence * 100)}%</p>
-              <Badge 
+              <Badge
                 variant={predictionData.confidence >= 0.75 ? 'default' : 'secondary'}
                 className="text-xs"
               >
@@ -226,12 +227,12 @@ export function RevenuePredictionWidget() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   tick={{ fontSize: 12 }}
                   className="text-muted-foreground"
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 12 }}
                   className="text-muted-foreground"
                   tickFormatter={(value) => formatCompactCurrency(value)}
@@ -245,19 +246,19 @@ export function RevenuePredictionWidget() {
                 <Line
                   type="monotone"
                   dataKey="actual"
-                  stroke="#22c55e"
+                  stroke={chartSemanticColors.revenue}
                   strokeWidth={2}
-                  dot={{ fill: '#22c55e', r: 4 }}
+                  dot={{ fill: chartSemanticColors.revenue, r: 4 }}
                   name="Actual"
                   connectNulls={false}
                 />
                 <Line
                   type="monotone"
                   dataKey="predicted"
-                  stroke="#a855f7"
+                  stroke={chartSemanticColors.tertiary}
                   strokeWidth={2}
                   strokeDasharray="5 5"
-                  dot={{ fill: '#a855f7', r: 4 }}
+                  dot={{ fill: chartSemanticColors.tertiary, r: 4 }}
                   name="Predicted"
                   connectNulls={false}
                 />
@@ -271,8 +272,8 @@ export function RevenuePredictionWidget() {
           <p className="text-sm font-medium">Daily Breakdown:</p>
           <div className="space-y-2">
             {predictionData.predictions.map((pred) => (
-              <div 
-                key={pred.date} 
+              <div
+                key={pred.date}
                 className="flex items-center justify-between text-sm p-2 rounded-md hover:bg-muted/50 transition-colors"
               >
                 <span className="text-muted-foreground">
@@ -302,4 +303,3 @@ export function RevenuePredictionWidget() {
     </Card>
   );
 }
-

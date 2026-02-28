@@ -143,6 +143,7 @@ export function RouteReplayControls({
             variant="outline"
             onClick={onReset}
             disabled={currentIndex === 0}
+            aria-label="Reset replay"
           >
             <RotateCcw className="h-4 w-4" />
           </Button>
@@ -152,6 +153,7 @@ export function RouteReplayControls({
             variant="outline"
             onClick={handleSkipBack}
             disabled={currentIndex === 0}
+            aria-label="Skip back"
           >
             <SkipBack className="h-4 w-4" />
           </Button>
@@ -179,6 +181,7 @@ export function RouteReplayControls({
             variant="outline"
             onClick={handleSkipForward}
             disabled={currentIndex >= locations.length - 1}
+            aria-label="Skip forward"
           >
             <SkipForward className="h-4 w-4" />
           </Button>

@@ -47,6 +47,13 @@ export function PromotionsBannerSection({ content, styles, storeId }: Promotions
         accent_color = '#10b981',
     } = styles || {};
 
+    // Clamp currentIndex when banners array shrinks
+    useEffect(() => {
+        if (banners.length > 0 && currentIndex >= banners.length) {
+            setCurrentIndex(0);
+        }
+    }, [banners.length, currentIndex]);
+
     // Auto-rotate banners
     useEffect(() => {
         if (!auto_rotate || banners.length <= 1 || isPaused) return;
@@ -71,7 +78,9 @@ export function PromotionsBannerSection({ content, styles, storeId }: Promotions
         return null;
     }
 
-    const currentBanner = banners[currentIndex];
+    const safeIndex = currentIndex < banners.length ? currentIndex : 0;
+    const currentBanner = banners[safeIndex];
+    if (!currentBanner) return null;
 
     return (
         <section
@@ -198,11 +207,11 @@ export function PromotionsBannerSection({ content, styles, storeId }: Promotions
                             onClick={() => setCurrentIndex(index)}
                             className={cn(
                                 'w-2 h-2 rounded-full transition-all',
-                                index === currentIndex
+                                index === safeIndex
                                     ? 'w-6'
                                     : 'bg-white/50 hover:bg-white/70'
                             )}
-                            style={index === currentIndex ? { backgroundColor: accent_color } : undefined}
+                            style={index === safeIndex ? { backgroundColor: accent_color } : undefined}
                             aria-label={`Go to banner ${index + 1}`}
                         />
                     ))}

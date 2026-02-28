@@ -662,7 +662,7 @@ export function ProductVariants({
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" disabled={isMutating}>
+                              <Button variant="ghost" size="sm" disabled={isMutating} aria-label="Edit variant">
                                 <Edit2 className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>

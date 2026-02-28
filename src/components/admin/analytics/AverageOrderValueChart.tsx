@@ -10,6 +10,7 @@ import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 import { formatCurrency } from '@/lib/formatters';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface AverageOrderValueChartProps {
     storeId?: string;
@@ -147,8 +148,8 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
                         <AreaChart data={aovData.data}>
                             <defs>
                                 <linearGradient id="aovGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                    <stop offset="5%" stopColor={chartSemanticColors.revenue} stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor={chartSemanticColors.revenue} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -177,7 +178,7 @@ export function AverageOrderValueChart({ storeId, className }: AverageOrderValue
                             <Area
                                 type="monotone"
                                 dataKey="aov"
-                                stroke="#10b981"
+                                stroke={chartSemanticColors.revenue}
                                 strokeWidth={2}
                                 fill="url(#aovGradient)"
                             />

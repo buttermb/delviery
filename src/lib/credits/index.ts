@@ -59,20 +59,6 @@ export {
   type UsageStats,
 } from './creditProjection';
 
-// Credit recovery functions
-export {
-  refundCredits,
-  recoverFailedAction,
-  directRefund,
-  batchRefund,
-  isTransactionRefunded,
-  getRefundHistory,
-  type RefundReason,
-  type RefundRequest,
-  type RefundResult,
-  type RecoveryResult,
-} from './creditRecovery';
-
 // Auto top-up functions
 export {
   getAutoTopUpConfig,

@@ -7,12 +7,11 @@ import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Clock } from 'lucid
 import { useUnifiedOrders } from '@/hooks/unified';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { format, subDays, parseISO, getHours } from 'date-fns';
-
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+import { CHART_COLORS } from '@/lib/chartColors';
 
 export default function OrderAnalyticsPage() {
   const [timeRange, setTimeRange] = useState('7d');
-  
+
   // Calculate date range based on selection
   const dateRange = useMemo(() => {
     const now = new Date();
@@ -73,7 +72,7 @@ export default function OrderAnalyticsPage() {
   // Generate orders by day chart data
   const ordersByDay = useMemo(() => {
     const dayMap = new Map<string, { orders: number; revenue: number }>();
-    
+
     filteredOrders.forEach(order => {
       const day = format(parseISO(order.created_at), 'EEE');
       const existing = dayMap.get(day) || { orders: 0, revenue: 0 };
@@ -94,7 +93,7 @@ export default function OrderAnalyticsPage() {
   // Generate orders by status chart data
   const ordersByStatus = useMemo(() => {
     const statusCounts = new Map<string, number>();
-    
+
     filteredOrders.forEach(order => {
       const status = order.status || 'unknown';
       statusCounts.set(status, (statusCounts.get(status) ?? 0) + 1);
@@ -113,14 +112,14 @@ export default function OrderAnalyticsPage() {
     return Array.from(statusCounts.entries()).map(([status, value], index) => ({
       name: statusLabels[status] || status,
       value,
-      color: COLORS[index % COLORS.length],
+      color: CHART_COLORS[index % CHART_COLORS.length],
     }));
   }, [filteredOrders]);
 
   // Generate peak hours chart data
   const peakHours = useMemo(() => {
     const hourCounts = new Map<number, number>();
-    
+
     filteredOrders.forEach(order => {
       const hour = getHours(parseISO(order.created_at));
       hourCounts.set(hour, (hourCounts.get(hour) ?? 0) + 1);
@@ -271,8 +270,8 @@ export default function OrderAnalyticsPage() {
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip />
                     <Legend />
-                    <Line yAxisId="left" type="monotone" dataKey="orders" stroke="hsl(var(--chart-1))" strokeWidth={2} name="Orders" />
-                    <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="hsl(var(--chart-2))" strokeWidth={2} name="Revenue ($)" />
+                    <Line yAxisId="left" type="monotone" dataKey="orders" stroke={CHART_COLORS[0]} strokeWidth={2} name="Orders" />
+                    <Line yAxisId="right" type="monotone" dataKey="revenue" stroke={CHART_COLORS[1]} strokeWidth={2} name="Revenue ($)" />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
@@ -301,11 +300,11 @@ export default function OrderAnalyticsPage() {
                       labelLine={false}
                       label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       outerRadius={120}
-                      fill="#8884d8"
+                      fill={CHART_COLORS[0]}
                       dataKey="value"
                     >
                       {ordersByStatus.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip />
@@ -334,7 +333,7 @@ export default function OrderAnalyticsPage() {
                     <XAxis dataKey="hour" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="orders" fill="hsl(var(--chart-1))" name="Orders" />
+                    <Bar dataKey="orders" fill={CHART_COLORS[0]} name="Orders" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (

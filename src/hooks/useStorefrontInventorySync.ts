@@ -25,12 +25,14 @@ interface ProductChangePayload {
     available_quantity?: number;
     in_stock?: boolean;
     tenant_id?: string;
+    price?: number;
   };
   old: {
     id: string;
     stock_quantity?: number;
     available_quantity?: number;
     in_stock?: boolean;
+    price?: number;
   };
 }
 
@@ -62,14 +64,20 @@ export function useStorefrontInventorySync({
 
       const oldStock = oldProduct.stock_quantity ?? oldProduct.available_quantity ?? 0;
       const newStock = newProduct.stock_quantity ?? newProduct.available_quantity ?? 0;
+      const stockChanged = oldStock !== newStock || oldProduct.in_stock !== newProduct.in_stock;
 
-      // Only invalidate if stock actually changed
-      if (oldStock !== newStock || oldProduct.in_stock !== newProduct.in_stock) {
-        logger.info('Storefront: Product stock changed, invalidating queries', {
+      // Detect price changes
+      const oldPrice = oldProduct.price;
+      const newPrice = newProduct.price;
+      const priceChanged = oldPrice !== undefined && newPrice !== undefined && oldPrice !== newPrice;
+
+      // Invalidate if stock or price changed
+      if (stockChanged || priceChanged) {
+        logger.info('Storefront: Product changed, invalidating queries', {
           productId: newProduct.id,
           productName: newProduct.name,
-          oldStock,
-          newStock,
+          ...(stockChanged ? { oldStock, newStock } : {}),
+          ...(priceChanged ? { oldPrice, newPrice } : {}),
         });
 
         // Invalidate the storefront product list
@@ -90,6 +98,18 @@ export function useStorefrontInventorySync({
         // Show notification for out-of-stock events
         if (showNotifications && newStock === 0 && oldStock > 0) {
           toast.error(`${newProduct.name} is now out of stock.`);
+        }
+
+        // Dispatch price change event for cart components
+        if (priceChanged) {
+          window.dispatchEvent(new CustomEvent('productPriceChanged', {
+            detail: {
+              productId: newProduct.id,
+              oldPrice,
+              newPrice,
+              productName: newProduct.name,
+            },
+          }));
         }
       }
     },
