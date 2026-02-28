@@ -485,8 +485,8 @@ export const navigationSections: NavSection[] = [
         badge: 'NEW'
       },
       {
-        title: 'Customize Store',
-        href: '/admin/storefront/customize',
+        title: 'Builder',
+        href: '/admin/storefront?tab=builder',
         icon: Palette
       },
       {

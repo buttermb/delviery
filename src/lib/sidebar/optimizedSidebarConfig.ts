@@ -239,6 +239,22 @@ const SELL: NavItem[] = [
         tier: 'PROFESSIONAL',
         keywords: ['catalog', 'listings'],
     },
+    {
+        id: 'storefront-settings',
+        name: 'Store Settings',
+        path: '/admin/storefront/settings',
+        icon: Settings,
+        tier: 'PROFESSIONAL',
+        keywords: ['store config', 'delivery', 'payment methods'],
+    },
+    {
+        id: 'storefront-analytics',
+        name: 'Store Analytics',
+        path: '/admin/storefront/analytics',
+        icon: BarChart3,
+        tier: 'PROFESSIONAL',
+        keywords: ['store metrics', 'revenue', 'sales data'],
+    },
     // Marketplace (B2B)
     {
         id: 'marketplace-dashboard',

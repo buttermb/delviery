@@ -30,6 +30,8 @@ import {
   ChevronLeft,
   Bell,
   AlertTriangle,
+  Palette,
+  Activity,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -123,6 +125,10 @@ const navigationSections: NavSection[] = [
     items: [
       { id: 'menus', label: 'Disposable Menus', icon: Store, href: '/admin/disposable-menus' },
       { id: 'storefront', label: 'Storefront', icon: Store, href: '/admin/storefront' },
+      { id: 'storefront-builder', label: 'Builder', icon: Palette, href: '/admin/storefront?tab=builder' },
+      { id: 'storefront-live', label: 'Live Orders', icon: Activity, href: '/admin/storefront?tab=live' },
+      { id: 'storefront-analytics', label: 'Analytics', icon: BarChart3, href: '/admin/storefront?tab=analytics' },
+      { id: 'storefront-settings', label: 'Settings', icon: Settings, href: '/admin/storefront?tab=settings' },
     ],
   },
   {
