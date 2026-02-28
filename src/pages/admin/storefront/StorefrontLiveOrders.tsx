@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/select';
 import { StorefrontLiveOrdersKanban } from '@/components/admin/storefront/StorefrontLiveOrdersKanban';
 import { StorefrontLiveOrdersTable } from '@/components/admin/storefront/StorefrontLiveOrdersTable';
+import { OrderDetailPanel } from '@/components/admin/storefront/OrderDetailPanel';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
 
@@ -173,6 +174,8 @@ export function StorefrontLiveOrders() {
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
   const previousOrderCountRef = useRef<number>(0);
   const isInitialLoadRef = useRef(true);
 
@@ -331,8 +334,14 @@ export function StorefrontLiveOrders() {
   };
 
   const handleViewDetails = (orderId: string) => {
-    navigate(`/${tenantSlug}/admin/storefront-hub?tab=orders&order=${orderId}`);
+    setSelectedOrderId(orderId);
+    setDetailPanelOpen(true);
   };
+
+  const selectedOrder = useMemo(
+    () => orders.find(o => o.id === selectedOrderId) ?? null,
+    [orders, selectedOrderId]
+  );
 
   // Filter orders by search
   const filteredOrders = useMemo(() => orders.filter((order) => {
@@ -501,6 +510,15 @@ export function StorefrontLiveOrders() {
           updatingOrderId={updatingOrderId}
         />
       )}
+
+      {/* Order Detail Slide-Over */}
+      <OrderDetailPanel
+        order={selectedOrder}
+        open={detailPanelOpen}
+        onOpenChange={setDetailPanelOpen}
+        onStatusChange={handleStatusChange}
+        updatingOrderId={updatingOrderId}
+      />
     </div>
   );
 }
