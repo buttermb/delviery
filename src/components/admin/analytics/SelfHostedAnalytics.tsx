@@ -315,7 +315,8 @@ function InventoryTab({ data }: { data: UnifiedAnalyticsData }) {
             {inventory.topProducts.length > 0 ? (
               <div className="space-y-3">
                 {inventory.topProducts.slice(0, 8).map((product, index) => {
-                  const stockPercentage = Math.min(100, (product.stockQuantity / (product.lowStockAlert * 5)) * 100);
+                  const alertLevel = product.lowStockAlert || 10;
+                  const stockPercentage = Math.min(100, (product.stockQuantity / (alertLevel * 5)) * 100);
                   const isLowStock = product.stockQuantity <= product.lowStockAlert;
 
                   return (

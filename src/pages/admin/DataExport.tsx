@@ -68,7 +68,7 @@ export default function DataExport() {
     }
 
     try {
-      toast.success("Preparing ${exportType} export...");
+      toast.success(`Preparing ${exportType} export...`);
 
       // 1. Create Job Record
       const { data: job, error: dbError } = await supabase
