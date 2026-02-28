@@ -108,6 +108,27 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - TypeScript compilation passes with no errors
 - Marked as passes: true
 
+## CartPage displays items with quantity controls and order summary
+- CartPage already fully implemented at src/pages/shop/CartPage.tsx (690 lines)
+- Lazy import at src/routes/lazyImports.ts:189, route at /shop/:storeSlug/cart in App.tsx:335
+- Features verified present:
+  - Cart items display: product image, name, variant, price, Metrc ID, stock warnings
+  - Quantity controls: +/- buttons with animated display, desktop and mobile (44px touch targets)
+  - Order summary: subtotal, delivery fee (with free delivery progress bar), coupon/deal discounts, total
+  - Coupon code input and application via useShopCart hook
+  - Active deals display via useDeals hook
+  - Price sync with server on mount and real-time price change events
+  - Stock validation before checkout via checkInventoryAvailability
+  - Express checkout buttons, express checkout link
+  - Swipeable cart items on mobile (SwipeableCartItem component)
+  - Empty cart state with animated icon and "Continue Shopping" CTA
+  - Sticky mobile checkout bar with item count and total
+  - Luxury and default theme support via useLuxuryTheme hook
+  - Upsells section (CartUpsellsSection) for related products
+  - Clear all cart functionality
+- TypeScript compilation passes with zero errors
+- No implementation changes needed — feature was already complete
+
 ## Product Grid section edit dialog has all fields and saves correctly
 - Updated ProductGridEditor in SectionEditors.tsx with new "Grid Settings" accordion section
 - Added fields: columns (2/3/4), max_products (4-50), sort_order (newest/price/name), category_filter (all/flower/edibles/pre-rolls/concentrates/vapes), show_view_all_link toggle
