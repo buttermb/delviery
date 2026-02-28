@@ -37,8 +37,8 @@ export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
 
   // Optimized: single pass for both filters with memoization
   const { missingRequired, missingOptional } = useMemo(() => {
-    const required: typeof requiredFields = [];
-    const optional: typeof optionalFields = [];
+    const required: Array<{ field: string; label: string }> = [];
+    const optional: Array<{ field: string; label: string }> = [];
     
     for (const f of requiredFields) {
       if (!formData[f.field]) {

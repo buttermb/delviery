@@ -130,6 +130,7 @@ interface WholesaleOrderFilters {
   q: string;
   status: string;
   view: string;
+  [key: string]: unknown;
 }
 
 const WHOLESALE_FILTER_CONFIG: Array<{ key: keyof WholesaleOrderFilters; defaultValue: string }> = [

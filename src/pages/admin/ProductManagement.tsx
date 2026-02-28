@@ -957,7 +957,7 @@ export default function ProductManagement() {
   };
 
   // --- Table Columns Definition ---
-  const columns: ResponsiveColumn<Product>[] = [
+  const columns: any[] = [
     {
       header: (
         <Checkbox

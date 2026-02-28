@@ -619,7 +619,7 @@ export default function WholesaleClients() {
                 </Button>
                 <div className="hidden sm:block">
                   <ExportButton
-                    data={filteredClients ?? []}
+                    data={filteredClients as any ?? []}
                     filename="wholesale-clients"
                     columns={[
                       { key: "business_name", label: "Business Name" },
@@ -665,7 +665,7 @@ export default function WholesaleClients() {
             emptyStateAction={{
               label: "Add Client",
               onClick: () => setCreateClientDialogOpen(true),
-              icon: Plus
+              icon: Plus as any
             }}
             renderMobileItem={renderMobileItem}
             onRowClick={(client) => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}

@@ -30,7 +30,7 @@ export interface AdminDataTableProps<T> {
     emptyStateAction?: {
         label: string;
         onClick: () => void;
-        icon?: React.ElementType;
+        icon?: React.ElementType | React.ReactNode;
     };
 
     // Responsive / View Mode
@@ -155,8 +155,8 @@ export function AdminDataTable<T>({
                         <EnhancedEmptyState
                             title={emptyStateTitle}
                             description={emptyStateDescription}
-                            icon={emptyStateIcon}
-                            action={emptyStateAction}
+                            icon={emptyStateIcon as React.ReactNode}
+                            primaryAction={emptyStateAction as any}
                         />
                     </div>
                 ) : viewMode === "grid" && renderGridItem ? (

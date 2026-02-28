@@ -26,7 +26,7 @@ export async function adminApiCall<T = unknown>(options: AdminApiOptions): Promi
 
   return invokeEdgeFunction<T>({
     functionName: 'admin-api-operations',
-    body: options,
+    body: options as unknown as Record<string, unknown>,
     headers: {
       'Authorization': `Bearer ${session.access_token}`
     }

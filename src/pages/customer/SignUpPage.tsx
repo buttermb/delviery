@@ -255,7 +255,7 @@ export default function CustomerSignUpPage() {
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               {logo ? (
-                <img src={logo} alt={businessName} className="h-16 object-contain" />
+                <img src={logo as string} alt={businessName} className="h-16 object-contain" />
               ) : (
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[hsl(var(--customer-primary))] shadow-xl">
                   <ShoppingBag className="w-8 h-8 text-white" aria-hidden="true" />

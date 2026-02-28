@@ -110,6 +110,7 @@ interface OrderFilters {
   to: string;
   sort: string;
   dir: string;
+  [key: string]: unknown;
 }
 
 const ORDERS_FILTER_CONFIG: Array<{ key: keyof OrderFilters; defaultValue: string }> = [

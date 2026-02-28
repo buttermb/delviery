@@ -60,7 +60,7 @@ export function TierComparisonModal({ open, onOpenChange, currentTier }: TierCom
                   <td className="py-2 pr-4">{feature.name}</td>
                   {TIERS.map((tier) => {
                     const tierIndex = TIERS.indexOf(tier);
-                    const requiredIndex = TIERS.indexOf(feature.minTier);
+                    const requiredIndex = TIERS.indexOf(feature.tier);
                     const included = tierIndex >= requiredIndex;
                     return (
                       <td key={tier} className="text-center py-2 px-4">

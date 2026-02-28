@@ -9,7 +9,7 @@ interface TurnstileWrapperProps {
   onSuccess: (token: string) => void;
   onError: () => void;
   onExpire: () => void;
-  turnstileRef: React.RefObject<HTMLElement | null>;
+  turnstileRef: React.RefObject<unknown>;
 }
 
 interface TurnstileWrapperState {
@@ -65,7 +65,7 @@ export class TurnstileWrapper extends Component<TurnstileWrapperProps, Turnstile
           action: 'signup',
           appearance: 'always',
         }}
-        ref={this.props.turnstileRef}
+        ref={this.props.turnstileRef as React.LegacyRef<unknown> as any}
       />
     );
   }
