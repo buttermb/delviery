@@ -281,6 +281,7 @@ export function CheckoutPage() {
     paymentMethod: 'cash',
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [ageVerified, setAgeVerified] = useState(false);
   const [venmoConfirmed, setVenmoConfirmed] = useState(false);
   const [zelleConfirmed, setZelleConfirmed] = useState(false);
   const [createAccount, setCreateAccount] = useState(false);
@@ -598,6 +599,10 @@ export function CheckoutPage() {
         }
         return true;
       case 4:
+        if (!ageVerified) {
+          toast.error('Please confirm you are 21 or older');
+          return false;
+        }
         if (!agreeToTerms) {
           toast.error('Please agree to the terms to continue');
           return false;
@@ -1972,6 +1977,18 @@ export function CheckoutPage() {
 
                     <Separator />
 
+                    {/* Age Verification */}
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        id="age-verify"
+                        checked={ageVerified}
+                        onCheckedChange={(checked) => setAgeVerified(checked as boolean)}
+                      />
+                      <Label htmlFor="age-verify" className="text-sm text-muted-foreground">
+                        I confirm that I am 21 years of age or older and legally eligible to purchase cannabis products.
+                      </Label>
+                    </div>
+
                     {/* Terms */}
                     <div className="flex items-start gap-2">
                       <Checkbox
@@ -2014,7 +2031,7 @@ export function CheckoutPage() {
                 ) : (
                   <Button
                     onClick={handlePlaceOrder}
-                    disabled={placeOrderMutation.isPending}
+                    disabled={placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
                     style={{ backgroundColor: store.primary_color }}
                   >
                     {placeOrderMutation.isPending ? (
@@ -2316,7 +2333,7 @@ export function CheckoutPage() {
             </div>
             <Button
               onClick={handlePlaceOrder}
-              disabled={placeOrderMutation.isPending || !agreeToTerms}
+              disabled={placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
               style={{ backgroundColor: themeColor }}
               className="w-full h-12 text-white text-base font-semibold"
             >
