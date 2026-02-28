@@ -190,9 +190,11 @@ export default function StorefrontSettings() {
     queryFn: async () => {
       const ids = formData.featured_product_ids ?? [];
       if (ids.length === 0) return [];
+      if (!tenantId) return [];
       const { data, error } = await supabase
         .from('products')
         .select('id, name, price, image_url, category')
+        .eq('tenant_id', tenantId)
         .in('id', ids);
 
       if (error) {
@@ -202,7 +204,7 @@ export default function StorefrontSettings() {
       // Sort by the order in featured_product_ids
       return (data ?? []).sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
     },
-    enabled: (formData.featured_product_ids ?? []).length > 0,
+    enabled: !!tenantId && (formData.featured_product_ids ?? []).length > 0,
   });
 
   // Memoize preview settings to avoid unnecessary re-renders
@@ -302,7 +304,8 @@ export default function StorefrontSettings() {
           purchase_limits: formData.purchase_limits,
           featured_product_ids: formData.featured_product_ids ?? [],
         })
-        .eq('id', store.id);
+        .eq('id', store.id)
+        .eq('tenant_id', tenantId);
 
       if (error) throw error;
     },
@@ -327,7 +330,8 @@ export default function StorefrontSettings() {
       const { error } = await supabase
         .from('marketplace_stores')
         .update({ encrypted_url_token: newToken })
-        .eq('id', store.id);
+        .eq('id', store.id)
+        .eq('tenant_id', tenantId);
 
       if (error) throw error;
       return newToken;
