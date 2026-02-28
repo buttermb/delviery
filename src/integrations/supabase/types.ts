@@ -12339,6 +12339,7 @@ export type Database = {
           credits_enabled: boolean | null
           demo_data_generated: boolean | null
           detected_operation_size: string | null
+          feature_toggles: Json | null
           features: Json | null
           grace_period_ends_at: string | null
           id: string
@@ -12397,6 +12398,7 @@ export type Database = {
           credits_enabled?: boolean | null
           demo_data_generated?: boolean | null
           detected_operation_size?: string | null
+          feature_toggles?: Json | null
           features?: Json | null
           grace_period_ends_at?: string | null
           id?: string
@@ -12455,6 +12457,7 @@ export type Database = {
           credits_enabled?: boolean | null
           demo_data_generated?: boolean | null
           detected_operation_size?: string | null
+          feature_toggles?: Json | null
           features?: Json | null
           grace_period_ends_at?: string | null
           id?: string
