@@ -23,6 +23,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AssignToFleetDialog } from '@/components/admin/AssignToFleetDialog';
 import { OrderLink } from '@/components/admin/cross-links';
+import { LiveOrderStatusBadge } from '@/components/admin/live-orders/LiveOrderStatusBadge';
 import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
 import { formatCurrency } from '@/lib/formatters';
 
@@ -145,6 +146,7 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
                                 <span className="font-bold text-sm">
                                     <OrderLink orderId={order.id} orderNumber={`#${order.order_number}`} />
                                 </span>
+                                <LiveOrderStatusBadge status={order.status} />
                                 {order.source === 'menu' && (
                                     <Badge variant="secondary" className="text-[10px] h-5 px-1">Menu</Badge>
                                 )}
