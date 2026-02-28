@@ -374,6 +374,14 @@ serve(secureHeadersMiddleware(async (req) => {
         },
       );
       upsertedCustomerId = customerId ?? null;
+
+      // Link CRM customer to the order
+      if (upsertedCustomerId) {
+        await supabase
+          .from("marketplace_orders")
+          .update({ crm_customer_id: upsertedCustomerId })
+          .eq("id", orderId);
+      }
     }
 
     // ------------------------------------------------------------------
