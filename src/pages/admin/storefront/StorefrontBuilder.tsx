@@ -254,6 +254,7 @@ export function StorefrontBuilder({
         setSelectedThemeId(theme.id);
         setThemeConfig(prevConfig => ({
             ...prevConfig,
+            theme_id: theme.id,
             colors: {
                 primary: theme.colors.primary,
                 secondary: theme.colors.secondary,
@@ -324,7 +325,11 @@ export function StorefrontBuilder({
             const rawConfig = store.layout_config;
             const config: SectionConfig[] = Array.isArray(rawConfig) ? rawConfig : [];
             setLayoutConfig(config);
-            if (store.theme_config) setThemeConfig(store.theme_config as ExtendedThemeConfig);
+            if (store.theme_config) {
+                const tc = store.theme_config as ExtendedThemeConfig;
+                setThemeConfig(tc);
+                if (tc.theme_id) setSelectedThemeId(tc.theme_id);
+            }
 
             // Initialize history
             setHistory([config]);

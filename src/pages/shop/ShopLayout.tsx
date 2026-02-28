@@ -23,6 +23,7 @@ import {
   Store,
 } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { getThemeById, applyCSSVariables } from '@/lib/storefrontThemes';
 import { MobileBottomNav } from '@/components/shop/MobileBottomNav';
 import { LuxuryNav } from '@/components/shop/LuxuryNav';
 import { LuxuryFooter } from '@/components/shop/LuxuryFooter';
@@ -51,12 +52,17 @@ interface StoreInfo {
   minimum_age: number;
   layout_config?: Record<string, unknown>[] | null;
   theme_config?: {
+    theme_id?: string;
     theme?: 'default' | 'luxury' | 'minimal';
     colors?: {
       primary?: string;
       secondary?: string;
       accent?: string;
       background?: string;
+      text?: string;
+    };
+    typography?: {
+      fontFamily?: string;
     };
   } | null;
   operating_hours: Record<string, unknown>;
@@ -166,6 +172,46 @@ export default function ShopLayout() {
         : `${store.store_name} | Best Cannabis Delivery`;
     }
   }, [store?.store_name, store?.tagline]);
+
+  // Apply theme CSS variables from persisted theme_config
+  useEffect(() => {
+    if (!store?.theme_config) return;
+
+    const { theme_id, colors, typography } = store.theme_config;
+
+    // Try to resolve a full theme preset by ID
+    const themePreset = theme_id ? getThemeById(theme_id) : undefined;
+
+    if (themePreset) {
+      // Apply the full preset CSS variables to <html>
+      applyCSSVariables(document.documentElement, themePreset);
+      logger.debug('Applied theme preset to storefront', { themeId: theme_id });
+    } else if (colors) {
+      // Fallback: apply individual color values as CSS variables
+      const root = document.documentElement;
+      if (colors.background) root.style.setProperty('--storefront-bg', colors.background);
+      if (colors.text) root.style.setProperty('--storefront-text', colors.text);
+      if (colors.primary) root.style.setProperty('--storefront-primary', colors.primary);
+      if (colors.accent) root.style.setProperty('--storefront-accent', colors.accent);
+      if (typography?.fontFamily) {
+        root.style.setProperty('--storefront-font-body', typography.fontFamily);
+        root.style.setProperty('--storefront-font-heading', typography.fontFamily);
+      }
+      logger.debug('Applied custom theme colors to storefront', { colors });
+    }
+
+    // Cleanup: remove CSS variables when component unmounts
+    return () => {
+      const root = document.documentElement;
+      const vars = [
+        '--storefront-bg', '--storefront-text', '--storefront-primary',
+        '--storefront-accent', '--storefront-card-bg', '--storefront-border',
+        '--storefront-radius', '--storefront-shadow',
+        '--storefront-font-heading', '--storefront-font-body',
+      ];
+      vars.forEach(v => root.style.removeProperty(v));
+    };
+  }, [store?.theme_config]);
 
   // GA4 Analytics: Inject Google Analytics script
   useEffect(() => {
@@ -336,7 +382,7 @@ export default function ShopLayout() {
   }
 
   // Determine if using luxury theme - defensive null check
-  const isLuxuryTheme = store?.theme_config?.theme === 'luxury';
+  const isLuxuryTheme = store?.theme_config?.theme === 'luxury' || store?.theme_config?.theme_id === 'luxury';
 
   // Age verification gate (skip in preview mode)
   if (store.require_age_verification && !ageVerified && !isPreviewMode) {
@@ -391,11 +437,23 @@ export default function ShopLayout() {
     );
   }
 
-  // Apply theme colors
+  // Resolve theme preset for inline style overrides
+  const resolvedTheme = store.theme_config?.theme_id
+    ? getThemeById(store.theme_config.theme_id)
+    : undefined;
+
+  // Apply theme colors — merge preset CSS variables with legacy color columns
   const themeStyles = {
     '--store-primary': store.primary_color,
     '--store-secondary': store.secondary_color,
     '--store-accent': store.accent_color,
+    ...(resolvedTheme ? {
+      backgroundColor: resolvedTheme.cssVariables['--storefront-bg'],
+      color: resolvedTheme.cssVariables['--storefront-text'],
+    } : store.theme_config?.colors?.background ? {
+      backgroundColor: store.theme_config.colors.background,
+      color: store.theme_config.colors.text ?? undefined,
+    } : {}),
   } as React.CSSProperties;
 
   // Get accent color for theme elements
@@ -488,10 +546,10 @@ export default function ShopLayout() {
   return (
     <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
       <div
-        className={`min-h-dvh ${isLuxuryTheme ? 'bg-black' : 'bg-background'}`}
+        className="min-h-dvh"
         style={themeStyles}
         data-testid="storefront-wrapper"
-        data-theme={isLuxuryTheme ? 'luxury' : 'default'}
+        data-theme={store.theme_config?.theme_id ?? (isLuxuryTheme ? 'luxury' : 'default')}
       >
         {/* Admin Preview Banner */}
         {isPreviewMode && (
