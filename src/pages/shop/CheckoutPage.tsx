@@ -95,6 +95,7 @@ interface OrderResult {
   tracking_token?: string;
   total?: number;
   checkoutUrl?: string;
+  telegramLink?: string;
 }
 
 // Helper type for calling untyped Supabase RPCs
@@ -576,8 +577,10 @@ export function CheckoutPage() {
           return {
             order_id: responseData.orderId as string,
             order_number: (responseData.orderNumber as string) || (responseData.orderId as string),
+            tracking_token: (responseData.trackingToken as string) || undefined,
             total: responseData.serverTotal as number,
             checkoutUrl: responseData.checkoutUrl as string | undefined,
+            telegramLink: (responseData.telegramLink as string) || undefined,
           };
         } catch (err: unknown) {
           // Re-throw known Error instances (business errors from edge function)
@@ -745,6 +748,7 @@ export function CheckoutPage() {
           orderNumber: data.order_number,
           trackingToken: data.tracking_token,
           total: data.total,
+          telegramLink: data.telegramLink,
         },
       });
     },

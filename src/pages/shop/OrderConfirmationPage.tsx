@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check, Loader2, ShoppingBag, Truck } from 'lucide-react';
+import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check, Loader2, ShoppingBag, Truck, MessageCircle } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useShopCart } from '@/hooks/useShopCart';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,6 +49,7 @@ export function OrderConfirmationPage() {
     orderId?: string;
     trackingToken?: string;
     total?: number;
+    telegramLink?: string;
   };
 
   const orderNumber = stateData.orderNumber || stateData.orderId || searchParams.get('order') || null;
@@ -187,6 +188,7 @@ export function OrderConfirmationPage() {
   const trackingUrl = trackingToken
     ? `${window.location.origin}/shop/${storeSlug}/track/${trackingToken}`
     : null;
+  const telegramLink = stateData.telegramLink || null;
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-16 max-w-2xl">
@@ -291,6 +293,24 @@ export function OrderConfirmationPage() {
                   )}
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* Telegram contact link */}
+          {telegramLink && (
+            <div className="mt-4 p-4 bg-muted rounded-lg">
+              <a
+                href={telegramLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+              >
+                <MessageCircle className="w-5 h-5" style={{ color: store.primary_color }} />
+                <div>
+                  <p className="text-sm font-medium">Chat with us on Telegram</p>
+                  <p className="text-xs text-muted-foreground">Get updates and support for your order</p>
+                </div>
+              </a>
             </div>
           )}
         </CardContent>

@@ -283,10 +283,10 @@ serve(secureHeadersMiddleware(async (req) => {
       return jsonResponse({ error: "Failed to create order. Please try again later." }, 500);
     }
 
-    // Fetch the generated order number
+    // Fetch the generated order number and tracking token
     const { data: orderRecord } = await supabase
       .from("marketplace_orders")
-      .select("order_number")
+      .select("order_number, tracking_token")
       .eq("id", orderId)
       .maybeSingle();
 
@@ -395,15 +395,33 @@ serve(secureHeadersMiddleware(async (req) => {
       // Intentionally swallowed — Telegram failures must never block checkout
     });
 
+    // ------------------------------------------------------------------
+    // 7b. Fetch Telegram contact link for confirmation page (if configured)
+    // ------------------------------------------------------------------
+    let telegramLink: string | null = null;
+    if (tenantAccount) {
+      const { data: acctSettings } = await supabase
+        .from("account_settings")
+        .select("telegram_video_link")
+        .eq("account_id", tenantAccount.id)
+        .maybeSingle();
+      telegramLink = (acctSettings?.telegram_video_link as string) ?? null;
+    }
+
     const result: Record<string, unknown> = {
       orderId,
       orderNumber: orderRecord?.order_number ?? null,
+      trackingToken: orderRecord?.tracking_token ?? null,
       customerId: upsertedCustomerId,
       serverTotal: total,
       subtotal,
       tax,
       deliveryFee,
     };
+
+    if (telegramLink) {
+      result.telegramLink = telegramLink;
+    }
 
     // Include discrepancy info so clients can reconcile
     if (priceDiscrepancy) {
