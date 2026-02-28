@@ -1,9 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Shield } from 'lucide-react';
-import { STORAGE_KEYS } from '@/constants/storageKeys';
-import { safeStorage } from '@/utils/safeStorage';
 
 interface LuxuryAgeVerificationProps {
   storeName?: string;
@@ -11,7 +9,6 @@ interface LuxuryAgeVerificationProps {
   minimumAge?: number;
   accentColor?: string;
   onVerify: (verified: boolean) => void;
-  storeId?: string;
 }
 
 export function LuxuryAgeVerification({
@@ -20,37 +17,15 @@ export function LuxuryAgeVerification({
   minimumAge = 21,
   accentColor = '#10b981',
   onVerify,
-  storeId
 }: LuxuryAgeVerificationProps) {
-  const [isVisible, setIsVisible] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
-  const onVerifyRef = useRef(onVerify);
-  onVerifyRef.current = onVerify;
-
-  // Check if already verified
-  useEffect(() => {
-    if (storeId) {
-      const verified = safeStorage.getItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeId}`);
-      if (verified === 'true') {
-        setIsVisible(false);
-        onVerifyRef.current(true);
-      }
-    }
-  }, [storeId]);
 
   const handleVerify = (isOfAge: boolean) => {
     setIsExiting(true);
-
     setTimeout(() => {
-      if (isOfAge && storeId) {
-        safeStorage.setItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeId}`, 'true');
-      }
-      setIsVisible(false);
       onVerify(isOfAge);
     }, 500);
   };
-
-  if (!isVisible) return null;
 
   return (
     <AnimatePresence>
@@ -59,7 +34,7 @@ export function LuxuryAgeVerification({
         animate={{ opacity: isExiting ? 0 : 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
-        className="fixed inset-0 z-max bg-black flex items-center justify-center p-6"
+        className="fixed inset-0 z-50 bg-black flex items-center justify-center p-6"
       >
         {/* Background effects */}
         <div className="absolute inset-0">
@@ -135,7 +110,7 @@ export function LuxuryAgeVerification({
                 variant="outline"
                 className="flex-1 h-14 text-white border-white/10 hover:border-white/30 hover:bg-white/5 rounded-full font-light"
               >
-                No, I'm not
+                No, I&apos;m not
               </Button>
               <Button
                 onClick={() => handleVerify(true)}

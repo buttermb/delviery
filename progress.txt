@@ -115,3 +115,14 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Updated ProductGridSectionProps interface with new fields: columns, max_products, sort_order, show_view_all_link, category_filter
 - Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
 - TypeScript compilation passes with zero errors
+
+## ShopLayout age verification gate for cannabis stores
+- Rewrote StorefrontAgeGate as a presentational full-page overlay component with props (storeName, logoUrl, minimumAge, primaryColor, onVerify)
+- Removed broken self-querying logic from StorefrontAgeGate (was querying non-existent enable_age_gate/age_gate_min_age columns)
+- ShopLayout now uses StorefrontAgeGate for default theme and LuxuryAgeVerification for luxury theme
+- Simplified LuxuryAgeVerification to be a pure presentational component (removed internal localStorage management)
+- ShopLayout owns all age verification state: checks require_age_verification flag, persists per store slug in localStorage
+- Removed redundant StorefrontAgeGate instances from bottom of both layout renders (unreachable after inline gate)
+- "No" redirects to google.com, "Yes" saves to localStorage and shows store
+- Preview mode bypasses age gate
+- TypeScript compilation passes with zero errors
