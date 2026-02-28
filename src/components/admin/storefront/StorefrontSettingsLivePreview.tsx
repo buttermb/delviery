@@ -1,13 +1,16 @@
 /**
  * Storefront Settings Live Preview
- * Real-time preview of storefront appearance based on current settings
+ * Real-time preview of storefront appearance based on current settings.
+ * Applies --storefront-* CSS variables to the preview container immediately
+ * as settings change, without requiring a save action.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Monitor, Smartphone, Tablet, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { applyPreviewCSSVariables } from '@/lib/storefrontThemes';
 
 interface PreviewProduct {
   id: string;
@@ -49,11 +52,32 @@ export function StorefrontSettingsLivePreview({
 }: StorefrontSettingsLivePreviewProps) {
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
   const [orientation, setOrientation] = useState<Orientation>('portrait');
+  const previewRef = useRef<HTMLDivElement>(null);
 
   const isLuxury = settings.theme_config?.theme === 'luxury';
   const primaryColor = settings.primary_color || '#10b981';
   const secondaryColor = settings.secondary_color || '#059669';
   const accentColor = settings.accent_color || '#34d399';
+
+  // Apply CSS variables to preview container immediately when settings change
+  useEffect(() => {
+    if (!previewRef.current) return;
+
+    const bgColor = isLuxury ? '#0a0a0a' : '#ffffff';
+    const textColor = isLuxury ? '#ffffff' : '#000000';
+    const cardBg = isLuxury ? '#1a1a1a' : '#fafafa';
+    const borderColor = isLuxury ? '#333' : '#e5e7eb';
+
+    applyPreviewCSSVariables(previewRef.current, {
+      primary: primaryColor,
+      secondary: secondaryColor,
+      accent: accentColor,
+      background: bgColor,
+      text: textColor,
+      cardBg,
+      border: borderColor,
+    }, settings.font_family || undefined);
+  }, [primaryColor, secondaryColor, accentColor, isLuxury, settings.font_family]);
 
   const containerWidth = useMemo(() => {
     switch (deviceMode) {
@@ -128,21 +152,22 @@ export function StorefrontSettingsLivePreview({
             </div>
           </div>
 
-          {/* Preview Content */}
+          {/* Preview Content — CSS variables scoped to this container */}
           <CardContent className="p-0">
             <div
+              ref={previewRef}
               className="transition-colors duration-300"
               style={{
-                backgroundColor: isLuxury ? '#0a0a0a' : '#ffffff',
-                color: isLuxury ? '#ffffff' : '#000000',
+                backgroundColor: 'var(--storefront-bg)',
+                color: 'var(--storefront-text)',
               }}
             >
               {/* Nav Bar Preview */}
               <div
                 className="flex items-center justify-between px-4 py-2 border-b transition-all duration-300"
                 style={{
-                  borderColor: isLuxury ? '#333' : '#e5e7eb',
-                  backgroundColor: isLuxury ? '#111' : '#ffffff',
+                  borderColor: 'var(--storefront-border)',
+                  backgroundColor: isLuxury ? '#111' : 'var(--storefront-bg)',
                 }}
               >
                 <div className="flex items-center gap-2">
@@ -159,12 +184,12 @@ export function StorefrontSettingsLivePreview({
                   ) : (
                     <div
                       className="h-6 w-6 rounded-full"
-                      style={{ backgroundColor: primaryColor }}
+                      style={{ backgroundColor: 'var(--storefront-primary)' }}
                     />
                   )}
                   <span
                     className="text-xs font-semibold truncate max-w-[120px]"
-                    style={{ color: isLuxury ? '#fff' : '#000' }}
+                    style={{ color: 'var(--storefront-text)' }}
                   >
                     {settings.store_name || 'Store Name'}
                   </span>
@@ -174,7 +199,7 @@ export function StorefrontSettingsLivePreview({
                   <div
                     className="px-2 py-0.5 rounded-full text-[8px] font-medium"
                     style={{
-                      backgroundColor: primaryColor,
+                      backgroundColor: 'var(--storefront-primary)',
                       color: '#fff',
                     }}
                   >
@@ -190,7 +215,7 @@ export function StorefrontSettingsLivePreview({
                   height: deviceMode === 'mobile' ? '120px' : '160px',
                   backgroundImage: settings.banner_url
                     ? `url(${settings.banner_url})`
-                    : `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                    : `linear-gradient(135deg, var(--storefront-primary), var(--storefront-secondary))`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}
@@ -211,7 +236,7 @@ export function StorefrontSettingsLivePreview({
                   )}
                   <div
                     className="mt-2 px-3 py-1 rounded-full text-[9px] font-medium text-white"
-                    style={{ backgroundColor: accentColor }}
+                    style={{ backgroundColor: 'var(--storefront-accent)' }}
                   >
                     Shop Now
                   </div>
@@ -236,8 +261,8 @@ export function StorefrontSettingsLivePreview({
                         key={product.id}
                         className="rounded-lg overflow-hidden border transition-all duration-300"
                         style={{
-                          borderColor: isLuxury ? '#333' : '#e5e7eb',
-                          backgroundColor: isLuxury ? '#1a1a1a' : '#fafafa',
+                          borderColor: 'var(--storefront-border)',
+                          backgroundColor: 'var(--storefront-card-bg)',
                         }}
                       >
                         <div
@@ -263,7 +288,7 @@ export function StorefrontSettingsLivePreview({
                           </p>
                           <p
                             className="text-[8px] font-bold"
-                            style={{ color: primaryColor }}
+                            style={{ color: 'var(--storefront-primary)' }}
                           >
                             ${product.price.toFixed(2)}
                           </p>
@@ -292,8 +317,8 @@ export function StorefrontSettingsLivePreview({
                         key={i}
                         className="rounded-lg overflow-hidden border"
                         style={{
-                          borderColor: isLuxury ? '#333' : '#e5e7eb',
-                          backgroundColor: isLuxury ? '#1a1a1a' : '#fafafa',
+                          borderColor: 'var(--storefront-border)',
+                          backgroundColor: 'var(--storefront-card-bg)',
                         }}
                       >
                         <div className="h-14 bg-muted/20" />
@@ -308,22 +333,22 @@ export function StorefrontSettingsLivePreview({
               )}
 
               {/* Color Swatches */}
-              <div className="px-3 py-2 border-t" style={{ borderColor: isLuxury ? '#333' : '#e5e7eb' }}>
+              <div className="px-3 py-2 border-t" style={{ borderColor: 'var(--storefront-border)' }}>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[8px] text-muted-foreground">Theme:</span>
                   <div
                     className="w-3 h-3 rounded-full border"
-                    style={{ backgroundColor: primaryColor, borderColor: isLuxury ? '#555' : '#ccc' }}
+                    style={{ backgroundColor: 'var(--storefront-primary)', borderColor: isLuxury ? '#555' : '#ccc' }}
                     title="Primary"
                   />
                   <div
                     className="w-3 h-3 rounded-full border"
-                    style={{ backgroundColor: secondaryColor, borderColor: isLuxury ? '#555' : '#ccc' }}
+                    style={{ backgroundColor: 'var(--storefront-secondary)', borderColor: isLuxury ? '#555' : '#ccc' }}
                     title="Secondary"
                   />
                   <div
                     className="w-3 h-3 rounded-full border"
-                    style={{ backgroundColor: accentColor, borderColor: isLuxury ? '#555' : '#ccc' }}
+                    style={{ backgroundColor: 'var(--storefront-accent)', borderColor: isLuxury ? '#555' : '#ccc' }}
                     title="Accent"
                   />
                   <Badge variant="outline" className="text-[7px] h-3 px-1 ml-1">
