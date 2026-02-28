@@ -18,6 +18,8 @@ after each iteration and it's included in prompts for context.
 - **queryKeys injection corruption**: Previous automated tooling injected `import { queryKeys }` mid-import-block and corrupted `Database['public']['Tables']['x']['Row']` type patterns with `queryKeys.x.all`. Always check for these corruptions after automated `queryKeys` migrations.
 - **||/?? mixing**: esbuild (Vite) strictly enforces parenthesization when `||` and `??` are mixed in the same expression. TypeScript may allow it, but the build will fail. Always wrap: `a || (b ?? c)`.
 - **Storefront order reads vs writes**: READ from `storefront_orders` view (aliased columns: `total`, `delivery_fee`, `delivery_address`). WRITE to `marketplace_orders` table (raw columns: `total_amount`, `shipping_cost`, `shipping_address`). Filter by `store_id` + `seller_tenant_id`, NOT `seller_profile_id` (that's for B2B marketplace orders).
+- **Stale carousel index crash**: Carousel/rotator components using `useState` index into a reactive TanStack Query array can crash when refetches shrink the array. Fix: add a `useEffect` clamping index when length changes + safe guard (`array[safeIndex]` with fallback).
+- **safeStorage for storefront**: Always use `safeStorage` from `@/utils/safeStorage` instead of raw `localStorage` in storefront components — handles private browsing mode gracefully.
 
 ---
 
@@ -701,4 +703,150 @@ after each iteration and it's included in prompts for context.
   - All storefront admin pages should use `queryKeys.marketplaceStore.byTenant()` for the store resolution query — this ensures cache sharing across tabs in StorefrontHubPage.
   - The `storefront_orders` view doesn't expose `seller_tenant_id` — tenant isolation for reads is achieved through the `store_id` chain (store belongs to tenant). For writes to `marketplace_orders`, add `seller_tenant_id` explicitly.
   - When Recharts data has all-zero values but non-empty array, the chart renders but looks broken. Always check for semantic emptiness (no meaningful data) in addition to array length.
+---
+
+## 2026-02-28 - floraiq-6w6.8
+- Audited public storefront homepage (/shop/:storeSlug) for console errors
+- Fixed 5 issues across 5 files:
+  1. **AnnouncementBar.tsx**: `announcements[currentIndex]` could crash with TypeError when reactive query data refetches with fewer items while `currentIndex` is stale. Added index clamping useEffect + safe fallback.
+  2. **PromotionsBannerSection.tsx**: Same stale index crash pattern with `banners[currentIndex]`. Applied same fix.
+  3. **LuxuryFeaturesSection.tsx**: `Record<string, any>` replaced with `Record<string, LucideIcon>` to comply with no-any rule.
+  4. **HotItemsSection.tsx**: `ICON_MAP[config.icon]` had no fallback (unlike sibling section components). Added `|| Star`.
+  5. **LuxuryAgeVerification.tsx**: Raw `localStorage` calls replaced with `safeStorage` wrapper (handles private browsing/SSR). Stabilized `onVerify` callback in `useEffect` via `useRef` to prevent re-fire loops when parent doesn't memoize.
+- Files changed: `src/components/shop/sections/AnnouncementBar.tsx`, `src/components/shop/sections/PromotionsBannerSection.tsx`, `src/components/shop/sections/LuxuryFeaturesSection.tsx`, `src/components/shop/sections/HotItemsSection.tsx`, `src/components/shop/LuxuryAgeVerification.tsx`
+- **Learnings:**
+  - **Stale index pattern in carousel/rotator components**: When a component uses `useState` index into a reactive array (from TanStack Query), refetches can shrink the array while `currentIndex` remains stale, causing `array[currentIndex]` to be `undefined`. Fix: add a `useEffect` that clamps index when length changes + a safe guard before access.
+  - **safeStorage vs localStorage**: The project has `@/utils/safeStorage` that wraps localStorage with try/catch and memory fallback. Always use it in storefront components where private browsing is common.
+  - **Callback ref pattern for useEffect stability**: When a parent-passed callback is in a useEffect dependency array and the parent doesn't memoize it, use `useRef` to stabilize: `const cbRef = useRef(cb); cbRef.current = cb;` then call `cbRef.current()` in the effect.
+---
+
+## 2026-02-28 - floraiq-6w6.9
+- Audited the product catalog page (`/shop/:storeSlug/products`) for console errors
+- Fixed `useWishlist` hook to use `safeStorage` instead of raw `localStorage` — prevents crashes in Safari private browsing mode
+- Verified: no console.log statements, no TypeScript errors, proper store_id filtering via `get_marketplace_products` RPC
+- Files changed: `src/hooks/useWishlist.ts`
+- **Learnings:**
+  - Product catalog page was already well-structured with proper error handling, empty states, loading skeletons, and real-time inventory sync
+  - `useWishlist` was the last storefront hook still using raw `localStorage` — all cart/coupon storage already used `safeStorage`
+  - The `get_marketplace_products` RPC handles store-level product filtering server-side, so no additional `tenant_id` filter is needed on the client
+---
+
+## 2026-02-28 - floraiq-6w6.10
+- Audited ProductDetailPage (`src/pages/shop/ProductDetailPage.tsx`) for console errors
+- Replaced 3 instances of raw `localStorage` with `safeStorage` from `@/utils/safeStorage`
+- Replaced raw `JSON.parse` with `safeJsonParse` in wishlist toggle handler for defensive parsing
+- Files changed: `src/pages/shop/ProductDetailPage.tsx`
+- **Learnings:**
+  - ProductDetailPage had the same `localStorage` issue as `useWishlist` — the wishlist check in useEffect and the toggle handler both used raw localStorage
+  - The page was otherwise well-structured: uses `logger` (not console), `queryKeys` factory, `safeJsonParse` for reads, proper `store_id` filtering, and already had the `safeStorage` import path available
+  - Storefront queries correctly use `store_id` filtering (via RPC `p_store_id` param or `.eq('store_id', ...)`) rather than `tenant_id` directly
+---
+
+## 2026-02-28 - floraiq-6w6.11
+- Audited CartPage (`src/pages/shop/CartPage.tsx`) for console errors
+- Fixed relative import `./ShopLayout` → `@/pages/shop/ShopLayout` to follow `@/` alias convention
+- Verified: no `console.log`, no TypeScript errors, empty cart state renders cleanly with animation and "Continue Shopping" CTA
+- Files changed: `src/pages/shop/CartPage.tsx`
+- **Learnings:**
+  - Cart page was already well-maintained: uses `logger`, `safeStorage` (via `useShopCart`), `formatCurrency`, proper `sonner` toast
+  - Cart is localStorage-based (no direct Supabase queries in CartPage itself); stock/deals queries are in child hooks (`useShopCart.checkInventoryAvailability`, `useDeals`, `CartStockWarning`)
+  - Storefront inventory checks query `products` by specific UUIDs (via `.in('id', productIds)`) — RLS handles visibility, no explicit `tenant_id` filter needed
+  - `SwipeableCartItem` uses `react-swipeable` for mobile delete gesture with haptic feedback — clean pattern
+  - `CartUpsellsSection` uses `get_marketplace_products` RPC scoped by `store_id`
+---
+
+## 2026-02-28 - floraiq-6w6.12
+- Audited `/shop/:storeSlug/checkout` (CheckoutPage.tsx)
+- Replaced 6 raw `localStorage` calls with `safeStorage` from `@/utils/safeStorage` for private browsing compatibility
+- Files changed: `src/pages/shop/CheckoutPage.tsx`
+- **Learnings:**
+  - CheckoutPage was already well-structured: uses `logger` (no console.log), proper error handling with `humanizeError`, `sonner` toast
+  - Empty cart already handled: `useEffect` at line 253 checks `isInitialized && cartItems.length === 0` and redirects to `/shop/:storeSlug/cart` with toast warning
+  - `sessionStorage` is used for idempotency keys (survives page refresh during submission) — `safeStorage` only wraps `localStorage`, so sessionStorage is left as-is
+  - Checkout uses edge function first (`storefront-checkout`), falls back to direct RPC (`create_marketplace_order`) — well-documented pattern
+  - No direct Supabase queries filtering by `tenant_id` needed — checkout reads go through `storefront_orders` view (scoped by `store_id`), writes go through `create_marketplace_order` RPC
+---
+
+## 2026-02-28 - floraiq-7r6.1
+- Created `supabase/migrations/20260228000001_add_time_entries.sql`
+- Table columns: id (uuid pk), tenant_id, user_id, clock_in, clock_out, break_minutes, location_lat, location_lng, status (active/completed/approved), notes, approved_by, created_at, updated_at
+- Added indexes on tenant_id, user_id, status, clock_in, and composite (tenant_id, user_id)
+- RLS policies: users see own entries, admins see all in tenant; users insert own; users update own + admins update any in tenant; only admins can delete
+- Files changed: `supabase/migrations/20260228000001_add_time_entries.sql`
+- **Learnings:**
+  - Migration pattern: use `CREATE TABLE IF NOT EXISTS`, reference `public.tenants(id)` and `auth.users(id)` for FKs
+  - RLS pattern: check `tenant_users` table for role-based access (`admin`, `owner` roles)
+  - Status columns use CHECK constraint: `CHECK (status IN ('active', 'completed', 'approved'))`
+  - SQL-only tasks (migrations) pass `npx tsc --noEmit` trivially since no TS files are changed
+---
+
+## 2026-02-28 - floraiq-mxj.1
+- Created `supabase/migrations/20260228000002_add_promotions.sql`
+- Table: `public.promotions` with all required columns (id, tenant_id, code, name, discount_type, discount_value, min_order_amount, max_uses, current_uses, applies_to, applies_to_ids, start_date, end_date, is_active, created_at)
+- UNIQUE constraint: `(tenant_id, code)` ensures unique promo codes per tenant
+- Indexes: tenant_id, tenant+code composite, active-only partial, date range
+- RLS: SELECT for all tenant members, INSERT/UPDATE/DELETE restricted to admin/owner roles
+- Files changed: `supabase/migrations/20260228000002_add_promotions.sql` (new)
+- **Learnings:**
+  - Existing advanced promotions system extends `coupons` table (see `20251216174400_add_advanced_promotions.sql`), while this new `promotions` table is a separate tenant-level entity
+  - `credit_promotions` table also exists separately — three distinct promo-related tables serve different scopes
+  - Latest migration pattern uses `time_entries` as reference: `CREATE TABLE IF NOT EXISTS`, proper `CHECK` constraints, comprehensive RLS with `tenant_users` role checks
+---
+
+## 2026-02-28 - floraiq-x79.2
+- Created `supabase/migrations/20260228000003_add_message_templates.sql`
+- Table: `message_templates` with columns: id, tenant_id, name, channel, subject, body, variables (jsonb), category, usage_count (default 0), is_active (default true), created_at
+- RLS enabled with 4 policies (SELECT for tenant members, INSERT/UPDATE/DELETE for admin/owner)
+- Indexes on tenant_id, (tenant_id, channel), (tenant_id, category), and partial on is_active
+- Foreign key to tenants(id) with CASCADE delete
+- **Learnings:**
+  - Migration naming follows `YYYYMMDD00000N_add_<table_name>.sql` pattern, incrementing the sequence number for same-day migrations
+  - RLS pattern consistent: SELECT open to tenant members, write operations restricted to admin/owner roles via tenant_users lookup
+---
+
+## 2026-02-28 - floraiq-x79.1
+- Created `supabase/migrations/20260228000001_add_messages.sql` for tenant messaging
+- Columns: id, tenant_id, sender_type (admin/customer/system), sender_id, recipient_type, recipient_id, channel (sms/email/in_app), subject, body, reference_type, reference_id, status (draft/sent/delivered/read/failed), sent_at, created_at
+- CHECK constraints on sender_type, channel, and status columns for data integrity
+- Indexes on tenant_id, sender, recipient, channel, status, reference, and created_at
+- RLS: SELECT open to tenant members, INSERT/UPDATE/DELETE restricted to admin/owner
+- **Learnings:**
+  - Same epic (x79) as message_templates — messages table stores actual sent/received messages while templates store reusable templates
+  - reference_type + reference_id pattern enables polymorphic linking to orders, invoices, tickets, etc.
+---
+
+## 2026-02-28 - floraiq-qkq.1
+- Created `supabase/migrations/20260228000004_add_payments.sql`
+- Table: `payments` with columns: id, tenant_id, order_id, customer_id, amount, method, status, transaction_id, processing_fee, notes, processed_by, created_at, updated_at
+- Status CHECK constraint: pending/completed/failed/refunded
+- RLS enabled with tenant_id-based policies (SELECT, INSERT, UPDATE, DELETE) using profiles join
+- Indexes on tenant_id, order_id, customer_id, status, created_at, transaction_id
+- Updated timestamp trigger via `update_updated_at()` function
+- **Learnings:**
+  - Standard migration pattern: CREATE TABLE → ENABLE RLS → policies → indexes → trigger
+  - RLS tenant isolation pattern: `tenant_id IN (SELECT p.tenant_id FROM profiles p WHERE p.id = auth.uid())`
+---
+
+## 2026-02-28 - floraiq-qkq.2
+- Created `supabase/migrations/add_register_sessions.sql` for POS register session tracking
+- Table: `register_sessions` with columns: id, tenant_id, user_id, opening_float, closing_amount, expected_amount, variance, status, opened_at, closed_at, notes, created_at, updated_at
+- Status CHECK constraint: open/closed
+- RLS enabled with tenant_id-based policies using tenant_users join (with admin/owner escalation for SELECT, UPDATE, DELETE)
+- Indexes on tenant_id, user_id, status, opened_at, composite (tenant_id, user_id)
+- Table and column COMMENTs for documentation
+- **Learnings:**
+  - Used tenant_users-based RLS (not profiles) matching time_entries pattern — more appropriate for role-based access
+  - Register sessions are user-scoped: regular users see own sessions, admins/owners see all within tenant
+---
+
+## 2026-02-28 - floraiq-okh.1
+- Created `supabase/migrations/add_webhooks.sql` for webhooks enhancement and webhook_deliveries table
+- The `webhooks` table already existed (from migration 20251103041953) — added missing columns: event_type TEXT, headers JSONB, failure_count INTEGER
+- Created new `webhook_deliveries` table with columns: id uuid, webhook_id uuid (FK to webhooks), tenant_id uuid, event_data jsonb, status text, response_code integer, created_at timestamptz
+- RLS enabled on webhook_deliveries with full CRUD tenant-isolation policies (profiles → accounts join pattern)
+- Indexes on webhook_id, tenant_id, status, created_at
+- **Learnings:**
+  - Webhooks table already existed — always check existing migrations before creating new tables
+  - A `webhook_logs` table also exists (from 20260128000001) — separate from `webhook_deliveries`. The logs table tracks detailed delivery attempts while deliveries is the core delivery record
+  - Used `ALTER TABLE ADD COLUMN IF NOT EXISTS` for safe idempotent column additions
 ---
