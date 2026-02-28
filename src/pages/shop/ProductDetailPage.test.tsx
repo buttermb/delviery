@@ -206,6 +206,10 @@ vi.mock('@/components/shop/ReviewForm', () => ({
 // Mock sanitize
 vi.mock('@/lib/utils/sanitize', () => ({
   sanitizeHtml: (html: string) => html,
+  safeJsonParse: <T,>(json: string | null, fallback: T) => {
+    if (!json) return fallback;
+    try { return JSON.parse(json); } catch { return fallback; }
+  },
 }));
 
 // Mock formatCurrency

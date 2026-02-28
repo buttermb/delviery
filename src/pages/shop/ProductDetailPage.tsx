@@ -189,6 +189,7 @@ export function ProductDetailPage() {
   // Touch swipe state for mobile image carousel
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
+  const imageCountRef = useRef(0);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.targetTouches[0].clientX;
@@ -203,12 +204,12 @@ export function ProductDetailPage() {
     const threshold = 50;
     if (Math.abs(delta) > threshold) {
       setSelectedImage((prev) => {
-        const max = (allImages?.length ?? 1) - 1;
+        const max = Math.max(imageCountRef.current - 1, 0);
         if (delta > 0) return Math.min(prev + 1, max); // swipe left = next
         return Math.max(prev - 1, 0); // swipe right = prev
       });
     }
-  }, [allImages]);
+  }, []);
 
   // Track recently viewed products
   const { addToRecentlyViewed } = useRecentlyViewed();
@@ -350,6 +351,9 @@ export function ProductDetailPage() {
     }
     return images.length ? images : [product.image_url].filter(Boolean);
   }, [product]);
+
+  // Keep ref in sync for touch handler (avoids temporal dead zone)
+  imageCountRef.current = allImages.length;
 
   // SEO: Update page title, meta tags, and structured data
   useEffect(() => {
