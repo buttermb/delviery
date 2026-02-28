@@ -8,6 +8,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { logger } from '@/lib/logger';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
@@ -221,7 +222,7 @@ describe('Database Performance Expectations', () => {
       expect(testContent).toContain('TEST');
     } else {
       // If running in CI/CD without the full repo, this is acceptable
-      console.warn('SQL test file not found. This is expected in some test environments.');
+      logger.warn('SQL test file not found. This is expected in some test environments.');
       expect(true).toBe(true);
     }
   });
