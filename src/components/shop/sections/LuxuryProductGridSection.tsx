@@ -238,7 +238,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
 
         {/* Loading State */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div key={i} className="bg-white rounded-2xl p-4 space-y-4 shadow-sm border border-neutral-100">
                 <Skeleton className="h-56 w-full rounded-xl bg-neutral-100" />
@@ -274,7 +274,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
           /* Premium Product Grid */
           <motion.div
             layout
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 pb-20"
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8 pb-20"
           >
             <AnimatePresence>
               {filteredProducts.map((product, index) => (

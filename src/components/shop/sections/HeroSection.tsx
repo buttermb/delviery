@@ -200,18 +200,18 @@ export function HeroSection({ content, styles }: HeroSectionProps) {
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.8 }}
                         className="flex flex-col sm:flex-row items-center justify-center gap-4"
                     >
-                        <Link to={cta_primary_link}>
+                        <Link to={cta_primary_link} className="w-full sm:w-auto">
                             <Button
-                                className="group relative px-10 py-4 text-sm font-light tracking-wide rounded-full transition-all duration-300 shadow-lg hover:scale-105 h-auto text-black bg-white hover:bg-gray-100 dark:text-white dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                                className="group relative w-full sm:w-auto px-10 py-4 text-sm font-light tracking-wide rounded-full transition-all duration-300 shadow-lg hover:scale-105 h-auto text-black bg-white hover:bg-gray-100 dark:text-white dark:bg-zinc-900 dark:hover:bg-zinc-800"
                             >
                                 <span className="relative z-10">{cta_primary_text}</span>
                             </Button>
                         </Link>
 
-                        <Link to={cta_secondary_link}>
+                        <Link to={cta_secondary_link} className="w-full sm:w-auto">
                             <Button
                                 variant="outline"
-                                className="px-10 py-4 text-sm font-light tracking-wide rounded-full border transition-all duration-300 h-auto backdrop-blur-sm"
+                                className="w-full sm:w-auto px-10 py-4 text-sm font-light tracking-wide rounded-full border transition-all duration-300 h-auto backdrop-blur-sm"
                                 style={{
                                     borderColor: `${text_color}20`,
                                     color: text_color,
