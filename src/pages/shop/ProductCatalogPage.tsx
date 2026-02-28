@@ -626,19 +626,36 @@ export function ProductCatalogPage() {
 
       {/* Products Grid/List */}
       {productsLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <Skeleton key={i} className="h-64 rounded-lg" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4" data-testid="product-catalog-loading">
+          {Array.from({ length: 8 }, (_, i) => (
+            <div key={i} className="bg-white dark:bg-zinc-950 rounded-3xl border border-neutral-100 dark:border-neutral-800 overflow-hidden shadow-sm h-full flex flex-col">
+              {/* Image placeholder */}
+              <Skeleton className="aspect-square w-full rounded-none" />
+              {/* Content */}
+              <div className="p-3 sm:p-5 flex flex-col flex-1 space-y-2">
+                <Skeleton className="h-4 sm:h-5 w-3/4" />
+                <Skeleton className="h-3 w-1/3" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-5 w-16 rounded-md" />
+                  <Skeleton className="h-5 w-16 rounded-md" />
+                </div>
+              </div>
+              {/* Footer */}
+              <div className="px-3 pb-3 sm:px-5 sm:pb-5 flex items-center justify-between border-t border-neutral-50 pt-2">
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-8 w-8 sm:h-10 sm:w-20 rounded-full" />
+              </div>
+            </div>
           ))}
         </div>
       ) : productsError ? (
-        <div className="text-center py-16">
+        <div className="text-center py-16" data-testid="product-catalog-error">
           <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
           <h2 className="text-xl font-semibold mb-2">Unable to load products</h2>
           <p className="text-muted-foreground mb-4">
             There was a problem loading the products. Please try again.
           </p>
-          <Button onClick={() => refetchProducts()}>
+          <Button onClick={() => refetchProducts()} data-testid="retry-button">
             <RefreshCw className="w-4 h-4 mr-2" />
             Try Again
           </Button>
@@ -663,7 +680,7 @@ export function ProductCatalogPage() {
           </Button>
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4" data-testid="product-catalog-grid">
           {paginatedProducts.map((product) => (
             <StorefrontProductCard
               key={product.product_id}
