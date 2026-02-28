@@ -228,7 +228,7 @@ export function OrderConfirmationPage() {
           <div className="text-center mb-4 sm:mb-6">
             <p className="text-xs sm:text-sm text-muted-foreground">Order Number</p>
             <p className="text-xl sm:text-2xl font-bold" style={{ color: store.primary_color }}>
-              {displayOrderNumber}
+              #{displayOrderNumber}
             </p>
             {displayTotal != null && (
               <p className="text-base sm:text-lg mt-1 sm:mt-2">
