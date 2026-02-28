@@ -45,6 +45,7 @@ export interface LiveOrder {
 interface LiveOrdersKanbanProps {
     orders: LiveOrder[];
     onStatusChange: (orderId: string, newStatus: string, source: 'menu' | 'app') => void;
+    onViewDetails?: (order: LiveOrder) => void;
     isLoading?: boolean;
 }
 
@@ -113,7 +114,7 @@ function SLATimer({ createdAt }: { createdAt: string }) {
     );
 }
 
-function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChange: LiveOrdersKanbanProps['onStatusChange'] }) {
+function KanbanCard({ order, onStatusChange, onViewDetails }: { order: LiveOrder, onStatusChange: LiveOrdersKanbanProps['onStatusChange'], onViewDetails?: (order: LiveOrder) => void }) {
     const [fleetDialogOpen, setFleetDialogOpen] = useState(false);
     const { isEnabled } = useTenantFeatureToggles();
     const deliveryEnabled = isEnabled('delivery_tracking');
@@ -137,7 +138,10 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
 
     return (
         <>
-            <Card className="mb-2 hover:shadow-md transition-all border-l-4 overflow-hidden relative group">
+            <Card
+                className="mb-2 hover:shadow-md transition-all border-l-4 overflow-hidden relative group cursor-pointer"
+                onClick={() => onViewDetails?.(order)}
+            >
                 <CardContent className="p-2.5 space-y-3">
                     {/* Header */}
                     <div className="flex justify-between items-start">
@@ -163,8 +167,8 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
                         )}
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                    {/* Actions — stop propagation so card click doesn't fire */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Order actions">
@@ -233,7 +237,7 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
     );
 }
 
-export function LiveOrdersKanban({ orders, onStatusChange, isLoading }: LiveOrdersKanbanProps) {
+export function LiveOrdersKanban({ orders, onStatusChange, onViewDetails, isLoading }: LiveOrdersKanbanProps) {
     // Group orders by column
     const columns = useMemo(() => {
         return COLUMNS.map(col => ({
@@ -274,6 +278,7 @@ export function LiveOrdersKanban({ orders, onStatusChange, isLoading }: LiveOrde
                                         key={order.id}
                                         order={order}
                                         onStatusChange={onStatusChange}
+                                        onViewDetails={onViewDetails}
                                     />
                                 ))
                             )}

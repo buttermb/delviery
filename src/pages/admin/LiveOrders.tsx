@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { LiveOrdersKanban, type LiveOrder } from '@/components/admin/live-orders/LiveOrdersKanban';
+import { LiveOrderDetailPanel } from '@/components/admin/live-orders/LiveOrderDetailPanel';
 import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { useUndo } from '@/hooks/useUndo';
 import { UndoToast } from '@/components/ui/undo-toast';
@@ -39,6 +40,8 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [soundEnabled, setSoundEnabledState] = useState(isSoundEnabled);
+  const [selectedOrder, setSelectedOrder] = useState<LiveOrder | null>(null);
+  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
   const previousOrderCountRef = useRef<number>(0);
   const isFirstLoadRef = useRef(true);
 
@@ -266,6 +269,11 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
     setIsRefreshing(false);
   };
 
+  const handleViewDetails = (order: LiveOrder) => {
+    setSelectedOrder(order);
+    setDetailPanelOpen(true);
+  };
+
   return (
     <div className="flex flex-col h-dvh overflow-hidden bg-slate-50 dark:bg-zinc-950">
       <SEOHead
@@ -351,6 +359,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
                 orders={orders}
                 isLoading={isLoading}
                 onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
+                onViewDetails={handleViewDetails}
               />
             )}
           </div>
@@ -367,6 +376,14 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           onDismiss={commit}
         />
       )}
+
+      {/* Order Detail Slide-Over */}
+      <LiveOrderDetailPanel
+        order={selectedOrder}
+        open={detailPanelOpen}
+        onOpenChange={setDetailPanelOpen}
+        onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
+      />
     </div>
   );
 }
