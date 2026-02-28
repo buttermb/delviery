@@ -367,8 +367,8 @@ export function useGenerateMenu() {
 }
 
 /**
- * Pre-configured hook for storefront/marketplace creation actions
- * Uses 'marketplace_list_product' action key (25 credits)
+ * Pre-configured hook for storefront creation actions
+ * Uses 'storefront_create' action key (500 credits)
  */
 export function useCreateStorefront() {
   const creditGated = useCreditGatedAction();
@@ -384,7 +384,7 @@ export function useCreateStorefront() {
       }
     ) => {
       return creditGated.execute({
-        actionKey: 'marketplace_list_product',
+        actionKey: 'storefront_create',
         action,
         referenceId: options?.storefrontId,
         referenceType: 'storefront',
