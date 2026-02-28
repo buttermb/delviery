@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useShop } from './ShopLayout';
+import { useShop } from '@/pages/shop/ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useDeals } from '@/hooks/useDeals';
