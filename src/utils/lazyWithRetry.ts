@@ -15,7 +15,7 @@ interface RetryOptions {
 /**
  * Create a lazy component with retry logic and error handling
  */
-export function lazyWithRetry<T extends ComponentType<any>>(
+export function lazyWithRetry<T extends ComponentType<Record<string, unknown>>>(
   importFn: () => Promise<{ default: T }>,
   options: RetryOptions = {}
 ): LazyExoticComponent<T> {
@@ -60,7 +60,7 @@ export function lazyWithRetry<T extends ComponentType<any>>(
         // Return fallback component using React.createElement to avoid JSX parsing issues
         return {
           default: (() => {
-            const FallbackComponent: ComponentType<any> = () => {
+            const FallbackComponent: ComponentType<Record<string, unknown>> = () => {
               const handleReload = async () => {
                 // Clear all caches and service workers, then reload
                 await clearAllCachesAndServiceWorkers();

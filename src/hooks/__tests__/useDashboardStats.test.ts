@@ -73,7 +73,7 @@ describe('useDashboardStats', () => {
       );
 
       expect(dashboardQuery).toBeDefined();
-      expect((dashboardQuery as any)?.options?.refetchInterval).toBe(60_000);
+      expect((dashboardQuery as unknown as Record<string, Record<string, unknown>>)?.options?.refetchInterval).toBe(60_000);
     });
   });
 
@@ -87,7 +87,7 @@ describe('useDashboardStats', () => {
       );
 
       expect(dashboardQuery).toBeDefined();
-      expect((dashboardQuery as any)?.options?.staleTime).toBe(60_000);
+      expect((dashboardQuery as unknown as Record<string, Record<string, unknown>>)?.options?.staleTime).toBe(60_000);
     });
   });
 

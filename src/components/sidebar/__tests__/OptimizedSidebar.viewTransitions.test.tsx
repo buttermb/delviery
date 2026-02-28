@@ -48,7 +48,7 @@ describe('OptimizedSidebar - View Transitions', () => {
     });
 
     // Store original startViewTransition
-    originalStartViewTransition = (document as any).startViewTransition;
+    originalStartViewTransition = (document as unknown as Record<string, unknown>).startViewTransition;
   });
 
   afterEach(() => {
@@ -57,9 +57,9 @@ describe('OptimizedSidebar - View Transitions', () => {
 
     // Restore original startViewTransition
     if (originalStartViewTransition !== undefined) {
-      (document as any).startViewTransition = originalStartViewTransition;
+      (document as unknown as Record<string, unknown>).startViewTransition = originalStartViewTransition;
     } else {
-      delete (document as any).startViewTransition;
+      delete (document as unknown as Record<string, unknown>).startViewTransition;
     }
   });
 
@@ -79,7 +79,7 @@ describe('OptimizedSidebar - View Transitions', () => {
     it('should enable viewTransition when browser supports View Transitions API', () => {
       // Mock View Transitions support
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(true);
-      (document as any).startViewTransition = vi.fn();
+      (document as unknown as Record<string, unknown>).startViewTransition = vi.fn();
 
       const { container } = renderSidebar();
 
@@ -91,7 +91,7 @@ describe('OptimizedSidebar - View Transitions', () => {
     it('should disable viewTransition when browser does not support View Transitions API', () => {
       // Mock no View Transitions support
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(false);
-      delete (document as any).startViewTransition;
+      delete (document as unknown as Record<string, unknown>).startViewTransition;
 
       const { container } = renderSidebar();
 

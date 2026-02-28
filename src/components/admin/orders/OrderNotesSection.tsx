@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedClient } from '@/lib/supabaseUntyped';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
@@ -83,10 +83,7 @@ export function OrderNotesSection({
     }) => {
       const updateData = { [field]: value };
 
-      // Supabase type limitation: dynamic table names can't be statically typed
-      const baseQuery = supabase.from(tableName as any).update(updateData); // Supabase type limitation
-
-      let query = baseQuery.eq('id', orderId) as any; // Supabase type limitation: dynamic chaining
+      let query = untypedClient.from(tableName).update(updateData).eq('id', orderId);
 
       if (additionalFilter) {
         query = query.eq(additionalFilter.field, additionalFilter.value);

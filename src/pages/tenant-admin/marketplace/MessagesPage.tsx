@@ -8,7 +8,7 @@ import { encryptMessage, decryptMessage } from '@/lib/utils/encryption';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedClient } from '@/lib/supabaseUntyped';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -89,8 +89,8 @@ export default function MessagesPage() {
     queryFn: async (): Promise<Message[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await supabase
-        .from('marketplace_messages' as any) // Supabase type limitation
+      const { data, error } = await untypedClient
+        .from('marketplace_messages')
         .select(`
           *,
           sender_tenant:tenants!marketplace_messages_sender_tenant_id_fkey (
@@ -202,8 +202,8 @@ export default function MessagesPage() {
   // Mark messages as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (messageIds: string[]) => {
-      const { error } = await supabase
-        .from('marketplace_messages' as any) // Supabase type limitation
+      const { error } = await untypedClient
+        .from('marketplace_messages')
         .update({
           read: true,
           read_at: new Date().toISOString()
@@ -233,8 +233,8 @@ export default function MessagesPage() {
 
       const encryptedText = await encryptMessage(text);
 
-      const { data, error } = await supabase
-        .from('marketplace_messages' as any) // Supabase type limitation
+      const { data, error } = await untypedClient
+        .from('marketplace_messages')
         .insert({
           sender_tenant_id: tenantId,
           receiver_tenant_id: buyerTenantId,

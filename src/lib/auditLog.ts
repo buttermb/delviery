@@ -80,7 +80,7 @@ async function getClientIP(): Promise<string | null> {
  */
 export const auditActions = {
   // Tenant actions
-  tenantCreated: (tenantId: string, changes: Record<string, any>) =>
+  tenantCreated: (tenantId: string, changes: Record<string, unknown>) =>
     logAuditEvent({
       action: 'tenant.created',
       resourceType: 'tenant',
@@ -89,7 +89,7 @@ export const auditActions = {
       changes,
     }),
 
-  tenantUpdated: (tenantId: string, changes: Record<string, any>) =>
+  tenantUpdated: (tenantId: string, changes: Record<string, unknown>) =>
     logAuditEvent({
       action: 'tenant.updated',
       resourceType: 'tenant',
@@ -123,14 +123,14 @@ export const auditActions = {
     }),
 
   // Feature flag actions
-  featureFlagCreated: (flagKey: string, changes: Record<string, any>) =>
+  featureFlagCreated: (flagKey: string, changes: Record<string, unknown>) =>
     logAuditEvent({
       action: 'feature_flag.created',
       resourceType: 'feature_flag',
       changes: { flagKey, ...changes },
     }),
 
-  featureFlagUpdated: (flagKey: string, changes: Record<string, any>) =>
+  featureFlagUpdated: (flagKey: string, changes: Record<string, unknown>) =>
     logAuditEvent({
       action: 'feature_flag.updated',
       resourceType: 'feature_flag',
@@ -138,7 +138,7 @@ export const auditActions = {
     }),
 
   // Workflow actions
-  workflowCreated: (workflowId: string, changes: Record<string, any>) =>
+  workflowCreated: (workflowId: string, changes: Record<string, unknown>) =>
     logAuditEvent({
       action: 'workflow.created',
       resourceType: 'workflow',
@@ -164,7 +164,7 @@ export const auditActions = {
     }),
 
   // Rate limit actions
-  rateLimitUpdated: (tenantId: string, changes: Record<string, any>) =>
+  rateLimitUpdated: (tenantId: string, changes: Record<string, unknown>) =>
     logAuditEvent({
       action: 'rate_limit.updated',
       resourceType: 'rate_limit',
@@ -192,7 +192,7 @@ export const auditActions = {
     }),
 
   // System actions
-  systemConfigUpdated: (changes: Record<string, any>) =>
+  systemConfigUpdated: (changes: Record<string, unknown>) =>
     logAuditEvent({
       action: 'system_config.updated',
       resourceType: 'system_config',

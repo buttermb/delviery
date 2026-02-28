@@ -318,7 +318,7 @@ describe('lodash-es utility functions', () => {
 
     it('should handle non-existent keys', () => {
       const obj = { a: 1, b: 2 };
-      const result = pickProperties(obj, 'a', 'c' as any);
+      const result = pickProperties(obj, 'a', 'c' as unknown as keyof typeof obj);
 
       expect(result).toEqual({ a: 1 });
     });
@@ -341,7 +341,7 @@ describe('lodash-es utility functions', () => {
 
     it('should handle non-existent keys', () => {
       const obj = { a: 1, b: 2 };
-      const result = omitProperties(obj, 'c' as any);
+      const result = omitProperties(obj, 'c' as unknown as keyof typeof obj);
 
       expect(result).toEqual({ a: 1, b: 2 });
     });

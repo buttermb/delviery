@@ -13,7 +13,7 @@ export interface ActivityLogParams {
   action: string;
   resource?: string;
   resourceId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -64,7 +64,7 @@ export async function logActivityAuto(
   action: string,
   resource?: string,
   resourceId?: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): Promise<void> {
   const userId = await getCurrentUserId();
   if (!userId) {

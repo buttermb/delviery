@@ -4,8 +4,8 @@
  * Manages promotional credit codes for marketing campaigns.
  */
 
-import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { untypedClient as sb } from '@/lib/supabaseUntyped';
 
 // ============================================================================
 // Types
@@ -64,9 +64,6 @@ interface PromoRedemptionRow {
   promo_codes?: { code: string };
 }
 
-// Use `supabase as any` for tables not in auto-generated types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sb = supabase as any;
 
 // ============================================================================
 // Public Functions

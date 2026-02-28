@@ -48,7 +48,7 @@ export function useMapboxToken() {
           .eq('account_id', account.id)
           .maybeSingle();
 
-        const integrationSettings = settings?.integration_settings as Record<string, any> | null;
+        const integrationSettings = settings?.integration_settings as Record<string, unknown> | null;
         if (integrationSettings && typeof integrationSettings === 'object' && integrationSettings.mapbox_token) {
           setToken(integrationSettings.mapbox_token as string);
         }

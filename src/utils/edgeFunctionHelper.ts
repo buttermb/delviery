@@ -7,14 +7,14 @@ import bugFinder from './bugFinder';
 
 export interface EdgeFunctionOptions {
   functionName: string;
-  body?: Record<string, any>;
+  body?: Record<string, unknown>;
   headers?: Record<string, string>;
 }
 
 /**
  * Invoke Supabase Edge Function with automatic error tracking
  */
-export async function invokeEdgeFunction<T = any>(
+export async function invokeEdgeFunction<T = unknown>(
   options: EdgeFunctionOptions
 ): Promise<{ data: T | null; error: Error | null }> {
   const { functionName, body, headers } = options;

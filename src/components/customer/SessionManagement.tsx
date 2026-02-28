@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedClient } from '@/lib/supabaseUntyped';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -91,8 +91,8 @@ export function SessionManagement() {
 
     setRevoking(sessionId);
     try {
-      const { error } = await supabase
-        .from('customer_sessions' as any) // Supabase type limitation
+      const { error } = await untypedClient
+        .from('customer_sessions')
         .update({ expires_at: new Date().toISOString() })
         .eq('id', sessionId);
 

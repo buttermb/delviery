@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
+import { untypedClient } from '@/lib/supabaseUntyped';
 import { toast } from "sonner";
 import { Check, Loader2, Sparkles, Shield, Clock, Coins, ArrowLeft, Zap } from "lucide-react";
 import { logger } from "@/lib/logger";
@@ -231,7 +232,7 @@ export default function SelectPlanPage() {
       if (updateError) throw updateError;
 
       // Grant initial credits
-      const { error: creditError } = await (supabase.rpc as any)('grant_free_credits', { // Supabase type limitation
+      const { error: creditError } = await untypedClient.rpc('grant_free_credits', {
         p_tenant_id: tenantId,
         p_amount: FREE_TIER_MONTHLY_CREDITS,
       });

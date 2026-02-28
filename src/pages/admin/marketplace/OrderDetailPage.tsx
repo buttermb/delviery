@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedClient } from '@/lib/supabaseUntyped';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -158,8 +159,8 @@ export default function OrderDetailPage() {
                 throw new Error("Cannot message guest customers directly via platform messaging yet.");
             }
 
-            const { error } = await supabase
-                .from('marketplace_messages' as any) // Supabase type limitation
+            const { error } = await untypedClient
+                .from('marketplace_messages')
                 .insert({
                     sender_tenant_id: tenant.id,
                     receiver_tenant_id: order.buyer_tenant_id,

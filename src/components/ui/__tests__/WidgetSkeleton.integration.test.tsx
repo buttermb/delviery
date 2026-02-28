@@ -4,7 +4,7 @@
  * Created: 2026-02-02
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Suspense, lazy, useState } from 'react';
@@ -173,7 +173,7 @@ describe('WidgetSkeleton - Integration Tests', () => {
 
       // Named component function to satisfy React hooks rules
       function DataWidgetComponent() {
-        const [data, setData] = useState<any>(null);
+        const [data, setData] = useState<{ revenue: number; trend: string } | null>(null);
 
         // Simulate data fetch
         if (!data) {

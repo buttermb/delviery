@@ -19,10 +19,23 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
+interface FrontedInventoryItem {
+  id: string;
+  quantity_fronted: number;
+  quantity_sold: number;
+  quantity_returned: number;
+  expected_revenue: string | number | null;
+  payment_received: string | number | null;
+  payment_due_date: string | null;
+  dispatched_at: string;
+  products: { name: string; sku: string; wholesale_price: number } | null;
+  tenants: { slug: string } | null;
+}
+
 export default function DriverPortal() {
   const navigate = useNavigate();
   const [_loading, setLoading] = useState(true);
-  const [myFronts, setMyFronts] = useState<any[]>([]);
+  const [myFronts, setMyFronts] = useState<FrontedInventoryItem[]>([]);
   const [stats, setStats] = useState({
     totalUnits: 0,
     unitsSold: 0,

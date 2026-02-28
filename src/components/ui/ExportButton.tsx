@@ -17,7 +17,7 @@ import {
 } from "@/lib/utils/exportUtils";
 
 interface ExportButtonProps {
-  data: Record<string, any>[];
+  data: Record<string, unknown>[];
   filename?: string;
   columns?: { key: string; label: string }[];
   disabled?: boolean;
@@ -31,7 +31,7 @@ export function ExportButton({
 }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
-  const getExportColumns = (): ExportColumn<Record<string, any>>[] => {
+  const getExportColumns = (): ExportColumn<Record<string, unknown>>[] => {
     if (columns) {
       return columns.map(c => ({
         key: c.key,

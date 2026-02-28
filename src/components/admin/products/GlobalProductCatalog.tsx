@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { untypedClient } from '@/lib/supabaseUntyped';
 import { useTenant } from '@/contexts/TenantContext';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -73,7 +74,7 @@ export function GlobalProductCatalog() {
     const { data: products = [], isLoading } = useQuery({
         queryKey: queryKeys.globalProducts.list(debouncedSearch, categoryFilter, debouncedBrand),
         queryFn: async () => {
-            const { data, error } = await (supabase.rpc as any)('search_global_products', { // Supabase type limitation
+            const { data, error } = await untypedClient.rpc('search_global_products', {
                 p_query: debouncedSearch || null,
                 p_category: categoryFilter === '__all__' ? null : categoryFilter || null,
                 p_brand: debouncedBrand || null,
@@ -91,8 +92,8 @@ export function GlobalProductCatalog() {
         queryKey: queryKeys.globalProducts.imports(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
-            const { data, error } = await (supabase
-                .from as any)('global_product_imports') // Supabase type limitation
+            const { data, error } = await untypedClient
+                .from('global_product_imports')
                 .select('global_product_id')
                 .eq('tenant_id', tenant.id);
 
@@ -116,7 +117,7 @@ export function GlobalProductCatalog() {
 
             if (!profile) throw new Error('No marketplace profile found');
 
-            const { data, error } = await (supabase.rpc as any)('import_global_product', { // Supabase type limitation
+            const { data, error } = await untypedClient.rpc('import_global_product', {
                 p_tenant_id: tenant.id,
                 p_global_product_id: selectedProduct.id,
                 p_price: Number(importPrice),

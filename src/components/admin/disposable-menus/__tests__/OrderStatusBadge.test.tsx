@@ -11,7 +11,7 @@ import { OrderStatusBadge } from '../OrderStatusBadge';
 
 // Mock UI components
 vi.mock('@/components/ui/badge', () => ({
-  Badge: ({ children, className, variant, ...props }: any) => (
+  Badge: ({ children, className, variant, ...props }: { children: React.ReactNode; className?: string; variant?: string; [key: string]: unknown }) => (
     <div data-testid="badge" className={className} data-variant={variant} {...props}>
       {children}
     </div>
@@ -20,29 +20,29 @@ vi.mock('@/components/ui/badge', () => ({
 
 // Mock lucide-react icons - using forwardRef to properly handle className
 vi.mock('lucide-react', () => ({
-  Clock: React.forwardRef(({ className, ...props }: any, ref) => (
+  Clock: React.forwardRef(({ className, ...props }: { className?: string; [key: string]: unknown }, ref: React.Ref<SVGSVGElement>) => (
     <svg data-testid="clock-icon" className={className} ref={ref} {...props} />
   )),
-  Package: React.forwardRef(({ className, ...props }: any, ref) => (
+  Package: React.forwardRef(({ className, ...props }: { className?: string; [key: string]: unknown }, ref: React.Ref<SVGSVGElement>) => (
     <svg data-testid="package-icon" className={className} ref={ref} {...props} />
   )),
-  CheckCircle: React.forwardRef(({ className, ...props }: any, ref) => (
+  CheckCircle: React.forwardRef(({ className, ...props }: { className?: string; [key: string]: unknown }, ref: React.Ref<SVGSVGElement>) => (
     <svg data-testid="check-circle-icon" className={className} ref={ref} {...props} />
   )),
-  XCircle: React.forwardRef(({ className, ...props }: any, ref) => (
+  XCircle: React.forwardRef(({ className, ...props }: { className?: string; [key: string]: unknown }, ref: React.Ref<SVGSVGElement>) => (
     <svg data-testid="x-circle-icon" className={className} ref={ref} {...props} />
   )),
-  Truck: React.forwardRef(({ className, ...props }: any, ref) => (
+  Truck: React.forwardRef(({ className, ...props }: { className?: string; [key: string]: unknown }, ref: React.Ref<SVGSVGElement>) => (
     <svg data-testid="truck-icon" className={className} ref={ref} {...props} />
   )),
-  Loader2: React.forwardRef(({ className, ...props }: any, ref) => (
+  Loader2: React.forwardRef(({ className, ...props }: { className?: string; [key: string]: unknown }, ref: React.Ref<SVGSVGElement>) => (
     <svg data-testid="loader2-icon" className={className} ref={ref} {...props} />
   )),
 }));
 
 // Mock utils
 vi.mock('@/lib/utils', () => ({
-  cn: (...args: any[]) => args.filter(Boolean).join(' '),
+  cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
 }));
 
 vi.mock('@/lib/utils/statusColors', () => ({
@@ -319,7 +319,7 @@ describe('OrderStatusBadge', () => {
     it('should not re-render when props remain the same', () => {
       const renderSpy = vi.fn();
 
-      const TestWrapper = ({ status, size, showIcon }: any) => {
+      const TestWrapper = ({ status, size, showIcon }: { status: string; size?: string; showIcon?: boolean }) => {
         renderSpy();
         return <OrderStatusBadge status={status} size={size} showIcon={showIcon} />;
       };

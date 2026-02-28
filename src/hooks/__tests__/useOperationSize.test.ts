@@ -6,7 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createElement } from 'react';
+import { createElement, type ReactNode } from 'react';
 import { useOperationSize } from '../useOperationSize';
 
 vi.mock('@/contexts/TenantAdminAuthContext', () => ({
@@ -42,7 +42,7 @@ const createWrapper = () => {
     defaultOptions: { queries: { retry: false } }
   });
   
-  return ({ children }: any) => 
+  return ({ children }: { children: ReactNode }) =>
     createElement(QueryClientProvider, { client: queryClient }, children);
 };
 

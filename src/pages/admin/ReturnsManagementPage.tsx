@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { untypedClient } from '@/lib/supabaseUntyped';
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -101,8 +102,8 @@ export default function ReturnsManagementPage() {
   const { data: returns, isLoading } = useQuery({
     queryKey: queryKeys.returns.list({ status: statusFilter }),
     queryFn: async () => {
-      let query = supabase
-        .from("return_authorizations" as any) // Supabase type limitation
+      let query = untypedClient
+        .from("return_authorizations")
         .select("*")
         .order("created_at", { ascending: false });
 

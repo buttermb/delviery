@@ -5,7 +5,7 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { untypedClient } from '@/lib/supabaseUntyped';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -90,7 +90,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
   const { data: giftCards = [], isLoading } = useQuery({
     queryKey: queryKeys.giftCards.byStore(storeId),
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await untypedClient
         .from('marketplace_gift_cards')
         .select('*')
         .eq('store_id', storeId)
@@ -131,7 +131,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
 
   const bulkStatusMutation = useMutation({
     mutationFn: async ({ ids, newStatus }: { ids: string[]; newStatus: 'active' | 'disabled' }) => {
-      const { error } = await supabase
+      const { error } = await untypedClient
         .from('marketplace_gift_cards')
         .update({ status: newStatus })
         .in('id', ids)
@@ -153,9 +153,8 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
   });
 
   const deleteMutation = useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- marketplace_gift_cards not in generated types
     mutationFn: async (cardId: string) => {
-      const { error } = await supabase
+      const { error } = await untypedClient
         .from('marketplace_gift_cards')
         .delete()
         .eq('id', cardId)
