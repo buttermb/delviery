@@ -23,6 +23,8 @@ const CheckoutItemSchema = z.object({
   product_id: z.string().uuid(),
   quantity: z.number().int().positive(),
   variant: z.string().optional(),
+  // Client may send price for display — always overridden by DB price
+  price: z.number().optional(),
 });
 
 const CustomerInfoSchema = z.object({
@@ -49,6 +51,8 @@ const CheckoutRequestSchema = z.object({
   successUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
   idempotencyKey: z.string().optional(),
+  // Client-side total for discrepancy detection (always overridden by server)
+  clientTotal: z.number().optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -157,7 +161,45 @@ serve(secureHeadersMiddleware(async (req) => {
         : freeThreshold > 0 && subtotal >= freeThreshold
           ? 0
           : storeDeliveryFee;
-    const total = subtotal + deliveryFee;
+    const tax = 0; // Tax placeholder — extend when tax rules are configured
+    const total = subtotal + tax + deliveryFee;
+
+    // ------------------------------------------------------------------
+    // 3b. SECURITY — Detect client/server price discrepancy
+    // ------------------------------------------------------------------
+    let priceDiscrepancy: { clientTotal: number; serverTotal: number } | null = null;
+    if (body.clientTotal !== undefined) {
+      const diff = Math.abs(body.clientTotal - total);
+      // Tolerate rounding differences up to 1 cent
+      if (diff > 0.01) {
+        priceDiscrepancy = {
+          clientTotal: body.clientTotal,
+          serverTotal: total,
+        };
+      }
+    }
+
+    // Also check per-item price discrepancies
+    const itemPriceAdjustments: Array<{
+      productId: string;
+      clientPrice: number;
+      serverPrice: number;
+    }> = [];
+    for (const item of body.items) {
+      if (item.price !== undefined) {
+        const product = productMap.get(item.product_id);
+        if (product) {
+          const serverPrice = Number(product.price);
+          if (Math.abs(item.price - serverPrice) > 0.01) {
+            itemPriceAdjustments.push({
+              productId: item.product_id,
+              clientPrice: item.price,
+              serverPrice,
+            });
+          }
+        }
+      }
+    }
 
     // ------------------------------------------------------------------
     // 4. Create order via existing RPC (handles inventory & idempotency)
@@ -175,7 +217,7 @@ serve(secureHeadersMiddleware(async (req) => {
         p_delivery_notes: body.notes ?? null,
         p_items: orderItems,
         p_subtotal: subtotal,
-        p_tax: 0,
+        p_tax: tax,
         p_delivery_fee: deliveryFee,
         p_total: total,
         p_payment_method: body.paymentMethod,
@@ -199,7 +241,20 @@ serve(secureHeadersMiddleware(async (req) => {
     const result: Record<string, unknown> = {
       orderId,
       orderNumber: orderRecord?.order_number ?? null,
+      serverTotal: total,
+      subtotal,
+      tax,
+      deliveryFee,
     };
+
+    // Include discrepancy info so clients can reconcile
+    if (priceDiscrepancy) {
+      result.priceAdjusted = true;
+      result.priceDiscrepancy = priceDiscrepancy;
+    }
+    if (itemPriceAdjustments.length > 0) {
+      result.itemPriceAdjustments = itemPriceAdjustments;
+    }
 
     // ------------------------------------------------------------------
     // 5. If card payment, create Stripe Checkout session
