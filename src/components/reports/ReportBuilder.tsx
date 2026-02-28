@@ -220,7 +220,7 @@ export function ReportBuilder({ onClose }: { onClose?: () => void }) {
                     placeholder="email@example.com"
                     onKeyPress={(e) => e.key === 'Enter' && addEmail()}
                   />
-                  <Button type="button" onClick={addEmail} variant="outline">
+                  <Button type="button" onClick={addEmail} variant="outline" aria-label="Add email recipient">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>

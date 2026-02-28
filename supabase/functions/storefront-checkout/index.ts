@@ -158,9 +158,11 @@ serve(secureHeadersMiddleware(async (req) => {
       subtotal += price * item.quantity;
       orderItems.push({
         product_id: item.product_id,
+        name: product.name,
         quantity: item.quantity,
         price,
         variant: item.variant ?? null,
+        image_url: product.image_url ?? null,
       });
     }
 

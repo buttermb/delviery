@@ -142,7 +142,7 @@ export function BigPlugRunnerPortal() {
             <h1 className="text-2xl font-bold">🚗 Runner #{runner?.id?.slice(-4) || 'N/A'}</h1>
             <p className="text-sm text-muted-foreground">{runner?.full_name || 'Runner'}</p>
           </div>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" aria-label="Call support">
             <Phone className="h-4 w-4" />
           </Button>
         </div>

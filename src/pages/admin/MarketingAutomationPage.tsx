@@ -195,7 +195,7 @@ export default function MarketingAutomationPage() {
       cell: (row) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-11 w-11 p-0">
+            <Button variant="ghost" size="sm" className="h-11 w-11 p-0" aria-label="Campaign actions">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

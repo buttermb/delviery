@@ -708,7 +708,7 @@ export default function NewWholesaleOrder() {
                                     {inCart.qty} in cart
                                   </Badge>
                                 ) : (
-                                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 shrink-0">
+                                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 shrink-0" aria-label="Add to order">
                                     <Plus className="h-4 w-4" />
                                   </Button>
                                 )}

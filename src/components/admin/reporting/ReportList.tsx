@@ -71,6 +71,7 @@ export function ReportList({ reports, isLoading }: ReportListProps) {
                   variant="ghost"
                   size="sm"
                   className="min-h-[44px] touch-manipulation"
+                  aria-label="View report"
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
@@ -78,6 +79,7 @@ export function ReportList({ reports, isLoading }: ReportListProps) {
                   variant="ghost"
                   size="sm"
                   className="min-h-[44px] touch-manipulation"
+                  aria-label="Download report"
                 >
                   <Download className="h-4 w-4" />
                 </Button>

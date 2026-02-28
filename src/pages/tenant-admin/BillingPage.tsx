@@ -1016,6 +1016,7 @@ export default function TenantAdminBillingPage() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          aria-label="View invoice"
                         >
                           <ExternalLink className="h-4 w-4" />
                         </Button>

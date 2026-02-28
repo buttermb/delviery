@@ -3,7 +3,6 @@ import { cn } from '@/lib/utils';
 interface FloraIQLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
-  disableAnimation?: boolean;
   iconOnly?: boolean;
 }
 
@@ -22,44 +21,34 @@ const FloraIQLogo = ({
   const sizes = sizeMap[size];
 
   return (
-    <div className={cn('flex items-center font-sans font-bold tracking-tight text-green-950', !iconOnly && sizes.gap, sizes.container, className)}>
-      <FlowerIcon className={sizes.icon} />
-      {!iconOnly && <span>FloraIQ</span>}
+    <div className={cn('flex items-center', !iconOnly && sizes.gap, className)}>
+      <FlowerMark className={cn('text-green-600 flex-shrink-0', sizes.icon)} />
+      {!iconOnly && (
+        <div className={cn('flex items-baseline leading-none tracking-tight', sizes.container)}>
+          <span className="font-light text-foreground">Flora</span>
+          <span className="font-extrabold text-foreground">IQ</span>
+        </div>
+      )}
     </div>
   );
 };
 
-// Custom Unique "Tech-Bloom" Icon
-// Circular design for a fuller, non-squished look
-function FlowerIcon({ className }: { className?: string }) {
+function FlowerMark({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      viewBox="0 0 52 52"
+      xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Stem/Tail - Curves to right */}
-      <path d="M12 18 C12 18 12 22 16 22" strokeWidth="2.5" />
-
-      {/* Leaf - Left side */}
-      <path d="M12 20 L9.5 18.5" strokeWidth="2.5" />
-
-      {/* Center Node */}
-      <circle cx="12" cy="11" r="1.5" fill="currentColor" stroke="none" />
-
-      {/* 4 Circular Petals (Full & Balanced) */}
-      {/* Top */}
-      <circle cx="12" cy="6" r="3" strokeWidth="2" />
-      {/* Bottom */}
-      <circle cx="12" cy="16" r="3" strokeWidth="2" />
-      {/* Left */}
-      <circle cx="7" cy="11" r="3" strokeWidth="2" />
-      {/* Right */}
-      <circle cx="17" cy="11" r="3" strokeWidth="2" />
+      <g transform="translate(26,26)">
+        <path d="M 0 -6 C -10 -10 -8 -18 0 -23 C 8 -18 10 -10 0 -6 Z" fill="currentColor" />
+        <path d="M 0 -6 C -10 -10 -8 -18 0 -23 C 8 -18 10 -10 0 -6 Z" fill="currentColor" transform="rotate(72)" />
+        <path d="M 0 -6 C -10 -10 -8 -18 0 -23 C 8 -18 10 -10 0 -6 Z" fill="currentColor" transform="rotate(144)" />
+        <path d="M 0 -6 C -10 -10 -8 -18 0 -23 C 8 -18 10 -10 0 -6 Z" fill="currentColor" transform="rotate(216)" />
+        <path d="M 0 -6 C -10 -10 -8 -18 0 -23 C 8 -18 10 -10 0 -6 Z" fill="currentColor" transform="rotate(288)" />
+        <circle cx="0" cy="0" r="6.5" fill="white" />
+        <circle cx="0" cy="0" r="3" fill="currentColor" />
+      </g>
     </svg>
   );
 }

@@ -1,0 +1,14 @@
+{
+  "id": "6f1d78f6-0b27-44f6-9744-f61047dbdf15",
+  "status": "interrupted",
+  "startedAt": "2026-02-28T06:25:05.056Z",
+  "updatedAt": "2026-02-28T15:11:28.197Z",
+  "agentPlugin": "claude",
+  "trackerPlugin": "beads",
+  "currentIteration": 93,
+  "maxIterations": 0,
+  "totalTasks": 0,
+  "tasksCompleted": 92,
+  "cwd": "C:\\Users\\Alex\\Downloads\\delviery-fresh",
+  "endedAt": "2026-02-28T15:11:28.196Z"
+}

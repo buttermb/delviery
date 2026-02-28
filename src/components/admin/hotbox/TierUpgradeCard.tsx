@@ -184,7 +184,7 @@ export function TierUpgradeCard({ compact = false }: TierUpgradeCardProps) {
           </CardTitle>
           <Dialog open={overrideDialogOpen} onOpenChange={setOverrideDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" aria-label="Tier settings">
                 <Settings className="h-4 w-4" />
               </Button>
             </DialogTrigger>

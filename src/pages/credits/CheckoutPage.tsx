@@ -324,6 +324,7 @@ export function CheckoutPage() {
                     onClick={handleRemovePromo}
                     disabled={isProcessing}
                     className="text-muted-foreground hover:text-foreground"
+                    aria-label="Remove promo code"
                   >
                     <X className="h-4 w-4" />
                   </Button>

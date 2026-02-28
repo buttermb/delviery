@@ -119,7 +119,7 @@ export function FeatureToggle({
             {!readOnly && (
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" aria-label="Configure feature">
                     <Settings className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>

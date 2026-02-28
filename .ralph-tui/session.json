@@ -1,0 +1,4692 @@
+{
+  "version": 1,
+  "sessionId": "6f1d78f6-0b27-44f6-9744-f61047dbdf15",
+  "status": "interrupted",
+  "startedAt": "2026-02-28T06:25:31.991Z",
+  "updatedAt": "2026-02-28T15:11:28.192Z",
+  "currentIteration": 93,
+  "maxIterations": 0,
+  "tasksCompleted": 92,
+  "isPaused": false,
+  "agentPlugin": "claude",
+  "trackerState": {
+    "plugin": "beads",
+    "totalTasks": 623,
+    "tasks": [
+      {
+        "id": "floraiq-1aj.1",
+        "title": "task-224: RLS — marketplace_stores",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-1aj.2",
+        "title": "task-225: RLS — orders",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-1aj.3",
+        "title": "task-226: RLS — customers",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-1aj.4",
+        "title": "task-227: RLS — products",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-1aj.5",
+        "title": "task-228: Server-side price validation",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-1aj.6",
+        "title": "task-229: Rate limiting — checkout",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1aj.7",
+        "title": "task-230: Input sanitization — all user inputs",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1aj.8",
+        "title": "task-231: CORS — edge functions",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1aj.9",
+        "title": "task-232: Stripe keys — not exposed client-side",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1aj.10",
+        "title": "task-233: Telegram bot token — not exposed client-side",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1aj.11",
+        "title": "task-234: Customer data — no cross-tenant leakage",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1aj.12",
+        "title": "task-235: XSS — Custom HTML section",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1aj.13",
+        "title": "task-236: Order access — customer can only see their order",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1va.1",
+        "title": "task-244: Keyboard navigation — all interactive elements",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1va.2",
+        "title": "task-245: ARIA labels — icon buttons",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1va.3",
+        "title": "task-246: Color contrast — WCAG AA",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1va.4",
+        "title": "task-247: Alt text — all images",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1va.5",
+        "title": "task-248: Screen reader — checkout flow",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1va.6",
+        "title": "task-249: Semantic HTML — headings hierarchy",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1va.7",
+        "title": "task-250: Focus management — modals and dialogs",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-5ie.1",
+        "title": "task-212: Create delivery fee calculation",
+        "status": "completed",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-5ie.2",
+        "title": "task-211: Create delivery zone management",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-5ie.3",
+        "title": "task-214: Create delivery scheduling",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-5ie.4",
+        "title": "task-215: Create delivery exception handling",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-5ie.5",
+        "title": "task-218: Create delivery batch creation from orders",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-5ie.6",
+        "title": "task-219: Create delivery ETAs on order list",
+        "status": "completed",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-5ie.7",
+        "title": "task-220: Create delivery cost tracking and P&L",
+        "status": "in_progress",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-5ie.8",
+        "title": "task-221: Create delivery customer rating",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-5ie.9",
+        "title": "task-213: Create delivery analytics",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.1",
+        "title": "task-345: Create marketplace search and discovery",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.2",
+        "title": "task-341: Create B2B marketplace landing page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.3",
+        "title": "task-342: Create marketplace product listing",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.4",
+        "title": "task-343: Create marketplace order placement",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.5",
+        "title": "task-344: Create marketplace vendor storefront",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.6",
+        "title": "task-346: Create marketplace price comparison tool",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.7",
+        "title": "task-347: Create marketplace order tracking",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.8",
+        "title": "task-348: Create marketplace messaging between buyer and vendor",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.9",
+        "title": "task-350: Create marketplace wishlist and alerts",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.10",
+        "title": "task-351: Create marketplace compliance verification",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.11",
+        "title": "task-352: Create marketplace bulk ordering",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.12",
+        "title": "task-353: Create marketplace vendor rating from buyer",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.13",
+        "title": "task-354: Create marketplace saved vendor list",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.14",
+        "title": "task-355: Create marketplace trending products",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me.15",
+        "title": "task-349: Create marketplace analytics",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6w6.1",
+        "title": "task-001: Run TypeScript check — zero errors",
+        "status": "completed",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6w6.2",
+        "title": "task-002: Run Vite build — zero errors",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-6w6.3",
+        "title": "task-003: Audit console for runtime errors on admin dashboard",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-6w6.4",
+        "title": "task-004: Audit console for runtime errors on storefront builder",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-6w6.5",
+        "title": "task-005: Audit console for runtime errors on storefront settings",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-6w6.6",
+        "title": "task-006: Audit console for runtime errors on live orders",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-6w6.7",
+        "title": "task-007: Audit console for runtime errors on analytics",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-6w6.8",
+        "title": "task-008: Audit console on public storefront homepage",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-6w6.9",
+        "title": "task-009: Audit console on product catalog page",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-6w6.10",
+        "title": "task-010: Audit console on product detail page",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-6w6.11",
+        "title": "task-011: Audit console on cart page",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-6w6.12",
+        "title": "task-012: Audit console on checkout page",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-6w6.13",
+        "title": "task-013: Remove all console.log statements",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6w6.14",
+        "title": "task-014: Remove all @ts-ignore and @ts-nocheck",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6w6.15",
+        "title": "task-015: Remove all 'any' types",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6w6.16",
+        "title": "task-016: Verify all storefront routes exist in App.tsx",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6w6.17",
+        "title": "task-017: Verify storefront nav items in admin sidebar",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6w6.18",
+        "title": "task-018: Verify Supabase connection works",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6w6.19",
+        "title": "task-019: Verify marketplace_stores table schema",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6w6.20",
+        "title": "task-020: Verify orders + order_items table schema",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.1",
+        "title": "task-251: Toast notifications — consistent usage",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.2",
+        "title": "task-252: Button loading states",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.3",
+        "title": "task-253: Hover and interaction feedback",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.4",
+        "title": "task-254: Theme consistency — colors match throughout",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.5",
+        "title": "task-255: Animations — subtle and purposeful",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.6",
+        "title": "task-256: Hero section — responsive background",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.7",
+        "title": "task-257: Product cards — uniform height",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.8",
+        "title": "task-258: Dark theme — all elements readable",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.9",
+        "title": "task-259: Luxury theme — gold accents applied",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.10",
+        "title": "task-260: Print stylesheet — order receipt",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.11",
+        "title": "task-261: Confirmation — prominent Telegram/contact button",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn.12",
+        "title": "task-262: Confirmation — store branding",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.1",
+        "title": "task-381: Create Supabase migration for time_entries table",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-7r6.2",
+        "title": "task-376: Create mobile push notification support",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.3",
+        "title": "task-382: Create mobile offline data sync",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.4",
+        "title": "task-383: Create mobile camera integration",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.5",
+        "title": "task-384: Create mobile location services",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.6",
+        "title": "task-387: Create mobile data usage optimization",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.7",
+        "title": "task-371: Create mobile admin dashboard",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.8",
+        "title": "task-372: Create mobile order creation flow",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.9",
+        "title": "task-373: Create mobile inventory scanner",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.10",
+        "title": "task-374: Create mobile customer lookup",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.11",
+        "title": "task-375: Create mobile delivery runner app",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.12",
+        "title": "task-377: Create mobile product quick edit",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.13",
+        "title": "task-379: Create mobile menu builder preview",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.14",
+        "title": "task-380: Create mobile staff time tracking",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.15",
+        "title": "task-385: Create mobile quick actions widget",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.16",
+        "title": "task-386: Create mobile inter-module navigation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.17",
+        "title": "task-388: Create mobile app install prompt",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.18",
+        "title": "task-389: Create mobile accessibility features",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.19",
+        "title": "task-390: Create mobile feedback and support",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7r6.20",
+        "title": "task-378: Create mobile report viewer",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.1",
+        "title": "task-021: Store creation — no-store empty state",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-8od.2",
+        "title": "task-022: Store creation — slug auto-generation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.3",
+        "title": "task-023: Store creation — slug uniqueness validation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.4",
+        "title": "task-024: Store creation — credit gating",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.5",
+        "title": "task-025: Store creation — successful insert",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.6",
+        "title": "task-026: Store creation — theme selection during creation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.7",
+        "title": "task-027: Add Section dropdown — all 8 types",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.8",
+        "title": "task-028: Hero section edit dialog",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.9",
+        "title": "task-029: Product Grid section edit dialog",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.10",
+        "title": "task-030: Features section edit dialog",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.11",
+        "title": "task-031: Testimonials section edit dialog",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.12",
+        "title": "task-032: Newsletter section edit dialog",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.13",
+        "title": "task-033: Gallery section edit dialog",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.14",
+        "title": "task-034: FAQ section edit dialog",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.15",
+        "title": "task-035: Custom HTML section edit dialog",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.16",
+        "title": "task-036: Section edit dialogs — save functionality",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.17",
+        "title": "task-037: Section delete with confirmation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.18",
+        "title": "task-038: Section collapse/expand",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.19",
+        "title": "task-039: Drag and drop — sections reorder correctly",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.20",
+        "title": "task-040: Drag and drop — order persists to layout_config",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.21",
+        "title": "task-041: Drag and drop — no crash with single section",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.22",
+        "title": "task-042: Theme selector — 4 themes with previews",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.23",
+        "title": "task-043: Theme — CSS variables apply to preview",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.24",
+        "title": "task-044: Theme — persists to database",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.25",
+        "title": "task-045: Theme — applies on public storefront",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.26",
+        "title": "task-046: Preview panel — renders sections live",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.27",
+        "title": "task-047: Preview panel — viewport toggle",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.28",
+        "title": "task-048: Preview panel — scroll sync",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.29",
+        "title": "task-049: Full-screen editor — entry card",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.30",
+        "title": "task-050: Full-screen editor — portal opens",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.31",
+        "title": "task-051: Full-screen editor — exit preserves state",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.32",
+        "title": "task-052: Save Draft — persists all data",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.33",
+        "title": "task-053: Publish — makes store live",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.34",
+        "title": "task-054: Unpublish — takes store offline",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.35",
+        "title": "task-055: Unsaved changes — warn before leaving",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.36",
+        "title": "task-056: Easy Mode editor — simplified interface",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.37",
+        "title": "task-057: Mode toggle — state preserved between modes",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.38",
+        "title": "task-058: Settings — General tab works",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.39",
+        "title": "task-059: Settings — SEO tab works",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.40",
+        "title": "task-060: Settings — Delivery & Fulfillment tab",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.41",
+        "title": "task-061: Settings — Payment Methods tab",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.42",
+        "title": "task-062: Settings — Notification & Links tab",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.43",
+        "title": "task-063: Settings — Store Hours tab",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.44",
+        "title": "task-064: Settings — all tabs save independently",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.45",
+        "title": "task-065: Store preview button — opens in modal",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.46",
+        "title": "task-066: Store preview — works even when draft",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.47",
+        "title": "task-067: Products sync to storefront",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.48",
+        "title": "task-068: Product visibility toggle for storefront",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.49",
+        "title": "task-069: Product images on storefront",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od.50",
+        "title": "task-070: Product categories for storefront filters",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi.1",
+        "title": "task-207: Storefront homepage — mobile layout",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-9wi.2",
+        "title": "task-208: Product catalog — mobile layout",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-9wi.3",
+        "title": "task-209: Product detail — mobile layout",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-9wi.4",
+        "title": "task-210: Cart — mobile layout",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-9wi.5",
+        "title": "task-211: Checkout — mobile layout",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-9wi.6",
+        "title": "task-212: Order confirmation — mobile layout",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-9wi.7",
+        "title": "task-213: Admin builder — mobile handling",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi.8",
+        "title": "task-214: Admin live orders — mobile layout",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi.9",
+        "title": "task-215: Touch targets — minimum 44px",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi.10",
+        "title": "task-216: No horizontal scroll anywhere",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi.11",
+        "title": "task-217: Mobile — font sizes readable",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi.12",
+        "title": "task-218: Mobile — image sizing",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi.13",
+        "title": "task-219: Mobile — keyboard handling",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi.14",
+        "title": "task-220: Mobile — bottom nav z-index",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi.15",
+        "title": "task-221: Tablet layout — 768px breakpoint",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi.16",
+        "title": "task-222: Offline indicator",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi.17",
+        "title": "task-223: Slow connection handling",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.1",
+        "title": "task-071: ShopLayout — loads store data by slug",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-43c.2",
+        "title": "task-072: ShopLayout — sticky header",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.3",
+        "title": "task-073: ShopLayout — footer",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.4",
+        "title": "task-074: ShopLayout — age verification gate",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.5",
+        "title": "task-075: ShopLayout — mobile bottom nav",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.6",
+        "title": "task-076: ShopLayout — cart drawer",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.7",
+        "title": "task-077: StorefrontPage — renders all sections from layout_config",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.8",
+        "title": "task-078: HeroSection — renders correctly",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.9",
+        "title": "task-079: ProductGridSection — fetches and renders products",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.10",
+        "title": "task-080: FeaturesSection — renders feature cards",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.11",
+        "title": "task-081: TestimonialsSection — renders testimonials",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.12",
+        "title": "task-082: NewsletterSection — email capture form",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.13",
+        "title": "task-083: GallerySection — renders images",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.14",
+        "title": "task-084: FAQSection — renders accordion",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.15",
+        "title": "task-085: CustomHTMLSection — renders sanitized HTML",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.16",
+        "title": "task-086: ProductCatalogPage — loads all products",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.17",
+        "title": "task-087: Product catalog — category filter",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.18",
+        "title": "task-088: Product catalog — strain type filter",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.19",
+        "title": "task-089: Product catalog — price range filter",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.20",
+        "title": "task-090: Product catalog — search",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.21",
+        "title": "task-091: Product catalog — sort options",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.22",
+        "title": "task-092: Product catalog — grid/list view toggle",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.23",
+        "title": "task-093: Product catalog — pagination",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.24",
+        "title": "task-094: Product catalog — mobile filter drawer",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.25",
+        "title": "task-095: Product catalog — empty state",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.26",
+        "title": "task-096: ProductCard — displays all key info",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.27",
+        "title": "task-097: ProductDetailPage — loads product data",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.28",
+        "title": "task-098: Product detail — image gallery",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.29",
+        "title": "task-099: Product detail — info section",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.30",
+        "title": "task-100: Product detail — variants (weight options)",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.31",
+        "title": "task-101: Product detail — quantity selector",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.32",
+        "title": "task-102: Product detail — Add to Cart button",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.33",
+        "title": "task-103: Product detail — related products",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.34",
+        "title": "task-104: Product detail — strain/terpene info",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.35",
+        "title": "task-105: useShopCart — works correctly",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.36",
+        "title": "task-106: CartPage — displays items",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.37",
+        "title": "task-107: CartPage — empty state",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.38",
+        "title": "task-108: CartPage — order summary",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.39",
+        "title": "task-109: CartPage — promo code",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.40",
+        "title": "task-110: CartPage — stock validation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.41",
+        "title": "task-111: CheckoutPage — step indicator",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.42",
+        "title": "task-112: Checkout Step 1 — customer info form",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.43",
+        "title": "task-113: Checkout Step 1 — fulfillment method",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.44",
+        "title": "task-114: Checkout Step 1 — guest vs account toggle",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.45",
+        "title": "task-115: Checkout Step 1 — order notes",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.46",
+        "title": "task-116: Checkout Step 2 — payment method selection",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.47",
+        "title": "task-117: Checkout Step 2 — order summary recap",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.48",
+        "title": "task-118: Checkout Step 2 — age verification",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.49",
+        "title": "task-119: Checkout Step 2 — Place Order button",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.50",
+        "title": "task-120: Checkout handler — create order in database",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.51",
+        "title": "task-121: Checkout handler — create customer profile (guest)",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.52",
+        "title": "task-122: Checkout handler — create customer account (registered)",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.53",
+        "title": "task-123: Checkout handler — Stripe payment processing",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.54",
+        "title": "task-124: Checkout handler — inventory deduction",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.55",
+        "title": "task-125: Checkout handler — order number generation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.56",
+        "title": "task-126: OrderConfirmationPage — success state",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.57",
+        "title": "task-127: OrderConfirmationPage — order details",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.58",
+        "title": "task-128: OrderConfirmationPage — custom tenant links",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.59",
+        "title": "task-129: OrderConfirmationPage — real-time status tracking",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.60",
+        "title": "task-130: OrderConfirmationPage — continue shopping button",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.61",
+        "title": "task-131: Post-checkout — confirmation popup/modal",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.62",
+        "title": "task-132: Post-checkout — send email confirmation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.63",
+        "title": "task-133: Post-checkout — send SMS confirmation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.64",
+        "title": "task-134: Post-checkout — Telegram auto-forward",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn",
+        "title": "Storefront: Final Polish & Testing",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-43c.65",
+        "title": "task-135: Telegram integration — edge function",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.66",
+        "title": "task-136: Telegram integration — test button in settings",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.67",
+        "title": "task-137: Telegram integration — settings UI",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.68",
+        "title": "task-138: Admin notification — new order alert",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-43c.69",
+        "title": "task-139: Admin notification — email for new orders",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-dy9",
+        "title": "Storefront: Edge Function Verification",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-43c.70",
+        "title": "task-140: Admin notification — low stock alert",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.1",
+        "title": "task-392: Create cascade delete protection",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.2",
+        "title": "task-393: Create cross-module data refresh orchestrator",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.3",
+        "title": "task-394: Create tenant onboarding completion checker",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.4",
+        "title": "task-395: Create cross-module duplicate detection",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.5",
+        "title": "task-398: Create cross-module bulk action framework",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.6",
+        "title": "task-402: Create tenant migration between environments",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.7",
+        "title": "task-406: Create system-wide error tracking",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-khy",
+        "title": "Storefront: Integration & Flow Testing",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.8",
+        "title": "task-408: Create system startup self-test",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.9",
+        "title": "task-409: Create admin session activity tracking",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.10",
+        "title": "task-391: Create universal entity link component",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.11",
+        "title": "task-396: Create universal audit trail viewer",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.12",
+        "title": "task-397: Create system-wide data integrity check",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.13",
+        "title": "task-399: Create universal entity timeline component",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.14",
+        "title": "task-400: Create admin dashboard personalization",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.15",
+        "title": "task-403: Create cross-module changelog",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.16",
+        "title": "task-404: Create entity relationship graph visualization",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.17",
+        "title": "task-405: Create admin quick switch between modules",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5",
+        "title": "Storefront: Admin UX Improvements",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.18",
+        "title": "task-407: Create cross-module data migration tools",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.19",
+        "title": "task-401: Create cross-module report scheduler",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p.20",
+        "title": "task-410: Create interconnectivity test suite runner",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.1",
+        "title": "task-265: Create cross-module link resolver",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.2",
+        "title": "task-266: Create admin keyboard shortcuts",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.3",
+        "title": "task-268: Create module connection health checker",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-7pn",
+        "title": "Storefront: Visual Polish",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.4",
+        "title": "task-269: Create data consistency validator",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.5",
+        "title": "task-273: Create performance monitoring for interconnected queries",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.6",
+        "title": "task-262: Create unified search results page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.7",
+        "title": "task-263: Create recent activity widget for dashboard",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.8",
+        "title": "task-264: Create quick create modal hub",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.9",
+        "title": "task-267: Create onboarding wizard for new tenants",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1va",
+        "title": "Storefront: Accessibility",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.10",
+        "title": "task-270: Create admin dashboard widget customization",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.11",
+        "title": "task-271: Create cross-module notification center page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.12",
+        "title": "task-276: Create tenant data migration tool",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.13",
+        "title": "task-277: Create admin activity summary email",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.14",
+        "title": "task-278: Create mobile responsive admin layout",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cry",
+        "title": "Storefront: Performance",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.15",
+        "title": "task-279: Create progressive web app configuration",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.16",
+        "title": "task-280: Create admin dark mode support",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.17",
+        "title": "task-272: Create module interconnection documentation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-1aj",
+        "title": "Storefront: Security",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.18",
+        "title": "task-274: Create end-to-end interconnectivity smoke test",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.19",
+        "title": "task-275: Create admin help and documentation system",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52.20",
+        "title": "task-281: Create final interconnectivity verification checklist",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cry.1",
+        "title": "task-237: Product images — optimize loading",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cry.2",
+        "title": "task-238: TanStack Query — stale times",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cry.3",
+        "title": "task-239: TanStack Query — prefetching",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cry.4",
+        "title": "task-240: Bundle size — code splitting",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cry.5",
+        "title": "task-241: Product catalog — query optimization",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-9wi",
+        "title": "Storefront: Mobile Responsiveness",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cry.6",
+        "title": "task-242: Realtime subscriptions — cleanup",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cry.7",
+        "title": "task-243: Admin analytics — memoize expensive calculations",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.1",
+        "title": "task-141: Live Orders — page loads with data",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-cyw.2",
+        "title": "task-142: Live Orders — table columns",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-cyw.3",
+        "title": "task-143: Live Orders — status badges with colors",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-cyw.4",
+        "title": "task-144: Live Orders — status change actions",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-cyw.5",
+        "title": "task-145: Live Orders — order detail slide-over panel",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-cyw.6",
+        "title": "task-146: Live Orders — Kanban view",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.7",
+        "title": "task-147: Live Orders — realtime subscription",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.8",
+        "title": "task-148: Live Orders — stats bar",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.9",
+        "title": "task-149: Live Orders — filters",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.10",
+        "title": "task-150: Live Orders — bulk actions",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.11",
+        "title": "task-151: Live Orders — contact customer shortcuts",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82",
+        "title": "Storefront: Edge Cases & Validation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.12",
+        "title": "task-152: Customers page — storefront customers appear",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.13",
+        "title": "task-153: Customer profile — order history",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.14",
+        "title": "task-154: Customer profile — what they ordered (inventory preferences)",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.15",
+        "title": "task-155: Customer profile — contact info and preferred method",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.16",
+        "title": "task-156: Customer profile — notes field",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.17",
+        "title": "task-157: Customers — search and filter",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.18",
+        "title": "task-158: Customers — export",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.19",
+        "title": "task-159: Products page — view all products",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.20",
+        "title": "task-160: Products — add new product",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.21",
+        "title": "task-161: Products — edit product",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.22",
+        "title": "task-162: Products — delete product",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.23",
+        "title": "task-163: Products — stock management",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.24",
+        "title": "task-164: Products — bulk stock update",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.25",
+        "title": "task-165: Products — categories management",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.26",
+        "title": "task-166: Analytics — KPI cards",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.27",
+        "title": "task-167: Analytics — revenue chart",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.28",
+        "title": "task-168: Analytics — top products chart",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.29",
+        "title": "task-169: Analytics — orders by status",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw",
+        "title": "Storefront: Admin Order Management",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.30",
+        "title": "task-170: Analytics — empty state",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.31",
+        "title": "task-171: Static menu generator — feature overview",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.32",
+        "title": "task-172: Static menu generator — UI in admin",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.33",
+        "title": "task-173: Static menu generator — generates HTML",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.34",
+        "title": "task-174: Static menu generator — URL management",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.35",
+        "title": "task-175: Static menu generator — auto-regenerate",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.36",
+        "title": "task-176: Store sharing — share dialog",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-cyw.37",
+        "title": "task-177: Store sharing — QR code generation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-dy9.1",
+        "title": "task-311: storefront-checkout edge function — exists and deploys",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.2",
+        "title": "task-312: storefront-checkout — server-side price validation",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.3",
+        "title": "task-313: storefront-checkout — stock validation",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.4",
+        "title": "task-314: storefront-checkout — customer upsert",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.5",
+        "title": "task-315: storefront-checkout — order number generation",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.6",
+        "title": "task-316: storefront-checkout — inventory deduction",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.7",
+        "title": "task-317: storefront-checkout — trigger Telegram notification",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.8",
+        "title": "task-318: storefront-checkout — error handling",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.9",
+        "title": "task-319: forward-order-telegram — edge function",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.10",
+        "title": "task-320: get_marketplace_store_by_slug — RPC function",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.11",
+        "title": "task-321: get_marketplace_products — RPC function",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.12",
+        "title": "task-322: Checkout — client-side fallback if edge function fails",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.13",
+        "title": "task-323: Telegram — client-side fallback",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.14",
+        "title": "task-324: Create deduct_stock RPC function",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.15",
+        "title": "task-325: Create customer upsert RPC function",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.16",
+        "title": "task-326: Create next_order_number RPC function",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.17",
+        "title": "task-327: Verify customers table has all needed columns",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-43c",
+        "title": "Storefront: Customer Shopping Experience",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-dy9.18",
+        "title": "task-328: Verify customer_addresses table",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.19",
+        "title": "task-329: Add payment_method columns to marketplace_stores",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.20",
+        "title": "task-330: Add Telegram config columns",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.21",
+        "title": "task-331: Add preferred_contact_method to checkout and orders",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-dy9.22",
+        "title": "task-332: Indexes for performance",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-e82.1",
+        "title": "task-178: Checkout — prevent double order submission",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-e82.2",
+        "title": "task-179: Checkout — handle network errors",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-e82.3",
+        "title": "task-180: Checkout — handle out-of-stock during checkout",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-e82.4",
+        "title": "task-181: Store not found — styled 404 page",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-e82.5",
+        "title": "task-182: Product not found — 404 page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.6",
+        "title": "task-183: Empty store — no products state",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.7",
+        "title": "task-184: Cart — validate cart on checkout page load",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.8",
+        "title": "task-185: Cart — max quantity enforcement",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.9",
+        "title": "task-186: Delivery zone — ZIP code validation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.10",
+        "title": "task-187: Phone number — validation and formatting",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.11",
+        "title": "task-188: Email — validation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.12",
+        "title": "task-189: Price display — consistent formatting",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.13",
+        "title": "task-190: Long product names — truncation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-8od",
+        "title": "Storefront: Admin Builder",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.14",
+        "title": "task-191: Image loading — lazy load and placeholders",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.15",
+        "title": "task-192: Special characters in names",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.16",
+        "title": "task-193: Search sanitization",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.17",
+        "title": "task-194: Session expiry — admin doesn't lose work",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.18",
+        "title": "task-195: Concurrent admin editing — last write wins",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.19",
+        "title": "task-196: Large layout_config — performance",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.20",
+        "title": "task-197: Image upload — size limits and validation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6w6",
+        "title": "Storefront: Build Health & Compilation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.21",
+        "title": "task-198: Cart persistence — localStorage",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.22",
+        "title": "task-199: Cart — clear after successful order",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.23",
+        "title": "task-200: Checkout — back button handling",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.24",
+        "title": "task-201: All forms use React Hook Form + Zod",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.25",
+        "title": "task-202: Form errors — inline display",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.26",
+        "title": "task-203: Required fields — asterisk indicator",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.27",
+        "title": "task-204: Every page has loading state",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.28",
+        "title": "task-205: Every page has empty state",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-a2p",
+        "title": "FloraIQ: Cross-Module & System-Wide",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-e82.29",
+        "title": "task-206: Every page has error state",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.1",
+        "title": "task-333: All toasts use Sonner",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-jwn.2",
+        "title": "task-334: All modals use shadcn Dialog or Sheet",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-jwn.3",
+        "title": "task-335: All tables use consistent component",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-7r6",
+        "title": "FloraIQ: Mobile Experience",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.4",
+        "title": "task-336: All forms have consistent layout",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-jwn.5",
+        "title": "task-337: Color palette — no rogue colors",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-jwn.6",
+        "title": "task-338: README — storefront setup guide",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.7",
+        "title": "task-339: ENV variables — document required ones",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.8",
+        "title": "task-340: Final TypeScript check — zero errors",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.9",
+        "title": "task-341: Final Vite build — zero errors",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.10",
+        "title": "task-342: Final console audit — all pages clean",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.11",
+        "title": "task-343: Remove dead code — unused imports",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.12",
+        "title": "task-344: Test with zero data — new tenant",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.13",
+        "title": "task-345: Test with lots of data",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.14",
+        "title": "task-346: Test all 4 themes end-to-end",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.15",
+        "title": "task-347: Test on Chrome, Firefox, Safari",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.16",
+        "title": "task-348: Test Stripe test mode",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly",
+        "title": "FloraIQ: API & Integrations",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.17",
+        "title": "task-349: Verify no sensitive data in client bundle",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.18",
+        "title": "task-350: Performance — page load under 3 seconds",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-6me",
+        "title": "FloraIQ: B2B Marketplace",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj",
+        "title": "FloraIQ: Point of Sale (POS)",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.19",
+        "title": "task-351: Wishlist — save for later",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.20",
+        "title": "task-352: Recently viewed — product carousel",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.21",
+        "title": "task-353: Product quick view — modal from catalog",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.22",
+        "title": "task-354: Cart upsells — suggested add-ons",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.23",
+        "title": "task-355: Order tracking page — public access",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79",
+        "title": "FloraIQ: Messaging & Communications",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq",
+        "title": "FloraIQ: Payment Processing",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.24",
+        "title": "task-356: Product reviews — customer can review",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.25",
+        "title": "task-357: Store announcement bar",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.26",
+        "title": "task-358: Cookie/privacy notice",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.27",
+        "title": "task-359: Social media links — in footer",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-c52",
+        "title": "FloraIQ: Platform & Admin Tools",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.28",
+        "title": "task-360: Copy store link — one-click",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.29",
+        "title": "task-361: Verify: StorefrontBuilder renders without crash",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.30",
+        "title": "task-362: Verify: StorefrontSettings all tabs render",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh",
+        "title": "FloraIQ: Tenant Settings & Configuration",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.31",
+        "title": "task-363: Verify: StorefrontLiveOrders renders with realtime",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.32",
+        "title": "task-364: Verify: StorefrontAnalytics renders charts",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef",
+        "title": "FloraIQ: Analytics & Reporting",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-5ie",
+        "title": "FloraIQ: Delivery Management",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.33",
+        "title": "task-365: Verify: /shop/:slug renders published store",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.34",
+        "title": "task-366: Verify: /shop/:slug/products shows product grid",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.35",
+        "title": "task-367: Verify: /shop/:slug/products/:id shows product",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.36",
+        "title": "task-368: Verify: /shop/:slug/cart works",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.37",
+        "title": "task-369: Verify: /shop/:slug/checkout completes",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.38",
+        "title": "task-370: Verify: /shop/:slug/order/:id shows confirmation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.39",
+        "title": "task-371: Verify: guest order creates customer in admin",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.40",
+        "title": "task-372: Verify: Telegram notification fires",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.41",
+        "title": "task-373: Verify: all payment methods work",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.42",
+        "title": "task-374: Verify: delivery zone enforcement",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.43",
+        "title": "task-375: Verify: stock deducts on order",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.44",
+        "title": "task-376: Verify: mobile checkout works",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.45",
+        "title": "task-377: Verify: admin can change order status",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.46",
+        "title": "task-378: Verify: customer sees status update in real-time",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.47",
+        "title": "task-379: Verify: order totals match everywhere",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.48",
+        "title": "task-380: Verify: multiple themes render correctly",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.49",
+        "title": "task-381: Verify: drag and drop reorder persists",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.50",
+        "title": "task-382: Verify: store creation from scratch works",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.51",
+        "title": "task-383: Verify: product visibility toggle",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.52",
+        "title": "task-384: Verify: empty states on all pages",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.53",
+        "title": "task-385: Verify: all section types render on storefront",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.54",
+        "title": "task-386: Verify: cart persistence across page navigations",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.55",
+        "title": "task-387: Verify: cart persistence across browser restart",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.56",
+        "title": "task-388: Verify: cart scoped to store",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.57",
+        "title": "task-389: Verify: no console.log in production code",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.58",
+        "title": "task-390: Verify: no any types in storefront files",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.59",
+        "title": "task-391: Verify: all routes use tenant slug",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.60",
+        "title": "task-392: Verify: RLS prevents cross-tenant data access",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.61",
+        "title": "task-393: Verify: no sensitive data in client bundle",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.62",
+        "title": "task-394: Verify: 404 for non-existent store slug",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.63",
+        "title": "task-395: Verify: 404 for non-existent product",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.64",
+        "title": "task-396: Verify: out of stock prevents add to cart",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.65",
+        "title": "task-397: Verify: double-click prevention on Place Order",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.66",
+        "title": "task-398: Verify: network error on checkout shows error",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.67",
+        "title": "task-399: Final TypeScript check — zero errors",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-jwn.68",
+        "title": "task-400: Final Vite build — production ready",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-khy.1",
+        "title": "task-285: E2E: Admin creates store → customer shops → order arrives",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.2",
+        "title": "task-286: E2E: Guest checkout with cash — full flow",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.3",
+        "title": "task-287: E2E: Guest checkout with Venmo — full flow",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.4",
+        "title": "task-288: E2E: Guest checkout with Zelle — full flow",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.5",
+        "title": "task-289: E2E: Guest checkout with Stripe — full flow",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.6",
+        "title": "task-290: E2E: Pickup order — full flow",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.7",
+        "title": "task-291: E2E: Account creation during checkout",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.8",
+        "title": "task-292: E2E: Returning customer — recognized by phone",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.9",
+        "title": "task-293: E2E: Telegram auto-forward — order posts to group",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.10",
+        "title": "task-294: E2E: Admin processes order through all statuses",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.11",
+        "title": "task-295: E2E: Admin cancels order",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.12",
+        "title": "task-296: E2E: Multiple stores — isolation test",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.13",
+        "title": "task-297: E2E: Out of stock during shopping",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.14",
+        "title": "task-298: E2E: Empty store published",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.15",
+        "title": "task-299: E2E: Theme change — reflected on storefront",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.16",
+        "title": "task-300: E2E: Section reorder — reflected on storefront",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.17",
+        "title": "task-301: E2E: Product price change — reflected immediately",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.18",
+        "title": "task-302: E2E: Customer adds to cart → leaves → comes back",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.19",
+        "title": "task-303: E2E: Admin inventory update → stock reflected on storefront",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.20",
+        "title": "task-304: E2E: Static menu page — generate and view",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.21",
+        "title": "task-305: E2E: Builder → Settings → Orders integration",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.22",
+        "title": "task-306: Customer profile completeness after order",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-khy.23",
+        "title": "task-307: Order line items match cart",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-khy.24",
+        "title": "task-308: Order totals are mathematically correct",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-khy.25",
+        "title": "task-309: Multi-item order — all items tracked",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-khy.26",
+        "title": "task-310: Order source correctly tagged",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.1",
+        "title": "task-263: Admin dashboard — storefront widget",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.2",
+        "title": "task-264: Getting started guide — for new tenants",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.3",
+        "title": "task-265: Quick actions — from admin header",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.4",
+        "title": "task-266: Settings — simple language",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.5",
+        "title": "task-267: Builder — section type descriptions",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.6",
+        "title": "task-268: Builder — real product data in preview",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.7",
+        "title": "task-269: Live Orders — one-click contact",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.8",
+        "title": "task-270: Live Orders — sound on new order",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.9",
+        "title": "task-271: Live Orders — order timestamp formatting",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.10",
+        "title": "task-272: Products — quick add flow",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.11",
+        "title": "task-273: Products — bulk import",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.12",
+        "title": "task-274: Products — sort and filter in admin",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.13",
+        "title": "task-275: Orders — export to CSV",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.14",
+        "title": "task-276: Order detail — edit order",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.15",
+        "title": "task-277: Order detail — cancel with reason",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.16",
+        "title": "task-278: Dashboard — revenue period comparison",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.17",
+        "title": "task-279: Settings — payment method save and load",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.18",
+        "title": "task-280: Settings — delivery zone save and load",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.19",
+        "title": "task-281: Settings — Telegram config save and load",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.20",
+        "title": "task-282: Settings — all saves show success toast",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.21",
+        "title": "task-283: Sidebar — storefront group expanded by default",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-km5.22",
+        "title": "task-284: Sidebar — order count badge",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.1",
+        "title": "task-327: Create Supabase migration for promotions table",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-mxj.2",
+        "title": "task-325: Create POS barcode scanning support",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.3",
+        "title": "task-334: Create POS offline mode",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.4",
+        "title": "task-336: Create POS training mode",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.5",
+        "title": "task-317: Create POS interface page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.6",
+        "title": "task-318: Create POS product grid",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.7",
+        "title": "task-319: Create POS cart component",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.8",
+        "title": "task-320: Create POS checkout flow",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.9",
+        "title": "task-321: Create POS receipt printing",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.10",
+        "title": "task-322: Create POS customer lookup",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.11",
+        "title": "task-323: Create POS inventory real-time check",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.12",
+        "title": "task-326: Create POS discount and promo code support",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.13",
+        "title": "task-328: Create POS hold order functionality",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.14",
+        "title": "task-329: Create POS quick product favorites",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.15",
+        "title": "task-330: Create POS multi-terminal support",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.16",
+        "title": "task-331: Create POS returns and exchanges",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.17",
+        "title": "task-332: Create POS to delivery handoff",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.18",
+        "title": "task-335: Create POS staff quick login",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.19",
+        "title": "task-337: Create POS end-of-day closeout workflow",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.20",
+        "title": "task-338: Create POS customer display",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.21",
+        "title": "task-339: Create POS integration with loyalty module",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.22",
+        "title": "task-340: Create POS product modifier support",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.23",
+        "title": "task-324: Create POS daily summary report",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-mxj.24",
+        "title": "task-333: Create POS analytics integration",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.1",
+        "title": "task-255: Create Supabase migration for webhooks table",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-okh.2",
+        "title": "task-254: Create webhook management",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.3",
+        "title": "task-261: Create useFeatureFlag hook",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.4",
+        "title": "task-242: Create tenant settings hub page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.5",
+        "title": "task-243: Create business profile settings",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.6",
+        "title": "task-244: Create order settings page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.7",
+        "title": "task-245: Create inventory settings page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.8",
+        "title": "task-246: Create delivery settings page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.9",
+        "title": "task-247: Create notification settings page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.10",
+        "title": "task-248: Create user and role management page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.11",
+        "title": "task-249: Create role permission matrix editor",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.12",
+        "title": "task-250: Create compliance settings page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.13",
+        "title": "task-251: Create compliance audit log",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.14",
+        "title": "task-252: Create tax configuration settings",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.15",
+        "title": "task-253: Create integrations settings page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.16",
+        "title": "task-256: Create audit log viewer",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.17",
+        "title": "task-257: Create backup and data export settings",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.18",
+        "title": "task-258: Create tenant branding settings",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.19",
+        "title": "task-259: Create system health monitoring",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-okh.20",
+        "title": "task-260: Create feature flags settings",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.1",
+        "title": "task-356: Create API key management page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.2",
+        "title": "task-357: Create REST API for orders",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.3",
+        "title": "task-358: Create REST API for products",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.4",
+        "title": "task-359: Create REST API for customers",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.5",
+        "title": "task-360: Create REST API for inventory",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.6",
+        "title": "task-361: Create webhook delivery system",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.7",
+        "title": "task-362: Create webhook event formatting",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.8",
+        "title": "task-363: Create webhook testing interface",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.9",
+        "title": "task-365: Create inbound webhook receiver",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.10",
+        "title": "task-366: Create Zapier/integration connector",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.11",
+        "title": "task-368: Create data sync status dashboard",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.12",
+        "title": "task-369: Create CSV/API import queue",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.13",
+        "title": "task-370: Create external POS integration",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.14",
+        "title": "task-364: Create API usage analytics",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-oly.15",
+        "title": "task-367: Create API documentation page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.1",
+        "title": "task-285: Create Supabase migration for payments table",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-qkq.2",
+        "title": "task-291: Create Supabase migration for register_sessions table",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-qkq.3",
+        "title": "task-282: Create payment processing hub page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.4",
+        "title": "task-283: Create payment detail page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.5",
+        "title": "task-284: Create payment recording on orders",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.6",
+        "title": "task-286: Create payment refund workflow",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.7",
+        "title": "task-289: Create payment reconciliation tool",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.8",
+        "title": "task-290: Create daily cash register/till management",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.9",
+        "title": "task-292: Create payment-customer credit integration",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.10",
+        "title": "task-293: Create payment-loyalty points integration",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.11",
+        "title": "task-294: Create vendor payment tracking page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.12",
+        "title": "task-295: Create payment notifications",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.13",
+        "title": "task-296: Create tip tracking on payments",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.14",
+        "title": "task-297: Create payment dashboard stats",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.15",
+        "title": "task-298: Create split payment support",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.16",
+        "title": "task-299: Create payment export for accounting",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.17",
+        "title": "task-300: Create invoice tracking page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.18",
+        "title": "task-301: Create payment dispute management",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.19",
+        "title": "task-287: Create payment method analytics",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-qkq.20",
+        "title": "task-288: Create outstanding payments report",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.1",
+        "title": "task-237: Create Supabase migration for analytics_goals table",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-sef.2",
+        "title": "task-232: Create analytics date range context provider",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.3",
+        "title": "task-238: Create analytics comparison tools",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.4",
+        "title": "task-222: Create unified analytics dashboard",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.5",
+        "title": "task-223: Create revenue analytics component",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.6",
+        "title": "task-224: Create product performance analytics",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.7",
+        "title": "task-225: Create customer analytics component",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.8",
+        "title": "task-226: Create sales funnel analytics",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.9",
+        "title": "task-227: Create inventory analytics component",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.10",
+        "title": "task-228: Create delivery analytics component",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.11",
+        "title": "task-229: Create vendor analytics component",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.12",
+        "title": "task-230: Create financial overview analytics",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.13",
+        "title": "task-231: Create custom report builder",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.14",
+        "title": "task-233: Create analytics data export hub",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.15",
+        "title": "task-234: Create real-time analytics ticker",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.16",
+        "title": "task-235: Create analytics cohort analysis",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.17",
+        "title": "task-236: Create analytics goal tracking",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.18",
+        "title": "task-239: Create analytics drill-down functionality",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.19",
+        "title": "task-240: Create analytics alerts and thresholds",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-sef.20",
+        "title": "task-241: Create analytics API for external consumption",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.1",
+        "title": "task-305: Create Supabase migration for messages table",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-x79.2",
+        "title": "task-307: Create Supabase migration for message_templates table",
+        "status": "completed",
+        "completedInSession": true
+      },
+      {
+        "id": "floraiq-x79.3",
+        "title": "task-313: Create SMS integration connector",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.4",
+        "title": "task-314: Create email integration connector",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.5",
+        "title": "task-302: Create messaging hub page",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.6",
+        "title": "task-303: Create customer messaging from order context",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.7",
+        "title": "task-304: Create broadcast messaging system",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.8",
+        "title": "task-306: Create message template management",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.9",
+        "title": "task-308: Create automated message triggers",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.10",
+        "title": "task-309: Create staff internal messaging",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.11",
+        "title": "task-310: Create delivery runner messaging",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.12",
+        "title": "task-311: Create customer feedback request automation",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.13",
+        "title": "task-315: Create customer communication preferences",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.14",
+        "title": "task-316: Create message scheduling",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "floraiq-x79.15",
+        "title": "task-312: Create message analytics",
+        "status": "open",
+        "completedInSession": false
+      }
+    ]
+  },
+  "iterations": [
+    {
+      "iteration": 1,
+      "status": "completed",
+      "taskId": "floraiq-dy9.1",
+      "taskTitle": "task-311: storefront-checkout edge function — exists and deploys",
+      "taskCompleted": true,
+      "durationMs": 437410,
+      "startedAt": "2026-02-28T06:25:59.243Z",
+      "endedAt": "2026-02-28T06:33:16.653Z"
+    },
+    {
+      "iteration": 2,
+      "status": "completed",
+      "taskId": "floraiq-dy9.2",
+      "taskTitle": "task-312: storefront-checkout — server-side price validation",
+      "taskCompleted": true,
+      "durationMs": 130807,
+      "startedAt": "2026-02-28T06:33:31.655Z",
+      "endedAt": "2026-02-28T06:35:42.462Z"
+    },
+    {
+      "iteration": 3,
+      "status": "completed",
+      "taskId": "floraiq-dy9.3",
+      "taskTitle": "task-313: storefront-checkout — stock validation",
+      "taskCompleted": true,
+      "durationMs": 115491,
+      "startedAt": "2026-02-28T06:35:57.505Z",
+      "endedAt": "2026-02-28T06:37:52.996Z"
+    },
+    {
+      "iteration": 4,
+      "status": "completed",
+      "taskId": "floraiq-dy9.4",
+      "taskTitle": "task-314: storefront-checkout — customer upsert",
+      "taskCompleted": true,
+      "durationMs": 408498,
+      "startedAt": "2026-02-28T06:38:07.909Z",
+      "endedAt": "2026-02-28T06:44:56.407Z"
+    },
+    {
+      "iteration": 5,
+      "status": "completed",
+      "taskId": "floraiq-dy9.5",
+      "taskTitle": "task-315: storefront-checkout — order number generation",
+      "taskCompleted": true,
+      "durationMs": 316407,
+      "startedAt": "2026-02-28T06:45:11.669Z",
+      "endedAt": "2026-02-28T06:50:28.076Z"
+    },
+    {
+      "iteration": 6,
+      "status": "completed",
+      "taskId": "floraiq-dy9.6",
+      "taskTitle": "task-316: storefront-checkout — inventory deduction",
+      "taskCompleted": true,
+      "durationMs": 228078,
+      "startedAt": "2026-02-28T06:50:43.194Z",
+      "endedAt": "2026-02-28T06:54:31.272Z"
+    },
+    {
+      "iteration": 7,
+      "status": "completed",
+      "taskId": "floraiq-dy9.7",
+      "taskTitle": "task-317: storefront-checkout — trigger Telegram notification",
+      "taskCompleted": true,
+      "durationMs": 271991,
+      "startedAt": "2026-02-28T06:54:46.392Z",
+      "endedAt": "2026-02-28T06:59:18.383Z"
+    },
+    {
+      "iteration": 8,
+      "status": "completed",
+      "taskId": "floraiq-dy9.8",
+      "taskTitle": "task-318: storefront-checkout — error handling",
+      "taskCompleted": true,
+      "durationMs": 157839,
+      "startedAt": "2026-02-28T06:59:33.536Z",
+      "endedAt": "2026-02-28T07:02:11.375Z"
+    },
+    {
+      "iteration": 9,
+      "status": "completed",
+      "taskId": "floraiq-dy9.9",
+      "taskTitle": "task-319: forward-order-telegram — edge function",
+      "taskCompleted": true,
+      "durationMs": 72223,
+      "startedAt": "2026-02-28T07:02:26.568Z",
+      "endedAt": "2026-02-28T07:03:38.791Z"
+    },
+    {
+      "iteration": 10,
+      "status": "completed",
+      "taskId": "floraiq-dy9.10",
+      "taskTitle": "task-320: get_marketplace_store_by_slug — RPC function",
+      "taskCompleted": true,
+      "durationMs": 206725,
+      "startedAt": "2026-02-28T07:03:53.424Z",
+      "endedAt": "2026-02-28T07:07:20.149Z"
+    },
+    {
+      "iteration": 11,
+      "status": "completed",
+      "taskId": "floraiq-dy9.11",
+      "taskTitle": "task-321: get_marketplace_products — RPC function",
+      "taskCompleted": true,
+      "durationMs": 107322,
+      "startedAt": "2026-02-28T07:07:35.220Z",
+      "endedAt": "2026-02-28T07:09:22.542Z"
+    },
+    {
+      "iteration": 12,
+      "status": "completed",
+      "taskId": "floraiq-dy9.12",
+      "taskTitle": "task-322: Checkout — client-side fallback if edge function fails",
+      "taskCompleted": true,
+      "durationMs": 672729,
+      "startedAt": "2026-02-28T07:09:37.673Z",
+      "endedAt": "2026-02-28T07:20:50.402Z"
+    },
+    {
+      "iteration": 13,
+      "status": "completed",
+      "taskId": "floraiq-khy.1",
+      "taskTitle": "task-285: E2E: Admin creates store → customer shops → order arrives",
+      "taskCompleted": true,
+      "durationMs": 655891,
+      "startedAt": "2026-02-28T07:21:05.605Z",
+      "endedAt": "2026-02-28T07:32:01.496Z"
+    },
+    {
+      "iteration": 14,
+      "status": "completed",
+      "taskId": "floraiq-khy.2",
+      "taskTitle": "task-286: E2E: Guest checkout with cash — full flow",
+      "taskCompleted": true,
+      "durationMs": 314681,
+      "startedAt": "2026-02-28T07:32:16.750Z",
+      "endedAt": "2026-02-28T07:37:31.431Z"
+    },
+    {
+      "iteration": 15,
+      "status": "completed",
+      "taskId": "floraiq-khy.3",
+      "taskTitle": "task-287: E2E: Guest checkout with Venmo — full flow",
+      "taskCompleted": true,
+      "durationMs": 330392,
+      "startedAt": "2026-02-28T07:37:46.624Z",
+      "endedAt": "2026-02-28T07:43:17.016Z"
+    },
+    {
+      "iteration": 16,
+      "status": "completed",
+      "taskId": "floraiq-khy.4",
+      "taskTitle": "task-288: E2E: Guest checkout with Zelle — full flow",
+      "taskCompleted": true,
+      "durationMs": 172498,
+      "startedAt": "2026-02-28T07:43:32.120Z",
+      "endedAt": "2026-02-28T07:46:24.618Z"
+    },
+    {
+      "iteration": 17,
+      "status": "completed",
+      "taskId": "floraiq-1aj.1",
+      "taskTitle": "task-224: RLS — marketplace_stores",
+      "taskCompleted": true,
+      "durationMs": 158251,
+      "startedAt": "2026-02-28T07:46:39.336Z",
+      "endedAt": "2026-02-28T07:49:17.587Z"
+    },
+    {
+      "iteration": 18,
+      "status": "completed",
+      "taskId": "floraiq-1aj.2",
+      "taskTitle": "task-225: RLS — orders",
+      "taskCompleted": true,
+      "durationMs": 1647334,
+      "startedAt": "2026-02-28T07:49:32.819Z",
+      "endedAt": "2026-02-28T08:17:00.153Z"
+    },
+    {
+      "iteration": 19,
+      "status": "completed",
+      "taskId": "floraiq-1aj.3",
+      "taskTitle": "task-226: RLS — customers",
+      "taskCompleted": true,
+      "durationMs": 189556,
+      "startedAt": "2026-02-28T08:17:15.502Z",
+      "endedAt": "2026-02-28T08:20:25.058Z"
+    },
+    {
+      "iteration": 20,
+      "status": "completed",
+      "taskId": "floraiq-1aj.4",
+      "taskTitle": "task-227: RLS — products",
+      "taskCompleted": true,
+      "durationMs": 292018,
+      "startedAt": "2026-02-28T08:20:40.426Z",
+      "endedAt": "2026-02-28T08:25:32.444Z"
+    },
+    {
+      "iteration": 21,
+      "status": "completed",
+      "taskId": "floraiq-1aj.5",
+      "taskTitle": "task-228: Server-side price validation",
+      "taskCompleted": true,
+      "durationMs": 82906,
+      "startedAt": "2026-02-28T08:25:47.778Z",
+      "endedAt": "2026-02-28T08:27:10.684Z"
+    },
+    {
+      "iteration": 22,
+      "status": "completed",
+      "taskId": "floraiq-9wi.1",
+      "taskTitle": "task-207: Storefront homepage — mobile layout",
+      "taskCompleted": true,
+      "durationMs": 290833,
+      "startedAt": "2026-02-28T08:27:26.080Z",
+      "endedAt": "2026-02-28T08:32:16.913Z"
+    },
+    {
+      "iteration": 23,
+      "status": "completed",
+      "taskId": "floraiq-9wi.2",
+      "taskTitle": "task-208: Product catalog — mobile layout",
+      "taskCompleted": true,
+      "durationMs": 178308,
+      "startedAt": "2026-02-28T08:32:31.598Z",
+      "endedAt": "2026-02-28T08:35:29.906Z"
+    },
+    {
+      "iteration": 24,
+      "status": "completed",
+      "taskId": "floraiq-9wi.3",
+      "taskTitle": "task-209: Product detail — mobile layout",
+      "taskCompleted": true,
+      "durationMs": 221532,
+      "startedAt": "2026-02-28T08:35:45.311Z",
+      "endedAt": "2026-02-28T08:39:26.843Z"
+    },
+    {
+      "iteration": 25,
+      "status": "completed",
+      "taskId": "floraiq-9wi.4",
+      "taskTitle": "task-210: Cart — mobile layout",
+      "taskCompleted": true,
+      "durationMs": 277615,
+      "startedAt": "2026-02-28T08:39:42.190Z",
+      "endedAt": "2026-02-28T08:44:19.805Z"
+    },
+    {
+      "iteration": 26,
+      "status": "completed",
+      "taskId": "floraiq-9wi.5",
+      "taskTitle": "task-211: Checkout — mobile layout",
+      "taskCompleted": true,
+      "durationMs": 288042,
+      "startedAt": "2026-02-28T08:44:35.147Z",
+      "endedAt": "2026-02-28T08:49:23.189Z"
+    },
+    {
+      "iteration": 27,
+      "status": "completed",
+      "taskId": "floraiq-9wi.6",
+      "taskTitle": "task-212: Order confirmation — mobile layout",
+      "taskCompleted": true,
+      "durationMs": 217163,
+      "startedAt": "2026-02-28T08:49:38.625Z",
+      "endedAt": "2026-02-28T08:53:15.788Z"
+    },
+    {
+      "iteration": 28,
+      "status": "completed",
+      "taskId": "floraiq-e82.1",
+      "taskTitle": "task-178: Checkout — prevent double order submission",
+      "taskCompleted": true,
+      "durationMs": 305760,
+      "startedAt": "2026-02-28T08:53:31.157Z",
+      "endedAt": "2026-02-28T08:58:36.917Z"
+    },
+    {
+      "iteration": 29,
+      "status": "completed",
+      "taskId": "floraiq-e82.2",
+      "taskTitle": "task-179: Checkout — handle network errors",
+      "taskCompleted": true,
+      "durationMs": 137870,
+      "startedAt": "2026-02-28T08:58:52.266Z",
+      "endedAt": "2026-02-28T09:01:10.136Z"
+    },
+    {
+      "iteration": 30,
+      "status": "completed",
+      "taskId": "floraiq-e82.3",
+      "taskTitle": "task-180: Checkout — handle out-of-stock during checkout",
+      "taskCompleted": true,
+      "durationMs": 246705,
+      "startedAt": "2026-02-28T09:01:25.007Z",
+      "endedAt": "2026-02-28T09:05:31.712Z"
+    },
+    {
+      "iteration": 31,
+      "status": "completed",
+      "taskId": "floraiq-e82.4",
+      "taskTitle": "task-181: Store not found — styled 404 page",
+      "taskCompleted": true,
+      "durationMs": 100270,
+      "startedAt": "2026-02-28T09:05:47.091Z",
+      "endedAt": "2026-02-28T09:07:27.361Z"
+    },
+    {
+      "iteration": 32,
+      "status": "completed",
+      "taskId": "floraiq-cyw.1",
+      "taskTitle": "task-141: Live Orders — page loads with data",
+      "taskCompleted": true,
+      "durationMs": 169721,
+      "startedAt": "2026-02-28T09:07:42.737Z",
+      "endedAt": "2026-02-28T09:10:32.458Z"
+    },
+    {
+      "iteration": 33,
+      "status": "completed",
+      "taskId": "floraiq-cyw.2",
+      "taskTitle": "task-142: Live Orders — table columns",
+      "taskCompleted": true,
+      "durationMs": 274894,
+      "startedAt": "2026-02-28T09:10:47.838Z",
+      "endedAt": "2026-02-28T09:15:22.732Z"
+    },
+    {
+      "iteration": 34,
+      "status": "completed",
+      "taskId": "floraiq-cyw.3",
+      "taskTitle": "task-143: Live Orders — status badges with colors",
+      "taskCompleted": true,
+      "durationMs": 146602,
+      "startedAt": "2026-02-28T09:15:38.218Z",
+      "endedAt": "2026-02-28T09:18:04.820Z"
+    },
+    {
+      "iteration": 35,
+      "status": "completed",
+      "taskId": "floraiq-cyw.4",
+      "taskTitle": "task-144: Live Orders — status change actions",
+      "taskCompleted": true,
+      "durationMs": 295064,
+      "startedAt": "2026-02-28T09:18:20.260Z",
+      "endedAt": "2026-02-28T09:23:15.324Z"
+    },
+    {
+      "iteration": 36,
+      "status": "completed",
+      "taskId": "floraiq-cyw.5",
+      "taskTitle": "task-145: Live Orders — order detail slide-over panel",
+      "taskCompleted": true,
+      "durationMs": 311276,
+      "startedAt": "2026-02-28T09:23:30.679Z",
+      "endedAt": "2026-02-28T09:28:41.955Z"
+    },
+    {
+      "iteration": 37,
+      "status": "completed",
+      "taskId": "floraiq-43c.1",
+      "taskTitle": "task-071: ShopLayout — loads store data by slug",
+      "taskCompleted": true,
+      "durationMs": 117889,
+      "startedAt": "2026-02-28T09:28:57.164Z",
+      "endedAt": "2026-02-28T09:30:55.053Z"
+    },
+    {
+      "iteration": 38,
+      "status": "completed",
+      "taskId": "floraiq-8od.1",
+      "taskTitle": "task-021: Store creation — no-store empty state",
+      "taskCompleted": true,
+      "durationMs": 233823,
+      "startedAt": "2026-02-28T09:31:10.514Z",
+      "endedAt": "2026-02-28T09:35:04.337Z"
+    },
+    {
+      "iteration": 39,
+      "status": "completed",
+      "taskId": "floraiq-6w6.2",
+      "taskTitle": "task-002: Run Vite build — zero errors",
+      "taskCompleted": true,
+      "durationMs": 1062535,
+      "startedAt": "2026-02-28T09:35:19.792Z",
+      "endedAt": "2026-02-28T09:53:02.327Z"
+    },
+    {
+      "iteration": 40,
+      "status": "completed",
+      "taskId": "floraiq-6w6.3",
+      "taskTitle": "task-003: Audit console for runtime errors on admin dashboard",
+      "taskCompleted": true,
+      "durationMs": 366054,
+      "startedAt": "2026-02-28T09:53:17.817Z",
+      "endedAt": "2026-02-28T09:59:23.871Z"
+    },
+    {
+      "iteration": 41,
+      "status": "completed",
+      "taskId": "floraiq-6w6.4",
+      "taskTitle": "task-004: Audit console for runtime errors on storefront builder",
+      "taskCompleted": true,
+      "durationMs": 345189,
+      "startedAt": "2026-02-28T09:59:39.414Z",
+      "endedAt": "2026-02-28T10:05:24.603Z"
+    },
+    {
+      "iteration": 42,
+      "status": "completed",
+      "taskId": "floraiq-6w6.5",
+      "taskTitle": "task-005: Audit console for runtime errors on storefront settings",
+      "taskCompleted": true,
+      "durationMs": 281447,
+      "startedAt": "2026-02-28T10:05:40.217Z",
+      "endedAt": "2026-02-28T10:10:21.664Z"
+    },
+    {
+      "iteration": 43,
+      "status": "completed",
+      "taskId": "floraiq-6w6.6",
+      "taskTitle": "task-006: Audit console for runtime errors on live orders",
+      "taskCompleted": true,
+      "durationMs": 518763,
+      "startedAt": "2026-02-28T10:10:36.886Z",
+      "endedAt": "2026-02-28T10:19:15.649Z"
+    },
+    {
+      "iteration": 44,
+      "status": "completed",
+      "taskId": "floraiq-6w6.7",
+      "taskTitle": "task-007: Audit console for runtime errors on analytics",
+      "taskCompleted": true,
+      "durationMs": 520372,
+      "startedAt": "2026-02-28T10:19:31.203Z",
+      "endedAt": "2026-02-28T10:28:11.575Z"
+    },
+    {
+      "iteration": 45,
+      "status": "completed",
+      "taskId": "floraiq-6w6.8",
+      "taskTitle": "task-008: Audit console on public storefront homepage",
+      "taskCompleted": true,
+      "durationMs": 573699,
+      "startedAt": "2026-02-28T10:28:27.242Z",
+      "endedAt": "2026-02-28T10:38:00.941Z"
+    },
+    {
+      "iteration": 46,
+      "status": "completed",
+      "taskId": "floraiq-6w6.9",
+      "taskTitle": "task-009: Audit console on product catalog page",
+      "taskCompleted": true,
+      "durationMs": 245738,
+      "startedAt": "2026-02-28T10:38:16.603Z",
+      "endedAt": "2026-02-28T10:42:22.341Z"
+    },
+    {
+      "iteration": 47,
+      "status": "completed",
+      "taskId": "floraiq-6w6.10",
+      "taskTitle": "task-010: Audit console on product detail page",
+      "taskCompleted": true,
+      "durationMs": 180834,
+      "startedAt": "2026-02-28T10:42:37.960Z",
+      "endedAt": "2026-02-28T10:45:38.794Z"
+    },
+    {
+      "iteration": 48,
+      "status": "completed",
+      "taskId": "floraiq-6w6.11",
+      "taskTitle": "task-011: Audit console on cart page",
+      "taskCompleted": true,
+      "durationMs": 141742,
+      "startedAt": "2026-02-28T10:45:54.558Z",
+      "endedAt": "2026-02-28T10:48:16.300Z"
+    },
+    {
+      "iteration": 49,
+      "status": "completed",
+      "taskId": "floraiq-6w6.12",
+      "taskTitle": "task-012: Audit console on checkout page",
+      "taskCompleted": true,
+      "durationMs": 150732,
+      "startedAt": "2026-02-28T10:48:31.886Z",
+      "endedAt": "2026-02-28T10:51:02.618Z"
+    },
+    {
+      "iteration": 50,
+      "status": "completed",
+      "taskId": "floraiq-7r6.1",
+      "taskTitle": "task-381: Create Supabase migration for time_entries table",
+      "taskCompleted": true,
+      "durationMs": 72320,
+      "startedAt": "2026-02-28T10:51:17.795Z",
+      "endedAt": "2026-02-28T10:52:30.115Z"
+    },
+    {
+      "iteration": 51,
+      "status": "completed",
+      "taskId": "floraiq-mxj.1",
+      "taskTitle": "task-327: Create Supabase migration for promotions table",
+      "taskCompleted": true,
+      "durationMs": 77201,
+      "startedAt": "2026-02-28T10:52:45.923Z",
+      "endedAt": "2026-02-28T10:54:03.124Z"
+    },
+    {
+      "iteration": 52,
+      "status": "completed",
+      "taskId": "floraiq-x79.2",
+      "taskTitle": "task-307: Create Supabase migration for message_templates table",
+      "taskCompleted": true,
+      "durationMs": 78044,
+      "startedAt": "2026-02-28T10:54:18.883Z",
+      "endedAt": "2026-02-28T10:55:36.927Z"
+    },
+    {
+      "iteration": 53,
+      "status": "completed",
+      "taskId": "floraiq-x79.1",
+      "taskTitle": "task-305: Create Supabase migration for messages table",
+      "taskCompleted": true,
+      "durationMs": 90254,
+      "startedAt": "2026-02-28T10:55:52.635Z",
+      "endedAt": "2026-02-28T10:57:22.889Z"
+    },
+    {
+      "iteration": 54,
+      "status": "completed",
+      "taskId": "floraiq-qkq.1",
+      "taskTitle": "task-285: Create Supabase migration for payments table",
+      "taskCompleted": true,
+      "durationMs": 97527,
+      "startedAt": "2026-02-28T10:57:38.581Z",
+      "endedAt": "2026-02-28T10:59:16.108Z"
+    },
+    {
+      "iteration": 55,
+      "status": "completed",
+      "taskId": "floraiq-qkq.2",
+      "taskTitle": "task-291: Create Supabase migration for register_sessions table",
+      "taskCompleted": true,
+      "durationMs": 75358,
+      "startedAt": "2026-02-28T10:59:31.977Z",
+      "endedAt": "2026-02-28T11:00:47.335Z"
+    },
+    {
+      "iteration": 56,
+      "status": "completed",
+      "taskId": "floraiq-okh.1",
+      "taskTitle": "task-255: Create Supabase migration for webhooks table",
+      "taskCompleted": true,
+      "durationMs": 108550,
+      "startedAt": "2026-02-28T11:01:02.808Z",
+      "endedAt": "2026-02-28T11:02:51.358Z"
+    },
+    {
+      "iteration": 57,
+      "status": "completed",
+      "taskId": "floraiq-sef.1",
+      "taskTitle": "task-237: Create Supabase migration for analytics_goals table",
+      "taskCompleted": true,
+      "durationMs": 90005,
+      "startedAt": "2026-02-28T11:03:06.892Z",
+      "endedAt": "2026-02-28T11:04:36.897Z"
+    },
+    {
+      "iteration": 58,
+      "status": "completed",
+      "taskId": "floraiq-jwn.1",
+      "taskTitle": "task-333: All toasts use Sonner",
+      "taskCompleted": true,
+      "durationMs": 127799,
+      "startedAt": "2026-02-28T11:04:52.629Z",
+      "endedAt": "2026-02-28T11:07:00.428Z"
+    },
+    {
+      "iteration": 59,
+      "status": "completed",
+      "taskId": "floraiq-jwn.2",
+      "taskTitle": "task-334: All modals use shadcn Dialog or Sheet",
+      "taskCompleted": true,
+      "durationMs": 599122,
+      "startedAt": "2026-02-28T11:07:16.048Z",
+      "endedAt": "2026-02-28T11:17:15.170Z"
+    },
+    {
+      "iteration": 60,
+      "status": "completed",
+      "taskId": "floraiq-jwn.3",
+      "taskTitle": "task-335: All tables use consistent component",
+      "taskCompleted": true,
+      "durationMs": 307626,
+      "startedAt": "2026-02-28T11:17:30.911Z",
+      "endedAt": "2026-02-28T11:22:38.537Z"
+    },
+    {
+      "iteration": 61,
+      "status": "completed",
+      "taskId": "floraiq-jwn.4",
+      "taskTitle": "task-336: All forms have consistent layout",
+      "taskCompleted": true,
+      "durationMs": 442688,
+      "startedAt": "2026-02-28T11:22:54.227Z",
+      "endedAt": "2026-02-28T11:30:16.915Z"
+    },
+    {
+      "iteration": 62,
+      "status": "completed",
+      "taskId": "floraiq-jwn.5",
+      "taskTitle": "task-337: Color palette — no rogue colors",
+      "taskCompleted": true,
+      "durationMs": 1428942,
+      "startedAt": "2026-02-28T11:30:32.766Z",
+      "endedAt": "2026-02-28T11:54:21.708Z"
+    },
+    {
+      "iteration": 63,
+      "status": "completed",
+      "taskId": "floraiq-jwn",
+      "taskTitle": "Storefront: Final Polish & Testing",
+      "taskCompleted": true,
+      "durationMs": 598200,
+      "startedAt": "2026-02-28T11:54:37.016Z",
+      "endedAt": "2026-02-28T12:04:35.216Z"
+    },
+    {
+      "iteration": 64,
+      "status": "completed",
+      "taskId": "floraiq-dy9.13",
+      "taskTitle": "task-323: Telegram — client-side fallback",
+      "taskCompleted": true,
+      "durationMs": 257100,
+      "startedAt": "2026-02-28T12:04:51.028Z",
+      "endedAt": "2026-02-28T12:09:08.128Z"
+    },
+    {
+      "iteration": 65,
+      "status": "completed",
+      "taskId": "floraiq-dy9.14",
+      "taskTitle": "task-324: Create deduct_stock RPC function",
+      "taskCompleted": true,
+      "durationMs": 87050,
+      "startedAt": "2026-02-28T12:09:23.910Z",
+      "endedAt": "2026-02-28T12:10:50.960Z"
+    },
+    {
+      "iteration": 66,
+      "status": "completed",
+      "taskId": "floraiq-dy9.15",
+      "taskTitle": "task-325: Create customer upsert RPC function",
+      "taskCompleted": true,
+      "durationMs": 259469,
+      "startedAt": "2026-02-28T12:11:06.733Z",
+      "endedAt": "2026-02-28T12:15:26.202Z"
+    },
+    {
+      "iteration": 67,
+      "status": "completed",
+      "taskId": "floraiq-dy9.16",
+      "taskTitle": "task-326: Create next_order_number RPC function",
+      "taskCompleted": true,
+      "durationMs": 165270,
+      "startedAt": "2026-02-28T12:15:42.063Z",
+      "endedAt": "2026-02-28T12:18:27.333Z"
+    },
+    {
+      "iteration": 68,
+      "status": "completed",
+      "taskId": "floraiq-dy9.17",
+      "taskTitle": "task-327: Verify customers table has all needed columns",
+      "taskCompleted": true,
+      "durationMs": 287353,
+      "startedAt": "2026-02-28T12:18:43.214Z",
+      "endedAt": "2026-02-28T12:23:30.567Z"
+    },
+    {
+      "iteration": 69,
+      "status": "completed",
+      "taskId": "floraiq-dy9.18",
+      "taskTitle": "task-328: Verify customer_addresses table",
+      "taskCompleted": true,
+      "durationMs": 126360,
+      "startedAt": "2026-02-28T12:23:45.691Z",
+      "endedAt": "2026-02-28T12:25:52.051Z"
+    },
+    {
+      "iteration": 70,
+      "status": "completed",
+      "taskId": "floraiq-dy9.19",
+      "taskTitle": "task-329: Add payment_method columns to marketplace_stores",
+      "taskCompleted": true,
+      "durationMs": 151139,
+      "startedAt": "2026-02-28T12:26:07.826Z",
+      "endedAt": "2026-02-28T12:28:38.965Z"
+    },
+    {
+      "iteration": 71,
+      "status": "completed",
+      "taskId": "floraiq-dy9.20",
+      "taskTitle": "task-330: Add Telegram config columns",
+      "taskCompleted": true,
+      "durationMs": 226468,
+      "startedAt": "2026-02-28T12:28:54.982Z",
+      "endedAt": "2026-02-28T12:32:41.450Z"
+    },
+    {
+      "iteration": 72,
+      "status": "completed",
+      "taskId": "floraiq-dy9.21",
+      "taskTitle": "task-331: Add preferred_contact_method to checkout and orders",
+      "taskCompleted": true,
+      "durationMs": 497923,
+      "startedAt": "2026-02-28T12:32:57.323Z",
+      "endedAt": "2026-02-28T12:41:15.246Z"
+    },
+    {
+      "iteration": 73,
+      "status": "completed",
+      "taskId": "floraiq-dy9.22",
+      "taskTitle": "task-332: Indexes for performance",
+      "taskCompleted": true,
+      "durationMs": 201157,
+      "startedAt": "2026-02-28T12:41:31.204Z",
+      "endedAt": "2026-02-28T12:44:52.361Z"
+    },
+    {
+      "iteration": 74,
+      "status": "completed",
+      "taskId": "floraiq-dy9",
+      "taskTitle": "Storefront: Edge Function Verification",
+      "taskCompleted": true,
+      "durationMs": 87005,
+      "startedAt": "2026-02-28T12:45:08.327Z",
+      "endedAt": "2026-02-28T12:46:35.332Z"
+    },
+    {
+      "iteration": 75,
+      "status": "completed",
+      "taskId": "floraiq-khy.5",
+      "taskTitle": "task-289: E2E: Guest checkout with Stripe — full flow",
+      "taskCompleted": true,
+      "durationMs": 546614,
+      "startedAt": "2026-02-28T12:46:50.576Z",
+      "endedAt": "2026-02-28T12:55:57.190Z"
+    },
+    {
+      "iteration": 76,
+      "status": "completed",
+      "taskId": "floraiq-khy.6",
+      "taskTitle": "task-290: E2E: Pickup order — full flow",
+      "taskCompleted": true,
+      "durationMs": 673003,
+      "startedAt": "2026-02-28T12:56:12.993Z",
+      "endedAt": "2026-02-28T13:07:25.996Z"
+    },
+    {
+      "iteration": 77,
+      "status": "completed",
+      "taskId": "floraiq-khy.7",
+      "taskTitle": "task-291: E2E: Account creation during checkout",
+      "taskCompleted": true,
+      "durationMs": 566574,
+      "startedAt": "2026-02-28T13:07:41.790Z",
+      "endedAt": "2026-02-28T13:17:08.364Z"
+    },
+    {
+      "iteration": 78,
+      "status": "completed",
+      "taskId": "floraiq-khy.8",
+      "taskTitle": "task-292: E2E: Returning customer — recognized by phone",
+      "taskCompleted": true,
+      "durationMs": 535776,
+      "startedAt": "2026-02-28T13:17:24.317Z",
+      "endedAt": "2026-02-28T13:26:20.093Z"
+    },
+    {
+      "iteration": 79,
+      "status": "completed",
+      "taskId": "floraiq-khy.9",
+      "taskTitle": "task-293: E2E: Telegram auto-forward — order posts to group",
+      "taskCompleted": true,
+      "durationMs": 285996,
+      "startedAt": "2026-02-28T13:26:36.045Z",
+      "endedAt": "2026-02-28T13:31:22.041Z"
+    },
+    {
+      "iteration": 80,
+      "status": "completed",
+      "taskId": "floraiq-khy.10",
+      "taskTitle": "task-294: E2E: Admin processes order through all statuses",
+      "taskCompleted": true,
+      "durationMs": 500216,
+      "startedAt": "2026-02-28T13:31:37.967Z",
+      "endedAt": "2026-02-28T13:39:58.183Z"
+    },
+    {
+      "iteration": 81,
+      "status": "completed",
+      "taskId": "floraiq-khy.11",
+      "taskTitle": "task-295: E2E: Admin cancels order",
+      "taskCompleted": true,
+      "durationMs": 463236,
+      "startedAt": "2026-02-28T13:40:13.875Z",
+      "endedAt": "2026-02-28T13:47:57.111Z"
+    },
+    {
+      "iteration": 82,
+      "status": "completed",
+      "taskId": "floraiq-khy.12",
+      "taskTitle": "task-296: E2E: Multiple stores — isolation test",
+      "taskCompleted": true,
+      "durationMs": 368822,
+      "startedAt": "2026-02-28T13:48:12.864Z",
+      "endedAt": "2026-02-28T13:54:21.686Z"
+    },
+    {
+      "iteration": 83,
+      "status": "completed",
+      "taskId": "floraiq-khy.13",
+      "taskTitle": "task-297: E2E: Out of stock during shopping",
+      "taskCompleted": true,
+      "durationMs": 291159,
+      "startedAt": "2026-02-28T13:54:37.638Z",
+      "endedAt": "2026-02-28T13:59:28.797Z"
+    },
+    {
+      "iteration": 84,
+      "status": "completed",
+      "taskId": "floraiq-khy.14",
+      "taskTitle": "task-298: E2E: Empty store published",
+      "taskCompleted": true,
+      "durationMs": 263383,
+      "startedAt": "2026-02-28T13:59:44.939Z",
+      "endedAt": "2026-02-28T14:04:08.322Z"
+    },
+    {
+      "iteration": 85,
+      "status": "completed",
+      "taskId": "floraiq-khy.15",
+      "taskTitle": "task-299: E2E: Theme change — reflected on storefront",
+      "taskCompleted": true,
+      "durationMs": 615287,
+      "startedAt": "2026-02-28T14:04:24.393Z",
+      "endedAt": "2026-02-28T14:14:39.680Z"
+    },
+    {
+      "iteration": 86,
+      "status": "completed",
+      "taskId": "floraiq-khy.16",
+      "taskTitle": "task-300: E2E: Section reorder — reflected on storefront",
+      "taskCompleted": true,
+      "durationMs": 369502,
+      "startedAt": "2026-02-28T14:14:55.697Z",
+      "endedAt": "2026-02-28T14:21:05.199Z"
+    },
+    {
+      "iteration": 87,
+      "status": "completed",
+      "taskId": "floraiq-khy.17",
+      "taskTitle": "task-301: E2E: Product price change — reflected immediately",
+      "taskCompleted": true,
+      "durationMs": 465345,
+      "startedAt": "2026-02-28T14:21:21.430Z",
+      "endedAt": "2026-02-28T14:29:06.775Z"
+    },
+    {
+      "iteration": 88,
+      "status": "completed",
+      "taskId": "floraiq-khy.18",
+      "taskTitle": "task-302: E2E: Customer adds to cart → leaves → comes back",
+      "taskCompleted": true,
+      "durationMs": 192328,
+      "startedAt": "2026-02-28T14:29:23.517Z",
+      "endedAt": "2026-02-28T14:32:35.845Z"
+    },
+    {
+      "iteration": 89,
+      "status": "completed",
+      "taskId": "floraiq-khy.19",
+      "taskTitle": "task-303: E2E: Admin inventory update → stock reflected on storefront",
+      "taskCompleted": true,
+      "durationMs": 301407,
+      "startedAt": "2026-02-28T14:32:52.703Z",
+      "endedAt": "2026-02-28T14:37:54.110Z"
+    },
+    {
+      "iteration": 90,
+      "status": "completed",
+      "taskId": "floraiq-khy.20",
+      "taskTitle": "task-304: E2E: Static menu page — generate and view",
+      "taskCompleted": true,
+      "durationMs": 759637,
+      "startedAt": "2026-02-28T14:38:10.951Z",
+      "endedAt": "2026-02-28T14:50:50.588Z"
+    },
+    {
+      "iteration": 91,
+      "status": "completed",
+      "taskId": "floraiq-khy.21",
+      "taskTitle": "task-305: E2E: Builder → Settings → Orders integration",
+      "taskCompleted": true,
+      "durationMs": 316205,
+      "startedAt": "2026-02-28T14:51:07.453Z",
+      "endedAt": "2026-02-28T14:56:23.658Z"
+    },
+    {
+      "iteration": 92,
+      "status": "completed",
+      "taskId": "floraiq-khy.22",
+      "taskTitle": "task-306: Customer profile completeness after order",
+      "taskCompleted": true,
+      "durationMs": 656897,
+      "startedAt": "2026-02-28T14:56:40.553Z",
+      "endedAt": "2026-02-28T15:07:37.450Z"
+    },
+    {
+      "iteration": 93,
+      "status": "failed",
+      "taskId": "floraiq-khy.23",
+      "taskTitle": "task-307: Order line items match cart",
+      "taskCompleted": false,
+      "durationMs": 213543,
+      "startedAt": "2026-02-28T15:07:54.419Z",
+      "endedAt": "2026-02-28T15:11:27.962Z"
+    }
+  ],
+  "skippedTaskIds": [],
+  "cwd": "C:\\Users\\Alex\\Downloads\\delviery-fresh",
+  "activeTaskIds": [],
+  "subagentPanelVisible": false
+}

@@ -349,7 +349,7 @@ export default function BillingDashboard() {
               <p className="font-semibold">{formatCurrency(99)}</p>
               <Badge variant="secondary" className="mt-1">Paid</Badge>
             </div>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" aria-label="Download invoice">
               <Download className="h-4 w-4" />
             </Button>
           </div>

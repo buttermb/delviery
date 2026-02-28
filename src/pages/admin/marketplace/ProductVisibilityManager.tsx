@@ -214,7 +214,7 @@ export default function ProductVisibilityManager() {
                                         <TableCell>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-11 w-11 p-0">
+                                                    <Button variant="ghost" className="h-11 w-11 p-0" aria-label="Listing actions">
                                                         <MoreHorizontal className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>

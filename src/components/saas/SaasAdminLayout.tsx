@@ -50,6 +50,7 @@ export function SaasAdminLayout() {
                 size="icon"
                 onClick={handleSignOut}
                 title="Sign Out"
+                aria-label="Sign out"
                 className="text-[hsl(var(--super-admin-text))]/80 hover:bg-white/10 hover:text-[hsl(var(--super-admin-text))]"
               >
                 <LogOut className="h-4 w-4" />

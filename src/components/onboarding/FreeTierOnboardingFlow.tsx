@@ -179,6 +179,7 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
                         size="icon"
                         className="absolute top-4 right-4 text-white/60 hover:text-white hover:bg-white/10"
                         onClick={handleSkip}
+                        aria-label="Close onboarding"
                     >
                         <X className="h-4 w-4" />
                     </Button>

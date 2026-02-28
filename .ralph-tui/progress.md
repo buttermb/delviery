@@ -34,6 +34,134 @@ after each iteration and it's included in prompts for context.
 
 - **Realtime subscription isolation**: Always add server-side `filter` to Supabase realtime subscriptions (e.g., `filter: \`seller_tenant_id=eq.${tenant.id}\``). Client-side filtering alone is not enough — events from other tenants still arrive at the client. Use server-side filter as primary guard, client-side as secondary.
 
+## 2026-02-28 - floraiq-khy.22
+- Customer profile completeness after order
+- Extended admin CustomerDetails page to fully display storefront customer data:
+  - Added `preferred_contact`, `referral_source`, `total_orders` to Customer interface
+  - "Storefront" source badge (violet) in header next to customer type badge
+  - Preferred contact method display with MessageCircle icon
+  - Account Details card shows Preferred Contact and Source fields
+  - Stats cards combine wholesale + storefront order counts and totals
+  - First Order date considers both order sources
+- Extended CustomerOrderHistoryTab to query both `orders` and `marketplace_orders`:
+  - New props: `customerEmail`, `referralSource` passed from CustomerDetails
+  - Storefront orders queried by `customer_email + seller_tenant_id + store_id IS NOT NULL`
+  - JSONB items array normalized to match Order interface (order_items with id + quantity)
+  - Storefront orders show order_number with "Store" outline badge
+  - Both sources merged and sorted by created_at desc
+- Created `tests/e2e/customer-profile-completeness.spec.ts` — 20 Playwright tests across 6 suites:
+  - **Checkout — Customer Data Capture** (3 tests): checkout form collects name/email/phone/preferred contact, delivery address fields for delivery, submit button exists
+  - **Customer Upsert — Data Completeness** (2 tests): upsert RPC populates fields, storefront customers page aggregates data
+  - **Admin — Customer Profile Display** (5 tests): name in header, email/phone/preferred contact, "Storefront" source badge, Account Details card, delivery address
+  - **Admin — Storefront Order History** (4 tests): dual-source query, order number with Store badge, JSONB items count, combined stats
+  - **Data Pipeline — Checkout to Admin Profile** (4 tests): edge function calls upsert, referral_source set, totals accumulate, preferred_contact passed
+  - **Full E2E — Profile Completeness Verification** (4 tests): all DB columns populated, admin UI exposes all fields, no null required fields, storefront customer directory
+- Files changed:
+  - `src/pages/admin/CustomerDetails.tsx` — extended interface, added storefront order stats, source badge, preferred contact display
+  - `src/components/admin/customers/CustomerOrderHistoryTab.tsx` — dual-source order query, merged display with Store badge
+  - `tests/e2e/customer-profile-completeness.spec.ts` (new) — comprehensive E2E test suite
+- **Learnings:**
+  - `marketplace_orders.customer_id` references `marketplace_customers(id)`, NOT `customers(id)` — use email matching (`customer_email + seller_tenant_id`) to find storefront orders for a customer
+  - `marketplace_orders` has `preferred_contact_method` and `fulfillment_method` columns added by later migrations (20260228000010 and 20260228000013) that are NOT in the generated types file — use type assertions when querying these
+  - `storefront_orders` view has a `customer_id` column that `marketplace_orders` doesn't expose in types — the view computes it from a join
+  - The `upsert_customer_on_checkout` RPC populates `customers.preferred_contact` (not `preferred_contact_method`) — different column name from marketplace_orders
+  - CustomerDetails uses `.select('*')` which fetches all columns — new fields (preferred_contact, referral_source) are automatically included without changing the query
+---
+
+## 2026-02-28 - floraiq-khy.21
+- E2E: Builder → Settings → Orders integration
+- Created `tests/e2e/settings-orders-integration.spec.ts` — 20 Playwright tests across 7 suites:
+  - **Settings → Storefront: Store Name** (3 tests): store name renders in header, name appears in nav/logo area, admin settings page shows store name field
+  - **Settings → Storefront: Logo** (2 tests): header shows logo image or initial fallback, logo URL from config matches storefront render
+  - **Settings → Checkout: Delivery Zones** (3 tests): checkout shows address fields, delivery zone validation rejects unknown zip codes, delivery fee reflects store default or zone-specific fee
+  - **Settings → Checkout: Payment Methods** (4 tests): checkout displays payment methods from settings, cash always available as default, card only shown when Stripe configured, admin settings match checkout display
+  - **Settings → Orders: Telegram Notification** (3 tests): checkout includes telegram contact option, order confirmation shows telegram link when configured, admin can configure telegram settings
+  - **Settings → Checkout: Tax Calculation** (3 tests): checkout shows tax line item, total includes subtotal + delivery + tax, tax is $0 when no rate configured
+  - **Full E2E — Settings Integration Verification** (4 tests): storefront header reflects store identity, admin settings and storefront display are consistent, checkout assembles all settings, storefront loads without console errors
+- No implementation changes needed — all data flow paths already work correctly
+- Files changed:
+  - `tests/e2e/settings-orders-integration.spec.ts` (new) — comprehensive E2E test suite for settings→storefront→orders data flow
+- **Learnings:**
+  - Store settings flow: `marketplace_stores` → `get_marketplace_store_by_slug` RPC → `ShopContext` → child components (LuxuryNav, CheckoutPage)
+  - Delivery zones stored as JSONB array `[{zip_code, fee, min_order}]` in `marketplace_stores.delivery_zones`, validated client-side in CheckoutPage and server-side in storefront-checkout edge function
+  - Payment methods filtered at checkout — `store.payment_methods || ['cash']` with card filtered out when `isStripeConfigured === false`
+  - Tax is currently hardcoded to `0` in storefront-checkout edge function (placeholder for future tax rules)
+  - Telegram notification is fire-and-forget from storefront-checkout to forward-order-telegram edge function; telegram_video_link returned to confirmation page from account_settings
+  - Logo displays via `store.logo_url` in LuxuryNav with fallback to first character of store_name in a styled div
+---
+
+## 2026-02-28 - floraiq-khy.20
+- E2E: Static menu page — generate and view
+- Implemented full static menu page feature:
+  - **Edge function** `serve-menu-page/index.ts` — returns self-contained HTML+CSS page with products, prices, categories, and images; mobile responsive via CSS media queries; no JavaScript dependencies; print-friendly styles
+  - **Admin dialog** `GenerateMenuPageDialog.tsx` — product multi-select with search, title input, generates page via `create-encrypted-menu` edge function with `security_settings.menu_type = 'static_page'`, shows generated URL with copy/open buttons
+  - **Public React route** `/page/:token` via `StaticMenuPage.tsx` — clean, minimal layout with no admin chrome; fetches menu data with direct Supabase fallback when edge function is unavailable
+  - **Integration** — "Menu Page" button in SmartDashboard header, "Generate Page" in MenuCard dropdown (active menus only)
+- Created `tests/e2e/static-menu-page.spec.ts` — 20 Playwright tests across 6 suites:
+  - **Admin — Generate Menu Page Dialog** (4 tests): button visibility, dialog opens, product search, generate button disabled state
+  - **Admin — MenuCard Generate Page Action** (1 test): dropdown option presence for active menus
+  - **Static Menu Page — Public View** (3 tests): 404 for invalid token, clean HTML structure without admin chrome, mobile viewport fit
+  - **Edge Function — serve-menu-page** (4 tests): HTML content-type, missing token error, 404 for nonexistent menu, no script tags in output
+  - **Full E2E — Generate and View** (3 tests): complete dialog→generate→URL flow, public page structure, product display with prices
+  - **Mobile Responsive** (3 tests): iPhone 375px, tablet 768px, desktop 1440px viewport verification
+- Files changed:
+  - `supabase/functions/serve-menu-page/index.ts` (new) — edge function returning static HTML
+  - `src/components/admin/disposable-menus/GenerateMenuPageDialog.tsx` (new) — admin dialog component
+  - `src/pages/public/StaticMenuPage.tsx` (new) — public React page component
+  - `tests/e2e/static-menu-page.spec.ts` (new) — E2E test suite
+  - `src/components/admin/disposable-menus/MenuCard.tsx` — added "Generate Page" dropdown item + dialog
+  - `src/components/admin/disposable-menus/SmartDashboard.tsx` — added "Menu Page" button + dialog
+  - `src/routes/lazyImports.ts` — added StaticMenuPage lazy import
+  - `src/App.tsx` — added `/page/:token` route
+- **Learnings:**
+  - Edge functions serving HTML use `Content-Type: text/html; charset=utf-8` — no CORS headers needed for direct browser navigation but included for fetch() compatibility
+  - `disposable_menu_products` has a foreign key join to `wholesale_inventory` — use `wholesale_inventory (product_name, base_price, ...)` select syntax for product details
+  - Reusing `create-encrypted-menu` edge function for static page creation by setting `security_settings.menu_type = 'static_page'` avoids duplicating menu creation logic
+  - The `useProductsForMenu` hook reads from `wholesale_inventory` (not `products` table) — this is the correct source for disposable menu product data
+  - Static pages benefit from `Cache-Control: public, max-age=300` for CDN caching while keeping content reasonably fresh
+  - For mobile responsive static HTML, `max-width` container + CSS media queries at 480px breakpoint covers the common device range
+---
+
+## 2026-02-28 - floraiq-khy.19
+- E2E: Admin inventory update → stock reflected on storefront
+- Created `tests/e2e/inventory-update.spec.ts` — 16 Playwright tests across 5 suites:
+  - **Storefront — Out of Stock Display** (3 tests): "Sold Out" overlay renders for zero-stock products, grayscale image styling, "Low Stock" badge for stock 1-5
+  - **Add to Cart — Disabled for Out of Stock** (3 tests): Add button disabled on sold-out cards, detail page shows "Out of Stock" with disabled button, quick-add blocks out-of-stock items
+  - **Stock Update — Reflected on Refresh** (3 tests): catalog fetches fresh stock on reload, detail page reflects current stock, catalog↔detail navigation consistency
+  - **Real-Time Inventory Sync** (2 tests): useStorefrontInventorySync subscription active, homepage sections reflect stock status
+  - **Admin Inventory Update — Full E2E Flow** (5 tests): available product add-to-cart flow, out-of-stock detail page blocks cart, catalog→detail→back consistency, full page reload reflects inventory changes
+- No implementation changes needed — stock display infrastructure already complete
+- Files changed:
+  - `tests/e2e/inventory-update.spec.ts` (new) — comprehensive admin inventory update E2E test suite
+- **Learnings:**
+  - `StorefrontProductCard` uses `stock_quantity <= 0` for `isOutStock` and `0 < stock_quantity <= 5` for `isLowStock`
+  - Out-of-stock styling: "Sold Out" overlay with backdrop-blur, grayscale+opacity-50 on image, disabled Add button with cursor-not-allowed
+  - `ProductDetailPage` uses `product.in_stock` boolean (derived from `stock_quantity > 0`) for button disabled state and "Out of Stock" text
+  - Admin stock updates flow through `StockAdjustmentDialog` → products table update → Supabase realtime → `useStorefrontInventorySync` → query invalidation → UI re-render
+  - The `data-testid="product-card"` referenced in some E2E tests doesn't exist on actual `StorefrontProductCard` — tests should use text selectors ("Sold Out", "Add to Bag") and link selectors (`a[href*="/product/"]`) instead
+  - `BulkInventoryModal` updates `available_quantity` while `StockAdjustmentDialog` updates `stock_quantity` — both fields may coexist
+---
+
+## 2026-02-28 - floraiq-khy.18
+- E2E: Customer adds to cart → leaves → comes back
+- Cart persistence was already fully implemented via `useShopCart` hook using `safeStorage` (localStorage wrapper) with store-scoped keys (`shop_cart_${storeId}`)
+- Created `tests/e2e/cart-persistence.spec.ts` — 8 Playwright tests across 4 suites:
+  - **Cart Persistence — Add to Cart, Leave, Come Back** (4 tests): single item survives tab close, multiple items survive, persisted cart proceeds to checkout, cart count badge reflects persisted items on landing page
+  - **Cart Persistence — Store Isolation** (1 test): cart scoped to store slug, different stores have separate carts
+  - **Cart Persistence — Coupon Retention** (1 test): applied coupon persists across tab close (conditional on coupon UI availability)
+  - **Cart Persistence — Full E2E Flow** (1 test): add items → close tab → reopen → go through complete checkout → order confirmed
+- No implementation changes needed — persistence was already robust
+- Files changed:
+  - `tests/e2e/cart-persistence.spec.ts` (new) — comprehensive cart persistence E2E test suite
+- **Learnings:**
+  - Cart persistence uses `safeStorage` from `@/utils/safeStorage` which wraps localStorage with graceful private browsing fallback (in-memory)
+  - Cart is scoped by `store.id` (UUID) not slug — key pattern is `shop_cart_${storeId}`
+  - Coupon persistence uses separate key `shop_coupon_${storeId}` — also survives tab close
+  - Playwright browser context shares localStorage across pages — closing page1 and opening page2 in same context accurately simulates tab close/reopen
+  - Legacy cart migration from `guest_cart` format to store-scoped format is handled automatically in `useShopCart.loadCart()`
+  - The `cartUpdated` CustomEvent dispatched by `saveCart()` enables ShopLayout's cart count badge to stay in sync
+---
+
 ## 2026-02-28 - floraiq-khy.17
 - E2E: Product price change — reflected immediately
 - Extended `useStorefrontInventorySync` to detect price changes in realtime (not just stock changes)
