@@ -28,7 +28,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
-  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Mail, Lock, Phone
+  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Mail, Lock, Phone,
+  ArrowUpDown, Store, Monitor
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
@@ -76,9 +77,13 @@ interface Customer {
   last_purchase_at: string | null;
   status: string;
   medical_card_expiration: string | null;
+  referral_source: string | null;
   /** Indicates data is encrypted but cannot be decrypted with current key */
   _encryptedIndicator?: boolean;
 }
+
+type SortField = 'name' | 'total_spent' | 'last_purchase_at' | 'created_at';
+type SortDirection = 'asc' | 'desc';
 
 /**
  * Detects if a value looks like encrypted ciphertext (Base64 encoded)
@@ -104,6 +109,9 @@ export function CustomerManagement() {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterSource, setFilterSource] = useState("all");
+  const [sortField, setSortField] = useState<SortField>("created_at");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<{ id: string; name: string } | null>(null);
@@ -119,13 +127,13 @@ export function CustomerManagement() {
   const { data: customerIdsByTags } = useCustomersByTags(filterTagIds);
 
   const { data: customers = [], isLoading: loading } = useQuery({
-    queryKey: queryKeys.customers.list(tenant?.id, { filterType, filterStatus }),
+    queryKey: queryKeys.customers.list(tenant?.id, { filterType, filterStatus, filterSource }),
     queryFn: async () => {
       if (!tenant) return [];
 
       let query = supabase
         .from("customers")
-        .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, phone_encrypted, email_encrypted, deleted_at, created_at")
+        .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, phone_encrypted, email_encrypted, deleted_at, created_at, referral_source")
         .eq("tenant_id", tenant.id)
         .is("deleted_at", null); // Exclude soft-deleted customers
 
@@ -135,6 +143,12 @@ export function CustomerManagement() {
 
       if (filterStatus !== "all") {
         query = query.eq("status", filterStatus);
+      }
+
+      if (filterSource === "storefront") {
+        query = query.eq("referral_source", "storefront");
+      } else if (filterSource === "pos") {
+        query = query.eq("referral_source", "pos");
       }
 
       const { data, error } = await query.order("created_at", { ascending: false });
@@ -281,12 +295,13 @@ export function CustomerManagement() {
 
   const handleExport = () => {
     const csv = [
-      ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
+      ["Name", "Email", "Phone", "Type", "Source", "Total Spent", "Loyalty Points", "Status"],
       ...filteredCustomers.map(c => [
         displayName(c.first_name, c.last_name),
         c.email ?? '',
         c.phone ?? '',
         c.customer_type,
+        c.referral_source ?? 'direct',
         c.total_spent,
         c.loyalty_points,
         c.status
@@ -302,21 +317,46 @@ export function CustomerManagement() {
     toast.success("Customer data exported");
   };
 
-  const filteredCustomers = useMemo(() => customers.filter((customer) => {
-    const fullName = displayName(customer.first_name, customer.last_name).toLowerCase();
-    const search = debouncedSearchTerm.toLowerCase();
-    const matchesSearch =
-      fullName.includes(search) ||
-      customer.email?.toLowerCase().includes(search) ||
-      customer.phone?.includes(search);
+  const filteredCustomers = useMemo(() => {
+    const filtered = customers.filter((customer) => {
+      const fullName = displayName(customer.first_name, customer.last_name).toLowerCase();
+      const search = debouncedSearchTerm.toLowerCase();
+      const matchesSearch =
+        fullName.includes(search) ||
+        customer.email?.toLowerCase().includes(search) ||
+        customer.phone?.includes(search);
 
-    // Filter by tags if any are selected
-    const matchesTags =
-      filterTagIds.length === 0 ||
-      (customerIdsByTags && customerIdsByTags.includes(customer.id));
+      // Filter by tags if any are selected
+      const matchesTags =
+        filterTagIds.length === 0 ||
+        (customerIdsByTags && customerIdsByTags.includes(customer.id));
 
-    return matchesSearch && matchesTags;
-  }), [customers, debouncedSearchTerm, filterTagIds, customerIdsByTags]);
+      return matchesSearch && matchesTags;
+    });
+
+    // Sort
+    const sorted = [...filtered].sort((a, b) => {
+      const dir = sortDirection === 'asc' ? 1 : -1;
+      switch (sortField) {
+        case 'name': {
+          const nameA = displayName(a.first_name, a.last_name).toLowerCase();
+          const nameB = displayName(b.first_name, b.last_name).toLowerCase();
+          return dir * nameA.localeCompare(nameB);
+        }
+        case 'total_spent':
+          return dir * ((a.total_spent ?? 0) - (b.total_spent ?? 0));
+        case 'last_purchase_at': {
+          const dateA = a.last_purchase_at ? new Date(a.last_purchase_at).getTime() : 0;
+          const dateB = b.last_purchase_at ? new Date(b.last_purchase_at).getTime() : 0;
+          return dir * (dateA - dateB);
+        }
+        default:
+          return 0;
+      }
+    });
+
+    return sorted;
+  }, [customers, debouncedSearchTerm, filterTagIds, customerIdsByTags, sortField, sortDirection]);
 
   // Use standardized pagination
   const {
@@ -390,7 +430,7 @@ export function CustomerManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {["", "Customer", "Type", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
+                  {["", "Customer", "Type", "Source", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
                     <TableHead key={i}>
                       <Skeleton className="h-3 w-16" />
                     </TableHead>
@@ -554,7 +594,17 @@ export function CustomerManagement() {
                 className="pl-9"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Select value={filterSource} onValueChange={setFilterSource}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Source" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sources</SelectItem>
+                  <SelectItem value="storefront">Storefront</SelectItem>
+                  <SelectItem value="pos">POS</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={filterType} onValueChange={setFilterType}>
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder="Type" />
@@ -574,6 +624,26 @@ export function CustomerManagement() {
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
                   <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={`${sortField}-${sortDirection}`} onValueChange={(v) => {
+                const [field, dir] = v.split('-') as [SortField, SortDirection];
+                setSortField(field);
+                setSortDirection(dir);
+              }}>
+                <SelectTrigger className="w-[160px]">
+                  <ArrowUpDown className="w-3.5 h-3.5 mr-1.5" />
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="created_at-desc">Newest First</SelectItem>
+                  <SelectItem value="created_at-asc">Oldest First</SelectItem>
+                  <SelectItem value="name-asc">Name A-Z</SelectItem>
+                  <SelectItem value="name-desc">Name Z-A</SelectItem>
+                  <SelectItem value="total_spent-desc">Highest Spent</SelectItem>
+                  <SelectItem value="total_spent-asc">Lowest Spent</SelectItem>
+                  <SelectItem value="last_purchase_at-desc">Recent Orders</SelectItem>
+                  <SelectItem value="last_purchase_at-asc">Oldest Orders</SelectItem>
                 </SelectContent>
               </Select>
               <CustomerTagFilter
@@ -629,6 +699,7 @@ export function CustomerManagement() {
                   </TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Type</TableHead>
+                  <TableHead>Source</TableHead>
                   <TableHead>Total Spent</TableHead>
                   <TableHead>Points</TableHead>
                   <TableHead>Last Order</TableHead>
@@ -693,6 +764,21 @@ export function CustomerManagement() {
                       <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
                         {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {customer.referral_source === 'storefront' ? (
+                        <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-300">
+                          <Store className="w-3 h-3 mr-1" />
+                          Storefront
+                        </Badge>
+                      ) : customer.referral_source === 'pos' ? (
+                        <Badge className="bg-sky-100 text-sky-700 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-300">
+                          <Monitor className="w-3 h-3 mr-1" />
+                          POS
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">Direct</Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm font-semibold">
                       {formatCurrency(customer.total_spent)}
@@ -851,6 +937,15 @@ export function CustomerManagement() {
                           <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
                             {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
                           </Badge>
+                          {customer.referral_source === 'storefront' ? (
+                            <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-300 text-[10px] h-5 px-1.5">
+                              Storefront
+                            </Badge>
+                          ) : customer.referral_source === 'pos' ? (
+                            <Badge className="bg-sky-100 text-sky-700 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-300 text-[10px] h-5 px-1.5">
+                              POS
+                            </Badge>
+                          ) : null}
                           {getCustomerStatus(customer)}
                           <CustomerTagBadges customerId={customer.id} maxVisible={2} size="sm" />
                         </div>
