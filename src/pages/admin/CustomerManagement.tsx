@@ -52,6 +52,14 @@ import { CustomerTagFilter } from "@/components/admin/customers/CustomerTagFilte
 import { CustomerTagBadges } from "@/components/admin/customers/CustomerTagBadges";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 import { useCustomersByTags } from "@/hooks/useAutoTagRules";
 
@@ -379,21 +387,21 @@ export function CustomerManagement() {
         {/* Table skeleton */}
         <Card>
           <CardContent className="p-0">
-            <table className="w-full">
-              <thead className="bg-muted/50 border-b">
-                <tr>
+            <Table>
+              <TableHeader>
+                <TableRow>
                   {["", "Customer", "Type", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
-                    <th key={i} scope="col" className="px-4 py-2.5 text-left">
+                    <TableHead key={i}>
                       <Skeleton className="h-3 w-16" />
-                    </th>
+                    </TableHead>
                   ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y">
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {Array.from({ length: 6 }).map((_, rowIdx) => (
-                  <tr key={rowIdx}>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-4" /></td>
-                    <td className="px-4 py-2.5">
+                  <TableRow key={rowIdx}>
+                    <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-3">
                         <Skeleton className="h-10 w-10 rounded-full" />
                         <div className="space-y-1">
@@ -401,18 +409,18 @@ export function CustomerManagement() {
                           <Skeleton className="h-3 w-36" />
                         </div>
                       </div>
-                    </td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-16 rounded-full" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-16" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-12" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-14 rounded-full" /></td>
-                    <td className="px-4 py-2.5"><Skeleton className="h-5 w-16 rounded-full" /></td>
-                    <td className="px-4 py-2.5 text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></td>
-                  </tr>
+                    </TableCell>
+                    <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-14 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>
@@ -602,11 +610,11 @@ export function CustomerManagement() {
       {/* Customer Table (Desktop) */}
       <Card className="hidden md:block border-none shadow-md">
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/50 border-b">
-                <tr>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
                     <input
                       type="checkbox"
                       className="rounded"
@@ -618,37 +626,21 @@ export function CustomerManagement() {
                         }
                       }}
                     />
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Total Spent
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Points
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Last Order
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Tags
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-background divide-y divide-border">
+                  </TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Total Spent</TableHead>
+                  <TableHead>Points</TableHead>
+                  <TableHead>Last Order</TableHead>
+                  <TableHead>Tags</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {paginatedCustomers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-2.5">
+                  <TableRow key={customer.id}>
+                    <TableCell>
                       <input
                         type="checkbox"
                         className="rounded"
@@ -661,8 +653,8 @@ export function CustomerManagement() {
                           }
                         }}
                       />
-                    </td>
-                    <td className="px-4 py-2.5">
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center min-w-0">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
                           {customer.first_name?.[0] ?? ''}{customer.last_name?.[0] ?? '?'}
@@ -696,36 +688,36 @@ export function CustomerManagement() {
                           </div>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-4 py-2.5">
+                    </TableCell>
+                    <TableCell>
                       <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
                         {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
                       </Badge>
-                    </td>
-                    <td className="px-4 py-2.5 text-sm font-semibold">
+                    </TableCell>
+                    <TableCell className="text-sm font-semibold">
                       {formatCurrency(customer.total_spent)}
-                    </td>
-                    <td className="px-4 py-2.5 text-sm">
+                    </TableCell>
+                    <TableCell className="text-sm">
                       <span className="flex items-center gap-1">
                         <Award className="w-4 h-4 text-yellow-600" />
                         {customer.loyalty_points ?? 0}
                       </span>
-                    </td>
-                    <td className="px-4 py-2.5 text-sm text-muted-foreground">
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
                       {customer.last_purchase_at
                         ? formatSmartDate(customer.last_purchase_at)
                         : 'Never'}
-                    </td>
-                    <td className="px-4 py-2.5">
+                    </TableCell>
+                    <TableCell>
                       <CustomerTagBadges customerId={customer.id} maxVisible={2} />
-                    </td>
-                    <td className="px-4 py-2.5">
+                    </TableCell>
+                    <TableCell>
                       {getCustomerStatus(customer)}
-                    </td>
-                    <td className="px-4 py-2.5 text-right">
+                    </TableCell>
+                    <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" aria-label="Customer actions">
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -761,11 +753,11 @@ export function CustomerManagement() {
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
 
             {filteredCustomers.length === 0 && (
               <EnhancedEmptyState

@@ -21,6 +21,14 @@ import { SwipeableItem } from '@/components/mobile/SwipeableItem';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerClose } from '@/components/ui/drawer';
 import { triggerHaptic } from '@/lib/utils/mobile';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { SearchInput } from '@/components/shared/SearchInput';
 import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
 import { LastUpdated } from "@/components/shared/LastUpdated";
@@ -630,36 +638,36 @@ export default function Orders() {
 
           {/* Table skeleton */}
           <div className="rounded-md border">
-            <table className="w-full">
-              <thead className="bg-muted/50 border-b">
-                <tr>
+            <Table>
+              <TableHeader>
+                <TableRow>
                   {["", "Order #", "Customer", "Status", "Total", "Source", "Date", ""].map((h, i) => (
-                    <th key={i} scope="col" className="px-4 py-3 text-left">
+                    <TableHead key={i}>
                       <Skeleton className="h-3 w-16" />
-                    </th>
+                    </TableHead>
                   ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y">
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {Array.from({ length: 8 }).map((_, rowIdx) => (
-                  <tr key={rowIdx}>
-                    <td className="px-4 py-3"><Skeleton className="h-4 w-4" /></td>
-                    <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-4 py-3">
+                  <TableRow key={rowIdx}>
+                    <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell>
                       <div className="space-y-1">
                         <Skeleton className="h-4 w-28" />
                         <Skeleton className="h-3 w-36" />
                       </div>
-                    </td>
-                    <td className="px-4 py-3"><Skeleton className="h-5 w-20 rounded-full" /></td>
-                    <td className="px-4 py-3"><Skeleton className="h-4 w-16" /></td>
-                    <td className="px-4 py-3"><Skeleton className="h-4 w-14" /></td>
-                    <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
-                    <td className="px-4 py-3"><Skeleton className="h-8 w-8 rounded" /></td>
-                  </tr>
+                    </TableCell>
+                    <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-14" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-8 rounded" /></TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </Card>
       </div>
