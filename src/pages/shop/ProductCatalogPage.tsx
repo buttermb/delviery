@@ -103,6 +103,8 @@ interface ProductWithSettings {
   slug: string | null;
 }
 
+const ITEMS_PER_PAGE = 24;
+
 // Transform RPC response to component interface
 function transformProduct(rpc: RpcProduct): ProductWithSettings {
   return {
@@ -153,7 +155,6 @@ export function ProductCatalogPage() {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 24;
 
   // Wishlist integration
   const { toggleItem: toggleWishlist, isInWishlist } = useWishlist({ storeId: store?.id });
@@ -220,7 +221,8 @@ export function ProductCatalogPage() {
     product_name: p.name,
     category: p.marketplace_category_name || p.category || 'Uncategorized',
     strain_type: p.strain_type ?? '',
-    price: p.display_price,
+    price: p.price,
+    sale_price: p.compare_at_price ? p.display_price : undefined,
     description: p.description ?? '',
     image_url: p.image_url,
     images: p.images,
@@ -228,53 +230,38 @@ export function ProductCatalogPage() {
     cbd_content: p.cbd_content,
     is_visible: true,
     display_order: 0,
-    stock_quantity: p.stock_quantity, // Use actual stock quantity from RPC
+    stock_quantity: p.stock_quantity,
     unit_type: p.unit_type || undefined,
     metrc_retail_id: p.metrc_retail_id || undefined,
     exclude_from_discounts: p.exclude_from_discounts,
     minimum_price: p.minimum_price ?? undefined,
     min_expiry_days: p.min_expiry_days ?? undefined,
+    effects: p.effects ?? undefined,
   });
 
   // Fetch products with error handling
   const { data: products = [], isLoading: productsLoading, error: productsError, refetch: refetchProducts } = useQuery({
     queryKey: queryKeys.shopProducts.list(store?.id),
     queryFn: async () => {
-      logger.info('ProductCatalogPage: Fetching products', { storeId: store?.id, type: typeof store?.id });
+      if (!store?.id) return [];
 
-      if (!store?.id) {
-        logger.warn('ProductCatalogPage: No storeId available');
-        return [];
-      }
+      const { data, error } = await supabase
+        .rpc('get_marketplace_products', { p_store_id: store.id });
 
-      // Validation
-      if (store.id.length < 32) {
-        logger.warn('ProductCatalogPage: Invalid storeId format', { storeId: store.id });
-        return [];
-      }
-
-      try {
-        const { data, error } = await supabase
-          .rpc('get_marketplace_products', { p_store_id: store.id });
-
-        // Handle missing RPC function gracefully
-        if (error) {
-          if (error.code === 'PGRST202' || error.message?.includes('does not exist') || error.code === '42883') {
-            logger.warn('get_marketplace_products RPC not found or signature mismatch', { storeId: store.id, error });
-            return [];
-          }
-          if (error.code === '22P02') { // Invalid text representation
-            logger.warn('ProductCatalogPage: Invalid UUID input', { storeId: store.id });
-            return [];
-          }
-          logger.error('Products fetch failed', error, { storeId: store.id });
-          throw error;
+      // Handle missing RPC function gracefully
+      if (error) {
+        if (error.code === 'PGRST202' || error.message?.includes('does not exist') || error.code === '42883') {
+          logger.warn('get_marketplace_products RPC not found or signature mismatch', { storeId: store.id, error });
+          return [];
         }
-        return (data ?? []).map((item: unknown) => transformProduct(item as RpcProduct));
-      } catch (err) {
-        logger.error('Error fetching products', err, { storeId: store.id });
-        throw err;
+        if (error.code === '22P02') {
+          logger.warn('ProductCatalogPage: Invalid UUID input', { storeId: store.id });
+          return [];
+        }
+        logger.error('Products fetch failed', error, { storeId: store.id });
+        throw error;
       }
+      return (data ?? []).map((item: unknown) => transformProduct(item as RpcProduct));
     },
     enabled: !!store?.id,
     retry: 1,
@@ -286,26 +273,21 @@ export function ProductCatalogPage() {
     queryFn: async () => {
       if (!store?.id) return [];
 
-      try {
-        const { data, error } = await supabase
-          .from('marketplace_categories')
-          .select('*')
-          .eq('store_id', store.id)
-          .eq('is_active', true)
-          .order('display_order');
+      const { data, error } = await supabase
+        .from('marketplace_categories')
+        .select('*')
+        .eq('store_id', store.id)
+        .eq('is_active', true)
+        .order('display_order');
 
-        if (error) {
-          logger.error('Categories fetch failed', error, { storeId: store.id });
-          throw error;
-        }
-        return data;
-      } catch (err) {
-        logger.error('Error fetching categories', err);
+      if (error) {
+        logger.warn('Categories fetch failed', error, { storeId: store.id });
         return [];
       }
+      return data ?? [];
     },
     enabled: !!store?.id,
-    retry: 2,
+    retry: 1,
   });
 
   // Filter and sort products
@@ -402,7 +384,7 @@ export function ProductCatalogPage() {
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredProducts, currentPage, ITEMS_PER_PAGE]);
+  }, [filteredProducts, currentPage]);
 
   // Reset page when filters change
   useEffect(() => {
