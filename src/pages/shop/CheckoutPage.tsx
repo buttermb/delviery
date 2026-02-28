@@ -457,7 +457,7 @@ export function CheckoutPage() {
           return false;
         }
         return true;
-      case 2:
+      case 2: {
         if (!formData.fulfillmentMethod) {
           toast.error('Please select a fulfillment method');
           return false;
