@@ -253,6 +253,61 @@ export const AdminNotificationCenter = () => {
       channelsRef.current.push(channel);
     });
 
+    // --- Marketplace orders (storefront checkout uses seller_tenant_id) ---
+    const marketplaceChannel = supabase
+      .channel(`notif-center-marketplace-orders-${tenantId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'marketplace_orders', filter: `seller_tenant_id=eq.${tenantId}` },
+        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+          if (!payload.new) return;
+          const orderNum = getPayloadString(payload.new, 'order_number') ||
+            getPayloadString(payload.new, 'id', '').slice(0, 8);
+          const amount = getPayloadNumber(payload.new, 'total_amount') ||
+            getPayloadNumber(payload.new, 'total');
+          const amountStr = amount ? ` - ${formatCurrency(amount)}` : '';
+          const customerName = getPayloadString(payload.new, 'customer_name', 'Storefront Customer');
+
+          addNotification({
+            type: 'new_order',
+            severity: 'info',
+            title: 'New Storefront Order',
+            message: `Order #${orderNum} from ${customerName}${amountStr}`,
+            link: adminLink('orders'),
+            entityId: getPayloadString(payload.new, 'id'),
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'marketplace_orders', filter: `seller_tenant_id=eq.${tenantId}` },
+        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+          if (!payload.new || !payload.old) return;
+          const newStatus = getPayloadString(payload.new, 'status');
+          const oldStatus = getPayloadString(payload.old, 'status');
+          if (newStatus !== oldStatus && (newStatus === 'ready' || newStatus === 'ready_for_pickup')) {
+            const orderNum = getPayloadString(payload.new, 'order_number') ||
+              getPayloadString(payload.new, 'id', '').slice(0, 8);
+            addNotification({
+              type: 'order_ready',
+              severity: 'success',
+              title: 'Order Ready',
+              message: `Order #${orderNum} is ready for pickup/delivery`,
+              link: adminLink('orders'),
+              entityId: getPayloadString(payload.new, 'id'),
+            });
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.debug('Notification center subscribed to marketplace_orders', {
+            component: 'AdminNotificationCenter',
+          });
+        }
+      });
+    channelsRef.current.push(marketplaceChannel);
+
     // --- Products (low stock) ---
     const productsChannel = supabase
       .channel(`notif-center-products-${tenantId}`)
