@@ -130,6 +130,8 @@ function SortableSectionItem({
             ref={setNodeRef}
             style={style}
             onClick={onSelect}
+            data-testid={`builder-section-${section.type}`}
+            data-section-type={section.type}
             className={`flex items-center justify-between p-3 rounded-md border cursor-pointer transition-colors ${isSelected ? 'border-primary bg-primary/5' : 'hover:bg-muted'
                 } ${isHidden ? 'opacity-50' : ''}`}
         >

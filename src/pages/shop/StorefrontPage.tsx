@@ -187,7 +187,7 @@ export function StorefrontPage() {
             {/* Section Renderer */}
             {sections
                 .filter((s) => s.visible !== false)
-                .map((section) => {
+                .map((section, index) => {
                     const Component = SECTION_COMPONENTS[section.type];
                     if (!Component) {
                         logger.warn(`Unknown section type: ${section.type}`);
@@ -196,12 +196,18 @@ export function StorefrontPage() {
 
                     try {
                         return (
-                            <Component
+                            <div
                                 key={section.id}
-                                content={section.content}
-                                styles={section.styles}
-                                storeId={store.id}
-                            />
+                                data-section-type={section.type}
+                                data-section-index={index}
+                                data-testid={`storefront-section-${section.type}`}
+                            >
+                                <Component
+                                    content={section.content}
+                                    styles={section.styles}
+                                    storeId={store.id}
+                                />
+                            </div>
                         );
                     } catch (error) {
                         logger.error(`Error rendering section ${section.id}`, error);
