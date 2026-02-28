@@ -25,6 +25,8 @@ export const STORAGE_KEYS = {
   // User preferences
   THEME: 'theme',
   SIDEBAR_COLLAPSED: 'sidebar_collapsed',
+  COMPACT_MODE: 'compact_mode',
+  ANIMATIONS_ENABLED: 'animations_enabled',
   
   // Age verification
   AGE_VERIFIED: 'age_verified',

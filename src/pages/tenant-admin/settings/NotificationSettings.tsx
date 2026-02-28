@@ -171,6 +171,7 @@ export default function NotificationSettings() {
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
       queryClient.invalidateQueries({ queryKey: queryKeys.notificationPreferences.byUser(admin?.id) });
+      toast.success('Notification preferences saved');
     },
     onError: (error: unknown) => {
       setSaveStatus('error');
