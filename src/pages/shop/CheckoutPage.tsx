@@ -3,7 +3,7 @@
  * Multi-step checkout flow
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -51,12 +51,7 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
 import { queryKeys } from '@/lib/queryKeys';
 import { useReturningCustomerLookup } from '@/hooks/useReturningCustomerLookup';
-
-// Email validation regex
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// Phone validation - accepts formats: (555) 123-4567, 555-123-4567, 5551234567, +1 555-123-4567
-const PHONE_REGEX = /^[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+import { CheckoutCustomerInfoStep } from '@/components/shop/CheckoutCustomerInfoStep';
 
 interface CheckoutData {
   // Contact
@@ -193,11 +188,16 @@ export function CheckoutPage() {
   const [zelleConfirmed, setZelleConfirmed] = useState(false);
   const [createAccount, setCreateAccount] = useState(false);
   const [accountPassword, setAccountPassword] = useState('');
-  const [showErrors, setShowErrors] = useState(false);
   const [, setOrderRetryCount] = useState(0);
 
   // Fast double-click guard — ref updates synchronously, before React re-renders with isPending
   const isSubmittingRef = useRef(false);
+
+  // Step 1 form validation (set by CheckoutCustomerInfoStep)
+  const step1ValidateRef = useRef<(() => Promise<boolean>) | null>(null);
+  const handleStep1Validate = useCallback((validateFn: () => Promise<boolean>) => {
+    step1ValidateRef.current = validateFn;
+  }, []);
 
   // Idempotency key persisted to sessionStorage to survive page refresh during submission
   const [idempotencyKey] = useState(() => {
@@ -435,33 +435,19 @@ export function CheckoutPage() {
   };
 
   // Validate current step
-  const validateStep = () => {
-    setShowErrors(true);
+  const validateStep = async (): Promise<boolean> => {
     switch (currentStep) {
-      case 1:
-        if (!formData.firstName || !formData.lastName || !formData.email) {
-          toast.error('Please fill in all required fields');
-          return false;
+      case 1: {
+        // Delegate to React Hook Form validation via ref
+        if (step1ValidateRef.current) {
+          const isValid = await step1ValidateRef.current();
+          if (!isValid) {
+            toast.error('Please fix the errors above');
+          }
+          return isValid;
         }
-        if (!EMAIL_REGEX.test(formData.email)) {
-          toast.error('Invalid email address', { description: 'Please enter a valid email.' });
-          return false;
-        }
-        if (store?.checkout_settings?.require_phone && !formData.phone) {
-          toast.error('Phone number is required');
-          return false;
-        }
-        // Validate phone format if provided
-        if (formData.phone && !PHONE_REGEX.test(formData.phone.replace(/\s/g, ''))) {
-          toast.error('Invalid phone number', { description: 'Please enter a valid phone number.' });
-          return false;
-        }
-        // Validate password if creating account
-        if (createAccount && accountPassword.length < 8) {
-          toast.error('Password too short', { description: 'Password must be at least 8 characters.' });
-          return false;
-        }
-        return true;
+        return false;
+      }
       case 2:
         if (!formData.fulfillmentMethod) {
           toast.error('Please select a fulfillment method');
@@ -518,8 +504,9 @@ export function CheckoutPage() {
   };
 
   // Next step
-  const nextStep = () => {
-    if (validateStep()) {
+  const nextStep = async () => {
+    const isValid = await validateStep();
+    if (isValid) {
       setCurrentStep((prev) => Math.min(prev + 1, 4));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1025,9 +1012,10 @@ export function CheckoutPage() {
   });
 
   // Handle place order — ref guard prevents fast double-click
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (isSubmittingRef.current || placeOrderMutation.isPending) return;
-    if (validateStep()) {
+    const isValid = await validateStep();
+    if (isValid) {
       isSubmittingRef.current = true;
       placeOrderMutation.mutate();
     }
@@ -1291,150 +1279,28 @@ export function CheckoutPage() {
               <AnimatePresence mode="wait">
                 {/* Step 1: Contact Information */}
                 {currentStep === 1 && (
-                  <motion.div
-                    key="step1"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-4"
-                  >
-                    <h2 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name *</Label>
-                        <Input
-                          id="firstName"
-                          name="firstName"
-                          value={formData.firstName}
-                          onChange={(e) => updateField('firstName', e.target.value)}
-                          placeholder="John"
-                          className={showErrors && !formData.firstName ? "border-red-500 focus-visible:ring-red-500" : ""}
-                        />
-                        {showErrors && !formData.firstName && (
-                          <p className="text-xs text-red-500">Required</p>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name *</Label>
-                        <Input
-                          id="lastName"
-                          name="lastName"
-                          value={formData.lastName}
-                          onChange={(e) => updateField('lastName', e.target.value)}
-                          placeholder="Doe"
-                          className={showErrors && !formData.lastName ? "border-red-500 focus-visible:ring-red-500" : ""}
-                        />
-                        {showErrors && !formData.lastName && (
-                          <p className="text-xs text-red-500">Required</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => updateField('email', e.target.value)}
-                        placeholder="john@example.com"
-                        className={showErrors && !formData.email ? "border-red-500 focus-visible:ring-red-500" : ""}
-                      />
-                      {showErrors && !formData.email && (
-                        <p className="text-xs text-red-500">Required</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">
-                        Phone {store.checkout_settings?.require_phone ? '*' : '(Optional)'}
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="phone"
-                          name="phone"
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => updateField('phone', e.target.value)}
-                          placeholder="(555) 123-4567"
-                        />
-                        {isLookingUpCustomer && (
-                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-                        )}
-                        {isRecognized && !isLookingUpCustomer && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
-                        )}
-                      </div>
-                      {isRecognized && (
-                        <p className="text-xs text-green-600">Welcome back, {returningCustomer?.firstName}!</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Preferred Contact Method</Label>
-                      <RadioGroup
-                        value={formData.preferredContact}
-                        onValueChange={(value) => updateField('preferredContact', value)}
-                        className="flex gap-4"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="text" id="contact-text" />
-                          <Label htmlFor="contact-text" className="cursor-pointer">Text</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="phone" id="contact-phone" />
-                          <Label htmlFor="contact-phone" className="cursor-pointer">Call</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="email" id="contact-email" />
-                          <Label htmlFor="contact-email" className="cursor-pointer">Email</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="telegram" id="contact-telegram" />
-                          <Label htmlFor="contact-telegram" className="cursor-pointer">Telegram</Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-
-                    {/* Create Account Option */}
-                    <Separator />
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-2">
-                        <Checkbox
-                          id="create-account"
-                          checked={createAccount}
-                          onCheckedChange={(checked) => {
-                            setCreateAccount(checked as boolean);
-                            if (!checked) setAccountPassword('');
-                          }}
-                        />
-                        <div>
-                          <Label htmlFor="create-account" className="cursor-pointer font-medium">
-                            Create an account
-                          </Label>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            Save your info and view order history
-                          </p>
-                        </div>
-                      </div>
-                      {createAccount && (
-                        <div className="space-y-2 pl-6">
-                          <Label htmlFor="account-password">Password *</Label>
-                          <Input
-                            id="account-password"
-                            type="password"
-                            value={accountPassword}
-                            onChange={(e) => setAccountPassword(e.target.value)}
-                            placeholder="At least 8 characters"
-                            minLength={8}
-                            className={showErrors && createAccount && accountPassword.length < 8 ? "border-red-500 focus-visible:ring-red-500" : ""}
-                          />
-                          {showErrors && createAccount && accountPassword.length < 8 && (
-                            <p className="text-xs text-red-500">Password must be at least 8 characters</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
+                  <CheckoutCustomerInfoStep
+                    initialValues={{
+                      firstName: formData.firstName,
+                      lastName: formData.lastName,
+                      phone: formData.phone,
+                      email: formData.email,
+                      preferredContact: formData.preferredContact,
+                    }}
+                    createAccount={createAccount}
+                    accountPassword={accountPassword}
+                    isLuxuryTheme={isLuxuryTheme}
+                    isLookingUpCustomer={isLookingUpCustomer}
+                    isRecognized={isRecognized}
+                    returningCustomer={returningCustomer}
+                    onFieldChange={(field, value) => updateField(field as keyof CheckoutData, value)}
+                    onCreateAccountChange={(checked) => {
+                      setCreateAccount(checked);
+                      if (!checked) setAccountPassword('');
+                    }}
+                    onAccountPasswordChange={setAccountPassword}
+                    onValidate={handleStep1Validate}
+                  />
                 )}
 
                 {/* Step 2: Fulfillment Method & Delivery Address */}
