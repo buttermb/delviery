@@ -37,6 +37,7 @@ import {
   Store,
   AlertTriangle,
   RefreshCw,
+  Zap,
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
@@ -64,6 +65,7 @@ import { BulkPriceEditor } from "@/components/admin/BulkPriceEditor";
 import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
 import { ProductImportDialog } from "@/components/admin/ProductImportDialog";
 import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
+import { QuickAddProductDialog } from "@/components/admin/products/QuickAddProductDialog";
 import { useProductDuplicate } from "@/hooks/useProductDuplicate";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import type { Database } from "@/integrations/supabase/types";
@@ -257,6 +259,7 @@ export default function ProductManagement() {
   const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
   const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
 
   // Optimistic locking for concurrent edit protection
@@ -1250,6 +1253,17 @@ export default function ProductManagement() {
             />
           )}
 
+          {canEdit('products') && (
+            <Button
+              variant="outline"
+              onClick={() => setQuickAddOpen(true)}
+              className="min-h-[44px]"
+            >
+              <Zap className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Quick Add</span>
+            </Button>
+          )}
+
           <Dialog
             open={isDialogOpen}
             onOpenChange={(open) => {
@@ -1639,6 +1653,14 @@ export default function ProductManagement() {
         description={batchDeleteDialogState.description}
         itemType={batchDeleteDialogState.itemType}
         isLoading={batchDeleteDialogState.isLoading}
+      />
+
+      {/* Quick Add Product Dialog */}
+      <QuickAddProductDialog
+        open={quickAddOpen}
+        onOpenChange={setQuickAddOpen}
+        onSuccess={loadProducts}
+        storeId={store?.id || undefined}
       />
 
       <UnsavedChangesDialog
