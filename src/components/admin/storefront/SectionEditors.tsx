@@ -98,6 +98,15 @@ function HeroEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorP
                                 rows={2}
                             />
                         </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-xs">Announcement Banner</Label>
+                            <Input
+                                value={(content.announcement_banner as string) ?? ''}
+                                onChange={(e) => onUpdateContent('announcement_banner', e.target.value)}
+                                placeholder="Free delivery on orders over $100"
+                            />
+                            <p className="text-[10px] text-muted-foreground">Optional banner shown above the hero. Leave empty to hide.</p>
+                        </div>
                         <div className="flex items-center gap-2">
                             <Switch
                                 checked={(content.trust_badges as boolean) ?? true}
