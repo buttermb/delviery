@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { sanitizeHtml, safeJsonParse } from '@/lib/utils/sanitize';
 import { queryKeys } from '@/lib/queryKeys';
+import { safeStorage } from '@/utils/safeStorage';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart,
@@ -329,7 +330,7 @@ export function ProductDetailPage() {
   // Check wishlist status
   useEffect(() => {
     if (store?.id && product?.product_id) {
-      const wishlist = safeJsonParse<string[]>(localStorage.getItem(`${STORAGE_KEYS.SHOP_WISHLIST_PREFIX}${store.id}`), []);
+      const wishlist = safeJsonParse<string[]>(safeStorage.getItem(`${STORAGE_KEYS.SHOP_WISHLIST_PREFIX}${store.id}`), []);
       setIsWishlisted(wishlist.includes(product.product_id));
     }
   }, [store?.id, product?.product_id]);
@@ -446,7 +447,7 @@ export function ProductDetailPage() {
     if (!store?.id || !product?.product_id) return;
 
     try {
-      const wishlist = JSON.parse(localStorage.getItem(`${STORAGE_KEYS.SHOP_WISHLIST_PREFIX}${store.id}`) || '[]');
+      const wishlist = safeJsonParse<string[]>(safeStorage.getItem(`${STORAGE_KEYS.SHOP_WISHLIST_PREFIX}${store.id}`), []);
       let newWishlist;
 
       if (isWishlisted) {
@@ -457,7 +458,7 @@ export function ProductDetailPage() {
         toast.success('Added to wishlist');
       }
 
-      localStorage.setItem(`${STORAGE_KEYS.SHOP_WISHLIST_PREFIX}${store.id}`, JSON.stringify(newWishlist));
+      safeStorage.setItem(`${STORAGE_KEYS.SHOP_WISHLIST_PREFIX}${store.id}`, JSON.stringify(newWishlist));
       setIsWishlisted(!isWishlisted);
     } catch (error) {
       logger.error('Wishlist operation failed', error);
