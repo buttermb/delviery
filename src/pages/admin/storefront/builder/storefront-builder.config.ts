@@ -30,7 +30,7 @@ export interface ThemeConfig {
 export interface SectionTypeDefinition {
     label: string;
     icon: LucideIcon;
-    component: React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }>;
+    component: React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string; storeSlug?: string }>;
 }
 
 export const DEFAULT_THEME: ThemeConfig = {
