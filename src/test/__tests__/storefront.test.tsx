@@ -43,6 +43,7 @@ vi.mock('@/lib/logger', () => ({
 // Mock sanitize utility
 vi.mock('@/lib/utils/sanitize', () => ({
   sanitizeBasicHtml: (html: string) => html,
+  sanitizeWithLineBreaks: (html: string) => html,
 }));
 
 // Mock framer-motion to avoid animation issues in tests
@@ -430,10 +431,8 @@ describe('Storefront Route /shop/:storeSlug', () => {
       render(<TestWrapper />);
 
       await waitFor(() => {
-        // Hero section heading should render
-        expect(screen.getByText('Premium')).toBeInTheDocument();
-        expect(screen.getByText('Cannabis')).toBeInTheDocument();
-        expect(screen.getByText('Delivered')).toBeInTheDocument();
+        // Hero section heading should render (combined headline)
+        expect(screen.getByText('Premium Cannabis Delivered')).toBeInTheDocument();
       });
     });
 
@@ -465,7 +464,7 @@ describe('Storefront Route /shop/:storeSlug', () => {
   });
 
   describe('5. Hero Section Display', () => {
-    it('should display hero section with heading lines', async () => {
+    it('should display hero section with headline', async () => {
       mockRpc.mockImplementation((fnName: string) => {
         if (fnName === 'get_marketplace_store_by_slug') {
           return Promise.resolve({ data: [mockStore], error: null });
@@ -479,9 +478,7 @@ describe('Storefront Route /shop/:storeSlug', () => {
       render(<TestWrapper />);
 
       await waitFor(() => {
-        expect(screen.getByText('Premium')).toBeInTheDocument();
-        expect(screen.getByText('Cannabis')).toBeInTheDocument();
-        expect(screen.getByText('Delivered')).toBeInTheDocument();
+        expect(screen.getByText('Premium Cannabis Delivered')).toBeInTheDocument();
       });
     });
 
@@ -737,16 +734,14 @@ describe('HeroSection Component', () => {
     accent_color: '#10b981',
   };
 
-  it('should render three heading lines', () => {
+  it('should render combined headline from heading lines', () => {
     render(
       <MemoryRouter>
         <HeroSection content={defaultContent} styles={defaultStyles} />
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Test')).toBeInTheDocument();
-    expect(screen.getByText('Hero')).toBeInTheDocument();
-    expect(screen.getByText('Section')).toBeInTheDocument();
+    expect(screen.getByText('Test Hero Section')).toBeInTheDocument();
   });
 
   it('should render CTA buttons with correct links', () => {
@@ -795,9 +790,7 @@ describe('HeroSection Component', () => {
       </MemoryRouter>
     );
 
-    // Default heading lines
-    expect(screen.getByText('Premium')).toBeInTheDocument();
-    expect(screen.getByText('Flower')).toBeInTheDocument();
-    expect(screen.getByText('Delivered')).toBeInTheDocument();
+    // Default headline
+    expect(screen.getByText('Premium Flower Delivered')).toBeInTheDocument();
   });
 });
