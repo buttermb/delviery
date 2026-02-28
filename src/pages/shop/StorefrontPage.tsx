@@ -1,7 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Share2 } from 'lucide-react';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { HeroSection } from '@/components/shop/sections/HeroSection';
 import { FeaturesSection } from '@/components/shop/sections/FeaturesSection';
 import { TestimonialsSection } from '@/components/shop/sections/TestimonialsSection';
@@ -17,7 +19,7 @@ import { PromotionsBannerSection } from '@/components/shop/sections/PromotionsBa
 import { DealsHighlightSection } from '@/components/shop/sections/DealsHighlightSection';
 import { AnnouncementBar } from '@/components/shop/sections/AnnouncementBar';
 import { SEOHead } from '@/components/SEOHead';
-import { ShareButtons } from '@/components/shop/ShareButtons';
+import { StorefrontShareDialog } from '@/components/shop/StorefrontShareDialog';
 import { logger } from '@/lib/logger';
 
 /** Section component props contract */
@@ -57,6 +59,7 @@ interface LayoutSection {
 export function StorefrontPage() {
     const { storeSlug } = useParams<{ storeSlug: string }>();
     const { store, isLoading } = useShop();
+    const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
     /** Build Schema.org Store JSON-LD structured data */
     const structuredData = useMemo(() => {
@@ -215,17 +218,29 @@ export function StorefrontPage() {
                     }
                 })}
 
-            {/* Social Sharing Bar */}
+            {/* Share Store Bar */}
             <div className="bg-muted/50 border-t py-6">
                 <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-sm text-muted-foreground">Share this store with friends</p>
-                    <ShareButtons
-                        title={seoTitle}
-                        description={seoDescription}
-                        compact
-                    />
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShareDialogOpen(true)}
+                        className="gap-2"
+                    >
+                        <Share2 className="w-4 h-4" />
+                        Share Store
+                    </Button>
                 </div>
             </div>
+
+            {/* Share Dialog */}
+            <StorefrontShareDialog
+                open={shareDialogOpen}
+                onOpenChange={setShareDialogOpen}
+                storeName={store.store_name}
+                storeSlug={storeSlug || store.slug}
+            />
         </div>
     );
 }
