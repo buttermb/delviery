@@ -238,6 +238,29 @@ export function SinglePageCheckout() {
         setCartItemCount(0);
       }
 
+      // Send order confirmation email (fire and forget) — only if email was provided
+      if (formData.email) {
+        supabase.functions.invoke('send-order-confirmation', {
+          body: {
+            order_id: data.order_id,
+            customer_email: formData.email,
+            customer_name: `${formData.firstName} ${formData.lastName}`.trim(),
+            order_number: data.order_id,
+            items: cartItems.map((item) => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+            subtotal,
+            delivery_fee: deliveryFee,
+            total,
+            store_name: store?.store_name || 'Store',
+          },
+        }).catch((err) => {
+          logger.warn('Failed to send order confirmation email', err, { component: 'SinglePageCheckout' });
+        });
+      }
+
       navigate(`/shop/${storeSlug}/order-confirmation`, {
         state: { orderId: data.order_id },
       });

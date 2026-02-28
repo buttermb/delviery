@@ -898,29 +898,30 @@ export function CheckoutPage() {
         setCartItemCount(0);
       }
 
-      // Send order confirmation email (fire and forget)
-      const origin = window.location.origin;
-      supabase.functions.invoke('send-order-confirmation', {
-        body: {
-          order_id: data.order_id,
-          customer_email: formData.email,
-          customer_name: `${formData.firstName} ${formData.lastName}`,
-          order_number: data.order_number,
-          items: cartItems.map((item) => ({
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-          subtotal,
-          delivery_fee: deliveryFee,
-          total: data.total,
-          store_name: store?.store_name || 'Store',
-          tracking_url: data.tracking_token ? `${origin}/shop/${storeSlug}/order-tracking?token=${data.tracking_token}` : undefined,
-        },
-      }).catch((err) => {
-        logger.warn('Failed to send order confirmation email', err, { component: 'CheckoutPage' });
-        toast.warning('Order placed, but confirmation email could not be sent');
-      });
+      // Send order confirmation email (fire and forget) — only if email was provided
+      if (formData.email) {
+        const origin = window.location.origin;
+        supabase.functions.invoke('send-order-confirmation', {
+          body: {
+            order_id: data.order_id,
+            customer_email: formData.email,
+            customer_name: `${formData.firstName} ${formData.lastName}`,
+            order_number: data.order_number,
+            items: cartItems.map((item) => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+            subtotal,
+            delivery_fee: deliveryFee,
+            total: data.total,
+            store_name: store?.store_name || 'Store',
+            tracking_url: data.tracking_token ? `${origin}/shop/${storeSlug}/track/${data.tracking_token}` : undefined,
+          },
+        }).catch((err) => {
+          logger.warn('Failed to send order confirmation email', err, { component: 'CheckoutPage' });
+        });
+      }
 
       // Create customer account if opted in (fire and forget — order already placed)
       if (createAccount && accountPassword && store?.tenant_id) {
