@@ -452,16 +452,28 @@ export function StorefrontBuilder({
     // Create store mutation (deducts 500 credits)
     const createStoreMutation = useMutation({
         mutationFn: async (data: { storeName: string; slug: string }) => {
+            if (!tenant?.id) throw new Error('No tenant context available');
+
+            const trimmedName = data.storeName.trim();
+            if (!trimmedName) throw new Error('Store name is required');
+
             const { data: newStore, error } = await supabase
                 .from('marketplace_stores')
                 .insert({
-                    tenant_id: tenant?.id,
-                    store_name: data.storeName,
+                    tenant_id: tenant.id,
+                    store_name: trimmedName,
                     slug: data.slug,
                     layout_config: [],
                     theme_config: themeConfig,
                     is_active: true,
                     is_public: false,
+                    require_age_verification: false,
+                    minimum_age: 21,
+                    payment_methods: ['cash', 'card'],
+                    delivery_zones: [],
+                    default_delivery_fee: 0,
+                    checkout_settings: {},
+                    operating_hours: {},
                 })
                 .select()
                 .maybeSingle();
@@ -487,6 +499,11 @@ export function StorefrontBuilder({
 
     // Handle store creation with credit deduction
     const handleCreateStore = async () => {
+        if (!newStoreName.trim()) {
+            toast.error('Store name is required');
+            return;
+        }
+
         const isValid = await validateSlug(newStoreSlug);
         if (!isValid) return;
 
