@@ -39,7 +39,12 @@ export interface LiveOrder {
     menu_title?: string;
     total_amount?: number;
     customer_name?: string;
+    customer_phone?: string;
     delivery_address?: string;
+    payment_method?: string;
+    payment_status?: string;
+    order_type?: string;
+    items_count?: number;
 }
 
 interface LiveOrdersKanbanProps {
