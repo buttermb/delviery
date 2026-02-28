@@ -50,6 +50,7 @@ import { humanizeError } from '@/lib/humanizeError';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
 import { queryKeys } from '@/lib/queryKeys';
+import { useReturningCustomerLookup } from '@/hooks/useReturningCustomerLookup';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -250,6 +251,36 @@ export function CheckoutPage() {
       }
     }
   }, [formData, formStorageKey]);
+
+  // Returning customer recognition by phone
+  const {
+    customer: returningCustomer,
+    isRecognized,
+    isSearching: isLookingUpCustomer,
+  } = useReturningCustomerLookup({
+    phone: formData.phone,
+    tenantId: store?.tenant_id,
+    enabled: currentStep === 1,
+  });
+
+  // Auto-fill form when returning customer is recognized
+  const lastRecognizedIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (returningCustomer && returningCustomer.customerId !== lastRecognizedIdRef.current) {
+      lastRecognizedIdRef.current = returningCustomer.customerId;
+      setFormData((prev) => ({
+        ...prev,
+        firstName: prev.firstName || returningCustomer.firstName,
+        lastName: prev.lastName || returningCustomer.lastName,
+        email: prev.email || returningCustomer.email || '',
+        street: prev.street || returningCustomer.address || '',
+        preferredContact: (returningCustomer.preferredContact as CheckoutData['preferredContact']) || prev.preferredContact,
+      }));
+      toast.success('Welcome back!', {
+        description: `We recognized your phone number, ${returningCustomer.firstName}.`,
+      });
+    }
+  }, [returningCustomer]);
 
   // Use unified cart hook with coupon support
   const {
@@ -1304,14 +1335,25 @@ export function CheckoutPage() {
                       <Label htmlFor="phone">
                         Phone {store.checkout_settings?.require_phone ? '*' : '(Optional)'}
                       </Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => updateField('phone', e.target.value)}
-                        placeholder="(555) 123-4567"
-                      />
+                      <div className="relative">
+                        <Input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => updateField('phone', e.target.value)}
+                          placeholder="(555) 123-4567"
+                        />
+                        {isLookingUpCustomer && (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                        )}
+                        {isRecognized && !isLookingUpCustomer && (
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                        )}
+                      </div>
+                      {isRecognized && (
+                        <p className="text-xs text-green-600">Welcome back, {returningCustomer?.firstName}!</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label>Preferred Contact Method</Label>

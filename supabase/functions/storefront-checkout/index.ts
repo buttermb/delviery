@@ -295,8 +295,12 @@ serve(secureHeadersMiddleware(async (req) => {
 
     // ------------------------------------------------------------------
     // 6. Customer upsert — sync to CRM customers table
+    //    Uses upsert_customer_on_checkout RPC which handles:
+    //    - Phone + tenant_id lookup (fallback to email)
+    //    - total_orders increment
+    //    - total_spent accumulation
+    //    - address & preferred_contact updates
     // ------------------------------------------------------------------
-    // Look up the account_id for this tenant (required for customers table)
     const { data: tenantAccount } = await supabase
       .from("accounts")
       .select("id")
@@ -306,62 +310,19 @@ serve(secureHeadersMiddleware(async (req) => {
     let upsertedCustomerId: string | null = null;
 
     if (tenantAccount) {
-      // Try to find existing customer by phone + tenant_id first
-      let existingCustomer: { id: string; total_spent: number | null } | null = null;
-
-      if (body.customerInfo.phone) {
-        const { data } = await supabase
-          .from("customers")
-          .select("id, total_spent")
-          .eq("tenant_id", store.tenant_id)
-          .eq("phone", body.customerInfo.phone)
-          .maybeSingle();
-        existingCustomer = data;
-      }
-
-      // Fall back to email lookup if no phone match
-      if (!existingCustomer) {
-        const { data } = await supabase
-          .from("customers")
-          .select("id, total_spent")
-          .eq("tenant_id", store.tenant_id)
-          .eq("email", body.customerInfo.email)
-          .maybeSingle();
-        existingCustomer = data;
-      }
-
-      if (existingCustomer) {
-        // Update existing customer: bump last_purchase_at, add to total_spent
-        await supabase
-          .from("customers")
-          .update({
-            last_purchase_at: new Date().toISOString(),
-            total_spent: (existingCustomer.total_spent ?? 0) + total,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existingCustomer.id)
-          .eq("tenant_id", store.tenant_id);
-
-        upsertedCustomerId = existingCustomer.id;
-      } else {
-        // Create new customer with all info
-        const { data: newCustomer } = await supabase
-          .from("customers")
-          .insert({
-            account_id: tenantAccount.id,
-            tenant_id: store.tenant_id,
-            first_name: body.customerInfo.firstName,
-            last_name: body.customerInfo.lastName,
-            email: body.customerInfo.email,
-            phone: body.customerInfo.phone ?? null,
-            total_spent: total,
-            last_purchase_at: new Date().toISOString(),
-          })
-          .select("id")
-          .maybeSingle();
-
-        upsertedCustomerId = newCustomer?.id ?? null;
-      }
+      const { data: customerId } = await supabase.rpc(
+        "upsert_customer_on_checkout",
+        {
+          p_tenant_id: store.tenant_id,
+          p_name: customerName,
+          p_phone: body.customerInfo.phone ?? "",
+          p_email: body.customerInfo.email,
+          p_preferred_contact: body.preferredContactMethod ?? null,
+          p_address: body.deliveryAddress ?? null,
+          p_order_total: total,
+        },
+      );
+      upsertedCustomerId = customerId ?? null;
     }
 
     // ------------------------------------------------------------------

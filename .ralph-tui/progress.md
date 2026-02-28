@@ -23,6 +23,7 @@ after each iteration and it's included in prompts for context.
 - **Hiding Sheet/Dialog default close button**: Use `[&>button:last-child]:hidden` on SheetContent/DialogContent className to hide the auto-rendered close button when using custom close buttons. The default close is always the last direct child.
 - **Sheet width overrides**: SheetContent variants include both base `max-w-sm` and `sm:max-w-sm`. To override width, pass both (e.g., `max-w-md sm:max-w-md`) so twMerge resolves both breakpoints.
 - **Full-screen Dialog pattern**: Override DialogContent with `left-0 top-0 translate-x-0 translate-y-0 w-screen h-screen max-w-none max-h-screen p-0 border-0 rounded-none` + zero-effect animation classes (`zoom-out-100`, `slide-out-to-left-0` etc.) for full-screen takeover while keeping Radix's focus trap and escape handling.
+- **Fulfillment method storage**: `marketplace_orders.fulfillment_method` stores 'delivery' or 'pickup'. The `shipping_method` column is misused (stores payment_method value) — do NOT use it for fulfillment. Read from `storefront_orders.fulfillment_method` in admin views.
 
 ---
 
@@ -1095,4 +1096,72 @@ after each iteration and it's included in prompts for context.
   - RPCs verified: `get_marketplace_store_by_slug`, `get_marketplace_products`, `create_marketplace_order`, `next_tenant_order_number`
 - **Learnings:**
   - Bead was completed across iterations dy9.1 through dy9.22 in previous sessions — verification-only closure
+---
+
+## 2026-02-28 - floraiq-khy.5
+- E2E: Guest checkout with Stripe — full flow
+- Created `is_store_stripe_configured` RPC (SECURITY DEFINER) that checks if a store's tenant has both `stripe_secret_key` and `stripe_publishable_key` in `account_settings.integration_settings`
+- Updated `CheckoutPage.tsx` to query this RPC and filter 'card' from payment methods when Stripe is not configured — card option no longer appears if the store hasn't set up Stripe
+- Cleaned up `storefront-stripe-webhook/index.ts`: removed all `console.log`/`console.error`/`console.warn` (quality gate violation), replaced `any` types with `unknown`, switched to shared deps (`../_shared/deps.ts`), stopped leaking `error.message` in outer catch (now returns generic "Internal server error")
+- Made confirmation email fire-and-forget in webhook (bare `fetch()` without `await` + `.catch()`)
+- Verified E2E Stripe flow: checkout → edge function creates Stripe Checkout Session → redirect to Stripe hosted page → webhook sets `paid_at` timestamp → order confirmation
+- Files changed: `src/pages/shop/CheckoutPage.tsx`, `src/lib/queryKeys.ts`, `supabase/functions/storefront-stripe-webhook/index.ts`, `supabase/migrations/20260228000012_is_store_stripe_configured.sql` (new)
+- **Learnings:**
+  - `storefront_orders` is an updatable view on `marketplace_orders` — `payment_status`, `stripe_payment_intent_id`, `paid_at` can be updated directly through the view since they're not aliased columns
+  - The webhook uses a global `STRIPE_SECRET_KEY` env var for signature verification, separate from the per-tenant `stripe_secret_key` in `account_settings` used by `storefront-checkout` for creating sessions
+  - For checking Stripe configuration from anonymous storefront: SECURITY DEFINER function is the cleanest approach since RLS blocks direct `account_settings` access
+  - Edge functions should use `../_shared/deps.ts` for consistent imports — the webhook was using direct deno.land imports instead
+---
+
+## 2026-02-28 - floraiq-khy.6
+- Implemented E2E pickup order flow across the full stack
+- Files changed:
+  - `supabase/migrations/20260228000013_add_fulfillment_method.sql` — adds `fulfillment_method` column to `marketplace_orders`, updates `storefront_orders` view, updates `create_marketplace_order` RPC with `p_fulfillment_method` parameter
+  - `supabase/functions/storefront-checkout/index.ts` — passes `fulfillmentMethod` to RPC as `p_fulfillment_method`
+  - `src/pages/shop/CheckoutPage.tsx` — adds explicit Delivery/Pickup selector in step 2, conditionally hides address form for pickup, shows store name for pickup, fixes fulfillmentMethod derivation (was heuristic based on street field, now explicit), updates RPC fallback with `p_fulfillment_method`, adjusts delivery fee to 0 for pickup
+  - `src/pages/admin/storefront/StorefrontOrders.tsx` — adds `fulfillment_method` to interface, adds `getFulfillmentBadge()` helper showing Pickup (blue, Store icon) / Delivery (orange, Truck icon), displays badge in mobile cards, desktop table column, and order detail sheet
+- **Learnings:**
+  - `marketplace_orders.shipping_method` column is misused — it stores `payment_method` value (cash/card), not the shipping method. Added a new `fulfillment_method` column rather than repurposing it
+  - `CheckoutPage.tsx` previously derived fulfillment method from `formData.street ? 'delivery' : 'pickup'` — fragile heuristic. The Telegram fallback path even referenced `formData.fulfillmentMethod` which didn't exist on the interface (was silently undefined)
+  - `storefront_orders` view must be DROP/CREATE (not ALTER) when adding columns since PostgreSQL views are immutable
+  - Store doesn't have a physical address column in `marketplace_stores` — for pickup, show store name with "pickup details after confirmation" message
+---
+
+## 2026-02-28 - floraiq-khy.7
+- Implemented "Create an account" checkbox during storefront checkout
+- When checked, password field appears (8-char minimum with validation)
+- After order succeeds, fires background request to `customer-auth?action=signup` edge function
+- If email already exists (409), shows info toast without blocking the order
+- Account creation is fire-and-forget — never affects order completion
+- Extended `customer-auth` edge function to accept `tenantId` as alternative to `tenantSlug`
+- Review step shows "Creating account with this email" when opt-in is checked
+- Files changed: `src/pages/shop/CheckoutPage.tsx`, `supabase/functions/customer-auth/index.ts`, `supabase/functions/customer-auth/validation.ts`
+- **Learnings:**
+  - The `customer-auth` edge function uses a custom `customer_users` table (not Supabase Auth `auth.users`) — separate auth system for customers vs admin users
+  - Storefront has `store.tenant_id` but NOT the `tenants.slug` — the edge function originally only accepted `tenantSlug`, so extending it to accept `tenantId` was necessary
+  - The established pattern for calling `customer-auth` from React is direct `fetch()` with full URL (not `supabase.functions.invoke`) — see `SignUpPage.tsx`, `CustomerAuthContext.tsx`
+  - For checkout account creation, fire-and-forget is the right pattern: order success is guaranteed, account creation is best-effort with graceful error handling
+  - The `signupSchema` in validation.ts needed both `tenantSlug` and `tenantId` as optional with runtime validation (not Zod `.refine()`) to keep it simple
+---
+
+## 2026-02-28 - floraiq-khy.8
+- Implemented returning customer recognition by phone during checkout
+- Created `lookup_returning_customer` RPC (SECURITY DEFINER, granted to anon) for storefront phone lookup
+- Created `useReturningCustomerLookup` hook — debounced phone lookup with 10+ digit trigger
+- Updated `CheckoutPage.tsx` — auto-fills name, email, address when phone matches existing customer; shows "Welcome back" toast and green checkmark indicator
+- Updated `ModernCheckoutFlow.tsx` — same phone-based recognition passed to DetailsStep with visual feedback
+- Replaced inline customer upsert in `storefront-checkout` edge function with `upsert_customer_on_checkout` RPC — now properly increments `total_orders` alongside `total_spent`
+- Files changed:
+  - `supabase/migrations/20260228000014_lookup_returning_customer.sql` (new)
+  - `src/hooks/useReturningCustomerLookup.ts` (new)
+  - `src/pages/shop/CheckoutPage.tsx`
+  - `src/components/menu/ModernCheckoutFlow.tsx`
+  - `supabase/functions/storefront-checkout/index.ts`
+- **Learnings:**
+  - Two customer tables: `customers` (CRM) and `marketplace_customers` (storefront B2B). Phone lookup for returning customers uses `customers` table with phone + tenant_id
+  - The `upsert_customer_on_checkout` RPC (migration 20260228000006) already existed and handles total_orders, address, preferred_contact — the inline edge function logic was missing these
+  - For guest/anon storefront, RPC functions must be SECURITY DEFINER with grants to anon to bypass RLS
+  - Phone normalization (strip non-digits) must match between client lookup and server storage — both sides strip `\D`
+  - Auto-fill only populates empty fields (`prev.firstName || returningCustomer.firstName`) to avoid overwriting user edits
+  - Used `lastRecognizedIdRef` to prevent duplicate toast notifications when the same customer stays recognized across re-renders
 ---
