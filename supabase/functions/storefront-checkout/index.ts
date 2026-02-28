@@ -366,13 +366,25 @@ serve(secureHeadersMiddleware(async (req) => {
     // 7b. Fetch Telegram contact link for confirmation page (if configured)
     // ------------------------------------------------------------------
     let telegramLink: string | null = null;
+    let telegramButtonLabel: string | null = null;
     if (tenantAccount) {
       const { data: acctSettings } = await supabase
         .from("account_settings")
-        .select("telegram_video_link")
+        .select("notification_settings, telegram_video_link")
         .eq("account_id", tenantAccount.id)
         .maybeSingle();
-      telegramLink = (acctSettings?.telegram_video_link as string) ?? null;
+
+      const notifSettings = (acctSettings?.notification_settings ?? {}) as Record<string, unknown>;
+      const showOnConfirmation = notifSettings.show_telegram_on_confirmation === true;
+      const customerLink = (notifSettings.telegram_customer_link as string) || "";
+
+      if (showOnConfirmation && customerLink) {
+        telegramLink = customerLink;
+        telegramButtonLabel = (notifSettings.telegram_button_label as string) || "Chat with us on Telegram";
+      } else {
+        // Fallback to legacy telegram_video_link field
+        telegramLink = (acctSettings?.telegram_video_link as string) || null;
+      }
     }
 
     const result: Record<string, unknown> = {
@@ -388,6 +400,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
     if (telegramLink) {
       result.telegramLink = telegramLink;
+      result.telegramButtonLabel = telegramButtonLabel ?? "Chat with us on Telegram";
     }
 
     // Include discrepancy info so clients can reconcile

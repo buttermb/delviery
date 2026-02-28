@@ -105,6 +105,7 @@ interface OrderResult {
   total?: number;
   checkoutUrl?: string;
   telegramLink?: string;
+  telegramButtonLabel?: string;
 }
 
 interface UnavailableProduct {
@@ -716,6 +717,7 @@ export function CheckoutPage() {
             total: responseData.serverTotal as number,
             checkoutUrl: responseData.checkoutUrl as string | undefined,
             telegramLink: (responseData.telegramLink as string) || undefined,
+            telegramButtonLabel: (responseData.telegramButtonLabel as string) || undefined,
           };
         } catch (err: unknown) {
           // Re-throw known Error instances (business errors from edge function)
@@ -963,6 +965,7 @@ export function CheckoutPage() {
           trackingToken: data.tracking_token,
           total: data.total,
           telegramLink: data.telegramLink,
+          telegramButtonLabel: data.telegramButtonLabel,
         },
       });
     },
