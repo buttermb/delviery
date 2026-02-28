@@ -3,7 +3,7 @@
  * Multi-step checkout flow
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -154,8 +154,18 @@ export function CheckoutPage() {
   const [showErrors, setShowErrors] = useState(false);
   const [, setOrderRetryCount] = useState(0);
 
-  // Idempotency key to prevent double orders on retry
-  const [idempotencyKey] = useState(() => `order_${crypto.randomUUID()}`);
+  // Fast double-click guard — ref updates synchronously, before React re-renders with isPending
+  const isSubmittingRef = useRef(false);
+
+  // Idempotency key persisted to sessionStorage to survive page refresh during submission
+  const [idempotencyKey] = useState(() => {
+    const storageKey = `checkout_idempotency_${storeSlug || ''}`;
+    const existing = sessionStorage.getItem(storageKey);
+    if (existing) return existing;
+    const newKey = `order_${crypto.randomUUID()}`;
+    sessionStorage.setItem(storageKey, newKey);
+    return newKey;
+  });
 
   // Express Checkout for returning customers
   const [hasSavedData, setHasSavedData] = useState(false);
@@ -710,6 +720,8 @@ export function CheckoutPage() {
     },
     onSuccess: async (data) => {
       setOrderRetryCount(0);
+      // Clear idempotency key — order succeeded, future checkouts get a fresh key
+      sessionStorage.removeItem(`checkout_idempotency_${storeSlug || ''}`);
 
       // If edge function returned a Stripe checkout URL, redirect directly
       if (data.checkoutUrl) {
@@ -802,11 +814,16 @@ export function CheckoutPage() {
         },
       });
     },
+    onSettled: () => {
+      isSubmittingRef.current = false;
+    },
   });
 
-  // Handle place order
+  // Handle place order — ref guard prevents fast double-click
   const handlePlaceOrder = () => {
+    if (isSubmittingRef.current || placeOrderMutation.isPending) return;
     if (validateStep()) {
+      isSubmittingRef.current = true;
       placeOrderMutation.mutate();
     }
   };
