@@ -24,6 +24,7 @@ interface LocalProduct {
     in_stock?: boolean;
     strain_type?: string;
     quantity_available?: number;
+    is_visible?: boolean;
 }
 
 export interface ProductGridSectionProps {
@@ -148,8 +149,12 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                     }
 
                     // Normalize RPC data to LocalProduct interface
-                    return ((data as unknown[]) ?? []).map((item: unknown) => {
+                    return ((data as unknown[]) ?? []).filter((item: unknown) => {
                         const p = item as Record<string, unknown>;
+                        return p.is_visible !== false;
+                    }).map((item: unknown) => {
+                        const p = item as Record<string, unknown>;
+                        const qty = (p.stock_quantity as number) ?? 0;
                         return {
                             id: (p.product_id || p.id) as string,
                             name: (p.product_name || p.name) as string,
@@ -157,8 +162,9 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                             description: p.description as string | undefined,
                             images: (p.images as string[]) ?? [],
                             category: p.category as string | undefined,
-                            in_stock: ((p.quantity_available as number) ?? 0) > 0,
+                            in_stock: qty > 0,
                             strain_type: (p.strain_type as string) ?? '',
+                            quantity_available: qty,
                         };
                     }) as LocalProduct[];
                 } catch (err) {
@@ -343,7 +349,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                                 cbd_content: null,
                                                                 is_visible: true,
                                                                 display_order: 0,
-                                                                stock_quantity: product.in_stock ? 100 : 0
+                                                                stock_quantity: product.quantity_available ?? (product.in_stock ? 100 : 0)
                                                             }}
                                                             storeSlug=""
                                                             isPreviewMode={false}
