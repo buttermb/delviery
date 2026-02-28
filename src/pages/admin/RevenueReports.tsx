@@ -15,6 +15,7 @@ import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { TruncatedText } from '@/components/shared/TruncatedText';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
+import { CHART_COLORS, chartSemanticColors } from '@/lib/chartColors';
 
 interface OrderWithItems {
   total_amount: number | null;
@@ -28,8 +29,6 @@ interface OrderWithItems {
   }>;
   [key: string]: unknown;
 }
-
-const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 export default function RevenueReports() {
   const { tenant } = useTenantAdminAuth();
@@ -260,8 +259,8 @@ export default function RevenueReports() {
                   <ComposedChart data={chartData}>
                     <defs>
                       <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                        <stop offset="5%" stopColor={chartSemanticColors.revenue} stopOpacity={0.2} />
+                        <stop offset="95%" stopColor={chartSemanticColors.revenue} stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -295,7 +294,7 @@ export default function RevenueReports() {
                       yAxisId="left"
                       type="monotone"
                       dataKey="revenue"
-                      stroke="#10b981"
+                      stroke={chartSemanticColors.revenue}
                       fillOpacity={1}
                       fill="url(#colorRevenue)"
                       name="Revenue"
@@ -304,7 +303,7 @@ export default function RevenueReports() {
                       yAxisId="right"
                       type="monotone"
                       dataKey="orders"
-                      stroke="#3b82f6"
+                      stroke={chartSemanticColors.secondary}
                       strokeWidth={2}
                       dot={false}
                       name="Orders"
@@ -365,7 +364,7 @@ export default function RevenueReports() {
                       dataKey="value"
                     >
                       {statusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Pie>
                     <RechartsTooltip />
@@ -380,4 +379,3 @@ export default function RevenueReports() {
     </div>
   );
 }
-

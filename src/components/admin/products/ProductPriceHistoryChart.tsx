@@ -29,6 +29,7 @@ import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
 import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';
 import Minus from 'lucide-react/dist/esm/icons/minus';
 import History from 'lucide-react/dist/esm/icons/history';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface ProductPriceHistoryChartProps {
   productId: string | undefined;
@@ -274,12 +275,12 @@ export function ProductPriceHistoryChart({ productId }: ProductPriceHistoryChart
               <LineChart data={formattedData}>
                 <defs>
                   <linearGradient id="colorWholesale" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                    <stop offset="5%" stopColor={chartSemanticColors.success} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={chartSemanticColors.success} stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorRetail" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    <stop offset="5%" stopColor={chartSemanticColors.tertiary} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={chartSemanticColors.tertiary} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -314,31 +315,31 @@ export function ProductPriceHistoryChart({ productId }: ProductPriceHistoryChart
                 <Line
                   type="stepAfter"
                   dataKey="wholesalePrice"
-                  stroke="#22c55e"
+                  stroke={chartSemanticColors.success}
                   strokeWidth={2}
-                  dot={{ r: 4, fill: '#22c55e' }}
-                  activeDot={{ r: 6, fill: '#22c55e' }}
+                  dot={{ r: 4, fill: chartSemanticColors.success }}
+                  activeDot={{ r: 6, fill: chartSemanticColors.success }}
                   name="Wholesale"
                   connectNulls
                 />
                 <Line
                   type="stepAfter"
                   dataKey="retailPrice"
-                  stroke="#8b5cf6"
+                  stroke={chartSemanticColors.tertiary}
                   strokeWidth={2}
-                  dot={{ r: 4, fill: '#8b5cf6' }}
-                  activeDot={{ r: 6, fill: '#8b5cf6' }}
+                  dot={{ r: 4, fill: chartSemanticColors.tertiary }}
+                  activeDot={{ r: 6, fill: chartSemanticColors.tertiary }}
                   name="Retail"
                   connectNulls
                 />
                 <Line
                   type="stepAfter"
                   dataKey="costPerUnit"
-                  stroke="#f59e0b"
+                  stroke={chartSemanticColors.cost}
                   strokeWidth={2}
                   strokeDasharray="5 5"
-                  dot={{ r: 3, fill: '#f59e0b' }}
-                  activeDot={{ r: 5, fill: '#f59e0b' }}
+                  dot={{ r: 3, fill: chartSemanticColors.cost }}
+                  activeDot={{ r: 5, fill: chartSemanticColors.cost }}
                   name="Cost"
                   connectNulls
                 />

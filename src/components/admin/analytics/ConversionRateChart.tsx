@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react";
 import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { CHART_COLORS, chartSemanticColors } from '@/lib/chartColors';
 
 interface ConversionRateChartProps {
     storeId?: string;
@@ -54,25 +55,25 @@ export function ConversionRateChart({ storeId, className }: ConversionRateChartP
                 {
                     name: 'Page Views',
                     value: estimatedViews,
-                    color: '#94a3b8',
+                    color: chartSemanticColors.muted,
                     rate: 100
                 },
                 {
                     name: 'Add to Cart',
                     value: estimatedCarts,
-                    color: '#60a5fa',
+                    color: CHART_COLORS[3],
                     rate: estimatedViews > 0 ? Math.round((estimatedCarts / estimatedViews) * 100) : 0
                 },
                 {
                     name: 'Checkout Started',
                     value: statusCounts.total,
-                    color: '#a78bfa',
+                    color: CHART_COLORS[4],
                     rate: estimatedCarts > 0 ? Math.round((statusCounts.total / estimatedCarts) * 100) : 0
                 },
                 {
                     name: 'Order Completed',
                     value: statusCounts.completed,
-                    color: '#10b981',
+                    color: chartSemanticColors.success,
                     rate: statusCounts.total > 0 ? Math.round((statusCounts.completed / statusCounts.total) * 100) : 0
                 },
             ];

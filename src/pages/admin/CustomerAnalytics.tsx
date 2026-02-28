@@ -8,8 +8,7 @@ import { Users, TrendingUp, DollarSign } from 'lucide-react';
 import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
-
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+import { CHART_COLORS } from '@/lib/chartColors';
 
 interface Customer {
   id: string;
@@ -164,11 +163,11 @@ export default function CustomerAnalytics() {
                   labelLine={false}
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   outerRadius={80}
-                  fill="#8884d8"
+                  fill={CHART_COLORS[0]}
                   dataKey="value"
                 >
                   {customerTypeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -188,4 +187,3 @@ export default function CustomerAnalytics() {
     </div>
   );
 }
-

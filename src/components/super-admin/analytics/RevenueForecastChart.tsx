@@ -13,6 +13,7 @@ import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 export function RevenueForecastChart() {
   const { data: revenueData } = useQuery({
@@ -27,7 +28,7 @@ export function RevenueForecastChart() {
       const mockData = [];
       const totalMRR = (tenants ?? []).reduce((sum, t) => sum + (t.mrr as number ?? 0), 0);
       const avgDailyRevenue = totalMRR / 30; // Approximate daily from monthly
-      
+
       // Last 14 days of historical data (using MRR as baseline)
       for (let i = 13; i >= 0; i--) {
         const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
@@ -37,7 +38,7 @@ export function RevenueForecastChart() {
           isForecast: false,
         });
       }
-      
+
       // Next 7 days forecast (slight growth trend)
       for (let i = 1; i <= 7; i++) {
         const date = format(new Date(Date.now() + i * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
@@ -79,22 +80,22 @@ export function RevenueForecastChart() {
           <AreaChart data={mockData}>
             <defs>
               <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                <stop offset="5%" stopColor={chartSemanticColors.actual} stopOpacity={0.3}/>
+                <stop offset="95%" stopColor={chartSemanticColors.actual} stopOpacity={0}/>
               </linearGradient>
               <linearGradient id="colorPredicted" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                <stop offset="5%" stopColor={chartSemanticColors.forecast} stopOpacity={0.3}/>
+                <stop offset="95%" stopColor={chartSemanticColors.forecast} stopOpacity={0}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis 
+            <XAxis
               dataKey="date"
               tick={{ fontSize: 12 }}
               tickFormatter={(value) => format(new Date(value), 'MMM dd')}
               className="text-muted-foreground"
             />
-            <YAxis 
+            <YAxis
               tick={{ fontSize: 12 }}
               tickFormatter={(value: number) => formatCompactCurrency(value)}
               className="text-muted-foreground"
@@ -118,14 +119,14 @@ export function RevenueForecastChart() {
             <Area
               type="monotone"
               dataKey="actual"
-              stroke="#3b82f6"
+              stroke={chartSemanticColors.actual}
               fill="url(#colorActual)"
               name="Actual Revenue"
             />
             <Area
               type="monotone"
               dataKey="predicted"
-              stroke="#10b981"
+              stroke={chartSemanticColors.forecast}
               strokeDasharray="5 5"
               fill="url(#colorPredicted)"
               name="Predicted Revenue"
@@ -149,9 +150,9 @@ export function RevenueForecastChart() {
             <p className="text-xl font-bold">{confidence}%</p>
           </div>
         </div>
-        
+
         <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-lg text-sm">
-          <p className="text-success font-medium">✓ Using real tenant MRR data for forecasting</p>
+          <p className="text-success font-medium">Using real tenant MRR data for forecasting</p>
           <p className="text-xs text-muted-foreground mt-1">
             Forecast based on current subscription revenue trends
           </p>

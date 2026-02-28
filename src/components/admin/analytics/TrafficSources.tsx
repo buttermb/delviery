@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 interface TrafficSourcesProps {
   storeId: string;
@@ -20,12 +21,12 @@ interface SourceData {
 }
 
 const SOURCE_COLORS: Record<string, string> = {
-  'Direct': '#10b981',
-  'Organic Search': '#3b82f6',
-  'Social Media': '#8b5cf6',
-  'Referral': '#f59e0b',
-  'Email': '#ec4899',
-  'Other': '#94a3b8',
+  'Direct': CHART_COLORS[5],
+  'Organic Search': CHART_COLORS[0],
+  'Social Media': CHART_COLORS[4],
+  'Referral': CHART_COLORS[7],
+  'Email': CHART_COLORS[2],
+  'Other': CHART_COLORS[9],
 };
 
 export function TrafficSources({ storeId, dateRange, className }: TrafficSourcesProps) {

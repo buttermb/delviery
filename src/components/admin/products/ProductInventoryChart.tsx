@@ -25,6 +25,7 @@ import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
 import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface ProductInventoryChartProps {
     productId: string | undefined;
@@ -230,8 +231,8 @@ export function ProductInventoryChart({ productId }: ProductInventoryChartProps)
                             <ComposedChart data={formattedData}>
                                 <defs>
                                     <linearGradient id="colorStock" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                        <stop offset="5%" stopColor={chartSemanticColors.secondary} stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor={chartSemanticColors.secondary} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -258,7 +259,7 @@ export function ProductInventoryChart({ productId }: ProductInventoryChartProps)
                                 <Line
                                     type="stepAfter"
                                     dataKey="quantity"
-                                    stroke="#3b82f6"
+                                    stroke={chartSemanticColors.secondary}
                                     strokeWidth={2}
                                     dot={false}
                                     fill="url(#colorStock)"
@@ -267,14 +268,14 @@ export function ProductInventoryChart({ productId }: ProductInventoryChartProps)
                                 {/* Green dots for restocks */}
                                 <Scatter
                                     dataKey="restockDot"
-                                    fill="#22c55e"
+                                    fill={chartSemanticColors.success}
                                     shape="circle"
                                     name="Restock"
                                 />
                                 {/* Red dots for deductions */}
                                 <Scatter
                                     dataKey="deductionDot"
-                                    fill="#ef4444"
+                                    fill={chartSemanticColors.danger}
                                     shape="circle"
                                     name="Order/Deduction"
                                 />

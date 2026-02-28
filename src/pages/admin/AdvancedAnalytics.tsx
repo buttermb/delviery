@@ -15,8 +15,7 @@ import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { exportAnalyticsToCSV, exportAnalyticsToPDF, formatCurrencyForReport } from '@/lib/utils/analyticsExport';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
-
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+import { CHART_COLORS } from '@/lib/chartColors';
 
 export default function AdvancedAnalytics() {
   const { tenant } = useTenantAdminAuth();
@@ -237,7 +236,7 @@ export default function AdvancedAnalytics() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="revenue" stroke="hsl(var(--chart-1))" />
+                    <Line type="monotone" dataKey="revenue" stroke={CHART_COLORS[0]} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
@@ -269,11 +268,11 @@ export default function AdvancedAnalytics() {
                       labelLine={false}
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
-                      fill="#8884d8"
+                      fill={CHART_COLORS[0]}
                       dataKey="value"
                     >
                       {segmentData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip />
@@ -311,4 +310,3 @@ export default function AdvancedAnalytics() {
     </div>
   );
 }
-

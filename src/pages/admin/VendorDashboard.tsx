@@ -53,6 +53,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { queryKeys } from '@/lib/queryKeys';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 // ============================================================================
 // Types
@@ -109,17 +110,6 @@ interface VendorRow {
   id: string;
   category: string | null;
 }
-
-const CATEGORY_COLORS = [
-  '#3b82f6',
-  '#22c55e',
-  '#eab308',
-  '#ef4444',
-  '#8b5cf6',
-  '#ec4899',
-  '#06b6d4',
-  '#f97316',
-];
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-gray-500 dark:bg-gray-600',
@@ -375,7 +365,7 @@ export default function VendorDashboard() {
         .map(([category, count]) => ({
           category,
           count,
-          color: CATEGORY_COLORS[colorIndex++ % CATEGORY_COLORS.length],
+          color: CHART_COLORS[colorIndex++ % CHART_COLORS.length],
         }))
         .sort((a, b) => b.count - a.count);
     },

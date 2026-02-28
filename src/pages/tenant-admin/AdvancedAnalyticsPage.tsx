@@ -6,6 +6,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 interface AnalyticsOrderItem {
   product_name?: string;
@@ -26,7 +27,7 @@ export default function AdvancedAnalyticsPage() {
     queryKey: queryKeys.advancedAnalyticsOrders.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
-      
+
       const { data, error } = await supabase
         .from('orders')
         .select('*, order_items(*)')
@@ -100,8 +101,8 @@ export default function AdvancedAnalyticsPage() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="revenue" stroke="#8884d8" name="Revenue ($)" />
-                  <Line type="monotone" dataKey="orders" stroke="#82ca9d" name="Orders" />
+                  <Line type="monotone" dataKey="revenue" stroke={CHART_COLORS[0]} name="Revenue ($)" />
+                  <Line type="monotone" dataKey="orders" stroke={CHART_COLORS[1]} name="Orders" />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -121,8 +122,8 @@ export default function AdvancedAnalyticsPage() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="revenue" fill="#8884d8" name="Revenue ($)" />
-                  <Bar dataKey="quantity" fill="#82ca9d" name="Quantity Sold" />
+                  <Bar dataKey="revenue" fill={CHART_COLORS[0]} name="Revenue ($)" />
+                  <Bar dataKey="quantity" fill={CHART_COLORS[1]} name="Quantity Sold" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

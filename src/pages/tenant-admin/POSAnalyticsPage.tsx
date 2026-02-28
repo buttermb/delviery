@@ -6,11 +6,12 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { 
+import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { queryKeys } from '@/lib/queryKeys';
+import { CHART_COLORS } from '@/lib/chartColors';
 import {
   DollarSign, TrendingUp, ShoppingCart, Clock,
   CreditCard, Award, Activity
@@ -42,7 +43,7 @@ export default function POSAnalyticsPage() {
 
       const now = new Date();
       const startDate = new Date();
-      
+
       switch (timeRange) {
         case 'today':
           startDate.setHours(0, 0, 0, 0);
@@ -67,7 +68,7 @@ export default function POSAnalyticsPage() {
         const { data, error } = await query;
 
         if (error) throw error;
-        
+
         // Transform to include payment method from status
         const results: POSTransaction[] = (data ?? []).map((order) => ({
           id: order.id,
@@ -79,7 +80,7 @@ export default function POSAnalyticsPage() {
           payment_status: order.status === 'delivered' ? 'paid' : 'pending',
           wholesale_clients: order.wholesale_clients
         }));
-        
+
         return results;
       } catch (error) {
         logger.error('Error fetching transactions', error, { component: 'POSAnalyticsPage' });
@@ -114,7 +115,7 @@ export default function POSAnalyticsPage() {
     const date = new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const existing = acc.find(item => item.date === date);
     const revenue = Number(t.total_amount ?? 0);
-    
+
     if (existing) {
       existing.revenue += revenue;
       existing.count += 1;
@@ -128,13 +129,13 @@ export default function POSAnalyticsPage() {
   const paymentMethods = transactions.reduce<Array<{ name: string; value: number; amount: number }>>((acc, t) => {
     const method = t.payment_method || 'Unknown';
     const existing = acc.find(item => item.name === method);
-    
+
     if (existing) {
       existing.value += 1;
       existing.amount += Number(t.total_amount ?? 0);
     } else {
-      acc.push({ 
-        name: method, 
+      acc.push({
+        name: method,
         value: 1,
         amount: Number(t.total_amount ?? 0)
       });
@@ -147,7 +148,7 @@ export default function POSAnalyticsPage() {
     const cashier = t.wholesale_clients?.business_name || 'Unknown';
     const existing = acc.find(item => item.name === cashier);
     const revenue = Number(t.total_amount ?? 0);
-    
+
     if (existing) {
       existing.transactions += 1;
       existing.revenue += revenue;
@@ -162,8 +163,6 @@ export default function POSAnalyticsPage() {
     }
     return acc;
   }, []).sort((a, b) => b.revenue - a.revenue).slice(0, 10);
-
-  const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
   if (isLoading) {
     return (
@@ -181,21 +180,21 @@ export default function POSAnalyticsPage() {
           <p className="text-muted-foreground">Point of sale performance metrics and insights</p>
         </div>
         <div className="flex gap-2">
-          <Badge 
+          <Badge
             variant={timeRange === 'today' ? 'default' : 'outline'}
             className="cursor-pointer"
             onClick={() => setTimeRange('today')}
           >
             Today
           </Badge>
-          <Badge 
+          <Badge
             variant={timeRange === 'week' ? 'default' : 'outline'}
             className="cursor-pointer"
             onClick={() => setTimeRange('week')}
           >
             Week
           </Badge>
-          <Badge 
+          <Badge
             variant={timeRange === 'month' ? 'default' : 'outline'}
             className="cursor-pointer"
             onClick={() => setTimeRange('month')}
@@ -285,7 +284,7 @@ export default function POSAnalyticsPage() {
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      <Line type="monotone" dataKey="revenue" stroke="hsl(var(--chart-1))" strokeWidth={2} />
+                      <Line type="monotone" dataKey="revenue" stroke={CHART_COLORS[0]} strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
@@ -310,7 +309,7 @@ export default function POSAnalyticsPage() {
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="count" fill="hsl(var(--chart-2))" />
+                      <Bar dataKey="count" fill={CHART_COLORS[1]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -343,8 +342,8 @@ export default function POSAnalyticsPage() {
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip />
                     <Legend />
-                    <Bar yAxisId="left" dataKey="transactions" fill="hsl(var(--chart-1))" name="Transactions" />
-                    <Bar yAxisId="right" dataKey="revenue" fill="hsl(var(--chart-2))" name="Revenue ($)" />
+                    <Bar yAxisId="left" dataKey="transactions" fill={CHART_COLORS[0]} name="Transactions" />
+                    <Bar yAxisId="right" dataKey="revenue" fill={CHART_COLORS[1]} name="Revenue ($)" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -362,7 +361,7 @@ export default function POSAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {hourlyData.length > 0 
+                  {hourlyData.length > 0
                     ? hourlyData.reduce((max, h) => h.transactions > max.transactions ? h : max, hourlyData[0]).hour
                     : '--:--'
                   }
@@ -377,7 +376,7 @@ export default function POSAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {hourlyData.length > 0 
+                  {hourlyData.length > 0
                     ? hourlyData.reduce((max, h) => h.revenue > max.revenue ? h : max, hourlyData[0]).hour
                     : '--:--'
                   }
@@ -418,8 +417,8 @@ export default function POSAnalyticsPage() {
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="revenue" fill="hsl(var(--chart-1))" name="Revenue ($)" />
-                      <Bar dataKey="transactions" fill="hsl(var(--chart-2))" name="Transactions" />
+                      <Bar dataKey="revenue" fill={CHART_COLORS[0]} name="Revenue ($)" />
+                      <Bar dataKey="transactions" fill={CHART_COLORS[1]} name="Transactions" />
                     </BarChart>
                   </ResponsiveContainer>
 
@@ -429,9 +428,9 @@ export default function POSAnalyticsPage() {
                       <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                            index === 0 ? 'bg-yellow-500' : 
-                            index === 1 ? 'bg-gray-400' : 
-                            index === 2 ? 'bg-orange-600' : 
+                            index === 0 ? 'bg-yellow-500' :
+                            index === 1 ? 'bg-gray-400' :
+                            index === 2 ? 'bg-orange-600' :
                             'bg-muted'
                           } text-white font-bold text-sm`}>
                             {index + 1}
@@ -484,11 +483,11 @@ export default function POSAnalyticsPage() {
                         labelLine={false}
                         label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                         outerRadius={80}
-                        fill="#8884d8"
+                        fill={CHART_COLORS[0]}
                         dataKey="value"
                       >
                         {paymentMethods.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -512,9 +511,9 @@ export default function POSAnalyticsPage() {
                   {paymentMethods.map((method, index) => (
                     <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div 
-                          className="w-4 h-4 rounded-full" 
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        <div
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
                         />
                         <div>
                           <p className="font-medium">{method.name}</p>

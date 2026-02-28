@@ -46,6 +46,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -752,7 +753,7 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
                       <Line
                         type="monotone"
                         dataKey="onTimeRate"
-                        stroke="#10b981"
+                        stroke={chartSemanticColors.success}
                         strokeWidth={2}
                         dot={false}
                       />
@@ -809,8 +810,8 @@ export function DeliveryAnalytics({ className }: DeliveryAnalyticsProps) {
                         }}
                       />
                       <Legend />
-                      <Bar yAxisId="left" dataKey="deliveries" name="Deliveries" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                      <Bar yAxisId="right" dataKey="avgTimeMinutes" name="Avg Time (min)" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                      <Bar yAxisId="left" dataKey="deliveries" name="Deliveries" fill={chartSemanticColors.secondary} radius={[4, 4, 0, 0]} />
+                      <Bar yAxisId="right" dataKey="avgTimeMinutes" name="Avg Time (min)" fill={chartSemanticColors.tertiary} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

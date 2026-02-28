@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import { TrendingUp, TrendingDown, Eye, ShoppingCart, DollarSign, Users } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 interface AccessLog {
   accessed_at: string;
@@ -165,8 +166,6 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
   const totalRevenue = orders.reduce((sum, o) => sum + (o.total_amount ?? 0), 0);
   const conversionRate = totalViews > 0 ? (totalOrders / totalViews) * 100 : 0;
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
-
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
@@ -223,15 +222,15 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
           <AreaChart data={viewsData}>
             <defs>
               <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                <stop offset="5%" stopColor={CHART_COLORS[4]} stopOpacity={0.8}/>
+                <stop offset="95%" stopColor={CHART_COLORS[4]} stopOpacity={0}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis />
             <Tooltip />
-            <Area type="monotone" dataKey="views" stroke="#8884d8" fillOpacity={1} fill="url(#colorViews)" />
+            <Area type="monotone" dataKey="views" stroke={CHART_COLORS[4]} fillOpacity={1} fill="url(#colorViews)" />
           </AreaChart>
         </ResponsiveContainer>
       </Card>
@@ -248,8 +247,8 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
               <YAxis yAxisId="right" orientation="right" />
               <Tooltip />
               <Legend />
-              <Line yAxisId="left" type="monotone" dataKey="orders" stroke="#8884d8" name="Orders" />
-              <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#82ca9d" name="Revenue ($)" />
+              <Line yAxisId="left" type="monotone" dataKey="orders" stroke={CHART_COLORS[4]} name="Orders" />
+              <Line yAxisId="right" type="monotone" dataKey="revenue" stroke={CHART_COLORS[5]} name="Revenue ($)" />
             </LineChart>
           </ResponsiveContainer>
         </Card>
@@ -265,7 +264,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
               <XAxis dataKey="hour" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="views" fill="#8884d8" />
+              <Bar dataKey="views" fill={CHART_COLORS[4]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -283,11 +282,11 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
                   labelLine={false}
                   label={(entry) => `${entry.name.slice(0, 15)}...`}
                   outerRadius={80}
-                  fill="#8884d8"
+                  fill={CHART_COLORS[4]}
                   dataKey="revenue"
                 >
                   {productData.map((entry, index) => (
-                    <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip formatter={(value: number | undefined) => formatCurrency(value ?? 0)} />
@@ -331,7 +330,7 @@ export const AnalyticsCharts = ({ accessLogs, orders, securityEvents }: Analytic
                 <XAxis type="number" />
                 <YAxis dataKey="type" type="category" width={150} />
                 <Tooltip />
-                <Bar dataKey="count" fill="#ff8042" />
+                <Bar dataKey="count" fill={CHART_COLORS[7]} />
               </BarChart>
             </ResponsiveContainer>
           </Card>

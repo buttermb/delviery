@@ -44,6 +44,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 // ============================================================================
 // Types
@@ -440,7 +441,7 @@ function SalesTrendChart({ data }: { data: SalesTrendPoint[] }) {
           <Line
             type="monotone"
             dataKey="units"
-            stroke="#10b981"
+            stroke={chartSemanticColors.revenue}
             strokeWidth={2}
             dot={false}
             activeDot={{ r: 4 }}

@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface CustomerRetentionChartProps {
     storeId?: string;
@@ -94,8 +95,8 @@ export function CustomerRetentionChart({ storeId, className }: CustomerRetention
     }
 
     const data = [
-        { name: 'New Customers', value: analytics.new_customers, color: '#10b981' }, // Emerald 500
-        { name: 'Returning Customers', value: analytics.returning_customers, color: '#3b82f6' }, // Blue 500
+        { name: 'New Customers', value: analytics.new_customers, color: chartSemanticColors.success },
+        { name: 'Returning Customers', value: analytics.returning_customers, color: chartSemanticColors.secondary },
     ];
 
     return (

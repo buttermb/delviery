@@ -13,6 +13,7 @@ import { TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface RevenueData {
   month: string;
@@ -133,7 +134,7 @@ export function ExpansionRevenueChart() {
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={revenueData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis 
+            <XAxis
               dataKey="month"
               tick={{ fontSize: 12 }}
               className="text-muted-foreground"
@@ -141,7 +142,7 @@ export function ExpansionRevenueChart() {
               textAnchor="end"
               height={80}
             />
-            <YAxis 
+            <YAxis
               tick={{ fontSize: 12 }}
               tickFormatter={(value: number) => formatCompactCurrency(value)}
               className="text-muted-foreground"
@@ -155,9 +156,9 @@ export function ExpansionRevenueChart() {
               formatter={(value: number) => formatCurrency(value)}
             />
             <Legend />
-            <Bar dataKey="newRevenue" fill="#3b82f6" name="New Revenue" radius={[8, 8, 0, 0]} />
-            <Bar dataKey="expansionRevenue" fill="#10b981" name="Expansion" radius={[8, 8, 0, 0]} />
-            <Bar dataKey="contractionRevenue" fill="#ef4444" name="Contraction" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="newRevenue" fill={chartSemanticColors.secondary} name="New Revenue" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="expansionRevenue" fill={chartSemanticColors.success} name="Expansion" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="contractionRevenue" fill={chartSemanticColors.danger} name="Contraction" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
 
@@ -179,4 +180,3 @@ export function ExpansionRevenueChart() {
     </Card>
   );
 }
-

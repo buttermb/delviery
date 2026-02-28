@@ -11,8 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
-
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+import { CHART_COLORS } from '@/lib/chartColors';
 
 export default function CustomerInsightsPage() {
   const { tenant } = useTenantAdminAuth();
@@ -37,7 +36,7 @@ export default function CustomerInsightsPage() {
         .from('customers')
         .select('id, created_at, total_spent, loyalty_points, last_purchase_at')
         .eq('tenant_id', tenant.id);
-      
+
       if (error) throw error;
       return data ?? [];
     },
@@ -51,13 +50,13 @@ export default function CustomerInsightsPage() {
       if (!tenant?.id) return [];
       const days = getDaysFromRange(timeRange);
       const startDate = subDays(new Date(), days).toISOString();
-      
+
       const { data, error } = await supabase
         .from('orders')
         .select('id, customer_id, total_amount, created_at')
         .eq('tenant_id', tenant.id)
         .gte('created_at', startDate);
-      
+
       if (error) throw error;
       return data ?? [];
     },
@@ -96,8 +95,8 @@ export default function CustomerInsightsPage() {
       : 0;
 
     // Calculate growth percentages
-    const newCustomersGrowth = prevNewCustomers > 0 
-      ? ((newCustomers - prevNewCustomers) / prevNewCustomers) * 100 
+    const newCustomersGrowth = prevNewCustomers > 0
+      ? ((newCustomers - prevNewCustomers) / prevNewCustomers) * 100
       : newCustomers > 0 ? 100 : 0;
 
     return {
@@ -115,7 +114,7 @@ export default function CustomerInsightsPage() {
     for (let i = 5; i >= 0; i--) {
       const monthStart = startOfMonth(subMonths(new Date(), i));
       const monthEnd = endOfMonth(subMonths(new Date(), i));
-      
+
       const newInMonth = customers.filter(c => {
         const created = new Date(c.created_at);
         return created >= monthStart && created <= monthEnd;
@@ -145,10 +144,10 @@ export default function CustomerInsightsPage() {
     const newCust = customers.filter(c => (c.total_spent ?? 0) < 50).length;
 
     return [
-      { name: 'VIP (>$500)', value: vip, color: COLORS[0] },
-      { name: 'Regular ($100-500)', value: regular, color: COLORS[1] },
-      { name: 'Occasional ($50-100)', value: occasional, color: COLORS[2] },
-      { name: 'New (<$50)', value: newCust, color: COLORS[3] },
+      { name: 'VIP (>$500)', value: vip, color: CHART_COLORS[0] },
+      { name: 'Regular ($100-500)', value: regular, color: CHART_COLORS[1] },
+      { name: 'Occasional ($50-100)', value: occasional, color: CHART_COLORS[2] },
+      { name: 'New (<$50)', value: newCust, color: CHART_COLORS[3] },
     ];
   }, [customers]);
 
@@ -187,7 +186,7 @@ export default function CustomerInsightsPage() {
         .eq('tenant_id', tenant.id)
         .order('total_spent', { ascending: false })
         .limit(5);
-      
+
       if (error) throw error;
 
       // Get order counts for each customer
@@ -208,7 +207,7 @@ export default function CustomerInsightsPage() {
         name: `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() || 'Unknown',
         orders: countMap[c.id] ?? 0,
         spent: c.total_spent ?? 0,
-        lastOrder: c.last_purchase_at 
+        lastOrder: c.last_purchase_at
           ? format(new Date(c.last_purchase_at), 'MMM d, yyyy')
           : 'Never',
         status: (c.total_spent ?? 0) > 500 ? 'VIP' : 'Regular',
@@ -357,8 +356,8 @@ export default function CustomerInsightsPage() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="new" stroke="hsl(var(--chart-1))" strokeWidth={2} name="New Customers" />
-                    <Line type="monotone" dataKey="returning" stroke="hsl(var(--chart-2))" strokeWidth={2} name="Returning" />
+                    <Line type="monotone" dataKey="new" stroke={CHART_COLORS[0]} strokeWidth={2} name="New Customers" />
+                    <Line type="monotone" dataKey="returning" stroke={CHART_COLORS[1]} strokeWidth={2} name="Returning" />
                   </LineChart>
                 </ResponsiveContainer>
               )}
@@ -387,11 +386,11 @@ export default function CustomerInsightsPage() {
                       labelLine={false}
                       label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       outerRadius={120}
-                      fill="#8884d8"
+                      fill={CHART_COLORS[0]}
                       dataKey="value"
                     >
                       {customerSegments.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip />
@@ -420,7 +419,7 @@ export default function CustomerInsightsPage() {
                     <XAxis dataKey="frequency" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="customers" fill="hsl(var(--chart-1))" name="Customers" />
+                    <Bar dataKey="customers" fill={CHART_COLORS[0]} name="Customers" />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -491,7 +490,7 @@ export default function CustomerInsightsPage() {
                     <XAxis dataKey="hour" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="orders" fill="hsl(var(--chart-2))" name="Orders" />
+                    <Bar dataKey="orders" fill={CHART_COLORS[1]} name="Orders" />
                   </BarChart>
                 </ResponsiveContainer>
               )}

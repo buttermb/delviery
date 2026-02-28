@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
 import { Eye, Users, ShoppingCart, TrendingUp } from 'lucide-react';
 import { queryKeys } from '@/lib/queryKeys';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface StorefrontAnalyticsWidgetProps {
   storeId: string;
@@ -207,12 +208,12 @@ export function StorefrontAnalyticsWidget({ storeId, className }: StorefrontAnal
             <AreaChart data={analytics?.dailyData ?? []}>
               <defs>
                 <linearGradient id="pageViewsGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  <stop offset="5%" stopColor={chartSemanticColors.secondary} stopOpacity={0.2} />
+                  <stop offset="95%" stopColor={chartSemanticColors.secondary} stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                  <stop offset="5%" stopColor={chartSemanticColors.revenue} stopOpacity={0.2} />
+                  <stop offset="95%" stopColor={chartSemanticColors.revenue} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -244,7 +245,7 @@ export function StorefrontAnalyticsWidget({ storeId, className }: StorefrontAnal
               <Area
                 type="monotone"
                 dataKey="pageViews"
-                stroke="#3b82f6"
+                stroke={chartSemanticColors.secondary}
                 fill="url(#pageViewsGradient)"
                 strokeWidth={2}
                 name="Page Views"
@@ -252,7 +253,7 @@ export function StorefrontAnalyticsWidget({ storeId, className }: StorefrontAnal
               <Area
                 type="monotone"
                 dataKey="orders"
-                stroke="#10b981"
+                stroke={chartSemanticColors.revenue}
                 fill="url(#ordersGradient)"
                 strokeWidth={2}
                 name="Orders"

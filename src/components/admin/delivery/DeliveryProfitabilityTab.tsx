@@ -33,6 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface DeliveryProfitabilityTabProps {
   costs: DeliveryCost[];
@@ -179,8 +180,8 @@ export function DeliveryProfitabilityTab({ costs, isLoading }: DeliveryProfitabi
   const profitabilityPieData = useMemo(() => {
     if (costs.length === 0) return [];
     return [
-      { name: 'Profitable', value: summary.profitableCount, fill: '#22c55e' },
-      { name: 'Unprofitable', value: summary.unprofitableCount, fill: '#ef4444' },
+      { name: 'Profitable', value: summary.profitableCount, fill: chartSemanticColors.success },
+      { name: 'Unprofitable', value: summary.unprofitableCount, fill: chartSemanticColors.danger },
     ].filter((d) => d.value > 0);
   }, [costs.length, summary]);
 
@@ -403,7 +404,7 @@ export function DeliveryProfitabilityTab({ costs, isLoading }: DeliveryProfitabi
                       {zoneChartData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={entry.profit >= 0 ? '#22c55e' : '#ef4444'}
+                          fill={entry.profit >= 0 ? chartSemanticColors.success : chartSemanticColors.danger}
                         />
                       ))}
                     </Bar>

@@ -6,6 +6,7 @@ import { Loader2, TrendingUp, ShoppingCart, DollarSign, CreditCard } from 'lucid
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 interface UnifiedAnalyticsProps {
     tenantId: string;
@@ -18,8 +19,6 @@ interface Transaction {
     created_at: string;
     status: string;
 }
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
 export function UnifiedAnalyticsDashboard({ tenantId }: UnifiedAnalyticsProps) {
     const { data: analytics, isLoading } = useQuery({
@@ -168,11 +167,11 @@ export function UnifiedAnalyticsDashboard({ tenantId }: UnifiedAnalyticsProps) {
                                             labelLine={false}
                                             label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                                             outerRadius={80}
-                                            fill="#8884d8"
+                                            fill={CHART_COLORS[0]}
                                             dataKey="value"
                                         >
-                                            {analytics.sourceData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            {analytics.sourceData.map((_, index) => (
+                                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                                             ))}
                                         </Pie>
                                         <Tooltip formatter={(value) => formatCurrency(Number(value))} />

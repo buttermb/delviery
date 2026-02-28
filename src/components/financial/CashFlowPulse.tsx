@@ -1,6 +1,6 @@
 /**
  * Cash Flow Pulse (Zone A)
- * 
+ *
  * The heartbeat of the business - shows cash health RIGHT NOW:
  * - Today's Cash Movement (Hero Card)
  * - Weekly Cash Forecast
@@ -71,18 +71,19 @@ export function CashFlowPulse() {
             {/* Net */}
             <div className={cn(
               "text-center p-3 sm:p-4 rounded-lg border",
-              (data?.todayNet ?? 0) >= 0 
-                ? "bg-emerald-500/10 border-emerald-500/20" 
+              (data?.todayNet ?? 0) >= 0
+                ? "bg-emerald-500/10 border-emerald-500/20"
                 : "bg-red-500/10 border-red-500/20"
             )}>
-              <div className="text-xl sm:text-2xl font-bold font-mono" style={{
-                color: (data?.todayNet ?? 0) >= 0 ? '#34d399' : '#f87171'
-              }}>
+              <div className={cn(
+                "text-xl sm:text-2xl font-bold font-mono",
+                (data?.todayNet ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"
+              )}>
                 {(data?.todayNet ?? 0) >= 0 ? '+' : ''}{formatCompactCurrency(data?.todayNet ?? 0)}
               </div>
               <div className="text-xs text-zinc-500 mt-1">NET</div>
-              <Progress 
-                value={Math.min(100, Math.abs((data?.todayNet ?? 0) / 1000) * 10)} 
+              <Progress
+                value={Math.min(100, Math.abs((data?.todayNet ?? 0) / 1000) * 10)}
                 className="h-1.5 mt-2 bg-zinc-800"
               />
             </div>
@@ -102,10 +103,10 @@ export function CashFlowPulse() {
             {data?.weeklyForecast.map((day, i) => {
               const maxAmount = Math.max(...(data?.weeklyForecast.map(d => d.amount) || [1]));
               const height = maxAmount > 0 ? (day.amount / maxAmount) * 100 : 0;
-              
+
               return (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div 
+                  <div
                     className={cn(
                       "w-full rounded-t transition-all",
                       day.isToday && "ring-2 ring-emerald-400/50",
@@ -159,14 +160,14 @@ export function CashFlowPulse() {
       {/* Cash Runway */}
       <Card className={cn(
         "border backdrop-blur-xl",
-        data?.cashRunway.isHealthy 
-          ? "bg-zinc-900/80 border-zinc-800/50" 
+        data?.cashRunway.isHealthy
+          ? "bg-zinc-900/80 border-zinc-800/50"
           : "bg-red-950/30 border-red-800/50"
       )}>
         <CardContent className="py-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-zinc-400 flex items-center gap-2">
-              {data?.cashRunway.isHealthy 
+              {data?.cashRunway.isHealthy
                 ? <CheckCircle className="h-4 w-4 text-emerald-400" />
                 : <AlertTriangle className="h-4 w-4 text-amber-400" />
               }
@@ -176,10 +177,10 @@ export function CashFlowPulse() {
               Avg burn: {formatCompactCurrency(data?.cashRunway.avgDailyBurn ?? 0)}/day
             </span>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="flex-1">
-              <Progress 
+              <Progress
                 value={Math.min(100, ((data?.cashRunway.daysRemaining ?? 0) / 90) * 100)}
                 className={cn(
                   "h-3 bg-zinc-800",
@@ -209,4 +210,3 @@ export function CashFlowPulse() {
     </div>
   );
 }
-

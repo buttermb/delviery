@@ -13,6 +13,7 @@ import { DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 interface MRRDataPoint {
   month: string;
@@ -60,11 +61,11 @@ export function MRRBreakdownChart() {
         tenants?.forEach((tenant) => {
           const created = new Date(tenant.created_at);
           const isActive = tenant.subscription_status === 'active';
-          
+
           if (created <= month && isActive) {
             const planPrice = planPrices[tenant.subscription_plan as string] || tenant.mrr || 0;
             monthlyData[monthKey].total += planPrice;
-            
+
             if (tenant.subscription_plan === 'starter') {
               monthlyData[monthKey].starter += planPrice;
             } else if (tenant.subscription_plan === 'professional') {
@@ -127,20 +128,20 @@ export function MRRBreakdownChart() {
           <AreaChart data={mrrData}>
             <defs>
               <linearGradient id="colorStarter" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                <stop offset="5%" stopColor={CHART_COLORS[3]} stopOpacity={0.3}/>
+                <stop offset="95%" stopColor={CHART_COLORS[3]} stopOpacity={0}/>
               </linearGradient>
               <linearGradient id="colorProfessional" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                <stop offset="5%" stopColor={CHART_COLORS[5]} stopOpacity={0.3}/>
+                <stop offset="95%" stopColor={CHART_COLORS[5]} stopOpacity={0}/>
               </linearGradient>
               <linearGradient id="colorEnterprise" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                <stop offset="5%" stopColor={CHART_COLORS[4]} stopOpacity={0.3}/>
+                <stop offset="95%" stopColor={CHART_COLORS[4]} stopOpacity={0}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis 
+            <XAxis
               dataKey="month"
               tick={{ fontSize: 12 }}
               className="text-muted-foreground"
@@ -148,7 +149,7 @@ export function MRRBreakdownChart() {
               textAnchor="end"
               height={80}
             />
-            <YAxis 
+            <YAxis
               tick={{ fontSize: 12 }}
               tickFormatter={(value: number) => formatCompactCurrency(value)}
               className="text-muted-foreground"
@@ -166,7 +167,7 @@ export function MRRBreakdownChart() {
               type="monotone"
               dataKey="starter"
               stackId="1"
-              stroke="#3b82f6"
+              stroke={CHART_COLORS[3]}
               fill="url(#colorStarter)"
               name="Starter"
             />
@@ -174,7 +175,7 @@ export function MRRBreakdownChart() {
               type="monotone"
               dataKey="professional"
               stackId="1"
-              stroke="#10b981"
+              stroke={CHART_COLORS[5]}
               fill="url(#colorProfessional)"
               name="Professional"
             />
@@ -182,7 +183,7 @@ export function MRRBreakdownChart() {
               type="monotone"
               dataKey="enterprise"
               stackId="1"
-              stroke="#8b5cf6"
+              stroke={CHART_COLORS[4]}
               fill="url(#colorEnterprise)"
               name="Enterprise"
             />
@@ -192,4 +193,3 @@ export function MRRBreakdownChart() {
     </Card>
   );
 }
-

@@ -32,6 +32,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -75,11 +76,11 @@ interface LowStockProduct {
 }
 
 const STOCK_COLORS = {
-  outOfStock: '#ef4444',
-  critical: '#f97316',
-  low: '#eab308',
-  adequate: '#22c55e',
-  overstocked: '#3b82f6',
+  outOfStock: 'hsl(var(--chart-7))',
+  critical: 'hsl(var(--chart-8))',
+  low: 'hsl(var(--chart-8))',
+  adequate: 'hsl(var(--chart-6))',
+  overstocked: 'hsl(var(--chart-4))',
 };
 
 export default function InventoryDashboard() {
@@ -555,7 +556,7 @@ export default function InventoryDashboard() {
                           formatter={(value: number) => [formatCurrency(value), 'Value']}
                           labelFormatter={(label) => `Category: ${label}`}
                         />
-                        <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+                        <Bar dataKey="value" fill={chartSemanticColors.secondary} radius={[0, 4, 4, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>

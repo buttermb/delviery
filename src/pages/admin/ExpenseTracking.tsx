@@ -38,6 +38,7 @@ import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { queryKeys } from '@/lib/queryKeys';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 interface Expense {
   id: string;
@@ -60,19 +61,6 @@ const EXPENSE_CATEGORIES = [
   'Insurance',
   'Maintenance',
   'Other'
-];
-
-const CHART_COLORS = [
-  'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
-  '#8884d8',
-  '#82ca9d',
-  '#ffc658',
-  '#ff7300',
-  '#00C49F',
 ];
 
 const DEFAULT_EXPENSE_FORM = {
