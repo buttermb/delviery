@@ -23,6 +23,7 @@ import {
   Store,
 } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { getThemeById } from '@/lib/storefrontThemes';
 import { MobileBottomNav } from '@/components/shop/MobileBottomNav';
 import { LuxuryNav } from '@/components/shop/LuxuryNav';
 import { LuxuryFooter } from '@/components/shop/LuxuryFooter';
@@ -53,11 +54,16 @@ interface StoreInfo {
   layout_config?: Record<string, unknown>[] | null;
   theme_config?: {
     theme?: 'default' | 'luxury' | 'minimal';
+    theme_id?: string;
     colors?: {
       primary?: string;
       secondary?: string;
       accent?: string;
       background?: string;
+      text?: string;
+    };
+    typography?: {
+      fontFamily?: string;
     };
   } | null;
   operating_hours: Record<string, unknown>;
@@ -167,6 +173,61 @@ export default function ShopLayout() {
         : `${store.store_name} | Best Cannabis Delivery`;
     }
   }, [store?.store_name, store?.tagline]);
+
+  // Theme: Apply --storefront-* CSS variables and load Google Fonts
+  useEffect(() => {
+    if (!store?.theme_config) return;
+
+    const themeId = store.theme_config.theme_id;
+    const preset = themeId ? getThemeById(themeId) : undefined;
+    const root = document.documentElement;
+
+    if (preset) {
+      // Apply all --storefront-* CSS variables from the theme preset
+      Object.entries(preset.cssVariables).forEach(([key, value]) => {
+        root.style.setProperty(key, value);
+      });
+      root.style.setProperty('--storefront-font-heading', preset.typography.fonts.heading);
+      root.style.setProperty('--storefront-font-body', preset.typography.fonts.body);
+
+      // Load Google Fonts for the theme
+      const fonts = [preset.typography.fonts.heading, preset.typography.fonts.body];
+      const uniqueFonts = [...new Set(fonts)].filter(f => f && f !== 'system-ui');
+      if (uniqueFonts.length > 0) {
+        const fontParam = uniqueFonts.map(f => f.replace(/ /g, '+')).join('&family=');
+        const linkId = 'storefront-theme-fonts';
+        let link = document.getElementById(linkId) as HTMLLinkElement | null;
+        if (!link) {
+          link = document.createElement('link');
+          link.id = linkId;
+          link.rel = 'stylesheet';
+          document.head.appendChild(link);
+        }
+        link.href = `https://fonts.googleapis.com/css2?family=${fontParam}:wght@300;400;500;600;700&display=swap`;
+      }
+
+      logger.debug('Applied theme preset CSS variables', { themeId });
+    } else if (store.theme_config.colors) {
+      // Fallback: apply custom colors from theme_config directly
+      const colors = store.theme_config.colors;
+      if (colors.background) root.style.setProperty('--storefront-bg', colors.background);
+      if (colors.text) root.style.setProperty('--storefront-text', colors.text);
+      if (colors.primary) root.style.setProperty('--storefront-primary', colors.primary);
+      if (colors.accent) root.style.setProperty('--storefront-accent', colors.accent);
+
+      logger.debug('Applied custom theme colors', { colors });
+    }
+
+    return () => {
+      // Cleanup: remove CSS variables when unmounting
+      const props = [
+        '--storefront-bg', '--storefront-text', '--storefront-primary', '--storefront-accent',
+        '--storefront-card-bg', '--storefront-border', '--storefront-radius', '--storefront-shadow',
+        '--storefront-font-heading', '--storefront-font-body',
+      ];
+      props.forEach(prop => root.style.removeProperty(prop));
+    };
+  }, [store?.theme_config]);
 
   // GA4 Analytics: Inject Google Analytics script
   useEffect(() => {
@@ -337,7 +398,7 @@ export default function ShopLayout() {
   }
 
   // Determine if using luxury theme - defensive null check
-  const isLuxuryTheme = store?.theme_config?.theme === 'luxury';
+  const isLuxuryTheme = store?.theme_config?.theme === 'luxury' || store?.theme_config?.theme_id === 'luxury';
 
   // Age verification gate (skip in preview mode)
   if (store.require_age_verification && !ageVerified && !isPreviewMode) {
@@ -392,11 +453,30 @@ export default function ShopLayout() {
     );
   }
 
-  // Apply theme colors
+  // Apply theme colors — merge legacy vars with storefront theme preset
+  const resolvedPreset = store.theme_config?.theme_id
+    ? getThemeById(store.theme_config.theme_id)
+    : undefined;
+
   const themeStyles = {
-    '--store-primary': store.primary_color,
-    '--store-secondary': store.secondary_color,
-    '--store-accent': store.accent_color,
+    '--store-primary': store.theme_config?.colors?.primary || store.primary_color,
+    '--store-secondary': store.theme_config?.colors?.secondary || store.secondary_color,
+    '--store-accent': store.theme_config?.colors?.accent || store.accent_color,
+    ...(resolvedPreset ? {
+      '--storefront-bg': resolvedPreset.cssVariables['--storefront-bg'],
+      '--storefront-text': resolvedPreset.cssVariables['--storefront-text'],
+      '--storefront-primary': resolvedPreset.cssVariables['--storefront-primary'],
+      '--storefront-accent': resolvedPreset.cssVariables['--storefront-accent'],
+      '--storefront-card-bg': resolvedPreset.cssVariables['--storefront-card-bg'],
+      '--storefront-border': resolvedPreset.cssVariables['--storefront-border'],
+      '--storefront-radius': resolvedPreset.cssVariables['--storefront-radius'],
+      '--storefront-shadow': resolvedPreset.cssVariables['--storefront-shadow'],
+    } : store.theme_config?.colors ? {
+      '--storefront-primary': store.theme_config.colors.primary,
+      '--storefront-accent': store.theme_config.colors.accent,
+      '--storefront-bg': store.theme_config.colors.background,
+      '--storefront-text': store.theme_config.colors.text,
+    } : {}),
   } as React.CSSProperties;
 
   // Get accent color for theme elements
@@ -489,10 +569,10 @@ export default function ShopLayout() {
   return (
     <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
       <div
-        className={`min-h-dvh ${isLuxuryTheme ? 'bg-black' : 'bg-background'}`}
+        className={`min-h-dvh ${resolvedPreset?.darkMode ? 'bg-black' : 'bg-background'}`}
         style={themeStyles}
         data-testid="storefront-wrapper"
-        data-theme={isLuxuryTheme ? 'luxury' : 'default'}
+        data-theme={store.theme_config?.theme_id || (isLuxuryTheme ? 'luxury' : 'default')}
       >
         {/* Admin Preview Banner */}
         {isPreviewMode && (
