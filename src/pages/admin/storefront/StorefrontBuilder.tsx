@@ -287,27 +287,15 @@ export function StorefrontBuilder({
     // Fetch Store Config
     const { data: store, isLoading: isLoadingStore } = useQuery({
         queryKey: queryKeys.marketplaceSettings.byTenant(tenant?.id),
-        queryFn: async (): Promise<MarketplaceStore> => {
-            try {
-                const { data, error } = await supabase
-                    .from('marketplace_stores')
-                    .select('*')
-                    .eq('tenant_id', tenant?.id ?? '')
-                    .maybeSingle();
+        queryFn: async (): Promise<MarketplaceStore | null> => {
+            const { data, error } = await supabase
+                .from('marketplace_stores')
+                .select('*')
+                .eq('tenant_id', tenant?.id ?? '')
+                .maybeSingle();
 
-                if (error) throw error;
-                return data as MarketplaceStore;
-            } catch (e) {
-                logger.warn("Using mock data as DB fetch failed", e);
-                return {
-                    id: 'mock-id',
-                    tenant_id: tenant?.id ?? '',
-                    store_name: tenant?.business_name ?? 'Mock Store',
-                    slug: 'mock-store',
-                    layout_config: [],
-                    theme_config: { colors: { primary: '#000000', background: '#ffffff' } }
-                } as MarketplaceStore;
-            }
+            if (error) throw error;
+            return data as MarketplaceStore | null;
         },
         enabled: !!tenant?.id,
     });
