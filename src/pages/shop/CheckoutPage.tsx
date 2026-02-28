@@ -58,6 +58,7 @@ interface CheckoutData {
   lastName: string;
   email: string;
   phone: string;
+  preferredContact: 'text' | 'call' | 'email';
   // Delivery
   street: string;
   apartment: string;
@@ -137,6 +138,7 @@ export function CheckoutPage() {
     lastName: '',
     email: '',
     phone: '',
+    preferredContact: 'text',
     street: '',
     apartment: '',
     city: '',
@@ -536,7 +538,10 @@ export function CheckoutPage() {
               fulfillmentMethod: formData.street ? 'delivery' : 'pickup',
               paymentMethod: formData.paymentMethod,
               deliveryAddress: edgeDeliveryAddress,
-              notes: formData.deliveryNotes || undefined,
+              notes: [
+                formData.preferredContact ? `Preferred contact: ${formData.preferredContact}` : '',
+                formData.deliveryNotes || '',
+              ].filter(Boolean).join(' | ') || undefined,
               discountAmount: totalDiscountAmount > 0 ? totalDiscountAmount : undefined,
               successUrl: formData.paymentMethod === 'card'
                 ? `${edgeOrigin}/shop/${storeSlug}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`
@@ -611,7 +616,10 @@ export function CheckoutPage() {
               p_customer_email: formData.email,
               p_customer_phone: formData.phone || undefined,
               p_delivery_address: deliveryAddress,
-              p_delivery_notes: formData.deliveryNotes || undefined,
+              p_delivery_notes: [
+                formData.preferredContact ? `Preferred contact: ${formData.preferredContact}` : '',
+                formData.deliveryNotes || '',
+              ].filter(Boolean).join(' | ') || undefined,
               p_items: cartItems.map(item => ({
                 product_id: item.productId,
                 quantity: item.quantity,
@@ -705,8 +713,12 @@ export function CheckoutPage() {
         return;
       }
 
-      // Card payment via fallback path (edge function was unavailable for Stripe)
-      if (formData.paymentMethod === 'card') {
+      // Show confirmation toast based on payment method
+      if (formData.paymentMethod === 'cash') {
+        toast.success("Thanks! You'll be contacted.", {
+          description: `Order #${data.order_number} placed successfully.`,
+        });
+      } else if (formData.paymentMethod === 'card') {
         toast.info('Order placed! The store will follow up regarding payment.');
       }
       // Clear cart and saved form data
@@ -1064,6 +1076,27 @@ export function CheckoutPage() {
                         placeholder="(555) 123-4567"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label>Preferred Contact Method</Label>
+                      <RadioGroup
+                        value={formData.preferredContact}
+                        onValueChange={(value) => updateField('preferredContact', value)}
+                        className="flex gap-4"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="text" id="contact-text" />
+                          <Label htmlFor="contact-text" className="cursor-pointer">Text</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="call" id="contact-call" />
+                          <Label htmlFor="contact-call" className="cursor-pointer">Call</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="email" id="contact-email" />
+                          <Label htmlFor="contact-email" className="cursor-pointer">Email</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
                   </motion.div>
                 )}
 
@@ -1222,6 +1255,12 @@ export function CheckoutPage() {
                         {formData.firstName} {formData.lastName}<br />
                         {formData.email}<br />
                         {formData.phone}
+                        {formData.preferredContact && (
+                          <>
+                            <br />
+                            Preferred contact: {formData.preferredContact.charAt(0).toUpperCase() + formData.preferredContact.slice(1)}
+                          </>
+                        )}
                       </p>
                     </div>
 
