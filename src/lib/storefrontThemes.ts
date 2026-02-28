@@ -512,6 +512,37 @@ export function customThemeToConfig(theme: CustomTheme): Record<string, unknown>
 }
 
 /**
+ * Apply storefront CSS variables to a DOM element from simple color settings.
+ * Used by the live preview panel to reflect theme changes immediately without save.
+ */
+export function applyPreviewCSSVariables(
+    element: HTMLElement,
+    colors: {
+        primary: string;
+        secondary: string;
+        accent: string;
+        background: string;
+        text: string;
+        cardBg: string;
+        border: string;
+    },
+    fontFamily?: string
+): void {
+    element.style.setProperty('--storefront-primary', colors.primary);
+    element.style.setProperty('--storefront-accent', colors.accent);
+    element.style.setProperty('--storefront-bg', colors.background);
+    element.style.setProperty('--storefront-text', colors.text);
+    element.style.setProperty('--storefront-card-bg', colors.cardBg);
+    element.style.setProperty('--storefront-border', colors.border);
+    element.style.setProperty('--storefront-secondary', colors.secondary);
+    if (fontFamily) {
+        element.style.setProperty('--storefront-font-heading', fontFamily);
+        element.style.setProperty('--storefront-font-body', fontFamily);
+    }
+    logger.debug('Applied preview CSS variables', { primary: colors.primary });
+}
+
+/**
  * Apply theme to storefront config
  */
 export function applyThemeToConfig(
