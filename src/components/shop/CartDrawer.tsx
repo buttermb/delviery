@@ -25,8 +25,8 @@ interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   items: CartItem[];
-  onUpdateQuantity: (productId: string, quantity: number) => void;
-  onRemoveItem: (productId: string) => void;
+  onUpdateQuantity: (productId: string, quantity: number, variant?: string) => void;
+  onRemoveItem: (productId: string, variant?: string) => void;
   accentColor?: string;
   deliveryFee?: number;
   freeDeliveryThreshold?: number;
@@ -114,7 +114,7 @@ export function CartDrawer({
               <div className="p-4 sm:p-6 space-y-4">
                 {items.map((item) => (
                   <motion.div
-                    key={item.productId}
+                    key={`${item.productId}-${item.variant ?? ''}`}
                     layout
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -145,7 +145,7 @@ export function CartDrawer({
                     {/* Quantity & Remove */}
                     <div className="flex flex-col items-end justify-between">
                       <button
-                        onClick={() => onRemoveItem(item.productId)}
+                        onClick={() => onRemoveItem(item.productId, item.variant)}
                         className="p-1 rounded hover:bg-white/10 transition-colors"
                       >
                         <Trash2 className="w-4 h-4 text-white/40 hover:text-red-400 transition-colors" />
@@ -153,7 +153,7 @@ export function CartDrawer({
 
                       <div className="flex items-center gap-2 bg-white/5 rounded-full p-1">
                         <button
-                          onClick={() => onUpdateQuantity(item.productId, item.quantity - 1)}
+                          onClick={() => onUpdateQuantity(item.productId, item.quantity - 1, item.variant)}
                           disabled={item.quantity <= 1}
                           className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
@@ -163,7 +163,7 @@ export function CartDrawer({
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => onUpdateQuantity(item.productId, item.quantity + 1)}
+                          onClick={() => onUpdateQuantity(item.productId, item.quantity + 1, item.variant)}
                           className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
                         >
                           <Plus className="w-3 h-3 text-white" />

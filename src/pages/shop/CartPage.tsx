@@ -280,8 +280,8 @@ export default function CartPage() {
                       <p className={`text-sm font-medium mb-2 ${isLuxuryTheme ? 'text-amber-300' : 'text-amber-800'}`}>
                         Prices updated
                       </p>
-                      {priceChanges.map(change => (
-                        <p key={change.productId} className={`text-xs ${isLuxuryTheme ? 'text-amber-400/80' : 'text-amber-700'}`}>
+                      {priceChanges.map((change, idx) => (
+                        <p key={`${change.productId}-${idx}`} className={`text-xs ${isLuxuryTheme ? 'text-amber-400/80' : 'text-amber-700'}`}>
                           {change.name}: <span className="line-through">{formatCurrency(change.oldPrice)}</span>{' '}
                           <span className="font-semibold">{formatCurrency(change.newPrice)}</span>
                         </p>
