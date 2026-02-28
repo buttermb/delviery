@@ -139,16 +139,16 @@ export function StoreOrdersTab({
 
   const effectiveStoreId = propStoreId || store?.id;
 
-  // Fetch orders for the store
+  // Fetch orders for the store from storefront_orders view (correct aliased columns)
   const { data: orders = [], isLoading, refetch } = useQuery({
     queryKey: queryKeys.storeOrdersTab.byStore(effectiveStoreId, statusFilter),
     queryFn: async () => {
       if (!effectiveStoreId) return [];
 
       let query = supabase
-        .from('marketplace_orders')
+        .from('storefront_orders')
         .select('*')
-        .eq('seller_profile_id', effectiveStoreId)
+        .eq('store_id', effectiveStoreId)
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {
@@ -193,7 +193,7 @@ export function StoreOrdersTab({
         .from('marketplace_orders')
         .update(updates)
         .eq('id', orderId)
-        .eq('seller_profile_id', effectiveStoreId);
+        .eq('store_id', effectiveStoreId);
 
       if (error) throw error;
     },

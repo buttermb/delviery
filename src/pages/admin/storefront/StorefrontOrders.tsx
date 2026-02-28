@@ -3,7 +3,7 @@
  * View and manage orders from the online store
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -60,18 +60,20 @@ interface MarketplaceOrder {
   customer_name: string | null;
   customer_email: string | null;
   customer_phone: string | null;
-  items: Array<{ product_name?: string; quantity?: number; price?: number; listing_id?: string }>;
+  items: Array<{ product_name?: string; name?: string; product_id?: string; quantity?: number; price?: number; listing_id?: string }>;
   subtotal: number;
-  delivery_fee: number;
-  discount_amount: number;
-  tip_amount: number;
+  delivery_fee: number | null;
   total: number;
-  delivery_address: Record<string, unknown> | string | null;
+  delivery_address: Record<string, unknown> | null;
   delivery_notes: string | null;
-  payment_method: string;
-  tracking_token: string;
+  tracking_token: string | null;
+  store_id: string | null;
   created_at: string;
   updated_at: string;
+  // Optional fields not present in storefront_orders view
+  discount_amount?: number;
+  tip_amount?: number;
+  payment_method?: string;
 }
 
 const STATUS_OPTIONS = [
@@ -103,7 +105,7 @@ export default function StorefrontOrders() {
       if (!tenantId) return null;
       const { data } = await supabase
         .from('marketplace_stores')
-        .select('id')
+        .select('id, slug')
         .eq('tenant_id', tenantId)
         .maybeSingle();
       return data;
@@ -111,16 +113,16 @@ export default function StorefrontOrders() {
     enabled: !!tenantId,
   });
 
-  // Fetch orders
+  // Fetch orders from storefront_orders view (has correct aliased columns)
   const { data: orders = [], isLoading, refetch } = useQuery({
     queryKey: queryKeys.marketplaceOrders.byTenant(store?.id, statusFilter),
     queryFn: async () => {
       if (!store?.id) return [];
 
       let query = supabase
-        .from('marketplace_orders')
+        .from('storefront_orders')
         .select('*')
-        .eq('seller_profile_id', store.id)
+        .eq('store_id', store.id)
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {
@@ -149,7 +151,7 @@ export default function StorefrontOrders() {
   // Update order status mutation with retry logic
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, status, retryCount = 0 }: { orderId: string; status: string; retryCount?: number }) => {
-      if (!store?.id) throw new Error('No store');
+      if (!store?.id || !tenantId) throw new Error('No store or tenant context');
       const MAX_RETRIES = 2;
       const updates: Record<string, unknown> = { status };
 
@@ -163,7 +165,8 @@ export default function StorefrontOrders() {
           .from('marketplace_orders')
           .update(updates)
           .eq('id', orderId)
-          .eq('seller_profile_id', store.id);
+          .eq('store_id', store.id)
+          .eq('seller_tenant_id', tenantId);
 
         if (error) throw error;
       } catch (error) {
@@ -223,6 +226,38 @@ export default function StorefrontOrders() {
     },
     {} as Record<string, number>
   );
+
+  // Realtime subscription for new/updated orders
+  useEffect(() => {
+    if (!store?.id) return;
+
+    const channel = supabase
+      .channel(`storefront-orders-${store.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'marketplace_orders',
+          filter: `store_id=eq.${store.id}`,
+        },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logger.debug('Storefront orders subscription active', {
+            storeId: store.id,
+            component: 'StorefrontOrders',
+          });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [store?.id, refetch]);
 
   if (!store) {
     return (
@@ -502,8 +537,11 @@ export default function StorefrontOrders() {
                 <div>
                   <h3 className="font-medium mb-3">Delivery</h3>
                   <div className="space-y-2 text-sm">
-                    {selectedOrder.delivery_address && (
-                      <p>{selectedOrder.delivery_address.street}, {selectedOrder.delivery_address.city}</p>
+                    {selectedOrder.delivery_address && typeof selectedOrder.delivery_address === 'object' && (
+                      <p>
+                        {String(selectedOrder.delivery_address.street ?? '')}
+                        {selectedOrder.delivery_address.city ? `, ${String(selectedOrder.delivery_address.city)}` : ''}
+                      </p>
                     )}
                     {selectedOrder.delivery_notes && (
                       <p className="text-muted-foreground">Notes: {selectedOrder.delivery_notes}</p>
@@ -569,7 +607,7 @@ export default function StorefrontOrders() {
                 <div className="p-4 bg-muted rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium capitalize">{selectedOrder.payment_method}</p>
+                      <p className="text-sm font-medium capitalize">{selectedOrder.payment_method ?? 'Online'}</p>
                       <p className="text-xs text-muted-foreground">Payment method</p>
                     </div>
                     {getPaymentBadge(selectedOrder.payment_status)}
@@ -577,12 +615,14 @@ export default function StorefrontOrders() {
                 </div>
 
                 {/* Tracking Link */}
-                <div className="p-4 bg-primary/5 rounded-lg">
-                  <p className="text-sm font-medium mb-1">Tracking Link</p>
-                  <code className="text-xs text-muted-foreground break-all">
-                    {window.location.origin}/shop/{store?.id}/track/{selectedOrder.tracking_token}
-                  </code>
-                </div>
+                {selectedOrder.tracking_token && (
+                  <div className="p-4 bg-primary/5 rounded-lg">
+                    <p className="text-sm font-medium mb-1">Tracking Link</p>
+                    <code className="text-xs text-muted-foreground break-all">
+                      {window.location.origin}/shop/{store?.slug ?? store?.id}/track/{selectedOrder.tracking_token}
+                    </code>
+                  </div>
+                )}
               </div>
             </>
           )}
