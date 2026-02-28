@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { queryKeys } from '@/lib/queryKeys';
 import { ANALYTICS_QUERY_CONFIG } from '@/lib/react-query-config';
 import { logger } from '@/lib/logger';
-import { TruncatedText } from '@/components/shared/TruncatedText';
+import { formatCurrency } from '@/lib/formatters';
+import { chartSemanticColors } from '@/lib/chartColors';
 
 interface TopSellingProductsProps {
   storeId: string;
@@ -17,6 +19,11 @@ interface ProductSales {
   name: string;
   quantity: number;
   revenue: number;
+}
+
+/** Truncate long product names for the Y-axis */
+function truncateName(name: string, maxLen = 18): string {
+  return name.length > maxLen ? name.slice(0, maxLen - 1) + '\u2026' : name;
 }
 
 export function TopSellingProducts({ storeId, dateRange, className }: TopSellingProductsProps) {
@@ -101,7 +108,9 @@ export function TopSellingProducts({ storeId, dateRange, className }: TopSelling
     );
   }
 
-  const maxRevenue = products[0]?.revenue || 1;
+  // Reverse so the highest-revenue product is at the top of the horizontal chart
+  const chartData = [...products].reverse();
+  const chartHeight = Math.max(280, chartData.length * 36);
 
   return (
     <Card className={className}>
@@ -110,25 +119,49 @@ export function TopSellingProducts({ storeId, dateRange, className }: TopSelling
         <CardDescription>Best performing products by revenue</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {products.map((product, index) => (
-            <div key={product.name} className="flex items-center gap-3">
-              <span className="text-sm font-medium text-muted-foreground w-5">{index + 1}</span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <TruncatedText text={product.name} className="text-sm font-medium" />
-                  <span className="text-sm text-muted-foreground ml-2">${product.revenue.toLocaleString()}</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-emerald-500"
-                    style={{ width: `${(product.revenue / maxRevenue) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs text-muted-foreground">{product.quantity} units sold</span>
-              </div>
-            </div>
-          ))}
+        <div style={{ height: chartHeight }} className="w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} layout="vertical" margin={{ left: 8, right: 16 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+              <XAxis
+                type="number"
+                tickFormatter={(v: number) => formatCurrency(v)}
+                tick={{ fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                type="category"
+                dataKey="name"
+                tickFormatter={truncateName}
+                tick={{ fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+                width={130}
+              />
+              <Tooltip
+                formatter={(value: number, _name: string, entry) => {
+                  const qty = (entry.payload as ProductSales).quantity;
+                  return [
+                    `${formatCurrency(value)} (${qty} units)`,
+                    'Revenue',
+                  ];
+                }}
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--card))',
+                  borderColor: 'hsl(var(--border))',
+                  borderRadius: '8px',
+                }}
+                itemStyle={{ color: 'hsl(var(--foreground))' }}
+              />
+              <Bar
+                dataKey="revenue"
+                fill={chartSemanticColors.primary}
+                radius={[0, 4, 4, 0]}
+                barSize={20}
+              />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>

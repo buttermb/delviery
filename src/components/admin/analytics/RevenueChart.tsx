@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -153,7 +153,7 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
       <CardContent>
         <div className="h-[280px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={revenueData.data}>
+            <LineChart data={revenueData.data}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 dataKey="label"
@@ -177,8 +177,15 @@ export function RevenueChart({ storeId, dateRange, className }: RevenueChartProp
                 }}
                 itemStyle={{ color: 'hsl(var(--foreground))' }}
               />
-              <Bar dataKey="revenue" fill={chartSemanticColors.revenue} radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke={chartSemanticColors.revenue}
+                strokeWidth={2}
+                dot={{ r: 4, fill: chartSemanticColors.revenue }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
