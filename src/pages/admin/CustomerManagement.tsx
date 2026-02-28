@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
-  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Mail, Lock, Phone
+  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Mail, Lock, Phone, Globe
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
@@ -76,6 +76,7 @@ interface Customer {
   last_purchase_at: string | null;
   status: string;
   medical_card_expiration: string | null;
+  source: string | null;
   /** Indicates data is encrypted but cannot be decrypted with current key */
   _encryptedIndicator?: boolean;
 }
@@ -125,7 +126,7 @@ export function CustomerManagement() {
 
       let query = supabase
         .from("customers")
-        .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, phone_encrypted, email_encrypted, deleted_at, created_at")
+        .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, source, phone_encrypted, email_encrypted, deleted_at, created_at")
         .eq("tenant_id", tenant.id)
         .is("deleted_at", null); // Exclude soft-deleted customers
 
@@ -281,12 +282,13 @@ export function CustomerManagement() {
 
   const handleExport = () => {
     const csv = [
-      ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
+      ["Name", "Email", "Phone", "Type", "Source", "Total Spent", "Loyalty Points", "Status"],
       ...filteredCustomers.map(c => [
         displayName(c.first_name, c.last_name),
         c.email ?? '',
         c.phone ?? '',
         c.customer_type,
+        c.source ?? 'manual',
         c.total_spent,
         c.loyalty_points,
         c.status
@@ -390,7 +392,7 @@ export function CustomerManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {["", "Customer", "Type", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
+                  {["", "Customer", "Type", "Source", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
                     <TableHead key={i}>
                       <Skeleton className="h-3 w-16" />
                     </TableHead>
@@ -411,6 +413,7 @@ export function CustomerManagement() {
                       </div>
                     </TableCell>
                     <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-12" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-20" /></TableCell>
@@ -629,6 +632,7 @@ export function CustomerManagement() {
                   </TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Type</TableHead>
+                  <TableHead>Source</TableHead>
                   <TableHead>Total Spent</TableHead>
                   <TableHead>Points</TableHead>
                   <TableHead>Last Order</TableHead>
@@ -693,6 +697,18 @@ export function CustomerManagement() {
                       <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
                         {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {customer.source === 'storefront' ? (
+                        <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-400">
+                          <Globe className="w-3 h-3" />
+                          Storefront
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-muted-foreground">
+                          {customer.source === 'pos' ? 'POS' : 'Manual'}
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm font-semibold">
                       {formatCurrency(customer.total_spent)}
@@ -851,6 +867,12 @@ export function CustomerManagement() {
                           <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
                             {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
                           </Badge>
+                          {customer.source === 'storefront' && (
+                            <Badge variant="outline" className="text-[10px] h-5 px-1.5 gap-0.5 text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-400">
+                              <Globe className="w-2.5 h-2.5" />
+                              Store
+                            </Badge>
+                          )}
                           {getCustomerStatus(customer)}
                           <CustomerTagBadges customerId={customer.id} maxVisible={2} size="sm" />
                         </div>
