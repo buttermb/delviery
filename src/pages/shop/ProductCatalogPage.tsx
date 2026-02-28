@@ -187,8 +187,8 @@ export function ProductCatalogPage() {
         variant: product.strain_type || undefined,
         metrcRetailId: product.metrc_retail_id || undefined,
         excludeFromDiscounts: product.exclude_from_discounts,
-        minimumPrice: product.minimum_price || undefined,
-        minExpiryDays: product.min_expiry_days || undefined,
+        minimumPrice: product.minimum_price ?? undefined,
+        minExpiryDays: product.min_expiry_days ?? undefined,
       });
 
       setAddedProducts(prev => new Set(prev).add(product.product_id));
@@ -232,8 +232,8 @@ export function ProductCatalogPage() {
     unit_type: p.unit_type || undefined,
     metrc_retail_id: p.metrc_retail_id || undefined,
     exclude_from_discounts: p.exclude_from_discounts,
-    minimum_price: p.minimum_price || undefined,
-    min_expiry_days: p.min_expiry_days || undefined,
+    minimum_price: p.minimum_price ?? undefined,
+    min_expiry_days: p.min_expiry_days ?? undefined,
   });
 
   // Fetch products with error handling
@@ -644,7 +644,7 @@ export function ProductCatalogPage() {
 
       {/* Products Grid/List */}
       {productsLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <Skeleton key={i} className="h-64 rounded-lg" />
           ))}
@@ -681,7 +681,7 @@ export function ProductCatalogPage() {
           </Button>
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {paginatedProducts.map((product) => (
             <StorefrontProductCard
               key={product.product_id}
