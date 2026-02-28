@@ -816,10 +816,51 @@ export function CheckoutPage() {
   const themeColor = isLuxuryTheme ? accentColor : store.primary_color;
 
   return (
-    <div className={`container mx-auto px-4 py-8 max-w-5xl ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
-      {/* Steps */}
-      <div className="mb-8">
-        <nav className="flex justify-between">
+    <div className={`container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-5xl ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
+      {/* Steps — compact horizontal pills on mobile, full icons on sm+ */}
+      <div className="mb-6 sm:mb-8">
+        {/* Mobile: compact pill indicators */}
+        <nav className="flex sm:hidden gap-2 justify-center" aria-label="Checkout steps">
+          {STEPS.map((step) => {
+            const isActive = currentStep === step.id;
+            const isComplete = currentStep > step.id;
+            const isFuture = currentStep < step.id;
+
+            return (
+              <button
+                key={step.id}
+                type="button"
+                onClick={() => {
+                  if (isComplete) setCurrentStep(step.id);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${
+                  isActive
+                    ? 'text-white shadow-md'
+                    : isComplete
+                      ? 'text-white/90'
+                      : isFuture
+                        ? (isLuxuryTheme ? 'bg-white/5 text-white/30' : 'bg-muted text-muted-foreground')
+                        : ''
+                }`}
+                style={{
+                  backgroundColor: isComplete || isActive ? themeColor : undefined,
+                  opacity: isComplete ? 0.7 : undefined,
+                }}
+                disabled={isFuture}
+              >
+                {isComplete ? (
+                  <Check className="w-3 h-3" />
+                ) : (
+                  <span>{step.id}</span>
+                )}
+                <span>{step.name}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Desktop: full icon step indicator */}
+        <nav className="hidden sm:flex justify-between">
           {STEPS.map((step, index) => {
             const Icon = step.icon;
             const isActive = currentStep === step.id;
@@ -833,7 +874,7 @@ export function CheckoutPage() {
               >
                 {/* Connecting Line */}
                 {index < STEPS.length - 1 && (
-                  <div className={`absolute top-4 sm:top-5 left-[calc(50%+16px)] sm:left-[calc(50%+20px)] w-[calc(100%-32px)] sm:w-[calc(100%-40px)] h-[2px] ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
+                  <div className={`absolute top-5 left-[calc(50%+20px)] w-[calc(100%-40px)] h-[2px] ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
                     <motion.div
                       className="h-full"
                       initial={{ width: "0%" }}
@@ -845,7 +886,7 @@ export function CheckoutPage() {
                 )}
 
                 <div
-                  className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center z-10 transition-all duration-300 ${isActive ? 'ring-2 ring-offset-2 sm:ring-offset-4 ring-offset-background scale-110' : ''
+                  className={`relative w-10 h-10 rounded-full flex items-center justify-center z-10 transition-all duration-300 ${isActive ? 'ring-2 ring-offset-4 ring-offset-background scale-110' : ''
                     } ${isFuture ? (isLuxuryTheme ? 'bg-white/5 text-white/20' : 'bg-muted text-muted-foreground') : ''
                     }`}
                   style={{
@@ -856,9 +897,9 @@ export function CheckoutPage() {
                   }}
                 >
                   {isComplete ? (
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Check className="w-5 h-5" />
                   ) : (
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Icon className="w-5 h-5" />
                   )}
 
                   {/* Active Pulse Ring */}
@@ -874,7 +915,7 @@ export function CheckoutPage() {
                 </div>
 
                 <span
-                  className={`text-[10px] sm:text-xs uppercase tracking-wide sm:tracking-widest mt-2 sm:mt-4 font-semibold transition-colors duration-300 ${isActive ? 'text-primary' : (isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground')
+                  className={`text-xs uppercase tracking-widest mt-4 font-semibold transition-colors duration-300 ${isActive ? 'text-primary' : (isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground')
                     }`}
                   style={{ color: isActive ? themeColor : undefined }}
                 >
@@ -887,28 +928,28 @@ export function CheckoutPage() {
       </div>
 
       {/* Mobile Order Summary - Collapsible (visible only on mobile) */}
-      <div className="lg:hidden mb-6">
+      <div className="lg:hidden mb-4 sm:mb-6">
         <button
           onClick={() => setMobileSummaryExpanded(!mobileSummaryExpanded)}
-          className={`w-full p-4 rounded-lg border flex items-center justify-between transition-colors ${isLuxuryTheme
+          className={`w-full p-3 sm:p-4 rounded-lg border flex items-center justify-between transition-colors ${isLuxuryTheme
             ? 'bg-white/5 border-white/10 text-white'
             : 'bg-muted/50 border-border'
             }`}
         >
-          <div className="flex items-center gap-3">
-            <ShoppingCart className="w-5 h-5" style={{ color: themeColor }} />
-            <span className="font-medium">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: themeColor }} />
+            <span className="font-medium text-sm sm:text-base">
               {cartCount} {cartCount === 1 ? 'item' : 'items'}
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="font-bold" style={{ color: themeColor }}>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="font-bold text-sm sm:text-base" style={{ color: themeColor }}>
               {formatCurrency(total)}
             </span>
             {mobileSummaryExpanded ? (
-              <ChevronUp className="w-5 h-5 text-muted-foreground" />
+              <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             )}
           </div>
         </button>
@@ -922,7 +963,7 @@ export function CheckoutPage() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className={`p-4 mt-2 rounded-lg border space-y-3 ${isLuxuryTheme ? 'bg-white/5 border-white/10' : 'bg-card border-border'
+              <div className={`p-3 sm:p-4 mt-2 rounded-lg border space-y-2 sm:space-y-3 ${isLuxuryTheme ? 'bg-white/5 border-white/10' : 'bg-card border-border'
                 }`}>
                 {/* Cart Items */}
                 <div className="space-y-2 max-h-40 overflow-y-auto">
@@ -972,7 +1013,7 @@ export function CheckoutPage() {
         </AnimatePresence>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
         {/* Form */}
         <div className="lg:col-span-2">
 
@@ -1024,7 +1065,7 @@ export function CheckoutPage() {
           )}
 
           <Card className={isLuxuryTheme ? `${cardBg} ${cardBorder}` : ''}>
-            <CardContent className="pt-6 overflow-hidden">
+            <CardContent className="px-3 sm:px-6 pt-4 sm:pt-6 overflow-hidden">
               <AnimatePresence mode="wait">
                 {/* Step 1: Contact Information */}
                 {currentStep === 1 && (
@@ -1036,7 +1077,7 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-4"
                   >
-                    <h2 className={`text-xl font-semibold mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
+                    <h2 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name *</Label>
@@ -1129,7 +1170,7 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-4"
                   >
-                    <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Delivery Address</h2>
 
                     {/* Address Autocomplete */}
                     <div className="space-y-2">
@@ -1212,7 +1253,7 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-6"
                   >
-                    <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Payment Method</h2>
 
                     {/* Express Payment Options */}
                     <div className="space-y-4">
@@ -1230,12 +1271,12 @@ export function CheckoutPage() {
                         if (value !== 'venmo') setVenmoConfirmed(false);
                         if (value !== 'zelle') setZelleConfirmed(false);
                       }}
-                      className="space-y-3"
+                      className="space-y-2 sm:space-y-3"
                     >
                       {(store.payment_methods || ['cash']).map((method: string) => (
                         <div
                           key={method}
-                          className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50"
+                          className="flex items-center space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-muted/50 w-full"
                           onClick={() => {
                             updateField('paymentMethod', method);
                             if (method !== 'venmo') setVenmoConfirmed(false);
@@ -1342,7 +1383,7 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-6"
                   >
-                    <h2 className="text-xl font-semibold mb-4">Review Your Order</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Review Your Order</h2>
 
                     {/* Contact Summary */}
                     <div>
@@ -1423,16 +1464,16 @@ export function CheckoutPage() {
                 )}
               </AnimatePresence>
 
-              {/* Navigation Buttons */}
-              <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-8">
+              {/* Navigation Buttons — hidden on mobile (sticky bar handles it), visible on sm+ */}
+              <div className="hidden sm:flex flex-row justify-between gap-3 mt-8">
                 {currentStep > 1 ? (
-                  <Button variant="outline" onClick={prevStep} className="w-full sm:w-auto">
+                  <Button variant="outline" onClick={prevStep}>
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back
                   </Button>
                 ) : (
-                  <Link to={`/shop/${storeSlug}/cart`} className="w-full sm:w-auto">
-                    <Button variant="outline" className="w-full sm:w-auto">
+                  <Link to={`/shop/${storeSlug}/cart`}>
+                    <Button variant="outline">
                       <ArrowLeft className="w-4 h-4 mr-2" />
                       Back to Cart
                     </Button>
@@ -1443,7 +1484,6 @@ export function CheckoutPage() {
                   <Button
                     onClick={nextStep}
                     style={{ backgroundColor: store.primary_color }}
-                    className="w-full sm:w-auto"
                   >
                     Continue
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -1453,7 +1493,6 @@ export function CheckoutPage() {
                     onClick={handlePlaceOrder}
                     disabled={placeOrderMutation.isPending}
                     style={{ backgroundColor: store.primary_color }}
-                    className="w-full sm:w-auto"
                   >
                     {placeOrderMutation.isPending ? (
                       <>
@@ -1462,7 +1501,6 @@ export function CheckoutPage() {
                       </>
                     ) : (
                       <>
-                        {/* Dynamic Button Text based on Status */}
                         {isStoreClosed ? (
                           <>
                             <Clock className="w-4 h-4 mr-2" />
@@ -1477,6 +1515,23 @@ export function CheckoutPage() {
                       </>
                     )}
                   </Button>
+                )}
+              </div>
+
+              {/* Mobile-only back link (above sticky bar) */}
+              <div className="sm:hidden mt-4">
+                {currentStep > 1 ? (
+                  <Button variant="ghost" size="sm" onClick={prevStep} className="text-muted-foreground">
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    Back
+                  </Button>
+                ) : (
+                  <Link to={`/shop/${storeSlug}/cart`}>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                      <ArrowLeft className="w-4 h-4 mr-1" />
+                      Back to Cart
+                    </Button>
+                  </Link>
                 )}
               </div>
             </CardContent>
@@ -1707,43 +1762,57 @@ export function CheckoutPage() {
       </div>
 
       {/* Sticky Mobile Checkout Bar */}
-      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background/95 backdrop-blur-md border-t p-4 z-50">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-muted-foreground">Order Total</p>
-            <p className="text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
-          </div>
-          {currentStep < 4 ? (
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background/95 backdrop-blur-md border-t px-3 sm:px-4 py-3 sm:py-4 z-50" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+        {currentStep < 4 ? (
+          <div className="flex items-center gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Total</p>
+              <p className="text-base sm:text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
+            </div>
             <Button
               onClick={nextStep}
               disabled={placeOrderMutation.isPending}
               style={{ backgroundColor: themeColor }}
-              className="flex-1 max-w-[180px] text-white"
+              className="flex-1 h-12 text-white text-base"
             >
               Continue
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-          ) : (
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Order Total</span>
+              <span className="font-bold text-base" style={{ color: themeColor }}>{formatCurrency(total)}</span>
+            </div>
             <Button
               onClick={handlePlaceOrder}
               disabled={placeOrderMutation.isPending || !agreeToTerms}
               style={{ backgroundColor: themeColor }}
-              className="flex-1 max-w-[180px] text-white"
+              className="w-full h-12 text-white text-base font-semibold"
             >
               {placeOrderMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Processing...
                 </>
+              ) : isStoreClosed ? (
+                <>
+                  <Clock className="w-4 h-4 mr-2" />
+                  Place Pre-Order — {formatCurrency(total)}
+                </>
               ) : (
-                'Place Order'
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Place Order — {formatCurrency(total)}
+                </>
               )}
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       {/* Spacer for mobile sticky bar */}
-      <div className="h-24 lg:hidden" />
+      <div className="h-28 lg:hidden" />
     </div>
   );
 }
