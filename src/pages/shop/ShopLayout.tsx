@@ -463,11 +463,11 @@ export default function ShopLayout() {
               imageUrl: item.imageUrl,
               variant: item.variant,
             }))}
-            onUpdateQuantity={(productId, quantity) => {
-              shopCart.setQuantity(productId, quantity);
+            onUpdateQuantity={(productId, quantity, variant) => {
+              shopCart.setQuantity(productId, quantity, variant);
             }}
-            onRemoveItem={(productId) => {
-              shopCart.removeItem(productId);
+            onRemoveItem={(productId, variant) => {
+              shopCart.removeItem(productId, variant);
             }}
             accentColor={accentColor}
             deliveryFee={store.default_delivery_fee}
@@ -706,11 +706,11 @@ export default function ShopLayout() {
             imageUrl: item.imageUrl,
             variant: item.variant,
           }))}
-          onUpdateQuantity={(productId, quantity) => {
-            shopCart.setQuantity(productId, quantity);
+          onUpdateQuantity={(productId, quantity, variant) => {
+            shopCart.setQuantity(productId, quantity, variant);
           }}
-          onRemoveItem={(productId) => {
-            shopCart.removeItem(productId);
+          onRemoveItem={(productId, variant) => {
+            shopCart.removeItem(productId, variant);
           }}
           accentColor={store.primary_color}
           deliveryFee={store.default_delivery_fee}
