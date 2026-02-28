@@ -42,9 +42,10 @@ import { formatCurrency } from '@/lib/formatters';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
+import { CheckoutSignInDialog } from '@/components/shop/CheckoutSignInDialog';
 import { useStoreStatus } from '@/hooks/useStoreStatus';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Clock, Tag } from 'lucide-react';
+import { Clock, LogIn, Tag } from 'lucide-react';
 import { isCustomerBlockedByEmail, FLAG_REASON_LABELS } from '@/hooks/useCustomerFlags';
 import { humanizeError } from '@/lib/humanizeError';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
@@ -194,6 +195,8 @@ export function CheckoutPage() {
   const [createAccount, setCreateAccount] = useState(false);
   const [accountPassword, setAccountPassword] = useState('');
   const [showErrors, setShowErrors] = useState(false);
+  const [signInOpen, setSignInOpen] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const [, setOrderRetryCount] = useState(0);
 
   // Fast double-click guard — ref updates synchronously, before React re-renders with isPending
@@ -1299,7 +1302,25 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-4"
                   >
-                    <h2 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <h2 className={`text-lg sm:text-xl font-semibold ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
+                      {!isSignedIn && (
+                        <button
+                          type="button"
+                          onClick={() => setSignInOpen(true)}
+                          className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                        >
+                          <LogIn className="h-4 w-4" />
+                          Sign in
+                        </button>
+                      )}
+                      {isSignedIn && (
+                        <span className="inline-flex items-center gap-1.5 text-sm text-green-600">
+                          <Check className="h-4 w-4" />
+                          Signed in
+                        </span>
+                      )}
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name *</Label>
@@ -1395,45 +1416,53 @@ export function CheckoutPage() {
                       </RadioGroup>
                     </div>
 
-                    {/* Create Account Option */}
-                    <Separator />
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-2">
-                        <Checkbox
-                          id="create-account"
-                          checked={createAccount}
-                          onCheckedChange={(checked) => {
-                            setCreateAccount(checked as boolean);
-                            if (!checked) setAccountPassword('');
-                          }}
-                        />
-                        <div>
-                          <Label htmlFor="create-account" className="cursor-pointer font-medium">
-                            Create an account
-                          </Label>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            Save your info and view order history
+                    {/* Guest vs Account Creation Toggle */}
+                    {!isSignedIn && (
+                      <>
+                        <Separator />
+                        <div className="space-y-3">
+                          <p className="text-sm text-muted-foreground">
+                            Checking out as a guest. Want to save your info for next time?
                           </p>
-                        </div>
-                      </div>
-                      {createAccount && (
-                        <div className="space-y-2 pl-6">
-                          <Label htmlFor="account-password">Password *</Label>
-                          <Input
-                            id="account-password"
-                            type="password"
-                            value={accountPassword}
-                            onChange={(e) => setAccountPassword(e.target.value)}
-                            placeholder="At least 8 characters"
-                            minLength={8}
-                            className={showErrors && createAccount && accountPassword.length < 8 ? "border-red-500 focus-visible:ring-red-500" : ""}
-                          />
-                          {showErrors && createAccount && accountPassword.length < 8 && (
-                            <p className="text-xs text-red-500">Password must be at least 8 characters</p>
+                          <div className="flex items-start gap-2">
+                            <Checkbox
+                              id="create-account"
+                              checked={createAccount}
+                              onCheckedChange={(checked) => {
+                                setCreateAccount(checked as boolean);
+                                if (!checked) setAccountPassword('');
+                              }}
+                            />
+                            <div>
+                              <Label htmlFor="create-account" className="cursor-pointer font-medium">
+                                Create an account
+                              </Label>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                Save your info and view order history
+                              </p>
+                            </div>
+                          </div>
+                          {createAccount && (
+                            <div className="space-y-2 pl-6">
+                              <Label htmlFor="account-password">Password *</Label>
+                              <Input
+                                id="account-password"
+                                type="password"
+                                value={accountPassword}
+                                onChange={(e) => setAccountPassword(e.target.value)}
+                                placeholder="At least 8 characters"
+                                autoComplete="new-password"
+                                minLength={8}
+                                className={showErrors && createAccount && accountPassword.length < 8 ? "border-red-500 focus-visible:ring-red-500" : ""}
+                              />
+                              {showErrors && createAccount && accountPassword.length < 8 && (
+                                <p className="text-xs text-red-500">Password must be at least 8 characters</p>
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
-                    </div>
+                      </>
+                    )}
                   </motion.div>
                 )}
 
@@ -1734,7 +1763,13 @@ export function CheckoutPage() {
                             Preferred contact: {formData.preferredContact.charAt(0).toUpperCase() + formData.preferredContact.slice(1)}
                           </>
                         )}
-                        {createAccount && (
+                        {isSignedIn && (
+                          <>
+                            <br />
+                            <span className="text-green-600">Signed in</span>
+                          </>
+                        )}
+                        {!isSignedIn && createAccount && (
                           <>
                             <br />
                             <span className="text-primary">Creating account with this email</span>
@@ -2166,6 +2201,27 @@ export function CheckoutPage() {
       </div>
       {/* Spacer for mobile sticky bar */}
       <div className="h-28 lg:hidden" />
+
+      {/* Sign In Dialog */}
+      {store?.tenant_id && (
+        <CheckoutSignInDialog
+          open={signInOpen}
+          onOpenChange={setSignInOpen}
+          tenantId={store.tenant_id}
+          onSignInSuccess={(customer) => {
+            setFormData((prev) => ({
+              ...prev,
+              firstName: customer.firstName || prev.firstName,
+              lastName: customer.lastName || prev.lastName,
+              email: customer.email || prev.email,
+              phone: customer.phone || prev.phone,
+            }));
+            setIsSignedIn(true);
+            setCreateAccount(false);
+            setAccountPassword('');
+          }}
+        />
+      )}
     </div>
   );
 }
