@@ -35,7 +35,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
-import { FilterDrawer, FilterTriggerButton, type FilterState } from '@/components/shop/FilterDrawer';
+import { FilterDrawer, FilterTriggerButton, getActiveFilterCount, type FilterState } from '@/components/shop/FilterDrawer';
 import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
 import { useShopCart } from '@/hooks/useShopCart';
@@ -441,7 +441,9 @@ export function ProductCatalogPage() {
     sortBy,
   };
 
-  const handleFiltersChange = (newFilters: FilterState) => {
+  const drawerActiveCount = getActiveFilterCount(filterState, maxPrice);
+
+  const handleApplyFilters = (newFilters: FilterState) => {
     setSelectedCategory(newFilters.categories[0] ?? '');
     setSelectedStrainTypes(newFilters.strainTypes);
     setPriceRange(newFilters.priceRange);
@@ -455,11 +457,12 @@ export function ProductCatalogPage() {
         isOpen={filterDrawerOpen}
         onClose={() => setFilterDrawerOpen(false)}
         filters={filterState}
-        onFiltersChange={handleFiltersChange}
+        onApply={handleApplyFilters}
         availableCategories={productCategories}
         availableStrainTypes={strainTypes}
         maxPrice={maxPrice}
         accentColor={store.primary_color}
+        resultCount={filteredProducts.length}
       />
       {/* Header */}
       <div className="mb-8">
@@ -537,7 +540,8 @@ export function ProductCatalogPage() {
           {/* Advanced Filter Button */}
           <FilterTriggerButton
             onClick={() => setFilterDrawerOpen(true)}
-            activeCount={selectedCategory || inStockOnly ? 1 : 0}
+            activeCount={drawerActiveCount}
+            accentColor={store.primary_color}
             className="md:hidden"
           />
         </div>

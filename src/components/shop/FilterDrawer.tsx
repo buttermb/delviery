@@ -1,14 +1,17 @@
 /**
- * FilterDrawer - Mobile-friendly filter panel
- * Uses shadcn Sheet for consistent drawer behavior
+ * FilterDrawer - Mobile-friendly filter panel with draft-and-apply pattern
+ * Uses shadcn Sheet for consistent drawer behavior.
+ * Filters are edited in a draft state and only applied when the user taps "Apply".
  */
 
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, SlidersHorizontal, ChevronDown } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { EnhancedPriceSlider } from './EnhancedPriceSlider';
 
@@ -23,11 +26,12 @@ interface FilterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   filters: FilterState;
-  onFiltersChange: (filters: FilterState) => void;
+  onApply: (filters: FilterState) => void;
   availableCategories: string[];
   availableStrainTypes: string[];
   maxPrice: number;
   accentColor?: string;
+  resultCount?: number;
 }
 
 const SORT_OPTIONS = [
@@ -37,17 +41,37 @@ const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest First' },
 ];
 
+/** Count how many filters are active (non-default) */
+export function getActiveFilterCount(filters: FilterState, maxPrice: number): number {
+  return (
+    filters.categories.length +
+    filters.strainTypes.length +
+    (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice ? 1 : 0) +
+    (filters.sortBy !== 'name' ? 1 : 0)
+  );
+}
+
 export function FilterDrawer({
   isOpen,
   onClose,
   filters,
-  onFiltersChange,
+  onApply,
   availableCategories,
   availableStrainTypes,
   maxPrice,
   accentColor = '#10b981',
+  resultCount,
 }: FilterDrawerProps) {
+  // Draft state — initialized from committed filters when drawer opens
+  const [draft, setDraft] = useState<FilterState>(filters);
   const [expandedSections, setExpandedSections] = useState<string[]>(['categories', 'price', 'sort']);
+
+  // Reset draft to committed filters whenever the drawer opens
+  useEffect(() => {
+    if (isOpen) {
+      setDraft(filters);
+    }
+  }, [isOpen, filters]);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev =>
@@ -55,33 +79,39 @@ export function FilterDrawer({
     );
   };
 
-  const toggleCategory = (category: string) => {
-    const newCategories = filters.categories.includes(category)
-      ? filters.categories.filter(c => c !== category)
-      : [...filters.categories, category];
-    onFiltersChange({ ...filters, categories: newCategories });
-  };
+  const toggleCategory = useCallback((category: string) => {
+    setDraft(prev => ({
+      ...prev,
+      categories: prev.categories.includes(category)
+        ? prev.categories.filter(c => c !== category)
+        : [...prev.categories, category],
+    }));
+  }, []);
 
-  const toggleStrainType = (strainType: string) => {
-    const newStrainTypes = filters.strainTypes.includes(strainType)
-      ? filters.strainTypes.filter(s => s !== strainType)
-      : [...filters.strainTypes, strainType];
-    onFiltersChange({ ...filters, strainTypes: newStrainTypes });
-  };
+  const toggleStrainType = useCallback((strainType: string) => {
+    setDraft(prev => ({
+      ...prev,
+      strainTypes: prev.strainTypes.includes(strainType)
+        ? prev.strainTypes.filter(s => s !== strainType)
+        : [...prev.strainTypes, strainType],
+    }));
+  }, []);
 
-  const clearAllFilters = () => {
-    onFiltersChange({
+  const clearAllFilters = useCallback(() => {
+    setDraft({
       categories: [],
       strainTypes: [],
       priceRange: [0, maxPrice],
       sortBy: 'name',
     });
+  }, [maxPrice]);
+
+  const handleApply = () => {
+    onApply(draft);
+    onClose();
   };
 
-  const activeFilterCount =
-    filters.categories.length +
-    filters.strainTypes.length +
-    (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice ? 1 : 0);
+  const draftActiveCount = getActiveFilterCount(draft, maxPrice);
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -99,14 +129,14 @@ export function FilterDrawer({
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4 text-white/60" />
             <h3 className="text-white font-light tracking-wide">Filters</h3>
-            {activeFilterCount > 0 && (
+            {draftActiveCount > 0 && (
               <span className="px-2 py-0.5 bg-white/10 rounded-full text-white/60 text-xs">
-                {activeFilterCount}
+                {draftActiveCount}
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            {activeFilterCount > 0 && (
+            {draftActiveCount > 0 && (
               <button
                 onClick={clearAllFilters}
                 className="text-xs text-white/40 hover:text-white transition-colors"
@@ -135,10 +165,10 @@ export function FilterDrawer({
               {SORT_OPTIONS.map(option => (
                 <button
                   key={option.value}
-                  onClick={() => onFiltersChange({ ...filters, sortBy: option.value })}
+                  onClick={() => setDraft(prev => ({ ...prev, sortBy: option.value }))}
                   className={cn(
                     'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors',
-                    filters.sortBy === option.value
+                    draft.sortBy === option.value
                       ? 'bg-white/10 text-white'
                       : 'text-white/50 hover:bg-white/5 hover:text-white/70'
                   )}
@@ -155,7 +185,7 @@ export function FilterDrawer({
               title="Categories"
               isExpanded={expandedSections.includes('categories')}
               onToggle={() => toggleSection('categories')}
-              count={filters.categories.length}
+              count={draft.categories.length}
             >
               <div className="space-y-2">
                 {availableCategories.map(category => (
@@ -164,7 +194,7 @@ export function FilterDrawer({
                     className="flex items-center gap-3 px-2 py-1.5 rounded hover:bg-white/5 cursor-pointer group"
                   >
                     <Checkbox
-                      checked={filters.categories.includes(category)}
+                      checked={draft.categories.includes(category)}
                       onCheckedChange={() => toggleCategory(category)}
                       className="border-white/30 data-[state=checked]:bg-white data-[state=checked]:border-white"
                     />
@@ -183,7 +213,7 @@ export function FilterDrawer({
               title="Strain Type"
               isExpanded={expandedSections.includes('strain')}
               onToggle={() => toggleSection('strain')}
-              count={filters.strainTypes.length}
+              count={draft.strainTypes.length}
             >
               <div className="space-y-2">
                 {availableStrainTypes.map(strain => (
@@ -192,7 +222,7 @@ export function FilterDrawer({
                     className="flex items-center gap-3 px-2 py-1.5 rounded hover:bg-white/5 cursor-pointer group"
                   >
                     <Checkbox
-                      checked={filters.strainTypes.includes(strain)}
+                      checked={draft.strainTypes.includes(strain)}
                       onCheckedChange={() => toggleStrainType(strain)}
                       className="border-white/30 data-[state=checked]:bg-white data-[state=checked]:border-white"
                     />
@@ -213,8 +243,8 @@ export function FilterDrawer({
           >
             <div className="px-2 pt-2 pb-4">
               <EnhancedPriceSlider
-                value={filters.priceRange}
-                onChange={(value) => onFiltersChange({ ...filters, priceRange: value })}
+                value={draft.priceRange}
+                onChange={(value) => setDraft(prev => ({ ...prev, priceRange: value }))}
                 max={maxPrice}
                 step={5}
                 accentColor={accentColor}
@@ -227,11 +257,13 @@ export function FilterDrawer({
         {/* Apply Button */}
         <div className="p-4 border-t border-white/10">
           <Button
-            onClick={onClose}
-            className="w-full py-3 rounded-full"
+            onClick={handleApply}
+            className="w-full py-3 rounded-full text-white font-medium"
             style={{ backgroundColor: accentColor }}
           >
-            Apply Filters
+            {resultCount !== undefined
+              ? `Show ${resultCount} Result${resultCount !== 1 ? 's' : ''}`
+              : 'Apply Filters'}
           </Button>
         </div>
       </SheetContent>
@@ -291,14 +323,16 @@ function FilterSection({
   );
 }
 
-// Trigger button for mobile
+/** Trigger button for opening the filter drawer on mobile */
 export function FilterTriggerButton({
   onClick,
   activeCount,
+  accentColor,
   className,
 }: {
   onClick: () => void;
-  activeCount?: number;
+  activeCount: number;
+  accentColor?: string;
   className?: string;
 }) {
   return (
@@ -306,14 +340,19 @@ export function FilterTriggerButton({
       variant="outline"
       onClick={onClick}
       className={cn(
-        'gap-2 bg-white/[0.02] border-white/10 text-white/60 hover:bg-white/5 hover:text-white rounded-full',
+        'relative gap-2 bg-white/[0.02] border-white/10 text-white/60 hover:bg-white/5 hover:text-white rounded-full',
         className
       )}
     >
       <SlidersHorizontal className="w-4 h-4" />
       Filters
-      {activeCount !== undefined && activeCount > 0 && (
-        <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-xs">{activeCount}</span>
+      {activeCount > 0 && (
+        <Badge
+          className="ml-1 h-5 min-w-5 px-1.5 text-[10px] font-bold text-white border-0"
+          style={{ backgroundColor: accentColor ?? '#10b981' }}
+        >
+          {activeCount}
+        </Badge>
       )}
     </Button>
   );

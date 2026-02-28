@@ -16,7 +16,7 @@ export { DynamicBackground, BACKGROUND_STYLE_OPTIONS, type BackgroundStyle } fro
 export { FloatingCartButton } from './FloatingCartButton';
 export { CartDrawer, type CartItem } from './CartDrawer';
 export { WishlistButton } from './WishlistButton';
-export { FilterDrawer, FilterTriggerButton, type FilterState } from './FilterDrawer';
+export { FilterDrawer, FilterTriggerButton, getActiveFilterCount, type FilterState } from './FilterDrawer';
 export { LuxuryNav } from './LuxuryNav';
 export { LuxuryFooter } from './LuxuryFooter';
 export { LuxuryAgeVerification } from './LuxuryAgeVerification';
