@@ -14,6 +14,7 @@ import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useTablePreferences } from '@/hooks/useTablePreferences';
 import { useProductArchive } from '@/hooks/useProductArchive';
+import { useProductMutations } from '@/hooks/useProductMutations';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
@@ -26,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Toggle } from '@/components/ui/toggle';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -96,6 +98,33 @@ export function ProductsListPage() {
 
   // Archive hook
   const { archiveProduct, unarchiveProduct, isLoading: isArchiveLoading } = useProductArchive();
+
+  // Product cache invalidation
+  const { invalidateProductCaches } = useProductMutations();
+
+  // Storefront visibility toggle mutation
+  const toggleStorefrontVisibility = useMutation({
+    mutationFn: async ({ productId, currentVisibility }: { productId: string; currentVisibility: boolean }) => {
+      if (!tenant?.id) throw new Error('Tenant required');
+
+      const { error } = await supabase
+        .from('products')
+        .update({ menu_visibility: !currentVisibility })
+        .eq('id', productId)
+        .eq('tenant_id', tenant.id);
+
+      if (error) throw error;
+      return !currentVisibility;
+    },
+    onSuccess: (newVisibility) => {
+      invalidateProductCaches({ tenantId: tenant?.id });
+      toast.success(newVisibility ? 'Product visible on storefront' : 'Product hidden from storefront');
+    },
+    onError: (error) => {
+      logger.error('Failed to toggle storefront visibility', { error });
+      toast.error('Failed to update visibility', { description: humanizeError(error) });
+    },
+  });
 
   // Table preferences for filter persistence
   const { preferences, savePreferences } = useTablePreferences('products-list', {
@@ -609,6 +638,28 @@ export function ProductsListPage() {
       ),
     },
     {
+      header: 'Storefront',
+      className: 'hidden md:table-cell',
+      cell: (product) => (
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <Switch
+            checked={product.menu_visibility === true}
+            disabled={toggleStorefrontVisibility.isPending}
+            onCheckedChange={() =>
+              toggleStorefrontVisibility.mutate({
+                productId: product.id,
+                currentVisibility: product.menu_visibility === true,
+              })
+            }
+            aria-label={`Toggle storefront visibility for ${product.name}`}
+          />
+          <span className="text-xs text-muted-foreground">
+            {product.menu_visibility ? 'Visible' : 'Hidden'}
+          </span>
+        </div>
+      ),
+    },
+    {
       header: 'Actions',
       className: 'text-right',
       cell: (product) => (
@@ -687,9 +738,17 @@ export function ProductsListPage() {
         low_stock_alert: product.low_stock_alert ?? 10,
         wholesale_price: product.wholesale_price ?? 0,
         cost_per_unit: product.cost_per_unit ?? 0,
+        menu_visibility: product.menu_visibility,
       }}
       onEdit={() => handleEdit(product.id)}
       onDelete={() => handleDelete(product.id)}
+      onToggleStorefrontVisibility={(id) =>
+        toggleStorefrontVisibility.mutate({
+          productId: id,
+          currentVisibility: product.menu_visibility === true,
+        })
+      }
+      isTogglingVisibility={toggleStorefrontVisibility.isPending}
     />
   );
 
@@ -996,9 +1055,17 @@ export function ProductsListPage() {
                                 low_stock_alert: product.low_stock_alert ?? 10,
                                 wholesale_price: product.wholesale_price ?? 0,
                                 cost_per_unit: product.cost_per_unit ?? 0,
+                                menu_visibility: product.menu_visibility,
                               }}
                               onEdit={() => handleEdit(product.id)}
                               onDelete={() => handleDelete(product.id)}
+                              onToggleStorefrontVisibility={(id) =>
+                                toggleStorefrontVisibility.mutate({
+                                  productId: id,
+                                  currentVisibility: product.menu_visibility === true,
+                                })
+                              }
+                              isTogglingVisibility={toggleStorefrontVisibility.isPending}
                             />
                           ))}
                         </div>

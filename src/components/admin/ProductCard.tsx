@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Copy,
   Edit,
@@ -35,6 +36,7 @@ interface Product {
   strain_name?: string;
   cost_per_unit?: number;
   wholesale_price?: number;
+  menu_visibility?: boolean;
 }
 
 interface ProductCardProps {
@@ -45,6 +47,8 @@ interface ProductCardProps {
   onPrintLabel?: () => void;
   onPublish?: (productId: string) => void;
   onDuplicate?: (productId: string) => void;
+  onToggleStorefrontVisibility?: (productId: string) => void;
+  isTogglingVisibility?: boolean;
 }
 
 export function ProductCard({
@@ -55,6 +59,8 @@ export function ProductCard({
   onPrintLabel,
   onPublish,
   onDuplicate,
+  onToggleStorefrontVisibility,
+  isTogglingVisibility,
 }: ProductCardProps) {
   const availableQty = Number(product.available_quantity || 0);
   const isInStock = availableQty > 0;
@@ -242,6 +248,25 @@ export function ProductCard({
             lowStockThreshold={reorderPoint}
           />
         </div>
+
+        {/* Storefront Visibility Toggle */}
+        {onToggleStorefrontVisibility && (
+          <div
+            className="flex items-center justify-between p-3 bg-[hsl(var(--tenant-surface))] rounded-lg mb-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2">
+              <Store className="h-4 w-4 text-[hsl(var(--tenant-text-light))]" />
+              <span className="text-sm text-[hsl(var(--tenant-text))]">Storefront</span>
+            </div>
+            <Switch
+              checked={product.menu_visibility === true}
+              disabled={isTogglingVisibility}
+              onCheckedChange={() => onToggleStorefrontVisibility(product.id)}
+              aria-label={`Toggle storefront visibility for ${product.name}`}
+            />
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="flex gap-2">
