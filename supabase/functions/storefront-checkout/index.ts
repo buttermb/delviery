@@ -273,9 +273,81 @@ serve(secureHeadersMiddleware(async (req) => {
       .eq("id", orderId)
       .maybeSingle();
 
+    // ------------------------------------------------------------------
+    // 6. Customer upsert — sync to CRM customers table
+    // ------------------------------------------------------------------
+    // Look up the account_id for this tenant (required for customers table)
+    const { data: tenantAccount } = await supabase
+      .from("accounts")
+      .select("id")
+      .eq("tenant_id", store.tenant_id)
+      .maybeSingle();
+
+    let upsertedCustomerId: string | null = null;
+
+    if (tenantAccount) {
+      // Try to find existing customer by phone + tenant_id first
+      let existingCustomer: { id: string; total_spent: number | null } | null = null;
+
+      if (body.customerInfo.phone) {
+        const { data } = await supabase
+          .from("customers")
+          .select("id, total_spent")
+          .eq("tenant_id", store.tenant_id)
+          .eq("phone", body.customerInfo.phone)
+          .maybeSingle();
+        existingCustomer = data;
+      }
+
+      // Fall back to email lookup if no phone match
+      if (!existingCustomer) {
+        const { data } = await supabase
+          .from("customers")
+          .select("id, total_spent")
+          .eq("tenant_id", store.tenant_id)
+          .eq("email", body.customerInfo.email)
+          .maybeSingle();
+        existingCustomer = data;
+      }
+
+      if (existingCustomer) {
+        // Update existing customer: bump last_purchase_at, add to total_spent
+        await supabase
+          .from("customers")
+          .update({
+            last_purchase_at: new Date().toISOString(),
+            total_spent: (existingCustomer.total_spent ?? 0) + total,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingCustomer.id)
+          .eq("tenant_id", store.tenant_id);
+
+        upsertedCustomerId = existingCustomer.id;
+      } else {
+        // Create new customer with all info
+        const { data: newCustomer } = await supabase
+          .from("customers")
+          .insert({
+            account_id: tenantAccount.id,
+            tenant_id: store.tenant_id,
+            first_name: body.customerInfo.firstName,
+            last_name: body.customerInfo.lastName,
+            email: body.customerInfo.email,
+            phone: body.customerInfo.phone ?? null,
+            total_spent: total,
+            last_purchase_at: new Date().toISOString(),
+          })
+          .select("id")
+          .maybeSingle();
+
+        upsertedCustomerId = newCustomer?.id ?? null;
+      }
+    }
+
     const result: Record<string, unknown> = {
       orderId,
       orderNumber: orderRecord?.order_number ?? null,
+      customerId: upsertedCustomerId,
       serverTotal: total,
       subtotal,
       tax,
@@ -292,23 +364,17 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     // ------------------------------------------------------------------
-    // 6. If card payment, create Stripe Checkout session
+    // 7. If card payment, create Stripe Checkout session
     // ------------------------------------------------------------------
     if (body.paymentMethod === "card") {
-      const { data: account } = await supabase
-        .from("accounts")
-        .select("id")
-        .eq("tenant_id", store.tenant_id)
-        .maybeSingle();
-
-      if (!account) {
+      if (!tenantAccount) {
         return jsonResponse({ error: "Store account not configured for payments" }, 400);
       }
 
       const { data: settings } = await supabase
         .from("account_settings")
         .select("integration_settings")
-        .eq("account_id", account.id)
+        .eq("account_id", tenantAccount.id)
         .maybeSingle();
 
       const integrationSettings = settings?.integration_settings as Record<string, unknown> | null;
