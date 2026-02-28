@@ -293,6 +293,7 @@ export function CheckoutPage() {
     removeCoupon,
     getCouponDiscount,
     validateCart,
+    syncCartPrices,
     removeItem,
   } = useShopCart({
     storeId: store?.id,
@@ -312,10 +313,17 @@ export function CheckoutPage() {
     }
   }, [isInitialized, cartItems.length, navigate, storeSlug]);
 
-  // Validate cart on mount
+  // Validate cart and sync prices on mount
   useEffect(() => {
     if (isInitialized && cartItems.length > 0 && store?.id) {
       validateCart();
+      syncCartPrices().then(result => {
+        if (result.changed) {
+          toast.warning('Some prices have been updated', {
+            description: 'Your cart has been refreshed with the latest prices.',
+          });
+        }
+      });
     }
   }, [isInitialized, cartItems.length, store?.id]);
 

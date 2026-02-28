@@ -24,6 +24,7 @@ after each iteration and it's included in prompts for context.
 - **Sheet width overrides**: SheetContent variants include both base `max-w-sm` and `sm:max-w-sm`. To override width, pass both (e.g., `max-w-md sm:max-w-md`) so twMerge resolves both breakpoints.
 - **Full-screen Dialog pattern**: Override DialogContent with `left-0 top-0 translate-x-0 translate-y-0 w-screen h-screen max-w-none max-h-screen p-0 border-0 rounded-none` + zero-effect animation classes (`zoom-out-100`, `slide-out-to-left-0` etc.) for full-screen takeover while keeping Radix's focus trap and escape handling.
 - **Fulfillment method storage**: `marketplace_orders.fulfillment_method` stores 'delivery' or 'pickup'. The `shipping_method` column is misused (stores payment_method value) — do NOT use it for fulfillment. Read from `storefront_orders.fulfillment_method` in admin views.
+- **Price change detection in storefront**: `useStorefrontInventorySync` listens to Supabase realtime `products` UPDATE events and invalidates queries when `price` changes (not just stock). Dispatches `productPriceChanged` CustomEvent for cart components. `syncCartPrices()` in `useShopCart` fetches current DB prices and updates stale cart items. Server-side: `storefront-checkout` edge function ALWAYS uses DB price, never trusts client.
 
 ---
 
@@ -32,6 +33,59 @@ after each iteration and it's included in prompts for context.
 - **Chart colors**: Import from `@/lib/chartColors` — never hardcode hex colors in chart components. Use `CHART_COLORS[N]` for indexed palette, `chartSemanticColors.revenue/cost/danger` for semantic meaning, `CATEGORY_CHART_COLORS` for credit/category breakdowns. CSS vars `--chart-1` through `--chart-10` defined in `index.css`.
 
 - **Realtime subscription isolation**: Always add server-side `filter` to Supabase realtime subscriptions (e.g., `filter: \`seller_tenant_id=eq.${tenant.id}\``). Client-side filtering alone is not enough — events from other tenants still arrive at the client. Use server-side filter as primary guard, client-side as secondary.
+
+## 2026-02-28 - floraiq-khy.17
+- E2E: Product price change — reflected immediately
+- Extended `useStorefrontInventorySync` to detect price changes in realtime (not just stock changes)
+- Added `syncCartPrices()` to `useShopCart` hook — fetches current DB prices and updates stale cart items
+- Updated `CartPage` to sync prices on mount, listen for real-time price change events, and show a warning banner when prices changed
+- Updated `CheckoutPage` to sync prices on mount alongside cart validation
+- Dispatches `productPriceChanged` CustomEvent from realtime handler for cross-component communication
+- Server-side validation was already complete: `storefront-checkout` edge function always uses DB prices, detects discrepancies, and includes `priceAdjusted`/`itemPriceAdjustments` in response
+- Created `tests/e2e/price-change.spec.ts` — 12 Playwright tests across 5 suites:
+  - **Storefront Catalog — Price Display** (3 tests): products display prices, detail page shows price, prices update on refresh
+  - **Cart — Price Validation** (3 tests): cart displays item prices, price change warning UI capability, subtotal recalculates
+  - **Checkout — Server-Side Price Validation** (2 tests): checkout loads with current prices, checkout blocks when price changed
+  - **Price Change — End to End Flow** (4 tests): fresh prices on catalog load, cart prices reflect server state, full browse→cart→checkout flow, order summary reflects current prices
+  - **Real-time Price Sync Infrastructure** (2 tests): inventory sync active on catalog, price change warning banner structure
+- Files changed:
+  - `src/hooks/useStorefrontInventorySync.ts` — added price fields to ProductChangePayload, price change detection, CustomEvent dispatch
+  - `src/hooks/useShopCart.ts` — added `syncCartPrices()` function and exported it
+  - `src/pages/shop/CartPage.tsx` — price sync on mount, real-time price change listener, price change warning banner
+  - `src/pages/shop/CheckoutPage.tsx` — added `syncCartPrices` call on mount with toast notification
+  - `tests/e2e/price-change.spec.ts` (new) — comprehensive price change E2E test suite
+- **Learnings:**
+  - `useStorefrontInventorySync` uses Supabase postgres_changes realtime subscription with `tenant_id` filter — the payload includes both old and new values, making field-level change detection straightforward
+  - Cart prices are stored in localStorage (`safeStorage`) as part of `ShopCartItem` objects — updating requires reading the full cart, modifying items, and saving back
+  - The `validate_cart_items` RPC already detects price changes (returns `price_changed` issues with `old_price`/`new_price`), but direct product query is more efficient for simple price sync
+  - `storefront-checkout` edge function already has complete server-side price validation including per-item discrepancy detection — no changes needed
+  - `window.CustomEvent` dispatch + `addEventListener` pattern works well for cross-hook communication (realtime handler → cart component) without coupling hooks directly
+  - The `checkInventoryAvailability` existing pattern queries products by IDs without explicit `tenant_id` — products table RLS + store isolation chain handle tenant isolation
+---
+
+## 2026-02-28 - floraiq-khy.16
+- E2E test for section reorder reflected on storefront
+- Added `data-section-type`, `data-section-index`, and `data-testid="storefront-section-{type}"` attributes to section wrapper divs in StorefrontPage for E2E targeting
+- Added `data-testid="builder-section-{type}"` and `data-section-type` to SortableSectionItem in StorefrontBuilder for admin-side E2E targeting
+- Created `tests/e2e/section-reorder.spec.ts` — 16 Playwright tests across 5 suites:
+  - **Storefront Section Rendering Order** (4 tests): sections have data-section-type attrs, sequential indices, matching data-testids, correct DOM position order
+  - **Admin Builder Section Order** (3 tests): builder shows Layer Order panel, drag handles on items, drag-and-drop reordering
+  - **Section Reorder Reflected on Storefront** (4 tests): builder order matches storefront core types, FAQ/Hero relative position verified, save persists order to storefront, order survives page refresh
+  - **Section Visibility and Ordering** (3 tests): hidden sections filtered, contiguous indices, unique indices per section
+  - **Builder Section Management** (3 tests): Layer Order label visible, 8 section type buttons, builder count matches storefront count (excluding auto-injected sections)
+- Files changed:
+  - `tests/e2e/section-reorder.spec.ts` (new) — comprehensive section reorder E2E test suite
+  - `src/pages/shop/StorefrontPage.tsx` — wrapped each rendered section in a `<div>` with `data-section-type`, `data-section-index`, `data-testid` attributes
+  - `src/pages/admin/storefront/StorefrontBuilder.tsx` — added `data-testid` and `data-section-type` to SortableSectionItem
+- **Learnings:**
+  - Section ordering is stored in `marketplace_stores.layout_config` JSONB as an ordered array of `SectionConfig` objects — array order = render order
+  - StorefrontPage.tsx iterates `layout_config` with `.map()` preserving array order, filtering out `visible === false` sections
+  - Drag-and-drop uses `@dnd-kit` library with `SortableContext` + `verticalListSortingStrategy` — `arrayMove()` creates new ordered array on drag end
+  - Builder has 8 core section types (hero, features, product_grid, testimonials, newsletter, gallery, faq, custom_html) but storefront also renders auto-injected types (hot_items, deals_highlight, promotions_banner, luxury_*) from default layout
+  - E2E tests comparing builder vs storefront section order must filter to core types only, since default layout adds non-builder types
+  - Wrapping section components in a `<div>` for data attributes is safe — sections are `<section>` elements internally, so the extra div doesn't break styling
+  - Playwright drag-and-drop with `@dnd-kit` is unreliable in CI (mouse events don't always trigger dnd-kit's sensors) — test written as best-effort with no-crash assertion fallback
+---
 
 ## 2026-02-28 - floraiq-khy.15
 - E2E test for theme change reflected on storefront

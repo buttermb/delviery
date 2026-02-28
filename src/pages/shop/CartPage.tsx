@@ -3,7 +3,7 @@
  * Shopping cart with quantity controls and checkout button
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
@@ -28,7 +28,8 @@ import {
   Tag,
   Loader2,
   Zap,
-  QrCode
+  QrCode,
+  AlertTriangle
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { CartItemStockWarning, CartStockSummary } from '@/components/shop/CartStockWarning';
@@ -61,6 +62,7 @@ export default function CartPage() {
     removeItem,
     clearCart,
     checkInventoryAvailability,
+    syncCartPrices,
     appliedCoupon,
     applyCoupon: applySharedCoupon,
     removeCoupon: removeSharedCoupon,
@@ -76,10 +78,58 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [isCheckingStock, setIsCheckingStock] = useState(false);
+  const [priceChanges, setPriceChanges] = useState<Array<{ productId: string; name: string; oldPrice: number; newPrice: number }>>([]);
+
+  // Sync cart prices with server on mount and when returning to cart
+  const checkPrices = useCallback(async () => {
+    if (cartItems.length === 0) return;
+    const result = await syncCartPrices();
+    if (result.changed) {
+      setPriceChanges(result.priceChanges);
+      toast.warning('Some prices have been updated', {
+        description: 'Your cart has been updated with the latest prices.',
+      });
+    }
+  }, [cartItems.length, syncCartPrices]);
+
+  useEffect(() => {
+    checkPrices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Listen for real-time price changes while on cart page
+  useEffect(() => {
+    const handlePriceChange = (event: CustomEvent) => {
+      const { productId, oldPrice, newPrice, productName } = event.detail;
+      const inCart = cartItems.some(item => item.productId === productId);
+      if (inCart) {
+        setPriceChanges(prev => {
+          const existing = prev.find(p => p.productId === productId);
+          if (existing) return prev.map(p => p.productId === productId ? { ...p, newPrice, oldPrice } : p);
+          return [...prev, { productId, name: productName, oldPrice, newPrice }];
+        });
+        // Re-sync cart prices to update stored values
+        syncCartPrices();
+      }
+    };
+
+    window.addEventListener('productPriceChanged', handlePriceChange as EventListener);
+    return () => window.removeEventListener('productPriceChanged', handlePriceChange as EventListener);
+  }, [cartItems, syncCartPrices]);
 
   const handleCheckout = async () => {
     setIsCheckingStock(true);
     try {
+      // Sync prices before checkout
+      const priceResult = await syncCartPrices();
+      if (priceResult.changed) {
+        setPriceChanges(priceResult.priceChanges);
+        toast.warning('Prices updated', {
+          description: 'Some product prices have changed. Please review your cart before proceeding.',
+        });
+        return;
+      }
+
       const { valid, outOfStock } = await checkInventoryAvailability();
 
       if (!valid && outOfStock.length > 0) {
@@ -219,6 +269,36 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-3 sm:space-y-4">
             {/* Stock Summary */}
             <CartStockSummary cartItems={cartItems} className="mb-4" />
+
+            {/* Price Change Warning */}
+            {priceChanges.length > 0 && (
+              <Card className={`border-amber-300 ${isLuxuryTheme ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50'}`} data-testid="price-change-warning">
+                <CardContent className="py-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isLuxuryTheme ? 'text-amber-400' : 'text-amber-600'}`} />
+                    <div className="flex-1">
+                      <p className={`text-sm font-medium mb-2 ${isLuxuryTheme ? 'text-amber-300' : 'text-amber-800'}`}>
+                        Prices updated
+                      </p>
+                      {priceChanges.map(change => (
+                        <p key={change.productId} className={`text-xs ${isLuxuryTheme ? 'text-amber-400/80' : 'text-amber-700'}`}>
+                          {change.name}: <span className="line-through">{formatCurrency(change.oldPrice)}</span>{' '}
+                          <span className="font-semibold">{formatCurrency(change.newPrice)}</span>
+                        </p>
+                      ))}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`flex-shrink-0 ${isLuxuryTheme ? 'text-amber-400 hover:text-amber-300 hover:bg-white/5' : 'text-amber-700 hover:text-amber-800'}`}
+                      onClick={() => setPriceChanges([])}
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Free Delivery Progress */}
             {deliveryFee > 0 && (
