@@ -54,6 +54,13 @@ export function AnnouncementBar({
         })),
     ];
 
+    // Clamp currentIndex when announcements array shrinks
+    useEffect(() => {
+        if (announcements.length > 0 && currentIndex >= announcements.length) {
+            setCurrentIndex(0);
+        }
+    }, [announcements.length, currentIndex]);
+
     // Auto-cycle through announcements
     useEffect(() => {
         if (announcements.length <= 1) return;
@@ -83,7 +90,9 @@ export function AnnouncementBar({
         return null;
     }
 
-    const current = announcements[currentIndex];
+    const safeIndex = currentIndex < announcements.length ? currentIndex : 0;
+    const current = announcements[safeIndex];
+    if (!current) return null;
 
     return (
         <div
@@ -132,7 +141,7 @@ export function AnnouncementBar({
                         <div
                             key={index}
                             className={`w-1 h-1 rounded-full transition-all ${
-                                index === currentIndex ? 'bg-white' : 'bg-white/40'
+                                index === safeIndex ? 'bg-white' : 'bg-white/40'
                             }`}
                         />
                     ))}

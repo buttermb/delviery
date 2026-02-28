@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Shield, Clock, Leaf, Award, Truck, HeartHandshake } from 'lucide-react';
+import { Shield, Clock, Leaf, Award, Truck, HeartHandshake, type LucideIcon } from 'lucide-react';
 
 export interface LuxuryFeaturesSectionProps {
   content?: {
@@ -16,7 +16,7 @@ export interface LuxuryFeaturesSectionProps {
   };
 }
 
-const iconMap: Record<string, any> = {
+const iconMap: Record<string, LucideIcon> = {
   shield: Shield,
   clock: Clock,
   leaf: Leaf,

@@ -89,7 +89,7 @@ export function HotItemsSection({
 
   // Use config accent or custom accent
   const accentColor = customAccent || config.accentColor;
-  const IconComponent = ICON_MAP[config.icon];
+  const IconComponent = ICON_MAP[config.icon] || Star;
 
   const handleQuickAdd = (e: React.MouseEvent, product: StorefrontHotItem) => {
     e.preventDefault();
