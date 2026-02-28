@@ -850,3 +850,14 @@ after each iteration and it's included in prompts for context.
   - A `webhook_logs` table also exists (from 20260128000001) — separate from `webhook_deliveries`. The logs table tracks detailed delivery attempts while deliveries is the core delivery record
   - Used `ALTER TABLE ADD COLUMN IF NOT EXISTS` for safe idempotent column additions
 ---
+
+## 2026-02-28 - floraiq-sef.1
+- Created `supabase/migrations/20260228000000_add_analytics_goals.sql` for analytics_goals table
+- Columns: id uuid PK, tenant_id uuid (FK to tenants), metric_name text, target_value decimal, period_type text (daily/weekly/monthly), period_start date, period_end date, current_value decimal default 0, created_at timestamptz
+- CHECK constraint on period_type to enforce allowed values
+- RLS enabled with 4 policies: SELECT for all tenant members, INSERT/UPDATE/DELETE for admin/owner roles
+- Indexes on tenant_id, created_at DESC, (tenant_id, metric_name), and (tenant_id, period_type, period_start, period_end)
+- **Learnings:**
+  - Pure SQL migration tasks don't affect TypeScript compilation — tsc passes without changes
+  - Composite indexes on (tenant_id, period_type, period_start, period_end) useful for period-based goal queries
+---
