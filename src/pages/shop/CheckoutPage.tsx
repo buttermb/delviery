@@ -202,11 +202,16 @@ export function CheckoutPage() {
   // Idempotency key persisted to sessionStorage to survive page refresh during submission
   const [idempotencyKey] = useState(() => {
     const storageKey = `checkout_idempotency_${storeSlug || ''}`;
-    const existing = sessionStorage.getItem(storageKey);
-    if (existing) return existing;
-    const newKey = `order_${crypto.randomUUID()}`;
-    sessionStorage.setItem(storageKey, newKey);
-    return newKey;
+    try {
+      const existing = sessionStorage.getItem(storageKey);
+      if (existing) return existing;
+      const newKey = `order_${crypto.randomUUID()}`;
+      sessionStorage.setItem(storageKey, newKey);
+      return newKey;
+    } catch {
+      // sessionStorage unavailable (e.g. private browsing)
+      return `order_${crypto.randomUUID()}`;
+    }
   });
 
   // Express Checkout for returning customers
@@ -282,7 +287,7 @@ export function CheckoutPage() {
     }
   }, [returningCustomer]);
 
-  // Use unified cart hook with coupon support
+  // Use unified cart hook with coupon and gift card support
   const {
     cartItems,
     cartCount,
@@ -295,6 +300,10 @@ export function CheckoutPage() {
     validateCart,
     syncCartPrices,
     removeItem,
+    appliedGiftCards,
+    applyGiftCard,
+    removeGiftCard,
+    getGiftCardTotal,
   } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
@@ -349,9 +358,6 @@ export function CheckoutPage() {
   };
 
   // Gift Cards
-  const { appliedGiftCards, applyGiftCard, removeGiftCard, getGiftCardTotal } = useShopCart({
-    storeId: store?.id,
-  });
   const [giftCardCode, setGiftCardCode] = useState('');
   const [isCheckingGiftCard, setIsCheckingGiftCard] = useState(false);
 
@@ -852,7 +858,7 @@ export function CheckoutPage() {
     onSuccess: async (data) => {
       setOrderRetryCount(0);
       // Clear idempotency key — order succeeded, future checkouts get a fresh key
-      sessionStorage.removeItem(`checkout_idempotency_${storeSlug || ''}`);
+      try { sessionStorage.removeItem(`checkout_idempotency_${storeSlug || ''}`); } catch { /* ignore */ }
 
       // If edge function returned a Stripe checkout URL, redirect directly
       if (data.checkoutUrl) {
@@ -1629,7 +1635,7 @@ export function CheckoutPage() {
                           <div className="space-y-2">
                             <p className="text-sm font-medium">
                               Send payment to{' '}
-                              <span className="font-bold">{store.checkout_settings.venmo_handle}</span>
+                              <span className="font-bold">{store.checkout_settings?.venmo_handle}</span>
                             </p>
                             <Button
                               type="button"
@@ -1666,7 +1672,7 @@ export function CheckoutPage() {
                           <div className="space-y-2">
                             <p className="text-sm font-medium">
                               Send Zelle payment to{' '}
-                              <span className="font-bold">{store.checkout_settings.zelle_email}</span>
+                              <span className="font-bold">{store.checkout_settings?.zelle_email}</span>
                             </p>
                             <Button
                               type="button"
