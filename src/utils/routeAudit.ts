@@ -126,6 +126,7 @@ const VALID_ADMIN_ROUTES = new Set([
   '/admin/compliance',
 
   // Marketing & Storefront
+  '/admin/storefront',
   '/admin/storefront-hub',
   '/admin/marketing-hub',
   '/admin/marketing/reviews',

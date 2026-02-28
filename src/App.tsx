@@ -651,6 +651,7 @@ const App = () => {
                                         <Route path="storefront/analytics" element={<Navigate to="../storefront?tab=analytics" replace />} />
                                         <Route path="storefront/bundles" element={<Navigate to="../storefront?tab=bundles" replace />} />
                                         <Route path="storefront/customize" element={<Navigate to="../storefront?tab=builder" replace />} />
+                                        <Route path="storefront/builder" element={<Navigate to="../storefront?tab=builder" replace />} />
                                         <Route path="storefront/settings" element={<Navigate to="../storefront?tab=settings" replace />} />
 
 
