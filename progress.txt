@@ -115,3 +115,19 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Updated ProductGridSectionProps interface with new fields: columns, max_products, sort_order, show_view_all_link, category_filter
 - Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
 - TypeScript compilation passes with zero errors
+
+## Checkout handler creates order in database with server-side price validation
+- Verified existing storefront-checkout edge function already performs server-side price validation:
+  - Fetches product prices from DB (never trusts client prices)
+  - Stock validation with all-or-nothing check
+  - Per-item and total price discrepancy detection (>0.01 tolerance)
+  - Delivery fee calculated server-side from store settings
+  - Builds orderItems with server-fetched prices
+- Verified create_marketplace_order RPC handles: idempotency, FOR UPDATE locks, checked inventory deduction
+- Created migration 20260228000016_order_items_from_rpc.sql:
+  - Updated create_marketplace_order RPC to INSERT into marketplace_order_items table
+  - Each item gets a normalised row with server-validated unit_price and total_price
+  - Items are inserted AFTER order creation but BEFORE inventory deduction
+  - If inventory deduction fails (race condition), the entire transaction rolls back (including order items)
+  - This ensures marketplace_order_items has relational integrity and queryable server-validated prices
+- TypeScript compilation passes with zero errors
