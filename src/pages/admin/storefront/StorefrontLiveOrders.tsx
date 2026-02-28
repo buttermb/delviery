@@ -57,7 +57,57 @@ const STATUS_LABELS: Record<string, string> = {
   ready: 'Ready',
   out_for_delivery: 'Out for Delivery',
   delivered: 'Delivered',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
 };
+
+/**
+ * Returns valid next statuses for an order based on its current status and fulfillment type.
+ * Follows the defined progression: pending → confirmed → preparing → ready → out_for_delivery/completed → delivered
+ */
+export function getValidNextStatuses(
+  currentStatus: string,
+  fulfillmentType: 'delivery' | 'pickup'
+): Array<{ status: string; label: string; variant: 'default' | 'destructive' }> {
+  switch (currentStatus) {
+    case 'pending':
+      return [
+        { status: 'confirmed', label: 'Confirm', variant: 'default' },
+        { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+      ];
+    case 'confirmed':
+      return [
+        { status: 'preparing', label: 'Start Preparing', variant: 'default' },
+        { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+      ];
+    case 'preparing':
+      return [
+        { status: 'ready', label: 'Mark Ready', variant: 'default' },
+        { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+      ];
+    case 'ready':
+      return fulfillmentType === 'delivery'
+        ? [
+            { status: 'out_for_delivery', label: 'Out for Delivery', variant: 'default' },
+            { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+          ]
+        : [
+            { status: 'completed', label: 'Mark Completed', variant: 'default' },
+            { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+          ];
+    case 'out_for_delivery':
+      return [
+        { status: 'delivered', label: 'Mark Delivered', variant: 'default' },
+        { status: 'cancelled', label: 'Cancel', variant: 'destructive' },
+      ];
+    case 'delivered':
+    case 'completed':
+    case 'cancelled':
+      return [];
+    default:
+      return [];
+  }
+}
 
 export interface LiveOrder {
   id: string;
@@ -249,13 +299,14 @@ export function StorefrontLiveOrders() {
   // Update order status mutation
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: string }) => {
-      if (!store?.id) throw new Error('No store context');
+      if (!store?.id || !tenantId) throw new Error('No store or tenant context');
 
       const { error } = await supabase
         .from('marketplace_orders')
         .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq('id', orderId)
-        .eq('store_id', store.id);
+        .eq('store_id', store.id)
+        .eq('seller_tenant_id', tenantId);
 
       if (error) throw error;
     },
@@ -264,11 +315,11 @@ export function StorefrontLiveOrders() {
     },
     onSuccess: (_, { newStatus }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.storefrontLiveOrders.all });
-      toast.success("Status changed to ${STATUS_LABELS[newStatus] || newStatus}");
+      toast.success(`Status changed to ${STATUS_LABELS[newStatus] || newStatus}`);
     },
     onError: (error) => {
       logger.error('Failed to update order status', error, { component: 'StorefrontLiveOrders' });
-      toast.error("Failed to update order status", { description: humanizeError(error) });
+      toast.error('Failed to update order status', { description: humanizeError(error) });
     },
     onSettled: () => {
       setUpdatingOrderId(null);

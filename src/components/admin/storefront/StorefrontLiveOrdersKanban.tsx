@@ -20,7 +20,9 @@ import {
     MessageSquare,
     Loader2,
     Store,
+    XCircle,
 } from 'lucide-react';
+import { getValidNextStatuses } from '@/pages/admin/storefront/StorefrontLiveOrders';
 
 // Types
 interface StorefrontOrder {
@@ -50,7 +52,7 @@ interface StorefrontKanbanProps {
     updatingOrderId?: string | null;
 }
 
-// Column Configuration
+// Column Configuration — action buttons now use getValidNextStatuses() instead of nextStatus
 const COLUMNS = [
     {
         id: 'pending',
@@ -59,16 +61,14 @@ const COLUMNS = [
         color: 'bg-amber-50 dark:bg-amber-950/20',
         borderColor: 'border-amber-200 dark:border-amber-800',
         textColor: 'text-amber-700',
-        nextStatus: 'preparing',
     },
     {
         id: 'preparing',
         label: 'PREPARING',
-        statuses: ['preparing', 'confirmed'],
+        statuses: ['confirmed', 'preparing'],
         color: 'bg-blue-50 dark:bg-blue-950/20',
         borderColor: 'border-blue-200 dark:border-blue-800',
         textColor: 'text-blue-700',
-        nextStatus: 'ready',
     },
     {
         id: 'ready',
@@ -77,7 +77,6 @@ const COLUMNS = [
         color: 'bg-green-50 dark:bg-green-950/20',
         borderColor: 'border-green-200 dark:border-green-800',
         textColor: 'text-green-700',
-        nextStatus: 'out_for_delivery',
     },
     {
         id: 'out_for_delivery',
@@ -86,7 +85,6 @@ const COLUMNS = [
         color: 'bg-purple-50 dark:bg-purple-950/20',
         borderColor: 'border-purple-200 dark:border-purple-800',
         textColor: 'text-purple-700',
-        nextStatus: 'delivered',
     },
 ];
 
@@ -267,34 +265,58 @@ function KanbanCard({
                     </div>
                 )}
 
-                {/* Action Button */}
-                {column.nextStatus && (
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full text-xs h-7 mt-2"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onStatusChange(order.id, column.nextStatus!);
-                        }}
-                        disabled={isUpdating}
-                    >
-                        {isUpdating ? (
-                            <>
-                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                Updating...
-                            </>
-                        ) : (
-                            <>
-                                {column.nextStatus === 'preparing' && 'Start Preparing'}
-                                {column.nextStatus === 'ready' && 'Mark Ready'}
-                                {column.nextStatus === 'out_for_delivery' && 'Out for Delivery'}
-                                {column.nextStatus === 'delivered' && 'Mark Delivered'}
-                                <ChevronRight className="h-3 w-3 ml-1" />
-                            </>
-                        )}
-                    </Button>
-                )}
+                {/* Action Buttons — valid next statuses */}
+                {(() => {
+                    const validActions = getValidNextStatuses(order.status, fulfillmentType);
+                    const primaryAction = validActions.find(a => a.variant === 'default');
+                    const cancelAction = validActions.find(a => a.variant === 'destructive');
+
+                    if (validActions.length === 0) return null;
+
+                    return (
+                        <div className="flex gap-1 mt-2">
+                            {primaryAction && (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1 text-xs h-7"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onStatusChange(order.id, primaryAction.status);
+                                    }}
+                                    disabled={isUpdating}
+                                >
+                                    {isUpdating ? (
+                                        <>
+                                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                            Updating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            {primaryAction.label}
+                                            <ChevronRight className="h-3 w-3 ml-1" />
+                                        </>
+                                    )}
+                                </Button>
+                            )}
+                            {cancelAction && (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-xs h-7 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onStatusChange(order.id, cancelAction.status);
+                                    }}
+                                    disabled={isUpdating}
+                                    title="Cancel order"
+                                >
+                                    <XCircle className="h-3.5 w-3.5" />
+                                </Button>
+                            )}
+                        </div>
+                    );
+                })()}
             </CardContent>
         </Card>
     );

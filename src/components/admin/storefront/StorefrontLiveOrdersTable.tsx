@@ -26,9 +26,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -43,10 +40,11 @@ import {
   MoreHorizontal,
   Eye,
   Phone,
-  ArrowRight,
   Package,
+  XCircle,
 } from 'lucide-react';
 import type { LiveOrder } from '@/pages/admin/storefront/StorefrontLiveOrders';
+import { getValidNextStatuses } from '@/pages/admin/storefront/StorefrontLiveOrders';
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pending',
@@ -55,6 +53,8 @@ const STATUS_LABELS: Record<string, string> = {
   ready: 'Ready',
   out_for_delivery: 'Out for Delivery',
   delivered: 'Delivered',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -64,16 +64,9 @@ const STATUS_COLORS: Record<string, string> = {
   ready: 'bg-green-100 text-green-800 border-green-200',
   out_for_delivery: 'bg-purple-100 text-purple-800 border-purple-200',
   delivered: 'bg-gray-100 text-gray-600 border-gray-200',
+  completed: 'bg-gray-100 text-gray-600 border-gray-200',
+  cancelled: 'bg-red-100 text-red-700 border-red-200',
 };
-
-const STATUS_PROGRESSION = [
-  'pending',
-  'confirmed',
-  'preparing',
-  'ready',
-  'out_for_delivery',
-  'delivered',
-] as const;
 
 interface StorefrontLiveOrdersTableProps {
   orders: LiveOrder[];
@@ -203,9 +196,7 @@ export function StorefrontLiveOrdersTable({
             const payment = getPaymentMethod(order);
             const fulfillment = getFulfillmentType(order);
             const isUpdating = updatingOrderId === order.id;
-            const currentStatusIndex = STATUS_PROGRESSION.indexOf(
-              order.status as (typeof STATUS_PROGRESSION)[number]
-            );
+            const validActions = getValidNextStatuses(order.status, fulfillment);
 
             return (
               <TableRow
@@ -333,32 +324,30 @@ export function StorefrontLiveOrdersTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      {/* Change Status submenu */}
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                          <ArrowRight className="h-4 w-4 mr-2" />
-                          Change Status
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                          {STATUS_PROGRESSION.map((s, idx) => (
-                            <DropdownMenuItem
-                              key={s}
-                              disabled={idx === currentStatusIndex}
-                              onClick={() => onStatusChange(order.id, s)}
-                            >
-                              <span
-                                className={cn(
-                                  'inline-block h-2 w-2 rounded-full mr-2',
-                                  STATUS_COLORS[s]?.split(' ')[0] || 'bg-gray-300'
-                                )}
-                              />
-                              {STATUS_LABELS[s]}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuSubContent>
-                      </DropdownMenuSub>
+                      {/* Status actions — only valid next statuses */}
+                      {validActions.map((action) => (
+                        <DropdownMenuItem
+                          key={action.status}
+                          onClick={() => onStatusChange(order.id, action.status)}
+                          className={cn(
+                            action.variant === 'destructive' && 'text-destructive focus:text-destructive'
+                          )}
+                        >
+                          {action.variant === 'destructive' ? (
+                            <XCircle className="h-4 w-4 mr-2" />
+                          ) : (
+                            <span
+                              className={cn(
+                                'inline-block h-2 w-2 rounded-full mr-2',
+                                STATUS_COLORS[action.status]?.split(' ')[0] || 'bg-gray-300'
+                              )}
+                            />
+                          )}
+                          {action.label}
+                        </DropdownMenuItem>
+                      ))}
 
-                      <DropdownMenuSeparator />
+                      {validActions.length > 0 && <DropdownMenuSeparator />}
 
                       {/* View Details */}
                       <DropdownMenuItem onClick={() => onViewDetails(order.id)}>
