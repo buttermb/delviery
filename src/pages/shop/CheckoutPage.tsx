@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
@@ -47,6 +47,7 @@ import { isCustomerBlockedByEmail, FLAG_REASON_LABELS } from '@/hooks/useCustome
 import { humanizeError } from '@/lib/humanizeError';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
+import { queryKeys } from '@/lib/queryKeys';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -137,6 +138,21 @@ export function CheckoutPage() {
   // Check store status
   const { data: storeStatus } = useStoreStatus(store?.id);
   const isStoreClosed = storeStatus?.isOpen === false;
+
+  // Check if Stripe is configured — hide card option if not
+  const { data: isStripeConfigured } = useQuery({
+    queryKey: queryKeys.marketplaceStores.stripeConfigured(store?.id),
+    queryFn: async () => {
+      const { data, error } = await (supabase.rpc as unknown as SupabaseRpc)(
+        'is_store_stripe_configured',
+        { p_store_id: store!.id }
+      );
+      if (error) return false;
+      return Boolean(data);
+    },
+    enabled: !!store?.id,
+    staleTime: 5 * 60 * 1000, // cache for 5 minutes
+  });
 
   // Handle cancelled Stripe checkout return
   useEffect(() => {
@@ -1381,7 +1397,9 @@ export function CheckoutPage() {
                       }}
                       className="space-y-2 sm:space-y-3"
                     >
-                      {(store.payment_methods || ['cash']).map((method: string) => (
+                      {(store.payment_methods || ['cash']).filter((method: string) =>
+                        method !== 'card' || isStripeConfigured !== false
+                      ).map((method: string) => (
                         <div
                           key={method}
                           className="flex items-center space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-muted/50 w-full"

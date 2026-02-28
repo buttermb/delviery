@@ -2986,6 +2986,8 @@ export const queryKeys = {
       ['marketplace-product-stats', storeId, tenantId] as const,
     revenueTrend: (storeId?: string) =>
       ['marketplace-revenue-trend', storeId] as const,
+    stripeConfigured: (storeId?: string) =>
+      ['marketplace-stores', 'stripe-configured', storeId] as const,
   },
 
   // Customer Menu (customer-facing menu view)
