@@ -100,6 +100,23 @@ interface OrderResult {
   telegramLink?: string;
 }
 
+interface UnavailableProduct {
+  productId: string;
+  productName: string;
+  requested: number;
+  available: number;
+}
+
+class OutOfStockError extends Error {
+  unavailableProducts: UnavailableProduct[];
+  constructor(unavailableProducts: UnavailableProduct[]) {
+    const names = unavailableProducts.map(p => p.productName).join(', ');
+    super(`Some items are out of stock: ${names}`);
+    this.name = 'OutOfStockError';
+    this.unavailableProducts = unavailableProducts;
+  }
+}
+
 // Helper type for calling untyped Supabase RPCs
 type SupabaseRpc = (name: string, params: Record<string, unknown>) => Promise<{ data: unknown; error: { message?: string; code?: string } | null }>;
 
@@ -220,7 +237,8 @@ export function CheckoutPage() {
     appliedCoupon,
     removeCoupon,
     getCouponDiscount,
-    validateCart
+    validateCart,
+    removeItem,
   } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
@@ -461,18 +479,23 @@ export function CheckoutPage() {
         logger.warn('Failed to check inventory', stockError, { component: 'CheckoutPage' });
         // Continue anyway - don't block orders on stock check failure
       } else if (products) {
-        const outOfStock: string[] = [];
+        const unavailable: UnavailableProduct[] = [];
         for (const item of cartItems) {
           const product = products.find((p) => p.id === item.productId);
           if (product) {
             const available = product.available_quantity ?? product.stock_quantity ?? 0;
             if (available < item.quantity) {
-              outOfStock.push(`${item.name} (only ${available} available)`);
+              unavailable.push({
+                productId: item.productId,
+                productName: item.name,
+                requested: item.quantity,
+                available,
+              });
             }
           }
         }
-        if (outOfStock.length > 0) {
-          throw new Error(`Some items are out of stock: ${outOfStock.join(', ')}`);
+        if (unavailable.length > 0) {
+          throw new OutOfStockError(unavailable);
         }
       }
 
@@ -588,6 +611,12 @@ export function CheckoutPage() {
 
             if (errorMessage === 'Internal server error') {
               return null; // Trigger fallback
+            }
+
+            // Parse structured out-of-stock response from edge function
+            if (errorMessage === 'Insufficient stock' && Array.isArray(errorBody?.unavailableProducts)) {
+              const items = errorBody.unavailableProducts as UnavailableProduct[];
+              throw new OutOfStockError(items);
             }
 
             throw new Error(errorMessage); // Business error — propagate
@@ -798,6 +827,34 @@ export function CheckoutPage() {
     onError: (error: Error) => {
       setOrderRetryCount(0);
       logger.error('Failed to place order', error, { component: 'CheckoutPage' });
+
+      // Handle out-of-stock errors — remove unavailable items and let user continue
+      if (error instanceof OutOfStockError) {
+        const { unavailableProducts } = error;
+        for (const product of unavailableProducts) {
+          if (product.available <= 0) {
+            // Completely out of stock — remove from cart
+            removeItem(product.productId);
+            toast.error(`Sorry, ${product.productName} is no longer available.`);
+          } else {
+            // Insufficient quantity — remove and let user re-add with correct quantity
+            removeItem(product.productId);
+            toast.error(
+              `Sorry, ${product.productName} is no longer available in the requested quantity.`,
+              { description: `Only ${product.available} left in stock.` },
+            );
+          }
+        }
+
+        // If cart still has items, stay on checkout for user to continue
+        const remainingCount = cartItems.length - unavailableProducts.length;
+        if (remainingCount > 0) {
+          toast.info('Your cart has been updated. You can continue with the remaining items.');
+          setCurrentStep(4); // Stay on review step
+        }
+        // If cart is now empty, the existing redirect effect (line ~236) will handle navigation
+        return;
+      }
 
       const errorMessage = error.message || '';
       const lowerMsg = errorMessage.toLowerCase();
