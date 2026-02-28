@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   SettingsSection,
   SettingsCard,
@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { OperationSizeSelector } from '@/components/admin/sidebar/OperationSizeSelector';
 import { SidebarCustomizer } from '@/components/admin/sidebar/SidebarCustomizer';
+import { STORAGE_KEYS, safeStorage, safeJsonParse } from '@/constants/storageKeys';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -32,16 +33,31 @@ const THEME_OPTIONS = [
   { value: 'system', label: 'System', icon: Monitor, description: 'Match your device settings' },
 ];
 
-export default function AppearanceSettings() {
-  const [theme, setTheme] = useState<Theme>('system');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [compactMode, setCompactMode] = useState(false);
-  const [animationsEnabled, setAnimationsEnabled] = useState(true);
+function loadTheme(): Theme {
+  const stored = safeStorage.getItem(STORAGE_KEYS.THEME);
+  if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
+  return 'system';
+}
 
-  // Apply theme changes
+export default function AppearanceSettings() {
+  const [theme, setTheme] = useState<Theme>(loadTheme);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
+    safeStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true'
+  );
+  const [compactMode, setCompactMode] = useState(() =>
+    safeStorage.getItem(STORAGE_KEYS.COMPACT_MODE) === 'true'
+  );
+  const [animationsEnabled, setAnimationsEnabled] = useState(() =>
+    safeJsonParse(safeStorage.getItem(STORAGE_KEYS.ANIMATIONS_ENABLED), true)
+  );
+
+  // Track whether this is the initial mount to skip toasts
+  const isInitialMount = useRef(true);
+
+  // Apply theme to DOM and persist
   useEffect(() => {
     const root = document.documentElement;
-    
+
     if (theme === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
@@ -53,8 +69,58 @@ export default function AppearanceSettings() {
       root.classList.add(theme);
     }
 
+    safeStorage.setItem(STORAGE_KEYS.THEME, theme);
+
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     toast.success('Theme updated');
   }, [theme]);
+
+  // Apply animations class on mount
+  useEffect(() => {
+    if (!animationsEnabled) {
+      document.documentElement.classList.add('no-animations');
+    }
+  }, [animationsEnabled]);
+
+  const handleSidebarCollapsedChange = useCallback((checked: boolean) => {
+    setSidebarCollapsed(checked);
+    safeStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(checked));
+    toast.success(checked ? 'Sidebar will start collapsed' : 'Sidebar will start expanded');
+  }, []);
+
+  const handleCompactModeChange = useCallback((checked: boolean) => {
+    setCompactMode(checked);
+    safeStorage.setItem(STORAGE_KEYS.COMPACT_MODE, String(checked));
+    toast.success(checked ? 'Compact mode enabled' : 'Compact mode disabled');
+  }, []);
+
+  const handleAnimationsChange = useCallback((checked: boolean) => {
+    setAnimationsEnabled(checked);
+    safeStorage.setItem(STORAGE_KEYS.ANIMATIONS_ENABLED, String(checked));
+    if (!checked) {
+      document.documentElement.classList.add('no-animations');
+    } else {
+      document.documentElement.classList.remove('no-animations');
+    }
+    toast.success(checked ? 'Animations enabled' : 'Animations disabled');
+  }, []);
+
+  const handleResetAll = useCallback(() => {
+    setTheme('system');
+    setSidebarCollapsed(false);
+    setCompactMode(false);
+    setAnimationsEnabled(true);
+    safeStorage.setItem(STORAGE_KEYS.THEME, 'system');
+    safeStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, 'false');
+    safeStorage.setItem(STORAGE_KEYS.COMPACT_MODE, 'false');
+    safeStorage.setItem(STORAGE_KEYS.ANIMATIONS_ENABLED, 'true');
+    document.documentElement.classList.remove('no-animations');
+    toast.success('Settings reset to defaults');
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -153,7 +219,7 @@ export default function AppearanceSettings() {
           >
             <Switch
               checked={sidebarCollapsed}
-              onCheckedChange={setSidebarCollapsed}
+              onCheckedChange={handleSidebarCollapsedChange}
             />
           </SettingsRow>
 
@@ -187,10 +253,7 @@ export default function AppearanceSettings() {
               )}
               <Switch
                 checked={compactMode}
-                onCheckedChange={(checked) => {
-                  setCompactMode(checked);
-                  toast.success(checked ? 'Compact mode enabled' : 'Compact mode disabled');
-                }}
+                onCheckedChange={handleCompactModeChange}
               />
             </div>
           </SettingsRow>
@@ -203,15 +266,7 @@ export default function AppearanceSettings() {
               <Eye className="h-4 w-4 text-muted-foreground" />
               <Switch
                 checked={animationsEnabled}
-                onCheckedChange={(checked) => {
-                  setAnimationsEnabled(checked);
-                  if (!checked) {
-                    document.documentElement.classList.add('no-animations');
-                  } else {
-                    document.documentElement.classList.remove('no-animations');
-                  }
-                  toast.success(checked ? 'Animations enabled' : 'Animations disabled');
-                }}
+                onCheckedChange={handleAnimationsChange}
               />
             </div>
           </SettingsRow>
@@ -229,13 +284,7 @@ export default function AppearanceSettings() {
           </div>
           <Button
             variant="outline"
-            onClick={() => {
-              setTheme('system');
-              setSidebarCollapsed(false);
-              setCompactMode(false);
-              setAnimationsEnabled(true);
-              toast.success('Settings reset to defaults');
-            }}
+            onClick={handleResetAll}
           >
             Reset All
           </Button>
@@ -244,4 +293,3 @@ export default function AppearanceSettings() {
     </div>
   );
 }
-

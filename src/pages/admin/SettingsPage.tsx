@@ -85,7 +85,10 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
   const { account, accountSettings, refreshAccount, loading: accountLoading } = useAccount();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'general';
-  const [loading, setLoading] = useState(false);
+  const [generalLoading, setGeneralLoading] = useState(false);
+  const [securityLoading, setSecurityLoading] = useState(false);
+  const [notificationLoading, setNotificationLoading] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [formsInitialized, setFormsInitialized] = useState(false);
   const [testingSending, setTestingSending] = useState(false);
@@ -200,7 +203,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
 
   const onSaveGeneral = async (data: GeneralFormValues) => {
     if (!account) return;
-    setLoading(true);
+    setGeneralLoading(true);
     try {
       const existingMetadata = ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>) || {};
       const { error } = await supabase
@@ -222,15 +225,15 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       toast.success("General settings updated successfully.");
     } catch (err) {
       logger.error("Error saving general settings", err);
-      toast.error("Failed to save settings.");
+      toast.error("Failed to save general settings.");
     } finally {
-      setLoading(false);
+      setGeneralLoading(false);
     }
   };
 
   const onSaveSecurity = async (data: SecurityFormValues) => {
     if (!account) return;
-    setLoading(true);
+    setSecurityLoading(true);
     try {
       // Saving security settings to account metadata as user profile preferences are separate
       const existingMetadataSec = ((account as unknown as Record<string, unknown>).metadata as Record<string, unknown>) || {};
@@ -249,15 +252,15 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       toast.success("Security settings updated successfully.");
     } catch (err) {
       logger.error("Error saving security settings", err);
-      toast.error("Failed to save settings.");
+      toast.error("Failed to save security settings.");
     } finally {
-      setLoading(false);
+      setSecurityLoading(false);
     }
   };
 
   const onSaveNotifications = async (data: NotificationFormValues) => {
     if (!account) return;
-    setLoading(true);
+    setNotificationLoading(true);
     try {
       const existingNotif = accountSettings
         ? (accountSettings.notification_settings as Record<string, unknown>) || {}
@@ -286,9 +289,9 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       toast.success("Notification preferences updated.");
     } catch (err) {
       logger.error("Error saving notification settings", err);
-      toast.error("Failed to save settings.");
+      toast.error("Failed to save notification settings.");
     } finally {
-      setLoading(false);
+      setNotificationLoading(false);
     }
   };
 
@@ -329,7 +332,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       throw new Error('No account found');
     }
 
-    setLoading(true);
+    setImportLoading(true);
     try {
       // Import general settings if provided
       if (settings.general) {
@@ -438,7 +441,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       logger.error("Error importing settings", err);
       throw err;
     } finally {
-      setLoading(false);
+      setImportLoading(false);
     }
   };
 
@@ -499,8 +502,8 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
               </div>
             </div>
             <ShortcutHint keys={[mod, "S"]} label="Save">
-              <Button type="submit" disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+              <Button type="submit" disabled={generalLoading}>
+                {generalLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                 Save General Settings
               </Button>
             </ShortcutHint>
@@ -546,7 +549,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
           <Button
             variant="outline"
             onClick={() => setImportDialogOpen(true)}
-            disabled={loading}
+            disabled={importLoading}
           >
             <Upload className="h-4 w-4 mr-2" />
             Import Settings
@@ -662,8 +665,8 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                   )}
                 </div>
                 <ShortcutHint keys={[mod, "S"]} label="Save">
-                  <Button type="submit" disabled={loading}>
-                    {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                  <Button type="submit" disabled={securityLoading}>
+                    {securityLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                     Save Security Settings
                   </Button>
                 </ShortcutHint>
@@ -827,8 +830,8 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
                 </div>
 
                 <ShortcutHint keys={[mod, "S"]} label="Save">
-                  <Button type="submit" disabled={loading}>
-                    {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                  <Button type="submit" disabled={notificationLoading}>
+                    {notificationLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                     Save Notification Settings
                   </Button>
                 </ShortcutHint>
