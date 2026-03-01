@@ -266,3 +266,20 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
   - Customer-themed UI matching existing page design
 - ProductsListPage and ProductCatalogPage already had proper pagination
 - TypeScript compilation passes with zero errors
+
+## Getting started checklist for new tenants
+- Created src/hooks/useStorefrontChecklist.ts - hook that queries marketplace_stores + products to derive 7-step completion status
+- Steps: create store, add products, customize, configure delivery, set payments, publish, share
+- Each step derives completion from actual DB data (store row + product count)
+- Rewrote src/components/admin/storefront/OnboardingProgressChecklist.tsx to use the new hook
+  - Shows progress bar with X of 7 complete + percentage
+  - Each item has a unique icon, label, and description
+  - Completed items show green checkmark with strikethrough
+  - Incomplete items link to the relevant storefront hub tab
+  - Dismissable via localStorage (STORAGE_KEYS.STOREFRONT_CHECKLIST_DISMISSED_PREFIX)
+  - Collapsible for compact view
+  - Skeleton loading state
+- Added STOREFRONT_CHECKLIST_DISMISSED_PREFIX to STORAGE_KEYS
+- Added storefrontChecklist.byStore() to queryKeys factory
+- Updated StorefrontDashboard to pass storeId instead of old props
+- TypeScript compilation passes with zero errors

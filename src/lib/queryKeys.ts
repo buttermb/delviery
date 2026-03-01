@@ -1935,6 +1935,12 @@ export const queryKeys = {
       ['setup-checklist', tenantId] as const,
   },
 
+  // Storefront Getting Started Checklist
+  storefrontChecklist: {
+    byStore: (storeId?: string) =>
+      ['storefront-checklist', storeId] as const,
+  },
+
   // Cart Stock Check
   cartStockCheck: {
     byItems: (itemsKey?: string) =>

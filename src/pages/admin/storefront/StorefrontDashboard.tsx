@@ -674,12 +674,8 @@ export default function StorefrontDashboard() {
         </div>
       )}
 
-      {/* Onboarding Progress Checklist */}
-      <OnboardingProgressChecklist
-        productCount={productStats?.total ?? 0}
-        storeIsActive={activeStore?.is_active ?? false}
-        storeHasCustomization={!!(activeStore?.logo_url || activeStore?.banner_url)}
-      />
+      {/* Getting Started Checklist */}
+      <OnboardingProgressChecklist storeId={activeStoreId} />
 
       {/* Sales Funnel Analytics */}
       {activeStoreId && (

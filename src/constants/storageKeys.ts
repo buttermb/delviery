@@ -240,6 +240,8 @@ export const STORAGE_KEYS = {
 
   // Live Orders view preference
   LIVE_ORDERS_VIEW: 'live_orders_view',
+  // Storefront getting started checklist dismissed (tenant-scoped)
+  STOREFRONT_CHECKLIST_DISMISSED_PREFIX: 'storefront_checklist_dismissed_',
 } as const;
 
 /**
