@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { queryKeys } from "@/lib/queryKeys";
@@ -13,6 +14,8 @@ import {
   XCircle,
   Truck,
   RefreshCw,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
@@ -68,11 +71,14 @@ const getStatusConfig = (status: string) => {
   );
 };
 
+const ORDERS_PER_PAGE = 10;
+
 export default function OrdersListPage() {
   const navigate = useNavigate();
   const { customer, tenant } = useCustomerAuth();
   const tenantId = tenant?.id;
   const customerId = customer?.customer_id || customer?.id;
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch all orders
   const { data: orders, isLoading } = useQuery({
@@ -92,6 +98,15 @@ export default function OrdersListPage() {
     },
     enabled: !!tenantId && !!customerId,
   });
+
+  // Pagination
+  const totalOrders = orders?.length ?? 0;
+  const totalPages = Math.ceil(totalOrders / ORDERS_PER_PAGE);
+  const paginatedOrders = useMemo(() => {
+    if (!orders) return [];
+    const start = (currentPage - 1) * ORDERS_PER_PAGE;
+    return orders.slice(start, start + ORDERS_PER_PAGE);
+  }, [orders, currentPage]);
 
   if (isLoading) {
     return (
@@ -161,7 +176,7 @@ export default function OrdersListPage() {
           />
         ) : (
           <div className="space-y-4">
-            {orders.map((order) => {
+            {paginatedOrders.map((order) => {
               const statusConfig = getStatusConfig((order.status as string) || "pending");
 
               return (
@@ -229,6 +244,38 @@ export default function OrdersListPage() {
                 </Card>
               );
             })}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4">
+                <p className="text-sm text-[hsl(var(--customer-text-light))]">
+                  Showing {(currentPage - 1) * ORDERS_PER_PAGE + 1}-{Math.min(currentPage * ORDERS_PER_PAGE, totalOrders)} of {totalOrders}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="border-[hsl(var(--customer-border))]"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-[hsl(var(--customer-text))] px-2">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="border-[hsl(var(--customer-border))]"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

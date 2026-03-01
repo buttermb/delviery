@@ -50,6 +50,8 @@ import { SearchInput } from '@/components/shared/SearchInput';
 import { wholesaleOrderFlowManager, WholesaleOrderStatus } from '@/lib/orders/wholesaleOrderFlowManager';
 import { canChangeStatus, getEditRestrictionMessage } from '@/lib/utils/orderEditability';
 import { queryKeys } from '@/lib/queryKeys';
+import { usePagination } from '@/hooks/usePagination';
+import { StandardPagination } from '@/components/shared/StandardPagination';
 
 interface WholesaleOrder {
   id: string;
@@ -389,6 +391,21 @@ export default function WholesaleOrdersPage() {
     return result;
   }, [orders, statusFilter, searchQuery, viewMode]);
 
+  // Pagination
+  const {
+    paginatedItems,
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    goToPage,
+    changePageSize,
+    pageSizeOptions,
+  } = usePagination(filteredOrders, {
+    defaultPageSize: 25,
+    persistInUrl: false,
+  });
+
   // Handlers
   const handleRefresh = async () => {
     await refetch();
@@ -396,7 +413,7 @@ export default function WholesaleOrdersPage() {
   };
 
   const handleSelectAll = (checked: boolean) => {
-    setSelectedOrders(checked ? filteredOrders.map((o) => o.id) : []);
+    setSelectedOrders(checked ? paginatedItems.map((o) => o.id) : []);
   };
 
   const handleSelectOrder = (orderId: string, checked: boolean) => {
@@ -553,7 +570,7 @@ export default function WholesaleOrdersPage() {
         {
           header: (
             <Checkbox
-              checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
+              checked={paginatedItems.length > 0 && selectedOrders.length === paginatedItems.length}
               onCheckedChange={handleSelectAll}
             />
           ),
@@ -667,7 +684,7 @@ export default function WholesaleOrdersPage() {
         {
           header: (
             <Checkbox
-              checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
+              checked={paginatedItems.length > 0 && selectedOrders.length === paginatedItems.length}
               onCheckedChange={handleSelectAll}
             />
           ),
@@ -1045,7 +1062,7 @@ export default function WholesaleOrdersPage() {
         <Card className="overflow-hidden">
           <ResponsiveTable
             columns={columns}
-            data={filteredOrders}
+            data={paginatedItems}
             isLoading={isLoading}
             mobileRenderer={renderMobileCard}
             keyExtractor={(item) => item.id}
@@ -1076,11 +1093,17 @@ export default function WholesaleOrdersPage() {
             }}
           />
 
-          {/* Search results count */}
-          {hasActiveFilters && filteredOrders.length > 0 && (
-            <div className="text-sm text-muted-foreground px-2 py-2">
-              Showing {filteredOrders.length} of {orders.length} orders
-            </div>
+          {/* Pagination */}
+          {filteredOrders.length > 0 && (
+            <StandardPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              pageSizeOptions={pageSizeOptions}
+              onPageChange={goToPage}
+              onPageSizeChange={changePageSize}
+            />
           )}
         </Card>
 

@@ -6,7 +6,52 @@ const logger = createLogger('seed-demo-data');
 // Zod validation schema
 const seedDemoDataSchema = z.object({
   tenant_id: z.string().uuid('Invalid tenant ID'),
+  scale: z.enum(['small', 'large']).default('small'),
 });
+
+// Product name templates for generating varied products
+const PRODUCT_PREFIXES = ['Premium', 'Organic', 'Classic', 'Artisan', 'Select', 'Reserve', 'Gold', 'Silver', 'Platinum', 'Diamond'];
+const PRODUCT_TYPES = ['Flower', 'Edibles', 'Vapes', 'Pre-Rolls', 'Concentrates', 'Tinctures', 'Topicals', 'Capsules', 'Drinks', 'Accessories'];
+const STRAIN_NAMES = ['OG Kush', 'Blue Dream', 'Sour Diesel', 'Girl Scout Cookies', 'Gorilla Glue', 'Wedding Cake', 'Gelato', 'Zkittlez', 'Purple Haze', 'Jack Herer'];
+
+function generateProducts(tenantId: string, count: number) {
+  return Array.from({ length: count }).map((_, i) => {
+    const prefix = PRODUCT_PREFIXES[i % PRODUCT_PREFIXES.length];
+    const type = PRODUCT_TYPES[i % PRODUCT_TYPES.length];
+    const strain = STRAIN_NAMES[i % STRAIN_NAMES.length];
+    const variant = Math.floor(i / PRODUCT_TYPES.length) + 1;
+    const price = 10 + Math.floor(Math.random() * 90);
+    const qty = Math.floor(Math.random() * 200);
+
+    return {
+      tenant_id: tenantId,
+      name: `${prefix} ${strain} ${type} #${variant}`,
+      description: `${prefix} quality ${type.toLowerCase()} featuring ${strain} genetics`,
+      price,
+      wholesale_price: price,
+      category: type,
+      stock_quantity: qty,
+      available_quantity: qty,
+      is_active: true,
+      menu_visibility: Math.random() > 0.2,
+      sku: `SKU-${type.slice(0, 3).toUpperCase()}-${String(i + 1).padStart(4, '0')}`,
+    };
+  });
+}
+
+function generateOrders(tenantId: string, customerIds: string[], count: number) {
+  const statuses = ['pending', 'processing', 'completed', 'cancelled'];
+  const paymentStatuses = ['paid', 'unpaid', 'partial'];
+
+  return Array.from({ length: count }).map((_, i) => ({
+    tenant_id: tenantId,
+    customer_id: customerIds[i % customerIds.length],
+    status: statuses[i % statuses.length],
+    total_amount: Math.floor(Math.random() * 500) + 25,
+    payment_status: paymentStatuses[i % paymentStatuses.length],
+    created_at: new Date(Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000)).toISOString(),
+  }));
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -34,16 +79,21 @@ serve(async (req) => {
       );
     }
 
-    const { tenant_id } = validationResult.data;
+    const { tenant_id, scale } = validationResult.data;
+    const isLarge = scale === 'large';
 
-    logger.info('Starting demo data seed', { tenantId: tenant_id });
+    const customerCount = isLarge ? 15 : 5;
+    const productCount = isLarge ? 100 : 5;
+    const orderCount = isLarge ? 50 : 10;
+
+    logger.info('Starting demo data seed', { tenantId: tenant_id, scale, productCount, orderCount });
 
     // 1. Create dummy customers
-    const customers = Array.from({ length: 5 }).map((_, i) => ({
+    const customers = Array.from({ length: customerCount }).map((_, i) => ({
       tenant_id,
       full_name: `Customer ${i + 1}`,
       email: `customer${i + 1}@example.com`,
-      phone: `555-010${i}`,
+      phone: `555-${String(i + 100).padStart(4, '0')}`,
       status: 'active',
       total_orders: Math.floor(Math.random() * 10),
       total_spent: Math.floor(Math.random() * 1000),
@@ -59,45 +109,52 @@ serve(async (req) => {
       throw customerError;
     }
 
-    // 2. Create dummy products (5)
-    const products = [
-      { name: 'Premium Flower', price: 45, category: 'Flower' },
-      { name: 'Edible Gummies', price: 25, category: 'Edibles' },
-      { name: 'Vape Cartridge', price: 35, category: 'Vapes' },
-      { name: 'Pre-Roll Pack', price: 15, category: 'Pre-Rolls' },
-      { name: 'Concentrate Wax', price: 55, category: 'Concentrates' },
-    ].map((p) => ({
-      tenant_id,
-      name: p.name,
-      description: `Sample ${p.name}`,
-      price: p.price,
-      category: p.category,
-      stock_quantity: 100,
-      is_active: true,
-    }));
+    // 2. Create products
+    const products = isLarge
+      ? generateProducts(tenant_id, productCount)
+      : [
+          { name: 'Premium Flower', price: 45, category: 'Flower' },
+          { name: 'Edible Gummies', price: 25, category: 'Edibles' },
+          { name: 'Vape Cartridge', price: 35, category: 'Vapes' },
+          { name: 'Pre-Roll Pack', price: 15, category: 'Pre-Rolls' },
+          { name: 'Concentrate Wax', price: 55, category: 'Concentrates' },
+        ].map((p) => ({
+          tenant_id,
+          name: p.name,
+          description: `Sample ${p.name}`,
+          price: p.price,
+          category: p.category,
+          stock_quantity: 100,
+          is_active: true,
+        }));
 
-    const { data: createdProducts, error: productError } = await supabaseClient
-      .from('products')
-      .insert(products)
-      .select();
-
-    if (productError) {
-      logger.error('Failed to create products', { error: productError.message });
-      throw productError;
+    // Insert products in batches of 50 to avoid payload limits
+    const productBatchSize = 50;
+    const createdProducts: Array<{ id: string }> = [];
+    for (let i = 0; i < products.length; i += productBatchSize) {
+      const batch = products.slice(i, i + productBatchSize);
+      const { data, error } = await supabaseClient.from('products').insert(batch).select('id');
+      if (error) {
+        logger.error('Failed to create products batch', { error: error.message, batchIndex: i });
+        throw error;
+      }
+      if (data) createdProducts.push(...data);
     }
 
-    // 3. Create dummy orders (10)
-    const orders = createdCustomers!.flatMap((customer, idx) => {
-      // 2 orders per customer = 10 total
-      return Array.from({ length: 2 }).map((_, orderIdx) => ({
-        tenant_id,
-        customer_id: customer.id,
-        status: ['pending', 'processing', 'completed'][((idx * 2) + orderIdx) % 3],
-        total_amount: Math.floor(Math.random() * 200) + 50,
-        payment_status: 'paid',
-        created_at: new Date(Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)).toISOString(),
-      }));
-    });
+    // 3. Create orders
+    const customerIds = createdCustomers!.map((c) => c.id);
+    const orders = isLarge
+      ? generateOrders(tenant_id, customerIds, orderCount)
+      : createdCustomers!.flatMap((customer, idx) => {
+          return Array.from({ length: 2 }).map((_, orderIdx) => ({
+            tenant_id,
+            customer_id: customer.id,
+            status: ['pending', 'processing', 'completed'][((idx * 2) + orderIdx) % 3],
+            total_amount: Math.floor(Math.random() * 200) + 50,
+            payment_status: 'paid',
+            created_at: new Date(Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)).toISOString(),
+          }));
+        });
 
     const { error: orderError } = await supabaseClient.from('orders').insert(orders);
 
@@ -111,13 +168,18 @@ serve(async (req) => {
 
     logger.info('Demo data seeded successfully', {
       tenantId: tenant_id,
+      scale,
       customers: createdCustomers?.length,
-      products: createdProducts?.length,
+      products: createdProducts.length,
       orders: orders.length,
     });
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Demo data generated successfully' }),
+      JSON.stringify({
+        success: true,
+        message: `Demo data generated successfully (${scale} scale)`,
+        counts: { customers: createdCustomers?.length, products: createdProducts.length, orders: orders.length },
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {

@@ -247,3 +247,22 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
   - `bot_token` only appears as property names in form schema (not actual values)
   - Supabase anon key in vite.config.ts is the public/publishable key (designed to be client-facing)
 - TypeScript compilation passes with zero errors
+
+## Test with lots of data: 100 products, 50 orders, pagination works
+- Enhanced seed-demo-data edge function with `scale` parameter ('small' | 'large')
+  - 'large' scale generates 100 products, 50 orders, 15 customers
+  - Product names generated from prefix/strain/type combinations for variety
+  - Products include SKU, wholesale_price, available_quantity, menu_visibility
+  - Orders distributed across customers with varied statuses and payment states
+  - Products inserted in batches of 50 to avoid payload limits
+  - 'small' scale preserves original behavior (5 products, 10 orders, 5 customers)
+- Added pagination to WholesaleOrdersPage (was missing entirely)
+  - Uses usePagination hook with 25 items per page default
+  - StandardPagination component with page size selector
+  - Select-all checkbox scoped to current page only
+- Added pagination to customer OrdersListPage (was missing entirely)
+  - Simple prev/next pagination with 10 orders per page
+  - Shows "Showing X-Y of Z" count text
+  - Customer-themed UI matching existing page design
+- ProductsListPage and ProductCatalogPage already had proper pagination
+- TypeScript compilation passes with zero errors
