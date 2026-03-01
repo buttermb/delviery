@@ -108,27 +108,6 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - TypeScript compilation passes with no errors
 - Marked as passes: true
 
-## CartPage displays items with quantity controls and order summary
-- CartPage already fully implemented at src/pages/shop/CartPage.tsx (690 lines)
-- Lazy import at src/routes/lazyImports.ts:189, route at /shop/:storeSlug/cart in App.tsx:335
-- Features verified present:
-  - Cart items display: product image, name, variant, price, Metrc ID, stock warnings
-  - Quantity controls: +/- buttons with animated display, desktop and mobile (44px touch targets)
-  - Order summary: subtotal, delivery fee (with free delivery progress bar), coupon/deal discounts, total
-  - Coupon code input and application via useShopCart hook
-  - Active deals display via useDeals hook
-  - Price sync with server on mount and real-time price change events
-  - Stock validation before checkout via checkInventoryAvailability
-  - Express checkout buttons, express checkout link
-  - Swipeable cart items on mobile (SwipeableCartItem component)
-  - Empty cart state with animated icon and "Continue Shopping" CTA
-  - Sticky mobile checkout bar with item count and total
-  - Luxury and default theme support via useLuxuryTheme hook
-  - Upsells section (CartUpsellsSection) for related products
-  - Clear all cart functionality
-- TypeScript compilation passes with zero errors
-- No implementation changes needed — feature was already complete
-
 ## Product Grid section edit dialog has all fields and saves correctly
 - Updated ProductGridEditor in SectionEditors.tsx with new "Grid Settings" accordion section
 - Added fields: columns (2/3/4), max_products (4-50), sort_order (newest/price/name), category_filter (all/flower/edibles/pre-rolls/concentrates/vapes), show_view_all_link toggle
@@ -137,30 +116,13 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
 - TypeScript compilation passes with zero errors
 
-## Checkout handler creates order in database with server-side price validation
-- Verified existing storefront-checkout edge function already performs server-side price validation:
-  - Fetches product prices from DB (never trusts client prices)
-  - Stock validation with all-or-nothing check
-  - Per-item and total price discrepancy detection (>0.01 tolerance)
-  - Delivery fee calculated server-side from store settings
-  - Builds orderItems with server-fetched prices
-- Verified create_marketplace_order RPC handles: idempotency, FOR UPDATE locks, checked inventory deduction
-- Created migration 20260228000016_order_items_from_rpc.sql:
-  - Updated create_marketplace_order RPC to INSERT into marketplace_order_items table
-  - Each item gets a normalised row with server-validated unit_price and total_price
-  - Items are inserted AFTER order creation but BEFORE inventory deduction
-  - If inventory deduction fails (race condition), the entire transaction rolls back (including order items)
-  - This ensures marketplace_order_items has relational integrity and queryable server-validated prices
+## Customer profile shows order history items preferences and contact info
+- Enhanced storefront AccountPage (src/pages/shop/AccountPage.tsx) Profile tab with customer preferences
+- The page already had: Orders tab (order history with expandable items, reorder, tracking), Wishlist tab, Profile tab (contact info with edit), Track Order tab
+- Added preferences section to Profile tab showing: flavor preferences, preferred strains, preferred products, consumption methods, THC/CBD preferences
+- Expanded customer profile query to fetch preference fields from customers table (flavor_preferences, preferred_strains, preferred_products, preferred_consumption_method, thc_preference, cbd_preference, loyalty_points, loyalty_tier, total_spent, created_at)
+- Created PreferencesDisplay component showing read-only preference badges grouped by category
+- Created PreferencesEditFields component with comma-separated input fields for array preferences and text inputs for THC/CBD
+- Created PreferenceBadgeRow helper component for consistent badge rendering
+- Updated ProfileFormData interface, form initialization, mutation, and cancel handler to include all preference fields
 - TypeScript compilation passes with zero errors
-
-## Create next_order_number RPC function
-- Migration already exists at supabase/migrations/20260228000007_create_next_order_number_rpc.sql
-- Function: public.next_order_number(p_tenant_id UUID) RETURNS INTEGER
-- Uses pg_advisory_xact_lock(hashtext('orders_' || p_tenant_id::text)) for race condition safety
-- Queries SELECT COALESCE(MAX(order_number::INTEGER), 1000) + 1 FROM orders WHERE tenant_id = p_tenant_id
-- Only considers numeric order_number values (WHERE order_number ~ '^\d+$')
-- SECURITY DEFINER with SET search_path = public
-- GRANT EXECUTE to authenticated role
-- Complements the existing next_tenant_order_number() which handles marketplace_orders via tenant_order_sequences table
-- TypeScript compilation passes with zero errors
-- No additional changes needed - migration was already committed (ffbf972f)

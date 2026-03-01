@@ -38,7 +38,8 @@ import {
   Loader2,
   Filter,
   Calendar,
-  UserPen
+  UserPen,
+  Leaf,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
@@ -1179,6 +1180,12 @@ interface ProfileFormData {
   city: string;
   state: string;
   zip_code: string;
+  flavor_preferences: string[];
+  preferred_strains: string[];
+  preferred_products: string[];
+  preferred_consumption_method: string[];
+  thc_preference: string;
+  cbd_preference: string;
 }
 
 function ProfileSection({
@@ -1204,6 +1211,12 @@ function ProfileSection({
     city: '',
     state: '',
     zip_code: '',
+    flavor_preferences: [],
+    preferred_strains: [],
+    preferred_products: [],
+    preferred_consumption_method: [],
+    thc_preference: '',
+    cbd_preference: '',
   });
 
   // Fetch customer profile
@@ -1212,7 +1225,7 @@ function ProfileSection({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customers')
-        .select('first_name, last_name, phone, address, city, state, zip_code, email')
+        .select('first_name, last_name, phone, address, city, state, zip_code, email, flavor_preferences, preferred_strains, preferred_products, preferred_consumption_method, thc_preference, cbd_preference, loyalty_points, loyalty_tier, total_spent, created_at')
         .eq('id', customerId)
         .eq('tenant_id', tenantId)
         .maybeSingle();
@@ -1237,6 +1250,12 @@ function ProfileSection({
         city: profile.city ?? '',
         state: profile.state ?? '',
         zip_code: profile.zip_code ?? '',
+        flavor_preferences: profile.flavor_preferences ?? [],
+        preferred_strains: profile.preferred_strains ?? [],
+        preferred_products: profile.preferred_products ?? [],
+        preferred_consumption_method: profile.preferred_consumption_method ?? [],
+        thc_preference: profile.thc_preference ?? '',
+        cbd_preference: profile.cbd_preference ?? '',
       });
     }
   }, [profile]);
@@ -1254,6 +1273,12 @@ function ProfileSection({
           city: data.city.trim() || null,
           state: data.state.trim() || null,
           zip_code: data.zip_code.trim() || null,
+          flavor_preferences: data.flavor_preferences.filter(Boolean),
+          preferred_strains: data.preferred_strains.filter(Boolean),
+          preferred_products: data.preferred_products.filter(Boolean),
+          preferred_consumption_method: data.preferred_consumption_method.filter(Boolean),
+          thc_preference: data.thc_preference.trim() || null,
+          cbd_preference: data.cbd_preference.trim() || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', customerId)
@@ -1291,6 +1316,12 @@ function ProfileSection({
         city: profile.city ?? '',
         state: profile.state ?? '',
         zip_code: profile.zip_code ?? '',
+        flavor_preferences: profile.flavor_preferences ?? [],
+        preferred_strains: profile.preferred_strains ?? [],
+        preferred_products: profile.preferred_products ?? [],
+        preferred_consumption_method: profile.preferred_consumption_method ?? [],
+        thc_preference: profile.thc_preference ?? '',
+        cbd_preference: profile.cbd_preference ?? '',
       });
     }
     setIsEditing(false);
@@ -1487,6 +1518,29 @@ function ProfileSection({
             </div>
           </div>
 
+          <Separator />
+
+          {/* Preferences */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-neutral-900 flex items-center gap-2">
+              <Leaf className="w-4 h-4" />
+              Preferences
+            </h3>
+
+            {isEditing ? (
+              <PreferencesEditFields formData={formData} setFormData={setFormData} />
+            ) : (
+              <PreferencesDisplay
+                flavorPreferences={profile.flavor_preferences}
+                preferredStrains={profile.preferred_strains}
+                preferredProducts={profile.preferred_products}
+                preferredConsumptionMethod={profile.preferred_consumption_method}
+                thcPreference={profile.thc_preference}
+                cbdPreference={profile.cbd_preference}
+              />
+            )}
+          </div>
+
           {/* Action Buttons */}
           {isEditing && (
             <div className="flex gap-3 pt-4">
@@ -1518,5 +1572,175 @@ function ProfileSection({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+// Preferences Display Component (read-only view)
+interface PreferencesDisplayProps {
+  flavorPreferences: string[] | null;
+  preferredStrains: string[] | null;
+  preferredProducts: string[] | null;
+  preferredConsumptionMethod: string[] | null;
+  thcPreference: string | null;
+  cbdPreference: string | null;
+}
+
+function PreferencesDisplay({
+  flavorPreferences,
+  preferredStrains,
+  preferredProducts,
+  preferredConsumptionMethod,
+  thcPreference,
+  cbdPreference,
+}: PreferencesDisplayProps) {
+  const hasAnyPreference =
+    (flavorPreferences && flavorPreferences.length > 0) ||
+    (preferredStrains && preferredStrains.length > 0) ||
+    (preferredProducts && preferredProducts.length > 0) ||
+    (preferredConsumptionMethod && preferredConsumptionMethod.length > 0) ||
+    thcPreference ||
+    cbdPreference;
+
+  if (!hasAnyPreference) {
+    return (
+      <p className="text-sm text-neutral-400 py-2">
+        No preferences set yet. Edit your profile to add your preferences.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {flavorPreferences && flavorPreferences.length > 0 && (
+        <PreferenceBadgeRow label="Flavors" items={flavorPreferences} />
+      )}
+      {preferredStrains && preferredStrains.length > 0 && (
+        <PreferenceBadgeRow label="Strains" items={preferredStrains} />
+      )}
+      {preferredProducts && preferredProducts.length > 0 && (
+        <PreferenceBadgeRow label="Products" items={preferredProducts} />
+      )}
+      {preferredConsumptionMethod && preferredConsumptionMethod.length > 0 && (
+        <PreferenceBadgeRow label="Consumption" items={preferredConsumptionMethod} />
+      )}
+      {(thcPreference || cbdPreference) && (
+        <div className="flex flex-wrap gap-3">
+          {thcPreference && (
+            <div className="text-sm">
+              <span className="text-neutral-500">THC: </span>
+              <span className="font-medium">{thcPreference}</span>
+            </div>
+          )}
+          {cbdPreference && (
+            <div className="text-sm">
+              <span className="text-neutral-500">CBD: </span>
+              <span className="font-medium">{cbdPreference}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PreferenceBadgeRow({ label, items }: { label: string; items: string[] }) {
+  return (
+    <div>
+      <p className="text-xs text-neutral-500 mb-1">{label}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map((item) => (
+          <Badge key={item} variant="secondary" className="text-xs font-normal">
+            {item}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Preferences Edit Fields Component
+interface PreferencesEditFieldsProps {
+  formData: ProfileFormData;
+  setFormData: React.Dispatch<React.SetStateAction<ProfileFormData>>;
+}
+
+function PreferencesEditFields({ formData, setFormData }: PreferencesEditFieldsProps) {
+  const handleArrayChange = (field: keyof ProfileFormData, value: string) => {
+    const items = value
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    setFormData((prev) => ({ ...prev, [field]: items }));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="flavor_preferences">Flavor Preferences</Label>
+        <Input
+          id="flavor_preferences"
+          value={formData.flavor_preferences.join(', ')}
+          onChange={(e) => handleArrayChange('flavor_preferences', e.target.value)}
+          placeholder="e.g. Citrus, Berry, Earthy"
+          className="h-11"
+        />
+        <p className="text-xs text-neutral-400">Separate with commas</p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="preferred_strains">Preferred Strains</Label>
+        <Input
+          id="preferred_strains"
+          value={formData.preferred_strains.join(', ')}
+          onChange={(e) => handleArrayChange('preferred_strains', e.target.value)}
+          placeholder="e.g. Blue Dream, OG Kush"
+          className="h-11"
+        />
+        <p className="text-xs text-neutral-400">Separate with commas</p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="preferred_products">Preferred Products</Label>
+        <Input
+          id="preferred_products"
+          value={formData.preferred_products.join(', ')}
+          onChange={(e) => handleArrayChange('preferred_products', e.target.value)}
+          placeholder="e.g. Flower, Edibles, Concentrates"
+          className="h-11"
+        />
+        <p className="text-xs text-neutral-400">Separate with commas</p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="preferred_consumption_method">Consumption Methods</Label>
+        <Input
+          id="preferred_consumption_method"
+          value={formData.preferred_consumption_method.join(', ')}
+          onChange={(e) => handleArrayChange('preferred_consumption_method', e.target.value)}
+          placeholder="e.g. Smoking, Vaping, Edibles"
+          className="h-11"
+        />
+        <p className="text-xs text-neutral-400">Separate with commas</p>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="thc_preference">THC Preference</Label>
+          <Input
+            id="thc_preference"
+            value={formData.thc_preference}
+            onChange={(e) => setFormData((prev) => ({ ...prev, thc_preference: e.target.value }))}
+            placeholder="e.g. High, Medium, Low"
+            className="h-11"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cbd_preference">CBD Preference</Label>
+          <Input
+            id="cbd_preference"
+            value={formData.cbd_preference}
+            onChange={(e) => setFormData((prev) => ({ ...prev, cbd_preference: e.target.value }))}
+            placeholder="e.g. High, Medium, Low"
+            className="h-11"
+          />
+        </div>
+      </div>
+    </div>
   );
 }
