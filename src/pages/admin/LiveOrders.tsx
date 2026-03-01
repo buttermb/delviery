@@ -1,42 +1,45 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { lazy, Suspense, useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
-import { Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
+import { Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff, LayoutGrid, List } from 'lucide-react';
 
 import type { DateRangeValue } from '@/components/admin/shared/FilterBar';
-import { LayoutGrid, List, Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
-import { Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff, LayoutGrid, List } from 'lucide-react';
+import type { LiveOrder } from '@/components/admin/live-orders/LiveOrdersKanban';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
-import { LiveOrdersKanban, type LiveOrder } from '@/components/admin/live-orders/LiveOrdersKanban';
 import { LiveOrdersMobileList } from '@/components/admin/live-orders/LiveOrdersMobileList';
 import {
   LiveOrdersFilters,
   useLiveOrderFilters,
   parseLiveOrderFilters,
 } from '@/components/admin/live-orders/LiveOrdersFilters';
-import { LiveOrdersTable } from '@/components/admin/live-orders/LiveOrdersTable';
-import { LiveOrdersListView } from '@/components/admin/live-orders/LiveOrdersListView';
 import { LiveOrderDetailPanel } from '@/components/admin/live-orders/LiveOrderDetailPanel';
 import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
-import { initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { useAdminOrdersRealtime } from '@/hooks/useAdminOrdersRealtime';
 import { useUndo } from '@/hooks/useUndo';
 import { UndoToast } from '@/components/ui/undo-toast';
 import { queryKeys } from '@/lib/queryKeys';
 import { EmptyState } from '@/components/admin/shared/EmptyState';
 import { PageErrorState } from '@/components/admin/shared/PageErrorState';
+import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { LiveOrdersStatsBar } from '@/components/admin/live-orders/LiveOrdersStatsBar';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
+
+// Lazy-loaded view components — only the active view is loaded
+const LiveOrdersKanban = lazy(() =>
+  import('@/components/admin/live-orders/LiveOrdersKanban').then(m => ({ default: m.LiveOrdersKanban }))
+);
+const LiveOrdersListView = lazy(() =>
+  import('@/components/admin/live-orders/LiveOrdersListView').then(m => ({ default: m.LiveOrdersListView }))
+);
 
 type ViewMode = 'kanban' | 'list';
 
@@ -61,6 +64,22 @@ interface LiveOrdersProps {
   statusFilter?: string;
 }
 
+/** Skeleton fallback for lazy-loaded views */
+function ViewSkeleton() {
+  return (
+    <div className="flex gap-4 h-full" role="status" aria-label="Loading view...">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="flex-1 min-w-[260px] space-y-3">
+          <Skeleton className="h-8 w-full rounded-lg" />
+          {[1, 2, 3].map((j) => (
+            <Skeleton key={j} className="h-28 w-full rounded-lg" />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** Determine fulfillment type from order data */
 function getFulfillmentType(order: LiveOrder): 'delivery' | 'pickup' {
   if (!order.delivery_address) return 'pickup';
@@ -76,7 +95,6 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
 
   // Filter state
   const { filters, setFilters, clearFilters, searchValue, setSearchValue } = useLiveOrderFilters();
-  const [viewMode, setViewMode] = useState<'board' | 'table'>('board');
   const [selectedOrder, setSelectedOrder] = useState<LiveOrder | null>(null);
   const [detailPanelOpen, setDetailPanelOpen] = useState(false);
   const previousOrderCountRef = useRef<number>(0);
@@ -147,8 +165,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
   });
 
   // Fetch Orders Query
-  const { data: allOrders = [], isLoading, refetch } = useQuery({
-  const { data: orders = [], isLoading, isError, refetch } = useQuery({
+  const { data: allOrders = [], isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.orders.live(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -197,12 +214,6 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           status: o.status,
           created_at: o.created_at,
           user_id: o.user_id,
-          source: 'app',
-          total_amount: Number(o.total_amount ?? 0),
-          delivery_address: o.delivery_address || undefined,
-          payment_status: o.payment_status || undefined,
-          payment_method: o.payment_method || undefined,
-          customer_name: o.customer_name || undefined,
           source: 'app' as const,
           total_amount: Number(o.total_amount ?? 0),
           customer_name: o.customer_name ?? undefined,
@@ -260,12 +271,6 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
     refetchInterval: 30000 // Fallback poll every 30s
   });
 
-  // Log new order count changes for debugging
-  useEffect(() => {
-    if (!isLoading && orders.length > 0) {
-      logger.debug('Live orders updated', { count: orders.length, component: 'LiveOrders' });
-    }
-  }, [orders.length, isLoading]);
   // Apply client-side filters
   const filteredOrders = useMemo(() => {
     const parsed = parseLiveOrderFilters(filters, searchValue);
@@ -409,7 +414,6 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
     setIsRefreshing(false);
   };
 
-  const hasActiveFilters = Object.keys(filters).length > 0 || searchValue.length > 0;
   const handleViewDetails = (order: LiveOrder) => {
     setSelectedOrder(order);
     setDetailPanelOpen(true);
@@ -434,38 +438,12 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
               </span>
             </h1>
             <p className="text-muted-foreground text-xs sm:text-sm">
-              {orders.length} active • {isMobile ? 'Card View' : 'Swimlane View'}
-            <p className="text-muted-foreground text-sm">
-              {filteredOrders.length}{hasActiveFilters ? ` of ${allOrders.length}` : ''} active orders • Swimlane View
+              {filteredOrders.length} active orders • {viewMode === 'kanban' ? 'Swimlane View' : 'List View'}
             </p>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-              {orders.length} active orders
-              {orders.length} active orders • {viewMode === 'kanban' ? 'Swimlane View' : 'List View'}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
             {/* View Toggle */}
-            <div className="flex items-center border rounded-lg overflow-hidden">
-              <Button
-                variant={viewMode === 'board' ? 'default' : 'ghost'}
-                size="sm"
-                className="rounded-none"
-                onClick={() => setViewMode('board')}
-              >
-                <LayoutGrid className="h-4 w-4 mr-1" />
-                Board
-              </Button>
-              <Button
-                variant={viewMode === 'table' ? 'default' : 'ghost'}
-                size="sm"
-                className="rounded-none"
-                onClick={() => setViewMode('table')}
-              >
-                <List className="h-4 w-4 mr-1" />
-                Table
             <div className="flex items-center rounded-lg border bg-muted/50 p-0.5">
               <Button
                 variant={viewMode === 'kanban' ? 'default' : 'ghost'}
@@ -538,8 +516,6 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
       {/* Stats Bar */}
       <LiveOrdersStatsBar />
 
-      {/* Orders Container */}
-      <div className="flex-1 overflow-auto p-2 sm:p-3">
       {/* Filters */}
       <div className="flex-none px-6 py-3 border-b bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
         <LiveOrdersFilters
@@ -551,61 +527,50 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
         />
       </div>
 
-      {/* Kanban Board Container */}
-      {/* Content Area */}
       {/* Content */}
       <div className="flex-1 overflow-auto p-3">
         <PullToRefresh onRefresh={async () => { await refetch(); }}>
           <div className="h-full">
-            {!isLoading && filteredOrders.length === 0 ? (
             {isLoading ? (
-              <div className="flex gap-4 h-full" role="status" aria-label="Loading live orders...">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex-1 min-w-[260px] space-y-3">
-                    <Skeleton className="h-8 w-full rounded-lg" />
-                    {[1, 2, 3].map((j) => (
-                      <Skeleton key={j} className="h-28 w-full rounded-lg" />
-                    ))}
-                  </div>
-                ))}
-              </div>
+              <ViewSkeleton />
             ) : isError ? (
               <PageErrorState
                 onRetry={() => refetch()}
                 message="Failed to load live orders. Please try again."
               />
-            ) : orders.length === 0 ? (
+            ) : filteredOrders.length === 0 ? (
               <EmptyState
                 icon={Radio}
-                title={hasActiveFilters ? 'No orders match your filters' : 'No active orders right now'}
-                description={hasActiveFilters ? 'Try adjusting your filters to see more orders' : 'Live orders appear here in real-time when customers place orders'}
+                title="No active orders right now"
+                description="Live orders appear here in real-time when customers place orders"
               />
             ) : isMobile ? (
               <LiveOrdersMobileList
-            ) : viewMode === 'table' ? (
-              <LiveOrdersTable
-                orders={orders}
-                isLoading={isLoading}
-                onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
-              />
-            ) : viewMode === 'kanban' ? (
-              <LiveOrdersKanban
-                orders={orders}
-                isLoading={isLoading}
-                onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
-              />
-            ) : (
-              <LiveOrdersKanban
                 orders={filteredOrders}
                 isLoading={isLoading}
                 onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
-                newOrderIds={newOrderIds}
-              <LiveOrdersListView
-                orders={orders}
-                isLoading={isLoading}
-                onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
-                onViewDetails={handleViewDetails}
               />
+            ) : viewMode === 'list' ? (
+              <ModuleErrorBoundary moduleName="List View">
+                <Suspense fallback={<ViewSkeleton />}>
+                  <LiveOrdersListView
+                    orders={filteredOrders}
+                    isLoading={isLoading}
+                    onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
+                  />
+                </Suspense>
+              </ModuleErrorBoundary>
+            ) : (
+              <ModuleErrorBoundary moduleName="Kanban Board">
+                <Suspense fallback={<ViewSkeleton />}>
+                  <LiveOrdersKanban
+                    orders={filteredOrders}
+                    isLoading={isLoading}
+                    onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
+                    newOrderIds={newOrderIds}
+                  />
+                </Suspense>
+              </ModuleErrorBoundary>
             )}
           </div>
         </PullToRefresh>
