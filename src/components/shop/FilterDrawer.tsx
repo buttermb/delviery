@@ -257,7 +257,8 @@ function FilterSection({
     <div className="border-b border-white/5 pb-4">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between py-2 text-left"
+        className="w-full flex items-center justify-between py-2 text-left rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        aria-expanded={isExpanded}
       >
         <span className="text-white/80 text-sm font-medium tracking-wide flex items-center gap-2">
           {title}

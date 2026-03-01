@@ -990,8 +990,9 @@ body.keyboard-open [data-radix-dialog-content] {
     scroll-behavior: smooth;
   }
 
-  /* Focus visible for better keyboard navigation — ring-2 consistent with shadcn/ui */
-  *:focus-visible {
+  /* Focus visible for better keyboard navigation — ring-2 consistent with shadcn/ui.
+     Excludes non-interactive containers and Radix menu items (which use focus: bg change). */
+  *:focus-visible:not([role="dialog"]):not([role="menu"]):not([role="listbox"]):not([data-radix-scroll-area-viewport]) {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background rounded-sm;
   }
 
@@ -1008,6 +1009,13 @@ body.keyboard-open [data-radix-dialog-content] {
 
   a:focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background rounded-sm;
+  }
+
+  /* Skip-to-content link for keyboard users — hidden until focused */
+  .skip-to-content {
+    @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999]
+           focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground
+           focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring;
   }
 
   /* Marketing Site Gradients */
