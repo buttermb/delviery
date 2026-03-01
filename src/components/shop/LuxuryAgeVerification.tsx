@@ -91,7 +91,7 @@ export function LuxuryAgeVerification({
             <h1 className="text-white text-2xl font-extralight tracking-tight mb-2">
               Age Verification
             </h1>
-            <p className="text-white/40 text-sm font-light mb-8">
+            <p className="text-white/70 text-sm font-light mb-8">
               You must be {minimumAge}+ to enter {storeName}
             </p>
 
@@ -121,7 +121,7 @@ export function LuxuryAgeVerification({
             </div>
 
             {/* Legal text */}
-            <p className="text-white/20 text-xs font-light mt-8 leading-relaxed">
+            <p className="text-white/70 text-xs font-light mt-8 leading-relaxed">
               By entering this site, you confirm that you are of legal age to consume cannabis in your jurisdiction.
             </p>
           </div>

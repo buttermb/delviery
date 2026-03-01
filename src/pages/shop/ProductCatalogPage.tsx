@@ -930,7 +930,7 @@ function ProductListItem({
             <p className="text-xs text-muted-foreground mb-1">
               {product.marketplace_category_name || product.category}
             </p>
-            <h3 className="font-semibold mb-2">{product.name}</h3>
+            <h2 className="font-semibold mb-2">{product.name}</h2>
             {product.short_description && (
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {product.short_description}

@@ -285,7 +285,7 @@ export function OrderConfirmationPage() {
     return (
       <div className="container mx-auto px-3 sm:px-4 py-12 sm:py-16 max-w-2xl text-center">
         <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 animate-spin" style={{ color: store.primary_color }} />
-        <h2 className="text-lg sm:text-xl font-semibold mb-2">Verifying Payment...</h2>
+        <h1 className="text-lg sm:text-xl font-semibold mb-2">Verifying Payment...</h1>
         <p className="text-sm sm:text-base text-muted-foreground">Please wait while we confirm your payment.</p>
       </div>
     );
@@ -587,6 +587,8 @@ export function OrderConfirmationPage() {
               <h3 className="font-semibold text-base sm:text-lg">
                 {orderDetails.fulfillment_method === 'pickup' ? 'Pickup Details' : 'Delivery Details'}
               </h3>
+              <Truck className="w-5 h-5" style={{ color: store.primary_color }} />
+              <h2 className="font-semibold text-base sm:text-lg">Delivery Details</h2>
             </div>
             <div className="space-y-3">
               {orderDetails.customer_name && (
@@ -643,7 +645,7 @@ export function OrderConfirmationPage() {
           <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
               <ShoppingBag className="w-5 h-5" style={{ color: store.primary_color }} />
-              <h3 className="font-semibold text-base sm:text-lg">Items Ordered</h3>
+              <h2 className="font-semibold text-base sm:text-lg">Items Ordered</h2>
             </div>
             <div className="space-y-3">
               {items.map((item, index) => (

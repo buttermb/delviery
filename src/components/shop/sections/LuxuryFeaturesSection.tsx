@@ -144,13 +144,13 @@ export function LuxuryFeaturesSection({ content, styles }: LuxuryFeaturesSection
                     <h3 className="text-white text-lg font-bold tracking-wide mb-2 group-hover:text-white transition-colors">
                       {feature.title}
                     </h3>
-                    <p className="text-white/40 text-sm font-light leading-relaxed group-hover:text-white/60 transition-colors flex-1">
+                    <p className="text-white/70 text-sm font-light leading-relaxed group-hover:text-white/60 transition-colors flex-1">
                       {feature.description}
                     </p>
 
                     {/* Subtle arrow indicator on large cards */}
                     {isLarge && (
-                      <div className="flex items-center gap-1 mt-4 text-white/20 group-hover:text-white/50 transition-colors">
+                      <div className="flex items-center gap-1 mt-4 text-white/70 group-hover:text-white transition-colors">
                         <span className="text-xs font-medium uppercase tracking-wider">Learn more</span>
                         <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />

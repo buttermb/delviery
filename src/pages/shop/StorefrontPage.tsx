@@ -225,7 +225,7 @@ export function StorefrontPage() {
                 })}
 
             {/* Share Store Bar */}
-            <div className="bg-muted/50 border-t py-6">
+            <footer className="bg-muted/50 border-t py-6">
                 <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-sm text-muted-foreground">Share this store with friends</p>
                     <Button
@@ -238,7 +238,7 @@ export function StorefrontPage() {
                         Share Store
                     </Button>
                 </div>
-            </div>
+            </footer>
 
             {/* Share Dialog */}
             <StorefrontShareDialog

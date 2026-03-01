@@ -123,7 +123,7 @@ export function ProductQuickViewModal({
                         >
                             {/* Category */}
                             {product.category && (
-                                <p className="text-white/40 text-xs tracking-widest uppercase mb-2">
+                                <p className="text-white/70 text-xs tracking-widest uppercase mb-2">
                                     {product.category}
                                 </p>
                             )}
@@ -138,13 +138,13 @@ export function ProductQuickViewModal({
                                 <div className="flex gap-4 mb-4">
                                     {product.thc_content && (
                                         <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                                            <span className="text-white/40 text-xs mr-2">THC</span>
+                                            <span className="text-white/70 text-xs mr-2">THC</span>
                                             <span className="text-white font-medium">{product.thc_content}%</span>
                                         </div>
                                     )}
                                     {product.cbd_content && (
                                         <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                                            <span className="text-white/40 text-xs mr-2">CBD</span>
+                                            <span className="text-white/70 text-xs mr-2">CBD</span>
                                             <span className="text-white font-medium">{product.cbd_content}%</span>
                                         </div>
                                     )}
@@ -161,7 +161,7 @@ export function ProductQuickViewModal({
 
                             {/* Price */}
                             <div className="mb-6">
-                                <span className="text-white/40 text-xs tracking-wider uppercase">Price</span>
+                                <span className="text-white/70 text-xs tracking-wider uppercase">Price</span>
                                 <p
                                     className="text-3xl"
                                     style={{ color: accentColor }}
@@ -172,7 +172,7 @@ export function ProductQuickViewModal({
 
                             {/* Quantity Selector */}
                             <div className="flex items-center gap-4 mb-6">
-                                <span className="text-white/40 text-sm">Quantity</span>
+                                <span className="text-white/70 text-sm">Quantity</span>
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}

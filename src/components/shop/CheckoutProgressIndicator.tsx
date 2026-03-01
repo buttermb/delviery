@@ -49,7 +49,7 @@ export function CheckoutProgressIndicator({
                 className={`relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
                   isFuture
                     ? isLuxuryTheme
-                      ? 'bg-white/5 text-white/30'
+                      ? 'bg-white/5 text-white/70'
                       : 'bg-muted text-muted-foreground'
                     : ''
                 }`}
@@ -142,7 +142,7 @@ export function CheckoutProgressIndicator({
                 } ${
                   isFuture
                     ? isLuxuryTheme
-                      ? 'bg-white/5 text-white/20'
+                      ? 'bg-white/5 text-white/70'
                       : 'bg-muted text-muted-foreground'
                     : ''
                 } ${isComplete || isActive ? 'cursor-pointer' : ''}`}
@@ -178,7 +178,7 @@ export function CheckoutProgressIndicator({
                   isActive
                     ? 'text-primary'
                     : isLuxuryTheme
-                      ? 'text-white/20'
+                      ? 'text-white/70'
                       : 'text-muted-foreground'
                 }`}
                 style={{ color: isActive ? themeColor : isComplete ? themeColor : undefined, opacity: isComplete ? 0.6 : undefined }}

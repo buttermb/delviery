@@ -173,7 +173,7 @@ export const THEME_PRESETS: ThemePreset[] = [
             background: '#ffffff', // White
             foreground: '#0f172a',
             muted: '#f1f5f9',
-            mutedForeground: '#64748b',
+            mutedForeground: '#5b6f82', // WCAG AA: ≥4.5:1 on both #ffffff and #f1f5f9
             card: '#ffffff',
             cardForeground: '#0f172a',
             border: '#e2e8f0',

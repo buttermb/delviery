@@ -79,9 +79,9 @@ export default function WishlistPage() {
 
                         <CardContent className="p-4">
                             <Link to={`/shop/${storeSlug}/products/${item.productId}`}>
-                                <h3 className="font-medium line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+                                <h2 className="font-medium line-clamp-2 mb-2 group-hover:text-primary transition-colors">
                                     {item.name}
-                                </h3>
+                                </h2>
                             </Link>
                             <div className="flex items-center justify-between">
                                 <span className="font-bold" style={{ color: store.primary_color }}>

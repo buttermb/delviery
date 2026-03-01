@@ -168,6 +168,7 @@ export function FilterDrawer({
               <button
                 onClick={clearAllFilters}
                 className="text-xs opacity-50 hover:opacity-100 transition-opacity"
+                className="text-xs text-white/70 hover:text-white transition-colors"
               >
                 Clear all
               </button>
@@ -384,6 +385,7 @@ function FilterSection({
         <ChevronDown
           className={cn(
             'w-4 h-4 opacity-40 transition-transform duration-200',
+            'w-4 h-4 text-white/70 transition-transform duration-200',
             isExpanded && 'rotate-180'
           )}
         />

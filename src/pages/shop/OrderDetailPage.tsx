@@ -478,7 +478,7 @@ export function OrderDetailPage() {
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <h3 className="font-medium text-sm">Need to cancel this order?</h3>
+                    <h2 className="font-medium text-sm">Need to cancel this order?</h2>
                     <p className="text-xs text-muted-foreground mt-1">
                       You can cancel this order while it's still {order.status}. Once it moves to the next stage, cancellation won't be possible.
                     </p>

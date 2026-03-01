@@ -816,7 +816,7 @@ export function ProductDetailPage() {
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                       <span className={`text-sm font-medium ${isLuxuryTheme ? 'text-white' : ''}`}>{averageRating.toFixed(1)}</span>
-                      <span className={`text-xs ${isLuxuryTheme ? 'text-white/40' : 'text-muted-foreground'}`}>({reviews.length})</span>
+                      <span className={`text-xs ${isLuxuryTheme ? 'text-white/70' : 'text-muted-foreground'}`}>({reviews.length})</span>
                     </div>
                   </div>
 
@@ -839,6 +839,8 @@ export function ProductDetailPage() {
                     </span>
                     {product.compare_at_price && product.compare_at_price > displayPrice && (
                       <span className={`text-base sm:text-lg line-through ${isLuxuryTheme ? 'text-white/30 decoration-white/30' : 'text-muted-foreground'}`}>
+                    {product.compare_at_price && (
+                      <span className={`text-base sm:text-lg line-through ${isLuxuryTheme ? 'text-white/70 decoration-white/70' : 'text-muted-foreground'}`}>
                         {formatCurrency(product.compare_at_price)}
                       </span>
                     )}
@@ -991,7 +993,7 @@ export function ProductDetailPage() {
                               <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
                                 <IconComponent className="w-5 h-5 text-emerald-400" />
                               </div>
-                              <span className="text-xs uppercase tracking-wider text-white/40 font-medium">{effect}</span>
+                              <span className="text-xs uppercase tracking-wider text-white/70 font-medium">{effect}</span>
                             </div>
                           );
                         })}
@@ -1005,19 +1007,19 @@ export function ProductDetailPage() {
                       <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                         <Truck className="w-4 h-4 text-white/60" />
                       </div>
-                      <span className="text-[10px] uppercase tracking-wider text-white/40">Fast Delivery</span>
+                      <span className="text-[10px] uppercase tracking-wider text-white/70">Fast Delivery</span>
                     </div>
                     <div className="flex flex-col items-center text-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                         <Shield className="w-4 h-4 text-white/60" />
                       </div>
-                      <span className="text-[10px] uppercase tracking-wider text-white/40">Secure</span>
+                      <span className="text-[10px] uppercase tracking-wider text-white/70">Secure</span>
                     </div>
                     <div className="flex flex-col items-center text-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                         <RotateCcw className="w-4 h-4 text-white/60" />
                       </div>
-                      <span className="text-[10px] uppercase tracking-wider text-white/40">Returns</span>
+                      <span className="text-[10px] uppercase tracking-wider text-white/70">Returns</span>
                     </div>
                   </div>
 
@@ -1084,12 +1086,12 @@ export function ProductDetailPage() {
                             <div className="flex justify-center mt-2">
                               {renderStars(averageRating, 'w-5 h-5')}
                             </div>
-                            <span className="text-sm text-white/40 mt-2 block">{reviews.length} ratings</span>
+                            <span className="text-sm text-white/70 mt-2 block">{reviews.length} ratings</span>
                           </div>
                           <div className="hidden sm:block h-20 w-px bg-white/10" />
                           <Separator className="sm:hidden bg-white/10" />
                           <div className="flex-1 text-center sm:text-left">
-                            <h3 className="text-xl sm:text-2xl font-light text-white mb-2">Customer Reviews</h3>
+                            <h2 className="text-xl sm:text-2xl font-light text-white mb-2">Customer Reviews</h2>
                             <p className="text-white/60 mb-4 sm:mb-6">95% of customers recommended this product</p>
                             {store && product && (
                               <ReviewForm
@@ -1125,7 +1127,7 @@ export function ProductDetailPage() {
                                     </div>
                                   </div>
                                 </div>
-                                <span className="text-xs text-white/30">
+                                <span className="text-xs text-white/70">
                                   {formatSmartDate(review.created_at)}
                                 </span>
                               </div>
