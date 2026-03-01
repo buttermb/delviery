@@ -1858,6 +1858,138 @@ export function CheckoutPage() {
                       zelleConfirmed={zelleConfirmed}
                       onZelleConfirmedChange={setZelleConfirmed}
                     />
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Payment Method</h2>
+
+                    {/* Express Payment Options */}
+                    <div className="space-y-4">
+                      <ExpressPaymentButtons
+                        showDivider={true}
+                        size="lg"
+                      />
+                    </div>
+
+                    {/* Standard Payment Methods */}
+                    <RadioGroup
+                      value={formData.paymentMethod}
+                      onValueChange={(value) => {
+                        updateField('paymentMethod', value);
+                        if (value !== 'venmo') setVenmoConfirmed(false);
+                        if (value !== 'zelle') setZelleConfirmed(false);
+                      }}
+                      className="space-y-2 sm:space-y-3"
+                    >
+                      {(store.payment_methods || ['cash']).filter((method: string) =>
+                        method !== 'card' || isStripeConfigured !== false
+                      ).map((method: string) => (
+                        <div
+                          key={method}
+                          className="flex items-center space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-muted/50 w-full"
+                          onClick={() => {
+                            updateField('paymentMethod', method);
+                            if (method !== 'venmo') setVenmoConfirmed(false);
+                            if (method !== 'zelle') setZelleConfirmed(false);
+                          }}
+                        >
+                          <RadioGroupItem value={method} id={method} />
+                          <Label htmlFor={method} className="flex-1 cursor-pointer capitalize">
+                            {method === 'cash' && 'Cash on Delivery'}
+                            {method === 'card' && 'Credit/Debit Card'}
+                            {method === 'paypal' && 'PayPal'}
+                            {method === 'bitcoin' && 'Bitcoin'}
+                            {method === 'venmo' && 'Venmo'}
+                            {method === 'zelle' && 'Zelle'}
+                            {!['cash', 'card', 'paypal', 'bitcoin', 'venmo', 'zelle'].includes(method) && method}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+
+                    {/* Venmo payment details */}
+                    {formData.paymentMethod === 'venmo' && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                        {store.checkout_settings?.venmo_handle && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">
+                              Send payment to{' '}
+                              <span className="font-bold">{store.checkout_settings?.venmo_handle}</span>
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="gap-2"
+                              onClick={() => {
+                                navigator.clipboard.writeText(store.checkout_settings?.venmo_handle || '');
+                                toast.success('Venmo handle copied!');
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                              Copy Venmo handle
+                            </Button>
+                          </div>
+                        )}
+                        <div className="flex items-start gap-2 pt-2">
+                          <Checkbox
+                            id="venmo-confirmed"
+                            checked={venmoConfirmed}
+                            onCheckedChange={(checked) => setVenmoConfirmed(checked as boolean)}
+                          />
+                          <Label htmlFor="venmo-confirmed" className="text-sm cursor-pointer">
+                            I&apos;ve sent payment via Venmo
+                          </Label>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Zelle payment details */}
+                    {formData.paymentMethod === 'zelle' && (
+                      <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                        {store.checkout_settings?.zelle_email && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">
+                              Send Zelle payment to{' '}
+                              <span className="font-bold">{store.checkout_settings?.zelle_email}</span>
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="gap-2"
+                              onClick={() => {
+                                navigator.clipboard.writeText(store.checkout_settings?.zelle_email || '');
+                                toast.success('Zelle contact copied!');
+                              }}
+                            >
+                              <Copy className="h-3 w-3" />
+                              Copy Zelle contact
+                            </Button>
+                          </div>
+                        )}
+                        <div className="flex items-start gap-2 pt-2">
+                          <Checkbox
+                            id="zelle-confirmed"
+                            checked={zelleConfirmed}
+                            onCheckedChange={(checked) => setZelleConfirmed(checked as boolean)}
+                          />
+                          <Label htmlFor="zelle-confirmed" className="text-sm cursor-pointer">
+                            I&apos;ve sent payment via Zelle
+                          </Label>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Card payment info */}
+                    {formData.paymentMethod === 'card' && (
+                      <div className="flex items-start gap-3 p-4 border rounded-lg bg-muted/30">
+                        <CreditCard className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Secure card payment</p>
+                          <p className="text-xs text-muted-foreground">
+                            You&apos;ll be redirected to Stripe&apos;s secure checkout to complete your payment after reviewing your order.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
@@ -2020,21 +2152,22 @@ export function CheckoutPage() {
                     {isSubmitting || placeOrderMutation.isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
+                        {formData.paymentMethod === 'card' ? 'Redirecting to payment...' : 'Processing...'}
+                      </>
+                    ) : isStoreClosed ? (
+                      <>
+                        <Clock className="w-4 h-4 mr-2" />
+                        Place Pre-Order
+                      </>
+                    ) : formData.paymentMethod === 'card' ? (
+                      <>
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        Pay with Card
                       </>
                     ) : (
                       <>
-                        {isStoreClosed ? (
-                          <>
-                            <Clock className="w-4 h-4 mr-2" />
-                            Place Pre-Order
-                          </>
-                        ) : (
-                          <>
-                            <Check className="w-4 h-4 mr-2" />
-                            Place Order
-                          </>
-                        )}
+                        <Check className="w-4 h-4 mr-2" />
+                        Place Order
                       </>
                     )}
                   </Button>
@@ -2316,12 +2449,17 @@ export function CheckoutPage() {
               {isSubmitting || placeOrderMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Processing...
+                  {formData.paymentMethod === 'card' ? 'Redirecting to payment...' : 'Processing...'}
                 </>
               ) : isStoreClosed ? (
                 <>
                   <Clock className="w-4 h-4 mr-2" />
                   Place Pre-Order — {formatCurrency(total)}
+                </>
+              ) : formData.paymentMethod === 'card' ? (
+                <>
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Pay with Card — {formatCurrency(total)}
                 </>
               ) : (
                 <>

@@ -875,13 +875,18 @@ serve(secureHeadersMiddleware(async (req) => {
           discounts = [{ coupon: coupon.id }];
         }
 
+        // Append order info to success URL so confirmation page can look up the order
+        const baseSuccessUrl =
+          body.successUrl ??
+          `${req.headers.get("origin")}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`;
+        const successUrlSeparator = baseSuccessUrl.includes("?") ? "&" : "?";
+        const successUrlWithOrder = `${baseSuccessUrl}${successUrlSeparator}order=${orderId}&token=${orderRecord?.tracking_token ?? ""}`;
+
         const session = await stripe.checkout.sessions.create({
           ...(customerEmail ? { customer_email: customerEmail } : {}),
           line_items: lineItems,
           mode: "payment",
-          success_url:
-            body.successUrl ??
-            `${req.headers.get("origin")}/order-confirmation/${orderId}`,
+          success_url: successUrlWithOrder,
           cancel_url:
             body.cancelUrl ?? `${req.headers.get("origin")}/checkout`,
           ...(discounts ? { discounts } : {}),

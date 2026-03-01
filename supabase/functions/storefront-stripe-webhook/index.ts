@@ -71,8 +71,9 @@ serve(async (req) => {
       }
 
       // Update order payment status and set paid_at timestamp
+      // Use marketplace_orders (the actual table) instead of storefront_orders (a view)
       const { error: updateError } = await supabaseClient
-        .from("storefront_orders")
+        .from("marketplace_orders")
         .update({
           payment_status: "paid",
           stripe_payment_intent_id: session.payment_intent as string,
@@ -89,10 +90,10 @@ serve(async (req) => {
 
       // Fetch order details for loyalty points and confirmation email
       const { data: order } = await supabaseClient
-        .from("storefront_orders")
-        .select("*, marketplace_stores(store_name)")
+        .from("marketplace_orders")
+        .select("*, marketplace_stores!marketplace_orders_store_id_fkey(store_name)")
         .eq("id", orderId)
-        .single();
+        .maybeSingle();
 
       if (order && order.customer_email) {
         // Award loyalty points for completed payment
@@ -103,7 +104,7 @@ serve(async (req) => {
             {
               p_store_id: order.store_id,
               p_customer_email: order.customer_email,
-              p_order_total: order.total || 0,
+              p_order_total: order.total_amount || 0,
             }
           );
 
@@ -112,7 +113,7 @@ serve(async (req) => {
 
             // Update order with points earned
             await supabaseClient
-              .from("storefront_orders")
+              .from("marketplace_orders")
               .update({ loyalty_points_earned: loyaltyPointsEarned })
               .eq("id", orderId);
           }
@@ -129,8 +130,8 @@ serve(async (req) => {
             order_number: order.order_number || order.id.slice(0, 8).toUpperCase(),
             items: order.items || [],
             subtotal: order.subtotal || 0,
-            delivery_fee: order.delivery_fee || 0,
-            total: order.total || 0,
+            delivery_fee: order.shipping_cost || 0,
+            total: order.total_amount || 0,
             store_name: order.marketplace_stores?.store_name || "Store",
             tracking_url: `${Deno.env.get("SUPABASE_URL")?.replace(".supabase.co", ".lovableproject.com")}/order/${orderId}`,
             loyalty_points_earned: loyaltyPointsEarned,
@@ -164,7 +165,7 @@ serve(async (req) => {
 
       if (orderId) {
         await supabaseClient
-          .from("storefront_orders")
+          .from("marketplace_orders")
           .update({ payment_status: "failed" })
           .eq("id", orderId);
       }

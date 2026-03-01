@@ -78,10 +78,15 @@ export function OrderConfirmationPage() {
   const sessionId = searchParams.get('session_id');
 
   // Fetch order details with id for realtime subscription
+  // Resolved order ID from Stripe session lookup (populated by verification effect below)
+  const [resolvedOrderId, setResolvedOrderId] = useState<string | null>(null);
+  const effectiveOrderId = orderNumber || resolvedOrderId;
+
+  // Fetch order details to show items ordered
   const { data: orderDetails, isLoading: orderLoading } = useQuery({
-    queryKey: queryKeys.shopPages.orderConfirmation(trackingToken || orderNumber),
+    queryKey: queryKeys.shopPages.orderConfirmation(trackingToken || effectiveOrderId || sessionId),
     queryFn: async () => {
-      if (!trackingToken && !orderNumber) return null;
+      if (!trackingToken && !effectiveOrderId && !sessionId) return null;
 
       let query = supabase
         .from('storefront_orders')
@@ -92,6 +97,19 @@ export function OrderConfirmationPage() {
         query = query.eq('tracking_token', trackingToken);
       } else if (orderNumber) {
         query = query.or(`id.eq.${orderNumber},order_number.eq.${orderNumber}`);
+      // Try fetching by tracking_token first, then by order_number/id, then by stripe_session_id
+      let query = supabase
+        .from('storefront_orders')
+        .select('order_number, items, subtotal, delivery_fee, total, status, created_at, delivery_address, customer_name, payment_status');
+
+      if (trackingToken) {
+        query = query.eq('tracking_token', trackingToken);
+      } else if (effectiveOrderId) {
+        // effectiveOrderId could be UUID (card) or human-readable (cash)
+        query = query.or(`id.eq.${effectiveOrderId},order_number.eq.${effectiveOrderId}`);
+      } else if (sessionId) {
+        // Fallback: look up by Stripe session ID
+        query = query.eq('stripe_session_id', sessionId);
       }
 
       const { data, error } = await query.maybeSingle();
@@ -110,6 +128,8 @@ export function OrderConfirmationPage() {
       const activeStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery'];
       return activeStatuses.includes(data.status) ? 30000 : false;
     },
+    enabled: !!(trackingToken || effectiveOrderId || sessionId),
+    staleTime: 5 * 60 * 1000,
   });
 
   // Realtime subscription for instant order status updates
@@ -145,18 +165,29 @@ export function OrderConfirmationPage() {
 
   // Verify Stripe payment session if session_id is present (redirect from Stripe)
   useEffect(() => {
-    if (sessionId && orderNumber && !paymentVerified) {
-      setVerifying(true);
-      const verifyPayment = async () => {
-        try {
-          const { data: order, error } = await supabase
+    if (!sessionId) {
+      setPaymentVerified(true);
+      return;
+    }
+    if (paymentVerified) return;
+
+    setVerifying(true);
+    const verifyPayment = async () => {
+      try {
+        // Look up order by ID (from URL) or fallback to stripe_session_id
+        let lookupId = orderNumber;
+
+        if (!lookupId) {
+          // Fallback: find order by Stripe session ID
+          const { data: sessionOrder } = await supabase
             .from('storefront_orders')
-            .select('payment_status, stripe_session_id')
-            .eq('id', orderNumber)
+            .select('id, order_number, tracking_token')
+            .eq('stripe_session_id', sessionId)
             .maybeSingle();
 
-          if (error) {
-            logger.warn('Failed to verify payment status', error, { component: 'OrderConfirmationPage' });
+          if (sessionOrder) {
+            lookupId = sessionOrder.id;
+            setResolvedOrderId(sessionOrder.id);
           }
 
           if (order?.payment_status === 'paid' || order?.stripe_session_id === sessionId) {
@@ -171,23 +202,51 @@ export function OrderConfirmationPage() {
         } finally {
           setVerifying(false);
         }
-      };
-      verifyPayment();
-    } else if (!sessionId) {
-      setPaymentVerified(true);
-    }
+
+        if (!lookupId) {
+          // Could not resolve order — show confirmation anyway
+          setPaymentVerified(true);
+          return;
+        }
+
+        const { data: order, error } = await supabase
+          .from('storefront_orders')
+          .select('payment_status, stripe_session_id')
+          .eq('id', lookupId)
+          .maybeSingle();
+
+        if (error) {
+          logger.warn('Failed to verify payment status', error, { component: 'OrderConfirmationPage' });
+        }
+
+        // Payment is verified if status is 'paid' or if session matches (webhook may arrive later)
+        if (order?.payment_status === 'paid' || order?.stripe_session_id === sessionId) {
+          setPaymentVerified(true);
+        } else {
+          // Webhook might not have arrived yet - still show confirmation
+          setPaymentVerified(true);
+          logger.info('Payment pending webhook confirmation', { orderId: lookupId, sessionId }, { component: 'OrderConfirmationPage' });
+        }
+      } catch (err) {
+        logger.warn('Payment verification error', err, { component: 'OrderConfirmationPage' });
+        setPaymentVerified(true);
+      } finally {
+        setVerifying(false);
+      }
+    };
+    verifyPayment();
   }, [sessionId, orderNumber, paymentVerified]);
 
-  // Redirect if no order data
+  // Redirect if no order data and no session ID (Stripe redirect may not have order param)
   useEffect(() => {
-    if (!orderNumber) {
+    if (!effectiveOrderId && !sessionId) {
       navigate(`/shop/${storeSlug}`);
     }
-  }, [orderNumber, navigate, storeSlug]);
+  }, [effectiveOrderId, sessionId, navigate, storeSlug]);
 
   // Clear cart ONCE after successful order confirmation
   useEffect(() => {
-    if (orderNumber && !cartCleared) {
+    if ((effectiveOrderId || sessionId) && !cartCleared) {
       clearCart();
       setCartCleared(true);
 
