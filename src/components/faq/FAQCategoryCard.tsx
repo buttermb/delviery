@@ -1,7 +1,7 @@
+import { HelpCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import * as Icons from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { getIconComponent } from '@/lib/icons/iconMap';
 
 interface FAQCategoryCardProps {
   name: string;
@@ -12,7 +12,7 @@ interface FAQCategoryCardProps {
 }
 
 export function FAQCategoryCard({ name, icon, count, onClick, active }: FAQCategoryCardProps) {
-  const Icon = (Icons[icon as keyof typeof Icons] || Icons.HelpCircle) as LucideIcon;
+  const Icon = getIconComponent(icon) ?? HelpCircle;
 
   return (
     <Card 

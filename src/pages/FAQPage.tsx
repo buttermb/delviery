@@ -9,13 +9,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Search, TrendingUp, Sparkles } from 'lucide-react';
+import { Search, TrendingUp, Sparkles, HelpCircle } from 'lucide-react';
 import { faqCategories, searchFAQs, getPopularFAQs } from '@/lib/faq-data';
 import { FAQRating } from '@/components/faq/FAQRating';
 import { FAQRelated } from '@/components/faq/FAQRelated';
 import { FAQCategoryCard } from '@/components/faq/FAQCategoryCard';
-import * as Icons from 'lucide-react';
-import { LucideIcon } from 'lucide-react';
+import { getIconComponent } from '@/lib/icons/iconMap';
 
 export default function FAQPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,7 +98,7 @@ export default function FAQPage() {
               </div>
               <div className="space-y-2">
                 {popularFAQs.map((faq) => {
-                  const Icon = (Icons[faqCategories.find(c => c.id === faq.category)?.icon as keyof typeof Icons] || Icons.HelpCircle) as LucideIcon;
+                  const Icon = getIconComponent(faqCategories.find(c => c.id === faq.category)?.icon ?? '') ?? HelpCircle;
                   return (
                     <button
                       key={faq.id}
@@ -159,7 +158,7 @@ export default function FAQPage() {
         {groupedFAQs.length > 0 ? (
           <div className="space-y-6">
             {groupedFAQs.map((category) => {
-              const Icon = (Icons[category.icon as keyof typeof Icons] || Icons.HelpCircle) as LucideIcon;
+              const Icon = getIconComponent(category.icon) ?? HelpCircle;
               return (
                 <Card key={category.id} id={category.id}>
                   <CardContent className="pt-6">

@@ -17,6 +17,7 @@ import {
   Box,
   MapPin,
   BarChart3,
+  BarChart,
   Shield,
   Building,
   CheckCircle,
@@ -45,6 +46,11 @@ import {
   Bell,
   Mail,
   Phone,
+  HelpCircle,
+  Plug,
+  Smartphone,
+  GraduationCap,
+  User,
   type LucideIcon,
 } from 'lucide-react';
 import React from 'react';
@@ -100,6 +106,12 @@ export const iconComponents: Record<string, LucideIcon> = {
   Bell,
   Mail,
   Phone,
+  HelpCircle,
+  BarChart,
+  Plug,
+  Smartphone,
+  GraduationCap,
+  User,
 };
 
 /**
