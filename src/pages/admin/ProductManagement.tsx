@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from "react";
 import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import { UnsavedChangesDialog } from "@/components/unsaved-changes";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -57,7 +57,7 @@ import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { BatchPanel } from "@/components/admin/BatchPanel";
 import { BulkPriceEditor } from "@/components/admin/BulkPriceEditor";
 import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
-import { ProductImportDialog } from "@/components/admin/ProductImportDialog";
+const ProductImportDialog = lazy(() => import("@/components/admin/ProductImportDialog").then(m => ({ default: m.ProductImportDialog })));
 import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
 import { useProductDuplicate } from "@/hooks/useProductDuplicate";
 import { useEncryption } from "@/lib/hooks/useEncryption";
@@ -1221,12 +1221,14 @@ export default function ProductManagement() {
         </DialogContent>
       </Dialog>
 
-      {canEdit('products') && (
-        <ProductImportDialog
-          open={importDialogOpen}
-          onOpenChange={setImportDialogOpen}
-          onSuccess={loadProducts}
-        />
+      {canEdit('products') && importDialogOpen && (
+        <Suspense fallback={null}>
+          <ProductImportDialog
+            open={importDialogOpen}
+            onOpenChange={setImportDialogOpen}
+            onSuccess={loadProducts}
+          />
+        </Suspense>
       )}
 
       {/* Stats */}
