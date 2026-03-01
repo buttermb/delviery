@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { LiveOrdersKanban, type LiveOrder } from '@/components/admin/live-orders/LiveOrdersKanban';
+import { LiveOrdersMobileList } from '@/components/admin/live-orders/LiveOrdersMobileList';
 import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { useUndo } from '@/hooks/useUndo';
 import { UndoToast } from '@/components/ui/undo-toast';
@@ -17,6 +18,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { EmptyState } from '@/components/admin/shared/EmptyState';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { LiveOrdersStatsBar } from '@/components/admin/live-orders/LiveOrdersStatsBar';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 // Type Definitions matching Supabase response
 interface MenuOrderRaw {
@@ -38,6 +40,7 @@ interface LiveOrdersProps {
 export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [soundEnabled, setSoundEnabledState] = useState(isSoundEnabled);
   const previousOrderCountRef = useRef<number>(0);
@@ -275,25 +278,25 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
       />
 
       {/* Header */}
-      <div className="flex-none px-6 py-4 border-b bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-3">
+      <div className="flex-none px-4 sm:px-6 py-3 sm:py-4 border-b bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+        <div className="flex justify-between items-start sm:items-center gap-2">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
               Live Orders
-              <span className="relative flex h-3 w-3">
+              <span className="relative flex h-2.5 w-2.5 sm:h-3 sm:w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 bg-green-500"></span>
               </span>
             </h1>
-            <p className="text-muted-foreground text-sm">
-              {orders.length} active orders • Swimlane View
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              {orders.length} active • {isMobile ? 'Card View' : 'Swimlane View'}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Connection Status */}
             <div
-              className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors ${isConnected
+              className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1 rounded-full text-[10px] sm:text-xs font-medium transition-colors ${isConnected
                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                 : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 animate-pulse'
                 }`}
@@ -304,7 +307,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
               ) : (
                 <WifiOff className="h-3 w-3" />
               )}
-              {isConnected ? 'Live' : 'Polling'}
+              {isConnected ? 'Live' : 'Poll'}
             </div>
 
             {/* Sound Toggle */}
@@ -312,7 +315,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
               variant={soundEnabled ? "default" : "outline"}
               size="sm"
               onClick={handleToggleSound}
-              className="gap-2"
+              className="gap-1 sm:gap-2 h-8 px-2 sm:px-3"
               title={soundEnabled ? "Sound alerts on" : "Sound alerts off"}
             >
               {soundEnabled ? (
@@ -320,7 +323,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
               ) : (
                 <VolumeX className="h-4 w-4" />
               )}
-              {soundEnabled ? "Sound On" : "Sound Off"}
+              <span className="hidden sm:inline">{soundEnabled ? "Sound On" : "Sound Off"}</span>
             </Button>
 
             <Button
@@ -328,10 +331,10 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
               size="sm"
               onClick={handleManualRefresh}
               disabled={isRefreshing || isLoading}
-              className="gap-2"
+              className="gap-1 sm:gap-2 h-8 px-2 sm:px-3"
             >
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Refresh Board
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
         </div>
@@ -340,8 +343,8 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
       {/* Stats Bar */}
       <LiveOrdersStatsBar />
 
-      {/* Kanban Board Container */}
-      <div className="flex-1 overflow-auto p-3">
+      {/* Orders Container */}
+      <div className="flex-1 overflow-auto p-2 sm:p-3">
         <PullToRefresh onRefresh={async () => { await refetch(); }}>
           <div className="h-full">
             {!isLoading && orders.length === 0 ? (
@@ -349,6 +352,12 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
                 icon={Radio}
                 title="No active orders right now"
                 description="Live orders appear here in real-time when customers place orders"
+              />
+            ) : isMobile ? (
+              <LiveOrdersMobileList
+                orders={orders}
+                isLoading={isLoading}
+                onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
               />
             ) : (
               <LiveOrdersKanban
