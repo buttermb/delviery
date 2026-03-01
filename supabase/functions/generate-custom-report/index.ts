@@ -1,4 +1,5 @@
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
+import { escapePostgresLike } from '../_shared/searchSanitize.ts';
 
 /**
  * Generate Custom Report Edge Function
@@ -199,10 +200,10 @@ serve(async (req) => {
                 query = query.neq(fieldName, condition.value);
                 break;
               case 'contains':
-                query = query.ilike(fieldName, `%${condition.value}%`);
+                query = query.ilike(fieldName, `%${escapePostgresLike(String(condition.value))}%`);
                 break;
               case 'not_contains':
-                query = query.not(fieldName, 'ilike', `%${condition.value}%`);
+                query = query.not(fieldName, 'ilike', `%${escapePostgresLike(String(condition.value))}%`);
                 break;
               case 'greater_than':
                 query = query.gt(fieldName, condition.value);

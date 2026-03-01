@@ -6,6 +6,7 @@
  */
 
 import { createClient, corsHeaders, z } from '../../_shared/deps.ts';
+import { sanitizeSearchInput } from '../../_shared/searchSanitize.ts';
 
 type RequestHandler = (req: Request, params: Record<string, string>) => Promise<Response>;
 
@@ -112,7 +113,8 @@ async function listProducts(req: Request, params: Record<string, string>): Promi
       query = query.eq('category', category);
     }
     if (search) {
-      query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%`);
+      const escaped = sanitizeSearchInput(search);
+      query = query.or(`name.ilike.%${escaped}%,sku.ilike.%${escaped}%`);
     }
     if (inStock === 'true') {
       query = query.gt('stock_quantity', 0);

@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
+import { sanitizeSearchInput } from '@/lib/utils/searchSanitize';
 import { quickExportCSV } from '@/lib/utils/exportUtils';
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';

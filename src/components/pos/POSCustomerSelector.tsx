@@ -24,7 +24,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { QuickCreateCustomerDialog } from './QuickCreateCustomerDialog';
 import { displayName } from '@/lib/formatters';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
+import { sanitizeSearchInput } from '@/lib/utils/searchSanitize';
 
 export interface POSCustomer {
   id: string;

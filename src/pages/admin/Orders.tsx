@@ -30,7 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SearchInput } from '@/components/shared/SearchInput';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
+import { sanitizeSearchInput } from '@/lib/utils/searchSanitize';
 import { LastUpdated } from "@/components/shared/LastUpdated";
 import { BulkActionsBar } from "@/components/ui/BulkActionsBar";
 import { OrderBulkStatusConfirmDialog } from "@/components/admin/orders/OrderBulkStatusConfirmDialog";

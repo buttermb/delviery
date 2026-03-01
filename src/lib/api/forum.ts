@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeForTextSearch } from '@/lib/utils/searchSanitize';
 import type {
   ForumPost,
   ForumComment,
@@ -500,7 +501,7 @@ export async function searchPosts(query: string): Promise<ForumPost[]> {
           customer_user:customer_users(id, email, first_name, last_name)
         )
       `)
-      .textSearch('search_vector', query)
+      .textSearch('search_vector', sanitizeForTextSearch(query))
       .eq('is_removed', false)
       .limit(20);
 
