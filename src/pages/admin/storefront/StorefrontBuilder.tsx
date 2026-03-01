@@ -24,7 +24,7 @@ import {
     GripVertical, Trash2, ArrowLeft, Layout,
     Monitor, Smartphone, Tablet, Copy, Eye, EyeOff, Undo2, Redo2,
     Image, MessageSquare, HelpCircle, Mail, Sparkles, X, ZoomIn, ZoomOut,
-    Code, Globe, GlobeLock, AlertCircle, Settings2, Wand2, Loader2, Store
+    Code, Globe, GlobeLock, AlertCircle, Settings2, Wand2, Loader2, Store, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EasyModeEditor } from '@/components/admin/storefront/EasyModeEditor';
@@ -53,6 +53,9 @@ import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { SectionEditor } from '@/components/admin/storefront/SectionEditors';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
+import { useDebounce } from '@/hooks/useDebounce';
+
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 // Define available section types (8 total)
 const SECTION_TYPES = {
@@ -235,6 +238,9 @@ export function StorefrontBuilder({
     const [newStoreSlug, setNewStoreSlug] = useState('');
     const [slugError, setSlugError] = useState<string | null>(null);
     const [isValidatingSlug, setIsValidatingSlug] = useState(false);
+    const [slugAvailable, setSlugAvailable] = useState(false);
+
+    const debouncedStoreSlug = useDebounce(newStoreSlug, 400);
 
     // Delete Confirmation Dialog State
     const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
@@ -399,44 +405,59 @@ export function StorefrontBuilder({
         }
     }, [history, historyIndex]);
 
-    // Slug uniqueness validation
-    const validateSlug = useCallback(async (slug: string): Promise<boolean> => {
-        if (!slug || slug.length < 3) {
-            setSlugError('Slug must be at least 3 characters');
-            return false;
-        }
-
-        const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-        if (!slugRegex.test(slug)) {
-            setSlugError('Slug can only contain lowercase letters, numbers, and hyphens');
-            return false;
-        }
-
-        setIsValidatingSlug(true);
-        try {
-            const { data, error } = await supabase
-                .from('marketplace_stores')
-                .select('id')
-                .eq('slug', slug)
-                .maybeSingle();
-
-            if (error) throw error;
-
-            if (data) {
-                setSlugError('This slug is already taken');
-                return false;
-            }
-
+    // Debounced slug uniqueness validation
+    useEffect(() => {
+        if (!debouncedStoreSlug) {
             setSlugError(null);
-            return true;
-        } catch (err) {
-            logger.error('Failed to validate slug', err);
-            setSlugError('Failed to validate slug');
-            return false;
-        } finally {
-            setIsValidatingSlug(false);
+            setSlugAvailable(false);
+            return;
         }
-    }, []);
+
+        if (debouncedStoreSlug.length < 3) {
+            setSlugError('Slug must be at least 3 characters');
+            setSlugAvailable(false);
+            return;
+        }
+
+        if (!SLUG_REGEX.test(debouncedStoreSlug)) {
+            setSlugError('Only lowercase letters, numbers, and hyphens allowed');
+            setSlugAvailable(false);
+            return;
+        }
+
+        let cancelled = false;
+        setIsValidatingSlug(true);
+
+        (async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('marketplace_stores')
+                    .select('id')
+                    .eq('slug', debouncedStoreSlug)
+                    .maybeSingle();
+
+                if (cancelled) return;
+                if (error) throw error;
+
+                if (data) {
+                    setSlugError('This slug is already taken');
+                    setSlugAvailable(false);
+                } else {
+                    setSlugError(null);
+                    setSlugAvailable(true);
+                }
+            } catch (err) {
+                if (cancelled) return;
+                logger.error('Failed to validate slug', err);
+                setSlugError('Failed to check availability');
+                setSlugAvailable(false);
+            } finally {
+                if (!cancelled) setIsValidatingSlug(false);
+            }
+        })();
+
+        return () => { cancelled = true; };
+    }, [debouncedStoreSlug]);
 
     // Auto-generate slug from store name
     const generateSlug = useCallback((name: string): string => {
@@ -489,6 +510,7 @@ export function StorefrontBuilder({
             setShowCreateDialog(false);
             setNewStoreName('');
             setNewStoreSlug('');
+            setSlugAvailable(false);
         },
         onError: (err) => {
             toast.error('Creation failed', { description: humanizeError(err) });
@@ -496,12 +518,16 @@ export function StorefrontBuilder({
         }
     });
 
+    const isSlugChecking = isValidatingSlug || (newStoreSlug !== debouncedStoreSlug && newStoreSlug.length >= 3);
+
     // Handle store creation with credit deduction
     const handleCreateStore = async () => {
         if (!newStoreName.trim()) {
             toast.error('Store name is required');
             return;
         }
+
+        if (slugError || isSlugChecking || !slugAvailable) return;
 
         const isValid = await validateSlug(newStoreSlug);
         if (!isValid) return;
@@ -831,7 +857,7 @@ export function StorefrontBuilder({
                                         onChange={(e) => {
                                             setNewStoreName(e.target.value);
                                             setNewStoreSlug(generateSlug(e.target.value));
-                                            setSlugError(null);
+                                            setSlugAvailable(false);
                                         }}
                                     />
                                 </div>
@@ -845,24 +871,28 @@ export function StorefrontBuilder({
                                             value={newStoreSlug}
                                             onChange={(e) => {
                                                 setNewStoreSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''));
-                                                setSlugError(null);
-                                            }}
-                                            onBlur={() => {
-                                                if (newStoreSlug) {
-                                                    validateSlug(newStoreSlug);
-                                                }
+                                                setSlugAvailable(false);
                                             }}
                                             className="flex-1"
                                         />
                                     </div>
                                     {slugError && (
                                         <p className="text-sm text-destructive flex items-center gap-1">
-                                            <AlertCircle className="w-3 h-3" />
+                                            <AlertCircle className="w-3 h-3 shrink-0" />
                                             {slugError}
                                         </p>
                                     )}
-                                    {isValidatingSlug && (
-                                        <p className="text-sm text-muted-foreground">Checking availability...</p>
+                                    {isSlugChecking && (
+                                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                            Checking availability...
+                                        </p>
+                                    )}
+                                    {slugAvailable && !isSlugChecking && newStoreSlug.length >= 3 && (
+                                        <p className="text-sm text-green-600 flex items-center gap-1">
+                                            <CheckCircle2 className="w-3 h-3" />
+                                            Slug is available
+                                        </p>
                                     )}
                                 </div>
                                 <div className="space-y-2">
@@ -876,7 +906,7 @@ export function StorefrontBuilder({
                             <Button
                                 className="w-full"
                                 onClick={handleCreateStore}
-                                disabled={!newStoreName || !newStoreSlug || isValidatingSlug || isCreatingWithCredits || createStoreMutation.isPending}
+                                disabled={!newStoreName || !newStoreSlug || !!slugError || isSlugChecking || isCreatingWithCredits || createStoreMutation.isPending}
                             >
                                 {(isCreatingWithCredits || createStoreMutation.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                                 {isCreatingWithCredits || createStoreMutation.isPending ? 'Creating...' : 'Create Store (500 credits)'}
@@ -1290,7 +1320,7 @@ export function StorefrontBuilder({
                                 onChange={(e) => {
                                     setNewStoreName(e.target.value);
                                     setNewStoreSlug(generateSlug(e.target.value));
-                                    setSlugError(null);
+                                    setSlugAvailable(false);
                                 }}
                             />
                         </div>
@@ -1304,24 +1334,28 @@ export function StorefrontBuilder({
                                     value={newStoreSlug}
                                     onChange={(e) => {
                                         setNewStoreSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''));
-                                        setSlugError(null);
-                                    }}
-                                    onBlur={() => {
-                                        if (newStoreSlug) {
-                                            validateSlug(newStoreSlug);
-                                        }
+                                        setSlugAvailable(false);
                                     }}
                                     className="flex-1"
                                 />
                             </div>
                             {slugError && (
                                 <p className="text-sm text-destructive flex items-center gap-1">
-                                    <AlertCircle className="w-3 h-3" />
+                                    <AlertCircle className="w-3 h-3 shrink-0" />
                                     {slugError}
                                 </p>
                             )}
-                            {isValidatingSlug && (
-                                <p className="text-sm text-muted-foreground">Checking availability...</p>
+                            {isSlugChecking && (
+                                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    Checking availability...
+                                </p>
+                            )}
+                            {slugAvailable && !isSlugChecking && newStoreSlug.length >= 3 && (
+                                <p className="text-sm text-green-600 flex items-center gap-1">
+                                    <CheckCircle2 className="w-3 h-3" />
+                                    Slug is available
+                                </p>
                             )}
                         </div>
                     </div>
@@ -1331,7 +1365,7 @@ export function StorefrontBuilder({
                         </Button>
                         <Button
                             onClick={handleCreateStore}
-                            disabled={!newStoreName || !newStoreSlug || isValidatingSlug || isCreatingWithCredits || createStoreMutation.isPending}
+                            disabled={!newStoreName || !newStoreSlug || !!slugError || isSlugChecking || isCreatingWithCredits || createStoreMutation.isPending}
                         >
                             {(isCreatingWithCredits || createStoreMutation.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                             {isCreatingWithCredits || createStoreMutation.isPending ? 'Creating...' : 'Create Store (500 credits)'}
