@@ -82,31 +82,80 @@ export type TemplateKey = keyof typeof TEMPLATES;
 // Helper to get defaults dynamically so we don't crash on new props
 export function sectionDefaults(type: string): { content: Record<string, unknown>; styles: Record<string, unknown> } {
     if (type === 'hero') return {
-        content: { heading_line_1: 'Premium', heading_line_2: 'Flower', heading_line_3: 'Delivered', subheading: 'Premium delivery service.', background_image: '', cta_primary_text: 'Shop Now', cta_primary_link: '/shop' },
+        content: {
+            heading_line_1: 'Premium',
+            heading_line_2: 'Flower',
+            heading_line_3: 'Delivered',
+            subheading: 'Curated strains. Same-day delivery.',
+            background_image: '',
+            cta_primary_text: 'Explore Collection',
+            cta_primary_link: '/shop',
+            cta_secondary_text: 'View Menu',
+            cta_secondary_link: '/menu',
+            trust_badges: true,
+        },
         styles: { background_gradient_start: '#000000', background_gradient_end: '#022c22', text_color: '#ffffff', accent_color: '#34d399', overlay_opacity: 0.6 }
     };
     if (type === 'features') return {
-        content: { heading_small: 'The Difference', heading_large: 'Excellence' },
+        content: {
+            heading_small: 'The Difference',
+            heading_large: 'Excellence in Every Detail',
+            features: [
+                { icon: 'clock', title: 'Same-Day Delivery', description: 'Order before 9 PM for delivery within the hour.' },
+                { icon: 'shield', title: 'Lab Verified', description: 'Every strain tested for purity and quality.' },
+                { icon: 'lock', title: 'Discreet Service', description: 'Unmarked packaging. Your privacy is our priority.' },
+                { icon: 'star', title: 'Premium Selection', description: 'Hand-picked strains. Top-shelf quality.' },
+            ],
+        },
         styles: { background_color: '#171717', text_color: '#ffffff', icon_color: '#34d399' }
     };
     if (type === 'product_grid') return {
-        content: { heading: 'Shop Collection', subheading: 'Curated selection.', columns: 4, max_products: 20, sort_order: 'newest', show_view_all_link: true, category_filter: 'all', show_search: true, show_categories: true, show_premium_filter: true, initial_categories_shown: 2 },
+        content: { heading: 'Shop Premium Collection', subheading: 'Premium indoor-grown flower from licensed cultivators', columns: 4, max_products: 20, sort_order: 'newest', show_view_all_link: true, category_filter: 'all', show_search: true, show_categories: true, show_premium_filter: true, initial_categories_shown: 2 },
         styles: { background_color: '#f4f4f5', text_color: '#000000', accent_color: '#10b981' }
     };
     if (type === 'testimonials') return {
-        content: { heading: 'What Our Customers Say', subheading: 'Join thousands of satisfied customers' },
+        content: {
+            heading: 'What Our Customers Say',
+            subheading: 'Join thousands of satisfied customers',
+            testimonials: [
+                { name: 'Sarah M.', role: 'Verified Customer', quote: 'The quality is unmatched. Fast delivery and exactly what I was looking for.', rating: 5 },
+                { name: 'Michael R.', role: 'Regular Customer', quote: 'Best service in the city. Professional, discreet, and always reliable.', rating: 5 },
+                { name: 'Jessica L.', role: 'New Customer', quote: 'Impressed with the selection and the speed of delivery. Highly recommend!', rating: 5 },
+            ],
+        },
         styles: { background_color: '#ffffff', text_color: '#000000', accent_color: '#10b981', card_background: '#f9fafb' }
     };
     if (type === 'newsletter') return {
-        content: { heading: 'Stay in the Loop', subheading: 'Subscribe for exclusive drops.', button_text: 'Subscribe', placeholder_text: 'Enter your email', success_message: 'Thanks for subscribing!' },
+        content: { heading: 'Stay in the Loop', subheading: 'Subscribe for exclusive drops, deals, and updates.', button_text: 'Subscribe', placeholder_text: 'Enter your email', success_message: 'Thanks for subscribing!' },
         styles: { background_gradient_start: '#000000', background_gradient_end: '#1f2937', text_color: '#ffffff', accent_color: '#10b981', button_color: '#10b981' }
     };
     if (type === 'gallery') return {
-        content: { heading: 'Gallery', subheading: 'A curated visual experience' },
+        content: {
+            heading: 'Gallery',
+            subheading: 'A curated visual experience',
+            images: [
+                { url: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600', alt: 'Product 1' },
+                { url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600', alt: 'Product 2' },
+                { url: 'https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?w=600', alt: 'Product 3' },
+                { url: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600', alt: 'Product 4' },
+                { url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600', alt: 'Product 5' },
+                { url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600', alt: 'Product 6' },
+            ],
+            layout: 'masonry',
+        },
         styles: { background_color: '#000000', text_color: '#ffffff', accent_color: '#10b981' }
     };
     if (type === 'faq') return {
-        content: { heading: 'Frequently Asked Questions', subheading: 'Got questions? We\'ve got answers.' },
+        content: {
+            heading: 'Frequently Asked Questions',
+            subheading: 'Got questions? We\'ve got answers.',
+            faqs: [
+                { question: 'What are your delivery hours?', answer: 'We deliver 7 days a week from 10 AM to 10 PM. Same-day delivery available.' },
+                { question: 'How do I track my order?', answer: 'You\'ll receive a tracking link via SMS and email once dispatched.' },
+                { question: 'What payment methods do you accept?', answer: 'We accept cash, debit cards, and all major credit cards.' },
+                { question: 'Is there a minimum order?', answer: 'Minimum order is $50 for delivery. Orders above $100 get free delivery.' },
+            ],
+        },
         styles: { background_color: '#f9fafb', text_color: '#000000', accent_color: '#10b981', border_color: '#e5e7eb' }
     };
     if (type === 'custom_html') return {

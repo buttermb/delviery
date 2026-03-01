@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface GallerySectionProps {
     content: {
@@ -10,6 +10,7 @@ export interface GallerySectionProps {
             url: string;
             alt: string;
         }>;
+        layout?: 'masonry' | 'grid' | 'carousel';
     };
     styles: {
         background_color: string;
@@ -29,11 +30,13 @@ const defaultImages = [
 
 export function GallerySection({ content, styles }: GallerySectionProps) {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
 
     const {
         heading = "Gallery",
         subheading = "A curated visual experience",
-        images = defaultImages
+        images = defaultImages,
+        layout = 'masonry',
     } = content || {};
 
     const {
@@ -41,6 +44,110 @@ export function GallerySection({ content, styles }: GallerySectionProps) {
         text_color = "#ffffff",
         accent_color = "#10b981"
     } = styles || {};
+
+    const scrollCarousel = (direction: 'left' | 'right') => {
+        if (!scrollRef.current) return;
+        const amount = scrollRef.current.clientWidth * 0.8;
+        scrollRef.current.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
+    };
+
+    const renderMasonry = () => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {images.map((image, index) => (
+                <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`relative overflow-hidden rounded-xl cursor-pointer group ${
+                        index % 5 === 0 ? 'md:row-span-2' : ''
+                    }`}
+                    onClick={() => setSelectedImage(image.url)}
+                >
+                    <img
+                        src={image.url}
+                        alt={image.alt}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        style={{ minHeight: index % 5 === 0 ? '400px' : '200px' }}
+                        loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </motion.div>
+            ))}
+        </div>
+    );
+
+    const renderGrid = () => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {images.map((image, index) => (
+                <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.05 }}
+                    className="relative overflow-hidden rounded-xl cursor-pointer group aspect-square"
+                    onClick={() => setSelectedImage(image.url)}
+                >
+                    <img
+                        src={image.url}
+                        alt={image.alt}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </motion.div>
+            ))}
+        </div>
+    );
+
+    const renderCarousel = () => (
+        <div className="relative">
+            <div
+                ref={scrollRef}
+                className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide"
+                style={{ scrollbarWidth: 'none' }}
+            >
+                {images.map((image, index) => (
+                    <motion.div
+                        key={index}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        className="relative flex-none w-72 sm:w-80 md:w-96 aspect-[4/3] overflow-hidden rounded-xl cursor-pointer group snap-center"
+                        onClick={() => setSelectedImage(image.url)}
+                    >
+                        <img
+                            src={image.url}
+                            alt={image.alt}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </motion.div>
+                ))}
+            </div>
+            {images.length > 2 && (
+                <>
+                    <button
+                        onClick={() => scrollCarousel('left')}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 hover:bg-black/60 transition-colors"
+                        aria-label="Scroll left"
+                    >
+                        <ChevronLeft className="w-5 h-5 text-white" />
+                    </button>
+                    <button
+                        onClick={() => scrollCarousel('right')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 hover:bg-black/60 transition-colors"
+                        aria-label="Scroll right"
+                    >
+                        <ChevronRight className="w-5 h-5 text-white" />
+                    </button>
+                </>
+            )}
+        </div>
+    );
 
     return (
         <section className="py-24 px-6" style={{ backgroundColor: background_color }}>
@@ -60,33 +167,8 @@ export function GallerySection({ content, styles }: GallerySectionProps) {
                     </h2>
                 </motion.div>
 
-                {/* Masonry-style Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {images.map((image, index) => (
-                        <motion.div
-                            key={`${image.url}-${index}`}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.05 }}
-                            className={`relative overflow-hidden rounded-xl cursor-pointer group ${
-                                index % 5 === 0 ? 'md:row-span-2' : ''
-                            }`}
-                            onClick={() => setSelectedImage(image.url)}
-                        >
-                            <img
-                                src={image.url}
-                                alt={image.alt}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                style={{ minHeight: index % 5 === 0 ? '400px' : '200px' }}
-                                loading="lazy"
-                            />
-                            <div 
-                                className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                            />
-                        </motion.div>
-                    ))}
-                </div>
+                {/* Gallery Layout */}
+                {layout === 'grid' ? renderGrid() : layout === 'carousel' ? renderCarousel() : renderMasonry()}
             </div>
 
             {/* Lightbox */}

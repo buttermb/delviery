@@ -824,6 +824,22 @@ function GalleryEditor({ section, onUpdateContent, onUpdateStyles }: SectionEdit
                                 placeholder="A curated visual experience"
                             />
                         </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-xs">Layout Style</Label>
+                            <Select
+                                value={(content.layout as string) || 'masonry'}
+                                onValueChange={(v) => onUpdateContent('layout', v)}
+                            >
+                                <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue placeholder="Select layout" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="masonry">Masonry</SelectItem>
+                                    <SelectItem value="grid">Grid (Uniform)</SelectItem>
+                                    <SelectItem value="carousel">Carousel</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </AccordionContent>
                 </AccordionItem>
 
