@@ -65,6 +65,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function isValidUSPhone(value: string): boolean {
   return normalizePhoneNumber(value) !== null;
 }
+import { CheckoutCustomerInfoStep } from '@/components/shop/CheckoutCustomerInfoStep';
 
 interface CheckoutData {
   // Contact
@@ -302,6 +303,12 @@ export function CheckoutPage() {
 
   // Double-submit guard — state disables button immediately on click
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Step 1 form validation (set by CheckoutCustomerInfoStep)
+  const step1ValidateRef = useRef<(() => Promise<boolean>) | null>(null);
+  const handleStep1Validate = useCallback((validateFn: () => Promise<boolean>) => {
+    step1ValidateRef.current = validateFn;
+  }, []);
 
   // Idempotency key persisted to sessionStorage to survive page refresh during submission
   const [idempotencyKey] = useState(() => {
@@ -606,13 +613,16 @@ export function CheckoutPage() {
   };
 
   // Validate current step
-  const validateStep = () => {
-    setShowErrors(true);
+  const validateStep = async (): Promise<boolean> => {
     switch (currentStep) {
-      case 1:
-        if (!formData.firstName || !formData.lastName || !formData.email) {
-          toast.error('Please fill in all required fields');
-          return false;
+      case 1: {
+        // Delegate to React Hook Form validation via ref
+        if (step1ValidateRef.current) {
+          const isValid = await step1ValidateRef.current();
+          if (!isValid) {
+            toast.error('Please fix the errors above');
+          }
+          return isValid;
         }
         if (!EMAIL_REGEX.test(formData.email)) {
           toast.error('Invalid email address', { description: 'Please enter a valid email.' });
@@ -633,6 +643,8 @@ export function CheckoutPage() {
           return false;
         }
         return true;
+        return false;
+      }
       case 2:
         if (!formData.fulfillmentMethod) {
           toast.error('Please select a fulfillment method');
@@ -695,8 +707,9 @@ export function CheckoutPage() {
   };
 
   // Next step
-  const nextStep = () => {
-    if (validateStep()) {
+  const nextStep = async () => {
+    const isValid = await validateStep();
+    if (isValid) {
       setCurrentStep((prev) => Math.min(prev + 1, 4));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1252,6 +1265,12 @@ export function CheckoutPage() {
     if (isSubmitting || placeOrderMutation.isPending) return;
     if (validateStep()) {
       setIsSubmitting(true);
+  // Handle place order — ref guard prevents fast double-click
+  const handlePlaceOrder = async () => {
+    if (isSubmittingRef.current || placeOrderMutation.isPending) return;
+    const isValid = await validateStep();
+    if (isValid) {
+      isSubmittingRef.current = true;
       placeOrderMutation.mutate();
     }
   };
@@ -1614,6 +1633,28 @@ export function CheckoutPage() {
                       </>
                     )}
                   </motion.div>
+                  <CheckoutCustomerInfoStep
+                    initialValues={{
+                      firstName: formData.firstName,
+                      lastName: formData.lastName,
+                      phone: formData.phone,
+                      email: formData.email,
+                      preferredContact: formData.preferredContact,
+                    }}
+                    createAccount={createAccount}
+                    accountPassword={accountPassword}
+                    isLuxuryTheme={isLuxuryTheme}
+                    isLookingUpCustomer={isLookingUpCustomer}
+                    isRecognized={isRecognized}
+                    returningCustomer={returningCustomer}
+                    onFieldChange={(field, value) => updateField(field as keyof CheckoutData, value)}
+                    onCreateAccountChange={(checked) => {
+                      setCreateAccount(checked);
+                      if (!checked) setAccountPassword('');
+                    }}
+                    onAccountPasswordChange={setAccountPassword}
+                    onValidate={handleStep1Validate}
+                  />
                 )}
 
                 {/* Step 2: Fulfillment Method & Delivery Address */}

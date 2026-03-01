@@ -157,4 +157,14 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Removed redundant StorefrontAgeGate instances from bottom of both layout renders (unreachable after inline gate)
 - "No" redirects to google.com, "Yes" saves to localStorage and shows store
 - Preview mode bypasses age gate
+## Checkout Step 1: Customer Info Form with React Hook Form + Zod
+- Created `src/components/shop/CheckoutCustomerInfoStep.tsx` as extracted Step 1 component
+- Uses React Hook Form + Zod validation (per project conventions)
+- Fields: first name (required), last name (required), phone (required, validated with regex), email (optional), preferred contact method radio (Text/Phone/Email/Telegram)
+- Includes create account option with conditional password field (min 8 chars)
+- Integrates with returning customer auto-fill (useReturningCustomerLookup)
+- Exposes validation function to parent via callback ref for step navigation
+- Updated CheckoutPage.tsx to use the new component, replacing inline Step 1 JSX
+- Made validateStep and nextStep async to support React Hook Form async validation
+- Removed dead code: showErrors state, EMAIL_REGEX, PHONE_REGEX (from CheckoutPage)
 - TypeScript compilation passes with zero errors
