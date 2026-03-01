@@ -245,6 +245,8 @@ export const queryKeys = {
       [...queryKeys.dashboard.all, 'orders-by-status', tenantId] as const,
     topProducts: (tenantId?: string) =>
       [...queryKeys.dashboard.all, 'top-products', tenantId] as const,
+    storefrontWidget: (tenantId?: string) =>
+      [...queryKeys.dashboard.all, 'storefront-widget', tenantId] as const,
   },
 
   // Analytics

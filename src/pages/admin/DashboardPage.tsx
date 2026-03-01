@@ -50,8 +50,25 @@ const RevenueWidget = lazy(() => import('@/components/admin/dashboard/RevenueWid
 // Lazy load ActivityWidget for better performance
 const ActivityWidget = lazy(() => import('@/components/admin/dashboard/ActivityFeedWidget').then(module => ({ default: module.ActivityFeedWidget })));
 
+// Lazy load StorefrontWidget for better performance
+const StorefrontWidget = lazy(() => import('@/components/admin/dashboard/StorefrontWidget').then(module => ({ default: module.StorefrontWidget })));
+
 // Lazy load AlertsWidget for better performance
 const AlertsWidget = lazy(() => import('@/components/admin/dashboard/AlertsWidget').then(module => ({ default: module.AlertsWidget })));
+
+// Fallback component for StorefrontWidget while loading
+function StorefrontWidgetFallback() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-7 w-32" />
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <KPICardSkeleton key={i} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // Fallback component for RevenueWidget while loading
 function RevenueWidgetFallback() {
@@ -369,6 +386,11 @@ export function DashboardPage() {
           {/* Revenue Section - Lazy Loaded */}
           <Suspense fallback={<RevenueWidgetFallback />}>
             <RevenueWidget period={period} />
+          </Suspense>
+
+          {/* Storefront Section - Lazy Loaded */}
+          <Suspense fallback={<StorefrontWidgetFallback />}>
+            <StorefrontWidget />
           </Suspense>
 
           {/* Orders Section */}
