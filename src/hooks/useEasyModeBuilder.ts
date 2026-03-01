@@ -191,6 +191,7 @@ export function useEasyModeBuilder({
         const sections = generateSectionsFromPreset(preset);
 
         const themeConfig: ExtendedThemeConfig = {
+            theme_id: theme?.id,
             colors: theme ? {
                 primary: theme.colors.primary,
                 secondary: theme.colors.secondary,
@@ -290,6 +291,7 @@ export function useEasyModeBuilder({
         const theme = selectedPreset ? getPresetTheme(selectedPreset) : null;
 
         return {
+            theme_id: theme?.id ?? initialThemeConfig?.theme_id,
             colors: theme ? {
                 primary: theme.colors.primary,
                 secondary: theme.colors.secondary,

@@ -174,7 +174,13 @@ export function StorefrontPage() {
     const seoDescription = store.tagline || `Shop premium cannabis at ${store.store_name}. Fast delivery, lab-tested products.`;
 
     return (
-        <div className="min-h-dvh bg-background overflow-x-hidden">
+        <div
+            className="min-h-dvh overflow-x-hidden"
+            style={{
+                backgroundColor: 'var(--storefront-bg, hsl(var(--background)))',
+                color: 'var(--storefront-text, inherit)',
+            }}
+        >
             {/* SEO: Title, Meta, OG, Twitter, JSON-LD */}
             <SEOHead
                 title={seoTitle}

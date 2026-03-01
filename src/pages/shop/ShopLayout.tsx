@@ -24,7 +24,7 @@ import {
   Share2,
 } from 'lucide-react';
 import { logger } from '@/lib/logger';
-import { getThemeById } from '@/lib/storefrontThemes';
+import { getThemeById, applyCSSVariables } from '@/lib/storefrontThemes';
 import { MobileBottomNav } from '@/components/shop/MobileBottomNav';
 import { LuxuryNav } from '@/components/shop/LuxuryNav';
 import { LuxuryFooter } from '@/components/shop/LuxuryFooter';
@@ -55,8 +55,8 @@ interface StoreInfo {
   minimum_age: number;
   layout_config?: Record<string, unknown>[] | null;
   theme_config?: {
-    theme?: 'default' | 'luxury' | 'minimal';
     theme_id?: string;
+    theme?: 'default' | 'luxury' | 'minimal';
     colors?: {
       primary?: string;
       secondary?: string;
@@ -184,12 +184,11 @@ export default function ShopLayout() {
     const themeId = store.theme_config.theme_id;
     const preset = themeId ? getThemeById(themeId) : undefined;
     const root = document.documentElement;
+    const { colors, typography } = store.theme_config;
 
     if (preset) {
-      // Apply all --storefront-* CSS variables from the theme preset
-      Object.entries(preset.cssVariables).forEach(([key, value]) => {
-        root.style.setProperty(key, value);
-      });
+      // Apply the full preset CSS variables to <html>
+      applyCSSVariables(root, preset);
       root.style.setProperty('--storefront-font-heading', preset.typography.fonts.heading);
       root.style.setProperty('--storefront-font-body', preset.typography.fonts.body);
 
@@ -210,13 +209,16 @@ export default function ShopLayout() {
       }
 
       logger.debug('Applied theme preset CSS variables', { themeId });
-    } else if (store.theme_config.colors) {
+    } else if (colors) {
       // Fallback: apply custom colors from theme_config directly
-      const colors = store.theme_config.colors;
       if (colors.background) root.style.setProperty('--storefront-bg', colors.background);
       if (colors.text) root.style.setProperty('--storefront-text', colors.text);
       if (colors.primary) root.style.setProperty('--storefront-primary', colors.primary);
       if (colors.accent) root.style.setProperty('--storefront-accent', colors.accent);
+      if (typography?.fontFamily) {
+        root.style.setProperty('--storefront-font-body', typography.fontFamily);
+        root.style.setProperty('--storefront-font-heading', typography.fontFamily);
+      }
 
       logger.debug('Applied custom theme colors', { colors });
     }
@@ -474,11 +476,15 @@ export default function ShopLayout() {
       '--storefront-border': resolvedPreset.cssVariables['--storefront-border'],
       '--storefront-radius': resolvedPreset.cssVariables['--storefront-radius'],
       '--storefront-shadow': resolvedPreset.cssVariables['--storefront-shadow'],
+      backgroundColor: resolvedPreset.cssVariables['--storefront-bg'],
+      color: resolvedPreset.cssVariables['--storefront-text'],
     } : store.theme_config?.colors ? {
       '--storefront-primary': store.theme_config.colors.primary,
       '--storefront-accent': store.theme_config.colors.accent,
       '--storefront-bg': store.theme_config.colors.background,
       '--storefront-text': store.theme_config.colors.text,
+      backgroundColor: store.theme_config.colors.background ?? undefined,
+      color: store.theme_config.colors.text ?? undefined,
     } : {}),
   } as React.CSSProperties;
 
