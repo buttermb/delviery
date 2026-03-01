@@ -35,6 +35,7 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { humanizeError } from '@/lib/humanizeError';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { safeStorage } from '@/utils/safeStorage';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -78,7 +79,7 @@ export function SinglePageCheckout() {
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormData, string>>>({});
 
   // Cart hook
-  const { cartItems, subtotal, clearCart: _clearCart, isInitialized } = useShopCart({
+  const { cartItems, subtotal, clearCart, isInitialized } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
   });
@@ -232,10 +233,9 @@ export function SinglePageCheckout() {
     },
     onSuccess: async (data) => {
       // Clear cart and form
-      if (store?.id) {
-        localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
-        if (formStorageKey) localStorage.removeItem(formStorageKey);
-        setCartItemCount(0);
+      clearCart();
+      if (formStorageKey) {
+        safeStorage.removeItem(formStorageKey);
       }
 
       // Send order confirmation email (fire and forget) — only if email was provided

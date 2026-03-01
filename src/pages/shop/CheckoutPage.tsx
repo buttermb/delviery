@@ -390,6 +390,7 @@ export function CheckoutPage() {
     cartCount,
     subtotal,
     isInitialized,
+    clearCart,
     applyCoupon,
     appliedCoupon,
     removeCoupon,
@@ -962,12 +963,9 @@ export function CheckoutPage() {
 
       // If edge function returned a Stripe checkout URL, redirect directly
       if (data.checkoutUrl) {
-        if (store?.id) {
-          safeStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
-          if (formStorageKey) {
-            safeStorage.removeItem(formStorageKey);
-          }
-          setCartItemCount(0);
+        clearCart();
+        if (formStorageKey) {
+          safeStorage.removeItem(formStorageKey);
         }
         window.location.href = data.checkoutUrl;
         return;
@@ -990,12 +988,9 @@ export function CheckoutPage() {
         toast.info('Order placed! The store will follow up regarding payment.');
       }
       // Clear cart and saved form data
-      if (store?.id) {
-        safeStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
-        if (formStorageKey) {
-          safeStorage.removeItem(formStorageKey);
-        }
-        setCartItemCount(0);
+      clearCart();
+      if (formStorageKey) {
+        safeStorage.removeItem(formStorageKey);
       }
 
       // Send order confirmation email (fire and forget) — only if email was provided
