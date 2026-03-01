@@ -283,3 +283,18 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Added storefrontChecklist.byStore() to queryKeys factory
 - Updated StorefrontDashboard to pass storeId instead of old props
 - TypeScript compilation passes with zero errors
+
+## Every page has loading skeleton, empty state, and error state
+- Created reusable PageErrorState component at src/components/admin/shared/PageErrorState.tsx
+  - AlertCircle icon, friendly error message, retry button with RefreshCw icon
+  - role="alert" for accessibility, configurable message and onRetry callback
+- VendorManagement.tsx: Replaced basic spinner with card-grid skeleton, added loadError state + PageErrorState
+- LocationsManagement.tsx: Replaced basic spinner with card-grid skeleton, added loadError state + PageErrorState
+- LiveOrders.tsx: Added kanban-column skeleton during loading, added isError + PageErrorState
+- PurchaseOrdersPage.tsx: Added full-page skeleton (header + filters + table rows), moved isLoading check to page-level, added isError + PageErrorState
+- SalesDashboard.tsx: Added isError + PageErrorState (already had skeleton + empty states)
+- VendorDashboard.tsx: Replaced Loader2 spinner with full dashboard skeleton (stats + charts + activity), added statsError + PageErrorState
+- InventoryTransfers.tsx: Added isError + PageErrorState (already had EnhancedLoadingState + empty state)
+- StorefrontDashboard.tsx: Added storesError + PageErrorState (already had skeleton + empty states)
+- CustomerDashboard.tsx and DeliveryTracking.tsx already had all three states — no changes needed
+- TypeScript compilation passes with zero errors

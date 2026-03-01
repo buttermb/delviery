@@ -52,6 +52,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import { queryKeys } from '@/lib/queryKeys';
 import { CHART_COLORS } from '@/lib/chartColors';
 
@@ -132,7 +133,7 @@ export default function VendorDashboard() {
   const [refreshing, setRefreshing] = useState(false);
 
   // Fetch vendor stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading, isError: statsError } = useQuery({
     queryKey: queryKeys.vendorDashboard.stats(tenantId),
     queryFn: async (): Promise<VendorStats> => {
       if (!tenantId) {
@@ -389,10 +390,30 @@ export default function VendorDashboard() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="container mx-auto py-4 space-y-4" role="status" aria-label="Loading vendor dashboard...">
+        <div className="flex items-center justify-between px-2 sm:px-0">
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-48" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+          <Skeleton className="h-10 w-24" />
+        </div>
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-28 rounded-lg" />
+          ))}
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Skeleton className="h-80 rounded-lg" />
+          <Skeleton className="h-80 rounded-lg" />
+        </div>
+        <Skeleton className="h-64 rounded-lg" />
       </div>
     );
+  }
+
+  if (statsError) {
+    return <PageErrorState onRetry={handleRefresh} message="Failed to load vendor dashboard data. Please try again." />;
   }
 
   if (!tenant) {

@@ -22,6 +22,7 @@ import { handleError } from "@/utils/errorHandling/handlers";
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
+import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import { queryKeys } from '@/lib/queryKeys';
 
 interface TransferFormData {
@@ -118,7 +119,7 @@ export default function InventoryTransfers() {
     enabled: !!tenantId,
   });
 
-  const { data: transfers, isLoading } = useQuery({
+  const { data: transfers, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.inventoryTransfersAdmin.transfers(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
@@ -218,6 +219,10 @@ export default function InventoryTransfers() {
 
   if (isLoading) {
     return <EnhancedLoadingState variant="table" message="Loading transfers..." />;
+  }
+
+  if (isError) {
+    return <PageErrorState onRetry={() => refetch()} message="Failed to load inventory transfers. Please try again." />;
   }
 
   return (

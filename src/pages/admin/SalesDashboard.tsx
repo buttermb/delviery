@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { LastUpdated } from '@/components/shared/LastUpdated';
 import { RecentItemsWidget } from "@/components/admin/dashboard/RecentItemsWidget";
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import { useSalesReportDrilldown } from '@/hooks/useSalesReportDrilldown';
 import { SalesReportDrilldownModal } from '@/components/admin/analytics/SalesReportDrilldownModal';
 import { format, parseISO } from 'date-fns';
@@ -55,7 +56,7 @@ export default function SalesDashboard() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
   const drilldown = useSalesReportDrilldown();
 
-  const { data: orders, isLoading, refetch } = useQuery({
+  const { data: orders, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.salesDashboard.main(tenantId, timeRange),
     queryFn: async (): Promise<OrderRecord[]> => {
       if (!tenantId) return [];
@@ -155,6 +156,10 @@ export default function SalesDashboard() {
         <div className="h-96 bg-muted animate-pulse rounded-xl" />
       </div>
     );
+  }
+
+  if (isError) {
+    return <PageErrorState onRetry={() => refetch()} message="Failed to load sales data. Please try again." />;
   }
 
   const stats = [

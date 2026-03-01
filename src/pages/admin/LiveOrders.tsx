@@ -12,6 +12,7 @@ import { LayoutGrid, List, Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff } f
 import { Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff, LayoutGrid, List } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { LiveOrdersKanban, type LiveOrder } from '@/components/admin/live-orders/LiveOrdersKanban';
@@ -31,6 +32,7 @@ import { useUndo } from '@/hooks/useUndo';
 import { UndoToast } from '@/components/ui/undo-toast';
 import { queryKeys } from '@/lib/queryKeys';
 import { EmptyState } from '@/components/admin/shared/EmptyState';
+import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { LiveOrdersStatsBar } from '@/components/admin/live-orders/LiveOrdersStatsBar';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -146,6 +148,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
 
   // Fetch Orders Query
   const { data: allOrders = [], isLoading, refetch } = useQuery({
+  const { data: orders = [], isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.orders.live(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -555,6 +558,23 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
         <PullToRefresh onRefresh={async () => { await refetch(); }}>
           <div className="h-full">
             {!isLoading && filteredOrders.length === 0 ? (
+            {isLoading ? (
+              <div className="flex gap-4 h-full" role="status" aria-label="Loading live orders...">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex-1 min-w-[260px] space-y-3">
+                    <Skeleton className="h-8 w-full rounded-lg" />
+                    {[1, 2, 3].map((j) => (
+                      <Skeleton key={j} className="h-28 w-full rounded-lg" />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ) : isError ? (
+              <PageErrorState
+                onRetry={() => refetch()}
+                message="Failed to load live orders. Please try again."
+              />
+            ) : orders.length === 0 ? (
               <EmptyState
                 icon={Radio}
                 title={hasActiveFilters ? 'No orders match your filters' : 'No active orders right now'}

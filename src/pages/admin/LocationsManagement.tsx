@@ -13,12 +13,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, Plus, Edit, Trash2, Building, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { handleError } from '@/utils/errorHandling/handlers';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import { formatPhoneNumber } from '@/lib/formatters';
 
 interface Location {
@@ -38,6 +40,7 @@ export default function LocationsManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -64,6 +67,7 @@ export default function LocationsManagement() {
   const loadLocations = async () => {
     if (!tenant) return;
 
+    setLoadError(false);
     try {
       const { data, error } = await supabase
         .from('locations')
@@ -74,6 +78,7 @@ export default function LocationsManagement() {
       if (error) throw error;
       setLocations(data ?? []);
     } catch (error) {
+      setLoadError(true);
       handleError(error, { component: 'LocationsManagement', toastTitle: 'Failed to load locations' });
     } finally {
       setLoading(false);
@@ -172,10 +177,40 @@ export default function LocationsManagement() {
 
   if (accountLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="space-y-4" role="status" aria-label="Loading locations...">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-32" />
+            <Skeleton className="h-4 w-56" />
+          </div>
+          <Skeleton className="h-10 w-36" />
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-lg border bg-card p-6 space-y-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-44" />
+                  <Skeleton className="h-5 w-16" />
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-8" />
+                  <Skeleton className="h-8 w-8" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
+  }
+
+  if (loadError) {
+    return <PageErrorState onRetry={loadLocations} message="Failed to load locations. Please try again." />;
   }
 
   return (

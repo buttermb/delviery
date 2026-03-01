@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { showCopyToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
+import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
 import { OutOfCreditsModal } from '@/components/credits/OutOfCreditsModal';
@@ -97,7 +98,7 @@ export default function StorefrontDashboard() {
   }, [searchParams]);
 
   // Fetch ALL stores for the tenant
-  const { data: stores = [], isLoading: storesLoading } = useQuery({
+  const { data: stores = [], isLoading: storesLoading, isError: storesError, refetch: refetchStores } = useQuery({
     queryKey: queryKeys.marketplaceStores.byTenant(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
@@ -397,6 +398,11 @@ export default function StorefrontDashboard() {
         </div>
       </div>
     );
+  }
+
+  // Error state
+  if (storesError) {
+    return <PageErrorState onRetry={() => refetchStores()} message="Failed to load storefront data. Please try again." />;
   }
 
   // No stores - show create CTA

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,7 @@ import { toast } from 'sonner';
 import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
+import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import { handleError } from "@/utils/errorHandling/handlers";
 
 interface VendorFormData {
@@ -62,6 +64,7 @@ export function VendorManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -73,6 +76,7 @@ export function VendorManagement() {
   const loadVendors = useCallback(async () => {
     if (!tenant) return;
 
+    setLoadError(false);
     try {
       const { data, error } = await supabase
         .from('vendors')
@@ -83,6 +87,7 @@ export function VendorManagement() {
       if (error) throw error;
       setVendors((data ?? []) as unknown as Vendor[]);
     } catch (error) {
+      setLoadError(true);
       handleError(error, {
         component: 'VendorManagement.loadVendors',
         toastTitle: 'Error',
@@ -207,10 +212,40 @@ export function VendorManagement() {
 
   if (accountLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="space-y-4" role="status" aria-label="Loading vendors...">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-lg border bg-card p-6 space-y-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-5 w-16" />
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-8" />
+                  <Skeleton className="h-8 w-8" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
+  }
+
+  if (loadError) {
+    return <PageErrorState onRetry={loadVendors} message="Failed to load vendors. Please try again." />;
   }
 
   return (
