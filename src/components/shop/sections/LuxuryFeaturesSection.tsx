@@ -104,7 +104,7 @@ export function LuxuryFeaturesSection({ content, styles }: LuxuryFeaturesSection
 
             return (
               <motion.div
-                key={index}
+                key={feature.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

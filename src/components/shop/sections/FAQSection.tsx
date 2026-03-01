@@ -84,7 +84,7 @@ export function FAQSection({ content, styles }: FAQSectionProps) {
                     <Accordion type="single" collapsible className="space-y-4">
                         {faqs.map((faq, index) => (
                             <AccordionItem
-                                key={`faq-${index}`}
+                                key={`faq-${faq.question}-${index}`}
                                 value={`item-${index}`}
                                 className="border rounded-xl px-6"
                                 style={{ borderColor: border_color }}
