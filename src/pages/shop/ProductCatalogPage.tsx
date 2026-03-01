@@ -48,6 +48,8 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
 import { useShopCart } from '@/hooks/useShopCart';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
+import { StandardPagination } from '@/components/shared/StandardPagination';
+import { usePagination } from '@/hooks/usePagination';
 import { toast } from 'sonner';
 import { useStorefrontInventorySync } from '@/hooks/useStorefrontInventorySync';
 
@@ -111,7 +113,8 @@ interface ProductWithSettings {
   slug: string | null;
 }
 
-const ITEMS_PER_PAGE = 24;
+const DEFAULT_PAGE_SIZE = 24;
+const PAGE_SIZE_OPTIONS = [12, 24, 48, 96];
 
 // Transform RPC response to component interface
 function transformProduct(rpc: RpcProduct): ProductWithSettings {
@@ -168,7 +171,6 @@ export function ProductCatalogPage() {
   const [cbdRange, setCbdRange] = useState<[number, number]>([0, 100]);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
 
   // Wishlist integration
   const { toggleItem: toggleWishlist, isInWishlist } = useWishlist({ storeId: store?.id });
@@ -393,17 +395,28 @@ export function ProductCatalogPage() {
     return result;
   }, [products, searchQuery, selectedCategories, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredProducts, currentPage]);
+  // Pagination via standardized hook (URL-persisted, page size selector)
+  const {
+    paginatedItems: paginatedProducts,
+    currentPage,
+    totalPages,
+    totalItems,
+    pageSize,
+    goToPage,
+    changePageSize,
+    pageSizeOptions,
+  } = usePagination(filteredProducts, {
+    defaultPageSize: DEFAULT_PAGE_SIZE,
+    pageSizeOptions: PAGE_SIZE_OPTIONS,
+    urlKey: 'page',
+  });
 
-  // Reset page when filters change
+  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedCategories, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]);
+    goToPage(1);
+  }, [searchQuery, selectedCategory, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Get unique categories from products
   const productCategories = useMemo(() => {
@@ -425,7 +438,7 @@ export function ProductCatalogPage() {
     setThcRange([0, 100]);
     setCbdRange([0, 100]);
     setSortBy('name');
-    setCurrentPage(1);
+    goToPage(1);
     setSearchParams({});
   };
 
@@ -790,52 +803,18 @@ export function ProductCatalogPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-8">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter(page => {
-              // Show first, last, current, and adjacent pages
-              if (page === 1 || page === totalPages) return true;
-              if (Math.abs(page - currentPage) <= 1) return true;
-              return false;
-            })
-            .reduce<(number | 'ellipsis')[]>((acc, page, idx, arr) => {
-              if (idx > 0 && page - (arr[idx - 1] as number) > 1) {
-                acc.push('ellipsis');
-              }
-              acc.push(page);
-              return acc;
-            }, [])
-            .map((item, idx) =>
-              item === 'ellipsis' ? (
-                <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">...</span>
-              ) : (
-                <Button
-                  key={item}
-                  variant={currentPage === item ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setCurrentPage(item)}
-                  className="min-w-[36px]"
-                >
-                  {item}
-                </Button>
-              )
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+        <div className="mt-8">
+          <StandardPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            pageSizeOptions={pageSizeOptions}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+            showPageSizeSelector={filteredProducts.length > PAGE_SIZE_OPTIONS[0]}
+            showItemCount
+          />
         </div>
       )}
 
