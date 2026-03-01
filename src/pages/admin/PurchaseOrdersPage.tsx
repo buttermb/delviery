@@ -44,9 +44,11 @@ import {
 } from "@/components/ui/select";
 import { POCreateForm } from "@/components/admin/purchase-orders/POCreateForm";
 import { PODetail } from "@/components/admin/purchase-orders/PODetail";
+import { Skeleton } from "@/components/ui/skeleton";
 import { queryKeys } from "@/lib/queryKeys";
 import { formatSmartDate } from '@/lib/formatters';
 import { TruncatedText } from '@/components/shared/TruncatedText';
+import { PageErrorState } from '@/components/admin/shared/PageErrorState';
 import type { Database } from "@/integrations/supabase/types";
 
 type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row'];
@@ -78,7 +80,7 @@ export default function PurchaseOrdersPage() {
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [editingPO, setEditingPO] = useState<PurchaseOrder | null>(null);
   const { dialogState, confirm, closeDialog, setLoading } = useConfirmDialog();
-  const { data: purchaseOrders, isLoading } = useQuery({
+  const { data: purchaseOrders, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.purchaseOrders.list({ status: statusFilter, tenantId: tenant?.id }),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -168,6 +170,39 @@ export default function PurchaseOrdersPage() {
     });
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-4 p-2 sm:p-4 md:p-4" role="status" aria-label="Loading purchase orders...">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-44" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-11 w-28" />
+            <Skeleton className="h-11 w-44" />
+          </div>
+        </div>
+        <Skeleton className="h-14 w-full rounded-lg" />
+        <div className="rounded-lg border bg-card">
+          <div className="p-6 space-y-2">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="px-6 pb-6 space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <PageErrorState onRetry={() => refetch()} message="Failed to load purchase orders. Please try again." />;
+  }
+
   return (
     <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">
       {/* Header */}
@@ -242,11 +277,7 @@ export default function PurchaseOrdersPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : filteredPOs.length === 0 ? (
+          {filteredPOs.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No purchase orders found. Create your first purchase order to get started.
             </div>
