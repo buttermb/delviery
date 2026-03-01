@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import {
     ArrowLeft, Monitor, Tablet, Smartphone,
     Undo2, Redo2, ZoomIn, ZoomOut,
-    Save, Globe, GlobeLock, Eye, Store
+    Save, Globe, GlobeLock, Eye, Store, Loader2
 } from 'lucide-react';
 import { MarketplaceStore } from '@/types/marketplace-extended';
 
@@ -167,7 +167,7 @@ export function BuilderHeader({
                         onClick={onSaveDraft}
                         disabled={isSaving}
                     >
-                        <Save className="w-4 h-4 mr-2" />
+                        {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                         {isSaving ? 'Saving...' : 'Save Draft'}
                     </Button>
                 )}
@@ -179,7 +179,7 @@ export function BuilderHeader({
                             onClick={onUnpublish}
                             disabled={isUnpublishing}
                         >
-                            <GlobeLock className="w-4 h-4 mr-2" />
+                            {isUnpublishing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <GlobeLock className="w-4 h-4 mr-2" />}
                             {isUnpublishing ? 'Unpublishing...' : 'Unpublish'}
                         </Button>
                     ) : (
@@ -187,7 +187,7 @@ export function BuilderHeader({
                             onClick={onPublish}
                             disabled={isPublishing}
                         >
-                            <Globe className="w-4 h-4 mr-2" />
+                            {isPublishing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Globe className="w-4 h-4 mr-2" />}
                             {isPublishing ? 'Publishing...' : 'Publish'}
                         </Button>
                     )

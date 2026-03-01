@@ -78,6 +78,8 @@ export default function AccountPage() {
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState<string | null>(null);
   const [trackingNumber, setTrackingNumber] = useState('');
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [isTracking, setIsTracking] = useState(false);
 
   // Magic Link state
   const [showMagicCode, setShowMagicCode] = useState(false);
@@ -131,49 +133,59 @@ export default function AccountPage() {
   const handleEmailLookup = async () => {
     if (!email || !store?.id) return;
 
-    const { data, error } = await supabase
-      .rpc('get_marketplace_customer_by_email' as 'get_secret', {
-        p_store_id: store.id,
-        p_email: email.trim()
-      } as Record<string, unknown>);
+    setIsLookingUp(true);
+    try {
+      const { data, error } = await supabase
+        .rpc('get_marketplace_customer_by_email' as 'get_secret', {
+          p_store_id: store.id,
+          p_email: email.trim()
+        } as Record<string, unknown>);
 
-    if (error || !data || (Array.isArray(data) && data.length === 0)) {
-      toast.error('Account not found', {
-        description: 'No account found with this email. Please check the email or place an order first.',
-      });
-      return;
+      if (error || !data || (Array.isArray(data) && data.length === 0)) {
+        toast.error('Account not found', {
+          description: 'No account found with this email. Please check the email or place an order first.',
+        });
+        return;
+      }
+
+      const customer = Array.isArray(data) ? data[0] : data;
+
+      // Save to localStorage
+      localStorage.setItem(`${STORAGE_KEYS.SHOP_CUSTOMER_PREFIX}${store.id}`, JSON.stringify(customer));
+      setCustomerId(customer.id);
+      setCustomerName(customer.first_name || null);
+      setIsLoggedIn(true);
+      toast.success(`Welcome back, ${customer.first_name || 'Customer'}!`);
+    } finally {
+      setIsLookingUp(false);
     }
-
-    const customer = Array.isArray(data) ? data[0] : data;
-
-    // Save to localStorage
-    localStorage.setItem(`${STORAGE_KEYS.SHOP_CUSTOMER_PREFIX}${store.id}`, JSON.stringify(customer));
-    setCustomerId(customer.id);
-    setCustomerName(customer.first_name || null);
-    setIsLoggedIn(true);
-    toast.success(`Welcome back, ${customer.first_name || 'Customer'}!`);
   };
 
   // Track order by number
   const handleTrackOrder = async () => {
     if (!trackingNumber.trim()) return;
 
-    // Try tracking token first
-    const { data } = await supabase
-      .from('marketplace_orders')
-      .select('tracking_token')
-      .eq('store_id', store?.id)
-      .or(`tracking_token.eq.${trackingNumber.trim()},order_number.eq.${trackingNumber.trim().toUpperCase()}`)
-      .maybeSingle();
+    setIsTracking(true);
+    try {
+      // Try tracking token first
+      const { data } = await supabase
+        .from('marketplace_orders')
+        .select('tracking_token')
+        .eq('store_id', store?.id)
+        .or(`tracking_token.eq.${trackingNumber.trim()},order_number.eq.${trackingNumber.trim().toUpperCase()}`)
+        .maybeSingle();
 
-    const orderData = data as { tracking_token?: string } | null;
+      const orderData = data as { tracking_token?: string } | null;
 
-    if (orderData?.tracking_token) {
-      navigate(`/shop/${storeSlug}/track/${orderData.tracking_token}`);
-    } else {
-      toast.error('Order not found', {
-        description: 'Please check your order number and try again.',
-      });
+      if (orderData?.tracking_token) {
+        navigate(`/shop/${storeSlug}/track/${orderData.tracking_token}`);
+      } else {
+        toast.error('Order not found', {
+          description: 'Please check your order number and try again.',
+        });
+      }
+    } finally {
+      setIsTracking(false);
     }
   };
 
@@ -398,8 +410,16 @@ export default function AccountPage() {
                     className="w-full h-14 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
                     style={{ backgroundColor: store.primary_color }}
                     onClick={handleEmailLookup}
+                    disabled={isLookingUp || !email}
                   >
-                    Sign In
+                    {isLookingUp ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                        Signing In...
+                      </>
+                    ) : (
+                      'Sign In'
+                    )}
                   </Button>
 
                   <div className="relative py-3">
@@ -454,8 +474,8 @@ export default function AccountPage() {
                   className="h-12 rounded-lg bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 focus-visible:bg-white dark:focus-visible:bg-zinc-950"
                   aria-label="Order number or tracking code"
                 />
-                <Button variant="secondary" onClick={handleTrackOrder} className="h-12 w-12 rounded-lg shrink-0" aria-label="Track order">
-                  <Search className="w-5 h-5" />
+                <Button variant="secondary" onClick={handleTrackOrder} disabled={isTracking || !trackingNumber.trim()} className="h-12 w-12 rounded-lg shrink-0" aria-label="Track order">
+                  {isTracking ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
                 </Button>
               </div>
             </div>
@@ -713,8 +733,16 @@ export default function AccountPage() {
                     className="h-12 px-6 font-bold rounded-lg"
                     style={{ backgroundColor: store.primary_color }}
                     onClick={handleTrackOrder}
+                    disabled={isTracking || !trackingNumber.trim()}
                   >
-                    Track
+                    {isTracking ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Tracking...
+                      </>
+                    ) : (
+                      'Track'
+                    )}
                   </Button>
                 </div>
                 <p className="text-sm text-neutral-500">

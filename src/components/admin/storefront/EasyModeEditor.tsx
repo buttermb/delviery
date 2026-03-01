@@ -22,6 +22,7 @@ import {
     Sparkles,
     Eye,
     RefreshCw,
+    Loader2,
 } from 'lucide-react';
 import { PresetPackSelector, PresetPackStrip } from '@/components/admin/storefront/PresetPackSelector';
 import { FeatureTogglesPanel } from '@/components/admin/storefront/FeatureTogglesPanel';
@@ -284,6 +285,7 @@ export function EasyModeEditor({
                             onClick={onSave}
                             disabled={isSaving}
                         >
+                            {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                             {isSaving ? 'Saving...' : 'Save Draft'}
                         </Button>
                         <Button
@@ -292,7 +294,7 @@ export function EasyModeEditor({
                             disabled={isSaving}
                             className="bg-green-600 hover:bg-green-700"
                         >
-                            <Sparkles className="w-4 h-4 mr-2" />
+                            {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
                             Publish Store
                         </Button>
                     </div>
