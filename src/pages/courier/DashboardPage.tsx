@@ -95,6 +95,7 @@ export default function CourierDashboardPage() {
         supabase.removeChannel(channel);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadStats is defined below; only run when courier changes
   }, [courier]);
 
   const loadAvailableOrders = async () => {

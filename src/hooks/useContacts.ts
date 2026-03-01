@@ -277,7 +277,7 @@ export function useCreateContact() {
           ...input,
           contact_type: input.contact_type || ['retail'],
           metadata: input.metadata ? JSON.parse(JSON.stringify(input.metadata)) : null,
-        } as Record<string, unknown>)
+        })
         .select()
         .maybeSingle();
 

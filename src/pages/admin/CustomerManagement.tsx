@@ -1,17 +1,16 @@
 import { logger } from '@/lib/logger';
-import { useState, useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
-import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { queryKeys } from "@/lib/queryKeys";
 import { invalidateOnEvent } from "@/lib/invalidation";
 import { formatCurrency, formatSmartDate, displayName } from '@/lib/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -27,9 +26,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
-  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Mail, Lock, Phone,
-  ArrowUpDown, Store, Monitor, Globe
+  Users, Plus, DollarSign, Award, TrendingUp, UserCircle,
+  MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Mail, Lock, Phone
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
@@ -41,26 +39,21 @@ import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 import { useEncryption } from "@/lib/hooks/useEncryption";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { SwipeableItem } from "@/components/mobile/SwipeableItem";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { triggerHaptic } from "@/lib/utils/mobile";
 import { cn } from "@/lib/utils";
 import { CustomerImportDialog } from "@/components/admin/CustomerImportDialog";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import CopyButton from "@/components/CopyButton";
 import { CustomerTagFilter } from "@/components/admin/customers/CustomerTagFilter";
 import { CustomerTagBadges } from "@/components/admin/customers/CustomerTagBadges";
+import { useContactTagsBatch } from "@/hooks/useCustomerTags";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
+import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
+import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 
 import { useCustomersByTags } from "@/hooks/useAutoTagRules";
 
@@ -77,13 +70,9 @@ interface Customer {
   last_purchase_at: string | null;
   status: string;
   medical_card_expiration: string | null;
-  referral_source: string | null;
   /** Indicates data is encrypted but cannot be decrypted with current key */
   _encryptedIndicator?: boolean;
 }
-
-type SortField = 'name' | 'total_spent' | 'last_purchase_at' | 'created_at';
-type SortDirection = 'asc' | 'desc';
 
 /**
  * Detects if a value looks like encrypted ciphertext (Base64 encoded)
@@ -100,8 +89,6 @@ const looksLikeEncryptedData = (value: string | null): boolean => {
 
 export function CustomerManagement() {
   const navigate = useNavigate();
-  const { navigateToAdmin } = useTenantNavigation();
-  const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
   const { decryptObject, isReady: encryptionIsReady } = useEncryption();
   const queryClient = useQueryClient();
@@ -109,16 +96,13 @@ export function CustomerManagement() {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [filterSource, setFilterSource] = useState("all");
-  const [sortField, setSortField] = useState<SortField>("created_at");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedCustomerForDrawer, setSelectedCustomerForDrawer] = useState<Customer | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [filterTagIds, setFilterTagIds] = useState<string[]>([]);
+  const searchInteractionStartRef = useRef<number | null>(null);
   const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
   const { canEdit, canDelete, canExport } = usePermissions();
   const posEnabled = isFeatureEnabled('pos');
@@ -127,13 +111,13 @@ export function CustomerManagement() {
   const { data: customerIdsByTags } = useCustomersByTags(filterTagIds);
 
   const { data: customers = [], isLoading: loading } = useQuery({
-    queryKey: queryKeys.customers.list(tenant?.id, { filterType, filterStatus, filterSource }),
+    queryKey: queryKeys.customers.list(tenant?.id, { filterType, filterStatus }),
     queryFn: async () => {
       if (!tenant) return [];
 
       let query = supabase
         .from("customers")
-        .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, phone_encrypted, email_encrypted, deleted_at, created_at, referral_source")
+        .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, phone_encrypted, email_encrypted, deleted_at, created_at")
         .eq("tenant_id", tenant.id)
         .is("deleted_at", null); // Exclude soft-deleted customers
 
@@ -143,12 +127,6 @@ export function CustomerManagement() {
 
       if (filterStatus !== "all") {
         query = query.eq("status", filterStatus);
-      }
-
-      if (filterSource === "storefront") {
-        query = query.eq("referral_source", "storefront");
-      } else if (filterSource === "pos") {
-        query = query.eq("referral_source", "pos");
       }
 
       const { data, error } = await query.order("created_at", { ascending: false });
@@ -217,11 +195,11 @@ export function CustomerManagement() {
     enabled: !!tenant && !accountLoading,
   });
 
-  const handleDeleteClick = (customerId: string, customerName: string) => {
+  const handleDeleteClick = useCallback((customerId: string, customerName: string) => {
     triggerHaptic('medium');
     setCustomerToDelete({ id: customerId, name: customerName });
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
   const handleDelete = async () => {
     if (!customerToDelete || !tenant) return;
@@ -295,13 +273,12 @@ export function CustomerManagement() {
 
   const handleExport = () => {
     const csv = [
-      ["Name", "Email", "Phone", "Type", "Source", "Total Spent", "Loyalty Points", "Status"],
+      ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
       ...filteredCustomers.map(c => [
         displayName(c.first_name, c.last_name),
         c.email ?? '',
         c.phone ?? '',
         c.customer_type,
-        c.referral_source ?? 'direct',
         c.total_spent,
         c.loyalty_points,
         c.status
@@ -317,46 +294,39 @@ export function CustomerManagement() {
     toast.success("Customer data exported");
   };
 
-  const filteredCustomers = useMemo(() => {
-    const filtered = customers.filter((customer) => {
-      const fullName = displayName(customer.first_name, customer.last_name).toLowerCase();
-      const search = debouncedSearchTerm.toLowerCase();
-      const matchesSearch =
-        fullName.includes(search) ||
-        customer.email?.toLowerCase().includes(search) ||
-        customer.phone?.includes(search);
+  const filteredCustomers = useMemo(() => customers.filter((customer) => {
+    const fullName = displayName(customer.first_name, customer.last_name).toLowerCase();
+    const search = debouncedSearchTerm.toLowerCase();
+    const matchesSearch =
+      fullName.includes(search) ||
+      customer.email?.toLowerCase().includes(search) ||
+      customer.phone?.includes(search);
 
-      // Filter by tags if any are selected
-      const matchesTags =
-        filterTagIds.length === 0 ||
-        (customerIdsByTags && customerIdsByTags.includes(customer.id));
+    // Filter by tags if any are selected
+    const matchesTags =
+      filterTagIds.length === 0 ||
+      (customerIdsByTags && customerIdsByTags.includes(customer.id));
 
-      return matchesSearch && matchesTags;
-    });
+    return matchesSearch && matchesTags;
+  }), [customers, debouncedSearchTerm, filterTagIds, customerIdsByTags]);
 
-    // Sort
-    const sorted = [...filtered].sort((a, b) => {
-      const dir = sortDirection === 'asc' ? 1 : -1;
-      switch (sortField) {
-        case 'name': {
-          const nameA = displayName(a.first_name, a.last_name).toLowerCase();
-          const nameB = displayName(b.first_name, b.last_name).toLowerCase();
-          return dir * nameA.localeCompare(nameB);
-        }
-        case 'total_spent':
-          return dir * ((a.total_spent ?? 0) - (b.total_spent ?? 0));
-        case 'last_purchase_at': {
-          const dateA = a.last_purchase_at ? new Date(a.last_purchase_at).getTime() : 0;
-          const dateB = b.last_purchase_at ? new Date(b.last_purchase_at).getTime() : 0;
-          return dir * (dateA - dateB);
-        }
-        default:
-          return 0;
-      }
-    });
+  useEffect(() => {
+    if (!debouncedSearchTerm) return;
+    searchInteractionStartRef.current = performance.now();
+  }, [searchTerm, debouncedSearchTerm]);
 
-    return sorted;
-  }, [customers, debouncedSearchTerm, filterTagIds, customerIdsByTags, sortField, sortDirection]);
+  useEffect(() => {
+    if (searchInteractionStartRef.current === null || !debouncedSearchTerm) return;
+    const duration = performance.now() - searchInteractionStartRef.current;
+    performance.mark('customers-filter-end');
+    if (import.meta.env.DEV) {
+      logger.debug('[perf] customer filter latency', {
+        durationMs: Math.round(duration),
+        resultCount: filteredCustomers.length,
+      });
+    }
+    searchInteractionStartRef.current = null;
+  }, [filteredCustomers, debouncedSearchTerm]);
 
   // Use standardized pagination
   const {
@@ -373,6 +343,13 @@ export function CustomerManagement() {
     persistInUrl: true,
     urlKey: 'customers',
   });
+
+  // Batch-fetch tags for visible rows to avoid N+1 tag queries.
+  const visibleCustomerIds = useMemo(
+    () => paginatedCustomers.map((customer) => customer.id),
+    [paginatedCustomers]
+  );
+  const { data: visibleTagsByCustomer = {} } = useContactTagsBatch(visibleCustomerIds);
 
   // Calculate stats
   const { totalCustomers, activeCustomers, medicalPatients, totalRevenue, avgLifetimeValue } = useMemo(() => {
@@ -395,6 +372,143 @@ export function CustomerManagement() {
     if (daysSince <= 7) return <Badge className="bg-green-600">Active</Badge>;
     return <Badge variant="secondary">Regular</Badge>;
   };
+
+  const atRiskCount = useMemo(() => customers.filter(c => {
+    if (!c.last_purchase_at) return false;
+    const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
+    return days > 60;
+  }).length, [customers]);
+  const customerColumns = useMemo<ResponsiveColumn<Customer>[]>(() => [
+    {
+      header: 'Customer',
+      accessorKey: 'first_name',
+      cell: (customer) => (
+        <div className="flex items-center min-w-0">
+          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
+            {customer.first_name?.[0] ?? ''}{customer.last_name?.[0] ?? '?'}
+          </div>
+          <div className="ml-4 min-w-0">
+            <TruncatedText
+              text={displayName(customer.first_name, customer.last_name)}
+              className="text-sm font-medium"
+              maxWidthClass="max-w-[200px]"
+              as="div"
+            />
+            <div className="text-sm text-muted-foreground flex items-center gap-1">
+              {customer._encryptedIndicator ? (
+                <span className="flex items-center gap-1 text-amber-600" title="Contact info encrypted - sign in to view">
+                  <Lock className="w-3 h-3" />
+                  <span className="italic">Encrypted</span>
+                </span>
+              ) : (
+                <>
+                  <TruncatedText
+                    text={customer.email || customer.phone || 'No contact'}
+                    className="text-sm text-muted-foreground"
+                    maxWidthClass="max-w-[200px]"
+                    as="span"
+                  />
+                  {customer.email && (
+                    <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      header: 'Type',
+      accessorKey: 'customer_type',
+      cell: (customer) => (
+        <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
+          {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
+        </Badge>
+      )
+    },
+    {
+      header: 'Total Spent',
+      accessorKey: 'total_spent',
+      cell: (customer) => <span className="text-sm font-semibold">{formatCurrency(customer.total_spent)}</span>
+    },
+    {
+      header: 'Points',
+      accessorKey: 'loyalty_points',
+      cell: (customer) => (
+        <span className="flex items-center gap-1">
+          <Award className="w-4 h-4 text-yellow-600" />
+          {customer.loyalty_points ?? 0}
+        </span>
+      )
+    },
+    {
+      header: 'Last Order',
+      accessorKey: 'last_purchase_at',
+      cell: (customer) => <span className="text-sm text-muted-foreground">{customer.last_purchase_at ? formatSmartDate(customer.last_purchase_at) : 'Never'}</span>
+    },
+    {
+      header: 'Tags',
+      accessorKey: 'id',
+      cell: (customer) => (
+        <CustomerTagBadges
+          customerId={customer.id}
+          maxVisible={2}
+          tags={visibleTagsByCustomer[customer.id]}
+          showLoading={!visibleTagsByCustomer[customer.id]}
+        />
+      )
+    },
+    {
+      header: 'Status',
+      accessorKey: 'status',
+      cell: (customer) => getCustomerStatus(customer)
+    },
+    {
+      header: 'Actions',
+      accessorKey: 'id',
+      cell: (customer) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
+              <MoreHorizontal className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)}>
+              <Eye className="w-4 h-4 mr-2" />
+              View Details
+            </DropdownMenuItem>
+            {canEdit('customers') && (
+              <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${customer.id}/edit`)}>
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
+              </DropdownMenuItem>
+            )}
+            {canEdit('orders') && (
+              <DropdownMenuItem
+                disabled={!posEnabled}
+                title={!posEnabled ? 'Enable POS in Settings' : undefined}
+                onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}
+              >
+                <DollarSign className="w-4 h-4 mr-2" />
+                New Order
+              </DropdownMenuItem>
+            )}
+            {canDelete('customers') && (
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={() => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))}
+              >
+                <Trash className="w-4 h-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    }
+  ], [tenant?.slug, navigate, canEdit, canDelete, posEnabled, handleDeleteClick, visibleTagsByCustomer]);
 
   if (accountLoading || loading) {
     return (
@@ -430,7 +544,7 @@ export function CustomerManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {["", "Customer", "Type", "Source", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
+                  {["", "Customer", "Type", "Total Spent", "Points", "Last Order", "Tags", "Status", "Actions"].map((h, i) => (
                     <TableHead key={i}>
                       <Skeleton className="h-3 w-16" />
                     </TableHead>
@@ -451,7 +565,6 @@ export function CustomerManagement() {
                       </div>
                     </TableCell>
                     <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-12" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-20" /></TableCell>
@@ -468,11 +581,81 @@ export function CustomerManagement() {
     );
   }
 
-  const atRiskCount = useMemo(() => customers.filter(c => {
-    if (!c.last_purchase_at) return false;
-    const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
-    return days > 60;
-  }).length, [customers]);
+  const renderMobileItem = (customer: Customer) => (
+    <SwipeableItem
+      key={customer.id}
+      leftAction={{
+        icon: <Trash className="h-5 w-5" />,
+        color: 'bg-red-500',
+        label: 'Delete',
+        onClick: () => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))
+      }}
+      rightAction={{
+        icon: <Eye className="h-5 w-5" />,
+        color: 'bg-blue-500',
+        label: 'View',
+        onClick: () => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)
+      }}
+    >
+      <div
+        className="p-4 bg-card rounded-lg border shadow-sm active:scale-[0.98] transition-transform"
+        onClick={() => {
+          triggerHaptic('light');
+          setSelectedCustomerForDrawer(customer);
+        }}
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
+              {customer.first_name?.[0]}{customer.last_name?.[0]}
+            </div>
+            <div className="flex-1 min-w-0">
+              <TruncatedText
+                text={`${customer.first_name ?? ''} ${customer.last_name ?? ''}`.trim() || 'Unknown'}
+                className="font-semibold text-base"
+                as="p"
+              />
+              <div className="text-sm text-muted-foreground">
+                {customer._encryptedIndicator ? (
+                  <span className="flex items-center gap-1 text-amber-600">
+                    <Lock className="w-3 h-3" />
+                    <span className="italic">Encrypted</span>
+                  </span>
+                ) : (
+                  <TruncatedText
+                    text={customer.email || customer.phone || 'No contact'}
+                    className="text-sm text-muted-foreground"
+                    maxWidthClass="max-w-[180px]"
+                    as="span"
+                  />
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
+                  {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
+                </Badge>
+                {getCustomerStatus(customer)}
+                <CustomerTagBadges
+                  customerId={customer.id}
+                  maxVisible={2}
+                  size="sm"
+                  tags={visibleTagsByCustomer[customer.id]}
+                  showLoading={!visibleTagsByCustomer[customer.id]}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <div className="font-bold">{formatCurrency(customer.total_spent)}</div>
+            <div className="text-xs text-muted-foreground flex items-center gap-1">
+              <Award className="w-3 h-3 text-yellow-600" />
+              {customer.loyalty_points ?? 0}
+            </div>
+          </div>
+        </div>
+      </div>
+    </SwipeableItem>
+  );
 
   const stats = [
     {
@@ -541,16 +724,6 @@ export function CustomerManagement() {
           </div>
           <p className="text-muted-foreground text-sm sm:text-base">Complete CRM for your customers</p>
         </div>
-        {canEdit('customers') && (
-          <Button
-            onClick={() => navigate(`/${tenantSlug}/admin/customers/new`)}
-            className="min-h-[44px] touch-manipulation flex-shrink-0"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Add Customer</span>
-            <span className="sm:hidden">Add</span>
-          </Button>
-        )}
       </div>
 
       {/* Stats Carousel */}
@@ -581,33 +754,16 @@ export function CustomerManagement() {
         ))}
       </div>
 
-      {/* Search and Filters */}
-      <Card className="border-none shadow-sm">
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4 mb-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                aria-label="Search customers"
-                placeholder="Search customers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Select value={filterSource} onValueChange={setFilterSource}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Source" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sources</SelectItem>
-                  <SelectItem value="storefront">Storefront</SelectItem>
-                  <SelectItem value="pos">POS</SelectItem>
-                </SelectContent>
-              </Select>
+      {/* Table Toolbar & Data */}
+      <div className="space-y-4">
+        <AdminToolbar
+          searchQuery={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search customers..."
+          filters={
+            <>
               <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[140px] h-9">
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -617,7 +773,7 @@ export function CustomerManagement() {
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[140px] h-9">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -627,359 +783,73 @@ export function CustomerManagement() {
                   <SelectItem value="suspended">Suspended</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={`${sortField}-${sortDirection}`} onValueChange={(v) => {
-                const [field, dir] = v.split('-') as [SortField, SortDirection];
-                setSortField(field);
-                setSortDirection(dir);
-              }}>
-                <SelectTrigger className="w-[160px]">
-                  <ArrowUpDown className="w-3.5 h-3.5 mr-1.5" />
-                  <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="created_at-desc">Newest First</SelectItem>
-                  <SelectItem value="created_at-asc">Oldest First</SelectItem>
-                  <SelectItem value="name-asc">Name A-Z</SelectItem>
-                  <SelectItem value="name-desc">Name Z-A</SelectItem>
-                  <SelectItem value="total_spent-desc">Highest Spent</SelectItem>
-                  <SelectItem value="total_spent-asc">Lowest Spent</SelectItem>
-                  <SelectItem value="last_purchase_at-desc">Recent Orders</SelectItem>
-                  <SelectItem value="last_purchase_at-asc">Oldest Orders</SelectItem>
-                </SelectContent>
-              </Select>
               <CustomerTagFilter
                 selectedTagIds={filterTagIds}
                 onTagsChange={setFilterTagIds}
               />
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {canExport('customers') && (
-              <Button variant="outline" size="sm" onClick={handleExport} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
-                <Download className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Export</span>
-                <span className="sm:hidden">Export</span>
+            </>
+          }
+          actions={
+            <>
+              {canEdit('customers') && (
+                <Button onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/new`)} className="h-9 min-w-[100px] sm:min-w-0">
+                  <Plus className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Add Customer</span>
+                  <span className="sm:hidden">Add</span>
+                </Button>
+              )}
+              {canExport('customers') && (
+                <Button variant="outline" size="sm" onClick={handleExport} className="h-9 min-w-[100px] sm:min-w-0">
+                  <Download className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Export</span>
+                </Button>
+              )}
+              {canEdit('customers') && (
+                <Button variant="outline" size="sm" className="h-9 min-w-[100px] sm:min-w-0" onClick={() => setImportDialogOpen(true)}>
+                  <Upload className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Import</span>
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })} className="h-9 min-w-[100px] sm:min-w-0">
+                <Filter className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
-            )}
-            {canEdit('customers') && (
-              <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]" onClick={() => setImportDialogOpen(true)}>
-                <Upload className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Import</span>
-                <span className="sm:hidden">Import</span>
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })} className="min-h-[44px] flex-1 sm:flex-initial min-w-[100px]">
-              <Filter className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Refresh</span>
-              <span className="sm:hidden">Refresh</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            </>
+          }
+        />
 
-      {/* Customer Table (Desktop) */}
-      <Card className="hidden md:block border-none shadow-md">
-        <CardContent className="p-0">
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    <input
-                      type="checkbox"
-                      className="rounded"
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedCustomers(paginatedCustomers.map(c => c.id));
-                        } else {
-                          setSelectedCustomers([]);
-                        }
-                      }}
-                    />
-                  </TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Total Spent</TableHead>
-                  <TableHead>Points</TableHead>
-                  <TableHead>Last Order</TableHead>
-                  <TableHead>Tags</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedCustomers.map((customer) => (
-                  <TableRow key={customer.id}>
-                    <TableCell>
-                      <input
-                        type="checkbox"
-                        className="rounded"
-                        checked={selectedCustomers.includes(customer.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedCustomers([...selectedCustomers, customer.id]);
-                          } else {
-                            setSelectedCustomers(selectedCustomers.filter(id => id !== customer.id));
-                          }
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center min-w-0">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
-                          {customer.first_name?.[0] ?? ''}{customer.last_name?.[0] ?? '?'}
-                        </div>
-                        <div className="ml-4 min-w-0">
-                          <TruncatedText
-                            text={displayName(customer.first_name, customer.last_name)}
-                            className="text-sm font-medium"
-                            maxWidthClass="max-w-[200px]"
-                            as="div"
-                          />
-                          <div className="text-sm text-muted-foreground flex items-center gap-1">
-                            {customer._encryptedIndicator ? (
-                              <span className="flex items-center gap-1 text-amber-600" title="Contact info encrypted - sign in to view">
-                                <Lock className="w-3 h-3" />
-                                <span className="italic">Encrypted</span>
-                              </span>
-                            ) : (
-                              <>
-                                <TruncatedText
-                                  text={customer.email || customer.phone || 'No contact'}
-                                  className="text-sm text-muted-foreground"
-                                  maxWidthClass="max-w-[200px]"
-                                  as="span"
-                                />
-                                {customer.email && (
-                                  <CopyButton text={customer.email} label="Email" showLabel={false} size="icon" variant="ghost" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'}>
-                        {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {customer.referral_source === 'storefront' ? (
-                        <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-300">
-                          <Globe className="w-3 h-3 mr-1" />
-                          Storefront
-                        </Badge>
-                      ) : customer.referral_source === 'pos' ? (
-                        <Badge className="bg-sky-100 text-sky-700 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-300">
-                          <Monitor className="w-3 h-3 mr-1" />
-                          POS
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline">Direct</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm font-semibold">
-                      {formatCurrency(customer.total_spent)}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      <span className="flex items-center gap-1">
-                        <Award className="w-4 h-4 text-yellow-600" />
-                        {customer.loyalty_points ?? 0}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {customer.last_purchase_at
-                        ? formatSmartDate(customer.last_purchase_at)
-                        : 'Never'}
-                    </TableCell>
-                    <TableCell>
-                      <CustomerTagBadges customerId={customer.id} maxVisible={2} />
-                    </TableCell>
-                    <TableCell>
-                      {getCustomerStatus(customer)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" aria-label="Customer actions">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)}>
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          {canEdit('customers') && (
-                            <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/customer-management/${customer.id}/edit`)}>
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                          )}
-                          {canEdit('orders') && (
-                            <DropdownMenuItem
-                              disabled={!posEnabled}
-                              title={!posEnabled ? 'Enable POS in Settings' : undefined}
-                              onClick={() => posEnabled && tenant?.slug && navigate(`/${tenant.slug}/admin/pos?customer=${customer.id}`)}
-                            >
-                              <DollarSign className="w-4 h-4 mr-2" />
-                              New Order
-                            </DropdownMenuItem>
-                          )}
-                          {canDelete('customers') && (
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))}
-                            >
-                              <Trash className="w-4 h-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-
-            {filteredCustomers.length === 0 && (
-              <EnhancedEmptyState
-                icon={Users}
-                title={debouncedSearchTerm ? "No customers found" : "No customers yet"}
-                description={debouncedSearchTerm ? "No customers match your search." : "Customers are automatically added when they place orders"}
-                primaryAction={debouncedSearchTerm ? {
-                  label: "Clear Search",
-                  onClick: () => setSearchTerm('')
-                } : undefined}
-                secondaryAction={!debouncedSearchTerm ? {
-                  label: "Import Customers",
-                  onClick: () => setImportDialogOpen(true),
-                } : undefined}
-                designSystem="tenant-admin"
-              />
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Mobile Swipeable List View */}
-      <div className="md:hidden space-y-3">
-        {filteredCustomers.length === 0 ? (
-          <EnhancedEmptyState
-            icon={Users}
-            title={debouncedSearchTerm ? "No customers found" : "No customers yet"}
-            description={debouncedSearchTerm ? "No customers match your search." : "Customers are automatically added when they place orders"}
-            primaryAction={debouncedSearchTerm ? {
+        <AdminDataTable
+          data={paginatedCustomers}
+          columns={customerColumns}
+          keyExtractor={(c) => c.id}
+          isLoading={loading}
+          renderMobileItem={renderMobileItem}
+          emptyStateIcon={Users}
+          emptyStateTitle={debouncedSearchTerm ? "No customers found" : "No customers yet"}
+          emptyStateDescription={debouncedSearchTerm ? "No customers match your search." : "Customers are automatically added when they place orders"}
+          emptyStateAction={
+            debouncedSearchTerm ? {
               label: "Clear Search",
               onClick: () => setSearchTerm('')
-            } : undefined}
-            secondaryAction={!debouncedSearchTerm ? {
+            } : {
               label: "Import Customers",
               onClick: () => setImportDialogOpen(true),
-            } : undefined}
-            designSystem="tenant-admin"
+            }
+          }
+        />
+
+        {filteredCustomers.length > 0 && (
+          <StandardPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            pageSizeOptions={pageSizeOptions}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
           />
-        ) : (
-          <AnimatePresence>
-            {paginatedCustomers.map((customer) => (
-              <SwipeableItem
-                key={customer.id}
-                leftAction={{
-                  icon: <Trash className="h-5 w-5" />,
-                  color: 'bg-red-500',
-                  label: 'Delete',
-                  onClick: () => handleDeleteClick(customer.id, displayName(customer.first_name, customer.last_name))
-                }}
-                rightAction={{
-                  icon: <Eye className="h-5 w-5" />,
-                  color: 'bg-blue-500',
-                  label: 'View',
-                  onClick: () => tenant?.slug && navigate(`/${tenant.slug}/admin/customers/${customer.id}`)
-                }}
-              >
-                <div
-                  className="p-4 bg-card rounded-lg border shadow-sm active:scale-[0.98] transition-transform"
-                  onClick={() => {
-                    triggerHaptic('light');
-                    setSelectedCustomerForDrawer(customer);
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
-                        {customer.first_name?.[0]}{customer.last_name?.[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <TruncatedText
-                          text={`${customer.first_name ?? ''} ${customer.last_name ?? ''}`.trim() || 'Unknown'}
-                          className="font-semibold text-base"
-                          as="p"
-                        />
-                        <div className="text-sm text-muted-foreground">
-                          {customer._encryptedIndicator ? (
-                            <span className="flex items-center gap-1 text-amber-600">
-                              <Lock className="w-3 h-3" />
-                              <span className="italic">Encrypted</span>
-                            </span>
-                          ) : (
-                            <TruncatedText
-                              text={customer.email || customer.phone || 'No contact'}
-                              className="text-sm text-muted-foreground"
-                              maxWidthClass="max-w-[180px]"
-                              as="span"
-                            />
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <Badge variant={customer.customer_type === 'medical' ? 'default' : 'secondary'} className="text-[10px] h-5 px-1.5">
-                            {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
-                          </Badge>
-                          {customer.referral_source === 'storefront' ? (
-                            <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-300 text-[10px] h-5 px-1.5">
-                              <Globe className="w-2.5 h-2.5 mr-0.5" />
-                              Storefront
-                            </Badge>
-                          ) : customer.referral_source === 'pos' ? (
-                            <Badge className="bg-sky-100 text-sky-700 hover:bg-sky-100 dark:bg-sky-900/30 dark:text-sky-300 text-[10px] h-5 px-1.5">
-                              POS
-                            </Badge>
-                          ) : null}
-                          {getCustomerStatus(customer)}
-                          <CustomerTagBadges customerId={customer.id} maxVisible={2} size="sm" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <div className="font-bold">{formatCurrency(customer.total_spent)}</div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Award className="w-3 h-3 text-yellow-600" />
-                        {customer.loyalty_points ?? 0}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </SwipeableItem>
-            ))}
-          </AnimatePresence>
         )}
       </div>
-
-      {/* Pagination */}
-      {filteredCustomers.length > 0 && (
-        <StandardPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          pageSize={pageSize}
-          totalItems={totalItems}
-          pageSizeOptions={pageSizeOptions}
-          onPageChange={goToPage}
-          onPageSizeChange={changePageSize}
-        />
-      )}
 
       <ConfirmDeleteDialog
         open={deleteDialogOpen}

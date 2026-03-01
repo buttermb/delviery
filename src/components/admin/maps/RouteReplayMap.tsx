@@ -148,6 +148,7 @@ export function RouteReplayMap({
     routeCoordinates.forEach(coord => bounds.extend(coord as [number, number]));
     map.current.fitBounds(bounds, { padding: 50, maxZoom: 15 });
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- currentIndex is handled by the marker update effect; re-creating layers on every index change is unnecessary
   }, [mapLoaded, locations]);
 
   // Update runner marker position

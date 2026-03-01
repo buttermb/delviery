@@ -51,24 +51,23 @@ export function MarketingNav() {
           </Link>
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-4">
           <Link to="/login">
-            <Button variant="ghost" size="sm" className="text-sm text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-primary))]/10 hover:text-[hsl(var(--marketing-primary))]">
+            <Button variant="ghost" className="text-sm uppercase tracking-wide font-bold text-[hsl(var(--marketing-text))] hover:bg-[hsl(var(--marketing-primary))]/10 hover:text-[hsl(var(--marketing-primary))] rounded-lg px-6 h-11">
               Login
             </Button>
           </Link>
           <Link to="/signup?plan=free">
-            <Button size="sm" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white font-semibold rounded-lg">
-              Start Free
+            <Button className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white text-sm uppercase tracking-wide font-bold rounded-lg px-6 h-11 transition-all">
+              Sign Up
             </Button>
           </Link>
         </div>
 
-        {/* Mobile Menu Button */}
         <div className="flex md:hidden items-center gap-2">
           <Link to="/signup?plan=free">
-            <Button size="sm" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white text-xs px-3 h-9 rounded-lg">
-              Start Free
+            <Button size="sm" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white text-xs uppercase tracking-wide font-bold px-4 h-10 rounded-lg">
+              Sign Up
             </Button>
           </Link>
           <button
@@ -116,13 +115,13 @@ export function MarketingNav() {
             </Link>
             <div className="pt-4 mt-4 border-t border-[hsl(var(--marketing-border))] space-y-3">
               <Link to="/login" className="block" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" size="lg" className="w-full rounded-lg border-[hsl(var(--marketing-border))]">
+                <Button variant="outline" className="w-full rounded-lg border-[hsl(var(--marketing-border))] h-12 text-sm uppercase tracking-wide font-bold">
                   Login
                 </Button>
               </Link>
               <Link to="/signup?plan=free" className="block" onClick={() => setMobileMenuOpen(false)}>
-                <Button size="lg" className="w-full rounded-lg bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white">
-                  Start Free
+                <Button className="w-full rounded-lg bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary))]/90 text-white h-12 text-sm uppercase tracking-wide font-bold">
+                  Sign Up
                 </Button>
               </Link>
             </div>

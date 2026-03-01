@@ -232,7 +232,7 @@ export default function CustomerSignUpPage() {
   const logo = whiteLabel?.logo;
 
   return (
-    <div data-dark-panel className="min-h-dvh flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div data-dark-panel className="min-h-dvh flex items-center justify-center p-4 relative overflow-hidden bg-slate-50">
       {/* Subtle animated accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(var(--customer-primary))]/20 rounded-full blur-3xl" />
@@ -241,7 +241,7 @@ export default function CustomerSignUpPage() {
 
       {/* Card */}
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8">
+        <div className="bg-slate-800/80  rounded-2xl shadow-2xl border border-slate-700/50 p-8">
           {/* Back Button */}
           <Link
             to={`/${tenantSlug}/customer/login`}
@@ -255,7 +255,7 @@ export default function CustomerSignUpPage() {
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               {logo ? (
-                <img src={logo} alt={businessName} className="h-16 object-contain" />
+                <img src={logo as string} alt={businessName} className="h-16 object-contain" />
               ) : (
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[hsl(var(--customer-primary))] shadow-xl">
                   <ShoppingBag className="w-8 h-8 text-white" aria-hidden="true" />

@@ -173,6 +173,7 @@ export default function LoyaltyProgramPage() {
 
   const deleteTierMutation = useMutation({
     mutationFn: async (id: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await supabase.from("loyalty_tiers").delete().eq("id", id).eq("tenant_id", tenant?.id);
       if (error) throw error;
     },
@@ -191,6 +192,7 @@ export default function LoyaltyProgramPage() {
 
   const deleteRewardMutation = useMutation({
     mutationFn: async (id: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await supabase.from("loyalty_rewards").delete().eq("id", id).eq("tenant_id", tenant?.id);
       if (error) throw error;
     },
@@ -497,9 +499,9 @@ export default function LoyaltyProgramPage() {
                       <Button variant="ghost" size="sm" onClick={() => handleOpenTier(tier)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => {
                           confirm({
                             title: 'Delete Tier?',
@@ -573,9 +575,9 @@ export default function LoyaltyProgramPage() {
                       <Button variant="ghost" size="sm" onClick={() => handleOpenReward(reward)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => {
                           confirm({
                             title: 'Delete Reward?',

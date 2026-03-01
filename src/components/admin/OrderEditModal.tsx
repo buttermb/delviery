@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -101,6 +101,7 @@ export function OrderEditModal({
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [customerNotes, setCustomerNotes] = useState('');
+  const modalOpenMarkRef = useRef<number | null>(null);
 
   // Check if order can be edited
   const canEdit = order ? isOrderEditable(order.status) : false;
@@ -112,6 +113,7 @@ export function OrderEditModal({
   // Reset form when order changes or dialog opens
   useEffect(() => {
     if (open && order) {
+      modalOpenMarkRef.current = performance.now();
       // Map order items to editable format
       const editableItems: EditableOrderItem[] = (order.order_items ?? []).map((item, index) => ({
         id: item.id || `temp-${index}`,
@@ -141,13 +143,31 @@ export function OrderEditModal({
     }
   }, [open, order]);
 
-  // Dirty state detection
-  const isDirty = open && initialSnapshot.current !== '' && JSON.stringify({
+  useEffect(() => {
+    if (!open || !order || items.length === 0 || modalOpenMarkRef.current === null) return;
+    const raf = requestAnimationFrame(() => {
+      const duration = performance.now() - modalOpenMarkRef.current!;
+      performance.mark('order-edit-modal-interactive');
+      if (import.meta.env.DEV) {
+        logger.debug('[perf] order edit modal interactive', {
+          orderId: order.id,
+          durationMs: Math.round(duration),
+        });
+      }
+      modalOpenMarkRef.current = null;
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [open, order, items.length]);
+
+  const currentSnapshot = useMemo(() => JSON.stringify({
     items,
     deliveryAddress,
     deliveryNotes,
     customerNotes,
-  }) !== initialSnapshot.current;
+  }), [items, deliveryAddress, deliveryNotes, customerNotes]);
+
+  // Dirty state detection
+  const isDirty = open && initialSnapshot.current !== '' && currentSnapshot !== initialSnapshot.current;
 
   const handleClose = useCallback(() => {
     onOpenChange(false);
@@ -404,7 +424,7 @@ export function OrderEditModal({
                               Math.max(1, Number(e.target.value))
                             )
                           }
-                          aria-label={`Quantity for ${item.productName || 'item'}`}
+                          aria-label={`Quantity for ${item.product_name || 'item'}`}
                           className="h-7 w-16 text-center"
                           min={1}
                           disabled={!canEdit}
@@ -437,7 +457,7 @@ export function OrderEditModal({
                               Math.max(0, Number(e.target.value))
                             )
                           }
-                          aria-label={`Price for ${item.productName || 'item'}`}
+                          aria-label={`Price for ${item.product_name || 'item'}`}
                           className="h-7 w-20"
                           step="0.01"
                           min={0}

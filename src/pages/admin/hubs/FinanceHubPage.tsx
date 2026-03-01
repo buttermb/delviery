@@ -19,12 +19,9 @@ import {
     Wallet,
     Building2,
     Banknote,
-    Plus,
-    Receipt,
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
 import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
@@ -86,23 +83,6 @@ export default function FinanceHubPage() {
                             <p className="text-muted-foreground text-sm">
                                 Financial management and reporting
                             </p>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleTabChange('expenses')}
-                            >
-                                <Receipt className="h-4 w-4 mr-2" />
-                                Record Expense
-                            </Button>
-                            <Button
-                                size="sm"
-                                onClick={() => handleTabChange('invoices')}
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Create Invoice
-                            </Button>
                         </div>
                     </div>
                     <ScrollableTabsList>

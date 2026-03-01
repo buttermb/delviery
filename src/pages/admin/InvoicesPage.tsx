@@ -6,15 +6,6 @@ import { useInvoices, type InvoiceSortState } from "@/hooks/crm/useInvoices";
 import { CustomerLink } from "@/components/admin/cross-links";
 import { useCRMSettings } from "@/hooks/crm/useCRMSettings";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -27,7 +18,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Plus,
-    Search,
     MoreHorizontal,
     FileText,
     Filter,
@@ -46,7 +36,6 @@ import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { format, differenceInDays, startOfMonth, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { CRMInvoice, CRMSettings } from "@/types/crm";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { ConfirmDialog } from "@/components/admin/shared/ConfirmDialog";
 import { ShortcutHint, useModifierKey } from "@/components/ui/shortcut-hint";
@@ -54,6 +43,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
+import { AdminDataTable } from "@/components/admin/shared/AdminDataTable";
+import { AdminToolbar } from "@/components/admin/shared/AdminToolbar";
+import type { ResponsiveColumn } from "@/components/shared/ResponsiveTable";
 
 /**
  * Format payment terms based on number of days
@@ -559,11 +551,6 @@ export function InvoicesPage() {
     const { data: crmSettings } = useCRMSettings();
     const mod = useModifierKey();
 
-    // Show full-page skeleton during initial load
-    if (isLoading && !invoices) {
-        return <InvoicesPageSkeleton />;
-    }
-
     const filteredInvoices = (() => {
         const sanitizedSearch = sanitizeSearchInput(searchQuery).toLowerCase();
         const filtered = invoices?.filter((invoice) => {
@@ -658,6 +645,11 @@ export function InvoicesPage() {
         }
     }, [crmSettings, isGeneratingPDF]);
 
+    // Show full-page skeleton during initial load
+    if (isLoading && !invoices) {
+        return <InvoicesPageSkeleton />;
+    }
+
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "paid":
@@ -741,6 +733,280 @@ export function InvoicesPage() {
         )
         : 0;
 
+    const invoiceColumns: ResponsiveColumn<CRMInvoice>[] = [
+        {
+            header: <SortableHeader field="invoice_number" label="Invoice #" />,
+            accessorKey: "invoice_number",
+            className: "sticky left-0 z-20 bg-background",
+            cell: (invoice) => (
+                <TruncatedText text={invoice.invoice_number} className="font-medium" maxWidthClass="max-w-[200px]" />
+            )
+        },
+        {
+            header: "Client",
+            accessorKey: "client",
+            cell: (invoice) => (
+                <div className="max-w-[200px] min-w-0 overflow-hidden">
+                    <CustomerLink
+                        customerId={invoice.client_id}
+                        customerName={invoice.client?.name || "Unknown Client"}
+                    />
+                </div>
+            )
+        },
+        {
+            header: <SortableHeader field="invoice_date" label="Date" />,
+            accessorKey: "invoice_date",
+            className: "hidden lg:table-cell",
+            cell: (invoice) => format(new Date(invoice.invoice_date), "MMM d, yyyy")
+        },
+        {
+            header: <SortableHeader field="due_date" label="Due Date" />,
+            accessorKey: "due_date",
+            cell: (invoice) => format(new Date(invoice.due_date), "MMM d, yyyy")
+        },
+        {
+            header: <div className="text-right"><SortableHeader field="total" label="Amount" /></div>,
+            accessorKey: "total",
+            className: "text-right",
+            cell: (invoice) => formatCurrency(invoice.total)
+        },
+        {
+            header: <div className="text-right"><SortableHeader field="amount_paid" label="Paid" /></div>,
+            accessorKey: "amount_paid",
+            className: "text-right hidden lg:table-cell",
+            cell: (invoice) => formatCurrency(invoice.amount_paid ?? 0)
+        },
+        {
+            header: <div className="text-right"><SortableHeader field="balance" label="Balance" /></div>,
+            accessorKey: "balance" as any,
+            className: "text-right",
+            cell: (invoice) => formatCurrency(invoice.total - (invoice.amount_paid ?? 0))
+        },
+        {
+            header: <SortableHeader field="status" label="Status" />,
+            accessorKey: "status",
+            cell: (invoice) => (
+                <div className="flex items-center gap-1.5">
+                    {getStatusBadge(invoice.status)}
+                    {invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status) && (
+                        <Badge variant="destructive">
+                            Overdue ({differenceInDays(new Date(), new Date(invoice.due_date))}d)
+                        </Badge>
+                    )}
+                </div>
+            )
+        },
+        {
+            header: <div className="text-right">Actions</div>,
+            className: "text-right",
+            cell: (invoice) => (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-11 w-11 p-0" onClick={(e) => e.stopPropagation()}>
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`);
+                        }}>
+                            View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            const link = `${window.location.origin}/portal/invoice/${invoice.public_token}`;
+                            navigator.clipboard.writeText(link);
+                            toast.success("Invoice link copied to clipboard");
+                        }}>
+                            Copy Link
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {invoice.status === "draft" && (
+                            <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsSent.execute(invoice.id);
+                            }}>
+                                <Send className="mr-2 h-4 w-4" />
+                                Mark as Sent
+                            </DropdownMenuItem>
+                        )}
+                        {invoice.status !== "paid" && invoice.status !== "cancelled" && (
+                            <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsPaid.execute(invoice.id);
+                            }}>
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Mark as Paid
+                            </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadPDF(invoice);
+                        }}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            Download PDF
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            handleDuplicateInvoice.execute(invoice.id);
+                        }}>
+                            <Copy className="mr-2 h-4 w-4" />
+                            Duplicate
+                        </DropdownMenuItem>
+                        {invoice.status !== "paid" && invoice.status !== "cancelled" && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    className="text-destructive focus-visible:text-destructive"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setInvoiceToVoid({ id: invoice.id, number: invoice.invoice_number });
+                                        setVoidDialogOpen(true);
+                                    }}
+                                >
+                                    <Ban className="mr-2 h-4 w-4" />
+                                    Void Invoice
+                                </DropdownMenuItem>
+                            </>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )
+        }
+    ];
+
+    const renderMobileInvoice = (invoice: CRMInvoice) => (
+        <div
+            className="p-4 active:bg-muted/50 transition-colors cursor-pointer"
+            onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`)}
+        >
+            <div className="flex justify-between items-start mb-2">
+                <div className="min-w-0 flex-1 mr-2">
+                    <TruncatedText text={invoice.invoice_number} className="font-semibold text-sm" maxWidthClass="max-w-[180px]" />
+                    <div className="text-sm text-foreground/90 font-medium min-w-0 max-w-[180px] overflow-hidden">
+                        <CustomerLink
+                            customerId={invoice.client_id}
+                            customerName={invoice.client?.name || "Unknown Client"}
+                        />
+                    </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    {getStatusBadge(invoice.status)}
+                    {invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status) && (
+                        <Badge variant="destructive">
+                            Overdue ({differenceInDays(new Date(), new Date(invoice.due_date))}d)
+                        </Badge>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex justify-between items-end">
+                <div className="text-xs text-muted-foreground space-y-0.5">
+                    <p>Due: {format(new Date(invoice.due_date), "MMM d, yyyy")}</p>
+                    <p>{format(new Date(invoice.invoice_date), "MMM d")}</p>
+                    {(invoice.amount_paid ?? 0) > 0 && (
+                        <p className="text-yellow-600">Paid: {formatCurrency(invoice.amount_paid ?? 0)}</p>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <div className="text-right">
+                        <span className={`font-bold text-base ${invoice.status === 'paid' ? 'text-green-600' :
+                                (invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status)) ? 'text-red-600' :
+                                    invoice.status === 'partially_paid' ? 'text-yellow-600' : ''
+                            }`}>
+                            {formatCurrency(invoice.total - (invoice.amount_paid ?? 0))}
+                        </span>
+                        {invoice.status === 'partially_paid' && (
+                            <p className="text-xs text-muted-foreground">of {formatCurrency(invoice.total)}</p>
+                        )}
+                    </div>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-11 w-11 -mr-2" onClick={(e) => e.stopPropagation()}>
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-5 w-5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[200px]">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem className="py-3" onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`);
+                            }}>
+                                View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3" onClick={(e) => {
+                                e.stopPropagation();
+                                const link = `${window.location.origin}/portal/invoice/${invoice.public_token}`;
+                                navigator.clipboard.writeText(link);
+                                toast.success("Invoice link copied");
+                            }}>
+                                Copy Link
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {invoice.status === "draft" && (
+                                <DropdownMenuItem className="py-3" onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMarkAsSent.execute(invoice.id);
+                                }}>
+                                    <Send className="mr-2 h-4 w-4" />
+                                    Mark as Sent
+                                </DropdownMenuItem>
+                            )}
+                            {invoice.status !== "paid" && invoice.status !== "cancelled" && (
+                                <DropdownMenuItem className="py-3" onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMarkAsPaid.execute(invoice.id);
+                                }}>
+                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                    Mark as Paid
+                                </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="py-3" onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownloadPDF(invoice);
+                            }}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                Download PDF
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3" onClick={(e) => {
+                                e.stopPropagation();
+                                handleDuplicateInvoice.execute(invoice.id);
+                            }}>
+                                <Copy className="mr-2 h-4 w-4" />
+                                Duplicate
+                            </DropdownMenuItem>
+                            {invoice.status !== "paid" && invoice.status !== "cancelled" && (
+                                <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        className="py-3 text-destructive focus-visible:text-destructive"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setInvoiceToVoid({ id: invoice.id, number: invoice.invoice_number });
+                                            setVoidDialogOpen(true);
+                                        }}
+                                    >
+                                        <Ban className="mr-2 h-4 w-4" />
+                                        Void Invoice
+                                    </DropdownMenuItem>
+                                </>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="space-y-4 p-4 pb-16">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -750,11 +1016,6 @@ export function InvoicesPage() {
                         Manage your invoices and track payments.
                     </p>
                 </div>
-                <ShortcutHint keys={[mod, "N"]} label="New">
-                    <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
-                        <Plus className="mr-2 h-4 w-4" /> Create Invoice
-                    </Button>
-                </ShortcutHint>
             </div>
 
             {/* Stats Cards */}
@@ -809,439 +1070,86 @@ export function InvoicesPage() {
                 </Card>
             </div>
 
-            <Card>
-                <CardHeader className="p-4">
-                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-2.5 top-3.5 h-4 w-4 text-muted-foreground md:top-2.5" />
-                            <Input
-                                aria-label="Search invoices"
-                                placeholder="Search invoices..."
-                                className="pl-8 h-11 md:h-10 text-base md:text-sm"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="gap-2 w-full md:w-auto justify-center h-11 md:h-10 text-base md:text-sm">
-                                    <Filter className="h-4 w-4" />
-                                    Filter: {statusFilter ? statusFilter.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "All"}
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[200px]">
-                                <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter(null)}>
-                                    All Statuses
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("draft")}>
-                                    Draft
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("sent")}>
-                                    Sent
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("paid")}>
-                                    Paid
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("partially_paid")}>
-                                    Partially Paid
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("overdue")}>
-                                    Overdue
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("cancelled")}>
-                                    Cancelled
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    {/* Mobile List View */}
-                    <div className="md:hidden divide-y">
-                        {isLoading ? (
-                            [...Array(3)].map((_, i) => (
-                                <div key={i} className="p-4 space-y-3">
-                                    <div className="flex justify-between">
-                                        <Skeleton className="h-5 w-24" />
-                                        <Skeleton className="h-5 w-16 rounded-full" />
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <div className="space-y-1">
-                                            <Skeleton className="h-4 w-32" />
-                                            <Skeleton className="h-3 w-20" />
-                                        </div>
-                                        <Skeleton className="h-6 w-20" />
-                                    </div>
-                                </div>
-                            ))
-                        ) : filteredInvoices?.length === 0 ? (
-                            <div className="p-6">
-                                <EnhancedEmptyState
-                                    icon={FileText}
-                                    title={searchQuery || statusFilter ? "No invoices found" : "No invoices yet"}
-                                    description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track payments from wholesale clients"}
-                                    primaryAction={searchQuery || statusFilter ? {
-                                        label: "Clear Filters",
-                                        onClick: () => { setSearchQuery(""); setStatusFilter(null); },
-                                    } : {
-                                        label: "Create Invoice",
-                                        onClick: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`),
-                                        icon: Plus
-                                    }}
-                                    compact
-                                    designSystem="tenant-admin"
-                                />
-                            </div>
-                        ) : (
-                            (paginatedInvoices as CRMInvoice[])?.map((invoice) => (
-                                <div
-                                    key={invoice.id}
-                                    className="p-4 active:bg-muted/50 transition-colors"
-                                    onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`)}
-                                >
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="min-w-0 flex-1 mr-2">
-                                            <TruncatedText text={invoice.invoice_number} className="font-semibold text-sm" maxWidthClass="max-w-[180px]" />
-                                            <div className="text-sm text-foreground/90 font-medium min-w-0 max-w-[180px] overflow-hidden">
-                                                <CustomerLink
-                                                    customerId={invoice.client_id}
-                                                    customerName={invoice.client?.name || "Unknown Client"}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            {getStatusBadge(invoice.status)}
-                                            {invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status) && (
-                                                <Badge variant="destructive">
-                                                    Overdue ({differenceInDays(new Date(), new Date(invoice.due_date))}d)
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </div>
+            <AdminToolbar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search invoices..."
+                actions={
+                    <ShortcutHint keys={[mod, "N"]} label="New">
+                        <Button onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/new`)}>
+                            <Plus className="mr-2 h-4 w-4" /> Create Invoice
+                        </Button>
+                    </ShortcutHint>
+                }
+                filters={
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="gap-2 w-full md:w-auto justify-center">
+                                <Filter className="h-4 w-4" />
+                                Filter: {statusFilter ? statusFilter.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : "All"}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-[200px]">
+                            <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter(null)}>
+                                All Statuses
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("draft")}>
+                                Draft
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("sent")}>
+                                Sent
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("paid")}>
+                                Paid
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("partially_paid")}>
+                                Partially Paid
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("overdue")}>
+                                Overdue
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="py-3 md:py-1.5" onClick={() => setStatusFilter("cancelled")}>
+                                Cancelled
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                }
+            />
 
-                                    <div className="flex justify-between items-end">
-                                        <div className="text-xs text-muted-foreground space-y-0.5">
-                                            <p>Due: {format(new Date(invoice.due_date), "MMM d, yyyy")}</p>
-                                            <p>{format(new Date(invoice.invoice_date), "MMM d")}</p>
-                                            {(invoice.amount_paid ?? 0) > 0 && (
-                                                <p className="text-yellow-600">Paid: {formatCurrency(invoice.amount_paid ?? 0)}</p>
-                                            )}
-                                        </div>
+            <AdminDataTable
+                data={paginatedInvoices as CRMInvoice[]}
+                keyExtractor={(invoice) => invoice.id}
+                isLoading={isLoading}
+                columns={invoiceColumns}
+                renderMobileItem={renderMobileInvoice}
+                emptyStateIcon={FileText}
+                emptyStateTitle={searchQuery || statusFilter ? "No invoices found" : "No invoices yet"}
+                emptyStateDescription={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track payments from wholesale clients"}
+                emptyStateAction={searchQuery || statusFilter ? {
+                    label: "Clear Filters",
+                    onClick: () => { setSearchQuery(""); setStatusFilter(null); },
+                } : {
+                    label: "Create Invoice",
+                    onClick: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`),
+                    icon: Plus
+                }}
+            />
 
-                                        <div className="flex items-center gap-3">
-                                            <div className="text-right">
-                                                <span className={`font-bold text-base ${
-                                                    invoice.status === 'paid' ? 'text-green-600' :
-                                                    (invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status)) ? 'text-red-600' :
-                                                    invoice.status === 'partially_paid' ? 'text-yellow-600' : ''
-                                                }`}>
-                                                    {formatCurrency(invoice.total - (invoice.amount_paid ?? 0))}
-                                                </span>
-                                                {invoice.status === 'partially_paid' && (
-                                                    <p className="text-xs text-muted-foreground">of {formatCurrency(invoice.total)}</p>
-                                                )}
-                                            </div>
-
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-11 w-11 -mr-2" onClick={(e) => e.stopPropagation()}>
-                                                        <span className="sr-only">Open menu</span>
-                                                        <MoreHorizontal className="h-5 w-5" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-[200px]">
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem className="py-3" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`);
-                                                    }}>
-                                                        View Details
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem className="py-3" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const link = `${window.location.origin}/portal/invoice/${invoice.public_token}`;
-                                                        navigator.clipboard.writeText(link);
-                                                        toast.success("Invoice link copied");
-                                                    }}>
-                                                        Copy Link
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    {invoice.status === "draft" && (
-                                                        <DropdownMenuItem className="py-3" onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleMarkAsSent.execute(invoice.id);
-                                                        }}>
-                                                            <Send className="mr-2 h-4 w-4" />
-                                                            Mark as Sent
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {invoice.status !== "paid" && invoice.status !== "cancelled" && (
-                                                        <DropdownMenuItem className="py-3" onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleMarkAsPaid.execute(invoice.id);
-                                                        }}>
-                                                            <CheckCircle className="mr-2 h-4 w-4" />
-                                                            Mark as Paid
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="py-3" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDownloadPDF(invoice);
-                                                    }}>
-                                                        <FileText className="mr-2 h-4 w-4" />
-                                                        Download PDF
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem className="py-3" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDuplicateInvoice.execute(invoice.id);
-                                                    }}>
-                                                        <Copy className="mr-2 h-4 w-4" />
-                                                        Duplicate
-                                                    </DropdownMenuItem>
-                                                    {invoice.status !== "paid" && invoice.status !== "cancelled" && (
-                                                        <>
-                                                            <DropdownMenuSeparator />
-                                                            <DropdownMenuItem
-                                                                className="py-3 text-destructive focus-visible:text-destructive"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setInvoiceToVoid({ id: invoice.id, number: invoice.invoice_number });
-                                                                    setVoidDialogOpen(true);
-                                                                }}
-                                                            >
-                                                                <Ban className="mr-2 h-4 w-4" />
-                                                                Void Invoice
-                                                            </DropdownMenuItem>
-                                                        </>
-                                                    )}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-
-                    {/* Desktop Table View */}
-                    <div className="overflow-x-auto">
-                    <Table className="hidden md:table">
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="sticky left-0 z-20 bg-background">
-                                    <SortableHeader field="invoice_number" label="Invoice #" />
-                                </TableHead>
-                                <TableHead>Client</TableHead>
-                                <TableHead className="hidden lg:table-cell">
-                                    <SortableHeader field="invoice_date" label="Date" />
-                                </TableHead>
-                                <TableHead>
-                                    <SortableHeader field="due_date" label="Due Date" />
-                                </TableHead>
-                                <TableHead className="text-right">
-                                    <SortableHeader field="total" label="Amount" />
-                                </TableHead>
-                                <TableHead className="text-right hidden lg:table-cell">
-                                    <SortableHeader field="amount_paid" label="Paid" />
-                                </TableHead>
-                                <TableHead className="text-right">
-                                    <SortableHeader field="balance" label="Balance" />
-                                </TableHead>
-                                <TableHead>
-                                    <SortableHeader field="status" label="Status" />
-                                </TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                // Skeleton loading state
-                                [...Array(5)].map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell className="sticky left-0 z-10 bg-background"><Skeleton className="h-4 w-20" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                        <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                        <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
-                                        <TableCell className="text-right hidden lg:table-cell"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
-                                        <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
-                                        <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
-                                        <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded" /></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : filteredInvoices?.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={9} className="h-64">
-                                        <EnhancedEmptyState
-                                            icon={FileText}
-                                            title={searchQuery || statusFilter ? "No invoices found" : "No invoices yet"}
-                                            description={searchQuery || statusFilter ? "Try adjusting your search or filters." : "Create invoices to track payments from wholesale clients"}
-                                            primaryAction={searchQuery || statusFilter ? {
-                                                label: "Clear Filters",
-                                                onClick: () => { setSearchQuery(""); setStatusFilter(null); },
-                                            } : {
-                                                label: "Create Invoice",
-                                                onClick: () => navigate(`/${tenantSlug}/admin/crm/invoices/new`),
-                                                icon: Plus
-                                            }}
-                                            compact
-                                            designSystem="tenant-admin"
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                (paginatedInvoices as CRMInvoice[])?.map((invoice) => (
-                                    <TableRow
-                                        key={invoice.id}
-                                        className="cursor-pointer hover:bg-muted/50"
-                                        onClick={() => navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`)}
-                                    >
-                                        <TableCell className="max-w-[200px] sticky left-0 z-10 bg-background">
-                                            <TruncatedText text={invoice.invoice_number} className="font-medium" maxWidthClass="max-w-[200px]" />
-                                        </TableCell>
-                                        <TableCell className="max-w-[200px]">
-                                            <div className="max-w-[200px] min-w-0 overflow-hidden">
-                                                <CustomerLink
-                                                    customerId={invoice.client_id}
-                                                    customerName={invoice.client?.name || "Unknown Client"}
-                                                />
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="hidden lg:table-cell">
-                                            {format(new Date(invoice.invoice_date), "MMM d, yyyy")}
-                                        </TableCell>
-                                        <TableCell>
-                                            {format(new Date(invoice.due_date), "MMM d, yyyy")}
-                                        </TableCell>
-                                        <TableCell className="text-right font-medium">
-                                            {formatCurrency(invoice.total)}
-                                        </TableCell>
-                                        <TableCell className={`text-right font-medium hidden lg:table-cell ${
-                                            invoice.status === 'paid' ? 'text-green-600' :
-                                            invoice.status === 'partially_paid' ? 'text-yellow-600' : ''
-                                        }`}>
-                                            {formatCurrency(invoice.amount_paid ?? 0)}
-                                        </TableCell>
-                                        <TableCell className={`text-right font-medium ${
-                                            invoice.status === 'paid' ? 'text-green-600' :
-                                            (invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status)) ? 'text-red-600' :
-                                            invoice.status === 'partially_paid' ? 'text-yellow-600' : ''
-                                        }`}>
-                                            {formatCurrency(invoice.total - (invoice.amount_paid ?? 0))}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-1.5">
-                                                {getStatusBadge(invoice.status)}
-                                                {invoice.due_date && new Date(invoice.due_date) < new Date() && ['sent', 'partially_paid'].includes(invoice.status) && (
-                                                    <Badge variant="destructive">
-                                                        Overdue ({differenceInDays(new Date(), new Date(invoice.due_date))}d)
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-11 w-11 p-0" onClick={(e) => e.stopPropagation()}>
-                                                        <span className="sr-only">Open menu</span>
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        navigate(`/${tenantSlug}/admin/crm/invoices/${invoice.id}`);
-                                                    }}>
-                                                        View Details
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const link = `${window.location.origin}/portal/invoice/${invoice.public_token}`;
-                                                        navigator.clipboard.writeText(link);
-                                                        toast.success("Invoice link copied to clipboard");
-                                                    }}>
-                                                        Copy Link
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    {invoice.status === "draft" && (
-                                                        <DropdownMenuItem onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleMarkAsSent.execute(invoice.id);
-                                                        }}>
-                                                            <Send className="mr-2 h-4 w-4" />
-                                                            Mark as Sent
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {invoice.status !== "paid" && invoice.status !== "cancelled" && (
-                                                        <DropdownMenuItem onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleMarkAsPaid.execute(invoice.id);
-                                                        }}>
-                                                            <CheckCircle className="mr-2 h-4 w-4" />
-                                                            Mark as Paid
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDownloadPDF(invoice);
-                                                    }}>
-                                                        <FileText className="mr-2 h-4 w-4" />
-                                                        Download PDF
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDuplicateInvoice.execute(invoice.id);
-                                                    }}>
-                                                        <Copy className="mr-2 h-4 w-4" />
-                                                        Duplicate
-                                                    </DropdownMenuItem>
-                                                    {invoice.status !== "paid" && invoice.status !== "cancelled" && (
-                                                        <>
-                                                            <DropdownMenuSeparator />
-                                                            <DropdownMenuItem
-                                                                className="text-destructive focus-visible:text-destructive"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setInvoiceToVoid({ id: invoice.id, number: invoice.invoice_number });
-                                                                    setVoidDialogOpen(true);
-                                                                }}
-                                                            >
-                                                                <Ban className="mr-2 h-4 w-4" />
-                                                                Void Invoice
-                                                            </DropdownMenuItem>
-                                                        </>
-                                                    )}
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                    </div>
-                </CardContent>
-
-                {/* Pagination */}
-                {totalItems > 0 && (
-                    <div className="p-4 border-t">
-                        <StandardPagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            totalItems={totalItems}
-                            pageSize={pageSize}
-                            onPageChange={goToPage}
-                            onPageSizeChange={changePageSize}
-                            pageSizeOptions={pageSizeOptions}
-                        />
-                    </div>
-                )}
-            </Card>
+            {totalItems > 0 && (
+                <div className="p-4 border-t bg-card rounded-b-lg">
+                    <StandardPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={totalItems}
+                        pageSize={pageSize}
+                        onPageChange={goToPage}
+                        onPageSizeChange={changePageSize}
+                        pageSizeOptions={pageSizeOptions}
+                    />
+                </div>
+            )}
 
             <ConfirmDialog
                 isOpen={voidDialogOpen}

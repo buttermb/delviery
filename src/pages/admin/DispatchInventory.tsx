@@ -254,7 +254,7 @@ export default function DispatchInventory() {
         }
 
         // RPC succeeded
-        const result = rpcResult as { success: boolean; total_expected_revenue: number; client_name: string };
+        const _result = rpcResult as { success: boolean; total_expected_revenue: number; client_name: string };
 
         // Create scan records for audit trail
         for (const product of scannedProducts) {
@@ -336,7 +336,7 @@ export default function DispatchInventory() {
         .from('products')
         .select('fronted_quantity, available_quantity')
         .eq('id', product.product_id)
-        .maybeSingle<ProductQuantity>();
+        .maybeSingle() as { data: ProductQuantity | null };
 
       if (currentProduct) {
         await supabase

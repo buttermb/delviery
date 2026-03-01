@@ -147,13 +147,13 @@ export function PaymentSettingsForm({
   const handleSubmit = async (data: PaymentSettingsFormData) => {
     try {
       setSaving(true);
-      
+
       // Validate crypto addresses if enabled
       if (data.accept_bitcoin && data.bitcoin_address && !isValidBitcoinAddress(data.bitcoin_address)) {
         showErrorToast('Invalid Bitcoin Address', 'Please enter a valid Bitcoin address');
         return;
       }
-      
+
       if ((data.accept_ethereum || data.accept_usdt) && data.ethereum_address && !isValidEthereumAddress(data.ethereum_address)) {
         showErrorToast('Invalid Ethereum Address', 'Please enter a valid Ethereum address (0x...)');
         return;
@@ -750,4 +750,5 @@ export function PaymentSettingsForm({
     </Form>
   );
 }
+export default PaymentSettingsForm;
 

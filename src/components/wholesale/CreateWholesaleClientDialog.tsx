@@ -19,28 +19,20 @@ interface Props {
     onSuccess: (clientId: string) => void;
 }
 
+const defaultFormData = {
+    business_name: '',
+    contact_name: '',
+    email: '',
+    phone: '',
+    license_number: '',
+    payment_terms: 'net_30',
+    address: ''
+};
+
 export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props) {
     const { tenant } = useTenantAdminAuth();
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        business_name: '',
-        contact_name: '',
-        email: '',
-        phone: '',
-        license_number: '',
-        payment_terms: 'net_30',
-        address: ''
-    });
-
-    const defaultFormData = {
-        business_name: '',
-        contact_name: '',
-        email: '',
-        phone: '',
-        license_number: '',
-        payment_terms: 'net_30',
-        address: ''
-    };
+    const [formData, setFormData] = useState(defaultFormData);
 
     // Reset form when dialog closes without submit
     useEffect(() => {

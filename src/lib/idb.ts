@@ -81,32 +81,33 @@ export const db = {
     },
 
     // Secure Order Methods
-    async saveOrder(order: Record<string, unknown> & { id: string; createdAt?: number }) {
+    async saveOrder(order: Record<string, unknown> & { id: string; createdAt?: number | string }) {
         const db = await initDB();
-        let dataToStore = order;
+        let dataToStore: unknown = order;
         let isEncrypted = false;
 
         // Encrypt if encryption is ready
         if (clientEncryption.isReady()) {
             try {
-                // Encrypt the sensitive order details
-                // We keep 'id' and 'createdAt' top level for querying, but encrypt the rest
                 const sensitiveData = { ...order };
                 delete sensitiveData.id;
                 delete sensitiveData.createdAt;
 
-                dataToStore = clientEncryption.encrypt(sensitiveData);
+                dataToStore = clientEncryption.encrypt(JSON.stringify(sensitiveData));
                 isEncrypted = true;
             } catch (e) {
                 logger.warn('Failed to encrypt order, storing plain text', e, { component: 'idb' });
             }
         }
 
+        const createdAtValue = order.createdAt;
+        const createdAtNum = typeof createdAtValue === 'string' ? new Date(createdAtValue).getTime() : (createdAtValue || Date.now());
+
         return db.put('orders', {
             id: order.id,
             data: dataToStore,
             encrypted: isEncrypted,
-            createdAt: order.createdAt || Date.now(),
+            createdAt: createdAtNum,
             synced: false
         });
     },
@@ -119,7 +120,7 @@ export const db = {
 
         if (record.encrypted && clientEncryption.isReady()) {
             try {
-                const decryptedData = clientEncryption.decrypt(record.data) as Record<string, unknown>;
+                const decryptedData = clientEncryption.decrypt(record.data as string) as Record<string, unknown>;
                 return {
                     id: record.id,
                     ...decryptedData,
@@ -128,12 +129,13 @@ export const db = {
                 };
             } catch (e) {
                 logger.error('Failed to decrypt order', e, { component: 'IDB', orderId: record.id });
-                return null; // Or throw error
+                return null;
             }
         }
 
         // Return as is if not encrypted or encryption not ready (fallback)
-        return record.encrypted ? null : { ...record.data, id: record.id, createdAt: record.createdAt, synced: record.synced };
+        const data = record.data as Record<string, unknown> | null;
+        return record.encrypted ? null : { ...(data ?? {}), id: record.id, createdAt: record.createdAt, synced: record.synced };
     },
 
     async getAllOrders() {
@@ -141,13 +143,13 @@ export const db = {
         const records = await db.getAll('orders');
 
         if (!clientEncryption.isReady()) {
-            return records.filter(r => !r.encrypted).map(r => ({ ...r.data, id: r.id, createdAt: r.createdAt, synced: r.synced }));
+            return records.filter(r => !r.encrypted).map(r => ({ ...(r.data as Record<string, unknown> ?? {}), id: r.id, createdAt: r.createdAt, synced: r.synced }));
         }
 
         return records.map(record => {
             if (record.encrypted) {
                 try {
-                    const decryptedData = clientEncryption.decrypt(record.data) as Record<string, unknown>;
+                    const decryptedData = clientEncryption.decrypt(record.data as string) as Record<string, unknown>;
                     return {
                         id: record.id,
                         ...decryptedData,
@@ -159,7 +161,7 @@ export const db = {
                     return null;
                 }
             }
-            return { ...record.data, id: record.id, createdAt: record.createdAt, synced: record.synced };
+            return { ...(record.data as Record<string, unknown> ?? {}), id: record.id, createdAt: record.createdAt, synced: record.synced };
         }).filter(Boolean);
     },
 

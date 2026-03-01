@@ -139,7 +139,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
 
       if (error) throw error;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (_, _variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.byStore(storeId) });
       toast.success("${variables.ids.length} card(s) ${variables.newStatus === ");
       setSelectedIds(new Set());

@@ -41,23 +41,20 @@ export function EnhancedMenuDashboard() {
   const { data: overviewStats } = useQuery({
     queryKey: queryKeys.menuOverviewStats.all,
     queryFn: async () => {
-      const activeMenus = menus?.filter((m: DisposableMenu) => m.status === 'active') ?? [];
-      const burnedMenus = menus?.filter((m: DisposableMenu) => 
+      const allMenus = (menus ?? []) as DisposableMenu[];
+      const activeMenus = allMenus.filter((m) => m.status === 'active');
+      const burnedMenus = allMenus.filter((m) =>
         m.status === 'soft_burned' || m.status === 'hard_burned'
-      ) ?? [];
+      );
 
       // Total views (from access logs)
       let totalViews = 0;
-      if (menus) {
-        for (const menu of menus) {
-          if (menu.menu_access_logs) {
-            const { count } = await supabase
-              .from('menu_access_logs')
-              .select('*', { count: 'exact', head: true })
-              .eq('menu_id', menu.id);
-            totalViews += count ?? 0;
-          }
-        }
+      for (const menu of allMenus) {
+        const { count } = await supabase
+          .from('menu_access_logs')
+          .select('*', { count: 'exact', head: true })
+          .eq('menu_id', menu.id);
+        totalViews += count ?? 0;
       }
 
       // Orders today
@@ -65,17 +62,13 @@ export function EnhancedMenuDashboard() {
       today.setHours(0, 0, 0, 0);
       
       let todayOrders = 0;
-      if (menus) {
-        for (const menu of menus) {
-          if (menu.menu_orders) {
-            const { count } = await supabase
-              .from('menu_orders')
-              .select('*', { count: 'exact', head: true })
-              .eq('menu_id', menu.id)
-              .gte('created_at', today.toISOString());
-            todayOrders += count ?? 0;
-          }
-        }
+      for (const menu of allMenus) {
+        const { count } = await supabase
+          .from('menu_orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('menu_id', menu.id)
+          .gte('created_at', today.toISOString());
+        todayOrders += count ?? 0;
       }
 
       return {
@@ -109,18 +102,18 @@ export function EnhancedMenuDashboard() {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const burned = (menus as DisposableMenu[])?.filter((m: DisposableMenu) =>
+      const burned = ((menus ?? []) as DisposableMenu[]).filter((m) =>
         (m.status === 'soft_burned' || m.status === 'hard_burned') &&
         m.burned_at &&
         new Date(m.burned_at) >= thirtyDaysAgo
-      ) ?? [];
+      );
 
       return burned.slice(0, 10);
     },
     enabled: !!menus,
   });
 
-  const activeMenus = (menus as DisposableMenu[])?.filter((m: DisposableMenu) => m.status === 'active') ?? [];
+  const activeMenus = ((menus ?? []) as DisposableMenu[]).filter((m) => m.status === 'active');
 
   return (
     <div className="space-y-6">

@@ -124,8 +124,8 @@ export default function RunnerView() {
 
   // Keep a ref to the latest syncOfflineQueue so the effect
   // always calls the current version without re-running when the callback identity changes.
-  const syncOfflineQueueRef = useRef(syncOfflineQueue);
-  useEffect(() => { syncOfflineQueueRef.current = syncOfflineQueue; }, [syncOfflineQueue]);
+  const syncOfflineQueueRef = useRef<() => void>(() => {});
+  // syncOfflineQueueRef is updated later after syncOfflineQueue is declared via useCallback
 
   // Sync offline queue when coming back online.
   // Only `isOnline` is a trigger — the queue length guard prevents unnecessary calls.
@@ -466,6 +466,9 @@ export default function RunnerView() {
       toast.success(`Synced ${toProcess.length - failed.length} offline actions`);
     }
   }, [isOnline, offlineQueue, updateStatusMutation]);
+
+  // Update the ref after syncOfflineQueue is declared
+  useEffect(() => { syncOfflineQueueRef.current = syncOfflineQueue; }, [syncOfflineQueue]);
 
   // Open maps for navigation
   const openMapsNavigation = useCallback((delivery: RunnerDelivery) => {

@@ -61,7 +61,7 @@ interface OptimizedRoute {
   stops: DeliveryStop[];
   totalDistance: number; // miles
   totalTime: number; // minutes
-  geometry?: Record<string, unknown>; // GeoJSON
+  geometry?: { type: string; coordinates: unknown }; // GeoJSON
 }
 
 const INITIAL_VIEW_STATE = {
@@ -130,7 +130,7 @@ export function RouteOptimizer() {
     }
   };
 
-  const handleAssignRoute = (courierId: string, courierName: string) => {
+  const handleAssignRoute = (_courierId: string, _courierName: string) => {
     toast.success("Successfully assigned ${stops.length} stops to ${courierName}.");
     // In a real app, this would save the route to the DB with the assigned courier_id
     // logger.info('Route Assigned', { courierId, stopCount: stops.length });
@@ -366,7 +366,7 @@ export function RouteOptimizer() {
 
             {/* Route Line */}
             {optimizedRoute?.geometry && (
-              <Source id="route" type="geojson" data={optimizedRoute.geometry}>
+              <Source id="route" type="geojson" data={optimizedRoute.geometry as unknown as GeoJSON.GeoJSON}>
                 <Layer
                   id="route-line"
                   type="line"

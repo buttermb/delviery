@@ -154,7 +154,7 @@ export function sanitizeSlugInput(slug: string): string {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, '-') // Replace spaces with dashes
-    .replace(/[^a-z0-9\-]/g, '') // Only allow lowercase alphanumeric and dashes
+    .replace(/[^a-z0-9-]/g, '') // Only allow lowercase alphanumeric and dashes
     .replace(/-+/g, '-') // Replace multiple dashes with single dash
     .replace(/^-|-$/g, ''); // Remove leading/trailing dashes
 }

@@ -10,19 +10,19 @@ import { Link } from "react-router-dom";
 export default function Press() {
   const pressReleases = [
     {
-      date: "March 15, 2024",
+      date: "March 15, 2025",
       title: "FloraIQ Raises $5M Series A to Transform Wholesale Distribution",
       category: "Funding",
       excerpt: "Leading B2B software platform secures funding to accelerate growth and product development."
     },
     {
-      date: "February 10, 2024",
+      date: "February 10, 2025",
       title: "FloraIQ Surpasses 400 Active Distributors Milestone",
       category: "Company News",
       excerpt: "Platform reaches significant growth milestone, processing over $1.4M in orders monthly."
     },
     {
-      date: "January 5, 2024",
+      date: "January 5, 2025",
       title: "FloraIQ Launches AI-Powered Analytics Dashboard",
       category: "Product Launch",
       excerpt: "New analytics features help distributors make data-driven decisions and optimize operations."
@@ -57,7 +57,7 @@ export default function Press() {
       <MarketingNav />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-b from-primary/5 to-background">
+      <section className="pt-32 pb-20 bg-slate-50">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <Badge className="mb-4">Press & Media</Badge>
@@ -143,7 +143,7 @@ export default function Press() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
-            <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+            <Card className="bg-slate-50 border-slate-200">
               <CardContent className="p-8 text-center">
                 <div className="p-4 rounded-lg bg-primary/10 w-fit mx-auto mb-4">
                   <Mail className="h-8 w-8 text-primary" />

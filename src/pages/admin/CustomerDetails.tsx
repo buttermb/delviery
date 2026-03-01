@@ -110,6 +110,7 @@ export default function CustomerDetails() {
     } else {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadCustomerData is defined below, only run when id changes
   }, [id]);
 
   const loadCustomerData = async () => {

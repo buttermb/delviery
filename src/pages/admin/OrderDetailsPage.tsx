@@ -86,10 +86,6 @@ import Truck from "lucide-react/dist/esm/icons/truck";
 import CheckCircle from "lucide-react/dist/esm/icons/check-circle";
 import Clock from "lucide-react/dist/esm/icons/clock";
 import XCircle from "lucide-react/dist/esm/icons/x-circle";
-import User from "lucide-react/dist/esm/icons/user";
-import Phone from "lucide-react/dist/esm/icons/phone";
-import Mail from "lucide-react/dist/esm/icons/mail";
-import CreditCard from "lucide-react/dist/esm/icons/credit-card";
 import Receipt from "lucide-react/dist/esm/icons/receipt";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 import Edit from "lucide-react/dist/esm/icons/edit";
@@ -420,7 +416,7 @@ export function OrderDetailsPage() {
                 .eq('id', item.product_id)
                 .eq('tenant_id', tenant?.id ?? '');
               // Log to inventory_history for audit trail
-              await (supabase as unknown as { from: (table: string) => { insert: (data: Record<string, unknown>) => Promise<{ error: unknown }> } })
+              await supabase
                 .from('inventory_history')
                 .insert({
                   tenant_id: tenant?.id,

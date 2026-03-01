@@ -87,15 +87,18 @@ export function LocationMapWidget() {
       const BASE_LNG = -74.0060;
 
       return {
-        warehouses: Object.entries(warehouses).map(([name, stats]) => ({
-          name,
-          lbs: stats.lbs,
-          count: stats.count,
-          // Use deterministic coordinates based on name (estimated location)
-          lat: BASE_LAT + getDeterministicOffset(name),
-          lng: BASE_LNG + getDeterministicOffset(name + '_lng'),
-          isEstimated: true,
-        })),
+        warehouses: Object.entries(warehouses).map(([name, rawStats]: [string, unknown]) => {
+          const stats = rawStats as { lbs: number; count: number };
+          return {
+            name,
+            lbs: stats.lbs,
+            count: stats.count,
+            // Use deterministic coordinates based on name (estimated location)
+            lat: BASE_LAT + getDeterministicOffset(name),
+            lng: BASE_LNG + getDeterministicOffset(name + '_lng'),
+            isEstimated: true,
+          };
+        }),
         runners: (runners ?? []).map((runner: { id: string; full_name: string; status: string; current_lat: number | null; current_lng: number | null }) => ({
           id: runner.id,
           full_name: runner.full_name,
@@ -153,7 +156,7 @@ export function LocationMapWidget() {
           Warehouses
         </h4>
         {locations?.warehouses && locations.warehouses.length > 0 ? (
-          locations.warehouses.map((wh, index) => (
+          locations.warehouses.map((wh, _index) => (
             <div key={wh.name} className="flex items-center justify-between p-2 border rounded-lg">
               <div>
                 <div className="font-medium text-sm">{wh.name}</div>

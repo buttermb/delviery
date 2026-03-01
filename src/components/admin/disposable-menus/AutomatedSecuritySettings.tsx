@@ -57,7 +57,7 @@ export const AutomatedSecuritySettings = () => {
       localStorage.setItem(STORAGE_KEYS.DISPOSABLE_MENUS_SECURITY_SETTINGS, JSON.stringify(settings));
 
       toast.success("Security automation settings have been updated");
-    } catch (error: unknown) {
+    } catch {
       toast.error("Failed to save settings");
     } finally {
       setSaving(false);

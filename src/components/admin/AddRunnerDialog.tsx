@@ -60,7 +60,7 @@ interface AddRunnerDialogProps {
 export function AddRunnerDialog({ onSuccess, trigger }: AddRunnerDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { account } = useAccount();
+  const { account: _account } = useAccount();
   const queryClient = useQueryClient();
 
   const form = useForm<RunnerFormData>({

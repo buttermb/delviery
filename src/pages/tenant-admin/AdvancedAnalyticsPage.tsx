@@ -58,7 +58,7 @@ export default function AdvancedAnalyticsPage() {
       const name = item.product_name || 'Unknown';
       if (!acc[name]) acc[name] = { name, quantity: 0, revenue: 0 };
       acc[name].quantity += item.quantity ?? 0;
-      acc[name].revenue += ((item.price ?? 0) * (item.quantity ?? 0)) ?? 0;
+      acc[name].revenue += ((item.price ?? 0) * (item.quantity ?? 0));
       return acc;
     }, {});
 

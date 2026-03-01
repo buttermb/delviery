@@ -275,7 +275,7 @@ export default function StorefrontProducts() {
         if (error) throw error;
       }
     },
-    onSuccess: (_, isVisible) => {
+    onSuccess: (_, _isVisible) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.all });
       // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });

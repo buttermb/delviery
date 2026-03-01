@@ -25,24 +25,24 @@ export function CTASection({
 }: CTASectionProps) {
   return (
     <div className="container mx-auto px-4">
-      <div className={`relative max-w-4xl mx-auto text-center p-12 md:p-16 rounded-2xl ${variant === "minimal"
-        ? "bg-gray-50 border border-gray-100"
-        : "bg-emerald-900 text-white shadow-2xl overflow-hidden relative"
+      <div className={`relative max-w-5xl mx-auto text-center p-12 md:p-20 rounded-[40px] md:rounded-[60px] ${variant === "minimal"
+        ? "bg-[hsl(var(--marketing-bg-subtle))] border border-[hsl(var(--marketing-border))]"
+        : "bg-[hsl(var(--marketing-primary))] text-white shadow-2xl overflow-hidden relative"
         }`}>
 
-        {/* Abstract Background for Default Variant */}
+        {/* Abstract Background for Default Variant - Subtler Flowhub Style */}
         {variant === "default" && (
           <div className="absolute inset-0 z-0">
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/20 blur-[100px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-800/20 blur-[100px] rounded-full pointer-events-none" />
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/5 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-black/10 blur-[120px] rounded-full pointer-events-none" />
           </div>
         )}
 
         <div className="relative z-10">
-          <h2 className={`text-3xl md:text-5xl font-bold mb-6 ${variant === 'minimal' ? 'text-slate-900' : 'text-white'}`}>
+          <h2 className={`text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-8 ${variant === 'minimal' ? 'text-[hsl(var(--marketing-text))]' : 'text-white'}`}>
             {title}
           </h2>
-          <p className={`text-lg md:text-xl mb-10 max-w-2xl mx-auto ${variant === 'minimal' ? 'text-slate-600' : 'text-emerald-100'}`}>
+          <p className={`text-lg md:text-xl font-medium mb-12 max-w-2xl mx-auto ${variant === 'minimal' ? 'text-slate-600' : 'text-white/80'}`}>
             {description}
           </p>
 
@@ -50,9 +50,9 @@ export function CTASection({
             <Link to={primaryCta.link} className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className={`w-full sm:w-auto h-14 px-8 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 ${variant === 'minimal'
-                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                    : 'bg-white text-emerald-900 hover:bg-emerald-50'
+                className={`w-full sm:w-auto h-16 px-10 text-base uppercase tracking-wide font-bold rounded-lg shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-200 ${variant === 'minimal'
+                  ? 'bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary)/0.9)] text-white'
+                  : 'bg-white text-[hsl(var(--marketing-primary))] hover:bg-gray-50'
                   }`}
               >
                 {primaryCta.text.replace(' →', '')}
@@ -65,9 +65,9 @@ export function CTASection({
                 <Button
                   size="lg"
                   variant="outline"
-                  className={`w-full sm:w-auto h-14 px-8 text-lg font-bold rounded-xl border-2 transition-all duration-200 ${variant === 'minimal'
-                      ? 'border-gray-200 text-slate-700 hover:bg-gray-50 hover:border-emerald-200 hover:text-emerald-700'
-                      : 'border-emerald-700 text-emerald-100 hover:bg-emerald-800 hover:text-white hover:border-emerald-600'
+                  className={`w-full sm:w-auto h-16 px-10 text-base uppercase tracking-wide font-bold rounded-lg border-2 transition-all duration-200 ${variant === 'minimal'
+                    ? 'border-[hsl(var(--marketing-border))] text-[hsl(var(--marketing-text))] hover:bg-white hover:border-[hsl(var(--marketing-primary)/0.3)] hover:text-[hsl(var(--marketing-primary))]'
+                    : 'border-white/20 text-white hover:bg-white/10 hover:border-white/40'
                     }`}
                 >
                   {secondaryCta.text}
@@ -76,7 +76,7 @@ export function CTASection({
             )}
           </div>
 
-          <p className={`text-sm mt-8 font-medium opacity-80 ${variant === 'minimal' ? 'text-slate-500' : 'text-emerald-200'}`}>
+          <p className={`text-sm mt-8 font-medium opacity-80 ${variant === 'minimal' ? 'text-slate-500' : 'text-white/60'}`}>
             No credit card required. Cancel anytime.
           </p>
         </div>

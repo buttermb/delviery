@@ -489,7 +489,7 @@ export function LoginPage() {
 
           {/* Footer */}
           <div className="p-6 text-center text-xs text-slate-400">
-            &copy; 2024 FloraIQ. Secure & Encrypted.
+            &copy; 2025 FloraIQ. Secure & Encrypted.
           </div>
         </div>
 

@@ -211,7 +211,7 @@ export function InventoryForecastWidget() {
                                     {item.product_name}
                                     <InventoryStatusBadge
                                         quantity={item.quantity_lbs}
-                                        reorderPoint={item.reorder_point}
+                                        lowStockThreshold={item.reorder_point}
                                         showLabel={false}
                                         className="h-5 px-1.5"
                                     />

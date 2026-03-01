@@ -19,12 +19,10 @@ import {
   Search,
   Clock,
   AlertTriangle,
-  Store,
   Leaf,
-  Share2,
+  Store,
 } from 'lucide-react';
 import { logger } from '@/lib/logger';
-import { getThemeById, applyCSSVariables } from '@/lib/storefrontThemes';
 import { MobileBottomNav } from '@/components/shop/MobileBottomNav';
 import { LuxuryNav } from '@/components/shop/LuxuryNav';
 import { LuxuryFooter } from '@/components/shop/LuxuryFooter';
@@ -33,12 +31,9 @@ import { LuxuryAgeVerification } from '@/components/shop/LuxuryAgeVerification';
 import { StorefrontAgeGate } from '@/components/shop/StorefrontAgeGate';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 import { CartDrawer } from '@/components/shop/CartDrawer';
-import { StorefrontShareDialog } from '@/components/shop/StorefrontShareDialog';
 import { useShopCart } from '@/hooks/useShopCart';
 import { queryKeys } from '@/lib/queryKeys';
-import StoreNotFound from '@/components/shop/StoreNotFound';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
-import { safeStorage } from '@/utils/safeStorage';
 
 interface StoreInfo {
   id: string;
@@ -56,17 +51,12 @@ interface StoreInfo {
   minimum_age: number;
   layout_config?: Record<string, unknown>[] | null;
   theme_config?: {
-    theme_id?: string;
     theme?: 'default' | 'luxury' | 'minimal';
     colors?: {
       primary?: string;
       secondary?: string;
       accent?: string;
       background?: string;
-      text?: string;
-    };
-    typography?: {
-      fontFamily?: string;
     };
   } | null;
   operating_hours: Record<string, unknown>;
@@ -79,12 +69,6 @@ interface StoreInfo {
     show_delivery_notes?: boolean;
     venmo_handle?: string;
     zelle_email?: string;
-    zelle_phone?: string;
-    cashapp_username?: string;
-    cash_instructions?: string;
-    venmo_instructions?: string;
-    zelle_instructions?: string;
-    cashapp_instructions?: string;
   };
   payment_methods?: string[];
   // Analytics
@@ -120,7 +104,6 @@ export default function ShopLayout() {
   const [cartItemCount, setCartItemCount] = useState(0);
   const [ageVerified, setAgeVerified] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   // Check if in preview mode
   const isPreviewMode = searchParams.get('preview') === 'true';
@@ -184,63 +167,6 @@ export default function ShopLayout() {
     }
   }, [store?.store_name, store?.tagline]);
 
-  // Theme: Apply --storefront-* CSS variables and load Google Fonts
-  useEffect(() => {
-    if (!store?.theme_config) return;
-
-    const themeId = store.theme_config.theme_id;
-    const preset = themeId ? getThemeById(themeId) : undefined;
-    const root = document.documentElement;
-    const { colors, typography } = store.theme_config;
-
-    if (preset) {
-      // Apply the full preset CSS variables to <html>
-      applyCSSVariables(root, preset);
-      root.style.setProperty('--storefront-font-heading', preset.typography.fonts.heading);
-      root.style.setProperty('--storefront-font-body', preset.typography.fonts.body);
-
-      // Load Google Fonts for the theme
-      const fonts = [preset.typography.fonts.heading, preset.typography.fonts.body];
-      const uniqueFonts = [...new Set(fonts)].filter(f => f && f !== 'system-ui');
-      if (uniqueFonts.length > 0) {
-        const fontParam = uniqueFonts.map(f => f.replace(/ /g, '+')).join('&family=');
-        const linkId = 'storefront-theme-fonts';
-        let link = document.getElementById(linkId) as HTMLLinkElement | null;
-        if (!link) {
-          link = document.createElement('link');
-          link.id = linkId;
-          link.rel = 'stylesheet';
-          document.head.appendChild(link);
-        }
-        link.href = `https://fonts.googleapis.com/css2?family=${fontParam}:wght@300;400;500;600;700&display=swap`;
-      }
-
-      logger.debug('Applied theme preset CSS variables', { themeId });
-    } else if (colors) {
-      // Fallback: apply custom colors from theme_config directly
-      if (colors.background) root.style.setProperty('--storefront-bg', colors.background);
-      if (colors.text) root.style.setProperty('--storefront-text', colors.text);
-      if (colors.primary) root.style.setProperty('--storefront-primary', colors.primary);
-      if (colors.accent) root.style.setProperty('--storefront-accent', colors.accent);
-      if (typography?.fontFamily) {
-        root.style.setProperty('--storefront-font-body', typography.fontFamily);
-        root.style.setProperty('--storefront-font-heading', typography.fontFamily);
-      }
-
-      logger.debug('Applied custom theme colors', { colors });
-    }
-
-    return () => {
-      // Cleanup: remove CSS variables when unmounting
-      const props = [
-        '--storefront-bg', '--storefront-text', '--storefront-primary', '--storefront-accent',
-        '--storefront-card-bg', '--storefront-border', '--storefront-radius', '--storefront-shadow',
-        '--storefront-font-heading', '--storefront-font-body',
-      ];
-      props.forEach(prop => root.style.removeProperty(prop));
-    };
-  }, [store?.theme_config]);
-
   // GA4 Analytics: Inject Google Analytics script
   useEffect(() => {
     if (store?.ga4_measurement_id && !isPreviewMode) {
@@ -285,7 +211,7 @@ export default function ShopLayout() {
     if (store?.id) {
       // Initial load
       const loadCart = () => {
-        const cart = safeStorage.getItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
+        const cart = localStorage.getItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
         if (cart) {
           try {
             const items = JSON.parse(cart);
@@ -313,15 +239,15 @@ export default function ShopLayout() {
     }
   }, [store?.id]);
 
-  // Check age verification (persists per store slug)
+  // Check age verification
   useEffect(() => {
     if (store?.require_age_verification) {
-      const verified = safeStorage.getItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeSlug}`);
+      const verified = localStorage.getItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${store.id}`);
       setAgeVerified(verified === 'true');
     } else {
       setAgeVerified(true);
     }
-  }, [store, storeSlug]);
+  }, [store]);
   // Check if store is open
   const isStoreOpen = () => {
     if (!store?.operating_hours) return true;
@@ -336,14 +262,13 @@ export default function ShopLayout() {
     return currentTime >= hours.open && currentTime <= hours.close;
   };
 
-  // Handle age verification (persists per store slug)
+  // Handle age verification
   const handleAgeVerification = (verified: boolean) => {
-    if (verified && storeSlug) {
-      safeStorage.setItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeSlug}`, 'true');
+    if (verified && store?.id) {
+      localStorage.setItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${store.id}`, 'true');
       setAgeVerified(true);
     } else {
-      // Redirect underage users away from the store
-      window.location.href = 'https://www.google.com';
+      navigate('/');
     }
   };
 
@@ -372,9 +297,27 @@ export default function ShopLayout() {
     );
   }
 
-  // Store not found
+  // Store not found — styled 404 page
   if (error || !store) {
-    return <StoreNotFound />;
+    return (
+      <div className="min-h-dvh bg-gradient-to-b from-muted/40 to-background flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-muted">
+            <Store className="h-12 w-12 text-muted-foreground" />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight mb-3">Store Not Found</h1>
+          <p className="text-muted-foreground mb-2">
+            The store you&apos;re looking for doesn&apos;t exist or has been taken offline.
+          </p>
+          <p className="text-sm text-muted-foreground mb-8">
+            Check the URL and try again.
+          </p>
+          <Button onClick={() => navigate('/')} size="lg">
+            Go Home
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   // Store inactive - show different message for public vs preview
@@ -393,7 +336,7 @@ export default function ShopLayout() {
   }
 
   // Determine if using luxury theme - defensive null check
-  const isLuxuryTheme = store?.theme_config?.theme === 'luxury' || store?.theme_config?.theme_id === 'luxury';
+  const isLuxuryTheme = store?.theme_config?.theme === 'luxury';
 
   // Age verification gate (skip in preview mode)
   if (store.require_age_verification && !ageVerified && !isPreviewMode) {
@@ -404,24 +347,18 @@ export default function ShopLayout() {
           storeName={store.store_name}
           logoUrl={store.logo_url}
           minimumAge={store.minimum_age}
+          storeId={store.id}
           onVerify={(verified) => handleAgeVerification(verified)}
         />
       );
     }
 
     return (
-      <StorefrontAgeGate
-        storeName={store.store_name}
-        logoUrl={store.logo_url}
-        minimumAge={store.minimum_age}
-        primaryColor={store.primary_color}
-        onVerify={(verified) => handleAgeVerification(verified)}
-      />
       <div
         className="min-h-dvh flex items-center justify-center"
         style={{ backgroundColor: store.primary_color }}
       >
-        <div className="bg-card rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
           {store.logo_url && (
             <img
               src={store.logo_url}
@@ -454,58 +391,33 @@ export default function ShopLayout() {
     );
   }
 
-  // Apply theme colors — merge legacy vars with storefront theme preset
-  const resolvedPreset = store.theme_config?.theme_id
-    ? getThemeById(store.theme_config.theme_id)
-    : undefined;
-
+  // Apply theme colors
   const themeStyles = {
-    '--store-primary': store.theme_config?.colors?.primary || store.primary_color,
-    '--store-secondary': store.theme_config?.colors?.secondary || store.secondary_color,
-    '--store-accent': store.theme_config?.colors?.accent || store.accent_color,
-    ...(resolvedPreset ? {
-      '--storefront-bg': resolvedPreset.cssVariables['--storefront-bg'],
-      '--storefront-text': resolvedPreset.cssVariables['--storefront-text'],
-      '--storefront-primary': resolvedPreset.cssVariables['--storefront-primary'],
-      '--storefront-accent': resolvedPreset.cssVariables['--storefront-accent'],
-      '--storefront-card-bg': resolvedPreset.cssVariables['--storefront-card-bg'],
-      '--storefront-border': resolvedPreset.cssVariables['--storefront-border'],
-      '--storefront-radius': resolvedPreset.cssVariables['--storefront-radius'],
-      '--storefront-shadow': resolvedPreset.cssVariables['--storefront-shadow'],
-      backgroundColor: resolvedPreset.cssVariables['--storefront-bg'],
-      color: resolvedPreset.cssVariables['--storefront-text'],
-    } : store.theme_config?.colors ? {
-      '--storefront-primary': store.theme_config.colors.primary,
-      '--storefront-accent': store.theme_config.colors.accent,
-      '--storefront-bg': store.theme_config.colors.background,
-      '--storefront-text': store.theme_config.colors.text,
-      backgroundColor: store.theme_config.colors.background ?? undefined,
-      color: store.theme_config.colors.text ?? undefined,
-    } : {}),
+    '--store-primary': store.primary_color,
+    '--store-secondary': store.secondary_color,
+    '--store-accent': store.accent_color,
   } as React.CSSProperties;
 
   // Get accent color for theme elements
   const accentColor = store.theme_config?.colors?.accent || store.accent_color || '#10b981';
+
+  // Handler for floating cart checkout
+  const _handleCartCheckout = () => {
+    navigate(`/shop/${storeSlug}/checkout`);
+  };
 
   // Luxury theme layout
   if (isLuxuryTheme) {
     return (
       <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
         <div className="min-h-dvh bg-shop-bg text-neutral-900" style={themeStyles} data-testid="storefront-wrapper" data-theme="luxury">
-          {/* Skip to content link for keyboard navigation */}
-          <a href="#main-content" className="skip-to-content">
-            Skip to main content
-          </a>
-
-        <div className="min-h-dvh bg-shop-bg" style={{ ...themeStyles, color: 'var(--storefront-text, #fafaf9)' }} data-testid="storefront-wrapper" data-theme="luxury">
-        <div className="min-h-dvh bg-shop-bg text-foreground" style={themeStyles} data-testid="storefront-wrapper" data-theme="luxury">
           {/* Admin Preview Banner */}
           {isPreviewMode && (
-            <div className="bg-warning text-warning-foreground px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
+            <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
               <AlertTriangle className="w-4 h-4" />
               <span>Preview Mode - This store is not yet live</span>
               {!store.is_active && (
-                <Badge variant="secondary" className="ml-2 bg-warning/90 text-warning-foreground">
+                <Badge variant="secondary" className="ml-2 bg-amber-600 text-white">
                   Draft
                 </Badge>
               )}
@@ -551,27 +463,22 @@ export default function ShopLayout() {
               imageUrl: item.imageUrl,
               variant: item.variant,
             }))}
-            onUpdateQuantity={(productId, quantity, variant) => {
-              shopCart.setQuantity(productId, quantity, variant);
+            onUpdateQuantity={(productId, quantity) => {
+              shopCart.setQuantity(productId, quantity);
             }}
-            onRemoveItem={(productId, variant) => {
-              shopCart.removeItem(productId, variant);
+            onRemoveItem={(productId) => {
+              shopCart.removeItem(productId);
             }}
             accentColor={accentColor}
             deliveryFee={store.default_delivery_fee}
             freeDeliveryThreshold={store.free_delivery_threshold}
           />
 
-          {/* Share Dialog */}
-          <StorefrontShareDialog
-            open={shareDialogOpen}
-            onOpenChange={setShareDialogOpen}
-            storeName={store.store_name}
-            storeSlug={store.slug}
-          />
-
           {/* Offline Indicator */}
           <OfflineIndicator position="top" showSyncStatus />
+
+          {/* Global Age Gate */}
+          <StorefrontAgeGate storeId={store?.id} />
         </div>
       </ShopContext.Provider>
     );
@@ -581,33 +488,26 @@ export default function ShopLayout() {
   return (
     <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
       <div
-        className={`min-h-dvh ${resolvedPreset?.darkMode ? 'bg-black' : 'bg-background'}`}
-        style={{ ...themeStyles, color: resolvedPreset?.darkMode ? 'var(--storefront-text, #fafafa)' : undefined }}
+        className={`min-h-dvh ${isLuxuryTheme ? 'bg-black' : 'bg-background'}`}
+        style={themeStyles}
         data-testid="storefront-wrapper"
-        data-theme={store.theme_config?.theme_id || (isLuxuryTheme ? 'luxury' : 'default')}
+        data-theme={isLuxuryTheme ? 'luxury' : 'default'}
       >
-        {/* Skip to content link for keyboard navigation */}
-        <a href="#main-content" className="skip-to-content">
-          Skip to main content
-        </a>
-
         {/* Admin Preview Banner */}
         {isPreviewMode && (
-          <div className="bg-warning text-warning-foreground px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
+          <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
             <AlertTriangle className="w-4 h-4" />
             <span>Preview Mode - This store is not yet live</span>
             {!store.is_active && (
-              <Badge variant="secondary" className="ml-2 bg-warning/90 text-warning-foreground">
+              <Badge variant="secondary" className="ml-2 bg-amber-600 text-white">
                 Draft
               </Badge>
             )}
           </div>
         )}
 
-        {/* Sticky Header */}
-        <header className="sticky top-0 z-50 bg-white dark:bg-zinc-950 border-b shadow-sm">
         {/* Header - Luxury vs Standard */}
-        <header className={`sticky top-0 z-50 ${isLuxuryTheme ? 'bg-background/80 backdrop-blur-xl border-b border-border' : 'bg-card border-b shadow-sm'}`}>
+        <header className={`sticky top-0 z-50 ${isLuxuryTheme ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : 'bg-white dark:bg-zinc-950 border-b shadow-sm'}`}>
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               {/* Logo / Store Name */}
@@ -618,6 +518,13 @@ export default function ShopLayout() {
                     alt={store.store_name}
                     className="h-10 object-contain"
                   />
+                ) : isLuxuryTheme ? (
+                  <div className="flex items-center gap-2">
+                    <Leaf className="w-6 h-6" style={{ color: accentColor }} />
+                    <span className="text-xl font-light text-white">
+                      {store.store_name}
+                    </span>
+                  </div>
                 ) : (
                   <span
                     className="text-xl font-bold"
@@ -631,26 +538,19 @@ export default function ShopLayout() {
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-6">
                 <Link
-                  to={`/shop/${storeSlug}${isPreviewMode ? '?preview=true' : ''}`}
-                  className="text-sm font-medium transition-colors hover:text-primary"
-                >
-                  Home
-                </Link>
-                <Link
                   to={`/shop/${storeSlug}/products${isPreviewMode ? '?preview=true' : ''}`}
-                  className="text-sm font-medium transition-colors hover:text-primary"
+                  className={`text-sm font-medium transition-colors ${isLuxuryTheme ? 'text-white/70 hover:text-white' : 'hover:text-primary'}`}
                 >
                   Products
                 </Link>
                 <Link
                   to={`/shop/${storeSlug}/deals${isPreviewMode ? '?preview=true' : ''}`}
-                  className="text-sm font-medium transition-colors hover:text-primary"
+                  className={`text-sm font-medium transition-colors ${isLuxuryTheme ? 'text-white/70 hover:text-white' : 'hover:text-primary'}`}
                 >
                   Deals
                 </Link>
                 {!isStoreOpen() && !isPreviewMode && (
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
-                  <Badge variant="secondary" className={isLuxuryTheme ? 'bg-muted text-muted-foreground' : 'bg-warning/10 text-warning'}>
+                  <Badge variant="secondary" className={isLuxuryTheme ? 'bg-white/10 text-white/70' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}>
                     <Clock className="w-3 h-3 mr-1" />
                     Currently Closed
                   </Badge>
@@ -659,17 +559,8 @@ export default function ShopLayout() {
 
               {/* Actions */}
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="hidden md:flex" aria-label="Search products">
+                <Button variant="ghost" size="icon" className={`hidden md:flex ${isLuxuryTheme ? 'text-white/70 hover:text-white hover:bg-white/10' : ''}`} aria-label="Search products">
                   <Search className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={`hidden md:flex ${isLuxuryTheme ? 'text-white/70 hover:text-white hover:bg-white/10' : ''}`}
-                  onClick={() => setShareDialogOpen(true)}
-                  aria-label="Share store"
-                >
-                  <Share2 className="w-5 h-5" />
                 </Button>
                 {!isPreviewMode && (
                   <>
@@ -718,13 +609,6 @@ export default function ShopLayout() {
               <nav className="md:hidden py-4 border-t mt-3" role="navigation" aria-label="Mobile menu">
                 <div className="flex flex-col gap-2">
                   <Link
-                    to={`/shop/${storeSlug}${isPreviewMode ? '?preview=true' : ''}`}
-                    className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98]"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Home
-                  </Link>
-                  <Link
                     to={`/shop/${storeSlug}/products${isPreviewMode ? '?preview=true' : ''}`}
                     className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98]"
                     onClick={() => setMobileMenuOpen(false)}
@@ -738,16 +622,6 @@ export default function ShopLayout() {
                   >
                     Deals & Promos
                   </Link>
-                  <button
-                    className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center gap-2 touch-manipulation active:scale-[0.98] text-left"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      setShareDialogOpen(true);
-                    }}
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Share Store
-                  </button>
                   {!isPreviewMode && (
                     <>
                       <button
@@ -779,36 +653,40 @@ export default function ShopLayout() {
           <Outlet />
         </main>
 
-        {/* Footer */}
-        <footer className="border-t mt-16 bg-muted/50 pb-24 md:pb-0">
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="text-center md:text-left">
-                <p className="font-semibold">{store.store_name}</p>
-                {store.tagline && (
-                  <p className="text-sm text-muted-foreground">{store.tagline}</p>
+        {/* Footer - Luxury vs Standard */}
+        {isLuxuryTheme ? (
+          <LuxuryFooter accentColor={accentColor} />
+        ) : (
+          <footer className="border-t mt-16 bg-muted/50 pb-24 md:pb-0">
+            <div className="container mx-auto px-4 py-8">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="text-center md:text-left">
+                  <p className="font-semibold">{store.store_name}</p>
+                  {store.tagline && (
+                    <p className="text-sm text-muted-foreground">{store.tagline}</p>
+                  )}
+                </div>
+                {!isPreviewMode && (
+                  <div className="flex gap-4 text-sm text-muted-foreground">
+                    <Link to={`/shop/${storeSlug}/orders`} className="hover:underline">
+                      Track Order
+                    </Link>
+                    <span>•</span>
+                    <Link to={`/shop/${storeSlug}/account`} className="hover:underline">
+                      Account
+                    </Link>
+                  </div>
                 )}
               </div>
-              {!isPreviewMode && (
-                <div className="flex gap-4 text-sm text-muted-foreground">
-                  <Link to={`/shop/${storeSlug}/orders`} className="hover:underline">
-                    Track Order
-                  </Link>
-                  <span>•</span>
-                  <Link to={`/shop/${storeSlug}/account`} className="hover:underline">
-                    Account
-                  </Link>
-                </div>
-              )}
+              <div className="mt-6 pt-6 border-t text-center text-xs text-muted-foreground">
+                © {new Date().getFullYear()} {store.store_name}. All rights reserved.
+              </div>
             </div>
-            <div className="mt-6 pt-6 border-t text-center text-xs text-muted-foreground">
-              © {new Date().getFullYear()} {store.store_name}. All rights reserved.
-            </div>
-          </div>
-        </footer>
+          </footer>
+        )}
 
-        {/* Mobile Bottom Navigation - hide in preview mode */}
-        {!isPreviewMode && (
+        {/* Mobile Bottom Navigation - hide in preview mode and luxury theme */}
+        {!isPreviewMode && !isLuxuryTheme && (
           <MobileBottomNav
             cartItemCount={cartItemCount}
             primaryColor={store.primary_color}
@@ -828,27 +706,22 @@ export default function ShopLayout() {
             imageUrl: item.imageUrl,
             variant: item.variant,
           }))}
-          onUpdateQuantity={(productId, quantity, variant) => {
-            shopCart.setQuantity(productId, quantity, variant);
+          onUpdateQuantity={(productId, quantity) => {
+            shopCart.setQuantity(productId, quantity);
           }}
-          onRemoveItem={(productId, variant) => {
-            shopCart.removeItem(productId, variant);
+          onRemoveItem={(productId) => {
+            shopCart.removeItem(productId);
           }}
           accentColor={store.primary_color}
           deliveryFee={store.default_delivery_fee}
           freeDeliveryThreshold={store.free_delivery_threshold}
         />
 
-        {/* Share Dialog */}
-        <StorefrontShareDialog
-          open={shareDialogOpen}
-          onOpenChange={setShareDialogOpen}
-          storeName={store.store_name}
-          storeSlug={store.slug}
-        />
-
         {/* Offline Indicator */}
         <OfflineIndicator position="top" showSyncStatus />
+
+        {/* Global Age Gate */}
+        <StorefrontAgeGate storeId={store?.id} />
       </div>
     </ShopContext.Provider>
   );

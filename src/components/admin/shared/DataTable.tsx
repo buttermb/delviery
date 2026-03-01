@@ -217,9 +217,9 @@ export function DataTable<TData extends Record<string, unknown>>({
   );
 
   // Get column ID helper
-  const getColumnId = (column: ColumnDef<TData>): string => {
+  const getColumnId = useCallback((column: ColumnDef<TData>): string => {
     return column.id ?? String(column.accessorKey ?? '');
-  };
+  }, []);
 
   // Filter data based on search
   const filteredData = useMemo(() => {
@@ -279,7 +279,7 @@ export function DataTable<TData extends Record<string, unknown>>({
 
       return sorting.direction === 'desc' ? -comparison : comparison;
     });
-  }, [filteredData, sorting, columns, serverPagination]);
+  }, [filteredData, sorting, columns, serverPagination, getColumnId]);
 
   // Paginate data (client-side only)
   const paginatedData = useMemo(() => {

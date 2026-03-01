@@ -57,6 +57,7 @@ export default function RecordFrontedReturn() {
     if (tenant?.id) {
       loadFrontDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadFrontDetails is defined below, only run when id/tenant changes
   }, [id, tenant]);
 
   const loadFrontDetails = async () => {

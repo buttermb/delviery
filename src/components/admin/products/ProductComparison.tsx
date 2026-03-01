@@ -569,7 +569,7 @@ export function ProductComparison({
                 <div className="divide-y">
                   {/* Price */}
                   <ComparisonRow label="Wholesale Price" icon={DollarSign}>
-                    {orderedProducts.map((product, idx) => (
+                    {orderedProducts.map((product, _idx) => (
                       <MetricCell
                         key={product.id}
                         value={
@@ -593,7 +593,7 @@ export function ProductComparison({
 
                   {/* Stock */}
                   <ComparisonRow label="Stock Level" icon={Package}>
-                    {orderedProducts.map((product, idx) => {
+                    {orderedProducts.map((product, _idx) => {
                       const qty = product.available_quantity ?? 0;
                       const threshold = product.low_stock_alert ?? 10;
                       const isLow = qty > 0 && qty <= threshold;

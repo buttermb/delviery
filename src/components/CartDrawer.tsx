@@ -51,7 +51,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
         .eq("user_id", user.id)
         .eq("tenant_id", tenantId);
       if (error) throw error;
-      return data as DbCartItem[];
+      return (data ?? []) as DbCartItem[];
     },
     enabled: !!user && !!tenantId,
     refetchOnMount: true,

@@ -23,18 +23,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { User, Mail, Camera, Trash2, CheckCircle, Layout } from 'lucide-react';
+import { User, Mail, Camera, Trash2, CheckCircle, Layout, Shield, Users, Building2, Palette, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { SidebarModeSwitcher } from '@/components/sidebar/SidebarModeSwitcher';
 import { getInitials } from '@/lib/utils/getInitials';
+import { useSearchParams } from 'react-router-dom';
 
 export default function AccountSettings() {
   const { admin, tenant } = useTenantAdminAuth();
   const [name, setName] = useState(admin?.name ?? '');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [, setSearchParams] = useSearchParams();
+
+  const navigateToTab = (tab: string) => {
+    setSearchParams({ tab }, { replace: true });
+    // Scroll to top of settings content
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const { save: saveName, status: nameStatus } = useAutoSave<{ name: string }>({
     onSave: async (data) => {
@@ -231,6 +239,78 @@ export default function AccountSettings() {
             </Badge>
           </div>
         </SettingsCard>
+      </SettingsSection>
+
+      {/* Quick Links */}
+      <SettingsSection
+        title="Quick Links"
+        description="Navigate to related settings"
+      >
+        <div className="grid sm:grid-cols-2 gap-4">
+          <button
+            onClick={() => navigateToTab('security')}
+            className="flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-muted/50 transition-colors text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Shield className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium">Security & Passwords</p>
+                <p className="text-xs text-muted-foreground">Change your password or manage 2FA</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          </button>
+
+          <button
+            onClick={() => navigateToTab('team')}
+            className="flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-muted/50 transition-colors text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium">Team Management</p>
+                <p className="text-xs text-muted-foreground">Invite members and manage roles</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          </button>
+
+          <button
+            onClick={() => navigateToTab('business')}
+            className="flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-muted/50 transition-colors text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium">Business Details</p>
+                <p className="text-xs text-muted-foreground">Manage operating hours and logo</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          </button>
+
+          <button
+            onClick={() => navigateToTab('appearance')}
+            className="flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-muted/50 transition-colors text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Palette className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium">Appearance</p>
+                <p className="text-xs text-muted-foreground">Change to Light or Dark mode</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          </button>
+        </div>
       </SettingsSection>
 
       {/* Sidebar Mode */}

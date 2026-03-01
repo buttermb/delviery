@@ -29,7 +29,7 @@ vi.mock('@/hooks/useDashboardStats', () => ({
 }));
 
 vi.mock('@/components/admin/dashboard/KPICard', () => ({
-  KPICard: ({ title, value, description, trend }: { title: string; value: string; description?: string; trend?: { value: number; label: string } }) => (
+  KPICard: ({ title, value, description, trend }: { title: string; value: React.ReactNode; description?: string; trend?: { value: number; label: string } }) => (
     <div data-testid={`kpi-card-${title}`}>
       <div data-testid="title">{title}</div>
       <div data-testid="value">{value}</div>

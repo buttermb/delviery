@@ -21,7 +21,7 @@ function formatQuantityValue(value: number): string {
 
 function formatDateValue(value: unknown, formatStr: string): string {
   try {
-    const date = value instanceof Date ? value : new Date(value);
+    const date = value instanceof Date ? value : new Date(value as string | number);
     return format(date, formatStr);
   } catch {
     return String(value);

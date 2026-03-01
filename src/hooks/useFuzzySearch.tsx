@@ -108,8 +108,8 @@ export function useFuzzySearch<T>(
   return {
     query,
     setQuery,
-    results: searchResults.results,
-    resultsWithScore: searchResults.resultsWithScore,
+    results: searchResults.results as T[],
+    resultsWithScore: searchResults.resultsWithScore as FuzzySearchResult<T>[],
     isSearching: searchResults.isSearching,
     clearSearch,
     suggestion,

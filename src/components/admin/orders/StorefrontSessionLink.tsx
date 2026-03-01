@@ -210,14 +210,14 @@ function useSessionDetails(sessionId: string | null | undefined, tenantId: strin
 
 export function StorefrontSessionLink({
   sessionId,
-  menuId,
+  menuId: _menuId,
   compact = false,
 }: StorefrontSessionLinkProps) {
   const { tenant } = useTenantAdminAuth();
   const { navigateToAdmin } = useTenantNavigation();
   const tenantId = tenant?.id;
 
-  const { data: session, isLoading, error } = useSessionDetails(sessionId, tenantId);
+  const { data: session, isLoading, error: _error } = useSessionDetails(sessionId, tenantId);
 
   // Calculate conversion metrics
   const conversionMetrics = useMemo(() => {

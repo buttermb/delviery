@@ -20,8 +20,8 @@ import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 
-import type {
 import { queryKeys } from '@/lib/queryKeys';
+import type {
   Organization,
   OrganizationWithStats,
   OrganizationMember,
@@ -184,7 +184,7 @@ async function fetchOrganizations(
       total_orders: totalOrders,
       avg_order_value: Math.round(avgOrderValue * 100) / 100,
       last_order_date: lastOrderDate,
-    });
+    } as OrganizationWithStats);
   }
 
   return orgsWithStats;

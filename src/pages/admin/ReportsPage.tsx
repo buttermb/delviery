@@ -136,24 +136,24 @@ export default function ReportsPage() {
   // Define Columns
   const businessColumns = useMemo<ResponsiveColumn<Record<string, unknown>>[]>(() => [
     { header: 'Order #', accessorKey: 'order_number', className: 'font-mono' },
-    { header: 'Date', cell: (item) => format(new Date(item.created_at), 'MMM d, yyyy') },
-    { header: 'Client', cell: (item) => item.client?.business_name || 'N/A' },
-    { header: 'Amount', cell: (item) => formatCurrency(item.total_amount), className: 'text-right' },
-    { header: 'Status', cell: (item) => <Badge variant="outline">{item.status}</Badge> }
+    { header: 'Date', cell: (item: Record<string, unknown>) => format(new Date(item.created_at as string), 'MMM d, yyyy') },
+    { header: 'Client', cell: (item: Record<string, unknown>) => (item.client as Record<string, unknown>)?.business_name as string || 'N/A' },
+    { header: 'Amount', cell: (item: Record<string, unknown>) => formatCurrency(item.total_amount as number), className: 'text-right' },
+    { header: 'Status', cell: (item: Record<string, unknown>) => <Badge variant="outline">{item.status as string}</Badge> }
   ], []);
 
   const inventoryColumns = useMemo<ResponsiveColumn<Record<string, unknown>>[]>(() => [
     { header: 'Product', accessorKey: 'product_name', className: 'font-medium' },
     { header: 'Quantity (lbs)', accessorKey: 'quantity_lbs' },
-    { header: 'Warehouse', cell: (item) => item.warehouse_location || 'Unassigned' },
+    { header: 'Warehouse', cell: (item: Record<string, unknown>) => (item.warehouse_location as string) || 'Unassigned' },
     { header: 'Category', accessorKey: 'category' }
   ], []);
 
   const financialColumns = useMemo<ResponsiveColumn<Record<string, unknown>>[]>(() => [
-    { header: 'Date', cell: (item) => format(new Date(item.created_at), 'MMM d, yyyy') },
-    { header: 'Client', cell: (item) => item.client?.business_name || 'N/A' },
-    { header: 'Amount', cell: (item) => formatCurrency(item.amount), className: 'text-right' },
-    { header: 'Method', cell: (item) => <Badge variant="secondary">{item.payment_method}</Badge> }
+    { header: 'Date', cell: (item: Record<string, unknown>) => format(new Date(item.created_at as string), 'MMM d, yyyy') },
+    { header: 'Client', cell: (item: Record<string, unknown>) => (item.client as Record<string, unknown>)?.business_name as string || 'N/A' },
+    { header: 'Amount', cell: (item: Record<string, unknown>) => formatCurrency(item.amount as number), className: 'text-right' },
+    { header: 'Method', cell: (item: Record<string, unknown>) => <Badge variant="secondary">{item.payment_method as string}</Badge> }
   ], []);
 
   if (loading) {
@@ -295,7 +295,7 @@ export default function ReportsPage() {
             <ResponsiveTable
               columns={businessColumns}
               data={filteredOrders}
-              keyExtractor={item => item.id}
+              keyExtractor={(item: Record<string, unknown>) => item.id as string}
               emptyState={{ title: "No orders", description: "No orders found for this period.", icon: FileText }}
               className="border-0 rounded-none"
             />
@@ -378,7 +378,7 @@ export default function ReportsPage() {
             <ResponsiveTable
               columns={inventoryColumns}
               data={inventory}
-              keyExtractor={item => item.id || `inventory-${item.product_name}`}
+              keyExtractor={(item: Record<string, unknown>) => (item.id as string) || `inventory-${item.product_name}` as string}
               emptyState={{ title: "No inventory", description: "No inventory found.", icon: Package }}
               className="border-0 rounded-none"
             />
@@ -419,8 +419,8 @@ export default function ReportsPage() {
             </div>
             <ResponsiveTable
               columns={financialColumns}
-              data={filteredPayments}
-              keyExtractor={item => item.id}
+              data={filteredPayments as unknown as Record<string, unknown>[]}
+              keyExtractor={(item: Record<string, unknown>) => item.id as string}
               emptyState={{ title: "No payments", description: "No payments found for this period.", icon: DollarSign }}
               className="border-0 rounded-none"
             />

@@ -489,6 +489,7 @@ export default function TeamManagement() {
         },
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-render columns when isPending changes; mutation objects are stable
     [updateRoleMutation.isPending, updateStatusMutation.isPending, removeMutation.isPending, canEdit, canDelete]
   );
 

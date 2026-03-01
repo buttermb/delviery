@@ -148,9 +148,9 @@ export function ProductsListPage() {
       // Parse dates back from strings
       return {
         ...defaultProductFilters,
-        ...saved,
-        createdAfter: saved.createdAfter ? new Date(saved.createdAfter) : null,
-        createdBefore: saved.createdBefore ? new Date(saved.createdBefore) : null,
+        ...(saved as Record<string, unknown>),
+        createdAfter: (saved as Record<string, unknown>).createdAfter ? new Date((saved as Record<string, unknown>).createdAfter as string) : null,
+        createdBefore: (saved as Record<string, unknown>).createdBefore ? new Date((saved as Record<string, unknown>).createdBefore as string) : null,
       };
     }
     return defaultProductFilters;

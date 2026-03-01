@@ -44,7 +44,7 @@ const solutions: Solution[] = [
   { icon: LayoutDashboard, text: 'Single unified dashboard' },
   { icon: Sparkles, text: 'Automation saves 15hrs/week' },
   { icon: RefreshCw, text: 'Real-time updates across devices' },
-  { icon: Target, text: 'Streamlined order processing' },
+  { icon: Target, text: 'Automated order processing' },
   { icon: ShieldCheck, text: 'Full regulatory compliance & data security' },
   { icon: BarChart3, text: 'Powerful analytics & insights' },
 ];
@@ -85,7 +85,7 @@ export function ProblemSolutionSection() {
             <button
               onClick={() => setActiveTab('after')}
               className={`flex-1 px-4 py-3 rounded-lg font-semibold text-sm transition-all ${activeTab === 'after'
-                ? 'bg-emerald-600 text-white shadow-sm'
+                ? 'bg-[hsl(var(--marketing-primary))] text-white shadow-sm'
                 : 'text-slate-500'
                 }`}
             >
@@ -132,16 +132,15 @@ export function ProblemSolutionSection() {
 
           {/* Solutions */}
           <motion.div
-            className={`p-8 rounded-xl border border-emerald-100 bg-emerald-50/50 relative overflow-hidden ${isMobile && activeTab !== 'after' ? 'hidden' : ''}`}
+            className={`p-8 rounded-xl border border-[hsl(var(--marketing-border))] bg-[hsl(var(--marketing-bg-subtle))] relative overflow-hidden ${isMobile && activeTab !== 'after' ? 'hidden' : ''}`}
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            {/* Glow Effect */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-100/50 blur-[60px] rounded-full pointer-events-none" />
+            {/* Glow Effect - Removed to match Flowhub clean design */}
             <div className="flex items-center gap-4 mb-8 relative z-10">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center border border-emerald-200 shadow-sm">
-                <Sparkles className="h-5 w-5 text-emerald-600" />
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center border border-[hsl(var(--marketing-border))] shadow-sm">
+                <Sparkles className="h-5 w-5 text-[hsl(var(--marketing-primary))]" />
               </div>
               <h3 className="text-xl font-bold text-slate-900">With FloraIQ</h3>
             </div>
@@ -156,8 +155,8 @@ export function ProblemSolutionSection() {
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-emerald-600" />
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm border border-gray-100">
+                      <Check className="h-4 w-4 text-[hsl(var(--marketing-primary))]" />
                     </div>
                     <span className="text-base">{solution.text}</span>
                   </motion.li>
@@ -178,7 +177,7 @@ export function ProblemSolutionSection() {
             Join 400+ cannabis distributors who've transformed their operations
           </p>
           <Link to="/signup">
-            <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white h-12 px-8 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 text-lg font-bold">
+            <Button size="lg" className="bg-[hsl(var(--marketing-primary))] hover:bg-[hsl(var(--marketing-primary)/0.9)] text-white h-14 px-10 rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 text-base uppercase font-bold tracking-wide">
               Start Automating Now
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>

@@ -22,7 +22,7 @@ import Calendar from 'lucide-react/dist/esm/icons/calendar';
 import Clock from 'lucide-react/dist/esm/icons/clock';
 import Star from 'lucide-react/dist/esm/icons/star';
 import ShoppingCart from 'lucide-react/dist/esm/icons/shopping-cart';
-import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
+import _Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

@@ -360,7 +360,7 @@ export const useSendNotification = () => {
       }
 
       // Build message from template or use custom message
-      let message = customMessage || template?.message || `Order ${event.replace('_', ' ')} - Order #${order.id.slice(0, 8)}`;
+      let message = customMessage || (template as unknown as { message?: string })?.message || `Order ${event.replace('_', ' ')} - Order #${order.id.slice(0, 8)}`;
       message = message.replace(/\{\{order_id\}\}/g, order.id.slice(0, 8));
       message = message.replace(/\{\{total_amount\}\}/g, order.total_amount?.toString() || '0');
       message = message.replace(/\{\{customer_name\}\}/g, 'Customer');
@@ -398,7 +398,7 @@ export const useSendNotification = () => {
             body: {
               tenant_id: tenant.id,
               type: 'order_status',
-              title: template?.subject || `Order ${event.replace('_', ' ')}`,
+              title: (template as unknown as { subject?: string })?.subject || `Order ${event.replace('_', ' ')}`,
               message,
               channels: ['database'],
               metadata: {

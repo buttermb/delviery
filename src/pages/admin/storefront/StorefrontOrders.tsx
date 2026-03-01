@@ -571,8 +571,8 @@ export default function StorefrontOrders() {
                       <>
                         {selectedOrder.delivery_address && typeof selectedOrder.delivery_address === 'object' && (
                           <p>
-                            {String(selectedOrder.delivery_address.street ?? selectedOrder.delivery_address.address ?? '')}
-                            {selectedOrder.delivery_address.city ? `, ${String(selectedOrder.delivery_address.city)}` : ''}
+                            {String((selectedOrder.delivery_address as Record<string, string>).street ?? (selectedOrder.delivery_address as Record<string, string>).address ?? '')}
+                            {(selectedOrder.delivery_address as Record<string, string>).city ? `, ${String((selectedOrder.delivery_address as Record<string, string>).city)}` : ''}
                           </p>
                         )}
                       </>

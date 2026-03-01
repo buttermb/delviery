@@ -90,11 +90,12 @@ export function WorkflowCanvas() {
       loadTemplates();
       loadActionTemplates();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load functions are defined below, only run on tenant change
   }, [tenant?.id]);
 
   const loadWorkflows = async () => {
     try {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await supabase
         .from('workflow_definitions')
         .select('*')
         .eq('tenant_id', tenant?.id)
@@ -185,7 +186,7 @@ export function WorkflowCanvas() {
 
       if (selectedWorkflow.id) {
         // Update existing
-        const { error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        const { error } = await supabase
           .from('workflow_definitions')
           .update(workflowData)
           .eq('id', selectedWorkflow.id);
@@ -193,7 +194,7 @@ export function WorkflowCanvas() {
         if (error) throw error;
       } else {
         // Create new
-        const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        const { data, error } = await supabase
           .from('workflow_definitions')
           .insert([workflowData])
           .select()
@@ -205,7 +206,7 @@ export function WorkflowCanvas() {
 
       // If trigger is database_event, create trigger record
       if (selectedWorkflow.trigger_type === 'database_event' && selectedWorkflow.id) {
-        await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        await supabase
           .from('workflow_triggers')
           .upsert({
             workflow_id: selectedWorkflow.id,
@@ -489,7 +490,7 @@ export function WorkflowCanvas() {
                   <NodePalette onNodeDragStart={handleNodeDragStart} />
                   <div className="flex-1">
                     <VisualWorkflowEditor
-                      workflow={selectedWorkflow}
+                      workflow={selectedWorkflow as unknown as Parameters<typeof VisualWorkflowEditor>[0]['workflow']}
                       onSave={handleVisualWorkflowSave}
                     />
                   </div>

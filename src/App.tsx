@@ -10,7 +10,6 @@
  */
 
 import { logger } from "@/lib/logger";
-import { Analytics } from "@vercel/analytics/react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -28,7 +27,7 @@ import { TenantAdminAuthProvider } from "./contexts/TenantAdminAuthContext";
 import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
 import { EncryptionProvider } from "./contexts/EncryptionContext";
 import { CreditProvider } from "./contexts/CreditContext";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState, type ComponentType } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { SkipToContent } from "./components/SkipToContent";
 import { LoadingFallback } from "./components/LoadingFallback";
@@ -50,19 +49,14 @@ import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 
 import OfflineBanner from "./components/OfflineBanner";
-import { UpdateBanner } from "./components/mobile/UpdateBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { RouteProgressManager } from "./components/RouteProgressManager";
 import { DocumentTitleManager } from "./components/DocumentTitleManager";
-import { InstallPWA } from "./components/InstallPWA";
-import { DeviceTracker } from "./components/DeviceTracker";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
 import { useVersionCheck } from "./hooks/useVersionCheck";
 import { FeatureFlagsProvider } from "./config/featureFlags";
 import { AdminDebugPanel } from "./components/admin/AdminDebugPanel";
 import { PerformanceMonitor } from "./utils/performance";
-import { runRouteAudit } from "./utils/routeAudit";
-import { STARTER_SIDEBAR, PROFESSIONAL_SIDEBAR, ENTERPRISE_SIDEBAR } from "./lib/sidebar/sidebarConfigs";
 
 import { initCapacitor } from '@/lib/capacitor';
 
@@ -157,13 +151,22 @@ import {
   BusinessFinderPage, BusinessMenuPage, UnifiedOrdersPage,
   CommunityAuthPage, CommunityProtectedRoute, CommunityLayout, CommunityHomePage,
   CategoryPage, PostDetailPage, CreatePostPage, UserProfilePage, SearchPage, ApprovalPage,
-  InvitationAcceptPage, MenuAccess, ComingSoonPage, MobileTestPage,
+  InvitationAcceptPage, MenuAccess, MobileTestPage,
   TenantAdminAuthCallback, SuperAdminAuthCallback, CustomerAuthCallback,
   MFAChallengePage, AuthConfirmPage, SecureAccountPage,
   FeatureCompliancePage, FeatureLogisticsPage, FeatureEcommercePage,
 } from "@/routes/lazyImports";
-import { EncodedUrlRedirect } from "./components/EncodedUrlRedirect";
 import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
+
+const scheduleNonCritical = (task: () => void, timeout = 1500) => {
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    (window as Window & {
+      requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number;
+    }).requestIdleCallback(task, { timeout });
+    return;
+  }
+  (window ?? globalThis).setTimeout(task, 0);
+};
 
 // Use the singleton QueryClient from centralized config
 const queryClient = appQueryClient;
@@ -172,6 +175,11 @@ const queryClient = appQueryClient;
 setupGlobalErrorHandlers();
 
 const App = () => {
+  const [VercelAnalytics, setVercelAnalytics] = useState<ComponentType | null>(null);
+  const [DeferredUpdateBanner, setDeferredUpdateBanner] = useState<ComponentType | null>(null);
+  const [DeferredInstallPWA, setDeferredInstallPWA] = useState<ComponentType | null>(null);
+  const [DeferredDeviceTracker, setDeferredDeviceTracker] = useState<ComponentType | null>(null);
+
   // Enable automatic version checking and cache busting
   useVersionCheck();
 
@@ -193,31 +201,72 @@ const App = () => {
 
   // Initialize global button monitoring
   useEffect(() => {
-    initializeGlobalButtonMonitoring();
+    scheduleNonCritical(() => {
+      initializeGlobalButtonMonitoring();
+    }, 3000);
   }, []);
 
   // Initialize performance monitoring (Core Web Vitals)
   useEffect(() => {
-    PerformanceMonitor.init();
+    let cleanup: (() => void) | undefined;
+    scheduleNonCritical(() => {
+      PerformanceMonitor.init();
+      cleanup = () => PerformanceMonitor.disconnect();
+    }, 3000);
 
     // Log performance report in development
     if (import.meta.env.DEV) {
       const reportTimer = setTimeout(() => {
         logger.info(PerformanceMonitor.getReport());
       }, 5000);
-      return () => clearTimeout(reportTimer);
+      return () => {
+        clearTimeout(reportTimer);
+        cleanup?.();
+      };
     }
 
-    return () => PerformanceMonitor.disconnect();
+    return () => cleanup?.();
+  }, []);
+
+  // Load analytics after initial UI is interactive
+  useEffect(() => {
+    if (!import.meta.env.PROD) return;
+    scheduleNonCritical(async () => {
+      const mod = await import('@vercel/analytics/react');
+      setVercelAnalytics(() => mod.Analytics);
+    }, 4000);
+  }, []);
+
+  // Load non-critical global UI/hooks after initial paint.
+  useEffect(() => {
+    scheduleNonCritical(async () => {
+      const [updateMod, pwaMod, deviceTrackerMod] = await Promise.all([
+        import('./components/mobile/UpdateBanner'),
+        import('./components/InstallPWA'),
+        import('./components/DeviceTracker'),
+      ]);
+
+      setDeferredUpdateBanner(() => updateMod.UpdateBanner);
+      setDeferredInstallPWA(() => ((pwaMod as Record<string, unknown>).default ?? (pwaMod as Record<string, unknown>).InstallPWA) as ComponentType);
+      setDeferredDeviceTracker(() => ((deviceTrackerMod as Record<string, unknown>).default ?? (deviceTrackerMod as Record<string, unknown>).DeviceTracker) as ComponentType);
+    }, 2500);
   }, []);
 
   // Run route audit on startup (dev mode only)
   useEffect(() => {
     if (import.meta.env.DEV) {
-      // Audit all sidebar configurations
-      runRouteAudit(STARTER_SIDEBAR);
-      runRouteAudit(PROFESSIONAL_SIDEBAR);
-      runRouteAudit(ENTERPRISE_SIDEBAR);
+      // Defer heavy route-audit graph imports off the critical path.
+      const timer = setTimeout(async () => {
+        const [{ runRouteAudit: runAudit }, sidebarConfigs] = await Promise.all([
+          import('./utils/routeAudit'),
+          import('./lib/sidebar/sidebarConfigs'),
+        ]);
+
+        runAudit(sidebarConfigs.STARTER_SIDEBAR);
+        runAudit(sidebarConfigs.PROFESSIONAL_SIDEBAR);
+        runAudit(sidebarConfigs.ENTERPRISE_SIDEBAR);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, []);
 
@@ -251,7 +300,7 @@ const App = () => {
 
   return (
     <ErrorBoundary>
-      <Analytics />
+      {VercelAnalytics ? <VercelAnalytics /> : null}
       <QueryClientProvider client={queryClient}>
         <FeatureFlagsProvider>
           <ThemeProvider>
@@ -268,9 +317,9 @@ const App = () => {
                                 <WhiteLabelProvider>
                                   <SkipToContent />
                                   <OfflineBanner />
-                                  <UpdateBanner />
-                                  <InstallPWA />
-                                  <DeviceTracker />
+                                  {DeferredUpdateBanner ? <DeferredUpdateBanner /> : null}
+                                  {DeferredInstallPWA ? <DeferredInstallPWA /> : null}
+                                  {DeferredDeviceTracker ? <DeferredDeviceTracker /> : null}
 
                                   <Sonner />
                                   <Suspense fallback={<SuspenseProgressFallback />}>
@@ -346,9 +395,6 @@ const App = () => {
                                       {/* Public Authentication - Redirect authenticated users */}
                                       <Route path="/signup" element={<PublicOnlyRoute portal="saas"><SignUpPage /></PublicOnlyRoute>} />
                                       <Route path="/select-plan" element={<SelectPlanPage />} />
-                                      {/* Handle encoded URLs with %3F - React Router doesn't match encoded chars */}
-                                      <Route path="/select-plan%3Ftenant_id/*" element={<EncodedUrlRedirect />} />
-                                      <Route path="/select-plan%3F/*" element={<EncodedUrlRedirect />} />
                                       <Route path="/saas/login" element={<PublicOnlyRoute portal="saas"><SaasLoginPage /></PublicOnlyRoute>} />
                                       <Route path="/verify-email" element={<VerifyEmailPage />} />
                                       <Route path="/signup-success" element={<SignupSuccessPage />} />
@@ -357,7 +403,7 @@ const App = () => {
 
 
                                       {/* Redirect admin routes without tenant slug - go directly to business login */}
-                                      <Route path="/admin/*" element={<Navigate to="/saas/login" replace />} />
+                                      <Route path="/admin/*" element={<PublicOnlyRoute portal="saas"><SaasLoginPage /></PublicOnlyRoute>} />
 
                                       {/* Invitation Acceptance */}
                                       <Route path="/invite/:token" element={<InvitationAcceptPage />} />
@@ -582,7 +628,7 @@ const App = () => {
 
                                         {/* Orders Hub Redirects */}
                                         <Route path="disposable-menu-orders" element={<Navigate to="orders?tab=menu" replace />} />
-                                        <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="disposable-menu-analytics" feature="analytics_advanced"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
+                                        <Route path="disposable-menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics" feature="analytics_advanced"><DisposableMenuAnalytics /></FeatureProtectedRoute>} />
                                         <Route path="menu-analytics" element={<FeatureProtectedRoute featureId="menu-analytics" feature="analytics_advanced"><MenuAnalytics /></FeatureProtectedRoute>} />
 
                                         {/* Inventory Hub Redirects */}
@@ -690,20 +736,20 @@ const App = () => {
                                         <Route path="locations" element={<FeatureProtectedRoute featureId="locations"><LocationsManagement /></FeatureProtectedRoute>} />
                                         <Route path="locations/warehouses" element={<FeatureProtectedRoute featureId="locations"><WarehousesPage /></FeatureProtectedRoute>} />
                                         <Route path="locations/runners" element={<FeatureProtectedRoute featureId="locations"><RunnersPage /></FeatureProtectedRoute>} />
-                                        <Route path="sales/pricing" element={<FeatureProtectedRoute featureId="sales"><AdminPricingPage /></FeatureProtectedRoute>} />
+                                        <Route path="sales/pricing" element={<FeatureProtectedRoute featureId="sales-dashboard"><AdminPricingPage /></FeatureProtectedRoute>} />
 
                                         {/* 13 Hidden gem pages */}
                                         <Route path="live-chat" element={<FeatureProtectedRoute featureId="live-chat" feature="live_chat"><AdminLiveChat /></FeatureProtectedRoute>} />
                                         <Route path="notifications" element={<FeatureProtectedRoute featureId="notifications"><AdminNotifications /></FeatureProtectedRoute>} />
                                         <Route path="couriers" element={<FeatureProtectedRoute feature="delivery_tracking"><Navigate to="operations-hub?tab=delivery" replace /></FeatureProtectedRoute>} />
-                                        <Route path="customer-details" element={<FeatureProtectedRoute featureId="customer-details"><CustomerDetails /></FeatureProtectedRoute>} />
-                                        <Route path="customer-reports" element={<FeatureProtectedRoute featureId="customer-reports"><CustomerReports /></FeatureProtectedRoute>} />
+                                        <Route path="customer-details" element={<FeatureProtectedRoute featureId="customers"><CustomerDetails /></FeatureProtectedRoute>} />
+                                        <Route path="customer-reports" element={<FeatureProtectedRoute featureId="customer-insights"><CustomerReports /></FeatureProtectedRoute>} />
                                         <Route path="delivery-tracking" element={<FeatureProtectedRoute feature="delivery_tracking"><Navigate to="operations-hub?tab=delivery" replace /></FeatureProtectedRoute>} />
                                         <Route path="delivery-zones" element={<FeatureProtectedRoute feature="delivery_tracking"><DeliveryZonesPage /></FeatureProtectedRoute>} />
                                         <Route path="dispatch-inventory" element={<FeatureProtectedRoute featureId="dispatch-inventory"><DispatchInventory /></FeatureProtectedRoute>} />
                                         <Route path="financial-center" element={<Navigate to="command-center" replace />} />
-                                        <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory-analytics" feature="analytics_advanced"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
-                                        <Route path="global-search" element={<FeatureProtectedRoute featureId="global-search"><GlobalSearch /></FeatureProtectedRoute>} />
+                                        <Route path="fronted-inventory-analytics" element={<FeatureProtectedRoute featureId="fronted-inventory" feature="analytics_advanced"><FrontedInventoryAnalytics /></FeatureProtectedRoute>} />
+                                        <Route path="global-search" element={<FeatureProtectedRoute featureId="dashboard"><GlobalSearch /></FeatureProtectedRoute>} />
                                         <Route path="suppliers" element={<Navigate to="operations-hub?tab=suppliers" replace />} />
                                         <Route path="purchase-orders" element={<FeatureProtectedRoute featureId="suppliers" feature="purchase_orders"><PurchaseOrders /></FeatureProtectedRoute>} />
                                         <Route path="returns" element={<Navigate to="operations-hub?tab=returns" replace />} />
@@ -786,7 +832,7 @@ const App = () => {
                                         <Route path="custom-domain" element={<FeatureProtectedRoute featureId="custom-domain"><CustomDomainPage /></FeatureProtectedRoute>} />
                                         <Route path="priority-support" element={<FeatureProtectedRoute featureId="priority-support"><PrioritySupportPage /></FeatureProtectedRoute>} />
                                         {/* Coming Soon Pages for missing features */}
-                                        <Route path="expense-tracking" element={<ComingSoonPage pageName="Expense Tracking" description="Track and manage business expenses" />} />
+                                        <Route path="expense-tracking" element={<Navigate to="finance-hub?tab=expenses" replace />} />
                                         {/* Catch-all for unknown admin routes */}
                                         <Route path="*" element={<Suspense fallback={<LoadingFallback />}><AdminNotFoundPage /></Suspense>} />
                                       </Route>
@@ -802,7 +848,7 @@ const App = () => {
                                       />
 
                                       {/* Catch-all route for /admin/* paths without tenant slug - go directly to business login */}
-                                      <Route path="/admin/*" element={<Navigate to="/saas/login" replace />} />
+                                      <Route path="/admin/*" element={<PublicOnlyRoute portal="saas"><SaasLoginPage /></PublicOnlyRoute>} />
 
                                       {/* ==================== COURIER PORTAL ==================== */}
                                       <Route path="/courier/login" element={<Suspense fallback={<SkeletonCourier />}><CourierLoginPage /></Suspense>} />

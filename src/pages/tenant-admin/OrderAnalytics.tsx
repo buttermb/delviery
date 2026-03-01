@@ -34,7 +34,7 @@ export default function OrderAnalytics() {
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   // Group by day for chart
-  const ordersByDay = orders.reduce<Record<string, { date: string; count: number; revenue: number }>>((acc, order) => {
+  const ordersByDay = orders.reduce((acc: Record<string, { date: string; count: number; revenue: number }>, order: typeof orders[number]) => {
     const date = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     if (!acc[date]) acc[date] = { date, count: 0, revenue: 0 };
     acc[date].count++;

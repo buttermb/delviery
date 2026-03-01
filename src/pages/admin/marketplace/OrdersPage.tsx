@@ -121,7 +121,7 @@ export default function OrdersPage() {
         const query = searchQuery.toLowerCase();
         return (
             order.order_number?.toLowerCase().includes(query) ||
-            (order as unknown as Record<string, unknown>).buyer_business_name?.toLowerCase().includes(query) ||
+            ((order as unknown as Record<string, unknown>).buyer_business_name as string)?.toLowerCase().includes(query) ||
             order.tracking_number?.toLowerCase().includes(query)
         );
     });
@@ -402,7 +402,7 @@ export default function OrdersPage() {
                                     {filteredOrders.map((order) => (
                                         <TableRow key={order.id}>
                                             <TableCell className="font-medium">{order.order_number}</TableCell>
-                                            <TableCell>{(order as unknown as Record<string, unknown>).buyer_business_name || 'Guest'}</TableCell>
+                                            <TableCell>{String((order as unknown as Record<string, unknown>).buyer_business_name || 'Guest')}</TableCell>
                                             <TableCell>
                                                 {Array.isArray(order.marketplace_order_items)
                                                     ? order.marketplace_order_items.length

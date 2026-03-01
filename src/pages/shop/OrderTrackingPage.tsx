@@ -7,7 +7,6 @@ import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedClient } from '@/lib/supabaseUntyped';
 import { useShop } from './ShopLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -71,8 +70,8 @@ export default function OrderTrackingPage() {
       if (!trackingToken) return null;
 
       try {
-        const { data, error } = await untypedClient
-          .rpc('get_marketplace_order_by_token', { p_tracking_token: trackingToken });
+        const rpc = supabase.rpc as unknown as (fn: string, params: Record<string, unknown>) => PromiseLike<{ data: unknown[] | null; error: { message?: string } | null }>;
+        const { data, error } = await rpc('get_marketplace_order_by_token', { p_tracking_token: trackingToken }); // Supabase type limitation
 
         if (error) {
           logger.error('Order tracking fetch failed', error, { trackingToken });
@@ -204,8 +203,8 @@ export default function OrderTrackingPage() {
                 variant="outline"
                 className={
                   order.payment_status === 'paid'
-                    ? 'bg-success/10 text-success'
-                    : 'bg-warning/10 text-warning'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-yellow-100 text-yellow-800'
                 }
               >
                 {order.payment_status}
@@ -223,8 +222,8 @@ export default function OrderTrackingPage() {
         <CardContent>
           {isCancelled ? (
             <div className="text-center py-8">
-              <XCircle className="w-16 h-16 mx-auto mb-4 text-destructive" />
-              <p className="text-xl font-semibold text-destructive capitalize">
+              <XCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
+              <p className="text-xl font-semibold text-red-600 capitalize">
                 Order {order.status}
               </p>
             </div>
@@ -268,7 +267,7 @@ export default function OrderTrackingPage() {
                       transition={isCurrent ? { duration: 1.5, repeat: Infinity, ease: "easeInOut" } : {}}
                     >
                       <Icon
-                        className={`w-5 h-5 ${isComplete ? 'text-white' : 'text-muted-foreground'}`}
+                        className={`w-5 h-5 ${isComplete ? 'text-white' : 'text-gray-400'}`}
                       />
                     </motion.div>
 
@@ -356,7 +355,7 @@ export default function OrderTrackingPage() {
                 <span>{formatCurrency(order.subtotal)}</span>
               </div>
               {order.discount_amount > 0 && (
-                <div className="flex justify-between text-sm text-success">
+                <div className="flex justify-between text-sm text-green-600">
                   <span>Discount</span>
                   <span>-{formatCurrency(order.discount_amount)}</span>
                 </div>

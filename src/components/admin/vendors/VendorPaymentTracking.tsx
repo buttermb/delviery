@@ -229,8 +229,8 @@ export function VendorPaymentTracking({ vendorId, vendorName }: VendorPaymentTra
     totalPages,
     paginatedItems: paginatedData,
     goToPage,
-    previousPage: prevPage,
-    nextPage,
+    previousPage: _prevPage,
+    nextPage: _nextPage,
     changePageSize,
   } = usePagination(payments ?? [], {
     defaultPageSize: 10,

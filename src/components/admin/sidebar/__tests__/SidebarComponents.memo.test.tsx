@@ -102,15 +102,15 @@ vi.mock('@/hooks/useOperationSize', () => ({
 }));
 
 vi.mock('@/components/ui/sidebar', () => ({
-  Sidebar: ({ children }: { children: React.ReactNode }) => <div data-testid="sidebar">{children}</div>,
-  SidebarContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SidebarGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SidebarGroupContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SidebarGroupLabel: ({ children, className }: { children: React.ReactNode; className?: string }) => <div className={className}>{children}</div>,
-  SidebarMenu: ({ children }: { children: React.ReactNode }) => <ul>{children}</ul>,
-  SidebarMenuItem: React.forwardRef(({ children }: { children: React.ReactNode }, ref: React.Ref<HTMLLIElement>) => <li ref={ref}>{children}</li>),
-  SidebarMenuButton: ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) =>
-    asChild ? <>{children}</> : <button>{children}</button>,
+  Sidebar: ({ children }: { children?: React.ReactNode }) => <div data-testid="sidebar">{children}</div>,
+  SidebarContent: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  SidebarGroup: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  SidebarGroupContent: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  SidebarGroupLabel: ({ children, className }: { children?: React.ReactNode; className?: string }) => <div className={className}>{children}</div>,
+  SidebarMenu: ({ children }: { children?: React.ReactNode }) => <ul>{children}</ul>,
+  SidebarMenuItem: React.forwardRef(({ children }: { children?: React.ReactNode }, ref: React.Ref<HTMLLIElement>) => <li ref={ref}>{children}</li>),
+  SidebarMenuButton: ({ children, asChild, ...props }: { children?: React.ReactNode; asChild?: boolean; [key: string]: unknown }) =>
+    asChild ? <>{children}</> : <button {...props}>{children}</button>,
   useSidebar: () => ({
     setOpenMobile: vi.fn(),
     isMobile: false

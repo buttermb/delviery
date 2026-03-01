@@ -12,22 +12,22 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  DollarSign, 
-  FileText, 
-  Calendar, 
-  Download, 
+import {
+  DollarSign,
+  FileText,
+  Calendar,
+  Download,
   AlertTriangle,
   CheckCircle,
   Clock,
   TrendingUp,
-  Building2,
   Percent
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, subMonths } from 'date-fns';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';
+import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
 
 interface TaxSummary {
   totalSales: number;
@@ -118,31 +118,24 @@ export default function TaxManagementPage() {
 
   return (
     <div className="p-4 space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Building2 className="h-6 w-6" />
-            Tax Management
-          </h1>
-          <p className="text-muted-foreground">Track tax collection, generate reports, and manage filings</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExportReport}>
-            <Download className="h-4 w-4 mr-2" />
+      <AdminToolbar
+        hideSearch={true}
+        filters={
+          <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as 'month' | 'quarter' | 'year')}>
+            <TabsList>
+              <TabsTrigger value="month">This Month</TabsTrigger>
+              <TabsTrigger value="quarter">This Quarter</TabsTrigger>
+              <TabsTrigger value="year">This Year</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        }
+        actions={
+          <Button variant="outline" onClick={handleExportReport} className="gap-2">
+            <Download className="h-4 w-4" />
             Export Report
           </Button>
-        </div>
-      </div>
-
-      {/* Period Selector */}
-      <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as 'month' | 'quarter' | 'year')}>
-        <TabsList>
-          <TabsTrigger value="month">This Month</TabsTrigger>
-          <TabsTrigger value="quarter">This Quarter</TabsTrigger>
-          <TabsTrigger value="year">This Year</TabsTrigger>
-        </TabsList>
-      </Tabs>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -195,8 +188,8 @@ export default function TaxManagementPage() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="text-2xl font-bold">
-              {taxData?.lastFilingDate 
-                ? format(new Date(taxData.lastFilingDate), 'MMM d') 
+              {taxData?.lastFilingDate
+                ? format(new Date(taxData.lastFilingDate), 'MMM d')
                 : 'N/A'}
             </div>
             <div className="flex items-center gap-1 mt-1">

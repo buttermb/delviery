@@ -91,6 +91,7 @@ export default function CustomerForm() {
     if (isEdit && id && !accountLoading) {
       loadCustomer();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEdit, id, accountLoading]);
 
   const loadCustomer = async () => {

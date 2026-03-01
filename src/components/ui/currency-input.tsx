@@ -199,7 +199,7 @@ const IntegerInput = React.forwardRef<HTMLInputElement, IntegerInputProps>(
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       // Strip any non-numeric chars that got through (e.g., paste)
       const raw = e.target.value;
-      const cleaned = raw.replace(/[^0-9\-]/g, '');
+      const cleaned = raw.replace(/[^0-9-]/g, '');
 
       if (cleaned !== raw) {
         e.target.value = cleaned;

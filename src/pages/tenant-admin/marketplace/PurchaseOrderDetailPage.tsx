@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedClient } from '@/lib/supabaseUntyped';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -96,8 +95,8 @@ export default function PurchaseOrderDetailPage() {
         mutationFn: async () => {
             if (!tenant?.id || !order?.marketplace_profiles?.tenant_id) throw new Error("Missing tenant info");
 
-            const { error } = await untypedClient
-                .from('marketplace_messages')
+            const { error } = await supabase
+                .from('marketplace_messages' as 'tenants') // Supabase type limitation
                 .insert({
                     sender_tenant_id: tenant.id,
                     receiver_tenant_id: order.marketplace_profiles.tenant_id,

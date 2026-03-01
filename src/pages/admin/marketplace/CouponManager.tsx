@@ -174,7 +174,7 @@ export default function CouponManager() {
                                 <Label htmlFor="type" className="text-right">Type</Label>
                                 <Select
                                     value={newCoupon.type}
-                                    onValueChange={(val) => setNewCoupon(prev => ({ ...prev, type: val }))}
+                                    onValueChange={(val) => setNewCoupon(prev => ({ ...prev, type: val as 'percentage' | 'fixed_amount' }))}
                                 >
                                     <SelectTrigger className="col-span-3">
                                         <SelectValue placeholder="Select type" />

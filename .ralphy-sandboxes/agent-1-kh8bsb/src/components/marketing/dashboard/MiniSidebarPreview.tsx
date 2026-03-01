@@ -1,17 +1,17 @@
 import { motion } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingCart, 
-  Warehouse, 
-  Truck, 
-  Users, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Warehouse,
+  Truck,
+  Users,
+  BarChart3,
   Settings,
   Radio,
   Shield
 } from 'lucide-react';
-import { 
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -22,8 +22,8 @@ import type { LucideIcon } from 'lucide-react';
 
 const navItems: Array<{ icon: LucideIcon; label: string; view: DashboardViewKey | null; special?: boolean; pulse?: boolean }> = [
   { icon: LayoutDashboard, label: 'Dashboard', view: 'dashboard' },
-  { icon: Radio, label: 'Live Tracking', view: 'tracking', special: true, pulse: true },
-  { icon: Shield, label: 'OPSEC Menus', view: 'menus', special: true },
+  { icon: Radio, label: 'Live Tracking', view: 'tracking', pulse: true },
+  { icon: Shield, label: 'OPSEC Menus', view: 'menus' },
   { icon: Package, label: 'Catalog', view: 'catalog' },
   { icon: ShoppingCart, label: 'Orders', view: 'orders' },
   { icon: Warehouse, label: 'Inventory', view: 'inventory' },
@@ -40,11 +40,11 @@ interface MiniSidebarPreviewProps {
 
 export function MiniSidebarPreview({ activeView, onViewChange }: MiniSidebarPreviewProps) {
   return (
-    <div id="sidebar" data-dark-panel className="w-10 sm:w-12 bg-slate-900 border-r border-slate-800 py-2 flex flex-col gap-0.5">
+    <div id="sidebar" data-dark-panel className="w-10 sm:w-12 py-2 flex flex-col gap-0.5 h-full z-20 relative">
       <TooltipProvider>
         {navItems.map((item, index) => {
           const Icon = item.icon;
-          
+
           return (
             <Tooltip key={item.label} delayDuration={0}>
               <TooltipTrigger asChild>
@@ -54,13 +54,12 @@ export function MiniSidebarPreview({ activeView, onViewChange }: MiniSidebarPrev
                   transition={{ delay: index * 0.05, duration: 0.3 }}
                   onClick={() => item.view && onViewChange(item.view)}
                   disabled={!item.view}
-                  className={`w-full p-1.5 sm:p-2 flex items-center justify-center transition-colors relative ${
-                    item.view === activeView
-                      ? 'bg-primary/20 text-primary' 
-                      : item.view
+                  className={`w-full p-1.5 sm:p-2 flex items-center justify-center transition-colors relative ${item.view === activeView
+                    ? 'bg-primary/20 text-primary'
+                    : item.view
                       ? 'text-slate-400 hover:text-slate-300 hover:bg-slate-800/50 cursor-pointer'
                       : 'text-slate-600 cursor-not-allowed'
-                  } ${item.special ? 'ring-1 ring-inset ring-primary/30' : ''}`}
+                    } ${item.special ? 'ring-1 ring-inset ring-primary/30' : ''}`}
                 >
                   {item.view === activeView && (
                     <motion.div

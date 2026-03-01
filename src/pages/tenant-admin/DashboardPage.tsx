@@ -40,7 +40,6 @@ import { FREE_TIER_LIMITS } from "@/lib/credits";
 import { useRealtimeSync } from "@/hooks/useRealtimeSync";
 import { TakeTourButton } from "@/components/tutorial/TakeTourButton";
 import { dashboardTutorial } from "@/lib/tutorials/tutorialConfig";
-import { useStorefrontOrderAlerts } from '@/hooks/useStorefrontOrderAlerts';
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { DataSetupBanner } from "@/components/admin/DataSetupBanner";
@@ -145,9 +144,6 @@ export default function TenantAdminDashboardPage() {
     enabled: !!tenantId,
   });
 
-  // Enable storefront order alerts (shows toast when new orders arrive)
-  useStorefrontOrderAlerts({ enabled: !!tenantId });
-
   // Memoized helper functions for handling unlimited limits (MOVED BEFORE EARLY RETURN)
   const isUnlimited = useCallback((resource: 'customers' | 'menus' | 'products') => {
     const limit = getLimit(resource);
@@ -226,20 +222,18 @@ export default function TenantAdminDashboardPage() {
         const orderCount = allOrders.length;
 
         // Get low stock items from products table (including low_stock_alert field)
-        let inventoryResult = await supabase
+        let inventoryResult: { data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null } = await (supabase
           .from("products")
           .select("id, name, stock_quantity, available_quantity, low_stock_alert")
-          .eq("tenant_id", tenantId)
-          .returns<DashboardInventoryRow[]>();
+          .eq("tenant_id", tenantId) as unknown as Promise<{ data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null }>);
 
         // Fallback without tenant filter if column doesn't exist
         if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.message?.includes('column'))) {
           logger.warn("tenant_id filter failed for products, retrying without filter", inventoryResult.error, { component: 'DashboardPage' });
-          inventoryResult = await supabase
+          inventoryResult = await (supabase
             .from("products")
             .select("id, name, stock_quantity, available_quantity, low_stock_alert")
-            .limit(100)
-            .returns<DashboardInventoryRow[]>();
+            .limit(100) as unknown as Promise<{ data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null }>);
         }
 
         const inventory = inventoryResult.error ? [] : (inventoryResult.data ?? []);
@@ -249,7 +243,7 @@ export default function TenantAdminDashboardPage() {
         }
 
         const DEFAULT_LOW_STOCK_THRESHOLD = 10;
-        const lowStock = (inventory as DashboardInventoryRow[] ?? []).map((item) => {
+        const lowStock = (inventory as unknown as DashboardInventoryRow[] ?? []).map((item) => {
           // Use product's low_stock_alert if set, otherwise use default threshold
           const threshold = item.low_stock_alert ?? DEFAULT_LOW_STOCK_THRESHOLD;
           const currentQty = item.available_quantity ?? item.stock_quantity ?? 0;
@@ -476,8 +470,8 @@ export default function TenantAdminDashboardPage() {
       }, 500);
       return () => clearTimeout(timer);
     }
-    // Only run once per location change, not on every state update
-  }, [location.pathname]); // Changed from location.state to location.pathname
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally using pathname only; location.state change should not re-trigger (we're clearing it)
+  }, [location.pathname]);
 
   // Auto-show Quick Start for completely empty accounts (new users)
   useEffect(() => {

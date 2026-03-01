@@ -421,7 +421,7 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
       />
 
       <MenuShareDialogEnhanced
-        menu={menu}
+        menu={menu as unknown as Parameters<typeof MenuShareDialogEnhanced>[0]['menu']}
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
         whitelistEntry={undefined}

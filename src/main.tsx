@@ -17,12 +17,21 @@ import { logger } from '@/lib/logger';
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { PerformanceMonitor } from "./utils/performance";
 import { initializeSecurityObfuscation } from "./utils/securityObfuscation";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import bugFinder from "./utils/bugFinder";
 import { setupGlobalErrorHandlers } from "./lib/globalErrorHandler";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
+
+const runDeferred = (task: () => void, timeout = 1500) => {
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    (window as Window & {
+      requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number;
+    }).requestIdleCallback(task, { timeout });
+    return;
+  }
+  (window ?? globalThis).setTimeout(task, 0);
+};
 
 // Setup global error handlers
 setupGlobalErrorHandlers();
@@ -184,33 +193,19 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   });
 }
 
-// Initialize performance monitoring
-if (import.meta.env.DEV) {
-  try {
-    PerformanceMonitor.init();
-
-    // Log performance report after page load
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        logger.debug('[APP] Performance Report:', PerformanceMonitor.getReport());
-      }, 3000);
-    });
-  } catch (error) {
-    logger.error('[APP] Performance monitoring failed:', error);
-  }
-}
-
 // Initialize bug finder (runs in all environments)
 try {
   // BugFinder automatically starts monitoring on instantiation
   logger.debug('[APP] Bug Finder initialized');
 
-  // Log bug scan on initialization
+  // Defer dev-only bug scanning until idle to keep initial render responsive
   if (import.meta.env.DEV) {
-    const scan = bugFinder.scanBugs();
-    if (scan.totalBugs > 0) {
-      logger.warn('[APP] Existing bugs detected:', scan);
-    }
+    runDeferred(() => {
+      const scan = bugFinder.scanBugs();
+      if (scan.totalBugs > 0) {
+        logger.warn('[APP] Existing bugs detected:', scan);
+      }
+    });
   }
 } catch (error) {
   logger.error('[APP] Bug Finder initialization failed:', error);

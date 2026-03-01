@@ -48,7 +48,7 @@ export function SmartOnboardingWidget({ productCount, className }: SmartOnboardi
 
             const { data, error } = await (supabase
                 .from('products')
-                .insert(sampleProduct as unknown as Record<string, unknown>)
+                .insert(sampleProduct)
                 .select()
                 .maybeSingle());
 

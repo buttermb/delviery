@@ -33,7 +33,7 @@ const SYSTEM_FIELDS = [
 export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductImportDialogProps) {
     const { tenant } = useTenantAdminAuth();
     const [step, setStep] = useState<ImportStep>('upload');
-    const [file, setFile] = useState<File | null>(null);
+    const [_file, _setFile] = useState<File | null>(null);
     const [fileHeaders, setFileHeaders] = useState<string[]>([]);
     const [rawRecords, setRawRecords] = useState<Record<string, unknown>[]>([]);
     const [mapping, setMapping] = useState<Record<string, string>>({});
@@ -199,11 +199,11 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
 
                 // Category Validation
                 const validCategories = ['flower', 'edibles', 'vapes', 'concentrates'];
-                if (normalized.category && !validCategories.includes(normalized.category.toLowerCase())) {
+                if (normalized.category && !validCategories.includes(String(normalized.category).toLowerCase())) {
                     // Try primitive fuzzy match or default?
                     // Let's force lowercase at least
-                    normalized.category = normalized.category.toLowerCase();
-                    if (!validCategories.includes(normalized.category)) {
+                    normalized.category = String(normalized.category).toLowerCase();
+                    if (!validCategories.includes(String(normalized.category))) {
                         invalidRecords.push({ row: index + 2, reason: `Invalid Category: ${normalized.category}. Must be one of: ${validCategories.join(', ')}`, data: record });
                         return;
                     }
@@ -227,9 +227,9 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
                 const { error } = await supabase.from('products').insert(
                     batch.map(record => ({
                         tenant_id: tenant.id,
-                        name: record.name,
-                        sku: record.sku,
-                        category: record.category,
+                        name: String(record.name || ''),
+                        sku: String(record.sku || ''),
+                        category: String(record.category || ''),
                         wholesale_price: parseNumber(record.wholesale_price),
                         retail_price: parseNumber(record.retail_price),
                         available_quantity: parseNumber(record.available_quantity),
@@ -349,7 +349,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
                             <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
                                 <div className="space-y-2">
                                     <Label>Decimal Separator</Label>
-                                    <Select value={decimalSeparator} onValueChange={(v) => setDecimalSeparator(v)}>
+                                    <Select value={decimalSeparator} onValueChange={(v) => setDecimalSeparator(v as typeof decimalSeparator)}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select separator" />
                                         </SelectTrigger>

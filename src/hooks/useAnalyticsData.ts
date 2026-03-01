@@ -595,7 +595,7 @@ async function fetchInventoryHistory(
     return [];
   }
 
-  return data ?? [];
+  return (data as Array<{ change_type: string; created_at: string }>) ?? [];
 }
 
 function processInventoryMovements(

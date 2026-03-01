@@ -277,6 +277,7 @@ vi.mock('@/lib/logger', () => ({
 
 // Mock the Select component to avoid Radix pointer capture issues in jsdom
 vi.mock('@/components/ui/select', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
 
   function MockSelect({ value, onValueChange, children }: { value: string; onValueChange: (val: string) => void; children: React.ReactNode }) {

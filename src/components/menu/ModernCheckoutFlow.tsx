@@ -1741,7 +1741,7 @@ export function ModernCheckoutFlow({
   const queryClient = useQueryClient();
   const cartItems = useMenuCartStore((state) => state.items);
   const getTotal = useMenuCartStore((state) => state.getTotal);
-  const getItemCount = useMenuCartStore((state) => state.getItemCount);
+  const _getItemCount = useMenuCartStore((state) => state.getItemCount);
   const clearCart = useMenuCartStore((state) => state.clearCart);
 
   // Fetch payment settings for this menu

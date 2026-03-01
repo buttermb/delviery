@@ -214,6 +214,7 @@ export function CustomerImport({ open, onOpenChange, onSuccess }: CustomerImport
 
     setFile(selectedFile);
     await parseFile(selectedFile);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- parseFile is defined below and is stable (no deps)
   }, []);
 
   const parseFile = useCallback(async (file: File) => {

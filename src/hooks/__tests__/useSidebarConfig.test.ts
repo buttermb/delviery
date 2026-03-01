@@ -6,7 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createElement, type ReactNode } from 'react';
+import React, { createElement } from 'react';
 import { useSidebarConfig } from '../useSidebarConfig';
 
 // Mock dependencies
@@ -60,7 +60,7 @@ const createWrapper = () => {
     defaultOptions: { queries: { retry: false } }
   });
   
-  return ({ children }: { children: ReactNode }) =>
+  return ({ children }: { children: React.ReactNode }) =>
     createElement(QueryClientProvider, { client: queryClient }, children);
 };
 

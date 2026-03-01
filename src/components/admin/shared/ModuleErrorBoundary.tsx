@@ -1,5 +1,5 @@
 import { Component, ReactNode, ErrorInfo } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ interface ModuleErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
   errorInfo: string | null;
+  copied: boolean;
 }
 
 /**
@@ -40,6 +41,7 @@ export class ModuleErrorBoundary extends Component<ModuleErrorBoundaryProps, Mod
       hasError: false,
       error: null,
       errorInfo: null,
+      copied: false,
     };
   }
 
@@ -81,6 +83,7 @@ export class ModuleErrorBoundary extends Component<ModuleErrorBoundaryProps, Mod
       hasError: false,
       error: null,
       errorInfo: null,
+      copied: false,
     });
 
     // Call custom retry handler if provided
@@ -89,8 +92,28 @@ export class ModuleErrorBoundary extends Component<ModuleErrorBoundaryProps, Mod
     }
   };
 
+  handleCopyError = (): void => {
+    const { error, errorInfo } = this.state;
+    const { moduleName } = this.props;
+
+    const errorText = [
+      `Module: ${moduleName}`,
+      `Error: ${error?.message || 'Unknown error'}`,
+      errorInfo ? `\nStack trace:\n${errorInfo}` : '',
+    ].filter(Boolean).join('\n');
+
+    navigator.clipboard.writeText(errorText).then(() => {
+      this.setState({ copied: true });
+      toast.success('Error copied to clipboard');
+      setTimeout(() => this.setState({ copied: false }), 2000);
+    }).catch(() => {
+      // Fallback: select text for manual copy
+      toast.error('Failed to copy — try selecting the text manually');
+    });
+  };
+
   render(): ReactNode {
-    const { hasError, error, errorInfo } = this.state;
+    const { hasError, error, errorInfo, copied } = this.state;
     const { children, moduleName, fallback } = this.props;
 
     if (hasError) {
@@ -113,16 +136,29 @@ export class ModuleErrorBoundary extends Component<ModuleErrorBoundaryProps, Mod
             </CardHeader>
             <CardContent className="space-y-4">
               {error && (
-                <div className="rounded-lg bg-destructive/10 p-4 border border-destructive/20">
-                  <p className="font-mono text-sm text-destructive">
+                <div className="rounded-lg bg-destructive/10 p-4 border border-destructive/20 relative group">
+                  <p className="font-mono text-sm text-destructive select-all pr-10">
                     {error.message || 'An unexpected error occurred'}
                   </p>
-                  {import.meta.env.DEV && errorInfo && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2 h-7 w-7 p-0 opacity-60 hover:opacity-100"
+                    onClick={this.handleCopyError}
+                    title="Copy error details"
+                  >
+                    {copied ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                  {errorInfo && (
                     <details className="mt-3">
                       <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
                         View stack trace
                       </summary>
-                      <pre className="mt-2 text-xs overflow-auto max-h-40 text-muted-foreground whitespace-pre-wrap">
+                      <pre className="mt-2 text-xs overflow-auto max-h-40 text-muted-foreground whitespace-pre-wrap select-all">
                         {errorInfo}
                       </pre>
                     </details>

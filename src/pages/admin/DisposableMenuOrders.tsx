@@ -38,7 +38,19 @@ interface OrderDataItems {
   items?: Array<{ quantity: number; name?: string; product_name?: string }>;
 }
 
-type MenuOrder = NonNullable<ReturnType<typeof useMenuOrders>['data']>[number];
+interface MenuOrder {
+  id: string;
+  menu_id: string;
+  tenant_id: string;
+  contact_phone: string | null;
+  status: string;
+  total_amount: number | null;
+  order_data: OrderDataItems | null;
+  created_at: string;
+  converted_to_invoice_id: string | null;
+  menu: { name: string } | null;
+  [key: string]: unknown;
+}
 
 const DisposableMenuOrders = () => {
   const { tenant } = useTenantAdminAuth();
@@ -330,7 +342,7 @@ const DisposableMenuOrders = () => {
               />
             ) : (
               <div className="space-y-3">
-                {paginatedOrders.map((order) => (
+                {paginatedOrders.map((order: MenuOrder) => (
                   <div
                     key={order.id}
                     className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer group"
@@ -438,7 +450,7 @@ const DisposableMenuOrders = () => {
       {/* Order Details Dialog */}
       {selectedOrder && (
         <OrderDetailsDialog
-          order={selectedOrder}
+          order={selectedOrder as any}
           open={detailsOpen}
           onOpenChange={setDetailsOpen}
           onUpdate={() => {

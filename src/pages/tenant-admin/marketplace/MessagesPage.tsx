@@ -8,7 +8,7 @@ import { encryptMessage, decryptMessage } from '@/lib/utils/encryption';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { untypedClient } from '@/lib/supabaseUntyped';
+import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -89,8 +89,8 @@ export default function MessagesPage() {
     queryFn: async (): Promise<Message[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await untypedClient
-        .from('marketplace_messages')
+      const { data, error } = await supabase
+        .from('marketplace_messages' as 'tenants') // Supabase type limitation
         .select(`
           *,
           sender_tenant:tenants!marketplace_messages_sender_tenant_id_fkey (
@@ -119,10 +119,10 @@ export default function MessagesPage() {
       }
 
       // Decrypt messages
-      const decryptedData = await Promise.all((data ?? []).map(async (msg: Record<string, unknown>) => {
+      const decryptedData = await Promise.all((data as unknown as Record<string, unknown>[] ?? []).map(async (msg: Record<string, unknown>) => {
         if (msg.message_encrypted && msg.message_text) {
           try {
-            const decrypted = await decryptMessage(msg.message_text);
+            const decrypted = await decryptMessage(String(msg.message_text));
             return { ...msg, message_text: decrypted };
           } catch {
             logger.warn('Failed to decrypt message', { messageId: msg.id });
@@ -202,8 +202,8 @@ export default function MessagesPage() {
   // Mark messages as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (messageIds: string[]) => {
-      const { error } = await untypedClient
-        .from('marketplace_messages')
+      const { error } = await supabase
+        .from('marketplace_messages' as 'tenants') // Supabase type limitation
         .update({
           read: true,
           read_at: new Date().toISOString()
@@ -233,8 +233,8 @@ export default function MessagesPage() {
 
       const encryptedText = await encryptMessage(text);
 
-      const { data, error } = await untypedClient
-        .from('marketplace_messages')
+      const { data, error } = await supabase
+        .from('marketplace_messages' as 'tenants') // Supabase type limitation
         .insert({
           sender_tenant_id: tenantId,
           receiver_tenant_id: buyerTenantId,

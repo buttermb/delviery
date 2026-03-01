@@ -76,7 +76,7 @@ function useSourceMenu(menuId: string | null | undefined, tenantId: string | und
         return null;
       }
 
-      return data as MenuInfo | null;
+      return data as unknown as MenuInfo | null;
     },
     enabled: !!menuId && !!tenantId,
     staleTime: 60000,

@@ -16,7 +16,7 @@ vi.mock('react-router-dom', async () => {
   return {
     ...actual,
     useParams: vi.fn(() => ({ tenantSlug: 'test-tenant' })),
-    Link: ({ to, children, ...props }: { to: string; children: React.ReactNode; [key: string]: unknown }) => (
+    Link: ({ to, children, ...props }: { to: string; children?: React.ReactNode; [key: string]: unknown }) => (
       <a href={to} data-testid="link" {...props}>
         {children}
       </a>
@@ -26,7 +26,7 @@ vi.mock('react-router-dom', async () => {
 
 // Mock UI components
 vi.mock('@/components/ui/card', () => ({
-  Card: ({ children, className, onClick, ...props }: { children: React.ReactNode; className?: string; onClick?: () => void; [key: string]: unknown }) => (
+  Card: ({ children, className, onClick, ...props }: { children?: React.ReactNode; className?: string; onClick?: () => void; [key: string]: unknown }) => (
     <div data-testid="card" className={className} onClick={onClick} {...props}>
       {children}
     </div>

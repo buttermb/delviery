@@ -314,7 +314,7 @@ describe('TenantAdminAuthContext - Memoization', () => {
   });
 
   it('should maintain referential equality of context value when dependencies do not change', async () => {
-    const contextReferences: unknown[] = [];
+    const contextReferences: ReturnType<typeof useTenantAdminAuth>[] = [];
 
     const TestComponent = () => {
       const context = useTenantAdminAuth();

@@ -563,7 +563,7 @@ export function useSegmentCounts(enabled = true): {
   error: Error | null;
   refetch: () => void;
 } {
-  const { segments, counts, isLoading, error, refetch } = useCustomerSegments({ enabled });
+  const { segments: _segments, counts, isLoading, error, refetch } = useCustomerSegments({ enabled });
 
   return {
     counts,

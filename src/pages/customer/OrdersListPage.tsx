@@ -189,7 +189,7 @@ export default function OrdersListPage() {
                       {/* Order Info */}
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
-                          <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] flex items-center justify-center">
+                          <div className="h-12 w-12 rounded-lg bg-slate-50(var(--customer-primary))] (var(--customer-secondary))] flex items-center justify-center">
                             <Package className="h-6 w-6 text-white" />
                           </div>
                           <div>

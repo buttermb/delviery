@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { untypedClient } from '@/lib/supabaseUntyped';
+import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +35,7 @@ export default function VendorPayoutsPage() {
         queryKey: queryKeys.marketplace.payouts.list(tenant?.id),
         queryFn: async () => {
             if (!tenant?.id) return [];
-            const { data, error } = await untypedClient
+            const { data, error } = await supabase
                 .from('marketplace_payouts')
                 .select('*')
                 .eq('seller_tenant_id', tenant.id)
@@ -54,7 +54,7 @@ export default function VendorPayoutsPage() {
             if (!tenant?.id) return { pending: 0, available: 0 };
 
             // Orders that are complete but not paid out
-            const { data: orders, error } = await untypedClient
+            const { data: orders, error } = await supabase
                 .from('marketplace_orders')
                 .select('total_amount, platform_fee, status, payout_id')
                 .eq('seller_tenant_id', tenant.id)

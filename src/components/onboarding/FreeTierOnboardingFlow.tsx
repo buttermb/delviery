@@ -333,7 +333,7 @@ export function FreeTierOnboardingFlow({ className }: FreeTierOnboardingFlowProp
 // ============================================================================
 
 function WelcomeStep({ businessName }: { businessName: string }) {
-    const emojis = ['🎉', '✨', '🚀', '💫', '🌟'];
+    const emojis = ['🎉', '🔥', '🚀', '💫', '🌟'];
 
     return (
         <div className="flex flex-col items-center justify-center h-full text-center space-y-6">

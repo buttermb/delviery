@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedClient } from '@/lib/supabaseUntyped';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -114,7 +113,8 @@ export function StockAlerts() {
   // Mutation to acknowledge an alert
   const acknowledgeMutation = useMutation({
     mutationFn: async (alertId: string) => {
-      const { data, error } = await untypedClient.rpc('acknowledge_stock_alert', {
+      const rpc = supabase.rpc as unknown as (fn: string, params: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { code?: string; message?: string } | null }>;
+      const { data, error } = await rpc('acknowledge_stock_alert', { // Supabase type limitation
         p_alert_id: alertId,
       });
 

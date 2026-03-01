@@ -44,7 +44,7 @@ export default function CustomerResetPasswordPage() {
   useEffect(() => {
     const fetchTenant = async () => {
       if (tenantSlug) {
-        const { data, error } = await supabase
+        const { data: _data, error } = await supabase
           .from('tenants')
           .select('*')
           .eq('slug', tenantSlug)

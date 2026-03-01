@@ -15,6 +15,7 @@ import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { TruncatedText } from '@/components/shared/TruncatedText';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { queryKeys } from '@/lib/queryKeys';
+import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
 import { CHART_COLORS, chartSemanticColors } from '@/lib/chartColors';
 
 interface OrderWithItems {
@@ -45,7 +46,7 @@ export default function RevenueReports() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders', filter: `tenant_id=eq.${tenantId}` },
-        () => queryClient.invalidateQueries({ queryKey: queryKeys.financialCommandCenter.revenueReports() })
+        () => queryClient.invalidateQueries({ queryKey: queryKeys.revenueReports.byTenant(tenantId, dateRange) })
       )
       .subscribe((status) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -54,7 +55,7 @@ export default function RevenueReports() {
       });
 
     return () => { supabase.removeChannel(channel); };
-  }, [queryClient, tenantId]);
+  }, [dateRange, queryClient, tenantId]);
 
   const { data: rawOrders, isLoading } = useQuery({
     queryKey: queryKeys.revenueReports.byTenant(tenantId, dateRange),
@@ -179,29 +180,27 @@ export default function RevenueReports() {
 
   return (
     <div className="p-4 sm:p-4 space-y-4 max-w-[1600px] mx-auto">
-      {/* Header & Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">Analytics</h1>
-          <p className="text-muted-foreground">Real-time revenue and operational insights</p>
-        </div>
-        <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg">
-          {(['7d', '30d', '90d', 'ytd', 'all'] as const).map((range) => (
-            <button
-              key={range}
-              onClick={() => setDateRange(range)}
-              className={cn(
-                "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
-                dateRange === range
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
-              )}
-            >
-              {range === 'ytd' ? 'Year to Date' : range.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </div>
+      <AdminToolbar
+        hideSearch={true}
+        filters={
+          <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg">
+            {(['7d', '30d', '90d', 'ytd', 'all'] as const).map((range) => (
+              <button
+                key={range}
+                onClick={() => setDateRange(range)}
+                className={cn(
+                  "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                  dateRange === range
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
+                )}
+              >
+                {range === 'ytd' ? 'Year to Date' : range.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-3">

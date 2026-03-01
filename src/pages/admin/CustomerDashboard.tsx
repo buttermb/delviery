@@ -211,7 +211,7 @@ function useRecentCustomerActivity(tenantId: string | undefined) {
 
       return Array.from(customerMap.values())
         .map(activity => {
-          const info = customerNameMap.get(activity.customerId);
+          const info = customerNameMap.get(activity.customerId) as { name?: string; email?: string } | undefined;
           return {
             ...activity,
             customerName: info?.name || 'Unknown',

@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedClient } from '@/lib/supabaseUntyped';
 import type { CRMInvoice, InvoiceFormValues, LineItem } from '@/types/crm';
 import type { Json } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
@@ -71,7 +70,7 @@ export function useInvoices() {
             const sortCol = sort?.column && INVOICE_SORT_COLUMN_MAP[sort.column]
                 ? INVOICE_SORT_COLUMN_MAP[sort.column]
                 : 'created_at';
-            const { data, error } = await untypedClient
+            const { data, error } = await supabase
                 .from('crm_invoices')
                 .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('account_id', accountId)

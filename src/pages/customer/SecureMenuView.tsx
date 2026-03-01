@@ -84,11 +84,11 @@ const getStrainColor = (strainType?: string) => {
 
 const getStrainBgColor = (strainType?: string) => {
   switch (strainType) {
-    case 'Indica': return 'from-purple-500/20 to-purple-600/10';
-    case 'Sativa': return 'from-emerald-500/20 to-emerald-600/10';
-    case 'Hybrid': return 'from-orange-500/20 to-orange-600/10';
-    case 'CBD': return 'from-blue-500/20 to-blue-600/10';
-    default: return 'from-gray-500/20 to-gray-600/10';
+    case 'Indica': return ' ';
+    case 'Sativa': return ' ';
+    case 'Hybrid': return ' ';
+    case 'CBD': return ' ';
+    default: return ' ';
   }
 };
 
@@ -100,7 +100,7 @@ const getEffectIcon = (effect: string) => {
   if (lowerEffect.includes('happy') || lowerEffect.includes('euphori')) return '😊';
   if (lowerEffect.includes('sleep') || lowerEffect.includes('sedat')) return '😴';
   if (lowerEffect.includes('hungry') || lowerEffect.includes('munch')) return '🍕';
-  return '✨';
+  return '🌿';
 };
 
 // Expiration Countdown Component
@@ -167,8 +167,8 @@ function TimeRemaining({ expiresAt }: { expiresAt: Date }) {
 }
 
 // Enhanced Product Card Component
-function ProductCard({ 
-  product, 
+function ProductCard({
+  product,
   menuData,
   selectedWeight,
   onWeightChange,
@@ -191,10 +191,10 @@ function ProductCard({
   const [justAdded, setJustAdded] = useState(false);
   const shouldShowImage = menuData.appearance_settings?.show_product_images !== false;
   const imageUrl = product.image_url || product.images?.[0];
-  
+
   const hasPrices = product.prices && typeof product.prices === 'object';
   const weights = hasPrices ? sortProductWeights(Object.keys(product.prices!)) : [];
-  const currentPrice = hasPrices 
+  const currentPrice = hasPrices
     ? (product.prices![selectedWeight] ?? 0)
     : (product.price ?? 0);
 
@@ -214,7 +214,7 @@ function ProductCard({
       <div className="relative">
         {shouldShowImage && imageUrl ? (
           <div
-            className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted to-muted/50 cursor-pointer"
+            className="relative aspect-square overflow-hidden bg-slate-50 cursor-pointer"
             onClick={onImageZoom}
           >
             <OptimizedProductImage
@@ -223,7 +223,7 @@ function ProductCard({
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               priority={false}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button size="sm" variant="secondary" className="h-8 gap-1">
                 <ZoomIn className="h-3.5 w-3.5" />
@@ -235,8 +235,8 @@ function ProductCard({
           <div className={cn(
             "relative aspect-[3/2] overflow-hidden flex items-center justify-center",
             product.strain_type
-              ? `bg-gradient-to-br ${getStrainBgColor(product.strain_type)}`
-              : "bg-gradient-to-br from-muted to-muted/50"
+              ? `bg-slate-50${getStrainBgColor(product.strain_type)}`
+              : "bg-slate-50"
           )}>
             <Leaf className="h-12 w-12 text-muted-foreground/30" />
             {product.category && (
@@ -246,7 +246,7 @@ function ProductCard({
             )}
           </div>
         )}
-        
+
         {/* Strain Badge */}
         {product.strain_type && (
           <Badge className={cn(
@@ -259,9 +259,9 @@ function ProductCard({
 
         {/* THC Badge */}
         {product.thc_percentage && (
-          <Badge 
-            variant="secondary" 
-            className="absolute top-3 right-3 bg-black/70 text-white backdrop-blur-sm"
+          <Badge
+            variant="secondary"
+            className="absolute top-3 right-3 bg-black/70 text-white "
           >
             <Leaf className="h-3 w-3 mr-1" />
             {product.thc_percentage.toFixed(1)}%
@@ -281,7 +281,7 @@ function ProductCard({
       {/* Content Section */}
       <div className={cn(
         "p-4 space-y-3",
-        product.strain_type && `bg-gradient-to-b ${getStrainBgColor(product.strain_type)}`
+        product.strain_type && `bg-slate-50${getStrainBgColor(product.strain_type)}`
       )}>
         {/* Title & Info Button */}
         <div className="flex items-start justify-between gap-2">
@@ -350,7 +350,7 @@ function ProductCard({
 
         {/* Add to Cart / Quantity Controls */}
         {cartQuantity === 0 ? (
-          <Button 
+          <Button
             onClick={handleAddToCart}
             className="w-full h-12 text-base font-semibold gap-2"
             size="lg"
@@ -485,9 +485,10 @@ const SecureMenuView = () => {
         setMenuToken(token);
       }
 
+      const cleanupFn = cleanupScreenshotProtection.current;
       return () => {
-        if (cleanupScreenshotProtection.current) {
-          cleanupScreenshotProtection.current();
+        if (cleanupFn) {
+          cleanupFn();
         }
       };
     } else {
@@ -568,7 +569,7 @@ const SecureMenuView = () => {
   const handleUpdateQuantity = (productId: string, delta: number) => {
     const existingItem = cartItems.find(item => item.productId === productId);
     if (!existingItem) return;
-    
+
     const newQty = existingItem.quantity + delta;
     if (newQty <= 0) {
       removeItem(productId);
@@ -610,7 +611,7 @@ const SecureMenuView = () => {
   // Check if menu has expired (client-side check for cached session data)
   if (!menuData.never_expires && menuData.expiration_date && new Date(menuData.expiration_date) < new Date()) {
     return (
-      <div className="min-h-dvh bg-gradient-to-b from-background to-muted/30 flex items-center justify-center p-4">
+      <div className="min-h-dvh bg-slate-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center p-8">
           <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-6">
             <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
@@ -632,9 +633,9 @@ const SecureMenuView = () => {
   const cartMap = new Map(cartItems.map(item => [item.productId, item]));
 
   return (
-    <div className="min-h-dvh bg-gradient-to-b from-background to-muted/30">
+    <div className="min-h-dvh bg-slate-50">
       {/* Header */}
-      <div className="bg-card/80 backdrop-blur-lg border-b sticky top-0 z-20 shadow-sm">
+      <div className="bg-card/80  border-b sticky top-0 z-20 shadow-sm">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0 flex-1">
@@ -728,7 +729,7 @@ const SecureMenuView = () => {
                 {strain}
               </Button>
             ))}
-            
+
             {/* Sort Dropdown */}
             <div className="ml-auto shrink-0">
               <select
@@ -757,13 +758,13 @@ const SecureMenuView = () => {
             <div className="col-span-full text-center py-12">
               <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <p className="text-lg text-muted-foreground">
-                {searchQuery || selectedStrain !== 'All' 
+                {searchQuery || selectedStrain !== 'All'
                   ? 'No products match your filters'
                   : 'No products available in this menu'}
               </p>
               {(searchQuery || selectedStrain !== 'All') && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-4"
                   onClick={() => {
                     setSearchQuery('');
@@ -778,7 +779,7 @@ const SecureMenuView = () => {
             filteredProducts.map((product) => {
               const cartItem = cartMap.get(product.id);
               const selectedWeight = selectedWeights[product.id] || getDefaultWeight(product.prices);
-              
+
               return (
                 <ProductCard
                   key={product.id}
@@ -807,7 +808,7 @@ const SecureMenuView = () => {
       {/* Floating Cart Summary */}
       {totalItems > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-30 safe-area-inset-bottom">
-          <div className="bg-gradient-to-t from-card via-card to-card/80 backdrop-blur-lg border-t shadow-2xl">
+          <div className="bg-slate-50  border-t shadow-2xl">
             <div className="container mx-auto px-4 py-3">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -831,7 +832,7 @@ const SecureMenuView = () => {
                 <Button
                   size="lg"
                   onClick={() => setCheckoutOpen(true)}
-                  className="min-w-[140px] h-12 text-base font-semibold gap-2 bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90 shadow-lg shadow-primary/25"
+                  className="min-w-[140px] h-12 text-base font-semibold gap-2 bg-slate-50 hover: hover: shadow-lg shadow-primary/25"
                 >
                   Checkout
                   <ChevronRight className="h-5 w-5" />
@@ -862,7 +863,7 @@ const SecureMenuView = () => {
           {zoomedImage && (
             <div className="relative">
               <div className="absolute top-4 left-4 z-10">
-                <Badge variant="secondary" className="text-lg px-4 py-2 backdrop-blur-sm">
+                <Badge variant="secondary" className="text-lg px-4 py-2 ">
                   {zoomedImage.name}
                 </Badge>
               </div>
@@ -888,7 +889,7 @@ const SecureMenuView = () => {
               </Badge>
             )}
           </DialogHeader>
-          
+
           {selectedProduct && (
             <div className="space-y-6">
               {/* Image */}
@@ -970,8 +971,8 @@ const SecureMenuView = () => {
                         <span className="text-sm">{terpene.name}</span>
                         <div className="flex items-center gap-2">
                           <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-primary rounded-full" 
+                            <div
+                              className="h-full bg-primary rounded-full"
                               style={{ width: `${Math.min(terpene.percentage * 50, 100)}%` }}
                             />
                           </div>
@@ -1031,7 +1032,7 @@ const SecureMenuView = () => {
 
               {/* Add to Cart from Detail View */}
               <div className="pt-4 border-t">
-                <Button 
+                <Button
                   onClick={() => {
                     handleAddToCart(selectedProduct);
                     setSelectedProduct(null);

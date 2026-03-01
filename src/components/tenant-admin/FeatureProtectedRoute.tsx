@@ -14,7 +14,7 @@ import { ShieldOff, Settings } from 'lucide-react';
 
 import { type FeatureId } from '@/lib/featureConfig';
 import { type FeatureToggleKey } from '@/lib/featureFlags';
-import { FeatureGate } from '@/components/admin/FeatureGate';
+import { FeatureGate } from '@/components/tenant-admin/FeatureGate';
 import { useTenantFeatureToggles } from '@/hooks/useTenantFeatureToggles';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Button } from '@/components/ui/button';

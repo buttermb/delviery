@@ -33,8 +33,8 @@ import { formatCurrency } from "@/lib/utils/formatCurrency";
 import { formatSmartDate, displayName } from '@/lib/formatters';
 import type { CRMActivityLog } from '@/types/crm';
 import { useTenantNavigation } from "@/lib/navigation/tenantNavigation";
-import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
-import { SearchInput } from '@/components/shared/SearchInput';
+import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
+import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
 
 interface Customer {
   id: string;
@@ -163,6 +163,12 @@ export default function CustomerCRMPage() {
     return "regular";
   };
 
+  const formatTotalSpent = (value: number | null | undefined): string =>
+    Number(value ?? 0).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
   const filteredCustomers = customers?.map((customer) => ({
     ...customer,
     lifecycle: getLifecycleStage(customer),
@@ -179,6 +185,130 @@ export default function CustomerCRMPage() {
     return matchesSearch && matchesLifecycle && matchesSegment;
   }) ?? [];
 
+  const crmColumns = [
+    {
+      header: 'Customer',
+      cell: (customer: EnrichedCustomer) => (
+        <div className="font-medium">
+          {displayName(customer.first_name, customer.last_name)}
+          {customer.email && (
+            <div className="text-xs text-muted-foreground">
+              {customer.email}
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      header: 'Lifecycle',
+      accessorKey: 'lifecycle',
+      cell: (customer: EnrichedCustomer) => (
+        <Badge
+          variant={
+            customer.lifecycle === "active"
+              ? "default"
+              : customer.lifecycle === "at-risk"
+                ? "destructive"
+                : "secondary"
+          }
+        >
+          {customer.lifecycle}
+        </Badge>
+      )
+    },
+    {
+      header: 'Segment',
+      accessorKey: 'segment',
+      cell: (customer: EnrichedCustomer) => <Badge variant="outline">{customer.segment}</Badge>
+    },
+    {
+      header: 'RFM Score',
+      cell: (customer: EnrichedCustomer) => (
+        <code className="text-sm bg-muted px-2 py-1 rounded">
+          {customer.rfm.rfm}
+        </code>
+      )
+    },
+    {
+      header: 'Total Spent',
+      accessorKey: 'total_spent',
+      cell: (customer: EnrichedCustomer) => (
+        <div className="flex items-center gap-1">
+          <DollarSign className="h-3 w-3 text-muted-foreground" />
+          {formatTotalSpent(customer.total_spent)}
+        </div>
+      )
+    },
+    {
+      header: 'Last Purchase',
+      accessorKey: 'last_purchase_at',
+      cell: (customer: EnrichedCustomer) => customer.last_purchase_at
+        ? formatSmartDate(customer.last_purchase_at)
+        : "Never"
+    }
+  ];
+
+  const renderMobileCRMItem = (customer: EnrichedCustomer) => (
+    <div className="space-y-3">
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-base">
+            {displayName(customer.first_name, customer.last_name)}
+          </h3>
+          {customer.email && (
+            <p className="text-sm text-muted-foreground truncate mt-1">
+              {customer.email}
+            </p>
+          )}
+        </div>
+        <Badge
+          variant={
+            customer.lifecycle === "active"
+              ? "default"
+              : customer.lifecycle === "at-risk"
+                ? "destructive"
+                : "secondary"
+          }
+          className="ml-2 flex-shrink-0"
+        >
+          {customer.lifecycle}
+        </Badge>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+        <div>
+          <p className="text-xs text-muted-foreground mb-1">Segment</p>
+          <Badge variant="outline" className="text-xs">
+            {customer.segment}
+          </Badge>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground mb-1">RFM Score</p>
+          <code className="text-xs bg-muted px-2 py-1 rounded">
+            {customer.rfm.rfm}
+          </code>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground mb-1">Total Spent</p>
+          <div className="flex items-center gap-1">
+            <DollarSign className="h-3 w-3 text-muted-foreground" />
+            <span className="font-medium">
+              {formatTotalSpent(customer.total_spent)}
+            </span>
+          </div>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground mb-1">Last Purchase</p>
+          <p className="text-sm font-medium">
+            {customer.last_purchase_at
+              ? formatSmartDate(customer.last_purchase_at)
+              : "Never"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4">
       {/* Header */}
@@ -194,49 +324,43 @@ export default function CustomerCRMPage() {
       </div>
 
       {/* Filters */}
-      <Card className="p-4 sm:p-6">
-        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
-          {/* Search */}
-          <div className="flex-1">
-            <SearchInput
-              placeholder="Search customers..."
-              onSearch={setSearchTerm}
-              defaultValue={searchTerm}
-            />
-          </div>
+      <AdminToolbar
+        searchQuery={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search customers..."
+        filters={
+          <>
+            <Select value={lifecycleFilter} onValueChange={setLifecycleFilter}>
+              <SelectTrigger className="w-[180px] h-9">
+                <SelectValue placeholder="Lifecycle" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Lifecycle Stages</SelectItem>
+                <SelectItem value="prospect">Prospect</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="regular">Regular</SelectItem>
+                <SelectItem value="at-risk">At Risk</SelectItem>
+                <SelectItem value="churned">Churned</SelectItem>
+              </SelectContent>
+            </Select>
 
-          {/* Lifecycle Filter */}
-          <Select value={lifecycleFilter} onValueChange={setLifecycleFilter}>
-            <SelectTrigger className="w-full lg:w-[180px] min-h-[44px] touch-manipulation">
-              <SelectValue placeholder="Lifecycle" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Lifecycle Stages</SelectItem>
-              <SelectItem value="prospect">Prospect</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="regular">Regular</SelectItem>
-              <SelectItem value="at-risk">At Risk</SelectItem>
-              <SelectItem value="churned">Churned</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Segment Filter */}
-          <Select value={segmentFilter} onValueChange={setSegmentFilter}>
-            <SelectTrigger className="w-full lg:w-[180px] min-h-[44px] touch-manipulation">
-              <SelectValue placeholder="Segment" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Segments</SelectItem>
-              <SelectItem value="champions">Champions</SelectItem>
-              <SelectItem value="high-value">High Value</SelectItem>
-              <SelectItem value="bulk-buyers">Bulk Buyers</SelectItem>
-              <SelectItem value="at-risk">At Risk</SelectItem>
-              <SelectItem value="new">New Customers</SelectItem>
-              <SelectItem value="regular">Regular</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </Card>
+            <Select value={segmentFilter} onValueChange={setSegmentFilter}>
+              <SelectTrigger className="w-[180px] h-9">
+                <SelectValue placeholder="Segment" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Segments</SelectItem>
+                <SelectItem value="champions">Champions</SelectItem>
+                <SelectItem value="high-value">High Value</SelectItem>
+                <SelectItem value="bulk-buyers">Bulk Buyers</SelectItem>
+                <SelectItem value="at-risk">At Risk</SelectItem>
+                <SelectItem value="new">New Customers</SelectItem>
+                <SelectItem value="regular">Regular</SelectItem>
+              </SelectContent>
+            </Select>
+          </>
+        }
+      />
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -337,150 +461,20 @@ export default function CustomerCRMPage() {
         </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
-          <ResponsiveTable
-            keyExtractor={(customer: EnrichedCustomer) => customer.id}
-            columns={[
-              {
-                header: 'Customer',
-                cell: (customer: EnrichedCustomer) => (
-                  <div className="font-medium">
-                    {displayName(customer.first_name, customer.last_name)}
-                    {customer.email && (
-                      <div className="text-xs text-muted-foreground">
-                        {customer.email}
-                      </div>
-                    )}
-                  </div>
-                )
-              },
-              {
-                header: 'Lifecycle',
-                accessorKey: 'lifecycle',
-                cell: (customer: EnrichedCustomer) => (
-                  <Badge
-                    variant={
-                      customer.lifecycle === "active"
-                        ? "default"
-                        : customer.lifecycle === "at-risk"
-                          ? "destructive"
-                          : "secondary"
-                    }
-                  >
-                    {customer.lifecycle}
-                  </Badge>
-                )
-              },
-              {
-                header: 'Segment',
-                accessorKey: 'segment',
-                cell: (customer: EnrichedCustomer) => <Badge variant="outline">{customer.segment}</Badge>
-              },
-              {
-                header: 'RFM Score',
-                cell: (customer: EnrichedCustomer) => (
-                  <code className="text-sm bg-muted px-2 py-1 rounded">
-                    {customer.rfm.rfm}
-                  </code>
-                )
-              },
-              {
-                header: 'Total Spent',
-                accessorKey: 'total_spent',
-                cell: (customer: EnrichedCustomer) => (
-                  <div className="flex items-center gap-1">
-                    <DollarSign className="h-3 w-3 text-muted-foreground" />
-                    {customer.total_spent.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </div>
-                )
-              },
-              {
-                header: 'Last Purchase',
-                accessorKey: 'last_purchase_at',
-                cell: (customer: EnrichedCustomer) => customer.last_purchase_at
-                  ? formatSmartDate(customer.last_purchase_at)
-                  : "Never"
-              }
-            ]}
+          <AdminDataTable
             data={filteredCustomers}
+            columns={crmColumns as any}
+            keyExtractor={(customer: EnrichedCustomer) => customer.id as string}
             isLoading={isLoading}
-            emptyState={{
-              type: searchTerm ? undefined : "no_customers",
-              icon: Users,
-              title: searchTerm ? "No Customers Found" : "No Customers Yet",
-              description: searchTerm
-                ? "No customers match your current filters. Try adjusting your search or filter criteria."
-                : "Customers will appear here once they start placing orders.",
-              primaryAction: searchTerm
-                ? { label: "Clear Search", onClick: () => setSearchTerm('') }
-                : { label: "Add Your First Customer", onClick: () => navigateToAdmin('crm/clients/new'), icon: Plus },
-              compact: true
-            }}
-            mobileRenderer={(customer: EnrichedCustomer) => (
-              <div className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base">
-                      {displayName(customer.first_name, customer.last_name)}
-                    </h3>
-                    {customer.email && (
-                      <p className="text-sm text-muted-foreground truncate mt-1">
-                        {customer.email}
-                      </p>
-                    )}
-                  </div>
-                  <Badge
-                    variant={
-                      customer.lifecycle === "active"
-                        ? "default"
-                        : customer.lifecycle === "at-risk"
-                          ? "destructive"
-                          : "secondary"
-                    }
-                    className="ml-2 flex-shrink-0"
-                  >
-                    {customer.lifecycle}
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 pt-2 border-t">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Segment</p>
-                    <Badge variant="outline" className="text-xs">
-                      {customer.segment}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">RFM Score</p>
-                    <code className="text-xs bg-muted px-2 py-1 rounded">
-                      {customer.rfm.rfm}
-                    </code>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Total Spent</p>
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-3 w-3 text-muted-foreground" />
-                      <span className="font-medium">
-                        {customer.total_spent.toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Last Purchase</p>
-                    <p className="text-sm font-medium">
-                      {customer.last_purchase_at
-                        ? formatSmartDate(customer.last_purchase_at)
-                        : "Never"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+            emptyStateIcon={Users}
+            emptyStateTitle={searchTerm ? "No Customers Found" : "No Customers Yet"}
+            emptyStateDescription={searchTerm
+              ? "No customers match your current filters. Try adjusting your search or filter criteria."
+              : "Customers will appear here once they start placing orders."}
+            emptyStateAction={searchTerm
+              ? { label: "Clear Search", onClick: () => setSearchTerm('') }
+              : { label: "Add Your First Customer", onClick: () => navigateToAdmin('crm/clients/new'), icon: Plus }}
+            renderMobileItem={(customer: EnrichedCustomer) => renderMobileCRMItem(customer)}
           />
         </TabsContent>
 

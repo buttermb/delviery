@@ -23,7 +23,8 @@ export const useProducts = () => {
             if (!accountId) throw new Error('Account ID required');
 
             // Break chain to avoid deep type instantiation
-            const query = supabase.from("products") as unknown;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase deep type instantiation workaround
+            const query = supabase.from("products");
             const result = await query
               .select("id, name, price, sku, description, stock_quantity, available_quantity, low_stock_alert")
               .eq("account_id", accountId)

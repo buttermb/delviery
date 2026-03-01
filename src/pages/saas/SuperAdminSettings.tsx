@@ -29,7 +29,7 @@ export default function SuperAdminSettings() {
   const [saving, setSaving] = useState(false);
 
   const [platformSettings, setPlatformSettings] = useState({
-    platformName: 'CannabisCRM',
+    platformName: 'FloraIQ',
     supportEmail: 'support@platform.com',
     adminEmail: 'admin@platform.com',
     maxTenants: 10000,

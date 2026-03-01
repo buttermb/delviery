@@ -1,72 +1,48 @@
 
 
-# Fix Build Errors to Restore Website
+# Fix: "Upgrade Required" Showing Despite Enterprise Plan
 
-The website is not loading because the production build is completely failing. This affects all devices, not just mobile. There are 5 separate issues that need to be fixed.
+## Root Cause
 
----
+In `src/components/tenant-admin/FeatureProtectedRoute.tsx` line 74, the prop name is wrong:
 
-## What Will Be Fixed
-
-### 1. Create missing sitemap generator file
-The build process tries to run `src/lib/generate-sitemap.ts` but the file doesn't exist. A minimal placeholder will be created so the build doesn't crash.
-
-### 2. Fix LiveDeliveryMap.tsx (lines 240, 530)
-Two lines have invalid TypeScript syntax where optional chaining is used incorrectly with type assertions. The complex inline expressions will be simplified into safe helper variables.
-
-### 3. Fix ProductQRGenerator.tsx (line 44)
-The type definition `Database['public']['Tables']queryKeys.products.all['Row']` is broken syntax. It will be corrected to use the proper table name.
-
-### 4. Fix SoundAlertToggle.tsx (line 14)
-The import `{ STORAGE_KEYS.SOUND_ALERTS_TOGGLES }` is invalid JavaScript. It will be changed to import `STORAGE_KEYS` and access the property where needed.
-
-### 5. Fix GeofenceSettings.tsx (line 90)
-A JSX comment `{/* ... */}` is placed as a direct child inside `.map()` before the actual element, which breaks the JSX structure. The comment will be moved inside the Card element.
-
----
-
-## Technical Details
-
-### File: `src/lib/generate-sitemap.ts`
-Create a minimal file that writes an empty sitemap to `dist/sitemap.xml`.
-
-### File: `src/components/admin/LiveDeliveryMap.tsx`
-**Lines 240 and 530** -- Replace:
 ```typescript
-(delivery as unknown as Record<string, unknown>).delivery_address as string | undefined?.split(',')[0]
-```
-With safe extraction:
-```typescript
-const rawAddr = (delivery as unknown as Record<string, unknown>).delivery_address;
-const clientName = (typeof rawAddr === 'string' ? rawAddr.split(',')[0] : null) || 'Client';
+// CURRENT (broken) - "feature" is not a valid prop on FeatureGate
+return <FeatureGate feature={featureId as unknown as FeatureToggleKey}>{content}</FeatureGate>;
+
+// CORRECT - FeatureGate expects "featureId"
+return <FeatureGate featureId={featureId}>{content}</FeatureGate>;
 ```
 
-### File: `src/components/admin/ProductQRGenerator.tsx`
-**Line 44** -- Replace:
+The `FeatureGate` component from `@/components/tenant-admin/FeatureGate` accepts `featureId: FeatureId`, not `feature`. Because the prop doesn't match, TypeScript errors out, the build partially fails, and the component renders the "Upgrade Required" fallback.
+
+Your tenant (`big-mike`) has `subscription_plan: enterprise` and `subscription_status: active`, so `canAccess()` should return `true` for every feature once the correct prop is passed.
+
+## Fix
+
+**File: `src/components/tenant-admin/FeatureProtectedRoute.tsx`** -- Line 74
+
+Change:
 ```typescript
-type Product = Database['public']['Tables']queryKeys.products.all['Row'];
+return <FeatureGate feature={featureId as unknown as FeatureToggleKey}>{content}</FeatureGate>;
 ```
-With:
+To:
 ```typescript
-type Product = Database['public']['Tables']['products']['Row'];
+return <FeatureGate featureId={featureId}>{content}</FeatureGate>;
 ```
 
-### File: `src/components/admin/SoundAlertToggle.tsx`
-**Line 14** -- Replace:
-```typescript
-import { STORAGE_KEYS.SOUND_ALERTS_TOGGLES } from '@/constants/storageKeys';
-```
-With:
-```typescript
-import { STORAGE_KEYS } from '@/constants/storageKeys';
-```
-Then use `STORAGE_KEYS.SOUND_ALERTS_TOGGLES` where the constant is referenced.
+This removes the broken `as unknown as FeatureToggleKey` cast and passes the `featureId` prop correctly. Since `featureId` is already typed as `FeatureId`, no cast is needed.
 
-### File: `src/components/admin/disposable-menus/GeofenceSettings.tsx`
-**Line 90** -- Move the comment inside the Card element or remove it, so `.map()` returns a single JSX element per iteration.
+## Other Build Errors (batch fix)
 
----
+Several other TypeScript errors need fixing in the same pass:
 
-## Expected Outcome
-After these 5 fixes, the production build will succeed and the website will load on all devices including mobile.
+1. **`src/App.tsx` lines 168, 250-251** -- `window` possibly undefined + missing `.default` exports. Wrap `window` access in a typeof guard; fix lazy import syntax.
+2. **Sidebar files** (SidebarFavorites, SidebarHotItems, SidebarMenuItem, SidebarSection) -- `string` not assignable to `FeatureId`. Cast sidebar item IDs through `as FeatureId`.
+3. **`FeatureComparisonTable.tsx`** -- No index signature on FEATURES. Use `FEATURES[key as FeatureId]`.
+4. **`VirtualizedTable.tsx` / `VirtualizedTableTanstack.tsx`** -- `unknown` not assignable to `ReactNode`. Cast cell render results.
+5. **`src/main.tsx` line 33** -- Same `window` guard needed.
 
+## Impact
+
+All admin panels (Dashboard, Hotbox, Orders, Inventory, Customers, Finance) will load correctly once the prop name is fixed, since the enterprise tier grants access to every feature.

@@ -132,6 +132,7 @@ interface WholesaleOrderFilters {
   q: string;
   status: string;
   view: string;
+  [key: string]: unknown;
 }
 
 const WHOLESALE_FILTER_CONFIG: Array<{ key: keyof WholesaleOrderFilters; defaultValue: string }> = [
@@ -245,7 +246,7 @@ export default function WholesaleOrdersPage() {
   const navigate = useTenantNavigate();
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const { exportCSV } = useExport();
+  const { exportCSV: _exportCSV } = useExport();
 
   // Filter state — persisted in URL for back-button & navigation support
   const [filters, setFilters, clearUrlFilters] = useUrlFilters<WholesaleOrderFilters>(WHOLESALE_FILTER_CONFIG);
@@ -770,6 +771,7 @@ export default function WholesaleOrdersPage() {
         }
       ];
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleSelectAll and handleStatusUpdate are stable callbacks defined below
   }, [viewMode, selectedOrders, filteredOrders]);
 
   // Mobile Renderer

@@ -40,7 +40,7 @@ type SortOrder = 'asc' | 'desc';
 export default function LocationInventoryPage() {
   const { locationId } = useParams<{ locationId?: string }>();
   const { tenant } = useTenantAdminAuth();
-  const { options: locationOptions, isLoading: locationsLoading, isError: locationsError, refetch: refetchLocations } = useLocationOptions();
+  const { options: locationOptions, isLoading: locationsLoading, isError: locationsError, refetch: _refetchLocations } = useLocationOptions();
   const { getLocationById } = useLocations();
 
   const [selectedLocationId, setSelectedLocationId] = useState<string | undefined>(locationId);

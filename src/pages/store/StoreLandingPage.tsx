@@ -235,7 +235,7 @@ export default function StoreLandingPage() {
                 className="h-20 sm:h-24 lg:h-28 object-contain mb-6 drop-shadow-lg"
               />
             ) : (
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-6">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/20  flex items-center justify-center mb-6">
                 <Leaf className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
               </div>
             )}
@@ -258,8 +258,8 @@ export default function StoreLandingPage() {
                 variant="secondary"
                 className={
                   storeOpen
-                    ? 'bg-white/20 text-white border-white/30 backdrop-blur-sm'
-                    : 'bg-yellow-500/20 text-yellow-100 border-yellow-500/30 backdrop-blur-sm'
+                    ? 'bg-white/20 text-white border-white/30 '
+                    : 'bg-yellow-500/20 text-yellow-100 border-yellow-500/30 '
                 }
               >
                 <span
@@ -505,7 +505,7 @@ function FeaturedProductCard({
             )}
             {product.strain_type && (
               <span
-                className={`px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md border backdrop-blur-sm ${
+                className={`px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md border  ${
                   product.strain_type === 'Indica'
                     ? 'bg-purple-100/90 text-purple-700 border-purple-200'
                     : product.strain_type === 'Sativa'

@@ -122,7 +122,7 @@ export function useNotificationDispatcher(
     lowStockThreshold = METRICS_CONSTANTS.DEFAULT_LOW_STOCK_THRESHOLD,
   } = options;
 
-  const { tenantId, userId, isReady: contextReady } = useTenantContext();
+  const { tenantId, userId: _userId, isReady: contextReady } = useTenantContext();
   const mountedRef = useRef(true);
 
   // Track if dispatcher is ready

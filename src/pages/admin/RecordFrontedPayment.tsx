@@ -24,7 +24,7 @@ import type { PaymentMethod } from '@/lib/services/paymentService';
 import { formatCurrency } from '@/lib/formatters';
 
 export default function RecordFrontedPayment() {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { id } = useParams<{ id: string }>();
   const { tenant } = useTenantAdminAuth();
@@ -45,6 +45,7 @@ export default function RecordFrontedPayment() {
 
   useEffect(() => {
     loadFrontedItem();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadFrontedItem is defined below, only run when id changes
   }, [id]);
 
   const loadFrontedItem = async () => {
@@ -78,7 +79,7 @@ export default function RecordFrontedPayment() {
     }
 
     try {
-      const result = await recordFrontedPayment({
+      const _result = await recordFrontedPayment({
         frontedId: id,
         amount: paymentAmount,
         paymentMethod,

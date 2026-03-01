@@ -11,7 +11,7 @@ import { OrderStatusBadge } from '../OrderStatusBadge';
 
 // Mock UI components
 vi.mock('@/components/ui/badge', () => ({
-  Badge: ({ children, className, variant, ...props }: { children: React.ReactNode; className?: string; variant?: string; [key: string]: unknown }) => (
+  Badge: ({ children, className, variant, ...props }: { children?: React.ReactNode; className?: string; variant?: string; [key: string]: unknown }) => (
     <div data-testid="badge" className={className} data-variant={variant} {...props}>
       {children}
     </div>

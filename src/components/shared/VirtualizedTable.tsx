@@ -48,6 +48,16 @@ interface RowComponentProps extends RowExtraProps {
 }
 
 /** Memoized row component to prevent unnecessary re-renders */
+function renderCellValue(cellContent: React.ReactNode): React.ReactNode {
+  if (cellContent == null) return '-';
+  if (React.isValidElement(cellContent)) return cellContent;
+  if (typeof cellContent === 'string' || typeof cellContent === 'number' || typeof cellContent === 'boolean') {
+    return String(cellContent);
+  }
+  return '-';
+}
+
+/** Memoized row component to prevent unnecessary re-renders */
 const VirtualizedRow = memo(function VirtualizedRow({
   index,
   style,
@@ -83,9 +93,7 @@ const VirtualizedRow = memo(function VirtualizedRow({
             )}
             style={{ width: column.width || 'auto', minWidth: column.width || 150 }}
           >
-            {cellContent != null
-              ? (typeof cellContent === 'object' ? JSON.stringify(cellContent) : String(cellContent))
-              : '-'}
+            {renderCellValue(cellContent as React.ReactNode)}
           </div>
         );
       })}

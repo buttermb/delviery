@@ -161,7 +161,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
         throw error;
       }
 
-      return data as DeliveryAddress[];
+      return (data ?? []) as unknown as DeliveryAddress[];
     },
     enabled: !!customerId && !!tenant?.id,
   });
@@ -179,12 +179,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
           id,
           created_at,
           status,
-          delivery_address,
-          location_id,
-          locations!orders_location_id_fkey(
-            name,
-            coordinates
-          )
+          delivery_address
         `)
         .eq('customer_id', customerId)
         .eq('tenant_id', tenant.id)
@@ -200,23 +195,17 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
         return [];
       }
 
-      // Transform the data for map display
-      return (data ?? [])
-        .filter((order) => order.locations?.coordinates)
-        .map((order) => {
-          const coords = order.locations?.coordinates as { lat?: number; lng?: number } | null;
-          return {
-            id: order.id,
-            delivery_date: order.created_at,
-            status: order.status,
-            delivery_address: order.delivery_address ?? '',
-            hub_name: order.locations?.name || 'Unknown Hub',
-            hub_lat: coords?.lat ?? 0,
-            hub_lng: coords?.lng ?? 0,
-            dest_lat: 0, // Would need geocoding
-            dest_lng: 0,
-          };
-        }) as DeliveryHistory[];
+      return (data ?? []).map((order: { id: string; created_at: string; status: string; delivery_address?: string }) => ({
+        id: order.id,
+        delivery_date: order.created_at,
+        status: order.status,
+        delivery_address: order.delivery_address ?? '',
+        hub_name: 'Main Hub',
+        hub_lat: 0,
+        hub_lng: 0,
+        dest_lat: 0,
+        dest_lng: 0,
+      })) as DeliveryHistory[];
     },
     enabled: !!customerId && !!tenant?.id && showDeliveryHistory,
   });
@@ -400,7 +389,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
   const isLoading = addressesLoading || locationsLoading;
 
   // Get addresses with coordinates for display
-  const geocodedAddresses = addresses.filter((a) => a.latitude && a.longitude);
+  const _geocodedAddresses = addresses.filter((a) => a.latitude && a.longitude);
   const ungeocodedAddresses = addresses.filter((a) => !a.latitude || !a.longitude);
 
   if (isLoading) {

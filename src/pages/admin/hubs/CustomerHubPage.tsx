@@ -7,7 +7,6 @@
  * - Insights: Customer analytics
  */
 
-import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -18,16 +17,13 @@ import {
     FileText,
     PieChart,
     Star,
-    Plus,
 } from 'lucide-react';
 import { Fragment, lazy, Suspense, useCallback } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
 import { ModuleErrorBoundary } from '@/components/admin/shared/ModuleErrorBoundary';
 import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { ScrollableTabsList } from '@/components/admin/ScrollableTabsList';
-import { QuickCreateCustomerDialog } from '@/components/pos/QuickCreateCustomerDialog';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
@@ -68,8 +64,7 @@ export default function CustomerHubPage() {
     usePageTitle('Customers');
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as TabId) || 'contacts';
-    const [createDialogOpen, setCreateDialogOpen] = useState(false);
-    const { tenant } = useTenantAdminAuth();
+    const { tenant: _tenant } = useTenantAdminAuth();
 
     const handleTabChange = useCallback((tab: string) => {
         setSearchParams({ tab }, { replace: true });
@@ -92,40 +87,34 @@ export default function CustomerHubPage() {
                                 Manage contacts, clients, and relationships
                             </p>
                         </div>
-                        {activeTab === 'contacts' && (
-                            <Button onClick={() => setCreateDialogOpen(true)}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Customer
-                            </Button>
-                        )}
                     </div>
                     <ScrollableTabsList>
                         <TooltipProvider delayDuration={300}>
-                        <TabsList className="inline-flex min-w-max gap-0.5">
-                            {tabs.map((tab, index) => {
-                                const prevTab = index > 0 ? tabs[index - 1] : null;
-                                const showSeparator = prevTab && prevTab.group !== tab.group;
-                                const trigger = (
-                                    <TabsTrigger value={tab.id} className="flex items-center gap-2">
-                                        <tab.icon className="h-4 w-4" />
-                                        <span className="text-xs sm:text-sm truncate">{tab.label}</span>
-                                    </TabsTrigger>
-                                );
-                                return (
-                                    <Fragment key={tab.id}>
-                                        {showSeparator && (
-                                            <div className="w-px h-6 bg-border mx-1" />
-                                        )}
-                                        {'tooltip' in tab && tab.tooltip ? (
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>{trigger}</TooltipTrigger>
-                                                <TooltipContent>{tab.tooltip}</TooltipContent>
-                                            </Tooltip>
-                                        ) : trigger}
-                                    </Fragment>
-                                );
-                            })}
-                        </TabsList>
+                            <TabsList className="inline-flex min-w-max gap-0.5">
+                                {tabs.map((tab, index) => {
+                                    const prevTab = index > 0 ? tabs[index - 1] : null;
+                                    const showSeparator = prevTab && prevTab.group !== tab.group;
+                                    const trigger = (
+                                        <TabsTrigger value={tab.id} className="flex items-center gap-2">
+                                            <tab.icon className="h-4 w-4" />
+                                            <span className="text-xs sm:text-sm truncate">{tab.label}</span>
+                                        </TabsTrigger>
+                                    );
+                                    return (
+                                        <Fragment key={tab.id}>
+                                            {showSeparator && (
+                                                <div className="w-px h-6 bg-border mx-1" />
+                                            )}
+                                            {'tooltip' in tab && tab.tooltip ? (
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+                                                    <TooltipContent>{tab.tooltip}</TooltipContent>
+                                                </Tooltip>
+                                            ) : trigger}
+                                        </Fragment>
+                                    );
+                                })}
+                            </TabsList>
                         </TooltipProvider>
                     </ScrollableTabsList>
                 </div>
@@ -193,15 +182,6 @@ export default function CustomerHubPage() {
                     </ModuleErrorBoundary>
                 </TabsContent>
             </Tabs>
-
-            {tenant && (
-                <QuickCreateCustomerDialog
-                    open={createDialogOpen}
-                    onOpenChange={setCreateDialogOpen}
-                    tenantId={tenant.id}
-                    onSuccess={() => setCreateDialogOpen(false)}
-                />
-            )}
         </div>
     );
 }

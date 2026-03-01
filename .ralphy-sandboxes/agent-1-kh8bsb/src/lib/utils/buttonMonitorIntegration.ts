@@ -97,15 +97,18 @@ export function logButtonHealthReport() {
 
 /**
  * Auto-log button health on errors (call this in error boundaries)
+ * Returns a cleanup function to clear the interval.
  */
-export function autoLogButtonHealth() {
+export function autoLogButtonHealth(): () => void {
   // Log health report every 5 minutes
-  setInterval(() => {
+  const intervalId = setInterval(() => {
     const report = buttonMonitor.getHealthReport();
     if (report.errorRate > 0.1) {
       // Only log if error rate is significant
       logButtonHealthReport();
     }
   }, 5 * 60 * 1000); // 5 minutes
+
+  return () => clearInterval(intervalId);
 }
 

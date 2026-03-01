@@ -416,23 +416,23 @@ body.keyboard-open [data-radix-dialog-content] {
     --saas-bg: 30 30% 96%;
     /* #F8F5F0 - Warm Linen */
 
-    /* Marketing Site Colors - Emerald Brand */
-    --marketing-primary: 160 84% 39%;
-    /* #10B981 - Emerald 500 */
-    --marketing-secondary: 160 84% 39%;
-    /* #10B981 - Same as primary */
+    /* Marketing Site Colors - Flowhub Inspired */
+    --marketing-primary: 254 70% 28%;
+    /* #2E1679 - Flowhub Indigo */
+    --marketing-secondary: 254 70% 28%;
+    /* Same as primary */
     --marketing-accent: 35 89% 60%;
-    /* #F3A73D - Gold */
-    --marketing-text: 160 60% 12%;
-    /* Dark emerald-tinted text */
-    --marketing-text-light: 160 10% 45%;
-    /* Emerald-tinted gray */
+    /* #F3A73D - Gold Accent */
+    --marketing-text: 215 25% 27%;
+    /* #374151 - Slate Gray Body Text */
+    --marketing-text-light: 215 16% 47%;
+    /* #64748b - Slate 500 */
     --marketing-bg: 0 0% 100%;
     /* Pure White */
-    --marketing-bg-subtle: 160 30% 98.5%;
-    /* Very faint emerald tint */
-    --marketing-border: 160 20% 93%;
-    /* Subtle emerald border */
+    --marketing-bg-subtle: 227 100% 98%;
+    /* #F4F7FF - Light Lavender/Blue */
+    --marketing-border: 214 32% 91%;
+    /* #e2e8f0 - Subtle border */
     --radius: 0.5rem;
 
     /* Unified Design System - Gradients */
@@ -583,20 +583,20 @@ body.keyboard-open [data-radix-dialog-content] {
     /* Dark background */
 
     /* Marketing Site Colors - Dark Theme (Forced Light Mode for consistency) */
-    --marketing-primary: 160 84% 39%;
-    /* #10B981 - Emerald 500 */
-    --marketing-secondary: 160 84% 39%;
-    /* #10B981 - Same as primary */
+    --marketing-primary: 254 70% 28%;
+    /* #2E1679 - Flowhub Indigo */
+    --marketing-secondary: 254 70% 28%;
+    /* Same as primary */
     --marketing-accent: 35 89% 60%;
-    /* #F3A73D - Gold */
+    /* #F3A73D - Gold Accent */
     --marketing-text: 222 47% 11%;
     /* #0f172a - Slate 900 (High Contrast) */
     --marketing-text-light: 215 16% 47%;
     /* #64748b - Slate 500 */
     --marketing-bg: 0 0% 100%;
     /* #ffffff - Pure White */
-    --marketing-bg-subtle: 210 40% 98%;
-    /* #f8fafc - Slate 50 */
+    --marketing-bg-subtle: 227 100% 98%;
+    /* #F4F7FF - Light Lavender/Blue */
     --marketing-border: 214 32% 91%;
     /* #e2e8f0 - Slate 200 */
 
@@ -1631,6 +1631,7 @@ body.keyboard-open [data-radix-dialog-content] {
    ======================================== */
 
 @media print {
+
   /* Force color printing */
   * {
     print-color-adjust: exact !important;
@@ -1772,7 +1773,8 @@ body.keyboard-open [data-radix-dialog-content] {
 
   /* Ensure links show URL in print if useful */
   a[href^="http"]::after {
-    content: none; /* Don't clutter with URLs */
+    content: none;
+    /* Don't clutter with URLs */
   }
 
   /* ---- Invoice Print Styles ---- */

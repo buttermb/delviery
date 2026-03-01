@@ -35,9 +35,7 @@ export function InventoryMovementLog() {
         .select(`
           id,
           movement_type,
-          quantity_lbs,
-          previous_quantity_lbs,
-          new_quantity_lbs,
+          quantity,
           notes,
           created_at,
           wholesale_inventory:wholesale_inventory_id (
@@ -55,11 +53,19 @@ export function InventoryMovementLog() {
       }
 
       // Map to our interface
-      return (data ?? []).map((m) => ({
+      interface MovementRow {
+        id: string;
+        movement_type?: string;
+        quantity?: number;
+        notes?: string;
+        created_at: string;
+        wholesale_inventory?: { strain_name?: string; location?: string } | null;
+      }
+      return (data ?? []).map((m: MovementRow) => ({
         id: m.id,
         product_name: m.wholesale_inventory?.strain_name || 'Unknown Product',
         movement_type: m.movement_type || 'adjustment',
-        quantity_change: m.quantity_lbs || (m.new_quantity_lbs - m.previous_quantity_lbs) || 0,
+        quantity_change: m.quantity || 0,
         from_location: m.wholesale_inventory?.location ?? '',
         to_location: '',
         notes: m.notes ?? '',

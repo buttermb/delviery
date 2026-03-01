@@ -108,7 +108,7 @@ export function useStorefrontBuilder() {
         themeCfg: ThemeConfig,
     ) => {
         try {
-            const { error } = await (supabase as unknown as { from: (t: string) => { update: (d: Record<string, unknown>) => { eq: (c: string, v: string | undefined) => Promise<{ error: unknown }> } } })
+            const { error } = await supabase
                 .from('marketplace_profiles')
                 .update({
                     layout_config: JSON.parse(JSON.stringify(layoutCfg)),
@@ -131,7 +131,7 @@ export function useStorefrontBuilder() {
                 const { data, error } = await supabase
                     .from('marketplace_stores')
                     .select('*')
-                    .eq('tenant_id', tenant?.id!)
+                    .eq('tenant_id', tenant!.id)
                     .maybeSingle();
 
                 if (error) throw error;
@@ -242,7 +242,7 @@ export function useStorefrontBuilder() {
             const { data: newStore, error } = await supabase
                 .from('marketplace_stores')
                 .insert({
-                    tenant_id: tenant?.id!,
+                    tenant_id: tenant!.id,
                     store_name: data.storeName,
                     slug: data.slug,
                     layout_config: [],
@@ -305,7 +305,7 @@ export function useStorefrontBuilder() {
                     theme_config: themeConfig as unknown as Record<string, unknown>,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id!);
+                .eq('tenant_id', tenant!.id);
 
             if (error) throw error;
 
@@ -335,7 +335,7 @@ export function useStorefrontBuilder() {
                     is_public: true,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id!);
+                .eq('tenant_id', tenant!.id);
 
             if (error) throw error;
 
@@ -362,7 +362,7 @@ export function useStorefrontBuilder() {
                     is_public: false,
                     updated_at: new Date().toISOString()
                 })
-                .eq('tenant_id', tenant?.id!);
+                .eq('tenant_id', tenant!.id);
 
             if (error) throw error;
         },

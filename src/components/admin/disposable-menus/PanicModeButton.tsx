@@ -110,7 +110,7 @@ export const PanicModeButton = () => {
       <Button
         variant="destructive"
         onClick={() => setOpen(true)}
-        className="gap-2"
+        className="gap-2 whitespace-nowrap"
       >
         <AlertTriangle className="h-4 w-4" />
         PANIC MODE

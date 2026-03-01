@@ -265,7 +265,7 @@ export function useAutoReorder(): AutoReorderSummary {
     refetchOnWindowFocus: true,
   });
 
-  const suggestions = data ?? [];
+  const suggestions = useMemo(() => data ?? [], [data]);
 
   const summary = useMemo(() => {
     const critical = suggestions.filter((s) => s.priority === 'critical');

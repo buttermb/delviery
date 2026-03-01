@@ -803,7 +803,7 @@ function MenuProductCard({
             {product.strain_type && (
               <span
                 className={cn(
-                  'px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border backdrop-blur-sm',
+                  'px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border ',
                   product.strain_type === 'Indica'
                     ? 'bg-purple-100/90 text-purple-700 border-purple-200'
                     : product.strain_type === 'Sativa'
@@ -821,7 +821,7 @@ function MenuProductCard({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              // Navigate to product detail for full add-to-cart flow
+              // Navigate to product detail for full add- flow
               window.location.href = `/shop/${storeSlug}/product/${product.product_id}`;
             }}
             className="absolute bottom-2.5 right-2.5 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:scale-110"

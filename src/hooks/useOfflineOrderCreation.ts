@@ -121,7 +121,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
     };
 
     // Save to IndexedDB
-    await idb.saveOrder(order);
+    await idb.saveOrder(order as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
 
     // Update local state
     setOfflineOrders((prev) => [...prev, order]);
@@ -136,6 +136,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
     }
 
     return id;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- syncSingleOrder is defined below and stable
   }, []);
 
   // Sync a single order to Supabase
@@ -143,7 +144,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
     try {
       // Update status to syncing
       const updatedOrder = { ...order, status: 'syncing' as const };
-      await idb.saveOrder(updatedOrder);
+      await idb.saveOrder(updatedOrder as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
       setOfflineOrders((prev) =>
         prev.map((o) => (o.id === order.id ? updatedOrder : o))
       );
@@ -199,7 +200,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
         status: 'synced',
         syncedAt: new Date().toISOString(),
       };
-      await idb.saveOrder(syncedOrder);
+      await idb.saveOrder(syncedOrder as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
       setOfflineOrders((prev) =>
         prev.map((o) => (o.id === order.id ? syncedOrder : o))
       );
@@ -221,7 +222,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
         status: 'failed',
         syncError: errorMsg,
       };
-      await idb.saveOrder(failedOrder);
+      await idb.saveOrder(failedOrder as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
       setOfflineOrders((prev) =>
         prev.map((o) => (o.id === order.id ? failedOrder : o))
       );
@@ -296,7 +297,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
       const order = offlineOrders.find((o) => o.id === id);
       if (order) {
         const removedOrder = { ...order, status: 'synced' as const };
-        await idb.saveOrder(removedOrder);
+        await idb.saveOrder(removedOrder as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
       }
       setOfflineOrders((prev) => prev.filter((o) => o.id !== id));
       toast.success('Offline order removed');
@@ -321,7 +322,7 @@ export function useOfflineOrderCreation(tenantId?: string): UseOfflineOrderCreat
       status: 'pending_sync',
       syncError: undefined,
     };
-    await idb.saveOrder(resetOrder);
+    await idb.saveOrder(resetOrder as unknown as Record<string, unknown> & { id: string; createdAt?: number | string });
     setOfflineOrders((prev) =>
       prev.map((o) => (o.id === id ? resetOrder : o))
     );

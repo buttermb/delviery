@@ -290,7 +290,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
       createItem('revenue-reports', 'Revenue', '/admin/finance-hub?tab=revenue', TrendingUp),
       createItem('expense-tracking', 'Expenses', '/admin/finance-hub?tab=expenses', Wallet),
       createItem('invoice-management', 'Invoices', '/admin/finance-hub?tab=invoices', FileSpreadsheet),
-      createItem('commission-tracking', 'Payouts', '/admin/finance-hub?tab=commissions', CreditCard),
+      createItem('commission-tracking', 'Payouts', '/admin/finance-hub?tab=payouts', CreditCard),
     ],
   },
   // ==========================================================================

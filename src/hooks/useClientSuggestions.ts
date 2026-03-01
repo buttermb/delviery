@@ -161,7 +161,7 @@ export function useClientSuggestions() {
       }
 
       // Favorite clients
-      if (client.is_favorite) {
+      if ((client as unknown as { is_favorite?: boolean }).is_favorite) {
         suggestions.push({
           ...client,
           suggestion_reason: 'Starred client',

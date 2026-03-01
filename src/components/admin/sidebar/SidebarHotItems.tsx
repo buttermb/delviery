@@ -22,8 +22,8 @@ export function SidebarHotItems() {
   const { canAccess } = useFeatureAccess();
   const { searchQuery } = useSidebar();
 
-  // Guard: Ensure hotItems is an array
-  const safeHotItems = Array.isArray(hotItems) ? hotItems : [];
+  // Guard: Ensure hotItems is an array - memoized to stabilize deps
+  const safeHotItems = useMemo(() => Array.isArray(hotItems) ? hotItems : [], [hotItems]);
 
   // Filter hot items based on search query
   const filteredHotItems = useMemo(() => {
@@ -57,7 +57,7 @@ export function SidebarHotItems() {
       <SidebarGroupContent className="mt-1">
         <SidebarMenu>
           {filteredHotItems.map((hot) => {
-            const hasAccess = hot.featureId ? canAccess(hot.featureId) : true;
+            const hasAccess = hot.featureId ? canAccess(hot.featureId as FeatureId) : true;
             return (
               <SidebarMenuItem
                 key={hot.id}

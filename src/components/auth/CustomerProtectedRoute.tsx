@@ -8,6 +8,8 @@ interface CustomerProtectedRouteProps {
   children: ReactNode;
 }
 
+const VERIFICATION_CACHE_MS = 2 * 60 * 1000; // 2 minutes
+
 export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps) {
   const { customer, tenant, token, loading } = useCustomerAuth();
   const navigate = useNavigate();
@@ -21,7 +23,6 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
 
   // Cache verification results to avoid repeated checks
   const verificationCache = useRef(new Map<string, { result: boolean; timestamp: number }>());
-  const VERIFICATION_CACHE_MS = 2 * 60 * 1000; // 2 minutes
 
   // Update auth ref when values change
   useEffect(() => {

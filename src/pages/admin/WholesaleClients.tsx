@@ -4,19 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { logger } from "@/lib/logger";
 import { PullToRefresh } from "@/components/mobile/PullToRefresh";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Plus,
   Phone,
@@ -36,6 +26,7 @@ import { CreateClientDialog } from "@/components/admin/CreateClientDialog";
 import { toast } from "sonner";
 import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from "@/lib/queryKeys";
+import { invalidateOnEvent } from "@/lib/invalidation";
 import {
   Select,
   SelectContent,
@@ -55,10 +46,13 @@ import { Link2 } from "lucide-react";
 import { customersTutorial } from "@/lib/tutorials/tutorialConfig";
 import { Database } from "@/integrations/supabase/types";
 import { CustomerQuickViewCard } from "@/components/tenant-admin/CustomerQuickViewCard";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
-import { SearchInput } from "@/components/shared/SearchInput";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
+import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
+import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
+import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { Upload, Filter, Eye, MoreHorizontal } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type WholesaleClientRow = Database['public']['Tables']['wholesale_clients']['Row'];
 
@@ -93,10 +87,7 @@ export default function WholesaleClients() {
   });
 
   const [searchTerm, setSearchTerm] = useState("");
-  const handleSearch = useCallback((value: string) => {
-    setSearchTerm(value);
-  }, []);
-  const [filter, setFilter] = useState<string>(preferences.customFilters?.filter || "all");
+  const [filter, setFilter] = useState<string>(String(preferences.customFilters?.filter || "all"));
   const [sortField, setSortField] = useState<ClientSortField>('business_name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; client?: WholesaleClient }>({ open: false });
@@ -148,8 +139,8 @@ export default function WholesaleClients() {
 
   const sanitizedSearch = sanitizeSearchInput(searchTerm).toLowerCase();
   const filteredClients = useMemo(() => clients?.filter(client =>
-    client.business_name.toLowerCase().includes(sanitizedSearch) ||
-    client.contact_name.toLowerCase().includes(sanitizedSearch)
+    (client.business_name ?? '').toLowerCase().includes(sanitizedSearch) ||
+    (client.contact_name ?? '').toLowerCase().includes(sanitizedSearch)
   ) ?? [], [clients, sanitizedSearch]);
 
   const handleSort = (field: ClientSortField) => {
@@ -234,7 +225,7 @@ export default function WholesaleClients() {
   };
 
   const handleRefresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.list({ filter }) });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleClients.all });
   };
 
   const updateClientMutation = useMutation({
@@ -249,8 +240,13 @@ export default function WholesaleClients() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       toast.success("Client updated successfully");
+      if (tenant?.id) {
+        invalidateOnEvent(queryClient, 'WHOLESALE_CLIENT_UPDATED', tenant.id, {
+          customerId: variables.clientId,
+        });
+      }
       handleRefresh();
     },
     onError: (error) => {
@@ -263,534 +259,418 @@ export default function WholesaleClients() {
     updateClientMutation.mutate({ clientId, updates });
   };
 
-  return (
-    <PullToRefresh onRefresh={handleRefresh}>
-      <div className="w-full max-w-full space-y-4 sm:space-y-4 p-2 sm:p-4 md:p-4 overflow-x-hidden">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-bold text-foreground">Wholesale Clients</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">B2B Relationships & Credit Management</p>
+  const wholesaleClientColumns = useMemo<ResponsiveColumn<WholesaleClient>[]>(() => [
+    {
+      header: <SortableHeader field="business_name" label="Client" />,
+      accessorKey: 'business_name',
+      cell: (client) => (
+        <div className="max-w-[200px] min-w-0">
+          <div className="font-semibold text-foreground flex items-center gap-2 min-w-0">
+            <CustomerQuickViewCard customer={client}>
+              <TruncatedText text={client.business_name} className="font-semibold" maxWidthClass="max-w-[200px]" />
+            </CustomerQuickViewCard>
+            <CopyButton text={client.id} label="Client ID" showLabel={false} className="h-4 w-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-          <div className="flex gap-2 flex-wrap w-full sm:w-auto">
-            <ExportButton
-              data={filteredClients ?? []}
-              filename="wholesale-clients"
-              columns={[
-                { key: "business_name", label: "Business Name" },
-                { key: "contact_name", label: "Contact Name" },
-                { key: "email", label: "Email" },
-                { key: "phone", label: "Phone" },
-                { key: "client_type", label: "Type" },
-                { key: "status", label: "Status" },
-                { key: "credit_limit", label: "Credit Limit" },
-                { key: "outstanding_balance", label: "Outstanding Balance" },
-                { key: "territory", label: "Territory" },
-              ]}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              className="min-h-[48px] touch-manipulation flex-1 sm:flex-initial min-w-[100px]"
-              disabled={updateClientMutation.isPending}
-              onClick={() => setImportDialogOpen(true)}
-            >
-              <Plus className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Import</span>
-            </Button>
-            <Button
-              className="bg-emerald-500 hover:bg-emerald-600 min-h-[44px] touch-manipulation flex-1 sm:flex-initial min-w-[100px]"
-              disabled={updateClientMutation.isPending}
-              onClick={() => setCreateClientDialogOpen(true)}
-              data-tutorial="add-customer"
-            >
-              <Plus className="h-4 w-4 sm:mr-2" />
-              <span className="text-sm sm:text-base">New Client</span>
-            </Button>
-            <TakeTourButton
-              tutorialId={customersTutorial.id}
-              steps={customersTutorial.steps}
-              variant="outline"
-              size="sm"
-              className="min-h-[48px]"
-            />
-          </div>
+          <TruncatedText text={client.territory} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
         </div>
-
-        {/* Filters */}
-        <Card className="p-4 sm:p-6">
-          <div className="flex flex-col lg:flex-row gap-3 sm:gap-4">
-            {/* Search */}
-            <div className="flex-1">
-              <SearchInput
-                placeholder="Search clients..."
-                onSearch={handleSearch}
-                className="min-h-[44px]"
-                delay={300}
-                isLoading={isLoading}
-              />
-            </div>
-
-            {/* Filter Buttons */}
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant={filter === "all" ? "default" : "outline"}
-                size="sm"
-                className="min-h-[44px] touch-manipulation text-xs sm:text-sm"
-                onClick={() => setFilter("all")}
-              >
-                All
-              </Button>
-              <Button
-                variant={filter === "active" ? "default" : "outline"}
-                size="sm"
-                className="min-h-[44px] touch-manipulation text-xs sm:text-sm"
-                onClick={() => setFilter("active")}
-              >
-                Active
-              </Button>
-              <Button
-                variant={filter === "credit_approved" ? "default" : "outline"}
-                size="sm"
-                className="min-h-[44px] touch-manipulation text-xs sm:text-sm"
-                onClick={() => setFilter("credit_approved")}
-              >
-                Credit Approved
-              </Button>
-              <Button
-                variant={filter === "high_balance" ? "default" : "outline"}
-                size="sm"
-                className="min-h-[44px] touch-manipulation text-xs sm:text-sm border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white"
-                onClick={() => setFilter("high_balance")}
-              >
-                High Balance
-              </Button>
-            </div>
+      )
+    },
+    {
+      header: <SortableHeader field="status" label="Status" />,
+      accessorKey: 'status',
+      cell: (client) => <ClientStatusBadge status={client.status || 'active'} />
+    },
+    {
+      header: 'Type',
+      accessorKey: 'client_type',
+      cell: (client) => (
+        <Select
+          defaultValue={client.client_type}
+          onValueChange={(value) => handleUpdateClient(client.id, { client_type: value })}
+          disabled={updateClientMutation.isPending}
+        >
+          <SelectTrigger className="h-8 w-[100px] border-none bg-transparent hover:bg-muted/50 focus-visible:ring-0 p-0" onClick={(e) => e.stopPropagation()}>
+            <SelectValue>
+              <Badge variant="outline" className="text-xs pointer-events-none">
+                {getClientTypeLabel(client.client_type)}
+              </Badge>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="sub_dealer">Sub-Dealer</SelectItem>
+            <SelectItem value="small_shop">Small Shop</SelectItem>
+            <SelectItem value="network">Network/Crew</SelectItem>
+            <SelectItem value="supplier">Supplier</SelectItem>
+          </SelectContent>
+        </Select>
+      )
+    },
+    {
+      header: 'Contact',
+      accessorKey: 'contact_name',
+      cell: (client) => (
+        <div className="max-w-[200px] min-w-0">
+          <TruncatedText text={client.contact_name} className="text-xs sm:text-sm text-foreground" maxWidthClass="max-w-[200px]" />
+          <div className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
+            {client.email && (
+              <>
+                <TruncatedText text={client.email} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
+                <CopyButton text={client.email} label="Email" showLabel={false} className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </>
+            )}
           </div>
-        </Card>
-
-        {/* Clients Table */}
-        <Card className="overflow-hidden">
-          <div className="hidden md:block overflow-x-auto">
-            <div className="inline-block min-w-full align-middle">
-              <Table data-tutorial="customer-list" className="w-full">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="business_name" label="Client" /></TableHead>
-                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="status" label="Status" /></TableHead>
-                    <TableHead className="text-xs sm:text-sm">Type</TableHead>
-                    <TableHead className="text-xs sm:text-sm">Contact</TableHead>
-                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="outstanding_balance" label="Credit Status" /></TableHead>
-                    <TableHead className="text-xs sm:text-sm">Reliability</TableHead>
-                    <TableHead className="text-xs sm:text-sm"><SortableHeader field="created_at" label="This Month" /></TableHead>
-                    <TableHead className="text-right text-xs sm:text-sm">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
-                        <div className="flex items-center justify-center">
-                          <div className="animate-spin h-6 w-6 border-2 border-emerald-500 border-t-transparent rounded-full" />
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : paginatedClients.length > 0 ? (
-                    paginatedClients.map((client) => (
-                      <TableRow
-                        key={client.id}
-                        className="cursor-pointer hover:bg-muted/50 touch-manipulation"
-                        onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`); } }}
-                      >
-                        <TableCell className="text-xs sm:text-sm max-w-[200px]">
-                          <div className="max-w-[200px] min-w-0">
-                            <div className="font-semibold text-foreground flex items-center gap-2 min-w-0">
-                              <CustomerQuickViewCard customer={client}>
-                                <TruncatedText text={client.business_name} className="font-semibold" maxWidthClass="max-w-[200px]" />
-                              </CustomerQuickViewCard>
-                              <CopyButton text={client.id} label="Client ID" showLabel={false} className="h-4 w-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                            <TruncatedText text={client.territory} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-xs sm:text-sm">
-                          <ClientStatusBadge status={client.status || 'active'} />
-                        </TableCell>
-                        <TableCell className="text-xs sm:text-sm">
-                          <Select
-                            defaultValue={client.client_type}
-                            onValueChange={(value) => handleUpdateClient(client.id, { client_type: value })}
-                            disabled={updateClientMutation.isPending}
-                          >
-                            <SelectTrigger className="h-8 w-[100px] border-none bg-transparent hover:bg-muted/50 focus-visible:ring-0 p-0">
-                              <SelectValue>
-                                <Badge variant="outline" className="text-xs pointer-events-none">
-                                  {getClientTypeLabel(client.client_type)}
-                                </Badge>
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="sub_dealer">Sub-Dealer</SelectItem>
-                              <SelectItem value="small_shop">Small Shop</SelectItem>
-                              <SelectItem value="network">Network/Crew</SelectItem>
-                              <SelectItem value="supplier">Supplier</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="text-xs sm:text-sm max-w-[200px]">
-                          <div className="max-w-[200px] min-w-0">
-                            <TruncatedText text={client.contact_name} className="text-xs sm:text-sm text-foreground" maxWidthClass="max-w-[200px]" />
-                            <div className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
-                              {client.email && (
-                                <>
-                                  <TruncatedText text={client.email} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
-                                  <CopyButton text={client.email} label="Email" showLabel={false} className="h-3 w-3 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </>
-                              )}
-                            </div>
-                            {client.phone && (
-                              <TruncatedText text={client.phone} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-xs sm:text-sm">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <div className="cursor-pointer hover:bg-muted/50 p-1 rounded transition-colors group/credit">
-                                <ClientStatusBadge
-                                  status=""
-                                  type="credit"
-                                  balance={Number(client.outstanding_balance)}
-                                  creditLimit={Number(client.credit_limit ?? 0)}
-                                  className="mb-1"
-                                />
-                                <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                  ${Number(client.outstanding_balance).toLocaleString()} / ${Number(client.credit_limit ?? 0).toLocaleString()}
-                                  <Edit2 className="h-3 w-3 opacity-0 group-hover/credit:opacity-100 transition-opacity" />
-                                </div>
-                              </div>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-60">
-                              <div className="space-y-2">
-                                <h4 className="font-medium leading-none">Credit Limit</h4>
-                                <p className="text-sm text-muted-foreground">Set credit limit for this client.</p>
-                                <div className="flex gap-2">
-                                  <Input
-                                    type="number"
-                                    defaultValue={client.credit_limit ?? 0}
-                                    aria-label="Credit limit"
-                                    className="h-8"
-                                    disabled={updateClientMutation.isPending}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        updateClientMutation.mutate(
-                                          { clientId: client.id, updates: { credit_limit: Number(e.currentTarget.value) } },
-                                          {
-                                            onSuccess: () => {
-                                              toast.success('Credit limit updated');
-                                              handleRefresh();
-                                            },
-                                            onError: (error) => {
-                                              logger.error('Error updating credit limit:', error);
-                                              toast.error('Failed to update credit limit', { description: humanizeError(error) });
-                                            },
-                                          }
-                                        );
-                                      }
-                                    }}
-                                    onBlur={(e) => {
-                                      const val = Number(e.target.value);
-                                      if (val !== client.credit_limit) {
-                                        updateClientMutation.mutate(
-                                          { clientId: client.id, updates: { credit_limit: val } },
-                                          {
-                                            onSuccess: () => {
-                                              toast.success('Credit limit updated');
-                                              handleRefresh();
-                                            },
-                                            onError: (error) => {
-                                              logger.error('Error updating credit limit:', error);
-                                              toast.error('Failed to update credit limit', { description: humanizeError(error) });
-                                            },
-                                          }
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        </TableCell>
-                        <TableCell className="text-xs sm:text-sm">
-                          <CustomerRiskBadge
-                            score={client.reliability_score ?? null}
-                            showLabel={true}
-                          />
-                        </TableCell>
-                        <TableCell className="text-xs sm:text-sm">
-                          <div>
-                            <div className="text-xs sm:text-sm font-mono text-foreground">
-                              {Number(client.monthly_volume_lbs).toFixed(0)} lbs
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              ${Number(client.total_spent).toLocaleString()}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="min-h-[48px] min-w-[48px] touch-manipulation"
-                              disabled={updateClientMutation.isPending}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setPortalLinkClient(client);
-                                setPortalLinkDialogOpen(true);
-                              }}
-                              title="Send Portal Link"
-                            >
-                              <Link2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="min-h-[48px] min-w-[48px] touch-manipulation"
-                              disabled={updateClientMutation.isPending}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (client.phone) {
-                                  window.location.href = `tel:${client.phone}`;
-                                } else {
-                                  toast.error("No phone number available");
-                                }
-                              }}
-                            >
-                              <Phone className="h-4 w-4" />
-                            </Button>
-                            {client.outstanding_balance > 0 && (
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                className="min-h-[48px] min-w-[48px] touch-manipulation"
-                                disabled={updateClientMutation.isPending}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setPaymentDialog({ open: true, client });
-                                }}
-                              >
-                                <DollarSign className="h-4 w-4 sm:mr-1" />
-                                <span className="hidden sm:inline">Collect</span>
-                              </Button>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="min-h-[48px] touch-manipulation"
-                              disabled={updateClientMutation.isPending}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (tenant?.slug) {
-                                  navigate(`/${tenant.slug}/admin/wholesale-orders/new?clientId=${client.id}`);
-                                }
-                              }}
-                            >
-                              <Package className="h-4 w-4 sm:mr-1" />
-                              <span className="hidden sm:inline">New Order</span>
-                              <span className="sm:hidden">Order</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={8} className="h-96 text-center">
-                        <EnhancedEmptyState
-                          icon={Building}
-                          title={searchTerm ? "No Clients Found" : "No wholesale clients yet"}
-                          description={searchTerm ? "No clients found matching your search criteria." : "Add clients to manage wholesale relationships"}
-                          primaryAction={{
-                            label: "Add Client",
-                            onClick: () => setCreateClientDialogOpen(true),
-                            icon: Plus
-                          }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-
-          {/* Desktop Pagination */}
-          {totalItems > 0 && (
-            <StandardPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              pageSize={pageSize}
-              onPageChange={goToPage}
-              onPageSizeChange={changePageSize}
-              pageSizeOptions={pageSizeOptions}
-            />
+          {client.phone && (
+            <TruncatedText text={client.phone} className="text-xs text-muted-foreground" maxWidthClass="max-w-[200px]" />
           )}
-        </Card>
-
-        {/* Mobile Card View */}
-        <Card className="md:hidden">
-          <div className="space-y-3 p-4">
-            {isLoading ? (
-              <div className="space-y-3 p-4">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="p-4">
-                    <div className="space-y-3">
-                      <Skeleton className="h-5 w-3/4" />
-                      <Skeleton className="h-4 w-1/2" />
-                      <div className="flex gap-2">
-                        <Skeleton className="h-6 w-20" />
-                        <Skeleton className="h-6 w-24" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3 pt-2 border-t">
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-full" />
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+        </div>
+      )
+    },
+    {
+      header: <SortableHeader field="outstanding_balance" label="Credit Status" />,
+      accessorKey: 'outstanding_balance',
+      cell: (client) => (
+        <Popover>
+          <PopoverTrigger asChild>
+            <div className="cursor-pointer hover:bg-muted/50 p-1 rounded transition-colors group/credit" onClick={(e) => e.stopPropagation()}>
+              <ClientStatusBadge
+                status=""
+                type="credit"
+                balance={Number(client.outstanding_balance)}
+                creditLimit={Number(client.credit_limit ?? 0)}
+                className="mb-1"
+              />
+              <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                ${Number(client.outstanding_balance).toLocaleString()} / ${Number(client.credit_limit ?? 0).toLocaleString()}
+                <Edit2 className="h-3 w-3 opacity-0 group-hover/credit:opacity-100 transition-opacity" />
               </div>
-            ) : paginatedClients.length > 0 ? (
-              paginatedClients.map((client) => (
-                <Card
-                  key={client.id}
-                  className="overflow-hidden cursor-pointer hover:bg-muted/50 transition-colors active:scale-[0.98]"
-                  onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`); } }}
-                >
-                  <div className="p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <ClientStatusBadge status={client.status || 'active'} showIcon={false} className="text-[10px] px-1.5 h-5" />
-                          <TruncatedText text={client.business_name} className="font-semibold text-base" maxWidthClass="max-w-[180px]" />
-                        </div>
-                        <TruncatedText text={client.territory} className="text-sm text-muted-foreground" maxWidthClass="max-w-[180px]" />
-                        <Badge variant="outline" className="text-xs mt-1">{getClientTypeLabel(client.client_type)}</Badge>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 pt-2 border-t">
-                      <div className="flex flex-col gap-1">
-                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact</div>
-                        <div className="text-sm">
-                          <TruncatedText text={client.contact_name} className="text-sm" maxWidthClass="max-w-[180px]" />
-                          <TruncatedText text={client.phone ?? ''} className="text-muted-foreground text-sm" maxWidthClass="max-w-[180px]" />
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Credit Status</div>
-                        <ClientStatusBadge
-                          status=""
-                          type="credit"
-                          balance={Number(client.outstanding_balance)}
-                          creditLimit={Number(client.credit_limit ?? 0)}
-                        />
-                        <div className="text-xs text-muted-foreground mt-1 font-mono">
-                          ${Number(client.outstanding_balance).toLocaleString()} / ${Number(client.credit_limit ?? 0).toLocaleString()} limit
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="flex flex-col gap-1">
-                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reliability</div>
-                          <CustomerRiskBadge
-                            score={client.reliability_score ?? null}
-                            showLabel={true}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">This Month</div>
-                          <div className="text-sm font-mono">{Number(client.monthly_volume_lbs).toFixed(0)} lbs</div>
-                          <div className="text-xs text-muted-foreground">${Number(client.total_spent).toLocaleString()}</div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 pt-2 border-t" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="min-h-[48px] min-w-[48px] flex-1 min-w-[100px]"
-                          disabled={updateClientMutation.isPending}
-                          onClick={() => {
-                            if (client.phone) {
-                              window.location.href = `tel:${client.phone}`;
-                            } else {
-                              toast.error("No phone number available");
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-60" onClick={(e) => e.stopPropagation()}>
+            <div className="space-y-2">
+              <h4 className="font-medium leading-none">Credit Limit</h4>
+              <p className="text-sm text-muted-foreground">Set credit limit for this client.</p>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  defaultValue={client.credit_limit ?? 0}
+                  aria-label="Credit limit"
+                  className="h-8"
+                  disabled={updateClientMutation.isPending}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      updateClientMutation.mutate(
+                        { clientId: client.id, updates: { credit_limit: Number(e.currentTarget.value) } },
+                        {
+                          onSuccess: () => {
+                            toast.success('Credit limit updated');
+                            if (tenant?.id) {
+                              invalidateOnEvent(queryClient, 'WHOLESALE_CLIENT_UPDATED', tenant.id, {
+                                customerId: client.id,
+                              });
                             }
-                          }}
-                        >
-                          <Phone className="h-4 w-4 mr-2" />
-                          <span className="text-xs">Call</span>
-                        </Button>
-                        {client.outstanding_balance > 0 && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="min-h-[48px] flex-1 min-w-[100px]"
-                            disabled={updateClientMutation.isPending}
-                            onClick={() => {
-                              setPaymentDialog({ open: true, client });
-                            }}
-                          >
-                            <DollarSign className="h-4 w-4 mr-2" />
-                            <span className="text-xs">Collect</span>
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="default"
-                          className="min-h-[48px] flex-1 min-w-[100px]"
-                          disabled={updateClientMutation.isPending}
-                          onClick={() => {
-                            if (tenant?.slug) {
-                              navigate(`/${tenant.slug}/admin/wholesale-orders/new?clientId=${client.id}`);
+                            handleRefresh();
+                          },
+                          onError: (error) => {
+                            logger.error('Error updating credit limit:', error);
+                            toast.error('Failed to update credit limit', { description: humanizeError(error) });
+                          },
+                        }
+                      );
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const val = Number(e.target.value);
+                    if (val !== client.credit_limit) {
+                      updateClientMutation.mutate(
+                        { clientId: client.id, updates: { credit_limit: val } },
+                        {
+                          onSuccess: () => {
+                            toast.success('Credit limit updated');
+                            if (tenant?.id) {
+                              invalidateOnEvent(queryClient, 'WHOLESALE_CLIENT_UPDATED', tenant.id, {
+                                customerId: client.id,
+                              });
                             }
-                          }}
-                        >
-                          <Package className="h-4 w-4 mr-2" />
-                          <span className="text-xs">New Order</span>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))
-            ) : (
-              <div className="py-8">
-                <EnhancedEmptyState
-                  icon={Building}
-                  title={searchTerm ? "No Clients Found" : "No wholesale clients yet"}
-                  description={searchTerm ? "No clients found matching your search criteria." : "Add clients to manage wholesale relationships"}
-                  primaryAction={{
-                    label: "Add Client",
-                    onClick: () => setCreateClientDialogOpen(true),
-                    icon: Plus
+                            handleRefresh();
+                          },
+                          onError: (error) => {
+                            logger.error('Error updating credit limit:', error);
+                            toast.error('Failed to update credit limit', { description: humanizeError(error) });
+                          },
+                        }
+                      );
+                    }
                   }}
                 />
               </div>
-            )}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )
+    },
+    {
+      header: 'Reliability',
+      accessorKey: 'reliability_score',
+      cell: (client) => (
+        <CustomerRiskBadge
+          score={client.reliability_score ?? null}
+          showLabel={true}
+        />
+      )
+    },
+    {
+      header: <SortableHeader field="created_at" label="This Month" />,
+      accessorKey: 'monthly_volume_lbs',
+      cell: (client) => (
+        <div>
+          <div className="text-xs sm:text-sm font-mono text-foreground">
+            {Number(client.monthly_volume_lbs).toFixed(0)} lbs
           </div>
+          <div className="text-xs text-muted-foreground">
+            ${Number(client.total_spent).toLocaleString()}
+          </div>
+        </div>
+      )
+    },
+    {
+      header: 'Actions',
+      accessorKey: 'id',
+      cell: (client) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
+              <MoreHorizontal className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}>
+              <Eye className="w-4 h-4 mr-2" />
+              View Details
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              setPortalLinkClient(client);
+              setPortalLinkDialogOpen(true);
+            }}>
+              <Link2 className="w-4 h-4 mr-2" />
+              Portal Link
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              if (client.phone) {
+                window.location.href = `tel:${client.phone}`;
+              } else {
+                toast.error("No phone number available");
+              }
+            }}>
+              <Phone className="w-4 h-4 mr-2" />
+              Call
+            </DropdownMenuItem>
+            {client.outstanding_balance > 0 && (
+              <DropdownMenuItem onClick={() => setPaymentDialog({ open: true, client })}>
+                <DollarSign className="w-4 h-4 mr-2" />
+                Collect
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => {
+              if (tenant?.slug) {
+                navigate(`/${tenant.slug}/admin/wholesale-orders/new?clientId=${client.id}`);
+              }
+            }}>
+              <Package className="w-4 h-4 mr-2" />
+              New Order
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [sortField, sortOrder, updateClientMutation.isPending, tenant?.slug, navigate]);
 
-          {/* Mobile Pagination */}
+  const renderMobileItem = useCallback((client: WholesaleClient) => (
+    <div className="p-4 space-y-3 relative w-full overflow-hidden">
+      <div className="flex items-start justify-between relative z-10 w-full">
+        <div className="flex-1 min-w-0 pr-4">
+          <div className="flex items-center gap-2 mb-1">
+            <ClientStatusBadge status={client.status || 'active'} showIcon={false} className="text-[10px] px-1.5 h-5" />
+            <TruncatedText text={client.business_name} className="font-semibold text-base" maxWidthClass="max-w-[180px]" />
+          </div>
+          <TruncatedText text={client.territory} className="text-sm text-muted-foreground" maxWidthClass="max-w-[180px]" />
+          <Badge variant="outline" className="text-xs mt-1">{getClientTypeLabel(client.client_type)}</Badge>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="absolute top-0 right-0 h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
+              <MoreHorizontal className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuItem onClick={() => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}>
+              <Eye className="w-4 h-4 mr-2" />
+              View Details
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              setPortalLinkClient(client);
+              setPortalLinkDialogOpen(true);
+            }}>
+              <Link2 className="w-4 h-4 mr-2" />
+              Portal Link
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              if (client.phone) {
+                window.location.href = `tel:${client.phone}`;
+              } else {
+                toast.error("No phone number available");
+              }
+            }}>
+              <Phone className="w-4 h-4 mr-2" />
+              Call
+            </DropdownMenuItem>
+            {client.outstanding_balance > 0 && (
+              <DropdownMenuItem onClick={() => setPaymentDialog({ open: true, client })}>
+                <DollarSign className="w-4 h-4 mr-2" />
+                Collect
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => {
+              if (tenant?.slug) {
+                navigate(`/${tenant.slug}/admin/wholesale-orders/new?clientId=${client.id}`);
+              }
+            }}>
+              <Package className="w-4 h-4 mr-2" />
+              New Order
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <div className="space-y-2 pt-2 border-t relative z-10 w-full">
+        <div className="flex flex-col gap-1 w-full">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact</div>
+          <div className="text-sm w-full">
+            <TruncatedText text={client.contact_name} className="text-sm" maxWidthClass="max-w-full" />
+            <TruncatedText text={client.phone ?? ''} className="text-muted-foreground text-sm" maxWidthClass="max-w-full" />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1 w-full">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Credit Status</div>
+          <ClientStatusBadge
+            status=""
+            type="credit"
+            balance={Number(client.outstanding_balance)}
+            creditLimit={Number(client.credit_limit ?? 0)}
+          />
+          <div className="text-xs text-muted-foreground mt-1 font-mono">
+            ${Number(client.outstanding_balance).toLocaleString()} / ${Number(client.credit_limit ?? 0).toLocaleString()} limit
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 w-full">
+          <div className="flex flex-col gap-1">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reliability</div>
+            <CustomerRiskBadge
+              score={client.reliability_score ?? null}
+              showLabel={true}
+            />
+          </div>
+          <div className="flex flex-col gap-1 pr-2">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">This Month</div>
+            <div className="text-sm font-mono">{Number(client.monthly_volume_lbs).toFixed(0)} lbs</div>
+            <div className="text-xs text-muted-foreground">${Number(client.total_spent).toLocaleString()}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ), [tenant?.slug, navigate]);
+
+  return (
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="w-full max-w-full space-y-4 p-2 sm:p-4 md:p-4 overflow-x-hidden">
+        {/* Table Toolbar & Data */}
+        <div className="space-y-4">
+          <AdminToolbar
+            searchQuery={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Search clients..."
+            filters={
+              <>
+                <Select value={filter} onValueChange={setFilter}>
+                  <SelectTrigger className="w-[140px] h-9">
+                    <SelectValue placeholder="Status Filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Clients</SelectItem>
+                    <SelectItem value="active">Active Status</SelectItem>
+                    <SelectItem value="credit_approved">Credit Approved</SelectItem>
+                    <SelectItem value="high_balance">High Balance</SelectItem>
+                  </SelectContent>
+                </Select>
+              </>
+            }
+            actions={
+              <>
+                <Button
+                  className="h-9 min-w-[100px] sm:min-w-0"
+                  onClick={() => setCreateClientDialogOpen(true)}
+                  data-tutorial="add-customer"
+                >
+                  <Plus className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">New Client</span>
+                  <span className="sm:hidden">New</span>
+                </Button>
+                <div className="hidden sm:block">
+                  <ExportButton
+                    data={filteredClients as any ?? []}
+                    filename="wholesale-clients"
+                    columns={[
+                      { key: "business_name", label: "Business Name" },
+                      { key: "contact_name", label: "Contact Name" },
+                      { key: "email", label: "Email" },
+                      { key: "phone", label: "Phone" },
+                      { key: "client_type", label: "Type" },
+                      { key: "status", label: "Status" },
+                      { key: "credit_limit", label: "Credit Limit" },
+                      { key: "outstanding_balance", label: "Outstanding Balance" },
+                      { key: "territory", label: "Territory" },
+                    ]}
+                  />
+                </div>
+                <Button variant="outline" size="sm" className="h-9 min-w-[100px] sm:min-w-0" onClick={() => setImportDialogOpen(true)}>
+                  <Upload className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Import</span>
+                </Button>
+                <Button variant="outline" size="sm" className="h-9 min-w-[100px] sm:min-w-0" onClick={handleRefresh}>
+                  <Filter className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Refresh</span>
+                </Button>
+                {/* Tutorial is kept but styled to fit AdminToolbar */}
+                <div className="hidden sm:block h-9 overflow-hidden">
+                  <TakeTourButton
+                    tutorialId={customersTutorial.id}
+                    steps={customersTutorial.steps}
+                    variant="outline"
+                    size="sm"
+                    className="h-9 m-0 min-h-0"
+                  />
+                </div>
+              </>
+            }
+          />
+          <AdminDataTable
+            data={paginatedClients}
+            columns={wholesaleClientColumns}
+            isLoading={isLoading}
+            emptyStateIcon={Building}
+            emptyStateTitle={searchTerm ? "No Clients Found" : "No wholesale clients yet"}
+            emptyStateDescription={searchTerm ? "No clients found matching your search criteria." : "Add clients to manage wholesale relationships"}
+            emptyStateAction={{
+              label: "Add Client",
+              onClick: () => setCreateClientDialogOpen(true),
+              icon: Plus as any
+            }}
+            renderMobileItem={renderMobileItem}
+            onRowClick={(client) => tenant?.slug && navigate(`/${tenant.slug}/admin/big-plug-clients/${client.id}`)}
+          />
+          {/* Pagination */}
           {totalItems > 0 && (
             <StandardPagination
               currentPage={currentPage}
@@ -800,10 +680,9 @@ export default function WholesaleClients() {
               onPageChange={goToPage}
               onPageSizeChange={changePageSize}
               pageSizeOptions={pageSizeOptions}
-              showPageSizeSelector={false}
             />
           )}
-        </Card>
+        </div>
 
         {/* Payment Dialog */}
         {paymentDialog.client && (
@@ -894,6 +773,7 @@ export default function WholesaleClients() {
                         });
 
                         if (client.business_name && client.contact_name) {
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
                           const { error } = await supabase.from('wholesale_clients').insert([{
                             tenant_id: tenant.id,
                             business_name: String(client.business_name),

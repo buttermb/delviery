@@ -118,7 +118,7 @@ export function OrderSplitDialog({
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const orderItems = order.items ?? [];
+  const orderItems = useMemo(() => order.items ?? [], [order.items]);
 
   // Calculate totals for split and remaining
   const { splitItems, remainingItems, splitTotal, remainingTotal } = useMemo(() => {

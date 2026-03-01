@@ -14,16 +14,16 @@ export default function Blog() {
       excerpt: "Discover proven strategies to streamline operations, reduce costs, and increase efficiency in your distribution business.",
       category: "Best Practices",
       author: "Sarah Johnson",
-      date: "March 18, 2024",
+      date: "March 18, 2025",
       readTime: "8 min read",
       image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=400&fit=crop"
     },
     {
-      title: "The Future of B2B Commerce: Trends for 2024",
+      title: "The Future of B2B Commerce: Trends for 2025",
       excerpt: "Explore the latest trends shaping wholesale distribution, from AI automation to mobile-first experiences.",
       category: "Industry Insights",
       author: "Michael Chen",
-      date: "March 15, 2024",
+      date: "March 15, 2025",
       readTime: "6 min read",
       image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=400&fit=crop"
     },
@@ -32,7 +32,7 @@ export default function Blog() {
       excerpt: "A comprehensive guide to evaluating and selecting the perfect software solution for your wholesale business.",
       category: "Guides",
       author: "Emily Rodriguez",
-      date: "March 12, 2024",
+      date: "March 12, 2025",
       readTime: "10 min read",
       image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=400&fit=crop"
     },
@@ -41,7 +41,7 @@ export default function Blog() {
       excerpt: "Best practices for maintaining optimal inventory levels across multiple warehouses and distribution centers.",
       category: "Operations",
       author: "David Park",
-      date: "March 10, 2024",
+      date: "March 10, 2025",
       readTime: "7 min read",
       image: "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&h=400&fit=crop"
     },
@@ -50,7 +50,7 @@ export default function Blog() {
       excerpt: "Learn how one distributor transformed their business using modern technology and data-driven insights.",
       category: "Case Studies",
       author: "Lisa Thompson",
-      date: "March 8, 2024",
+      date: "March 8, 2025",
       readTime: "5 min read",
       image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=400&fit=crop"
     },
@@ -59,7 +59,7 @@ export default function Blog() {
       excerpt: "Calculate the true return on investment when implementing new distribution software in your business.",
       category: "Business",
       author: "James Wilson",
-      date: "March 5, 2024",
+      date: "March 5, 2025",
       readTime: "9 min read",
       image: "https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=800&h=400&fit=crop"
     }

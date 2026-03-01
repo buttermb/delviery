@@ -47,7 +47,7 @@ export const exportAccessLogs = (logs: Array<Record<string, unknown> & { whiteli
     menu_name: log.menu_name || 'N/A',
     customer_name: log.whitelist?.customer_name || 'Anonymous',
     customer_phone: log.whitelist?.customer_phone || 'N/A',
-    accessed_at: format(new Date(log.accessed_at), 'yyyy-MM-dd HH:mm:ss'),
+    accessed_at: format(new Date(String(log.accessed_at)), 'yyyy-MM-dd HH:mm:ss'),
     ip_address: log.ip_address || 'Unknown',
     user_agent: log.user_agent || 'Unknown',
     device_fingerprint: log.device_fingerprint || 'N/A',
@@ -85,7 +85,7 @@ export const exportOrders = (orders: Array<Record<string, unknown> & { whitelist
     status: order.status || 'pending',
     delivery_method: order.delivery_method || 'N/A',
     special_instructions: order.special_instructions ?? '',
-    created_at: format(new Date(order.created_at), 'yyyy-MM-dd HH:mm:ss'),
+    created_at: format(new Date(String(order.created_at)), 'yyyy-MM-dd HH:mm:ss'),
     order_items: JSON.stringify(order.order_items ?? [])
   }));
 
@@ -122,7 +122,7 @@ export const exportMenuAnalytics = (menu: Record<string, unknown>, accessLogs: A
     menu_name: menu.name,
     menu_id: menu.id,
     status: menu.status,
-    created_at: format(new Date(menu.created_at), 'yyyy-MM-dd HH:mm:ss'),
+    created_at: format(new Date(String(menu.created_at)), 'yyyy-MM-dd HH:mm:ss'),
     total_views: totalViews,
     unique_visitors: uniqueVisitors,
     total_orders: totalOrders,
@@ -132,7 +132,7 @@ export const exportMenuAnalytics = (menu: Record<string, unknown>, accessLogs: A
     screenshot_protection: menu.screenshot_protection_enabled ? 'Yes' : 'No',
     device_locking: menu.device_locking_enabled ? 'Yes' : 'No',
     geofencing: menu.geofence_enabled ? 'Yes' : 'No',
-    expiration_date: menu.expiration_date ? format(new Date(menu.expiration_date), 'yyyy-MM-dd') : 'Never'
+    expiration_date: menu.expiration_date ? format(new Date(String(menu.expiration_date)), 'yyyy-MM-dd') : 'Never'
   }];
 
   const headers = [
@@ -153,7 +153,7 @@ export const exportMenuAnalytics = (menu: Record<string, unknown>, accessLogs: A
   ];
 
   const csv = arrayToCSV(data, headers);
-  const filename = `menu-analytics-${menu.name.replace(/\s+/g, '-')}-${format(new Date(), 'yyyy-MM-dd-HHmmss')}.csv`;
+  const filename = `menu-analytics-${String(menu.name).replace(/\s+/g, '-')}-${format(new Date(), 'yyyy-MM-dd-HHmmss')}.csv`;
   downloadCSV(csv, filename);
 };
 
@@ -171,7 +171,7 @@ export const exportSecurityEvents = (events: Array<Record<string, unknown> & { m
     device_fingerprint: event.device_fingerprint || 'N/A',
     blocked: event.blocked ? 'Yes' : 'No',
     resolved: event.resolved ? 'Yes' : 'No',
-    created_at: format(new Date(event.created_at), 'yyyy-MM-dd HH:mm:ss'),
+    created_at: format(new Date(String(event.created_at)), 'yyyy-MM-dd HH:mm:ss'),
     details: JSON.stringify(event.metadata || {})
   }));
 
@@ -203,9 +203,9 @@ export const exportWhitelist = (whitelist: Array<Record<string, unknown>>, menuN
     customer_phone: entry.customer_phone || 'N/A',
     customer_email: entry.customer_email || 'N/A',
     status: entry.status || 'pending',
-    invited_at: format(new Date(entry.invited_at), 'yyyy-MM-dd HH:mm:ss'),
-    first_access_at: entry.first_access_at ? format(new Date(entry.first_access_at), 'yyyy-MM-dd HH:mm:ss') : 'Never',
-    last_access_at: entry.last_access_at ? format(new Date(entry.last_access_at), 'yyyy-MM-dd HH:mm:ss') : 'Never',
+    invited_at: format(new Date(String(entry.invited_at)), 'yyyy-MM-dd HH:mm:ss'),
+    first_access_at: entry.first_access_at ? format(new Date(String(entry.first_access_at)), 'yyyy-MM-dd HH:mm:ss') : 'Never',
+    last_access_at: entry.last_access_at ? format(new Date(String(entry.last_access_at)), 'yyyy-MM-dd HH:mm:ss') : 'Never',
     view_count: entry.view_count ?? 0,
     unique_access_token: entry.unique_access_token
   }));

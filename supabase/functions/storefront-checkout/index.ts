@@ -148,8 +148,9 @@ serve(secureHeadersMiddleware(async (req) => {
     const parseResult = CheckoutRequestSchema.safeParse(rawBody);
 
     if (!parseResult.success) {
+      const errorResult = parseResult as z.SafeParseError<unknown>;
       return jsonResponse(
-        { error: "Validation failed", details: parseResult.error.flatten().fieldErrors },
+        { error: "Validation failed", details: errorResult.error.flatten().fieldErrors },
         400,
       );
     }

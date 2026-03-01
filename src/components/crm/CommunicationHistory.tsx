@@ -179,7 +179,7 @@ export function CommunicationHistory({
           status: 'delivered',
           sentAt: new Date(item.created_at || new Date()),
           orderId: item.order_id,
-          orderNumber: item.order_id ? (orderMap.get(item.order_id) ?? null) : null,
+          orderNumber: item.order_id ? (orderMap.get(item.order_id) as string ?? null) : null,
         }));
     },
     enabled: !!customerId && !!tenantId,

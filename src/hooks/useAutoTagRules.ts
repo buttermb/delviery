@@ -272,7 +272,7 @@ export function useCustomersByTags(tagIds: string[]) {
       }
 
       // Count occurrences to find customers with ALL tags
-      const customerCounts = (data ?? []).reduce((acc: Record<string, number>, item) => {
+      const customerCounts = (data ?? []).reduce((acc: Record<string, number>, item: { contact_id: string }) => {
         acc[item.contact_id] = (acc[item.contact_id] ?? 0) + 1;
         return acc;
       }, {} as Record<string, number>);
@@ -310,7 +310,7 @@ export function useTagCounts() {
       }
 
       // Count customers per tag
-      const counts = (data ?? []).reduce((acc: Record<string, number>, item) => {
+      const counts = (data ?? []).reduce((acc: Record<string, number>, item: { tag_id: string }) => {
         acc[item.tag_id] = (acc[item.tag_id] ?? 0) + 1;
         return acc;
       }, {} as Record<string, number>);

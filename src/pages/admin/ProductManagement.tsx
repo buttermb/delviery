@@ -15,10 +15,9 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { useOptimisticLock } from "@/hooks/useOptimisticLock";
 import { useProductMutations } from "@/hooks/useProductMutations";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SearchInput } from "@/components/shared/SearchInput";
 import { sanitizeSearchInput } from "@/lib/sanitizeSearch";
 import { toast } from "sonner";
 import {
@@ -35,11 +34,6 @@ import {
   Printer,
   MoreVertical,
   Store,
-  AlertTriangle,
-  RefreshCw,
-  Zap,
-  Eye,
-  EyeOff,
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
@@ -47,11 +41,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { ProductCard } from "@/components/admin/ProductCard";
 import { Toggle } from "@/components/ui/toggle";
-import { EnhancedEmptyState } from "@/components/shared/EnhancedEmptyState";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import {
   Select,
@@ -67,11 +59,9 @@ import { BulkPriceEditor } from "@/components/admin/BulkPriceEditor";
 import { BatchCategoryEditor } from "@/components/admin/BatchCategoryEditor";
 import { ProductImportDialog } from "@/components/admin/ProductImportDialog";
 import { ProductForm, type ProductFormData } from "@/components/admin/products/ProductForm";
-import { QuickAddProductDialog } from "@/components/admin/products/QuickAddProductDialog";
 import { useProductDuplicate } from "@/hooks/useProductDuplicate";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import type { Database } from "@/integrations/supabase/types";
-import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { Checkbox } from "@/components/ui/checkbox";
 import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -81,7 +71,8 @@ import { ExportButton } from "@/components/ui/ExportButton";
 import { InlineEditableCell } from "@/components/admin/products/InlineEditableCell";
 import { ProductMarginBadge } from "@/components/admin/products/ProductMarginBadge";
 import { ColumnVisibilityControl } from "@/components/admin/ColumnVisibilityControl";
-import Columns from "lucide-react/dist/esm/icons/columns";
+import { AdminToolbar } from "@/components/admin/shared/AdminToolbar";
+import { AdminDataTable } from "@/components/admin/shared/AdminDataTable";
 
 type Product = Database['public']['Tables']['products']['Row'] & {
   // Add fields that might be missing from generated types or are dynamic
@@ -142,7 +133,7 @@ export default function ProductManagement() {
   const {
     items: products,
     optimisticIds,
-    addOptimistic,
+    addOptimistic: _addOptimistic,
     updateOptimistic,
     deleteOptimistic,
     setItems: setProducts,
@@ -169,8 +160,8 @@ export default function ProductManagement() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   // Filters - initialize from saved preferences
-  const [categoryFilter, setCategoryFilter] = useState<string>(preferences.customFilters?.category || "all");
-  const [stockStatusFilter, setStockStatusFilter] = useState<string>(preferences.customFilters?.stockStatus || "all");
+  const [categoryFilter, setCategoryFilter] = useState<string>(String(preferences.customFilters?.category || "all"));
+  const [stockStatusFilter, setStockStatusFilter] = useState<string>(String(preferences.customFilters?.stockStatus || "all"));
   const [sortBy, setSortBy] = useState<string>(preferences.sortBy || "name");
 
   // Column visibility - margin column hidden by default
@@ -181,10 +172,9 @@ export default function ProductManagement() {
     { id: "price", label: "Price" },
     { id: "margin", label: "Margin" },
     { id: "stock", label: "Stock" },
-    { id: "visibility", label: "Storefront" },
   ];
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
-    () => preferences.customFilters?.visibleColumns || ["image", "name", "category", "price", "stock", "visibility"]
+    () => (preferences.customFilters?.visibleColumns as string[]) || ["image", "name", "category", "price", "stock"]
   );
 
   // Margin threshold for alerts (default 20%)
@@ -262,7 +252,6 @@ export default function ProductManagement() {
   const [bulkPriceEditorOpen, setBulkPriceEditorOpen] = useState(false);
   const [batchCategoryEditorOpen, setBatchCategoryEditorOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
 
   // Optimistic locking for concurrent edit protection
@@ -371,10 +360,11 @@ export default function ProductManagement() {
             return (b.wholesale_price ?? 0) - (a.wholesale_price ?? 0);
           case "stock":
             return (b.available_quantity ?? 0) - (a.available_quantity ?? 0);
-          case "margin":
+          case "margin": {
             const marginA = profitMargin(a.cost_per_unit ?? 0, a.wholesale_price ?? 0);
             const marginB = profitMargin(b.cost_per_unit ?? 0, b.wholesale_price ?? 0);
             return Number(marginB) - Number(marginA);
+          }
           default:
             return 0;
         }
@@ -469,7 +459,7 @@ export default function ProductManagement() {
   };
 
   // Handlers
-  const handleProductSubmit = async (data: ProductFormData, imageFile: File | null) => {
+  const handleProductSubmit = async (data: ProductFormData) => {
     // Validate tenant context first
     if (!tenant?.id) {
       toast.error('Tenant not found. Please refresh.');
@@ -505,29 +495,6 @@ export default function ProductManagement() {
         }
       }
 
-      // Upload image file to Supabase Storage if provided
-      let imageUrl = data.image_url;
-      if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop() || 'png';
-        const fileName = `${tenant.id}/${crypto.randomUUID()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(fileName, imageFile, {
-            contentType: imageFile.type,
-            upsert: true,
-          });
-
-        if (uploadError) {
-          logger.error('Failed to upload product image', { error: uploadError });
-          toast.error('Failed to upload image. Product will be saved without it.');
-        } else {
-          const { data: urlData } = supabase.storage
-            .from('product-images')
-            .getPublicUrl(fileName);
-          imageUrl = urlData.publicUrl;
-        }
-      }
-
       // Ensure all required fields for DB are present
       const productData = {
         tenant_id: tenant.id,
@@ -545,7 +512,7 @@ export default function ProductManagement() {
         retail_price: data.retail_price ? parseFloat(data.retail_price) : null,
         available_quantity: data.available_quantity ? Math.floor(parseFloat(data.available_quantity)) : 0,
         description: data.description,
-        image_url: imageUrl,
+        image_url: data.image_url,
         low_stock_alert: data.low_stock_alert ? parseInt(data.low_stock_alert) : 10,
         // Add missing required fields with defaults
         price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
@@ -608,6 +575,7 @@ export default function ProductManagement() {
           storeId: store?.id || undefined,
           productId: editingProduct.id,
           category: productData.category || undefined,
+          action: 'updated',
         });
       } else {
         const { data: newProduct, error } = await supabase.from('products').insert(productData).select().maybeSingle();
@@ -635,6 +603,7 @@ export default function ProductManagement() {
           storeId: store?.id || undefined,
           productId: newProduct.id,
           category: productData.category || undefined,
+          action: 'created',
         });
       }
       setIsDialogOpen(false);
@@ -707,6 +676,7 @@ export default function ProductManagement() {
             storeId: store?.id || undefined,
             productId: productToDelete.id,
             category: deletedCategory || undefined,
+            action: 'deleted',
           });
         }
       );
@@ -807,6 +777,7 @@ export default function ProductManagement() {
           invalidateProductCaches({
             tenantId: tenant.id,
             storeId: store?.id || undefined,
+            action: 'deleted',
           });
 
           handleCombinedBatchClear();
@@ -836,6 +807,7 @@ export default function ProductManagement() {
     invalidateProductCaches({
       tenantId: tenant?.id || undefined,
       storeId: store?.id || undefined,
+      action: 'updated',
     });
     setBulkPriceEditorOpen(false);
   }
@@ -845,6 +817,7 @@ export default function ProductManagement() {
     invalidateProductCaches({
       tenantId: tenant?.id || undefined,
       storeId: store?.id || undefined,
+      action: 'updated',
     });
     setBatchCategoryEditorOpen(false);
   }
@@ -888,6 +861,7 @@ export default function ProductManagement() {
           tenantId: tenant?.id || undefined,
           storeId: store?.id || undefined,
           productId,
+          action: 'updated',
         });
       } else {
         toast.error((result?.error as string) || "Failed to publish product");
@@ -974,6 +948,7 @@ export default function ProductManagement() {
           tenantId: tenant.id,
           storeId: store?.id || undefined,
           productId,
+          action: field === 'available_quantity' ? 'stock_adjusted' : 'updated',
         });
 
         return updated as Product;
@@ -982,7 +957,7 @@ export default function ProductManagement() {
   };
 
   // --- Table Columns Definition ---
-  const columns: ResponsiveColumn<Product>[] = [
+  const columns: any[] = [
     {
       header: (
         <Checkbox
@@ -1072,51 +1047,21 @@ export default function ProductManagement() {
     {
       header: "Stock",
       accessorKey: "available_quantity",
-      cell: (product) => {
-        const qty = product.available_quantity ?? 0;
-        const threshold = product.low_stock_alert || 10;
-        const stockColorClass = qty <= 0
-          ? "text-destructive font-bold"
-          : qty <= threshold
-            ? "text-warning font-semibold"
-            : "text-success font-semibold";
-        return (
-          <div className="flex items-center gap-2">
-            <InlineEditableCell
-              value={product.available_quantity}
-              onSave={(v) => handleInlineUpdate(product.id, 'available_quantity', v)}
-              type="number"
-              className="w-16"
-              valueClassName={stockColorClass}
-            />
-            <InventoryStatusBadge
-              quantity={qty}
-              lowStockThreshold={threshold}
-            />
-          </div>
-        );
-      }
-    },
-    // Storefront visibility column - visible by default
-    ...(visibleColumns.includes("visibility") ? [{
-      header: "Storefront",
-      accessorKey: "menu_visibility" as keyof Product,
-      className: "text-center",
-      cell: (product: Product) => (
-        <Badge
-          variant="outline"
-          className={product.menu_visibility
-            ? "text-green-700 border-green-300 bg-green-50 dark:text-green-400 dark:border-green-700 dark:bg-green-950 gap-1"
-            : "text-muted-foreground border-muted bg-muted/30 gap-1"
-          }
-        >
-          {product.menu_visibility
-            ? <><Eye className="h-3 w-3" /> Listed</>
-            : <><EyeOff className="h-3 w-3" /> Unlisted</>
-          }
-        </Badge>
+      cell: (product) => (
+        <div className="flex items-center gap-2">
+          <InlineEditableCell
+            value={product.available_quantity}
+            onSave={(v) => handleInlineUpdate(product.id, 'available_quantity', v)}
+            type="number"
+            className="w-12"
+          />
+          <InventoryStatusBadge
+            quantity={product.available_quantity ?? 0}
+            lowStockThreshold={product.low_stock_alert || 10}
+          />
+        </div>
       )
-    }] : []),
+    },
     {
       header: "Actions",
       className: "text-right",
@@ -1169,7 +1114,6 @@ export default function ProductManagement() {
       onDuplicate={() => duplicateProduct(product)}
       onPrintLabel={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
       onPublish={() => handlePublish(product.id)}
-      onStockUpdate={(v) => handleInlineUpdate(product.id, 'available_quantity', v)}
     />
   );
 
@@ -1250,88 +1194,40 @@ export default function ProductManagement() {
             Manage products, batches, and inventory packages
           </p>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          {canExport('products') && (
-            <ExportButton
-              data={filteredProducts.map(p => ({
-                ...p,
-                margin_percent: p.wholesale_price && p.cost_per_unit
-                  ? (((p.wholesale_price - p.cost_per_unit) / p.wholesale_price) * 100).toFixed(1)
-                  : null,
-              }))}
-              filename="products"
-              columns={[
-                { key: "name", label: "Name" },
-                { key: "sku", label: "SKU" },
-                { key: "category", label: "Category" },
-                { key: "cost_per_unit", label: "Cost" },
-                { key: "wholesale_price", label: "Price" },
-                { key: "margin_percent", label: "Margin %" },
-                { key: "available_quantity", label: "Stock" },
-                { key: "strain_name", label: "Strain" },
-                { key: "vendor_name", label: "Vendor" },
-              ]}
-            />
-          )}
-          {canEdit('products') && (
-            <Button onClick={() => navigateTenant("/admin/generate-barcodes")} className="min-h-[44px]">
-              <Barcode className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Generate Barcodes</span>
-            </Button>
-          )}
-          {canEdit('products') && (
-            <ProductImportDialog
-              open={importDialogOpen}
-              onOpenChange={setImportDialogOpen}
-              onSuccess={loadProducts}
-            />
-          )}
-
-          {canEdit('products') && (
-            <Button
-              variant="outline"
-              onClick={() => setQuickAddOpen(true)}
-              className="min-h-[44px]"
-            >
-              <Zap className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Quick Add</span>
-            </Button>
-          )}
-
-          <Dialog
-            open={isDialogOpen}
-            onOpenChange={(open) => {
-              setIsDialogOpen(open);
-              if (!open) setEditingProduct(null);
-            }}
-          >
-            {canEdit('products') && (
-              <DialogTrigger asChild>
-                <Button disabled={isGenerating} onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }} className="min-h-[44px]">
-                  <Plus className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Add Product</span>
-                </Button>
-              </DialogTrigger>
-            )}
-            <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingProduct ? "Edit Product" : "Add New Product"}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="flex-1 overflow-y-auto px-1">
-                <ProductForm
-                  initialData={editingProduct ? mapProductToForm(editingProduct) : undefined}
-                  onSubmit={handleProductSubmit}
-                  onCancel={() => setIsDialogOpen(false)}
-                  isLoading={isGenerating}
-                  isEditMode={!!editingProduct}
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
       </div>
+
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) setEditingProduct(null);
+        }}
+      >
+        <DialogContent className="max-w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>
+              {editingProduct ? "Edit Product" : "Add New Product"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto px-1">
+            <ProductForm
+              initialData={editingProduct ? mapProductToForm(editingProduct) : undefined}
+              onSubmit={handleProductSubmit}
+              onCancel={() => setIsDialogOpen(false)}
+              isLoading={isGenerating}
+              isEditMode={!!editingProduct}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {canEdit('products') && (
+        <ProductImportDialog
+          open={importDialogOpen}
+          onOpenChange={setImportDialogOpen}
+          onSuccess={loadProducts}
+        />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
@@ -1395,28 +1291,19 @@ export default function ProductManagement() {
         </Card>
       </div>
 
-      {/* Filters and View Mode Toggle */}
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          {/* Search Bar */}
-          <div className="relative w-full sm:flex-1">
-            <SearchInput
-              placeholder="Search products, SKU, category..."
-              onSearch={setSearchTerm}
-              defaultValue={searchTerm}
-              className="w-full"
-            />
-          </div>
-
-          {/* Action Buttons (Scan/Import) */}
-          <div className="flex gap-2 w-full sm:w-auto">
+      <AdminToolbar
+        searchQuery={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search products, SKU, category..."
+        actions={
+          <>
             <Button
               variant="outline"
               onClick={() => {
                 setBatchScanMode(false);
                 setScannerOpen(true);
               }}
-              className="flex-1 sm:flex-initial min-h-[44px]"
+              className="min-h-[40px]"
             >
               <Barcode className="h-4 w-4 mr-2" />
               Scan
@@ -1424,18 +1311,56 @@ export default function ProductManagement() {
             <Button
               variant="outline"
               onClick={startBatchScan}
-              className="flex-1 sm:flex-initial min-h-[44px]"
+              className="min-h-[40px]"
             >
               <Barcode className="h-4 w-4 mr-2" />
               Batch
             </Button>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-2 justify-between">
-          <div className="flex gap-2 flex-wrap sm:flex-nowrap w-full">
+            {canExport('products') && (
+              <ExportButton
+                data={filteredProducts.map(p => ({
+                  ...p,
+                  margin_percent: p.wholesale_price && p.cost_per_unit
+                    ? (((p.wholesale_price - p.cost_per_unit) / p.wholesale_price) * 100).toFixed(1)
+                    : null,
+                }))}
+                filename="products"
+                columns={[
+                  { key: "name", label: "Name" },
+                  { key: "sku", label: "SKU" },
+                  { key: "category", label: "Category" },
+                  { key: "cost_per_unit", label: "Cost" },
+                  { key: "wholesale_price", label: "Price" },
+                  { key: "margin_percent", label: "Margin %" },
+                  { key: "available_quantity", label: "Stock" },
+                  { key: "strain_name", label: "Strain" },
+                  { key: "vendor_name", label: "Vendor" },
+                ]}
+              />
+            )}
+            {canEdit('products') && (
+              <Button onClick={() => navigateTenant("/admin/generate-barcodes")} className="min-h-[40px] hidden sm:inline-flex" variant="outline">
+                <Barcode className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Barcodes</span>
+              </Button>
+            )}
+            {canEdit('products') && (
+              <Button onClick={() => setImportDialogOpen(true)} className="min-h-[40px] hidden sm:inline-flex" variant="outline">
+                Import
+              </Button>
+            )}
+            {canEdit('products') && (
+              <Button onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }} className="min-h-[40px]">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Product
+              </Button>
+            )}
+          </>
+        }
+        filters={
+          <>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectTrigger className="w-[140px] sm:w-[150px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
@@ -1450,7 +1375,7 @@ export default function ProductManagement() {
             </Select>
 
             <Select value={stockStatusFilter} onValueChange={setStockStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectTrigger className="w-[140px] sm:w-[150px]">
                 <SelectValue placeholder="Stock Status" />
               </SelectTrigger>
               <SelectContent>
@@ -1462,7 +1387,7 @@ export default function ProductManagement() {
             </Select>
 
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectTrigger className="w-[140px] sm:w-[150px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -1472,10 +1397,10 @@ export default function ProductManagement() {
                 <SelectItem value="margin">Margin (High-Low)</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Column Visibility & View Mode Toggle */}
-          <div className="flex items-center gap-2">
+          </>
+        }
+        viewOptions={
+          <>
             <ColumnVisibilityControl
               visibleColumns={visibleColumns}
               onToggleColumn={handleToggleColumn}
@@ -1497,125 +1422,54 @@ export default function ProductManagement() {
                 <List className="h-4 w-4" />
               </Toggle>
             </div>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
-      {/* Products Display */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Products ({filteredProducts.length})</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0 sm:p-6">
-          {productsError && !productsLoading ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
-              <h3 className="text-lg font-semibold mb-1">Failed to load products</h3>
-              <p className="text-muted-foreground text-sm mb-4">
-                Something went wrong while fetching your products. Please try again.
-              </p>
-              <Button variant="outline" onClick={() => refetchProductsQuery()} className="gap-2">
-                <RefreshCw className="h-4 w-4" />
-                Try Again
-              </Button>
-            </div>
-          ) : productsLoading ? (
-            viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 p-3 sm:p-0">
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} className="border rounded-lg p-4 space-y-3">
-                    <Skeleton className="h-32 w-full rounded" />
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                    <div className="flex justify-between">
-                      <Skeleton className="h-6 w-16" />
-                      <Skeleton className="h-6 w-20" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-2 p-4 sm:p-0">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 py-3 border-b last:border-b-0">
-                    <Skeleton className="h-5 w-5 rounded" />
-                    <Skeleton className="h-10 w-10 rounded-md" />
-                    <div className="flex-1 space-y-1">
-                      <Skeleton className="h-4 w-48" />
-                      <Skeleton className="h-3 w-24" />
-                    </div>
-                    <Skeleton className="h-5 w-16 rounded-full" />
-                    <Skeleton className="h-4 w-16" />
-                    <Skeleton className="h-4 w-12" />
-                    <Skeleton className="h-8 w-8 rounded" />
-                  </div>
-                ))}
-              </div>
-            )
-          ) : filteredProducts.length > 0 ? (
-            viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 p-3 sm:p-0">
-                {filteredProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className={optimisticIds.has(product.id) ? 'opacity-70 transition-opacity' : ''}
-                  >
-                    <ProductCard
-                      product={product}
-                      onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
-                      onDelete={() => handleDelete(product.id)}
-                      onDuplicate={() => duplicateProduct(product)}
-                      onPrintLabel={() => {
-                        setLabelProduct(product);
-                        setLabelDialogOpen(true);
-                      }}
-                      onPublish={() => handlePublish(product.id)}
-                      onStockUpdate={(v) => handleInlineUpdate(product.id, 'available_quantity', v)}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="-mx-4 sm:mx-0">
-                {/* Table View */}
-                <ResponsiveTable
-                  columns={columns}
-                  data={filteredProducts}
-                  keyExtractor={(item) => item.id}
-                  isLoading={productsLoading}
-                  mobileRenderer={renderMobileProduct}
-                />
-              </div>
-            )
-          ) : (
-            <EnhancedEmptyState
-              type="no_products"
-              icon={Package}
-              title={searchTerm || categoryFilter !== "all" ? "No products found" : "No products yet"}
-              description={
-                searchTerm || categoryFilter !== "all"
-                  ? "Try adjusting your filters to find products"
-                  : "Add your inventory to start selling"
-              }
-              primaryAction={
-                !searchTerm && categoryFilter === "all"
-                  ? {
-                    label: "Add Product",
-                    onClick: () => {
-                      setEditingProduct(null);
-                      setIsDialogOpen(true);
-                    },
-                    icon: <Plus className="h-4 w-4" />,
-                  }
-                  : undefined
-              }
-              designSystem="tenant-admin"
+      <AdminDataTable
+        title={`Products (${filteredProducts.length})`}
+        data={filteredProducts}
+        columns={columns}
+        isLoading={productsLoading}
+        isError={productsError}
+        onRetry={() => refetchProductsQuery()}
+        viewMode={viewMode}
+        renderGridItem={(product) => (
+          <div className={optimisticIds.has(product.id) ? 'opacity-70 transition-opacity' : ''}>
+            <ProductCard
+              product={product}
+              onEdit={() => { setEditingProduct(product); setIsDialogOpen(true); }}
+              onDelete={() => handleDelete(product.id)}
+              onDuplicate={() => duplicateProduct(product)}
+              onPrintLabel={() => {
+                setLabelProduct(product);
+                setLabelDialogOpen(true);
+              }}
+              onPublish={() => handlePublish(product.id)}
             />
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+        renderMobileItem={renderMobileProduct}
+        emptyStateIcon={Package}
+        emptyStateTitle={searchTerm || categoryFilter !== "all" ? "No products found" : "No products yet"}
+        emptyStateDescription={
+          searchTerm || categoryFilter !== "all"
+            ? "Try adjusting your filters to find products"
+            : "Add your inventory to start selling"
+        }
+        emptyStateAction={
+          !searchTerm && categoryFilter === "all" && canEdit('products')
+            ? {
+              label: "Add Product",
+              onClick: () => {
+                setEditingProduct(null);
+                setIsDialogOpen(true);
+              },
+              icon: Plus,
+            }
+            : undefined
+        }
+      />
 
       {/* Product Label Dialog */}
       {labelProduct && (
@@ -1688,14 +1542,6 @@ export default function ProductManagement() {
         description={batchDeleteDialogState.description}
         itemType={batchDeleteDialogState.itemType}
         isLoading={batchDeleteDialogState.isLoading}
-      />
-
-      {/* Quick Add Product Dialog */}
-      <QuickAddProductDialog
-        open={quickAddOpen}
-        onOpenChange={setQuickAddOpen}
-        onSuccess={loadProducts}
-        storeId={store?.id || undefined}
       />
 
       <UnsavedChangesDialog

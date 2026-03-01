@@ -29,6 +29,7 @@ import {
   CreditCard,
   Clock,
   Globe,
+  Save as _Save,
   Eye,
   Share2,
   MapPin,
@@ -39,13 +40,6 @@ import {
   Star,
   PanelRightClose,
   PanelRightOpen,
-  Banknote,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  ExternalLink,
-  Bell,
-  Send,
 } from 'lucide-react';
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';
@@ -54,6 +48,7 @@ import { FeaturedProductsManager } from '@/components/admin/storefront/FeaturedP
 import { FieldHelp, fieldHelpTexts } from '@/components/ui/field-help';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
+// Skeleton already imported above
 
 interface DeliveryZone {
   zip_code: string;
@@ -74,24 +69,6 @@ interface ThemeConfig {
     accent?: string;
   };
 }
-
-interface TelegramConfig {
-  bot_token: string;
-  chat_id: string;
-  auto_forward: boolean;
-  customer_link: string;
-  button_label: string;
-  show_on_confirmation: boolean;
-}
-
-const DEFAULT_TELEGRAM_CONFIG: TelegramConfig = {
-  bot_token: '',
-  chat_id: '',
-  auto_forward: false,
-  customer_link: '',
-  button_label: 'Chat with us on Telegram',
-  show_on_confirmation: false,
-};
 
 interface StoreSettings {
   id: string;
@@ -143,8 +120,6 @@ interface StoreSettings {
   } | null;
   // Featured products
   featured_product_ids: string[];
-  // Telegram notifications
-  telegram_config: TelegramConfig;
 }
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -157,10 +132,12 @@ const DEFAULT_TIME_SLOTS: TimeSlot[] = [
 ];
 
 const PAYMENT_METHOD_OPTIONS = [
-  { id: 'cash', label: 'Cash', description: 'Customers pay cash when they receive their order' },
-  { id: 'venmo', label: 'Venmo', description: 'Customers send payment through Venmo before delivery' },
-  { id: 'zelle', label: 'Zelle', description: 'Customers send a bank transfer through Zelle' },
-  { id: 'stripe', label: 'Credit/Debit Card', description: 'Customers pay with a card at checkout (powered by Stripe)' },
+  { id: 'cash', label: 'Cash', icon: '' },
+  { id: 'card', label: 'Credit/Debit Card', icon: '' },
+  { id: 'apple_pay', label: 'Apple Pay', icon: '' },
+  { id: 'google_pay', label: 'Google Pay', icon: '' },
+  { id: 'venmo', label: 'Venmo', icon: '' },
+  { id: 'zelle', label: 'Zelle', icon: '' },
 ];
 
 export default function StorefrontSettings() {
@@ -174,12 +151,6 @@ export default function StorefrontSettings() {
   const [isDirty, setIsDirty] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
-  const [stripeStatus, setStripeStatus] = useState<{
-    connected: boolean;
-    charges_enabled: boolean;
-    payouts_enabled: boolean;
-  } | null>(null);
-  const [stripeLoading, setStripeLoading] = useState(false);
 
   // Fetch store data
   const { data: store, isLoading } = useQuery({
@@ -209,34 +180,9 @@ export default function StorefrontSettings() {
       setFormData({
         ...store,
         featured_product_ids: store.featured_product_ids ?? [],
-        telegram_config: {
-          ...DEFAULT_TELEGRAM_CONFIG,
-          ...(store.telegram_config as Partial<TelegramConfig> | null),
-        },
       });
     }
   }, [store]);
-
-  // Check Stripe connection status
-  useEffect(() => {
-    if (!tenantId) return;
-    const checkStripe = async () => {
-      try {
-        setStripeLoading(true);
-        const { data, error } = await supabase.functions.invoke('check-stripe-config', {
-          body: { tenant_id: tenantId },
-        });
-        if (error) throw error;
-        setStripeStatus(data);
-      } catch (err: unknown) {
-        logger.error('Failed to check Stripe status', err, { component: 'StorefrontSettings' });
-        setStripeStatus(null);
-      } finally {
-        setStripeLoading(false);
-      }
-    };
-    checkStripe();
-  }, [tenantId]);
 
   // Fetch featured products for preview
   const { data: featuredProducts } = useQuery({
@@ -304,19 +250,6 @@ export default function StorefrontSettings() {
     setIsDirty(true);
   };
 
-  // Update telegram config
-  const updateTelegramConfig = (key: keyof TelegramConfig, value: string | boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      telegram_config: {
-        ...DEFAULT_TELEGRAM_CONFIG,
-        ...(prev.telegram_config as TelegramConfig | undefined),
-        [key]: value,
-      },
-    }));
-    setIsDirty(true);
-  };
-
   // Update operating hours
   const updateHours = (day: string, field: 'open' | 'close' | 'closed', value: string | boolean) => {
     setFormData((prev) => ({
@@ -370,7 +303,6 @@ export default function StorefrontSettings() {
           operating_hours: formData.operating_hours,
           purchase_limits: formData.purchase_limits,
           featured_product_ids: formData.featured_product_ids ?? [],
-          telegram_config: formData.telegram_config ?? DEFAULT_TELEGRAM_CONFIG,
         })
         .eq('id', store.id)
         .eq('tenant_id', tenantId);
@@ -591,10 +523,9 @@ export default function StorefrontSettings() {
             <TabsTrigger value="zones">Zones</TabsTrigger>
             <TabsTrigger value="timeslots">Time Slots</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="checkout">Checkout</TabsTrigger>
             <TabsTrigger value="hours">Hours</TabsTrigger>
-            <TabsTrigger value="seo">Search & Sharing</TabsTrigger>
+            <TabsTrigger value="seo">SEO</TabsTrigger>
           </TabsList>
 
           {/* General Tab */}
@@ -605,7 +536,7 @@ export default function StorefrontSettings() {
                   <Store className="w-5 h-5" />
                   General Settings
                 </CardTitle>
-                <CardDescription>Your store name, URL, and who can access it</CardDescription>
+                <CardDescription>Basic store information</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -617,13 +548,10 @@ export default function StorefrontSettings() {
                       onChange={(e) => updateField('store_name', e.target.value)}
                       placeholder="My Store"
                     />
-                    <p className="text-xs text-muted-foreground">
-                      This is shown in your header, browser tab, and receipts
-                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="slug" className="flex items-center gap-1.5">
-                      Store Web Address
+                      Store URL Slug
                       <FieldHelp tooltip={fieldHelpTexts.tenantSlug.tooltip} example={fieldHelpTexts.tenantSlug.example} />
                     </Label>
                     <div className="flex items-center gap-2">
@@ -635,9 +563,6 @@ export default function StorefrontSettings() {
                         placeholder="my-store"
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      The URL customers use to visit your store — letters, numbers, and dashes only
-                    </p>
                   </div>
                 </div>
 
@@ -649,13 +574,10 @@ export default function StorefrontSettings() {
                     onChange={(e) => updateField('tagline', e.target.value)}
                     placeholder="Welcome to our store"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    A short phrase shown below your store name
-                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">About Your Store</Label>
+                  <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
                     value={formData.description ?? ''}
@@ -663,21 +585,18 @@ export default function StorefrontSettings() {
                     placeholder="Tell customers about your store..."
                     rows={4}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Describe what you sell, your story, or anything you want customers to know
-                  </p>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-4">
-                  <h3 className="font-medium">Who Can See Your Store</h3>
+                  <h3 className="font-medium">Store Visibility</h3>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Open to Everyone</Label>
+                      <Label>Public Store</Label>
                       <p className="text-sm text-muted-foreground">
-                        Anyone with the link can browse your store
+                        Allow anyone to view your store
                       </p>
                     </div>
                     <Switch
@@ -688,9 +607,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Account Required to Order</Label>
+                      <Label>Require Account</Label>
                       <p className="text-sm text-muted-foreground">
-                        Customers must sign up before placing an order
+                        Customers must create an account to order
                       </p>
                     </div>
                     <Switch
@@ -701,9 +620,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Age Check on Entry</Label>
+                      <Label>Age Verification</Label>
                       <p className="text-sm text-muted-foreground">
-                        Visitors must confirm their age before seeing your store
+                        Require age verification before viewing
                       </p>
                     </div>
                     <Switch
@@ -714,7 +633,7 @@ export default function StorefrontSettings() {
 
                   {formData.require_age_verification && (
                     <div className="space-y-2 pl-4 border-l-2 border-muted">
-                      <Label htmlFor="minimum_age">Minimum Age (years)</Label>
+                      <Label htmlFor="minimum_age">Minimum Age</Label>
                       <Input
                         id="minimum_age"
                         type="number"
@@ -722,9 +641,6 @@ export default function StorefrontSettings() {
                         onChange={(e) => updateField('minimum_age', parseInt(e.target.value))}
                         className="w-full sm:w-24"
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Customers below this age will be turned away
-                      </p>
                     </div>
                   )}
                 </div>
@@ -740,12 +656,12 @@ export default function StorefrontSettings() {
                   <Palette className="w-5 h-5" />
                   Branding
                 </CardTitle>
-                <CardDescription>Colors, logo, and visual style for your storefront</CardDescription>
+                <CardDescription>Customize your store's appearance</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="primary_color">Main Color</Label>
+                    <Label htmlFor="primary_color">Primary Color</Label>
                     <div className="flex gap-2">
                       <Input
                         id="primary_color"
@@ -763,7 +679,7 @@ export default function StorefrontSettings() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="secondary_color">Background Color</Label>
+                    <Label htmlFor="secondary_color">Secondary Color</Label>
                     <div className="flex gap-2">
                       <Input
                         id="secondary_color"
@@ -781,7 +697,7 @@ export default function StorefrontSettings() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="accent_color">Highlight Color</Label>
+                    <Label htmlFor="accent_color">Accent Color</Label>
                     <div className="flex gap-2">
                       <Input
                         id="accent_color"
@@ -806,7 +722,7 @@ export default function StorefrontSettings() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="logo_url">Logo Image Link</Label>
+                      <Label htmlFor="logo_url">Logo URL</Label>
                       <Input
                         id="logo_url"
                         value={formData.logo_url ?? ''}
@@ -826,7 +742,7 @@ export default function StorefrontSettings() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="banner_url">Banner Image Link</Label>
+                      <Label htmlFor="banner_url">Banner URL</Label>
                       <Input
                         id="banner_url"
                         value={formData.banner_url ?? ''}
@@ -847,12 +763,12 @@ export default function StorefrontSettings() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="favicon_url">Browser Tab Icon</Label>
+                    <Label htmlFor="favicon_url">Favicon URL</Label>
                     <Input
                       id="favicon_url"
                       value={formData.favicon_url ?? ''}
                       onChange={(e) => updateField('favicon_url', e.target.value)}
-                      placeholder="https://..."
+                      placeholder="https://... (32x32 recommended)"
                     />
                     {formData.favicon_url && (
                       <div className="mt-2 flex items-center gap-2">
@@ -864,7 +780,7 @@ export default function StorefrontSettings() {
                             loading="lazy"
                           />
                         </div>
-                        <span className="text-xs text-muted-foreground">Small icon shown in browser tabs (32x32px)</span>
+                        <span className="text-xs text-muted-foreground">32x32px preview</span>
                       </div>
                     )}
                   </div>
@@ -948,31 +864,28 @@ export default function StorefrontSettings() {
                   <Truck className="w-5 h-5" />
                   Delivery Settings
                 </CardTitle>
-                <CardDescription>How much you charge for delivery and when it's free</CardDescription>
+                <CardDescription>Configure delivery fees and zones</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="default_delivery_fee">Delivery Fee ($)</Label>
+                    <Label htmlFor="default_delivery_fee">Default Delivery Fee ($)</Label>
                     <CurrencyInput
                       id="default_delivery_fee"
                       value={formData.default_delivery_fee || 5}
                       onChange={(e) => updateField('default_delivery_fee', parseFloat(e.target.value))}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      The standard fee charged for each delivery order
-                    </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="free_delivery_threshold">Free Delivery Over ($)</Label>
+                    <Label htmlFor="free_delivery_threshold">Free Delivery Threshold ($)</Label>
                     <CurrencyInput
                       id="free_delivery_threshold"
                       value={formData.free_delivery_threshold || 100}
                       onChange={(e) => updateField('free_delivery_threshold', parseFloat(e.target.value))}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Orders over this amount qualify for free delivery
+                      Orders above this amount get free delivery
                     </p>
                   </div>
                 </div>
@@ -988,7 +901,7 @@ export default function StorefrontSettings() {
                   <MapPin className="w-5 h-5" />
                   Delivery Zones
                 </CardTitle>
-                <CardDescription>Charge different delivery fees based on the customer's zip code</CardDescription>
+                <CardDescription>Set custom delivery fees by zip code</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
@@ -1006,7 +919,7 @@ export default function StorefrontSettings() {
                         className="w-full sm:w-32"
                       />
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Delivery fee:</span>
+                        <span className="text-sm text-muted-foreground">Fee:</span>
                         <CurrencyInput
                           value={zone.fee ?? 0}
                           onChange={(e) => {
@@ -1018,7 +931,7 @@ export default function StorefrontSettings() {
                         />
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Minimum order:</span>
+                        <span className="text-sm text-muted-foreground">Min:</span>
                         <CurrencyInput
                           value={zone.min_order ?? 0}
                           onChange={(e) => {
@@ -1068,14 +981,14 @@ export default function StorefrontSettings() {
                   <Clock className="w-5 h-5" />
                   Delivery Time Slots
                 </CardTitle>
-                <CardDescription>Let customers pick a delivery window that works for them</CardDescription>
+                <CardDescription>Let customers choose their delivery window</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>Offer Delivery Time Choices</Label>
+                    <Label>Enable Scheduled Delivery</Label>
                     <p className="text-sm text-muted-foreground">
-                      Customers can choose when they want their delivery
+                      Allow customers to select a delivery time slot
                     </p>
                   </div>
                   <Switch
@@ -1167,261 +1080,63 @@ export default function StorefrontSettings() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Banknote className="w-5 h-5" />
+                  <CreditCard className="w-5 h-5" />
                   Payment Methods
                 </CardTitle>
-                <CardDescription>Pick how customers can pay you</CardDescription>
+                <CardDescription>Select which payment methods to accept</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {PAYMENT_METHOD_OPTIONS.map((method) => {
-                  const isEnabled = (formData.payment_methods || ['cash']).includes(method.id);
-                  return (
-                    <div key={method.id} className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label className="text-base">{method.label}</Label>
-                          <p className="text-sm text-muted-foreground">{method.description}</p>
-                        </div>
-                        <Switch
-                          checked={isEnabled}
-                          onCheckedChange={(checked) => {
-                            const current = formData.payment_methods || ['cash'];
-                            const updated = checked
-                              ? [...current, method.id]
-                              : current.filter((m) => m !== method.id);
-                            updateField('payment_methods', updated);
-                          }}
+              <CardContent className="space-y-4">
+                {PAYMENT_METHOD_OPTIONS.map((method) => (
+                  <div key={method.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{method.icon}</span>
+                        <Label>{method.label}</Label>
+                      </div>
+                      <Switch
+                        checked={(formData.payment_methods || ['cash', 'card']).includes(method.id)}
+                        onCheckedChange={(checked) => {
+                          const current = formData.payment_methods || ['cash', 'card'];
+                          const updated = checked
+                            ? [...current, method.id]
+                            : current.filter((m) => m !== method.id);
+                          updateField('payment_methods', updated);
+                        }}
+                      />
+                    </div>
+                    {method.id === 'venmo' && (formData.payment_methods || []).includes('venmo') && (
+                      <div className="ml-11">
+                        <Label htmlFor="venmo_handle" className="text-sm text-muted-foreground">
+                          Venmo Handle (e.g. @your-store)
+                        </Label>
+                        <Input
+                          id="venmo_handle"
+                          className="mt-1 max-w-xs"
+                          placeholder="@your-store"
+                          value={formData.checkout_settings?.venmo_handle || ''}
+                          onChange={(e) => updateCheckoutSetting('venmo_handle', e.target.value)}
                         />
                       </div>
-
-                      {/* Venmo handle input */}
-                      {method.id === 'venmo' && isEnabled && (
-                        <div className="pl-4 border-l-2 border-muted">
-                          <Label htmlFor="venmo_handle" className="text-sm text-muted-foreground">
-                            Your Venmo Username
-                          </Label>
-                          <Input
-                            id="venmo_handle"
-                            className="mt-1 max-w-xs"
-                            placeholder="@your-store"
-                            value={formData.checkout_settings?.venmo_handle || ''}
-                            onChange={(e) => updateCheckoutSetting('venmo_handle', e.target.value)}
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Customers will see this so they know where to send payment
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Zelle info input */}
-                      {method.id === 'zelle' && isEnabled && (
-                        <div className="pl-4 border-l-2 border-muted">
-                          <Label htmlFor="zelle_email" className="text-sm text-muted-foreground">
-                            Your Zelle Email or Phone Number
-                          </Label>
-                          <Input
-                            id="zelle_email"
-                            className="mt-1 max-w-xs"
-                            placeholder="store@example.com or (555) 123-4567"
-                            value={formData.checkout_settings?.zelle_email || ''}
-                            onChange={(e) => updateCheckoutSetting('zelle_email', e.target.value)}
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Customers will see this so they know where to send payment
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Stripe connection status */}
-                      {method.id === 'stripe' && isEnabled && (
-                        <div className="pl-4 border-l-2 border-muted space-y-3">
-                          {stripeLoading ? (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              Checking Stripe connection...
-                            </div>
-                          ) : stripeStatus?.connected ? (
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900 rounded-md">
-                                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
-                                <div className="text-sm">
-                                  <span className="font-medium text-green-900 dark:text-green-100">Stripe Connected</span>
-                                  <span className="text-green-700 dark:text-green-300 ml-1">
-                                    {stripeStatus.charges_enabled ? '— accepting payments' : '— setup incomplete'}
-                                  </span>
-                                </div>
-                              </div>
-                              <Button variant="outline" size="sm" asChild>
-                                <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer">
-                                  Stripe Dashboard <ExternalLink className="ml-1 h-3 w-3" />
-                                </a>
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900 rounded-md">
-                                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                                <span className="text-sm text-amber-800 dark:text-amber-200">
-                                  Stripe not connected — set up in Settings to accept card payments
-                                </span>
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => navigate(`/${tenantSlug}/admin/settings`)}
-                              >
-                                <CreditCard className="mr-2 h-4 w-4" />
-                                Configure Stripe
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {method.id !== PAYMENT_METHOD_OPTIONS[PAYMENT_METHOD_OPTIONS.length - 1].id && (
-                        <Separator />
-                      )}
-                    </div>
-                  );
-                })}
-                <p className="text-xs text-muted-foreground">
+                    )}
+                    {method.id === 'zelle' && (formData.payment_methods || []).includes('zelle') && (
+                      <div className="ml-11">
+                        <Label htmlFor="zelle_email" className="text-sm text-muted-foreground">
+                          Zelle Email or Phone (shown to customers)
+                        </Label>
+                        <Input
+                          id="zelle_email"
+                          className="mt-1 max-w-xs"
+                          placeholder="store@example.com or (555) 123-4567"
+                          value={formData.checkout_settings?.zelle_email || ''}
+                          onChange={(e) => updateCheckoutSetting('zelle_email', e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground mt-4">
                   At least one payment method must be enabled.
                 </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Notifications Tab */}
-          <TabsContent value="notifications">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="w-5 h-5" />
-                  Telegram Notifications
-                </CardTitle>
-                <CardDescription>
-                  Get new order notifications forwarded to your Telegram group and show a contact link on the order confirmation page
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Auto-forward toggle */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Auto-Forward Orders to Telegram</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Send order details to your Telegram group when a new order is placed
-                    </p>
-                  </div>
-                  <Switch
-                    checked={(formData.telegram_config as TelegramConfig | undefined)?.auto_forward ?? false}
-                    onCheckedChange={(checked) => updateTelegramConfig('auto_forward', checked)}
-                  />
-                </div>
-
-                {(formData.telegram_config as TelegramConfig | undefined)?.auto_forward && (
-                  <div className="space-y-4 pl-4 border-l-2 border-muted">
-                    <div className="space-y-2">
-                      <Label htmlFor="telegram_bot_token">Bot Token</Label>
-                      <Input
-                        id="telegram_bot_token"
-                        type="password"
-                        placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-                        value={(formData.telegram_config as TelegramConfig | undefined)?.bot_token ?? ''}
-                        onChange={(e) => updateTelegramConfig('bot_token', e.target.value)}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Get a bot token from @BotFather on Telegram
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="telegram_chat_id">Chat ID</Label>
-                      <Input
-                        id="telegram_chat_id"
-                        placeholder="-1001234567890"
-                        value={(formData.telegram_config as TelegramConfig | undefined)?.chat_id ?? ''}
-                        onChange={(e) => updateTelegramConfig('chat_id', e.target.value)}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        The Telegram group or channel ID where order notifications will be sent
-                      </p>
-                    </div>
-
-                    {/* Test button */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={
-                        !(formData.telegram_config as TelegramConfig | undefined)?.bot_token ||
-                        !(formData.telegram_config as TelegramConfig | undefined)?.chat_id
-                      }
-                      onClick={async () => {
-                        try {
-                          const { error } = await supabase.functions.invoke('test-telegram', {
-                            body: {
-                              bot_token: (formData.telegram_config as TelegramConfig | undefined)?.bot_token,
-                              chat_id: (formData.telegram_config as TelegramConfig | undefined)?.chat_id,
-                            },
-                          });
-                          if (error) throw error;
-                          toast.success('Test message sent to Telegram');
-                        } catch (err: unknown) {
-                          logger.error('Telegram test failed', err, { component: 'StorefrontSettings' });
-                          toast.error('Failed to send test message. Check your bot token and chat ID.');
-                        }
-                      }}
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      Send Test Message
-                    </Button>
-                  </div>
-                )}
-
-                <Separator />
-
-                {/* Customer-facing Telegram link */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Show Telegram Link on Order Confirmation</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Display a button linking to your Telegram on the order confirmation page
-                    </p>
-                  </div>
-                  <Switch
-                    checked={(formData.telegram_config as TelegramConfig | undefined)?.show_on_confirmation ?? false}
-                    onCheckedChange={(checked) => updateTelegramConfig('show_on_confirmation', checked)}
-                  />
-                </div>
-
-                {(formData.telegram_config as TelegramConfig | undefined)?.show_on_confirmation && (
-                  <div className="space-y-4 pl-4 border-l-2 border-muted">
-                    <div className="space-y-2">
-                      <Label htmlFor="telegram_customer_link">Telegram Link URL</Label>
-                      <Input
-                        id="telegram_customer_link"
-                        placeholder="https://t.me/your_group"
-                        value={(formData.telegram_config as TelegramConfig | undefined)?.customer_link ?? ''}
-                        onChange={(e) => updateTelegramConfig('customer_link', e.target.value)}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Public link customers can use to reach you on Telegram
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="telegram_button_label">Button Label</Label>
-                      <Input
-                        id="telegram_button_label"
-                        placeholder="Chat with us on Telegram"
-                        value={(formData.telegram_config as TelegramConfig | undefined)?.button_label ?? 'Chat with us on Telegram'}
-                        onChange={(e) => updateTelegramConfig('button_label', e.target.value)}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Text shown on the button on your order confirmation page
-                      </p>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1434,15 +1149,15 @@ export default function StorefrontSettings() {
                   <CreditCard className="w-5 h-5" />
                   Checkout Settings
                 </CardTitle>
-                <CardDescription>Control what customers see and do during checkout</CardDescription>
+                <CardDescription>Configure checkout options</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Guest Checkout</Label>
+                      <Label>Allow Guest Checkout</Label>
                       <p className="text-sm text-muted-foreground">
-                        Customers can order without creating an account
+                        Let customers checkout without creating an account
                       </p>
                     </div>
                     <Switch
@@ -1453,9 +1168,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Phone Number Required</Label>
+                      <Label>Require Phone Number</Label>
                       <p className="text-sm text-muted-foreground">
-                        Ask for a phone number so you can send delivery updates
+                        Require phone for delivery updates
                       </p>
                     </div>
                     <Switch
@@ -1466,9 +1181,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Coupon Codes</Label>
+                      <Label>Enable Coupons</Label>
                       <p className="text-sm text-muted-foreground">
-                        Show a field where customers can enter discount codes
+                        Allow coupon codes at checkout
                       </p>
                     </div>
                     <Switch
@@ -1479,9 +1194,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Delivery Instructions</Label>
+                      <Label>Show Delivery Notes</Label>
                       <p className="text-sm text-muted-foreground">
-                        Let customers add special notes like &quot;Leave at door&quot; or &quot;Ring bell&quot;
+                        Allow customers to add delivery instructions
                       </p>
                     </div>
                     <Switch
@@ -1492,9 +1207,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Tips</Label>
+                      <Label>Enable Tips</Label>
                       <p className="text-sm text-muted-foreground">
-                        Let customers add a tip during checkout
+                        Allow customers to add tips at checkout
                       </p>
                     </div>
                     <Switch
@@ -1513,14 +1228,14 @@ export default function StorefrontSettings() {
                   <Shield className="w-5 h-5" />
                   Purchase Limits
                 </CardTitle>
-                <CardDescription>Cap how much a customer can buy to stay compliant with regulations</CardDescription>
+                <CardDescription>Set limits for regulatory compliance</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>Limit Purchase Amounts</Label>
+                    <Label>Enable Purchase Limits</Label>
                     <p className="text-sm text-muted-foreground">
-                      Restrict how much each customer can order
+                      Enforce limits on order quantities
                     </p>
                   </div>
                   <Switch
@@ -1541,7 +1256,7 @@ export default function StorefrontSettings() {
                   <div className="space-y-4 pl-4 border-l-2 border-muted">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="max_per_order">Per Order Limit ($)</Label>
+                        <Label htmlFor="max_per_order">Max Per Order ($)</Label>
                         <Input
                           id="max_per_order"
                           type="number"
@@ -1557,12 +1272,12 @@ export default function StorefrontSettings() {
                           }
                         />
                         <p className="text-xs text-muted-foreground">
-                          The most a customer can spend in a single order
+                          Maximum total value per transaction
                         </p>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="max_daily">Daily Limit ($)</Label>
+                        <Label htmlFor="max_daily">Max Daily ($)</Label>
                         <Input
                           id="max_daily"
                           type="number"
@@ -1578,12 +1293,12 @@ export default function StorefrontSettings() {
                           }
                         />
                         <p className="text-xs text-muted-foreground">
-                          The most a customer can spend in one day
+                          Maximum per customer per day
                         </p>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="max_weekly">Weekly Limit ($)</Label>
+                        <Label htmlFor="max_weekly">Max Weekly ($)</Label>
                         <Input
                           id="max_weekly"
                           type="number"
@@ -1599,12 +1314,13 @@ export default function StorefrontSettings() {
                           }
                         />
                         <p className="text-xs text-muted-foreground">
-                          The most a customer can spend in one week
+                          Maximum per customer per week
                         </p>
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
-                      Limits are tracked by customer email. Customers need to provide an email for daily and weekly limits to work.
+                      Daily and weekly limits are tracked by customer email address.
+                      Customers must provide an email to enforce these limits.
                     </p>
                   </div>
                 )}
@@ -1620,7 +1336,7 @@ export default function StorefrontSettings() {
                   <Clock className="w-5 h-5" />
                   Operating Hours
                 </CardTitle>
-                <CardDescription>When your store is open for orders</CardDescription>
+                <CardDescription>Set your store's hours of operation</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -1666,26 +1382,23 @@ export default function StorefrontSettings() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Globe className="w-5 h-5" />
-                  Search & Sharing
+                  SEO & Domain
                 </CardTitle>
-                <CardDescription>How your store looks on Google and when shared on social media</CardDescription>
+                <CardDescription>Search engine and sharing settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="meta_title">Page Title</Label>
+                  <Label htmlFor="meta_title">Meta Title</Label>
                   <Input
                     id="meta_title"
                     value={formData.meta_title ?? ''}
                     onChange={(e) => updateField('meta_title', e.target.value)}
                     placeholder="Your Store Name - Tagline"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Appears in browser tabs and Google search results
-                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="meta_description">Search Description</Label>
+                  <Label htmlFor="meta_description">Meta Description</Label>
                   <Textarea
                     id="meta_description"
                     value={formData.meta_description ?? ''}
@@ -1693,13 +1406,10 @@ export default function StorefrontSettings() {
                     placeholder="A brief description of your store for search engines..."
                     rows={3}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    The short blurb shown under your store name in Google results
-                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="og_image_url">Social Preview Image</Label>
+                  <Label htmlFor="og_image_url">Social Sharing Image URL</Label>
                   <Input
                     id="og_image_url"
                     value={formData.og_image_url ?? ''}
@@ -1707,14 +1417,14 @@ export default function StorefrontSettings() {
                     placeholder="https://..."
                   />
                   <p className="text-xs text-muted-foreground">
-                    The image shown when someone shares your store link on social media (1200x630px recommended)
+                    Recommended size: 1200x630 pixels
                   </p>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label htmlFor="custom_domain">Your Own Domain</Label>
+                  <Label htmlFor="custom_domain">Custom Domain</Label>
                   <Input
                     id="custom_domain"
                     value={formData.custom_domain ?? ''}
@@ -1722,14 +1432,14 @@ export default function StorefrontSettings() {
                     placeholder="shop.yourdomain.com"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Use your own web address instead of ours — requires a CNAME DNS record pointing to our servers
+                    Point a CNAME record to our servers to use a custom domain
                   </p>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label htmlFor="ga4_measurement_id">Google Analytics Tracking ID</Label>
+                  <Label htmlFor="ga4_measurement_id">Google Analytics 4 Measurement ID</Label>
                   <Input
                     id="ga4_measurement_id"
                     value={formData.ga4_measurement_id ?? ''}
@@ -1737,7 +1447,8 @@ export default function StorefrontSettings() {
                     placeholder="G-XXXXXXXXXX"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Track visits, add-to-cart clicks, and purchases. Find your ID in Google Analytics under Admin &gt; Data Streams.
+                    Enter your GA4 Measurement ID to track page views, add-to-cart events, and purchases.
+                    Find it in your Google Analytics admin under Data Streams.
                   </p>
                 </div>
               </CardContent>

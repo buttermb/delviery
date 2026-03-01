@@ -3,10 +3,9 @@
  * Full product view with gallery, variants, reviews, and add-to-cart
  */
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import useEmblaCarousel from 'embla-carousel-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
@@ -32,6 +31,7 @@ import {
   Truck,
   Shield,
   RotateCcw,
+  Package,
   ChevronRight,
   X,
   Loader2,
@@ -54,15 +54,11 @@ import {
 import { ReviewForm } from '@/components/shop/ReviewForm';
 import { cn } from '@/lib/utils';
 import { RecentlyViewedSection } from '@/components/shop/RecentlyViewedSection';
-import { RelatedProductsCarousel } from '@/components/shop/RelatedProductsCarousel';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
-import { MobileFixedAddToCart } from '@/components/shop/MobileFixedAddToCart';
+import { EnhancedStickyAddToCart } from '@/components/shop/EnhancedStickyAddToCart';
 import { ScrollProgress } from '@/components/shop/ScrollProgress';
 import { CartPreviewPopup } from '@/components/shop/CartPreviewPopup';
-import ProductImage from '@/components/ProductImage';
-import { useStorefrontProductVariants, StorefrontVariant } from '@/hooks/useStorefrontProductVariants';
-import ProductNotFound from '@/components/shop/ProductNotFound';
 
 interface RpcProduct {
   product_id: string;
@@ -171,14 +167,14 @@ export function ProductDetailPage() {
   const { isLuxuryTheme, accentColor } = useLuxuryTheme();
 
   // Use unified cart hook
-  const { addItem, cartCount, subtotal, MAX_QUANTITY_PER_ITEM } = useShopCart({
+  const { addItem, cartCount, subtotal } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
   });
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [selectedVariant, setSelectedVariant] = useState<StorefrontVariant | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [showZoom, setShowZoom] = useState(false);
@@ -190,26 +186,29 @@ export function ProductDetailPage() {
     quantity: number;
   } | null>(null);
 
-  // Embla carousel for mobile swipe gallery
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, dragFree: false });
+  // Touch swipe state for mobile image carousel
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
 
-  // Sync Embla carousel selection with selectedImage state
-  const onEmblaSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSelectedImage(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  }, []);
 
-  useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.on('select', onEmblaSelect);
-    return () => { emblaApi.off('select', onEmblaSelect); };
-  }, [emblaApi, onEmblaSelect]);
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  }, []);
 
-  // When selectedImage changes externally (thumbnail click, dot click), scroll Embla
-  const scrollToImage = useCallback((index: number) => {
-    setSelectedImage(index);
-    emblaApi?.scrollTo(index);
-  }, [emblaApi]);
+  const handleTouchEnd = useCallback(() => {
+    const delta = touchStartX.current - touchEndX.current;
+    const threshold = 50;
+    if (Math.abs(delta) > threshold) {
+      setSelectedImage((prev) => {
+        const max = (allImages?.length ?? 1) - 1;
+        if (delta > 0) return Math.min(prev + 1, max); // swipe left = next
+        return Math.max(prev - 1, 0); // swipe right = prev
+      });
+    }
+  }, []);
 
   // Track recently viewed products
   const { addToRecentlyViewed } = useRecentlyViewed();
@@ -309,25 +308,6 @@ export function ProductDetailPage() {
     },
     enabled: !!store?.id && !!product?.product_id,
   });
-
-  // Fetch product variants from the database
-  const { data: productVariants = [] } = useStorefrontProductVariants(product?.product_id);
-
-  // Auto-select the first variant when variants load
-  useEffect(() => {
-    if (productVariants.length > 0 && !selectedVariant) {
-      setSelectedVariant(productVariants[0]);
-    }
-  }, [productVariants, selectedVariant]);
-
-  // Compute the displayed price based on selected variant
-  const displayPrice = useMemo(() => {
-    if (selectedVariant) {
-      const variantPrice = selectedVariant.retail_price ?? selectedVariant.price;
-      if (variantPrice !== null) return variantPrice;
-    }
-    return product?.display_price ?? 0;
-  }, [selectedVariant, product?.display_price]);
 
   // Fetch related products
   const { data: relatedProducts = [] } = useQuery({
@@ -459,7 +439,7 @@ export function ProductDetailPage() {
         }
       };
     }
-  }, [product, store, storeSlug, productId, addToRecentlyViewed, allImages, reviews, averageRating]);
+  }, [product, store, productId, storeSlug, addToRecentlyViewed, allImages, reviews, averageRating]);
 
 
   // Toggle wishlist with error handling
@@ -487,45 +467,36 @@ export function ProductDetailPage() {
     }
   };
 
-  // Compute max quantity based on stock and cart limit
-  const maxQuantity = product ? Math.min(product.stock_quantity, MAX_QUANTITY_PER_ITEM) : MAX_QUANTITY_PER_ITEM;
-
   // Add to cart using the unified hook
   const handleAddToCart = () => {
-    if (!store?.id || !product || !product.in_stock) return;
+    if (!store?.id || !product) return;
 
     setIsAddingToCart(true);
 
-    // Use unified cart hook with variant-aware price
+    // Use unified cart hook
     addItem({
       productId: product.product_id,
       quantity,
-      price: displayPrice,
+      price: product.display_price,
       name: product.name,
       imageUrl: product.image_url,
-      variant: selectedVariant?.name || undefined,
+      variant: selectedVariant || undefined,
       metrcRetailId: product.metrc_retail_id,
       excludeFromDiscounts: product.exclude_from_discounts,
       minimumPrice: product.minimum_price ?? undefined,
       minExpiryDays: product.min_expiry_days,
     });
 
-    toast.success('Added to cart', {
-      description: `${quantity}x ${product.name}`,
-      duration: 2000,
-    });
-
     // Show premium cart popup
     setLastAddedItem({
       name: product.name,
-      price: displayPrice,
+      price: product.display_price,
       imageUrl: product.image_url,
       quantity
     });
 
     setTimeout(() => {
       setIsAddingToCart(false);
-      setQuantity(1);
     }, 1500);
   };
 
@@ -539,7 +510,7 @@ export function ProductDetailPage() {
             className={cn(
               size,
               star <= rating
-                ? 'fill-warning text-warning'
+                ? 'fill-yellow-400 text-yellow-400'
                 : 'fill-muted text-muted'
             )}
           />
@@ -552,7 +523,7 @@ export function ProductDetailPage() {
 
   if (productLoading) {
     return (
-      <div className="min-h-dvh bg-card pt-16 sm:pt-24 pb-12">
+      <div className="min-h-dvh bg-neutral-950 pt-16 sm:pt-24 pb-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12">
             <Skeleton className="h-[300px] sm:h-[600px] w-full rounded-2xl sm:rounded-3xl bg-white/5" />
@@ -568,16 +539,29 @@ export function ProductDetailPage() {
   }
 
   if (!product) {
-    return <ProductNotFound storeSlug={storeSlug ?? ''} routePrefix="shop" />;
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+        <h1 className="text-2xl font-bold mb-2">Product Not Found</h1>
+        <p className="text-muted-foreground mb-6">
+          This product doesn't exist or is no longer available.
+        </p>
+        <Link to={`/shop/${storeSlug}/products`}>
+          <Button style={{ backgroundColor: store.primary_color }}>
+            Browse Products
+          </Button>
+        </Link>
+      </div>
+    );
   }
 
-  const hasDiscount = product.compare_at_price && product.compare_at_price > displayPrice;
+  const hasDiscount = product.compare_at_price && product.compare_at_price > product.display_price;
   const discountPercent = hasDiscount
-    ? Math.round((1 - displayPrice / product.compare_at_price!) * 100)
+    ? Math.round((1 - product.display_price / product.compare_at_price!) * 100)
     : 0;
 
   return (
-    <div className={`min-h-dvh overflow-x-hidden ${isLuxuryTheme ? 'bg-background text-white selection:bg-white/20' : 'bg-background'}`}>
+    <div className={`min-h-dvh overflow-x-hidden ${isLuxuryTheme ? 'bg-zinc-950 text-white selection:bg-white/20' : 'bg-background'}`}>
       {/* Ambient Background Effects */}
       {isLuxuryTheme && (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
@@ -596,8 +580,7 @@ export function ProductDetailPage() {
         onClose={() => setLastAddedItem(null)}
       />
 
-      {/* pb-36 on mobile for fixed add-to-cart bar + bottom nav clearance */}
-      <div className="relative z-10 pt-16 sm:pt-24 pb-36 sm:pb-20">
+      <div className="relative z-10 pt-16 sm:pt-24 pb-20">
         <div className="container mx-auto px-4 max-w-7xl">
           {/* Breadcrumbs */}
           <nav className="flex items-center space-x-2 text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
@@ -610,123 +593,30 @@ export function ProductDetailPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-12 lg:gap-20">
             {/* Left Column: Image Gallery (Span 7) */}
-            <div className="lg:col-span-7 space-y-4 sm:space-y-6">
-              {/* Mobile: Embla Carousel for swipe gallery */}
-              <div className="sm:hidden relative">
-                <div className="overflow-hidden rounded-2xl" ref={emblaRef}>
-                  <div className="flex">
-                    {(allImages.length > 0 ? allImages : ['/placeholder.png']).map((img, idx) => (
-                      <div key={idx} className="flex-[0_0_100%] min-w-0">
-                        <div className="relative aspect-square bg-white/5">
-                          <img
-                            src={img}
-                            alt={`${product.name} - image ${idx + 1}`}
-                            className="w-full h-full object-cover"
-                            loading={idx === 0 ? 'eager' : 'lazy'}
-                            onClick={() => setShowZoom(true)}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Mobile overlay buttons */}
-                <div className="absolute top-3 right-3 z-20 flex flex-col gap-2">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-9 w-9 rounded-full bg-black/30 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white"
-                    onClick={toggleWishlist}
-                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                  >
-                    <Heart className={cn('w-4 h-4', isWishlisted && 'fill-red-500 text-red-500')} />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-9 w-9 rounded-full bg-black/30 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white"
-                    aria-label="Share"
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* Mobile badges */}
-                <div className="absolute top-3 left-3 flex flex-col gap-2">
-                  {discountPercent > 0 && (
-                    <Badge className="bg-red-500/90 hover:bg-red-500 backdrop-blur border-none text-white px-2.5 py-0.5 text-[11px] uppercase tracking-widest">
-                      Sale
-                    </Badge>
-                  )}
-                  {!product.in_stock && (
-                    <Badge className="bg-zinc-800/90 text-zinc-300 backdrop-blur border-white/10 px-2.5 py-0.5 text-[11px] uppercase tracking-widest">
-                      Sold Out
-                    </Badge>
-                  )}
-                  {product.in_stock && product.stock_quantity < 10 && (
-                    <Badge className="bg-amber-500/90 text-black backdrop-blur border-none px-2.5 py-0.5 text-[11px] uppercase tracking-widest">
-                      Low Stock
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Mobile dot indicators */}
-                {allImages.length > 1 && (
-                  <div className="flex justify-center gap-1.5 mt-3">
-                    {allImages.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => scrollToImage(idx)}
-                        aria-label={`View image ${idx + 1}`}
-                        className={cn(
-                          'rounded-full transition-all duration-300',
-                          selectedImage === idx
-                            ? 'w-6 h-2 bg-emerald-400'
-                            : 'w-2 h-2 bg-white/30'
-                        )}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {/* Image counter */}
-                {allImages.length > 1 && (
-                  <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
-                    {selectedImage + 1} / {allImages.length}
-                  </div>
-                )}
-              </div>
-
-              {/* Desktop: Static image with hover zoom */}
+            <div className="lg:col-span-7 space-y-6">
               <div
-                className="hidden sm:block relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden bg-white/5 group border border-white/5 cursor-zoom-in"
+                className="relative aspect-square md:aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-white/5 group border border-white/5 cursor-zoom-in"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
                 onClick={() => setShowZoom(true)}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               >
                 <AnimatePresence mode="wait">
-                  {allImages[selectedImage] ? (
-                    <motion.img
-                      key={selectedImage}
-                      src={allImages[selectedImage]}
-                      alt={product.name}
-                      className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isHovering ? 'scale-110' : 'scale-100'}`}
-                      initial={{ opacity: 0, scale: 1.1 }}
-                      animate={{ opacity: 1, scale: isHovering ? 1.1 : 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.4 }}
-                    />
-                  ) : (
-                    <ProductImage
-                      src={null}
-                      alt={product.name}
-                      className="w-full h-full"
-                    />
-                  )}
+                  <motion.img
+                    key={selectedImage}
+                    src={allImages[selectedImage] || '/placeholder.png'}
+                    alt={product.name}
+                    className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isHovering ? 'scale-110' : 'scale-100'}`}
+                    initial={{ opacity: 0, scale: 1.1 }}
+                    animate={{ opacity: 1, scale: isHovering ? 1.1 : 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                  />
                 </AnimatePresence>
 
+                {/* Luxury overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
 
                 <div className="absolute top-4 right-4 z-20 flex flex-col gap-3">
@@ -737,8 +627,7 @@ export function ProductDetailPage() {
                     onClick={toggleWishlist}
                     aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                   >
-                    <Heart className={cn('w-5 h-5', isWishlisted && 'fill-red-500 text-red-500')} />
-                    <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-destructive text-destructive' : ''}`} />
+                    <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                   </Button>
                   <Button
                     size="icon"
@@ -750,19 +639,20 @@ export function ProductDetailPage() {
                   </Button>
                 </div>
 
+                {/* Badges */}
                 <div className="absolute top-4 left-4 flex flex-col gap-2">
                   {discountPercent > 0 && (
-                    <Badge className="bg-destructive/90 hover:bg-destructive backdrop-blur border-none text-white px-3 py-1 text-xs uppercase tracking-widest">
+                    <Badge className="bg-red-500/90 hover:bg-red-500 backdrop-blur border-none text-white px-3 py-1 text-xs uppercase tracking-widest">
                       Sale
                     </Badge>
                   )}
                   {!product.in_stock && (
-                    <Badge className="bg-muted text-muted-foreground backdrop-blur border-white/10 px-3 py-1 text-xs uppercase tracking-widest">
+                    <Badge className="bg-zinc-800/90 text-zinc-300 backdrop-blur border-white/10 px-3 py-1 text-xs uppercase tracking-widest">
                       Sold Out
                     </Badge>
                   )}
                   {product.in_stock && product.stock_quantity < 10 && (
-                    <Badge className="bg-warning/90 text-warning-foreground backdrop-blur border-none px-3 py-1 text-xs uppercase tracking-widest">
+                    <Badge className="bg-amber-500/90 text-black backdrop-blur border-none px-3 py-1 text-xs uppercase tracking-widest">
                       Low Stock
                     </Badge>
                   )}
@@ -780,7 +670,7 @@ export function ProductDetailPage() {
                       className={cn(
                         'rounded-full transition-all duration-300',
                         selectedImage === idx
-                          ? 'w-6 h-2 bg-success'
+                          ? 'w-6 h-2 bg-emerald-400'
                           : 'w-2 h-2 bg-white/30'
                       )}
                     />
@@ -794,15 +684,13 @@ export function ProductDetailPage() {
                   {allImages.map((img, idx) => (
                     <button
                       key={img}
-                      onClick={() => scrollToImage(idx)}
-                      className={cn(
-                        'relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden transition-all duration-300',
-                        selectedImage === idx
-                          ? 'ring-2 ring-primary ring-offset-2 ring-offset-black scale-105 opacity-100'
-                          : 'opacity-50 hover:opacity-80 hover:scale-105'
-                      )}
+                      onClick={() => setSelectedImage(idx)}
+                      className={`relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden transition-all duration-300 ${selectedImage === idx
+                        ? 'ring-2 ring-primary ring-offset-2 ring-offset-black scale-105 opacity-100'
+                        : 'opacity-50 hover:opacity-80 hover:scale-105'
+                        }`}
                     >
-                      <ProductImage src={img} alt={`${product.name} view ${idx + 1}`} className="w-full h-full" />
+                      <img src={img} alt={`${product.name} view ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
                     </button>
                   ))}
                 </div>
@@ -834,9 +722,9 @@ export function ProductDetailPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-warning text-warning" />
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                       <span className={`text-sm font-medium ${isLuxuryTheme ? 'text-white' : ''}`}>{averageRating.toFixed(1)}</span>
-                      <span className={`text-xs ${isLuxuryTheme ? 'text-white/70' : 'text-muted-foreground'}`}>({reviews.length})</span>
+                      <span className={`text-xs ${isLuxuryTheme ? 'text-white/40' : 'text-muted-foreground'}`}>({reviews.length})</span>
                     </div>
                   </div>
 
@@ -852,17 +740,13 @@ export function ProductDetailPage() {
                     </p>
                   )}
 
-                  {/* Price — updates when a variant is selected */}
+                  {/* Price */}
                   <div className="flex items-baseline gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <span className="text-2xl sm:text-3xl font-medium text-emerald-400">
-                      {formatCurrency(displayPrice)}
-                    <span className="text-2xl sm:text-3xl font-medium text-success">
                       {formatCurrency(product.display_price)}
                     </span>
-                    {product.compare_at_price && product.compare_at_price > displayPrice && (
-                      <span className={`text-base sm:text-lg line-through ${isLuxuryTheme ? 'text-white/30 decoration-white/30' : 'text-muted-foreground'}`}>
                     {product.compare_at_price && (
-                      <span className={`text-base sm:text-lg line-through ${isLuxuryTheme ? 'text-white/70 decoration-white/70' : 'text-muted-foreground'}`}>
+                      <span className={`text-base sm:text-lg line-through ${isLuxuryTheme ? 'text-white/30 decoration-white/30' : 'text-muted-foreground'}`}>
                         {formatCurrency(product.compare_at_price)}
                       </span>
                     )}
@@ -874,13 +758,13 @@ export function ProductDetailPage() {
                       {product.thc_content !== null && (
                         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-muted'}`}>
                           <span className={`text-xs uppercase tracking-wider font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>THC</span>
-                          <span className={`text-sm font-bold ${isLuxuryTheme ? 'text-success' : 'text-foreground'}`}>{product.thc_content}%</span>
+                          <span className={`text-sm font-bold ${isLuxuryTheme ? 'text-emerald-400' : 'text-foreground'}`}>{product.thc_content}%</span>
                         </div>
                       )}
                       {product.cbd_content !== null && (
                         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-muted'}`}>
                           <span className={`text-xs uppercase tracking-wider font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>CBD</span>
-                          <span className={`text-sm font-bold ${isLuxuryTheme ? 'text-info' : 'text-foreground'}`}>{product.cbd_content}%</span>
+                          <span className={`text-sm font-bold ${isLuxuryTheme ? 'text-blue-400' : 'text-foreground'}`}>{product.cbd_content}%</span>
                         </div>
                       )}
                     </div>
@@ -890,44 +774,36 @@ export function ProductDetailPage() {
                   <div className="mb-6">
                     {product.in_stock ? (
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-success" />
-                        <span className={`text-sm ${isLuxuryTheme ? 'text-success' : 'text-success'}`}>In Stock</span>
+                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <span className={`text-sm ${isLuxuryTheme ? 'text-emerald-400' : 'text-green-600'}`}>In Stock</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-destructive" />
-                        <span className={`text-sm ${isLuxuryTheme ? 'text-destructive' : 'text-destructive'}`}>Out of Stock</span>
+                        <div className="w-2 h-2 rounded-full bg-red-500" />
+                        <span className={`text-sm ${isLuxuryTheme ? 'text-red-400' : 'text-red-600'}`}>Out of Stock</span>
                       </div>
                     )}
                   </div>
 
                   <Separator className={isLuxuryTheme ? "bg-white/10 mb-8" : "mb-8"} />
 
-                  {/* Variant Selector */}
-                  {productVariants.length > 0 && (
+                  {/* Variants */}
+                  {product.variants && product.variants.length > 0 && (
                     <div className="mb-8 space-y-4">
-                      <span className={`text-sm uppercase tracking-widest font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>
-                        Select Option
-                      </span>
+                      <span className={`text-sm uppercase tracking-widest font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>Select Option</span>
                       <div className="flex flex-wrap gap-3">
-                        {productVariants.map((variant) => {
-                          const isSelected = selectedVariant?.id === variant.id;
-                          const variantPrice = variant.retail_price ?? variant.price;
+                        {product.variants.map((variant) => {
+                          const variantName = variant;
                           return (
                             <button
-                              key={variant.id}
-                              onClick={() => setSelectedVariant(variant)}
-                              className={`px-6 py-3 rounded-xl border transition-all duration-300 text-sm font-medium ${isSelected
+                              key={variantName}
+                              onClick={() => setSelectedVariant(variantName)}
+                              className={`px-6 py-3 rounded-xl border transition-all duration-300 text-sm font-medium ${selectedVariant === variantName
                                 ? 'bg-white text-black border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]'
                                 : 'bg-transparent text-white/70 border-white/10 hover:border-white/30 hover:bg-white/5'
                                 }`}
                             >
-                              <span>{variant.name}</span>
-                              {variantPrice !== null && (
-                                <span className={`ml-2 text-xs ${isSelected ? 'text-black/60' : 'text-white/40'}`}>
-                                  {formatCurrency(variantPrice)}
-                                </span>
-                              )}
+                              {variantName}
                             </button>
                           );
                         })}
@@ -935,49 +811,36 @@ export function ProductDetailPage() {
                     </div>
                   )}
 
-                  {/* Add To Cart Actions - hidden on mobile, shown via fixed bar instead */}
-                  <div className="hidden sm:block space-y-6">
-                    <div className="flex items-center gap-4">
+                  {/* Add To Cart Actions */}
+                  <div className="space-y-4 sm:space-y-6">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <div className={`flex items-center rounded-xl border p-1 ${isLuxuryTheme ? 'bg-black/30 border-white/10' : 'bg-muted'}`}>
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          disabled={quantity <= 1 || !product.in_stock}
-                          aria-label="Decrease quantity"
-                          className={cn(
-                            'w-10 h-10 flex items-center justify-center rounded-lg transition-colors',
-                            isLuxuryTheme ? 'hover:bg-white/10 text-white' : 'hover:bg-background',
-                            (quantity <= 1 || !product.in_stock) && 'opacity-30 cursor-not-allowed'
-                          )}
+                          className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${isLuxuryTheme ? 'hover:bg-white/10 text-white' : 'hover:bg-background'
+                            }`}
                         >
                           <Minus className="w-4 h-4" />
                         </button>
-                        <span className={`w-12 text-center text-lg font-medium tabular-nums ${isLuxuryTheme ? 'text-white' : ''}`}>{quantity}</span>
+                        <span className={`w-12 text-center text-lg font-medium ${isLuxuryTheme ? 'text-white' : ''}`}>{quantity}</span>
                         <button
-                          onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
-                          disabled={quantity >= maxQuantity || !product.in_stock}
-                          aria-label="Increase quantity"
-                          className={cn(
-                            'w-10 h-10 flex items-center justify-center rounded-lg transition-colors',
-                            isLuxuryTheme ? 'hover:bg-white/10 text-white' : 'hover:bg-background',
-                            (quantity >= maxQuantity || !product.in_stock) && 'opacity-30 cursor-not-allowed'
-                          )}
+                          onClick={() => setQuantity(quantity + 1)}
+                          className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${isLuxuryTheme ? 'hover:bg-white/10 text-white' : 'hover:bg-background'
+                            }`}
                         >
                           <Plus className="w-4 h-4" />
                         </button>
                       </div>
                       <div className="flex-1">
                         <motion.button
-                          data-testid="add-to-cart-button"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={handleAddToCart}
                           disabled={!product.in_stock || isAddingToCart}
-                          className={`w-full py-4 rounded-xl font-medium text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group ${!product.in_stock
-                            ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                           className={`w-full py-3 sm:py-4 rounded-xl font-medium text-base sm:text-lg flex items-center justify-center gap-2 sm:gap-3 transition-all relative overflow-hidden group ${!product.in_stock
-                            ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                            ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                             : isLuxuryTheme
-                              ? 'bg-gradient-to-r from-success to-success/80 hover:from-success/90 hover:to-success text-white shadow-[0_0_30px_rgba(16,185,129,0.3)]'
+                              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white shadow-[0_0_30px_rgba(16,185,129,0.3)]'
                               : 'bg-primary text-primary-foreground hover:bg-primary/90'
                             }`}
                         >
@@ -1015,9 +878,9 @@ export function ProductDetailPage() {
                           return (
                             <div key={effect} className="flex flex-col items-center gap-2 group">
                               <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
-                                <IconComponent className="w-5 h-5 text-success" />
+                                <IconComponent className="w-5 h-5 text-emerald-400" />
                               </div>
-                              <span className="text-xs uppercase tracking-wider text-white/70 font-medium">{effect}</span>
+                              <span className="text-xs uppercase tracking-wider text-white/40 font-medium">{effect}</span>
                             </div>
                           );
                         })}
@@ -1031,19 +894,19 @@ export function ProductDetailPage() {
                       <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                         <Truck className="w-4 h-4 text-white/60" />
                       </div>
-                      <span className="text-[10px] uppercase tracking-wider text-white/70">Fast Delivery</span>
+                      <span className="text-[10px] uppercase tracking-wider text-white/40">Fast Delivery</span>
                     </div>
                     <div className="flex flex-col items-center text-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                         <Shield className="w-4 h-4 text-white/60" />
                       </div>
-                      <span className="text-[10px] uppercase tracking-wider text-white/70">Secure</span>
+                      <span className="text-[10px] uppercase tracking-wider text-white/40">Secure</span>
                     </div>
                     <div className="flex flex-col items-center text-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                         <RotateCcw className="w-4 h-4 text-white/60" />
                       </div>
-                      <span className="text-[10px] uppercase tracking-wider text-white/70">Returns</span>
+                      <span className="text-[10px] uppercase tracking-wider text-white/40">Returns</span>
                     </div>
                   </div>
 
@@ -1061,13 +924,13 @@ export function ProductDetailPage() {
                 <TabsList className="w-full justify-start bg-transparent border-b border-white/10 p-0 h-auto mb-6 sm:mb-8">
                   <TabsTrigger
                     value="description"
-                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-success data-[state=active]:text-success transition-all"
+                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
                   >
                     Description
                   </TabsTrigger>
                   <TabsTrigger
                     value="reviews"
-                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-success data-[state=active]:text-success transition-all"
+                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
                   >
                     Reviews ({reviews.length})
                   </TabsTrigger>
@@ -1110,12 +973,12 @@ export function ProductDetailPage() {
                             <div className="flex justify-center mt-2">
                               {renderStars(averageRating, 'w-5 h-5')}
                             </div>
-                            <span className="text-sm text-white/70 mt-2 block">{reviews.length} ratings</span>
+                            <span className="text-sm text-white/40 mt-2 block">{reviews.length} ratings</span>
                           </div>
                           <div className="hidden sm:block h-20 w-px bg-white/10" />
                           <Separator className="sm:hidden bg-white/10" />
                           <div className="flex-1 text-center sm:text-left">
-                            <h2 className="text-xl sm:text-2xl font-light text-white mb-2">Customer Reviews</h2>
+                            <h3 className="text-xl sm:text-2xl font-light text-white mb-2">Customer Reviews</h3>
                             <p className="text-white/60 mb-4 sm:mb-6">95% of customers recommended this product</p>
                             {store && product && (
                               <ReviewForm
@@ -1144,14 +1007,14 @@ export function ProductDetailPage() {
                                     <div className="flex items-center gap-2">
                                       {renderStars(review.rating, 'w-3 h-3')}
                                       {review.is_verified_purchase && (
-                                        <Badge variant="secondary" className="bg-success/10 text-success border-0 text-[10px] h-5 px-1.5">
+                                        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 border-0 text-[10px] h-5 px-1.5">
                                           Verified
                                         </Badge>
                                       )}
                                     </div>
                                   </div>
                                 </div>
-                                <span className="text-xs text-white/70">
+                                <span className="text-xs text-white/30">
                                   {formatSmartDate(review.created_at)}
                                 </span>
                               </div>
@@ -1169,12 +1032,6 @@ export function ProductDetailPage() {
               </Tabs>
             </div>
 
-            {/* Related Products Carousel */}
-            {product.category && (
-              <RelatedProductsCarousel
-                currentProductId={product.product_id}
-                category={product.category}
-              />
             {/* Related Products */}
             {relatedProducts.length > 0 && (
               <div className="relative">
@@ -1193,11 +1050,18 @@ export function ProductDetailPage() {
                     >
                       <div className="group relative rounded-2xl overflow-hidden bg-white/5 border border-white/5 hover:border-emerald-500/50 transition-all duration-300 h-full hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-900/20">
                         <div className="aspect-[4/5] relative overflow-hidden">
-                          <ProductImage
-                            src={relatedProduct.image_url}
-                            alt={relatedProduct.name}
-                            className="w-full h-full transition-transform duration-700 group-hover:scale-110"
-                          />
+                          {relatedProduct.image_url ? (
+                            <img
+                              src={relatedProduct.image_url}
+                              alt={relatedProduct.name}
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[0.2] group-hover:grayscale-0"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-white/5">
+                              <Package className="w-12 h-12 text-white/10" />
+                            </div>
+                          )}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 pointer-events-none" />
                           <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                             <Button size="sm" className="w-full bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-lg shadow-emerald-900/50">
@@ -1231,22 +1095,22 @@ export function ProductDetailPage() {
           </div>
 
 
-          {/* Mobile Fixed Add to Cart Bar - always visible on mobile */}
-          <MobileFixedAddToCart
+          {/* Enhanced Mobile Sticky Add to Cart (kept as is) */}
+          <EnhancedStickyAddToCart
             product={{
+              product_id: product.product_id,
               name: product.name,
               display_price: product.display_price,
-              display_price: displayPrice,
               compare_at_price: product.compare_at_price,
               in_stock: product.in_stock,
               image_url: product.image_url,
             }}
-            quantity={quantity}
-            onQuantityChange={setQuantity}
-            maxQuantity={maxQuantity}
-            onAddToCart={handleAddToCart}
-            isAddingToCart={isAddingToCart}
             primaryColor={store.primary_color}
+            onAddToCart={async () => {
+              handleAddToCart();
+            }}
+            onToggleWishlist={toggleWishlist}
+            isWishlisted={isWishlisted}
           />
         </div>
       </div>

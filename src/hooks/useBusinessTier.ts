@@ -294,7 +294,7 @@ export function useBusinessTier() {
       hasAttemptedUpdate.current = true;
       recalculateTierMutation.mutate();
     }
-    // Remove recalculateTierMutation from deps to prevent infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- recalculateTierMutation is intentionally omitted to prevent infinite loops (mutation triggers data refetch which triggers this effect)
   }, [tierData]);
 
   return {

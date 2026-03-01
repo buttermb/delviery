@@ -119,8 +119,8 @@ export function OrderThreadedNotes({
   const tenantId = tenant?.id;
   const currentUserId = admin?.id;
 
-  // Query key for notes
-  const notesQueryKey = ['order-notes', orderId, tenantId];
+  // Query key for notes - memoized to prevent useEffect dependency changes
+  const notesQueryKey = useMemo(() => ['order-notes', orderId, tenantId], [orderId, tenantId]);
 
   // Fetch team members for @mentions
   const { data: teamMembers = [] } = useQuery({
@@ -128,7 +128,7 @@ export function OrderThreadedNotes({
     queryFn: async (): Promise<TeamMember[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await supabase
         .from('tenant_users')
         .select('id, user_id, email, full_name, first_name, last_name, avatar_url, role')
         .eq('tenant_id', tenantId)
@@ -141,7 +141,7 @@ export function OrderThreadedNotes({
         return [];
       }
 
-      return (data ?? []) as TeamMember[];
+      return (data ?? []) as unknown as TeamMember[];
     },
     enabled: !!tenantId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
@@ -154,7 +154,7 @@ export function OrderThreadedNotes({
       if (!tenantId || !orderId) return [];
 
       // Query order_notes with user info joined
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await supabase
         .from('order_notes')
         .select(`
           id,
@@ -189,7 +189,7 @@ export function OrderThreadedNotes({
         return [];
       }
 
-      return (data ?? []) as OrderNote[];
+      return (data ?? []) as unknown as OrderNote[];
     },
     enabled: !!tenantId && !!orderId,
   });
@@ -213,7 +213,7 @@ export function OrderThreadedNotes({
       // Convert display mentions to plain @names for storage
       const plainContent = content.replace(mentionPattern, '@$1');
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await supabase
         .from('order_notes')
         .insert({
           tenant_id: tenantId,
@@ -235,7 +235,7 @@ export function OrderThreadedNotes({
 
       if (error) throw error;
 
-      return data as OrderNote;
+      return data as unknown as OrderNote;
     },
     onSuccess: async (newNote) => {
       // Invalidate notes query
@@ -291,7 +291,7 @@ export function OrderThreadedNotes({
         throw new Error('Missing required data');
       }
 
-      const { error: updateError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { error: updateError } = await supabase
         .from('order_notes')
         .update({
           is_pinned: true,
@@ -324,7 +324,7 @@ export function OrderThreadedNotes({
         throw new Error('Missing tenant ID');
       }
 
-      const { error: updateError } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { error: updateError } = await supabase
         .from('order_notes')
         .update({
           is_pinned: false,

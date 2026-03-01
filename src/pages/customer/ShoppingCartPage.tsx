@@ -290,7 +290,7 @@ export default function ShoppingCartPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleRemoveItem(item.product_id || item.productId, selectedWeight)}
+                              onClick={() => handleRemoveItem(item.product_id || (item as unknown as Record<string, unknown>).productId as string, selectedWeight)}
                               className="text-[hsl(var(--customer-text-light))] hover:text-[hsl(var(--customer-accent))]"
                               aria-label="Remove item"
                             >
@@ -305,7 +305,7 @@ export default function ShoppingCartPage() {
                                 <button
                                   onClick={() => handleUpdateQuantity(
                                     item.id,
-                                    item.product_id || item.productId,
+                                    item.product_id || (item as unknown as Record<string, unknown>).productId as string,
                                     selectedWeight,
                                     item.quantity - 1
                                   )}
@@ -320,7 +320,7 @@ export default function ShoppingCartPage() {
                                 <button
                                   onClick={() => handleUpdateQuantity(
                                     item.id,
-                                    item.product_id || item.productId,
+                                    item.product_id || (item as unknown as Record<string, unknown>).productId as string,
                                     selectedWeight,
                                     item.quantity + 1
                                   )}

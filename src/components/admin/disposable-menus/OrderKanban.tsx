@@ -85,7 +85,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
     };
 
     orders.forEach((order: MenuOrderItem) => {
-      const column = COLUMNS.find(c => c.statuses.includes(order.status));
+      const column = COLUMNS.find(c => (c.statuses as string[]).includes(order.status));
       if (column) {
         grouped[column.id].push(order);
       } else {
@@ -265,7 +265,7 @@ export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate
       {/* Dialogs */}
       {selectedOrder && (
         <OrderDetailsDialog
-          order={selectedOrder}
+          order={selectedOrder as unknown as Parameters<typeof OrderDetailsDialog>[0]['order']}
           open={detailsOpen}
           onOpenChange={setDetailsOpen}
           onUpdate={() => refetch()}

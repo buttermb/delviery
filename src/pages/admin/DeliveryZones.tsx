@@ -49,7 +49,6 @@ import {
   MapPin,
   Trash2,
   Edit2,
-  Save,
   Clock,
   DollarSign,
   Loader2,
@@ -96,7 +95,7 @@ const DEFAULT_CENTER: L.LatLngTuple = [39.8283, -98.5795]; // Center of USA
 const DEFAULT_ZOOM = 4;
 
 export default function DeliveryZones() {
-  const { tenantId, hasPermission, isReady } = useTenantContext();
+  const { tenantId: _tenantId, hasPermission, isReady } = useTenantContext();
   const {
     zones,
     isLoading,

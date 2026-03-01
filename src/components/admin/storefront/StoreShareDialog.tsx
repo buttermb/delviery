@@ -77,7 +77,7 @@ export function StoreShareDialog({
   
   const shareUrl = useEncryptedLink && encryptedUrl ? encryptedUrl : publicUrl;
 
-  // Generate QR code when dialog opens or share URL changes (e.g. encrypted toggle)
+  // Generate QR code when dialog opens
   useEffect(() => {
     if (open && shareUrl) {
       setQrLoading(true);
@@ -89,6 +89,17 @@ export function StoreShareDialog({
         .finally(() => setQrLoading(false));
     }
   }, [open, shareUrl]);
+
+  // Regenerate QR when URL type changes
+  useEffect(() => {
+    if (open && shareUrl) {
+      setQrLoading(true);
+      generateQRCodeDataURL(shareUrl, { size: 256 })
+        .then(setQrCodeDataUrl)
+        .catch((err) => { logger.warn('QR code generation failed', err); })
+        .finally(() => setQrLoading(false));
+    }
+  }, [useEncryptedLink, open, shareUrl]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);

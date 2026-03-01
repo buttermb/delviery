@@ -166,7 +166,7 @@ export function useConfirmOrderInventory() {
             return { previousProducts };
         },
 
-        onError: (error, { items }, _context) => {
+        onError: (error, { items: _items }, _context) => {
             logger.error('Confirm order inventory sync failed, rolling back', error);
 
             // Invalidate list caches to refetch correct state
@@ -265,7 +265,7 @@ export function useCancelOrderInventory() {
             return { previousProducts };
         },
 
-        onError: (error, { items }, _context) => {
+        onError: (error, { items: _items }, _context) => {
             logger.error('Cancel order inventory sync failed, rolling back', error);
 
             // Invalidate list caches to refetch correct state

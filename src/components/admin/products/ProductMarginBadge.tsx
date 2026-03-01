@@ -58,7 +58,7 @@ export function ProductMarginBadge({
 
   const isLowMargin = margin < marginThreshold;
   const isNegativeMargin = margin < 0;
-  const isHealthyMargin = margin >= marginThreshold;
+  const _isHealthyMargin = margin >= marginThreshold;
 
   // Determine badge variant and icon
   let variant: "default" | "destructive" | "outline" | "secondary" = "default";

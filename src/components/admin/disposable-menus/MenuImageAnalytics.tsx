@@ -34,7 +34,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
     from: subDays(new Date(), 30),
     to: new Date(),
   });
-  const [filters, setFilters] = useState<FilterState>({});
+  const [_filters, setFilters] = useState<FilterState>({});
   const { data: analytics, isLoading } = useMenuAnalytics(menuId);
   const { data: productAnalytics } = useProductImageAnalytics(menuId);
 
@@ -64,7 +64,7 @@ export const MenuImageAnalytics = ({ menuId }: MenuImageAnalyticsProps) => {
 
   // Fetch real trend data from menu_access_logs
   const { data: trendData = [] } = useQuery({
-    queryKey: queryKeys.menuImageTrend.byMenu(menuId, dateRange),
+    queryKey: queryKeys.menuImageTrend.byMenu(menuId, JSON.stringify(dateRange)),
     queryFn: async () => {
       const days = 7;
       const trends = [];

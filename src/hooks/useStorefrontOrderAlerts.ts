@@ -39,9 +39,11 @@ export function useStorefrontOrderAlerts({
 
     useEffect(() => {
         if (!enabled || !tenant?.id) return;
+        let cancelled = false;
 
         // First, fetch stores for this tenant
         const fetchStoresAndSubscribe = async () => {
+            if (cancelled) return;
             const { data: stores, error } = await supabase
                 .from('marketplace_stores')
                 .select('id, store_name')
@@ -52,7 +54,7 @@ export function useStorefrontOrderAlerts({
                 return;
             }
 
-            if (!stores || stores.length === 0) {
+            if (cancelled || !stores || stores.length === 0) {
                 return; // No stores, no need to subscribe
             }
 
@@ -62,6 +64,7 @@ export function useStorefrontOrderAlerts({
             // Subscribe to storefront_orders for these stores
             const channelKey = `storefront-order-alerts-${tenant.id}`;
 
+            if (cancelled) return;
             channelRef.current = supabase
                 .channel(channelKey)
                 .on(
@@ -80,7 +83,7 @@ export function useStorefrontOrderAlerts({
                             return;
                         }
 
-                        const storeName = storeNameMap[storeId] || 'Storefront';
+                        const _storeName = storeNameMap[storeId] || 'Storefront';
                         const customerName = (order.customer_name as string) || 'Customer';
                         const total = (order.total as number) ?? 0;
 
@@ -125,6 +128,7 @@ export function useStorefrontOrderAlerts({
 
         // Cleanup
         return () => {
+            cancelled = true;
             if (channelRef.current) {
                 supabase.removeChannel(channelRef.current).catch((err) => {
                     logger.warn('Error removing realtime channel', { error: err, component: 'useStorefrontOrderAlerts' });

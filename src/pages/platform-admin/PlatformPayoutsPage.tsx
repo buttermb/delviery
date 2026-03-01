@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { untypedClient } from '@/lib/supabaseUntyped';
+import { supabase } from '@/integrations/supabase/client';
 import {
     Table,
     TableBody,
@@ -30,6 +30,16 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { queryKeys } from '@/lib/queryKeys';
 
+interface PayoutRecord {
+    id: string;
+    seller_tenant_id: string;
+    amount: number;
+    method?: string;
+    status: string;
+    created_at: string;
+    tenant?: { business_name: string; slug: string };
+}
+
 export default function PlatformPayoutsPage() {
     const { isPlatformAdmin } = usePlatformAdmin();
     const queryClient = useQueryClient();
@@ -42,8 +52,8 @@ export default function PlatformPayoutsPage() {
         queryFn: async () => {
             // Need to join with tenants to see WHO is asking
             // Supabase join syntax: tenant:tenants!marketplace_payouts_seller_tenant_id_fkey (*)
-            const { data, error } = await untypedClient
-                .from('marketplace_payouts')
+            const { data, error } = await supabase
+                .from('marketplace_payouts' as 'tenants') // Supabase type limitation
                 .select(`
             *,
             tenant:tenants!marketplace_payouts_seller_tenant_id_fkey (
@@ -63,8 +73,8 @@ export default function PlatformPayoutsPage() {
     // Approve Mutation
     const approveMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { error } = await untypedClient
-                .from('marketplace_payouts')
+            const { error } = await supabase
+                .from('marketplace_payouts' as 'tenants') // Supabase type limitation
                 .update({
                     status: 'completed',
                     processed_at: new Date().toISOString()
@@ -85,8 +95,8 @@ export default function PlatformPayoutsPage() {
     const rejectMutation = useMutation({
         mutationFn: async () => {
             if (!rejectDialog.id) return;
-            const { error } = await untypedClient
-                .from('marketplace_payouts')
+            const { error } = await supabase
+                .from('marketplace_payouts' as 'tenants') // Supabase type limitation
                 .update({
                     status: 'failed', // or rejected
                     notes: rejectReason,
@@ -135,15 +145,15 @@ export default function PlatformPayoutsPage() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            payouts.map((payout: { id: string; seller_tenant_id: string; amount: number; status: string; created_at: string; paid_at?: string; tenant?: { business_name: string } }) => (
+                            (payouts as unknown as PayoutRecord[]).map((payout) => (
                                 <TableRow key={payout.id}>
                                     <TableCell>
                                         <div className="font-medium">{payout.tenant?.business_name}</div>
-                                        <div className="text-xs text-muted-foreground">ID: {payout.seller_tenant_id.slice(0, 8)}...</div>
+                                        <div className="text-xs text-muted-foreground">ID: {payout.seller_tenant_id?.slice(0, 8)}...</div>
                                     </TableCell>
                                     <TableCell>{formatSmartDate(payout.created_at)}</TableCell>
                                     <TableCell className="font-bold">{formatCurrency(payout.amount)}</TableCell>
-                                    <TableCell className="capitalize">{payout.method}</TableCell>
+                                    <TableCell className="capitalize">{payout.method ?? '—'}</TableCell>
                                     <TableCell><Badge variant="secondary">{payout.status}</Badge></TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">

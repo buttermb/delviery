@@ -81,6 +81,10 @@ export function initEventBusInvalidationBridge(
         orderId: payload.orderId,
         customerId: payload.customerId,
       });
+      invalidateOnEvent(queryClient, 'PAYMENT_RECEIVED', payload.tenantId || tenantId, {
+        orderId: payload.orderId,
+        customerId: payload.customerId,
+      });
     }),
   );
 
@@ -114,6 +118,38 @@ export function initEventBusInvalidationBridge(
     }),
   );
 
+  // menu_order_created → STOREFRONT_ORDER
+  unsubscribers.push(
+    eventBus.subscribe('menu_order_created', (payload) => {
+      logger.debug('[EventBridge] menu_order_created → STOREFRONT_ORDER', { orderId: payload.orderId });
+      invalidateOnEvent(queryClient, 'STOREFRONT_ORDER', payload.tenantId || tenantId, {
+        orderId: payload.orderId,
+      });
+    }),
+  );
+
+  // menu_product_hidden → INVENTORY_ADJUSTED
+  unsubscribers.push(
+    eventBus.subscribe('menu_product_hidden', (payload) => {
+      logger.debug('[EventBridge] menu_product_hidden → INVENTORY_ADJUSTED', { productId: payload.productId });
+      invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', payload.tenantId || tenantId, {
+        productId: payload.productId,
+        menuId: payload.menuId,
+      });
+    }),
+  );
+
+  // menu_product_restored → INVENTORY_ADJUSTED
+  unsubscribers.push(
+    eventBus.subscribe('menu_product_restored', (payload) => {
+      logger.debug('[EventBridge] menu_product_restored → INVENTORY_ADJUSTED', { productId: payload.productId });
+      invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', payload.tenantId || tenantId, {
+        productId: payload.productId,
+        menuId: payload.menuId,
+      });
+    }),
+  );
+
   // menu_archived → MENU_BURNED
   unsubscribers.push(
     eventBus.subscribe('menu_archived', (payload) => {
@@ -121,6 +157,24 @@ export function initEventBusInvalidationBridge(
       invalidateOnEvent(queryClient, 'MENU_BURNED', payload.tenantId || tenantId, {
         menuId: payload.menuId,
       });
+    }),
+  );
+
+  // menu_reactivated → MENU_PUBLISHED
+  unsubscribers.push(
+    eventBus.subscribe('menu_reactivated', (payload) => {
+      logger.debug('[EventBridge] menu_reactivated → MENU_PUBLISHED', { menuId: payload.menuId });
+      invalidateOnEvent(queryClient, 'MENU_PUBLISHED', payload.tenantId || tenantId, {
+        menuId: payload.menuId,
+      });
+    }),
+  );
+
+  // storefront_synced → MENU_UPDATED
+  unsubscribers.push(
+    eventBus.subscribe('storefront_synced', (payload) => {
+      logger.debug('[EventBridge] storefront_synced → MENU_UPDATED', { storefrontId: payload.storefrontId });
+      invalidateOnEvent(queryClient, 'MENU_UPDATED', payload.tenantId || tenantId);
     }),
   );
 

@@ -9,7 +9,7 @@ export function OrdersScene() {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const moveCard = (startFrame: number, startX: number, endX: number) => {
+  const _moveCard = (startFrame: number, startX: number, endX: number) => {
     return spring({
       frame: frame - startFrame,
       fps,

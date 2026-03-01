@@ -318,6 +318,7 @@ export function useRealTimeSubscription<T = Record<string, unknown>>(
         setupSubscriptionInternal();
       }
     }, delay);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setupSubscriptionInternal is defined below; circular dep would cause infinite retries
   }, [table]);
 
   /**

@@ -138,6 +138,7 @@ export function SinglePageCheckout() {
     if (isInitialized && cartItems.length > 0) {
       checkStock();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- checkStock is defined below, only run when cart initialization changes
   }, [isInitialized, cartItems.length]);
 
   // Redirect if cart empty
@@ -146,7 +147,7 @@ export function SinglePageCheckout() {
       toast.warning('Your cart is empty');
       navigate(`/shop/${storeSlug}/cart`);
     }
-  }, [isInitialized, cartItems.length]);
+  }, [isInitialized, cartItems.length, navigate, storeSlug]);
 
   const checkStock = async () => {
     setIsCheckingStock(true);

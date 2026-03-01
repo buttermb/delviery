@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { untypedClient } from '@/lib/supabaseUntyped';
+import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,8 +27,8 @@ export default function CustomDomain() {
       if (!tenantId) return [];
 
       try {
-        const { data, error } = await untypedClient
-          .from('custom_domains')
+        const { data, error } = await supabase
+          .from('custom_domains' as 'tenants') // Supabase type limitation
           .select('*')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
@@ -48,8 +48,8 @@ export default function CustomDomain() {
     mutationFn: async (domainName: string) => {
       if (!tenantId) throw new Error('Tenant ID required');
 
-      const { data, error } = await untypedClient
-        .from('custom_domains')
+      const { data, error } = await supabase
+        .from('custom_domains' as 'tenants') // Supabase type limitation
         .insert({
           tenant_id: tenantId,
           domain: domainName,
@@ -154,7 +154,7 @@ export default function CustomDomain() {
         <CardContent>
           {domains && domains.length > 0 ? (
             <div className="space-y-4">
-              {domains.map((domainItem: { id: string; domain: string; status: string; ssl_status?: string; created_at: string }) => (
+              {(domains as unknown as Array<{ id: string; domain: string; status: string; ssl_status?: string; created_at: string }>).map((domainItem) => (
                 <div key={domainItem.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-4">
                     <Globe className="h-5 w-5" />

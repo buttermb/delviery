@@ -93,7 +93,7 @@ export default function PointOfSale() {
   });
 
   // Load customers via useQuery with loading/error states
-  const { data: customers = [], isLoading: customersLoading, isError: customersError, refetch: refetchCustomers } = useQuery({
+  const { data: customers = [], isLoading: customersLoading, isError: customersError, refetch: _refetchCustomers } = useQuery({
     queryKey: queryKeys.customers.list(tenantId),
     queryFn: async () => {
       if (!tenantId) return [];
@@ -129,10 +129,12 @@ export default function PointOfSale() {
     if (tenantId) {
       loadProducts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadProducts is defined below, only run when tenantId changes
   }, [tenantId]);
 
   useEffect(() => {
     filterProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- filterProducts is defined below, runs when search/filter/products change
   }, [searchQuery, categoryFilter, products]);
 
   // Full screen toggle handler
@@ -447,7 +449,7 @@ export default function PointOfSale() {
         quantity: item.quantity,
         category: 'flower',
         stock_quantity: 999, // Placeholder
-        subtotal: item.price * item.quantity,
+        subtotal: Number(item.price) * Number(item.quantity),
         image_url: null,
         thc_percent: null
       }));

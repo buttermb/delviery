@@ -105,6 +105,7 @@ export default function MenuAccess() {
 
   useEffect(() => {
     validateAccess();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- validateAccess is defined below, only run when token/accessCode changes
   }, [token, accessCode]);
 
   const validateAccess = async () => {

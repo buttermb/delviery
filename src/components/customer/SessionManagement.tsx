@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 
 import { useState, useEffect } from 'react';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
-import { untypedClient } from '@/lib/supabaseUntyped';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +49,7 @@ export function SessionManagement() {
     if (customer && tenant) {
       loadSessions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadSessions is defined below and depends on customer/tenant which are already in deps
   }, [customer, tenant]);
 
   const loadSessions = async () => {
@@ -91,7 +92,7 @@ export function SessionManagement() {
 
     setRevoking(sessionId);
     try {
-      const { error } = await untypedClient
+      const { error } = await supabase
         .from('customer_sessions')
         .update({ expires_at: new Date().toISOString() })
         .eq('id', sessionId);

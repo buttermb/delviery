@@ -296,7 +296,7 @@ export const useUpdateOrderStatus = (tenantId?: string) => {
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
       const { data, error } = await supabase
         .from('menu_orders')
-        .update({ status })
+        .update({ status: status as 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled' })
         .eq('id', orderId)
         .select()
         .maybeSingle();

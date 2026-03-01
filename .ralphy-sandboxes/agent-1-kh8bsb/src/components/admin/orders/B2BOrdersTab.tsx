@@ -436,7 +436,7 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
               <Package className="h-4 w-4 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total Orders</p>
+              <p className="text-xs text-muted-foreground whitespace-nowrap truncate">Total Orders</p>
               <p className="text-lg font-bold">{stats.total}</p>
             </div>
           </div>
@@ -446,8 +446,8 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
             <div className="p-2 rounded-lg bg-yellow-500/10">
               <Clock className="h-4 w-4 text-yellow-600" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Pending</p>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground whitespace-nowrap truncate">Pending</p>
               <p className="text-lg font-bold">{stats.pending}</p>
             </div>
           </div>
@@ -457,8 +457,8 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
             <div className="p-2 rounded-lg bg-purple-500/10">
               <Truck className="h-4 w-4 text-purple-600" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">In Transit</p>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground whitespace-nowrap truncate">In Transit</p>
               <p className="text-lg font-bold">{stats.inTransit}</p>
             </div>
           </div>
@@ -468,8 +468,8 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
             <div className="p-2 rounded-lg bg-emerald-500/10">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Delivered</p>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground whitespace-nowrap truncate">Delivered</p>
               <p className="text-lg font-bold">{stats.delivered}</p>
             </div>
           </div>
@@ -479,8 +479,8 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
             <div className="p-2 rounded-lg bg-red-500/10">
               <XCircle className="h-4 w-4 text-red-600" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Unpaid</p>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground whitespace-nowrap truncate">Unpaid</p>
               <p className="text-lg font-bold">{stats.unpaid}</p>
             </div>
           </div>
@@ -490,8 +490,8 @@ export const B2BOrdersTab = ({ onOrderSelect }: B2BOrdersTabProps) => {
             <div className="p-2 rounded-lg bg-emerald-500/10">
               <DollarSign className="h-4 w-4 text-emerald-600" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Total Revenue</p>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground whitespace-nowrap truncate">Total Revenue</p>
               <p className="text-lg font-bold">{formatCurrency(stats.totalRevenue)}</p>
             </div>
           </div>

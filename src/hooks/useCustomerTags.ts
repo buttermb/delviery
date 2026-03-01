@@ -34,6 +34,8 @@ export interface CustomerTag {
   tag?: Tag;
 }
 
+export type CustomerTagsByContactId = Record<string, CustomerTag[]>;
+
 export interface CreateTagInput {
   name: string;
   color?: string;
@@ -79,7 +81,7 @@ export function useTags() {
 /**
  * Hook to fetch tags for a specific contact
  */
-export function useContactTags(contactId: string | undefined) {
+export function useContactTags(contactId: string | undefined, options?: { enabled?: boolean }) {
   const { tenant } = useTenantAdminAuth();
 
   return useQuery({
@@ -100,7 +102,43 @@ export function useContactTags(contactId: string | undefined) {
 
       return data as CustomerTag[];
     },
-    enabled: !!tenant?.id && !!contactId,
+    enabled: (options?.enabled ?? true) && !!tenant?.id && !!contactId,
+    staleTime: 30000,
+  });
+}
+
+/**
+ * Hook to fetch tags for multiple contacts in one request.
+ * This avoids N+1 query patterns in customer tables.
+ */
+export function useContactTagsBatch(contactIds: string[]) {
+  const { tenant } = useTenantAdminAuth();
+  const normalizedIds = [...new Set(contactIds.filter(Boolean))];
+
+  return useQuery({
+    queryKey: [...queryKeys.customerTags.all, 'batch', tenant?.id ?? '', normalizedIds.join(',')],
+    queryFn: async (): Promise<CustomerTagsByContactId> => {
+      if (!tenant?.id || normalizedIds.length === 0) return {};
+
+      const { data, error } = await supabase
+        .from('customer_tags')
+        .select('*, tag:tags(*)')
+        .eq('tenant_id', tenant.id)
+        .in('contact_id', normalizedIds);
+
+      if (error) {
+        logger.error('Failed to fetch contact tags batch', { error, count: normalizedIds.length });
+        throw error;
+      }
+
+      return (data as CustomerTag[]).reduce<CustomerTagsByContactId>((acc, item) => {
+        const key = item.contact_id;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+      }, {});
+    },
+    enabled: !!tenant?.id && normalizedIds.length > 0,
     staleTime: 30000,
   });
 }

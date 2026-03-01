@@ -163,16 +163,16 @@ export const SecurityAlertsPanel = () => {
                       <div className="mt-3 pt-3 border-t border-current/10">
                         <div className="text-xs space-y-1 opacity-70">
                           {alert.metadata.ip_address && (
-                            <div>IP: {alert.metadata.ip_address}</div>
+                            <div>IP: {String(alert.metadata.ip_address)}</div>
                           )}
                           {alert.metadata.location && (
-                            <div>Location: {alert.metadata.location}</div>
+                            <div>Location: {String(alert.metadata.location)}</div>
                           )}
                           {alert.metadata.customer_name && (
-                            <div>Customer: {alert.metadata.customer_name}</div>
+                            <div>Customer: {String(alert.metadata.customer_name)}</div>
                           )}
                           {alert.metadata.attempts && (
-                            <div>Attempts: {alert.metadata.attempts}</div>
+                            <div>Attempts: {String(alert.metadata.attempts)}</div>
                           )}
                         </div>
                       </div>

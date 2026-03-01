@@ -71,8 +71,8 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
                     is_visible: true,
                     display_order: 0,
                     stock_quantity: p.stock_quantity,
-                    unit_type: p.unit_type,
-                    min_expiry_days: p.min_expiry_days
+                    unit_type: (p as Record<string, unknown>).unit_type as string | undefined,
+                    min_expiry_days: (p as Record<string, unknown>).min_expiry_days as number | undefined
                 }));
 
                 // Filter and sort by recently viewed order

@@ -14,6 +14,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
+import { invalidateOnEvent } from '@/lib/invalidation';
 
 interface InvalidationOptions {
   /** The tenant ID for admin-side invalidation */
@@ -24,6 +25,8 @@ interface InvalidationOptions {
   productId?: string;
   /** Product category for related-products invalidation */
   category?: string;
+  /** Mutation action to emit cross-hub invalidation events */
+  action?: 'created' | 'updated' | 'deleted' | 'stock_adjusted';
 }
 
 /**
@@ -41,7 +44,7 @@ export function useProductMutations() {
    */
   const invalidateProductCaches = useCallback(
     (options: InvalidationOptions = {}) => {
-      const { tenantId, storeId, productId, category } = options;
+      const { tenantId, storeId, productId, category, action = 'updated' } = options;
 
       logger.info('Invalidating product caches', { tenantId, storeId, productId });
 
@@ -118,6 +121,21 @@ export function useProductMutations() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.crm.products.all(),
       });
+
+      // 9. Emit cross-hub invalidation events for non-product panels
+      if (tenantId) {
+        if (action === 'created') {
+          invalidateOnEvent(queryClient, 'PRODUCT_CREATED', tenantId, { productId });
+        } else if (action === 'deleted') {
+          invalidateOnEvent(queryClient, 'PRODUCT_DELETED', tenantId, { productId });
+        } else {
+          invalidateOnEvent(queryClient, 'PRODUCT_UPDATED', tenantId, { productId });
+        }
+
+        if (action === 'stock_adjusted') {
+          invalidateOnEvent(queryClient, 'INVENTORY_ADJUSTED', tenantId, { productId });
+        }
+      }
     },
     [queryClient]
   );

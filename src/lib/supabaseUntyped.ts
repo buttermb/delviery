@@ -1,14 +1,14 @@
 /**
- * Untyped Supabase Client Helper
- *
- * For tables/RPCs not yet in auto-generated types (e.g. referral_codes,
- * promo_codes, menu_security_events, marketplace_*, custom_domains, etc.)
- *
- * Usage:  import { untypedClient } from '@/lib/supabaseUntyped';
- *         const { data } = await untypedClient.from('referral_codes').select('*');
+ * Untyped Supabase client for tables/RPCs not in generated types.
+ * 
+ * Usage: Import `db` instead of `supabase` when accessing tables
+ * that aren't in the auto-generated types file.
+ * 
+ * Example:
+ *   import { db } from '@/lib/supabaseUntyped';
+ *   const { data } = await db.from('my_untyped_table').select('*');
  */
 import { supabase } from '@/integrations/supabase/client';
-import type { SupabaseClient } from '@supabase/supabase-js';
 
-// Cast once here so every consumer avoids `as any`
-export const untypedClient = supabase as unknown as SupabaseClient;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const db = supabase as any;

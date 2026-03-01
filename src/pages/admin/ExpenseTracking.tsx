@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CurrencyInput } from '@/components/ui/currency-input';
@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
   DollarSign, Calendar, Tag, Plus, Loader2, Receipt,
-  TrendingDown, Filter, X, Trash2
+  TrendingDown, X, Trash2
 } from 'lucide-react';
 import {
   Dialog,
@@ -21,7 +21,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { TruncatedText } from '@/components/shared/TruncatedText';
 import {
   Select,
   SelectContent,
@@ -33,11 +32,14 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
-import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { queryKeys } from '@/lib/queryKeys';
+import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
+import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
+import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { invalidateOnEvent } from '@/lib/invalidation';
 import { CHART_COLORS } from '@/lib/chartColors';
 
 interface Expense {
@@ -78,6 +80,7 @@ export default function ExpenseTracking() {
   // State
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState(DEFAULT_EXPENSE_FORM);
@@ -137,6 +140,9 @@ export default function ExpenseTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses.byTenant(tenantId) });
+      if (tenantId) {
+        invalidateOnEvent(queryClient, 'EXPENSE_CREATED', tenantId);
+      }
       showSuccessToast('Expense Added', 'The expense has been recorded successfully');
       setIsAddDialogOpen(false);
       setFormData(DEFAULT_EXPENSE_FORM);
@@ -159,6 +165,9 @@ export default function ExpenseTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses.byTenant(tenantId) });
+      if (tenantId) {
+        invalidateOnEvent(queryClient, 'EXPENSE_DELETED', tenantId);
+      }
       showSuccessToast('Expense Deleted', 'The expense has been removed');
       setDeleteDialogOpen(false);
       setExpenseToDelete(null);
@@ -175,6 +184,60 @@ export default function ExpenseTracking() {
     }
   };
 
+  const columns: ResponsiveColumn<Expense>[] = [
+    {
+      header: 'Description',
+      accessorKey: 'description',
+      cell: (expense) => (
+        <div className="flex flex-col gap-1">
+          <span className="font-medium">{expense.description || 'No description'}</span>
+          <Badge variant="outline" className="w-fit text-xs">
+            <Tag className="h-3 w-3 mr-1 inline-block align-text-bottom" />
+            {expense.category || 'Uncategorized'}
+          </Badge>
+        </div>
+      )
+    },
+    {
+      header: 'Date',
+      accessorKey: 'created_at',
+      cell: (expense) => (
+        <span className="text-muted-foreground whitespace-nowrap">
+          {formatSmartDate(expense.created_at)}
+        </span>
+      )
+    },
+    {
+      header: 'Amount',
+      accessorKey: 'amount',
+      cell: (expense) => (
+        <span className="font-bold text-red-600 whitespace-nowrap">
+          -{formatCurrency(parseFloat(String(expense.amount ?? 0)))}
+        </span>
+      )
+    },
+    {
+      header: 'Actions',
+      accessorKey: 'id',
+      cell: (expense) => (
+        <div className="flex justify-end pr-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            onClick={() => {
+              setExpenseToDelete(expense.id);
+              setDeleteDialogOpen(true);
+            }}
+            aria-label="Delete expense"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )
+    }
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.description || !formData.amount) {
@@ -185,9 +248,11 @@ export default function ExpenseTracking() {
   };
 
   // Filter expenses
-  const filteredExpenses = (expenses ?? []).filter((e: Expense) =>
-    categoryFilter === 'all' || e.category === categoryFilter
-  );
+  const filteredExpenses = (expenses ?? []).filter((e: Expense) => {
+    const matchesCategory = categoryFilter === 'all' || e.category === categoryFilter;
+    const matchesSearch = !searchQuery || e.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   // Calculate metrics
   const totalExpenses = filteredExpenses.reduce((sum: number, e: Expense) => sum + parseFloat(String(e.amount ?? 0)), 0);
@@ -216,21 +281,6 @@ export default function ExpenseTracking() {
 
   return (
     <div className="p-4 space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Receipt className="h-8 w-8 text-red-500" />
-            Expense Tracking
-          </h1>
-          <p className="text-muted-foreground">Monitor and categorize business expenses</p>
-        </div>
-        <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Expense
-        </Button>
-      </div>
-
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="bg-gradient-to-br from-red-500/10 to-background border-red-500/20">
@@ -306,86 +356,55 @@ export default function ExpenseTracking() {
         )}
 
         {/* Recent Expenses */}
-        <Card className={pieChartData.length === 0 ? 'lg:col-span-2' : ''}>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Recent Expenses</CardTitle>
-                <CardDescription>Latest expense entries</CardDescription>
-              </div>
-              {/* Category Filter */}
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
+        <div className={`space-y-4 ${pieChartData.length === 0 ? 'lg:col-span-2' : ''}`}>
+          <AdminToolbar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder="Search expenses..."
+            actions={
+              <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
+                <Plus className="h-4 w-4" /> Add Expense
+              </Button>
+            }
+            filters={
+              <div className="flex items-center gap-2 w-full md:w-auto">
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="w-[150px]">
+                  <SelectTrigger className="w-full md:w-[150px]">
                     <SelectValue placeholder="All categories" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
                     {uniqueCategories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      <SelectItem key={String(cat)} value={String(cat)}>{String(cat)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 {categoryFilter !== 'all' && (
-                  <Button variant="ghost" size="icon" onClick={() => setCategoryFilter('all')} aria-label="Clear category filter">
+                  <Button variant="ghost" size="icon" onClick={() => setCategoryFilter('all')} aria-label="Clear filter" className="shrink-0">
                     <X className="h-4 w-4" />
                   </Button>
                 )}
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {filteredExpenses.length > 0 ? (
-              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                {filteredExpenses.slice(0, 20).map((expense: Expense) => (
-                  <div key={expense.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="min-w-0 flex-1">
-                      <TruncatedText text={expense.description || 'No description'} className="font-medium" as="div" />
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          <Tag className="h-3 w-3 mr-1" />
-                          {expense.category || 'Uncategorized'}
-                        </Badge>
-                        <span className="text-xs">
-                          {formatSmartDate(expense.created_at)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      <div className="text-lg font-bold text-red-600">
-                        -{formatCurrency(parseFloat(expense.amount ?? 0))}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        onClick={() => {
-                          setExpenseToDelete(expense.id);
-                          setDeleteDialogOpen(true);
-                        }}
-                        aria-label="Delete expense"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <EnhancedEmptyState
-                icon={Receipt}
-                title="No Expenses Recorded"
-                description="Click 'Add Expense' to record your first expense."
-                primaryAction={{
-                  label: "Add First Expense",
-                  onClick: () => setIsAddDialogOpen(true),
-                  icon: Plus
-                }}
-              />
-            )}
-          </CardContent>
-        </Card>
+            }
+          />
+          <AdminDataTable
+            data={filteredExpenses}
+            keyExtractor={(expense) => expense.id}
+            isLoading={isLoading}
+            columns={columns}
+            emptyStateIcon={Receipt}
+            emptyStateTitle={searchQuery || categoryFilter !== 'all' ? "No matching expenses" : "No Expenses Recorded"}
+            emptyStateDescription={searchQuery || categoryFilter !== 'all' ? "Try adjusting your search or filters." : "Click 'Add Expense' to record your first expense."}
+            emptyStateAction={searchQuery || categoryFilter !== 'all' ? {
+              label: "Clear Filters",
+              onClick: () => { setSearchQuery(""); setCategoryFilter("all"); },
+            } : {
+              label: "Add First Expense",
+              onClick: () => setIsAddDialogOpen(true),
+              icon: Plus
+            }}
+          />
+        </div>
       </div>
 
       {/* Add Expense Dialog */}

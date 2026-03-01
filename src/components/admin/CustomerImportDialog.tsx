@@ -32,7 +32,7 @@ const SYSTEM_FIELDS = [
 export function CustomerImportDialog({ open, onOpenChange, onSuccess }: CustomerImportDialogProps) {
     const { tenant } = useTenantAdminAuth();
     const [step, setStep] = useState<ImportStep>('upload');
-    const [file, setFile] = useState<File | null>(null);
+    const [_file, setFile] = useState<File | null>(null);
     const [fileHeaders, setFileHeaders] = useState<string[]>([]);
     const [rawRecords, setRawRecords] = useState<Record<string, unknown>[]>([]);
     const [mapping, setMapping] = useState<Record<string, string>>({});
@@ -124,7 +124,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
 
         const strVal = String(value).trim();
         // Regex for DD/MM/YYYY or MM/DD/YYYY or YYYY-MM-DD with separators [/-.]
-        const parts = strVal.split(/[\/\-\.]/);
+        const parts = strVal.split(/[/\-.]/);
 
         if (parts.length === 3) {
             let day, month, year;
@@ -217,7 +217,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
                 }
 
                 // Email validation
-                if (normalized.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized.email)) {
+                if (normalized.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(normalized.email))) {
                     invalidRecords.push({ row: index + 2, reason: "Invalid email format", data: record });
                     return;
                 }
@@ -240,12 +240,12 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
                 const { error } = await supabase.from('customers').insert(
                     batch.map(record => ({
                         account_id: tenant.id,
-                        first_name: record.first_name,
-                        last_name: record.last_name,
-                        email: record.email,
-                        phone: record.phone || null,
-                        date_of_birth: record.date_of_birth || null,
-                        customer_type: record.customer_type?.toLowerCase() || 'retail',
+                        first_name: String(record.first_name || ''),
+                        last_name: String(record.last_name || ''),
+                        email: String(record.email || ''),
+                        phone: record.phone ? String(record.phone) : null,
+                        date_of_birth: record.date_of_birth ? String(record.date_of_birth) : null,
+                        customer_type: String(record.customer_type || 'retail').toLowerCase(),
                         status: 'active',
                         total_spent: 0,
                         loyalty_points: 0,
@@ -358,7 +358,7 @@ export function CustomerImportDialog({ open, onOpenChange, onSuccess }: Customer
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg mb-4">
                                 <div className="space-y-2">
                                     <Label>Date Format</Label>
-                                    <Select value={dateFormat} onValueChange={(v) => setDateFormat(v)}>
+                                    <Select value={dateFormat} onValueChange={(v) => setDateFormat(v as typeof dateFormat)}>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select date format" />
                                         </SelectTrigger>

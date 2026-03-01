@@ -43,7 +43,7 @@ describe('View Transitions Fallback', () => {
       // Remove View Transitions support
       const descriptor = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
       if (descriptor?.configurable) {
-        delete (document as unknown as Record<string, unknown>).startViewTransition;
+        delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
       }
 
       expect(supportsViewTransitions()).toBe(false);
@@ -51,7 +51,7 @@ describe('View Transitions Fallback', () => {
 
     it('should return false in non-browser environment', () => {
       const originalDoc = global.document;
-      (global as unknown as Record<string, unknown>).document = undefined;
+      (global as unknown as { document: undefined }).document = undefined;
 
       expect(supportsViewTransitions()).toBe(false);
 
@@ -213,7 +213,7 @@ describe('View Transitions Fallback', () => {
         // Remove View Transitions support
         const descriptor = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
         if (descriptor?.configurable) {
-          delete (document as unknown as Record<string, unknown>).startViewTransition;
+          delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
         }
 
         window.matchMedia = vi.fn().mockImplementation(() => ({
@@ -238,7 +238,7 @@ describe('View Transitions Fallback', () => {
         // Remove View Transitions support
         const descriptor = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
         if (descriptor?.configurable) {
-          delete (document as unknown as Record<string, unknown>).startViewTransition;
+          delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
         }
 
         window.matchMedia = vi.fn().mockImplementation(() => ({
@@ -445,7 +445,7 @@ describe('View Transitions Fallback', () => {
         // Remove View Transitions support
         const descriptor = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
         if (descriptor?.configurable) {
-          delete (document as unknown as Record<string, unknown>).startViewTransition;
+          delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
         }
 
         window.matchMedia = vi.fn().mockImplementation(() => ({
@@ -470,7 +470,7 @@ describe('View Transitions Fallback', () => {
         // Remove View Transitions support
         const descriptor = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
         if (descriptor?.configurable) {
-          delete (document as unknown as Record<string, unknown>).startViewTransition;
+          delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
         }
 
         window.matchMedia = vi.fn().mockImplementation(() => ({
@@ -497,7 +497,7 @@ describe('View Transitions Fallback', () => {
         // Remove View Transitions support
         const descriptor = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
         if (descriptor?.configurable) {
-          delete (document as unknown as Record<string, unknown>).startViewTransition;
+          delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
         }
 
         window.matchMedia = vi.fn().mockImplementation(() => ({
@@ -525,7 +525,7 @@ describe('View Transitions Fallback', () => {
         // Remove View Transitions support
         const descriptor = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
         if (descriptor?.configurable) {
-          delete (document as unknown as Record<string, unknown>).startViewTransition;
+          delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
         }
 
         window.matchMedia = vi.fn().mockImplementation(() => ({
@@ -581,7 +581,7 @@ describe('View Transitions Fallback', () => {
         // Remove View Transitions support
         const descriptor = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
         if (descriptor?.configurable) {
-          delete (document as unknown as Record<string, unknown>).startViewTransition;
+          delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
         }
 
         window.matchMedia = vi.fn().mockImplementation(() => ({
@@ -635,7 +635,7 @@ describe('View Transitions Fallback', () => {
       // Reset and test without support
       const descriptor = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
       if (descriptor?.configurable) {
-        delete (document as unknown as Record<string, unknown>).startViewTransition;
+        delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
       }
 
       const fallbackCallback = vi.fn();

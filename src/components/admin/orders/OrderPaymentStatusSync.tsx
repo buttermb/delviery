@@ -187,7 +187,7 @@ export function OrderPaymentStatusSync({
         throw fetchError;
       }
 
-      return data;
+      return data as unknown as PaymentRecord | null;
     },
     enabled: !!tenant?.id && !!orderId,
     staleTime: 30_000,
@@ -236,6 +236,7 @@ export function OrderPaymentStatusSync({
           }
         }
       },
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- updateOrderPaymentStatus is a stable helper; tenant?.id is accessed from closure
       [orderId, queryClient, paymentQueryKey, onPaymentStatusChange, autoUpdateOrderStatus]
     ),
   });

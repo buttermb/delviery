@@ -204,7 +204,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
         visibility: existingListing.visibility || 'public',
         tags: existingListing.tags ?? [],
         lab_results: undefined, // Will be decrypted if needed
-        has_lab_results: !!listing.lab_results,
+        has_lab_results: !!existingListing.lab_results,
       });
     } else if (productData && !listingId) {
       // Pre-fill form with product data from product list
@@ -218,23 +218,23 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
       };
 
       form.reset({
-        product_name: productData.name ?? '',
-        product_type: productTypeMap[productData.category?.toLowerCase() ?? ''] ?? productData.category ?? '',
-        strain_type: productData.strain_type ?? '',
-        description: productData.description ?? '',
+        product_name: String(productData.name ?? ''),
+        product_type: String(productTypeMap[String(productData.category ?? '').toLowerCase()] ?? productData.category ?? ''),
+        strain_type: String(productData.strain_type ?? ''),
+        description: String(productData.description ?? ''),
         base_price: Number(productData.wholesale_price) || 0,
         bulk_pricing: [],
         min_order_quantity: 1,
         max_order_quantity: undefined,
         quantity_available: Number(productData.available_quantity) || 0,
         unit_type: 'lb',
-        images: productData.image_url ? [productData.image_url] : [],
+        images: productData.image_url ? [String(productData.image_url)] : [],
         visibility: 'public',
-        tags: [],
+        tags: (productData.tags as string[]) ?? [],
         lab_results: productData.thc_percent || productData.cbd_percent ? {
           thc_percent: productData.thc_percent ? Number(productData.thc_percent) : undefined,
           cbd_percent: productData.cbd_percent ? Number(productData.cbd_percent) : undefined,
-          batch_number: productData.batch_number || undefined,
+          batch_number: String(productData.batch_number || ''),
         } : undefined,
         has_lab_results: !!(productData.thc_percent || productData.cbd_percent),
       });

@@ -22,6 +22,7 @@ export function StripeConnectSettings() {
         if (tenant?.id) {
             checkStripeStatus();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- checkStripeStatus is defined below, only run on tenant change
     }, [tenant?.id]);
 
     const checkStripeStatus = async () => {

@@ -55,7 +55,7 @@ describe('OptimizedSidebar - View Transitions Fallback', () => {
   describe('Fallback behavior without View Transitions support', () => {
     beforeEach(() => {
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(false);
-      delete (document as unknown as Record<string, unknown>).startViewTransition;
+      delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
     });
 
     it('should render sidebar correctly without View Transitions support', () => {
@@ -140,14 +140,14 @@ describe('OptimizedSidebar - View Transitions Fallback', () => {
     it('should work identically with and without View Transitions support', async () => {
       // Test with support
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(true);
-      (document as unknown as Record<string, unknown>).startViewTransition = vi.fn();
+      (document as unknown as { startViewTransition: unknown }).startViewTransition = vi.fn();
 
       const { container: containerWith } = renderSidebar();
       const linksCountWith = containerWith.querySelectorAll('a[href]').length;
 
       // Test without support
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(false);
-      delete (document as unknown as Record<string, unknown>).startViewTransition;
+      delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
 
       const { container: containerWithout } = renderSidebar();
       const linksCountWithout = containerWithout.querySelectorAll('a[href]').length;
@@ -201,7 +201,7 @@ describe('OptimizedSidebar - View Transitions Fallback', () => {
   describe('Browser compatibility', () => {
     it('should work in browsers without document.startViewTransition', () => {
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(false);
-      delete (document as unknown as Record<string, unknown>).startViewTransition;
+      delete (document as unknown as { startViewTransition?: unknown }).startViewTransition;
 
       expect(() => renderSidebar()).not.toThrow();
     });
@@ -211,11 +211,11 @@ describe('OptimizedSidebar - View Transitions Fallback', () => {
 
       // Mock SSR environment
       const originalDocument = global.document;
-      (global as unknown as Record<string, unknown>).document = undefined;
+      (global as unknown as { document: undefined }).document = undefined;
 
       expect(() => {
         // Restore document for rendering
-        (global as unknown as Record<string, unknown>).document = originalDocument;
+        (global as unknown as { document: Document }).document = originalDocument;
         renderSidebar();
       }).not.toThrow();
     });
@@ -224,7 +224,7 @@ describe('OptimizedSidebar - View Transitions Fallback', () => {
       vi.spyOn(useViewTransitionSupportModule, 'useViewTransitionSupport').mockReturnValue(false);
 
       // Simulate browser with partial API
-      (document as unknown as Record<string, unknown>).startViewTransition = null;
+      (document as unknown as { startViewTransition: null }).startViewTransition = null;
 
       expect(() => renderSidebar()).not.toThrow();
     });

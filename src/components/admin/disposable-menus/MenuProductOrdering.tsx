@@ -288,7 +288,7 @@ function SortableCategoryItem({
 }
 
 // Product Overlay for dragging
-function ProductOverlay({ product, index }: { product: OrderedProduct; index: number }) {
+function _ProductOverlay({ product, index }: { product: OrderedProduct; index: number }) {
   return (
     <div className="flex items-center gap-3 p-3 bg-background border rounded-lg shadow-xl">
       <GripVertical className="w-4 h-4 text-muted-foreground cursor-grabbing" />
@@ -453,32 +453,6 @@ export function MenuProductOrdering({
     }
   }, []);
 
-  const handleCategoryDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
-      setActiveId(null);
-      setActiveType(null);
-
-      if (over && active.id !== over.id) {
-        const activeCategory = (active.id as string).replace('category-', '');
-        const overCategory = (over.id as string).replace('category-', '');
-
-        const oldIndex = categoryOrder.indexOf(activeCategory);
-        const newIndex = categoryOrder.indexOf(overCategory);
-
-        if (oldIndex !== -1 && newIndex !== -1) {
-          const newOrder = arrayMove(categoryOrder, oldIndex, newIndex);
-          setCategoryOrder(newOrder);
-          setHasChanges(true);
-
-          // Update product display orders based on new category order
-          updateProductOrders(newOrder);
-        }
-      }
-    },
-    [categoryOrder]
-  );
-
   // Update product display orders when category order changes
   const updateProductOrders = useCallback((newCategoryOrder: string[]) => {
     let globalOrder = 0;
@@ -500,6 +474,30 @@ export function MenuProductOrdering({
     setOrderedProducts(updatedProducts);
     onOrderChange?.(updatedProducts);
   }, [orderedProducts, onOrderChange]);
+
+  const handleCategoryDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      setActiveId(null);
+      setActiveType(null);
+
+      if (over && active.id !== over.id) {
+        const activeCategory = (active.id as string).replace('category-', '');
+        const overCategory = (over.id as string).replace('category-', '');
+
+        const oldIndex = categoryOrder.indexOf(activeCategory);
+        const newIndex = categoryOrder.indexOf(overCategory);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const newOrder = arrayMove(categoryOrder, oldIndex, newIndex);
+          setCategoryOrder(newOrder);
+          setHasChanges(true);
+          updateProductOrders(newOrder);
+        }
+      }
+    },
+    [categoryOrder, updateProductOrders]
+  );
 
   // Handle product reorder within category
   const handleProductReorder = useCallback(

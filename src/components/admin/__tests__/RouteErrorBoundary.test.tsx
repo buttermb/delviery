@@ -37,7 +37,7 @@ vi.mock('@/utils/serviceWorkerCache', () => ({
 }));
 
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, ...props }: { children: React.ReactNode; onClick?: () => void; [key: string]: unknown }) => (
+  Button: ({ children, onClick, ...props }: { children?: React.ReactNode; onClick?: () => void; [key: string]: unknown }) => (
     <button onClick={onClick} {...props}>
       {children}
     </button>
@@ -45,12 +45,12 @@ vi.mock('@/components/ui/button', () => ({
 }));
 
 vi.mock('@/components/ui/card', () => ({
-  Card: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
-  CardContent: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
-  CardDescription: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
-  CardFooter: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
-  CardHeader: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
-  CardTitle: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
+  Card: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
+  CardContent: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
+  CardDescription: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
+  CardFooter: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
+  CardHeader: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
+  CardTitle: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
 }));
 
 // Test components
@@ -257,7 +257,7 @@ describe('RouteErrorBoundary', () => {
       const originalLocation = window.location;
 
       // Mock window.location
-      delete (window as unknown as Record<string, unknown>).location;
+      delete (window as unknown as { location?: Location }).location;
       window.location = { ...originalLocation, href: '' } as unknown as Location;
 
       render(
@@ -390,7 +390,7 @@ describe('RouteErrorBoundary', () => {
     it('should handle errors with no message', () => {
       const ErrorWithNoMessage = () => {
         const error = new Error();
-        (error as unknown as Record<string, unknown>).message = undefined;
+        (error as unknown as { message: undefined }).message = undefined;
         throw error;
       };
 

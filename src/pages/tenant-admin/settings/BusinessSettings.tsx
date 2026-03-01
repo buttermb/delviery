@@ -46,6 +46,7 @@ import {
   Trash2,
   Loader2,
   History,
+  ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -53,6 +54,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
+import { useSearchParams } from 'react-router-dom';
 
 const TIMEZONES = [
   { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
@@ -82,6 +84,12 @@ export default function BusinessSettings() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null); // Ideally fetch this from storage
   const [clearDemoDialogOpen, setClearDemoDialogOpen] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [, setSearchParams] = useSearchParams();
+
+  const navigateToTab = (tab: string) => {
+    setSearchParams({ tab }, { replace: true });
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
 
   const [businessInfo, setBusinessInfo] = useState({
     name: tenant?.business_name ?? '',
@@ -630,6 +638,46 @@ export default function BusinessSettings() {
             </div>
           </div>
         </SettingsCard>
+      </SettingsSection>
+
+      {/* Quick Links */}
+      <SettingsSection
+        title="Quick Links"
+        description="Navigate to related settings"
+      >
+        <div className="grid sm:grid-cols-2 gap-4">
+          <button
+            onClick={() => navigateToTab('appearance')}
+            className="flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-muted/50 transition-colors text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Palette className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium">Theme & Sidebar</p>
+                <p className="text-xs text-muted-foreground">Customize admin interface mode</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          </button>
+
+          <button
+            onClick={() => navigateToTab('crm')}
+            className="flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-muted/50 transition-colors text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Database className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium">CRM & Invoicing</p>
+                <p className="text-xs text-muted-foreground">Set tax rates, prefixes, and terms</p>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          </button>
+        </div>
       </SettingsSection>
 
       {/* Data Management */}

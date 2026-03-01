@@ -781,6 +781,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const interval = setInterval(validateToken, 120000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refreshAuthToken is a stable async function using refs; adding it would cause re-subscription loops
   }, [isAuthenticated, token]);
 
   // Track if a refresh is already in progress to prevent race conditions
@@ -1188,6 +1189,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     return () => {
       channel.close();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clearAuthState and performFullLogout are stable functions; adding them won't change behavior but would cause unnecessary re-subscriptions
   }, [tenant?.slug, navigate]);
 
   const logout = async () => {
@@ -1272,6 +1274,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
   const handleTenantMismatch = useCallback((urlSlug: string, currentSlug: string) => {
     logger.info(`[TenantAdmin] Tenant mismatch: URL="${urlSlug}" vs Context="${currentSlug}". Logging out.`);
     logout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- logout is a stable function defined in the same context
   }, []);
 
   // Use the centralized tenant route guard for detecting tenant changes
@@ -1395,6 +1398,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
         clearTimeout(warningTimerRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setupRefreshTimer is a stable function using refs internally
   }, [accessToken]);
 
   // Refresh tenant data from database

@@ -27,7 +27,7 @@ import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
 import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';
-import Minus from 'lucide-react/dist/esm/icons/minus';
+import _Minus from 'lucide-react/dist/esm/icons/minus';
 import History from 'lucide-react/dist/esm/icons/history';
 import { chartSemanticColors } from '@/lib/chartColors';
 

@@ -119,7 +119,7 @@ export default function POReceivingPage() {
 
   // Fetch vendor info for display
   const { data: vendors } = useQuery({
-    queryKey: queryKeys.vendors.byTenant(tenant?.id!),
+    queryKey: queryKeys.vendors.byTenant(tenant!.id),
     queryFn: async () => {
       if (!tenant?.id) return {};
 

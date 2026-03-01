@@ -162,7 +162,6 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
           payment_method,
           payment_status,
           order_id,
-          reference_number,
           notes
         `)
         .eq('customer_id', customerId)
@@ -174,7 +173,7 @@ export function CustomerPaymentHistoryTab({ customerId }: CustomerPaymentHistory
         throw queryError;
       }
 
-      return data as Payment[];
+      return (data ?? []) as unknown as Payment[];
     },
     enabled: !!customerId && !!tenantId,
   });

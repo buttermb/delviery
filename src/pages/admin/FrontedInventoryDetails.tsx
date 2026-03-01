@@ -53,6 +53,7 @@ export default function FrontedInventoryDetails() {
       loadFrontDetails();
       subscribeToUpdates();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadFrontDetails and subscribeToUpdates are defined below, only run when id/tenant changes
   }, [id, tenant]);
 
   const subscribeToUpdates = () => {
@@ -142,8 +143,8 @@ export default function FrontedInventoryDetails() {
   const damagedPercentage = (front.quantity_damaged / front.quantity_fronted) * 100;
   const remainingPercentage = 100 - soldPercentage - returnedPercentage - damagedPercentage;
 
-  const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-  const amountOwed = parseFloat(front.expected_revenue) - totalPaid;
+  const totalPaid = payments.reduce((sum, p) => sum + parseFloat(String(p.amount)), 0);
+  const amountOwed = parseFloat(String(front.expected_revenue)) - totalPaid;
   const isOverdue = front.payment_due_date && new Date(front.payment_due_date) < new Date() && amountOwed > 0;
   const daysOverdue = isOverdue
     ? Math.floor((Date.now() - new Date(front.payment_due_date).getTime()) / (1000 * 60 * 60 * 24))
@@ -186,7 +187,7 @@ export default function FrontedInventoryDetails() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Expected Revenue</p>
-              <p className="text-2xl font-bold">${parseFloat(front.expected_revenue).toFixed(2)}</p>
+              <p className="text-2xl font-bold">${parseFloat(String(front.expected_revenue)).toFixed(2)}</p>
             </div>
           </div>
         </Card>
@@ -198,7 +199,7 @@ export default function FrontedInventoryDetails() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Expected Profit</p>
-              <p className="text-2xl font-bold">${parseFloat(front.expected_profit).toFixed(2)}</p>
+              <p className="text-2xl font-bold">${parseFloat(String(front.expected_profit)).toFixed(2)}</p>
             </div>
           </div>
         </Card>
@@ -318,16 +319,16 @@ export default function FrontedInventoryDetails() {
           <div className="flex justify-between">
             <span className="text-muted-foreground">Your Total Cost</span>
             <span className="font-medium">
-              ${(parseFloat(front.cost_per_unit) * front.quantity_fronted).toFixed(2)}
+              ${(parseFloat(String(front.cost_per_unit)) * front.quantity_fronted).toFixed(2)}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Expected Revenue</span>
-            <span className="font-medium">${parseFloat(front.expected_revenue).toFixed(2)}</span>
+            <span className="font-medium">${parseFloat(String(front.expected_revenue)).toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-green-600">
             <span>Expected Profit</span>
-            <span className="font-bold">${parseFloat(front.expected_profit).toFixed(2)}</span>
+            <span className="font-bold">${parseFloat(String(front.expected_profit)).toFixed(2)}</span>
           </div>
           <Separator />
           <div className="flex justify-between">
@@ -379,7 +380,7 @@ export default function FrontedInventoryDetails() {
             {payments.map((payment) => (
               <div key={payment.id} className="flex justify-between items-center">
                 <div>
-                  <p className="font-medium">${parseFloat(payment.amount).toFixed(2)}</p>
+                  <p className="font-medium">${parseFloat(String(payment.amount)).toFixed(2)}</p>
                   <p className="text-sm text-muted-foreground">
                     {payment.payment_method} • {format(new Date(payment.received_at), "MMM dd, yyyy")}
                   </p>

@@ -110,6 +110,7 @@ export function OrderTrackingMap({ order }: OrderTrackingMapProps) {
         return () => {
             supabase.removeChannel(channel);
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- courier lat/lng are for initial placement; updates come via realtime subscription. updateCourierMarker uses refs
     }, [mapLoaded, order.courier_id]);
 
     const updateCourierMarker = (lat: number, lng: number) => {

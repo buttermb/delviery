@@ -73,7 +73,7 @@ describe('useDashboardStats', () => {
       );
 
       expect(dashboardQuery).toBeDefined();
-      expect((dashboardQuery as unknown as Record<string, Record<string, unknown>>)?.options?.refetchInterval).toBe(60_000);
+      expect((dashboardQuery as unknown as { options?: { refetchInterval?: number } })?.options?.refetchInterval).toBe(60_000);
     });
   });
 
@@ -87,11 +87,12 @@ describe('useDashboardStats', () => {
       );
 
       expect(dashboardQuery).toBeDefined();
-      expect((dashboardQuery as unknown as Record<string, Record<string, unknown>>)?.options?.staleTime).toBe(60_000);
+      expect((dashboardQuery as unknown as { options?: { staleTime?: number } })?.options?.staleTime).toBe(60_000);
     });
   });
 
   it('should return default stats when tenant is not available', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useTenantAdminAuth } = require('@/contexts/TenantAdminAuthContext');
     useTenantAdminAuth.mockReturnValueOnce({ tenant: null });
 
@@ -122,6 +123,7 @@ describe('useDashboardStats', () => {
     const { result: resultWithTenant } = renderHook(() => useDashboardStats(), { wrapper });
     expect(resultWithTenant.current.isLoading || resultWithTenant.current.isSuccess).toBe(true);
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useTenantAdminAuth } = require('@/contexts/TenantAdminAuthContext');
     useTenantAdminAuth.mockReturnValueOnce({ tenant: null });
 

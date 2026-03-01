@@ -39,7 +39,7 @@ function SecuritySkeleton() {
 export default function TenantSecuritySettings() {
   const { account, refreshAccount, loading: accountLoading } = useAccount();
   const [saving, setSaving] = useState(false);
-  const [initialized, setInitialized] = useState(false);
+  const [_initialized, setInitialized] = useState(false);
 
   const form = useForm<SecurityFormValues>({
     resolver: zodResolver(securitySchema),
@@ -61,9 +61,12 @@ export default function TenantSecuritySettings() {
         sessionTimeout: (secSettings.sessionTimeout as number) || 30,
         passwordMinLength: (secSettings.passwordMinLength as number) || 8,
       });
+    }
+    // Mark initialized once loading completes, even if account is null
+    if (!accountLoading) {
       setInitialized(true);
     }
-  }, [account, form]);
+  }, [account, accountLoading, form]);
 
   const onSave = async (data: SecurityFormValues) => {
     if (!account) return;
@@ -91,7 +94,7 @@ export default function TenantSecuritySettings() {
     }
   };
 
-  if (accountLoading || !initialized) {
+  if (accountLoading) {
     return <SecuritySkeleton />;
   }
 

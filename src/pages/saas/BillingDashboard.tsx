@@ -41,7 +41,7 @@ import { queryKeys } from '@/lib/queryKeys';
 
 export default function BillingDashboard() {
   const { tenant, refresh } = useTenant();
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>('');
 

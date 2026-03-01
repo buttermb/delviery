@@ -5,8 +5,11 @@
  * Users earn credits for referring others.
  */
 
+import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
-import { untypedClient as sb } from '@/lib/supabaseUntyped';
+
+// Cast for tables not in auto-generated types
+const sb = supabase;
 
 // ============================================================================
 // Types

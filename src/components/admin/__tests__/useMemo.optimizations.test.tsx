@@ -103,12 +103,12 @@ describe('useMemo Optimizations', () => {
       ];
 
       const { result, rerender } = renderHook(
-        ({ data, filter, sortBy }) => {
+        ({ data, filter, sortBy: _sortBy }) => {
           const processed = useMemo(() => {
             return data
               .filter((item) => item.category === filter)
               .sort((a, b) => b.price - a.price);
-          }, [data, filter, sortBy]);
+          }, [data, filter]);
           return processed;
         },
         { initialProps: { data: mockData, filter: 'fruit', sortBy: 'price' } }
@@ -384,7 +384,7 @@ describe('useMemo Optimizations', () => {
     it('should handle empty arrays efficiently', () => {
       const { result } = renderHook(() => {
         const filtered = useMemo(() => {
-          return [].filter((item: unknown) => (item as Record<string, unknown>).category === 'test');
+          return [].filter((item: { category: string }) => item.category === 'test');
         }, []);
         return filtered;
       });
@@ -404,7 +404,7 @@ describe('useMemo Optimizations', () => {
           return Array.from(
             new Set(mockData.map((p) => p.category).filter(Boolean))
           );
-        }, [mockData]);
+        }, []);
         return categories;
       });
 

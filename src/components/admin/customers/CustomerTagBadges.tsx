@@ -8,6 +8,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { useContactTags } from '@/hooks/useCustomerTags';
+import type { CustomerTag } from '@/hooks/useCustomerTags';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import {
@@ -26,6 +27,8 @@ interface CustomerTagBadgesProps {
   className?: string;
   /** Show loading skeleton while fetching */
   showLoading?: boolean;
+  /** Optional preloaded tags (bypasses per-contact query when provided) */
+  tags?: CustomerTag[];
 }
 
 export function CustomerTagBadges({
@@ -34,8 +37,10 @@ export function CustomerTagBadges({
   size = 'sm',
   className,
   showLoading = true,
+  tags,
 }: CustomerTagBadgesProps) {
-  const { data: customerTags, isLoading } = useContactTags(customerId);
+  const { data: customerTags, isLoading } = useContactTags(customerId, { enabled: !tags });
+  const resolvedTags = tags ?? customerTags;
 
   if (isLoading && showLoading) {
     return (
@@ -46,12 +51,12 @@ export function CustomerTagBadges({
     );
   }
 
-  if (!customerTags || customerTags.length === 0) {
+  if (!resolvedTags || resolvedTags.length === 0) {
     return null;
   }
 
-  const visibleTags = customerTags.slice(0, maxVisible);
-  const hiddenTags = customerTags.slice(maxVisible);
+  const visibleTags = resolvedTags.slice(0, maxVisible);
+  const hiddenTags = resolvedTags.slice(maxVisible);
   const hiddenCount = hiddenTags.length;
 
   const badgeClasses = cn(

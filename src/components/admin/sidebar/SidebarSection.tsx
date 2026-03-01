@@ -132,7 +132,7 @@ export function SidebarSection({
           <SidebarGroupContent className="mt-1">
             <SidebarMenu>
               {filteredItems.map((item, index) => {
-                const hasAccess = item.featureId ? canAccess(item.featureId) : true;
+                const hasAccess = item.featureId ? canAccess(item.featureId as FeatureId) : true;
 
                 return (
                   <SidebarMenuItem

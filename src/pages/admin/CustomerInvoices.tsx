@@ -84,6 +84,7 @@ export default function CustomerInvoices() {
     } else if (!accountLoading && !tenant) {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenant, accountLoading]);
 
   const loadInvoices = async (page: number = 1, append: boolean = false) => {
@@ -147,6 +148,7 @@ export default function CustomerInvoices() {
       // Fallback: Try RPC (may not support pagination, so load all and paginate client-side)
       if (page === 1) {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const { data: rpcData, error: rpcError } = await supabase.rpc('get_tenant_invoices' as 'get_secret', {
             tenant_id: tenant.id,
           } as Record<string, unknown>);
@@ -295,6 +297,7 @@ export default function CustomerInvoices() {
       // Prefer generating a unique invoice number via RPC (guaranteed unique per tenant/year)
       let invoiceNumber = `INV-${Date.now()}`;
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: genNum, error: genErr } = await supabase.rpc('generate_invoice_number' as 'get_secret', {
           tenant_id: tenant.id,
         } as Record<string, unknown>);
@@ -372,7 +375,7 @@ export default function CustomerInvoices() {
         reference_number: '',
         tax_rate: '8.875'
       });
-      setLineItems([{ description: '', quantity: 1, rate: 0, amount: 0 }]);
+      setLineItems([{ id: crypto.randomUUID(), description: '', quantity: 1, rate: 0, amount: 0 }]);
       // Reset pagination and reload from page 1
       setCurrentPage(1);
       setAllInvoices([]); // Clear stored invoices

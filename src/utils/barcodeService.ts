@@ -424,10 +424,11 @@ export function validateBarcode(barcode: string, type: BarcodeType = 'CODE128'):
   switch (type) {
     case 'CODE128':
       // CODE128 can encode ASCII characters
+      // eslint-disable-next-line no-control-regex
       return /^[\x00-\x7F]+$/.test(barcode);
     case 'CODE39':
       // CODE39: alphanumeric + some special chars
-      return /^[A-Z0-9\-\.\$\/\+\%]+$/.test(barcode.toUpperCase());
+      return /^[A-Z0-9\-.$/+%]+$/.test(barcode.toUpperCase());
     case 'EAN13':
       // EAN13: 13 digits
       return /^\d{13}$/.test(barcode);

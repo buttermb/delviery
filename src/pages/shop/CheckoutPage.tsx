@@ -3,7 +3,7 @@
  * Multi-step checkout flow
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,13 +20,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import {
   ArrowLeft,
   ArrowRight,
   Check,
+  Package,
   User,
   MapPin,
   CreditCard,
@@ -34,40 +34,29 @@ import {
   Loader2,
   ChevronUp,
   ChevronDown,
+  Copy,
   Truck,
-  Store,
-  AlertCircle,
-  CheckCircle2,
+  Store
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
-import { formatPhoneInput, normalizePhoneNumber, formatPhoneNumber } from '@/lib/utils/formatPhone';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
-import { CheckoutProgressIndicator } from '@/components/shop/CheckoutProgressIndicator';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
-import { PaymentMethodStep } from '@/components/shop/PaymentMethodStep';
 import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
-import { CheckoutSignInDialog } from '@/components/shop/CheckoutSignInDialog';
 import { useStoreStatus } from '@/hooks/useStoreStatus';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Clock, LogIn, Tag } from 'lucide-react';
+import { Clock, Tag } from 'lucide-react';
 import { isCustomerBlockedByEmail, FLAG_REASON_LABELS } from '@/hooks/useCustomerFlags';
 import { humanizeError } from '@/lib/humanizeError';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
 import { queryKeys } from '@/lib/queryKeys';
 import { useReturningCustomerLookup } from '@/hooks/useReturningCustomerLookup';
-import type { DeliveryZone } from '@/types/delivery-zone';
-import ProductImage from '@/components/ProductImage';
-import { PostCheckoutConfirmationDialog } from '@/components/shop/PostCheckoutConfirmationDialog';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Phone validation: normalize to 10-digit US format and check
-function isValidUSPhone(value: string): boolean {
-  return normalizePhoneNumber(value) !== null;
-}
-import { CheckoutCustomerInfoStep } from '@/components/shop/CheckoutCustomerInfoStep';
+// Phone validation - accepts formats: (555) 123-4567, 555-123-4567, 5551234567, +1 555-123-4567
+const PHONE_REGEX = /^[+]?[(]?[0-9]{1,3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
 
 interface CheckoutData {
   // Contact
@@ -89,13 +78,11 @@ interface CheckoutData {
   paymentMethod: string;
 }
 
-/** Result of matching a customer ZIP against delivery zones */
-interface ZoneMatchInfo {
-  zone_name: string;
-  delivery_fee: number;
-  minimum_order: number;
-  estimated_time_min: number;
-  estimated_time_max: number;
+// Extended store properties beyond base StoreInfo type
+interface DeliveryZone {
+  zip_code: string;
+  fee?: number;
+  min_order?: number;
 }
 
 interface PurchaseLimits {
@@ -118,10 +105,6 @@ interface OrderResult {
   total?: number;
   checkoutUrl?: string;
   telegramLink?: string;
-  accountToken?: string;
-  accountCustomer?: Record<string, unknown>;
-  accountTenant?: Record<string, unknown>;
-  telegramButtonLabel?: string;
 }
 
 interface UnavailableProduct {
@@ -160,93 +143,6 @@ export function CheckoutPage() {
   // Check store status
   const { data: storeStatus } = useStoreStatus(store?.id);
   const isStoreClosed = storeStatus?.isOpen === false;
-
-  // Fetch delivery zones for the store's tenant
-  const { data: deliveryZones = [] } = useQuery({
-    queryKey: queryKeys.deliveryZones.byTenant(store?.tenant_id),
-    queryFn: async () => {
-      if (!store?.tenant_id) return [];
-      const { data, error } = await supabase
-        .from('delivery_zones')
-        .select('*')
-        .eq('tenant_id', store.tenant_id)
-        .eq('is_active', true)
-        .order('priority', { ascending: false });
-      if (error) {
-        logger.warn('Failed to fetch delivery zones', error, { component: 'CheckoutPage' });
-        return [];
-      }
-      return (data ?? []) as DeliveryZone[];
-    },
-    enabled: !!store?.tenant_id,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // ZIP code zone validation state
-  const [matchedZone, setMatchedZone] = useState<ZoneMatchInfo | null>(null);
-  const [zipValidationStatus, setZipValidationStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
-  const zipCheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Debounced ZIP zone validation
-  const validateZipAgainstZones = useCallback((zip: string) => {
-    if (zipCheckTimerRef.current) {
-      clearTimeout(zipCheckTimerRef.current);
-    }
-
-    // Reset if empty or too short
-    if (!zip || zip.length < 5) {
-      setZipValidationStatus('idle');
-      setMatchedZone(null);
-      return;
-    }
-
-    setZipValidationStatus('checking');
-
-    zipCheckTimerRef.current = setTimeout(() => {
-      // First check against delivery_zones table via client-side ZIP match
-      const normalizedZip = zip.trim();
-      const match = deliveryZones.find(zone =>
-        zone.zip_codes.some(zc => zc === normalizedZip)
-      );
-
-      if (match) {
-        setMatchedZone({
-          zone_name: match.name,
-          delivery_fee: match.delivery_fee,
-          minimum_order: match.minimum_order,
-          estimated_time_min: match.estimated_time_min,
-          estimated_time_max: match.estimated_time_max,
-        });
-        setZipValidationStatus('valid');
-      } else if (deliveryZones.length > 0) {
-        // Zones exist but no match — ZIP not in any zone
-        setMatchedZone(null);
-        setZipValidationStatus('invalid');
-      } else {
-        // No zones configured — allow all ZIPs
-        setMatchedZone(null);
-        setZipValidationStatus('idle');
-      }
-    }, 400);
-  }, [deliveryZones]);
-
-  // Trigger ZIP validation when zip changes
-  useEffect(() => {
-    if (formData.fulfillmentMethod === 'delivery') {
-      validateZipAgainstZones(formData.zip);
-    }
-    return () => {
-      if (zipCheckTimerRef.current) clearTimeout(zipCheckTimerRef.current);
-    };
-  }, [formData.zip, formData.fulfillmentMethod, validateZipAgainstZones]);
-
-  // Reset zone validation when switching to pickup
-  useEffect(() => {
-    if (formData.fulfillmentMethod === 'pickup') {
-      setZipValidationStatus('idle');
-      setMatchedZone(null);
-    }
-  }, [formData.fulfillmentMethod]);
 
   // Check if Stripe is configured — hide card option if not
   const { data: isStripeConfigured } = useQuery({
@@ -293,35 +189,12 @@ export function CheckoutPage() {
     paymentMethod: 'cash',
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-  const [ageVerified, setAgeVerified] = useState(false);
   const [venmoConfirmed, setVenmoConfirmed] = useState(false);
   const [zelleConfirmed, setZelleConfirmed] = useState(false);
   const [createAccount, setCreateAccount] = useState(false);
   const [accountPassword, setAccountPassword] = useState('');
   const [showErrors, setShowErrors] = useState(false);
-  const [signInOpen, setSignInOpen] = useState(false);
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [orderRetryCount, setOrderRetryCount] = useState(0);
-
-  // Double-submit guard — state disables button immediately on click
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Step 1 form validation (set by CheckoutCustomerInfoStep)
-  const step1ValidateRef = useRef<(() => Promise<boolean>) | null>(null);
-  const handleStep1Validate = useCallback((validateFn: () => Promise<boolean>) => {
-    step1ValidateRef.current = validateFn;
-  }, []);
-  // Post-checkout confirmation popup state
-  const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
-  const [completedOrderData, setCompletedOrderData] = useState<{
-    orderNumber: string;
-    trackingToken?: string;
-    total?: number;
-    telegramLink?: string | null;
-  } | null>(null);
-
-  // Out-of-stock items surfaced by the last checkout attempt
-  const [outOfStockItems, setOutOfStockItems] = useState<UnavailableProduct[]>([]);
+  const [, setOrderRetryCount] = useState(0);
 
   // Fast double-click guard — ref updates synchronously, before React re-renders with isPending
   const isSubmittingRef = useRef(false);
@@ -329,16 +202,11 @@ export function CheckoutPage() {
   // Idempotency key persisted to sessionStorage to survive page refresh during submission
   const [idempotencyKey] = useState(() => {
     const storageKey = `checkout_idempotency_${storeSlug || ''}`;
-    try {
-      const existing = sessionStorage.getItem(storageKey);
-      if (existing) return existing;
-      const newKey = `order_${crypto.randomUUID()}`;
-      sessionStorage.setItem(storageKey, newKey);
-      return newKey;
-    } catch {
-      // sessionStorage unavailable (e.g. private browsing)
-      return `order_${crypto.randomUUID()}`;
-    }
+    const existing = sessionStorage.getItem(storageKey);
+    if (existing) return existing;
+    const newKey = `order_${crypto.randomUUID()}`;
+    sessionStorage.setItem(storageKey, newKey);
+    return newKey;
   });
 
   // Express Checkout for returning customers
@@ -414,24 +282,19 @@ export function CheckoutPage() {
     }
   }, [returningCustomer]);
 
-  // Use unified cart hook with coupon and gift card support
+  // Use unified cart hook with coupon support
   const {
     cartItems,
     cartCount,
     subtotal,
     isInitialized,
-    clearCart,
     applyCoupon,
     appliedCoupon,
     removeCoupon,
     getCouponDiscount,
+    validateCart,
     syncCartPrices,
     removeItem,
-    appliedGiftCards,
-    applyGiftCard,
-    removeGiftCard,
-    getGiftCardTotal,
-    checkInventoryAvailability,
   } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
@@ -442,11 +305,6 @@ export function CheckoutPage() {
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
 
-  // Cart validation state
-  const [isValidatingCart, setIsValidatingCart] = useState(false);
-  const [cartValidationIssues, setCartValidationIssues] = useState<string[]>([]);
-  const cartValidationRanRef = useRef(false);
-
   // Redirect to cart if empty
   useEffect(() => {
     if (isInitialized && cartItems.length === 0) {
@@ -455,82 +313,19 @@ export function CheckoutPage() {
     }
   }, [isInitialized, cartItems.length, navigate, storeSlug]);
 
-  // Validate cart items on checkout page load: check existence, stock, and prices
+  // Validate cart and sync prices on mount
   useEffect(() => {
-    if (!isInitialized || cartItems.length === 0 || !store?.id || cartValidationRanRef.current) return;
-    cartValidationRanRef.current = true;
-
-    const validateOnMount = async () => {
-      setIsValidatingCart(true);
-      const issues: string[] = [];
-
-      try {
-        // 1. Check which products still exist and get current prices/stock
-        const productIds = cartItems.map(item => item.productId);
-        const { data: products, error } = await supabase
-          .from('products')
-          .select('id, name, price, in_stock')
-          .in('id', productIds);
-
-        if (error) {
-          logger.warn('Cart validation query failed', error, { component: 'CheckoutPage' });
-          // Don't block checkout on validation failure
-          setIsValidatingCart(false);
-          return;
-        }
-
-        const productMap = new Map(products?.map(p => [p.id, p]) ?? []);
-        const itemsToRemove: string[] = [];
-
-        // 2. Find deleted products (no longer in DB)
-        for (const item of cartItems) {
-          const product = productMap.get(item.productId);
-          if (!product) {
-            itemsToRemove.push(item.productId);
-            issues.push(`"${item.name}" is no longer available and was removed from your cart.`);
-          }
-        }
-
-        // 3. Remove deleted items
-        for (const productId of itemsToRemove) {
-          removeItem(productId);
-        }
-
-        // 4. Sync prices (updates cart in-place for changed prices)
-        const priceResult = await syncCartPrices();
-        if (priceResult.changed) {
-          for (const change of priceResult.priceChanges) {
-            issues.push(`"${change.name}" price updated from ${formatCurrency(change.oldPrice)} to ${formatCurrency(change.newPrice)}.`);
-          }
-        }
-
-        // 5. Check inventory availability
-        const stockResult = await checkInventoryAvailability();
-        if (!stockResult.valid) {
-          for (const item of stockResult.outOfStock) {
-            if (item.available <= 0) {
-              issues.push(`"${item.name}" is out of stock.`);
-            } else {
-              issues.push(`"${item.name}" — only ${item.available} available (you requested ${item.requested}).`);
-            }
-          }
-        }
-
-        // Show toast summary if there were any issues
-        if (issues.length > 0) {
-          toast.warning('Cart updated', {
-            description: 'Some items in your cart were updated. Please review before placing your order.',
+    if (isInitialized && cartItems.length > 0 && store?.id) {
+      validateCart();
+      syncCartPrices().then(result => {
+        if (result.changed) {
+          toast.warning('Some prices have been updated', {
+            description: 'Your cart has been refreshed with the latest prices.',
           });
         }
-      } catch (e) {
-        logger.error('Cart validation failed on checkout mount', e, { component: 'CheckoutPage' });
-      } finally {
-        setCartValidationIssues(issues);
-        setIsValidatingCart(false);
-      }
-    };
-
-    validateOnMount();
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- validateCart is defined below; only run when cart/store changes
   }, [isInitialized, cartItems.length, store?.id]);
 
   // Fetch and calculate active deals
@@ -555,6 +350,9 @@ export function CheckoutPage() {
   };
 
   // Gift Cards
+  const { appliedGiftCards, applyGiftCard, removeGiftCard, getGiftCardTotal } = useShopCart({
+    storeId: store?.id,
+  });
   const [giftCardCode, setGiftCardCode] = useState('');
   const [isCheckingGiftCard, setIsCheckingGiftCard] = useState(false);
 
@@ -594,17 +392,20 @@ export function CheckoutPage() {
     }
   };
 
-  // Get delivery fee based on matched zone or store default
+  // Get delivery fee based on zip code (from delivery zones or default)
   const getDeliveryFee = () => {
-    if (subtotal >= (store?.free_delivery_threshold || Infinity)) return 0;
+    if (subtotal >= (store?.free_delivery_threshold || 100)) return 0;
 
-    // Use matched zone fee if available
-    if (matchedZone) {
-      return matchedZone.delivery_fee;
+    // Check if zip matches a delivery zone
+    const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) ?? [];
+    const matchingZone = deliveryZones.find((zone) => zone.zip_code === formData.zip);
+
+    if (matchingZone) {
+      return matchingZone.fee || store?.default_delivery_fee || 5;
     }
 
     // Fall back to default delivery fee
-    return store?.default_delivery_fee || 0;
+    return store?.default_delivery_fee || 5;
   };
 
   // Calculate totals
@@ -629,16 +430,13 @@ export function CheckoutPage() {
   };
 
   // Validate current step
-  const validateStep = async (): Promise<boolean> => {
+  const validateStep = () => {
+    setShowErrors(true);
     switch (currentStep) {
-      case 1: {
-        // Delegate to React Hook Form validation via ref
-        if (step1ValidateRef.current) {
-          const isValid = await step1ValidateRef.current();
-          if (!isValid) {
-            toast.error('Please fix the errors above');
-          }
-          return isValid;
+      case 1:
+        if (!formData.firstName || !formData.lastName || !formData.email) {
+          toast.error('Please fill in all required fields');
+          return false;
         }
         if (!EMAIL_REGEX.test(formData.email)) {
           toast.error('Invalid email address', { description: 'Please enter a valid email.' });
@@ -648,9 +446,9 @@ export function CheckoutPage() {
           toast.error('Phone number is required');
           return false;
         }
-        // Validate phone format if provided — must be 10-digit US number
-        if (formData.phone && !isValidUSPhone(formData.phone)) {
-          toast.error('Invalid phone number', { description: 'Please enter a valid 10-digit US phone number.' });
+        // Validate phone format if provided
+        if (formData.phone && !PHONE_REGEX.test(formData.phone.replace(/\s/g, ''))) {
+          toast.error('Invalid phone number', { description: 'Please enter a valid phone number.' });
           return false;
         }
         // Validate password if creating account
@@ -659,9 +457,7 @@ export function CheckoutPage() {
           return false;
         }
         return true;
-        return false;
-      }
-      case 2:
+      case 2: {
         if (!formData.fulfillmentMethod) {
           toast.error('Please select a fulfillment method');
           return false;
@@ -673,26 +469,25 @@ export function CheckoutPage() {
           return false;
         }
         // Validate delivery zone if zones are configured
+        const deliveryZones: DeliveryZone[] = ((store as unknown as { delivery_zones?: DeliveryZone[] })?.delivery_zones) ?? [];
         if (deliveryZones.length > 0) {
-          if (zipValidationStatus === 'checking') {
-            toast.error('Please wait while we verify your delivery area');
-            return false;
-          }
-          if (zipValidationStatus === 'invalid' || !matchedZone) {
+          const matchingZone = deliveryZones.find((zone) => zone.zip_code === formData.zip);
+          if (!matchingZone) {
             toast.error('Delivery not available', {
-              description: `We don't currently deliver to ZIP code ${formData.zip}. Please try a different address or choose pickup.`,
+              description: `We don't currently deliver to zip code ${formData.zip}. Please try a different address.`,
             });
             return false;
           }
-          // Check minimum order for the matched zone
-          if (matchedZone.minimum_order > 0 && subtotal < matchedZone.minimum_order) {
+          // Check minimum order if zone has one
+          if (matchingZone.min_order && subtotal < matchingZone.min_order) {
             toast.error('Minimum order not met', {
-              description: `Delivery to ${matchedZone.zone_name} requires a minimum order of ${formatCurrency(matchedZone.minimum_order)}.`,
+              description: `This delivery zone requires a minimum order of $${matchingZone.min_order}.`,
             });
             return false;
           }
         }
         return true;
+      }
       case 3:
         if (!formData.paymentMethod) {
           toast.error('Please select a payment method');
@@ -708,10 +503,6 @@ export function CheckoutPage() {
         }
         return true;
       case 4:
-        if (!ageVerified) {
-          toast.error('Please confirm you are 21 or older');
-          return false;
-        }
         if (!agreeToTerms) {
           toast.error('Please agree to the terms to continue');
           return false;
@@ -723,9 +514,8 @@ export function CheckoutPage() {
   };
 
   // Next step
-  const nextStep = async () => {
-    const isValid = await validateStep();
-    if (isValid) {
+  const nextStep = () => {
+    if (validateStep()) {
       setCurrentStep((prev) => Math.min(prev + 1, 4));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -843,18 +633,6 @@ export function CheckoutPage() {
         }
       }
 
-      // Helper: detect network errors worth retrying
-      const isNetworkError = (err: unknown): boolean => {
-        const msg = err instanceof Error ? err.message : String(err);
-        const lower = msg.toLowerCase();
-        return lower.includes('network') ||
-          lower.includes('fetch') ||
-          lower.includes('timeout') ||
-          lower.includes('failed to fetch') ||
-          lower.includes('load failed') ||
-          msg === '';
-      };
-
       // Primary path: edge function checkout (handles order, customer, stock, Telegram, Stripe)
       const tryEdgeFunction = async (): Promise<OrderResult | null> => {
         try {
@@ -877,7 +655,7 @@ export function CheckoutPage() {
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 email: formData.email,
-                phone: normalizePhoneNumber(formData.phone) || undefined,
+                phone: formData.phone || undefined,
               },
               fulfillmentMethod: formData.fulfillmentMethod,
               paymentMethod: formData.paymentMethod,
@@ -893,8 +671,6 @@ export function CheckoutPage() {
                 : undefined,
               idempotencyKey,
               clientTotal: total,
-              createAccount: createAccount || undefined,
-              password: createAccount ? accountPassword : undefined,
             },
           });
 
@@ -936,10 +712,6 @@ export function CheckoutPage() {
             total: responseData.serverTotal as number,
             checkoutUrl: responseData.checkoutUrl as string | undefined,
             telegramLink: (responseData.telegramLink as string) || undefined,
-            accountToken: (responseData.accountToken as string) || undefined,
-            accountCustomer: (responseData.accountCustomer as Record<string, unknown>) || undefined,
-            accountTenant: (responseData.accountTenant as Record<string, unknown>) || undefined,
-            telegramButtonLabel: (responseData.telegramButtonLabel as string) || undefined,
           };
         } catch (err: unknown) {
           // Re-throw known Error instances (business errors from edge function)
@@ -950,16 +722,15 @@ export function CheckoutPage() {
       };
 
       // Fallback path: direct RPC (if edge function is unavailable)
-      const tryRpcFallback = async (): Promise<OrderResult> => {
-        if (!store?.id) throw new Error('Store ID missing');
+      const attemptOrder = async (attempt: number): Promise<OrderResult> => {
+        try {
+          if (!store?.id) throw new Error('Store ID missing');
 
-        // Session ID for reservation (using guest email or random string if not available yet)
-        const sessionId = formData.email || `guest_${Date.now()}`;
+          // Session ID for reservation (using guest email or random string if not available yet)
+          const sessionId = formData.email || `guest_${Date.now()}`;
 
-        // 1. Create Order using the actual function signature
-        const deliveryAddress = formData.fulfillmentMethod === 'pickup'
-          ? null
-          : `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
+          // Skip inventory reservation if the RPC doesn't match expected signature
+          // The existing reserve_inventory uses (p_menu_id, p_items) not per-product calls
 
           // 1. Create Order using the actual function signature
           const deliveryAddress = formData.fulfillmentMethod === 'pickup'
@@ -971,7 +742,7 @@ export function CheckoutPage() {
               p_store_id: store.id,
               p_customer_name: `${formData.firstName} ${formData.lastName}`,
               p_customer_email: formData.email,
-              p_customer_phone: normalizePhoneNumber(formData.phone) || undefined,
+              p_customer_phone: formData.phone || undefined,
               p_delivery_address: deliveryAddress,
               p_delivery_notes: formData.deliveryNotes || undefined,
               p_items: cartItems.map(item => ({
@@ -1004,207 +775,44 @@ export function CheckoutPage() {
           await (supabase.rpc as unknown as SupabaseRpc)('complete_reservation', {
             p_session_id: sessionId,
             p_order_id: orderId
-        const { data: orderId, error: orderError } = await supabase
-          .rpc('create_marketplace_order', {
-            p_store_id: store.id,
-            p_customer_name: `${formData.firstName} ${formData.lastName}`,
-            p_customer_email: formData.email,
-            p_customer_phone: formData.phone || undefined,
-            p_delivery_address: deliveryAddress,
-            p_delivery_notes: formData.deliveryNotes || undefined,
-            p_items: cartItems.map(item => ({
-              product_id: item.productId,
-              quantity: item.quantity,
-              price: item.price,
-              variant: item.variant
-            })),
-            p_subtotal: subtotal,
-            p_tax: 0,
-            p_delivery_fee: effectiveDeliveryFee,
-            p_total: total,
-            p_payment_method: formData.paymentMethod,
-            p_idempotency_key: idempotencyKey, // Prevent double orders on retry
-            p_preferred_contact_method: formData.preferredContact || undefined,
-            p_fulfillment_method: formData.fulfillmentMethod,
           });
 
-        if (orderError) {
-          // Handle case where RPC function doesn't exist - don't retry
-          if (orderError.message?.includes('function') || orderError.code === '42883') {
-            throw new Error('Order system is not configured. Please contact the store.');
-          }
-          throw orderError;
-        }
-
-        if (!orderId) throw new Error('Failed to create order');
-
-        // 2. Complete Reservations
-        await (supabase.rpc as unknown as SupabaseRpc)('complete_reservation', {
-          p_session_id: sessionId,
-          p_order_id: orderId
-        });
-
-        // 3. Redeem Coupon
-        if (appliedCoupon?.coupon_id) {
-          await (supabase.rpc as unknown as SupabaseRpc)('redeem_coupon', { p_coupon_id: appliedCoupon.coupon_id });
-        }
-
-        // 4. Fetch order details (tracking token, order number, total)
-        const { data: orderRow } = await supabase
-          .from('storefront_orders')
-          .select('order_number, tracking_token, total')
-          .eq('id', orderId as string)
-          .maybeSingle();
-
-        return {
-          order_id: orderId as string,
-          order_number: (orderRow?.order_number as string) || (orderId as string),
-          tracking_token: (orderRow?.tracking_token as string) || undefined,
-          total: (orderRow?.total as number) ?? undefined,
-        };
-      };
-
-      // Submit order with retry: tries edge function → RPC fallback, retries on network errors
-      const MAX_RETRIES = 3;
-      const submitWithRetry = async (attempt: number): Promise<OrderResult> => {
-        try {
-          // Try edge function first
-          const edgeResult = await tryEdgeFunction();
-          if (edgeResult) return edgeResult;
-
-          // Edge function unavailable, use RPC fallback
-          logger.warn('Edge function unavailable, using client-side fallback', null, { component: 'CheckoutPage' });
-          const fallbackResult = await tryRpcFallback();
-
-          // Telegram fallback: edge function handles Telegram server-side,
-          // but the RPC fallback path skips it. Fire-and-forget notification.
-          if (store?.tenant_id) {
-            supabase.functions.invoke('forward-order-telegram', {
-              body: {
-                orderId: fallbackResult.order_id,
-                tenantId: store.tenant_id,
-                orderNumber: fallbackResult.order_number,
-                customerName: `${formData.firstName} ${formData.lastName}`,
-                customerPhone: formData.phone || null,
-                orderTotal: fallbackResult.total ?? total,
-                items: cartItems.map((item) => ({
-                  productName: item.name,
-                  quantity: item.quantity,
-                  price: item.price * item.quantity,
-                })),
-                storeName: store.store_name || 'Store',
-                fulfillmentMethod: formData.fulfillmentMethod,
-              },
-            }).catch((err) => {
-              logger.warn('Telegram fallback notification failed — skipping', err, { component: 'CheckoutPage' });
-            });
+          // 3. Redeem Coupon
+          if (appliedCoupon?.coupon_id) {
+            await (supabase.rpc as unknown as SupabaseRpc)('redeem_coupon', { p_coupon_id: appliedCoupon.coupon_id });
           }
 
-          return fallbackResult;
           // 4. Fetch order details (tracking token, order number, total)
-          // 4. Customer upsert — sync to CRM customers table (non-blocking)
-          if (store.tenant_id) {
-            const customerName = `${formData.firstName} ${formData.lastName}`;
-            (supabase.rpc as unknown as SupabaseRpc)('upsert_customer_on_checkout', {
-              p_tenant_id: store.tenant_id,
-              p_name: customerName,
-              p_phone: formData.phone || '',
-              p_email: formData.email,
-              p_preferred_contact: formData.preferredContact || null,
-              p_address: deliveryAddress || null,
-              p_order_total: total,
-            }).catch((err: unknown) => {
-              logger.warn('Customer upsert failed in fallback path — skipping', err, { component: 'CheckoutPage' });
-            });
-          }
-
-          // 5. Fetch order details (tracking token, order number, total)
           const { data: orderRow } = await supabase
             .from('storefront_orders')
             .select('order_number, tracking_token, total')
             .eq('id', orderId as string)
             .maybeSingle();
 
-          // 5. Customer upsert — sync to CRM (mirrors edge function step 6)
-          if (store?.tenant_id) {
-            try {
-              const deliveryAddr = formData.fulfillmentMethod === 'pickup'
-                ? null
-                : `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
-
-              const { data: customerId } = await (supabase.rpc as unknown as SupabaseRpc)(
-                'upsert_customer_on_checkout',
-                {
-                  p_tenant_id: store.tenant_id,
-                  p_name: `${formData.firstName} ${formData.lastName}`,
-                  p_phone: formData.phone || '',
-                  p_email: formData.email,
-                  p_preferred_contact: formData.preferredContact || null,
-                  p_address: deliveryAddr,
-                  p_order_total: total,
-                },
-              );
-
-              // Link CRM customer to the order
-              if (customerId) {
-                await supabase
-                  .from('marketplace_orders')
-                  .update({ crm_customer_id: customerId as string })
-                  .eq('id', orderId as string);
-              }
-            } catch (upsertErr) {
-              // Non-blocking — order already placed, CRM sync is best-effort
-              logger.warn('Customer upsert failed in fallback path', upsertErr, { component: 'CheckoutPage' });
-            }
-          }
-
-          // 6. Fetch Telegram link for confirmation page (mirrors edge function step 7b)
-          let telegramLink: string | undefined;
-          if (store?.tenant_id) {
-            try {
-              const { data: acctRow } = await supabase
-                .from('accounts')
-                .select('id')
-                .eq('tenant_id', store.tenant_id)
-                .maybeSingle();
-
-              if (acctRow) {
-                const { data: settingsRow } = await supabase
-                  .from('account_settings')
-                  .select('notification_settings')
-                  .eq('account_id', acctRow.id)
-                  .maybeSingle();
-
-                const notif = settingsRow?.notification_settings as Record<string, unknown> | null;
-                telegramLink = (notif?.telegram_customer_link as string) || undefined;
-              }
-            } catch {
-              // Non-blocking — Telegram link is optional
-            }
-          }
-
           return {
             order_id: orderId as string,
             order_number: (orderRow?.order_number as string) || (orderId as string),
             tracking_token: (orderRow?.tracking_token as string) || undefined,
             total: (orderRow?.total as number) ?? undefined,
-            telegramLink,
           };
 
         } catch (err: unknown) {
-          // Don't retry business errors (out of stock, blocked, limits, etc.)
-          if (err instanceof OutOfStockError) throw err;
+          const errMessage = err instanceof Error ? err.message : String(err);
+          const isNetworkError =
+            errMessage.toLowerCase().includes('network') ||
+              errMessage.toLowerCase().includes('fetch') ||
+              errMessage.toLowerCase().includes('timeout') ||
+              errMessage.toLowerCase().includes('failed to fetch');
 
-          if (isNetworkError(err) && attempt < MAX_RETRIES) {
+          // Retry on network errors
+          if (isNetworkError && attempt < 3) { // Hardcoded 3 for simplicity or import constant
             setOrderRetryCount(attempt);
-            toast.warning(`Connection issue, retrying (${attempt}/${MAX_RETRIES})...`, {
-              description: 'Your cart is safe. Retrying automatically.',
-            });
+            toast.warning(`Connection issue, retrying (${attempt}/3)...`);
             await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
-            return submitWithRetry(attempt + 1);
+            return attemptOrder(attempt + 1);
           }
 
-          logger.error('Order submission error', err, { attempt, component: 'CheckoutPage' });
+          logger.error('Order RPC error', err, { attempt, component: 'CheckoutPage' });
           throw err;
         }
       };
@@ -1226,7 +834,7 @@ export function CheckoutPage() {
             tenantId: store.tenant_id,
             orderNumber: fallbackResult.order_number,
             customerName: `${formData.firstName} ${formData.lastName}`,
-            customerPhone: normalizePhoneNumber(formData.phone) || null,
+            customerPhone: formData.phone || null,
             orderTotal: fallbackResult.total ?? total,
             items: cartItems.map((item) => ({
               productName: item.name,
@@ -1241,44 +849,21 @@ export function CheckoutPage() {
         });
       }
 
-      // Account creation fallback: edge function path handles it server-side,
-      // but the RPC fallback path skips it. Fire-and-forget client call.
-      if (createAccount && accountPassword && store?.tenant_id && formData.email) {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-        fetch(`${supabaseUrl}/functions/v1/customer-auth?action=signup`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseAnonKey}`,
-            'apikey': supabaseAnonKey,
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            password: accountPassword,
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            phone: formData.phone || null,
-            tenantId: store.tenant_id,
-          }),
-        }).catch((err) => {
-          logger.warn('Fallback account creation failed — completing as guest', err, { component: 'CheckoutPage' });
-        });
-      }
-
       return fallbackResult;
-      return submitWithRetry(1);
     },
     onSuccess: async (data) => {
       setOrderRetryCount(0);
       // Clear idempotency key — order succeeded, future checkouts get a fresh key
-      try { sessionStorage.removeItem(`checkout_idempotency_${storeSlug || ''}`); } catch { /* ignore */ }
+      sessionStorage.removeItem(`checkout_idempotency_${storeSlug || ''}`);
 
       // If edge function returned a Stripe checkout URL, redirect directly
       if (data.checkoutUrl) {
-        clearCart();
-        if (formStorageKey) {
-          safeStorage.removeItem(formStorageKey);
+        if (store?.id) {
+          safeStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
+          if (formStorageKey) {
+            safeStorage.removeItem(formStorageKey);
+          }
+          setCartItemCount(0);
         }
         window.location.href = data.checkoutUrl;
         return;
@@ -1297,43 +882,41 @@ export function CheckoutPage() {
         toast.success('Zelle payment received!', {
           description: `Order #${data.order_number} placed successfully.`,
         });
-      } else if (formData.paymentMethod === 'cashapp') {
-        toast.success('Cash App payment received!', {
-          description: `Order #${data.order_number} placed successfully.`,
-        });
       } else if (formData.paymentMethod === 'card') {
         toast.info('Order placed! The store will follow up regarding payment.');
       }
       // Clear cart and saved form data
-      clearCart();
-      if (formStorageKey) {
-        safeStorage.removeItem(formStorageKey);
+      if (store?.id) {
+        safeStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
+        if (formStorageKey) {
+          safeStorage.removeItem(formStorageKey);
+        }
+        setCartItemCount(0);
       }
 
-      // Send order confirmation email (fire and forget) — only if email was provided
-      if (formData.email) {
-        const origin = window.location.origin;
-        supabase.functions.invoke('send-order-confirmation', {
-          body: {
-            order_id: data.order_id,
-            customer_email: formData.email,
-            customer_name: `${formData.firstName} ${formData.lastName}`,
-            order_number: data.order_number,
-            items: cartItems.map((item) => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price,
-            })),
-            subtotal,
-            delivery_fee: deliveryFee,
-            total: data.total,
-            store_name: store?.store_name || 'Store',
-            tracking_url: data.tracking_token ? `${origin}/shop/${storeSlug}/track/${data.tracking_token}` : undefined,
-          },
-        }).catch((err) => {
-          logger.warn('Failed to send order confirmation email', err, { component: 'CheckoutPage' });
-        });
-      }
+      // Send order confirmation email (fire and forget)
+      const origin = window.location.origin;
+      supabase.functions.invoke('send-order-confirmation', {
+        body: {
+          order_id: data.order_id,
+          customer_email: formData.email,
+          customer_name: `${formData.firstName} ${formData.lastName}`,
+          order_number: data.order_number,
+          items: cartItems.map((item) => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          subtotal,
+          delivery_fee: deliveryFee,
+          total: data.total,
+          store_name: store?.store_name || 'Store',
+          tracking_url: data.tracking_token ? `${origin}/shop/${storeSlug}/order-tracking?token=${data.tracking_token}` : undefined,
+        },
+      }).catch((err) => {
+        logger.warn('Failed to send order confirmation email', err, { component: 'CheckoutPage' });
+        toast.warning('Order placed, but confirmation email could not be sent');
+      });
 
       // Create customer account if opted in (fire and forget — order already placed)
       if (createAccount && accountPassword && store?.tenant_id) {
@@ -1351,7 +934,7 @@ export function CheckoutPage() {
             password: accountPassword,
             firstName: formData.firstName,
             lastName: formData.lastName,
-            phone: normalizePhoneNumber(formData.phone) || null,
+            phone: formData.phone || null,
             tenantId: store.tenant_id,
           }),
         }).then(async (response) => {
@@ -1367,21 +950,6 @@ export function CheckoutPage() {
         }).catch((err) => {
           logger.warn('Account creation failed', err, { component: 'CheckoutPage' });
         });
-      // Auto-login if account was created during checkout (edge function handles creation)
-      if (data.accountToken && data.accountCustomer && data.accountTenant) {
-        try {
-          safeStorage.setItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN, data.accountToken);
-          safeStorage.setItem(STORAGE_KEYS.CUSTOMER_USER, JSON.stringify(data.accountCustomer));
-          safeStorage.setItem(STORAGE_KEYS.CUSTOMER_TENANT_DATA, JSON.stringify(data.accountTenant));
-          toast.success('Account created! You are now logged in.');
-        } catch (err) {
-          logger.warn('Auto-login after account creation failed', err, { component: 'CheckoutPage' });
-          toast.success('Account created! You can log in to view your order history.');
-        }
-      } else if (createAccount) {
-        // Edge function path didn't create the account (e.g., email already exists or fallback path)
-        // Gracefully complete as guest
-        logger.info('Account creation was requested but not completed by checkout handler', null, { component: 'CheckoutPage' });
       }
 
       // Navigate to confirmation
@@ -1391,22 +959,14 @@ export function CheckoutPage() {
           trackingToken: data.tracking_token,
           total: data.total,
           telegramLink: data.telegramLink,
-          telegramButtonLabel: data.telegramButtonLabel,
         },
-      // Show confirmation popup before navigating
-      setCompletedOrderData({
-        orderNumber: data.order_number,
-        trackingToken: data.tracking_token,
-        total: data.total,
-        telegramLink: data.telegramLink,
       });
-      setShowConfirmationPopup(true);
     },
     onError: (error: Error) => {
       setOrderRetryCount(0);
       logger.error('Failed to place order', error, { component: 'CheckoutPage' });
 
-      // Handle out-of-stock errors — show per-item warnings and let user decide
+      // Handle out-of-stock errors — remove unavailable items and let user continue
       if (error instanceof OutOfStockError) {
         const { unavailableProducts } = error;
         for (const product of unavailableProducts) {
@@ -1430,72 +990,40 @@ export function CheckoutPage() {
           toast.info('Your cart has been updated. You can continue with the remaining items.');
           setCurrentStep(4); // Stay on review step
         }
-        // If cart is now empty, the existing redirect effect will handle navigation
-        setOutOfStockItems(error.unavailableProducts);
-        setCurrentStep(4); // Ensure we're on the review step so the alert is visible
-        toast.error('Some items are no longer available', {
-          description: 'Please review the stock warnings below.',
-        });
+        // If cart is now empty, the existing redirect effect (line ~236) will handle navigation
         return;
       }
 
-      // Determine if the error is a connection issue (retryable)
       const errorMessage = error.message || '';
       const lowerMsg = errorMessage.toLowerCase();
       const isRetryableError =
         lowerMsg.includes('network') ||
         lowerMsg.includes('fetch') ||
         lowerMsg.includes('timeout') ||
-        lowerMsg.includes('load failed') ||
         lowerMsg.includes('internal server error') ||
         lowerMsg.includes('500') ||
         lowerMsg.includes('failed to create order') ||
         errorMessage === '';
 
-      // Cart is preserved — user can retry without losing anything
-      toast.error(
-        isRetryableError ? 'Connection error' : 'Order failed',
-        {
-          description: isRetryableError
-            ? 'Could not reach the server. Your cart is saved — tap Retry when ready.'
-            : humanizeError(error),
-          duration: 10000,
-          action: {
-            label: 'Retry',
-            onClick: () => handlePlaceOrder(),
-          },
+      toast.error('Order failed', {
+        description: isRetryableError
+          ? 'Something went wrong. Please try again.'
+          : errorMessage,
+        action: {
+          label: 'Retry',
+          onClick: () => handlePlaceOrder(),
         },
-      );
+      });
     },
     onSettled: () => {
-      setIsSubmitting(false);
+      isSubmittingRef.current = false;
     },
   });
 
-  // Handle place order — state guard prevents double submission
-  const handlePlaceOrder = () => {
-    if (isSubmitting || placeOrderMutation.isPending) return;
-  // Remove out-of-stock items from cart so the user can retry checkout
-  const handleRemoveOutOfStockItems = () => {
-    for (const product of outOfStockItems) {
-      removeItem(product.productId);
-    }
-    setOutOfStockItems([]);
-    toast.success('Unavailable items removed. You can place your order now.');
-  };
-
   // Handle place order — ref guard prevents fast double-click
   const handlePlaceOrder = () => {
     if (isSubmittingRef.current || placeOrderMutation.isPending) return;
-    // Clear any previous out-of-stock warnings before re-attempting
-    setOutOfStockItems([]);
     if (validateStep()) {
-      setIsSubmitting(true);
-  // Handle place order — ref guard prevents fast double-click
-  const handlePlaceOrder = async () => {
-    if (isSubmittingRef.current || placeOrderMutation.isPending) return;
-    const isValid = await validateStep();
-    if (isValid) {
       isSubmittingRef.current = true;
       placeOrderMutation.mutate();
     }
@@ -1506,19 +1034,116 @@ export function CheckoutPage() {
   const themeColor = isLuxuryTheme ? accentColor : store.primary_color;
 
   return (
-    <div className={`container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-5xl overflow-x-hidden ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
-      {/* Visual Progress Indicator */}
-      <CheckoutProgressIndicator
-        steps={STEPS}
-        currentStep={currentStep}
-        themeColor={themeColor}
-        isLuxuryTheme={isLuxuryTheme}
-        onStepClick={(stepId) => setCurrentStep(stepId)}
-      />
+    <div className={`container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-5xl ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
+      {/* Steps — compact horizontal pills on mobile, full icons on sm+ */}
+      <div className="mb-6 sm:mb-8">
+        {/* Mobile: compact pill indicators */}
+        <nav className="flex sm:hidden gap-2 justify-center" aria-label="Checkout steps">
+          {STEPS.map((step) => {
+            const isActive = currentStep === step.id;
+            const isComplete = currentStep > step.id;
+            const isFuture = currentStep < step.id;
 
-      <h1 className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 ${isLuxuryTheme ? 'text-white font-extralight tracking-wide' : ''}`}>
-        Checkout
-      </h1>
+            return (
+              <button
+                key={step.id}
+                type="button"
+                onClick={() => {
+                  if (isComplete) setCurrentStep(step.id);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${
+                  isActive
+                    ? 'text-white shadow-md'
+                    : isComplete
+                      ? 'text-white/90'
+                      : isFuture
+                        ? (isLuxuryTheme ? 'bg-white/5 text-white/30' : 'bg-muted text-muted-foreground')
+                        : ''
+                }`}
+                style={{
+                  backgroundColor: isComplete || isActive ? themeColor : undefined,
+                  opacity: isComplete ? 0.7 : undefined,
+                }}
+                disabled={isFuture}
+              >
+                {isComplete ? (
+                  <Check className="w-3 h-3" />
+                ) : (
+                  <span>{step.id}</span>
+                )}
+                <span>{step.name}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Desktop: full icon step indicator */}
+        <nav className="hidden sm:flex justify-between">
+          {STEPS.map((step, index) => {
+            const Icon = step.icon;
+            const isActive = currentStep === step.id;
+            const isComplete = currentStep > step.id;
+            const isFuture = currentStep < step.id;
+
+            return (
+              <div
+                key={step.id}
+                className="flex-1 flex flex-col items-center relative"
+              >
+                {/* Connecting Line */}
+                {index < STEPS.length - 1 && (
+                  <div className={`absolute top-5 left-[calc(50%+20px)] w-[calc(100%-40px)] h-[2px] ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
+                    <motion.div
+                      className="h-full"
+                      initial={{ width: "0%" }}
+                      animate={{ width: isComplete ? "100%" : "0%" }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                      style={{ backgroundColor: themeColor }}
+                    />
+                  </div>
+                )}
+
+                <div
+                  className={`relative w-10 h-10 rounded-full flex items-center justify-center z-10 transition-all duration-300 ${isActive ? 'ring-2 ring-offset-4 ring-offset-background scale-110' : ''
+                    } ${isFuture ? (isLuxuryTheme ? 'bg-white/5 text-white/20' : 'bg-muted text-muted-foreground') : ''
+                    }`}
+                  style={{
+                    backgroundColor: isComplete || isActive ? themeColor : undefined,
+                    color: isComplete || isActive ? '#fff' : undefined,
+                    boxShadow: isActive && isLuxuryTheme ? `0 0 20px ${themeColor}60` : undefined,
+                    borderColor: isLuxuryTheme ? '#000' : undefined
+                  }}
+                >
+                  {isComplete ? (
+                    <Check className="w-5 h-5" />
+                  ) : (
+                    <Icon className="w-5 h-5" />
+                  )}
+
+                  {/* Active Pulse Ring */}
+                  {isActive && (
+                    <motion.div
+                      className="absolute inset-0 rounded-full"
+                      initial={{ scale: 1, opacity: 0.5 }}
+                      animate={{ scale: 1.5, opacity: 0 }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      style={{ border: `1px solid ${themeColor}` }}
+                    />
+                  )}
+                </div>
+
+                <span
+                  className={`text-xs uppercase tracking-widest mt-4 font-semibold transition-colors duration-300 ${isActive ? 'text-primary' : (isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground')
+                    }`}
+                  style={{ color: isActive ? themeColor : undefined }}
+                >
+                  {step.name}
+                </span>
+              </div>
+            );
+          })}
+        </nav>
+      </div>
 
       {/* Mobile Order Summary - Collapsible (visible only on mobile) */}
       <div className="lg:hidden mb-4 sm:mb-6">
@@ -1576,18 +1201,18 @@ export function CheckoutPage() {
 
                 {/* Summary */}
                 <div className="space-y-1 text-sm">
-                  <div className="flex justify-between" data-testid="checkout-sidebar-subtotal">
+                  <div className="flex justify-between">
                     <span className={isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}>Subtotal</span>
                     <span className={isLuxuryTheme ? 'text-white' : ''}>{formatCurrency(subtotal)}</span>
                   </div>
                   {effectiveDeliveryFee > 0 && (
-                    <div className="flex justify-between" data-testid="checkout-sidebar-delivery-fee">
+                    <div className="flex justify-between">
                       <span className={isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}>Delivery</span>
                       <span className={isLuxuryTheme ? 'text-white' : ''}>{formatCurrency(effectiveDeliveryFee)}</span>
                     </div>
                   )}
                   {couponDiscount > 0 && (
-                    <div className="flex justify-between text-success">
+                    <div className="flex justify-between text-green-600">
                       <span>Discount</span>
                       <span>-{formatCurrency(couponDiscount)}</span>
                     </div>
@@ -1596,7 +1221,7 @@ export function CheckoutPage() {
 
                 <Separator className={isLuxuryTheme ? 'bg-white/10' : ''} />
 
-                <div className="flex justify-between font-bold" data-testid="checkout-sidebar-total">
+                <div className="flex justify-between font-bold">
                   <span className={isLuxuryTheme ? 'text-white' : ''}>Total</span>
                   <span style={{ color: themeColor }}>{formatCurrency(total)}</span>
                 </div>
@@ -1612,39 +1237,13 @@ export function CheckoutPage() {
 
           {/* Store Closed Warning */}
           {isStoreClosed && (
-            <Alert className="border-warning/50 bg-warning/10 mb-6">
-              <Clock className="h-4 w-4 text-warning" />
-              <AlertTitle className="text-warning">Store is currently closed</AlertTitle>
-              <AlertDescription className="text-warning/90">
+            <Alert className="border-yellow-500/50 bg-yellow-500/10 mb-6">
+              <Clock className="h-4 w-4 text-yellow-500" />
+              <AlertTitle className="text-yellow-500">Store is currently closed</AlertTitle>
+              <AlertDescription className="text-yellow-500/90">
                 {storeStatus?.reason || 'We are currently closed for new orders.'}
                 {storeStatus?.nextOpen && ` We open again at ${storeStatus.nextOpen}.`}
                 {' '}You can still place a pre-order for delivery/pickup when we open.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Cart Validation Loading */}
-          {isValidatingCart && (
-            <Alert className="border-blue-500/50 bg-blue-500/10 mb-6">
-              <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />
-              <AlertTitle className="text-blue-500">Verifying your cart</AlertTitle>
-              <AlertDescription className="text-blue-500/90">
-                Checking item availability and prices...
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Cart Validation Issues */}
-          {!isValidatingCart && cartValidationIssues.length > 0 && (
-            <Alert className="border-yellow-500/50 bg-yellow-500/10 mb-6">
-              <AlertCircle className="h-4 w-4 text-yellow-500" />
-              <AlertTitle className="text-yellow-500">Cart updated</AlertTitle>
-              <AlertDescription className="text-yellow-500/90">
-                <ul className="list-disc list-inside mt-1 space-y-1">
-                  {cartValidationIssues.map((issue, i) => (
-                    <li key={i}>{issue}</li>
-                  ))}
-                </ul>
               </AlertDescription>
             </Alert>
           )}
@@ -1696,25 +1295,7 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-4"
                   >
-                    <div className="flex items-center justify-between mb-3 sm:mb-4">
-                      <h2 className={`text-lg sm:text-xl font-semibold ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
-                      {!isSignedIn && (
-                        <button
-                          type="button"
-                          onClick={() => setSignInOpen(true)}
-                          className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-                        >
-                          <LogIn className="h-4 w-4" />
-                          Sign in
-                        </button>
-                      )}
-                      {isSignedIn && (
-                        <span className="inline-flex items-center gap-1.5 text-sm text-success">
-                          <Check className="h-4 w-4" />
-                          Signed in
-                        </span>
-                      )}
-                    </div>
+                    <h2 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>Contact Information</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name *</Label>
@@ -1724,10 +1305,10 @@ export function CheckoutPage() {
                           value={formData.firstName}
                           onChange={(e) => updateField('firstName', e.target.value)}
                           placeholder="John"
-                          className={showErrors && !formData.firstName ? "border-destructive focus-visible:ring-destructive" : ""}
+                          className={showErrors && !formData.firstName ? "border-red-500 focus-visible:ring-red-500" : ""}
                         />
                         {showErrors && !formData.firstName && (
-                          <p className="text-xs text-destructive">Required</p>
+                          <p className="text-xs text-red-500">Required</p>
                         )}
                       </div>
                       <div className="space-y-2">
@@ -1738,10 +1319,10 @@ export function CheckoutPage() {
                           value={formData.lastName}
                           onChange={(e) => updateField('lastName', e.target.value)}
                           placeholder="Doe"
-                          className={showErrors && !formData.lastName ? "border-destructive focus-visible:ring-destructive" : ""}
+                          className={showErrors && !formData.lastName ? "border-red-500 focus-visible:ring-red-500" : ""}
                         />
                         {showErrors && !formData.lastName && (
-                          <p className="text-xs text-destructive">Required</p>
+                          <p className="text-xs text-red-500">Required</p>
                         )}
                       </div>
                     </div>
@@ -1754,10 +1335,10 @@ export function CheckoutPage() {
                         value={formData.email}
                         onChange={(e) => updateField('email', e.target.value)}
                         placeholder="john@example.com"
-                        className={showErrors && !formData.email ? "border-destructive focus-visible:ring-destructive" : ""}
+                        className={showErrors && !formData.email ? "border-red-500 focus-visible:ring-red-500" : ""}
                       />
                       {showErrors && !formData.email && (
-                        <p className="text-xs text-destructive">Required</p>
+                        <p className="text-xs text-red-500">Required</p>
                       )}
                     </div>
                     <div className="space-y-2">
@@ -1770,23 +1351,18 @@ export function CheckoutPage() {
                           name="phone"
                           type="tel"
                           value={formData.phone}
-                          onChange={(e) => updateField('phone', formatPhoneInput(e.target.value))}
+                          onChange={(e) => updateField('phone', e.target.value)}
                           placeholder="(555) 123-4567"
-                          maxLength={14}
-                          className={showErrors && formData.phone && !isValidUSPhone(formData.phone) ? "border-red-500 focus-visible:ring-red-500" : ""}
                         />
                         {isLookingUpCustomer && (
                           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
                         )}
                         {isRecognized && !isLookingUpCustomer && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-success" />
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
                         )}
                       </div>
-                      {showErrors && formData.phone && !isValidUSPhone(formData.phone) && (
-                        <p className="text-xs text-red-500">Please enter a valid 10-digit US phone number</p>
-                      )}
                       {isRecognized && (
-                        <p className="text-xs text-success">Welcome back, {returningCustomer?.firstName}!</p>
+                        <p className="text-xs text-green-600">Welcome back, {returningCustomer?.firstName}!</p>
                       )}
                     </div>
                     <div className="space-y-2">
@@ -1794,7 +1370,7 @@ export function CheckoutPage() {
                       <RadioGroup
                         value={formData.preferredContact}
                         onValueChange={(value) => updateField('preferredContact', value)}
-                        className="flex flex-wrap gap-3 sm:gap-4"
+                        className="flex gap-4"
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="text" id="contact-text" />
@@ -1815,76 +1391,46 @@ export function CheckoutPage() {
                       </RadioGroup>
                     </div>
 
-                    {/* Guest vs Account Creation Toggle */}
-                    {!isSignedIn && (
-                      <>
-                        <Separator />
-                        <div className="space-y-3">
-                          <p className="text-sm text-muted-foreground">
-                            Checking out as a guest. Want to save your info for next time?
+                    {/* Create Account Option */}
+                    <Separator />
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <Checkbox
+                          id="create-account"
+                          checked={createAccount}
+                          onCheckedChange={(checked) => {
+                            setCreateAccount(checked as boolean);
+                            if (!checked) setAccountPassword('');
+                          }}
+                        />
+                        <div>
+                          <Label htmlFor="create-account" className="cursor-pointer font-medium">
+                            Create an account
+                          </Label>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Save your info and view order history
                           </p>
-                          <div className="flex items-start gap-2">
-                            <Checkbox
-                              id="create-account"
-                              checked={createAccount}
-                              onCheckedChange={(checked) => {
-                                setCreateAccount(checked as boolean);
-                                if (!checked) setAccountPassword('');
-                              }}
-                            />
-                            <div>
-                              <Label htmlFor="create-account" className="cursor-pointer font-medium">
-                                Create an account
-                              </Label>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                Save your info and view order history
-                              </p>
-                            </div>
-                          </div>
-                          {createAccount && (
-                            <div className="space-y-2 pl-6">
-                              <Label htmlFor="account-password">Password *</Label>
-                              <Input
-                                id="account-password"
-                                type="password"
-                                value={accountPassword}
-                                onChange={(e) => setAccountPassword(e.target.value)}
-                                placeholder="At least 8 characters"
-                                autoComplete="new-password"
-                                minLength={8}
-                                className={showErrors && createAccount && accountPassword.length < 8 ? "border-destructive focus-visible:ring-destructive" : ""}
-                              />
-                              {showErrors && createAccount && accountPassword.length < 8 && (
-                                <p className="text-xs text-destructive">Password must be at least 8 characters</p>
-                              )}
-                            </div>
+                        </div>
+                      </div>
+                      {createAccount && (
+                        <div className="space-y-2 pl-6">
+                          <Label htmlFor="account-password">Password *</Label>
+                          <Input
+                            id="account-password"
+                            type="password"
+                            value={accountPassword}
+                            onChange={(e) => setAccountPassword(e.target.value)}
+                            placeholder="At least 8 characters"
+                            minLength={8}
+                            className={showErrors && createAccount && accountPassword.length < 8 ? "border-red-500 focus-visible:ring-red-500" : ""}
+                          />
+                          {showErrors && createAccount && accountPassword.length < 8 && (
+                            <p className="text-xs text-red-500">Password must be at least 8 characters</p>
                           )}
                         </div>
-                      </>
-                    )}
+                      )}
+                    </div>
                   </motion.div>
-                  <CheckoutCustomerInfoStep
-                    initialValues={{
-                      firstName: formData.firstName,
-                      lastName: formData.lastName,
-                      phone: formData.phone,
-                      email: formData.email,
-                      preferredContact: formData.preferredContact,
-                    }}
-                    createAccount={createAccount}
-                    accountPassword={accountPassword}
-                    isLuxuryTheme={isLuxuryTheme}
-                    isLookingUpCustomer={isLookingUpCustomer}
-                    isRecognized={isRecognized}
-                    returningCustomer={returningCustomer}
-                    onFieldChange={(field, value) => updateField(field as keyof CheckoutData, value)}
-                    onCreateAccountChange={(checked) => {
-                      setCreateAccount(checked);
-                      if (!checked) setAccountPassword('');
-                    }}
-                    onAccountPasswordChange={setAccountPassword}
-                    onValidate={handleStep1Validate}
-                  />
                 )}
 
                 {/* Step 2: Fulfillment Method & Delivery Address */}
@@ -1897,7 +1443,7 @@ export function CheckoutPage() {
                     transition={{ duration: 0.3 }}
                     className="space-y-4"
                   >
-                    <h2 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 ${isLuxuryTheme ? 'text-white font-light' : ''}`}>How would you like to receive your order?</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">How would you like to receive your order?</h2>
 
                     {/* Fulfillment Method Selector */}
                     <div className="grid grid-cols-2 gap-3">
@@ -1905,59 +1451,39 @@ export function CheckoutPage() {
                         type="button"
                         className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
                           formData.fulfillmentMethod === 'delivery'
-                            ? isLuxuryTheme
-                              ? 'border-white/30 bg-white/10 ring-1 ring-white/20'
-                              : 'ring-2 ring-offset-1'
-                            : isLuxuryTheme
-                              ? 'border-white/10 hover:border-white/20 text-white/60'
-                              : 'border-border hover:border-primary/50'
+                            ? 'border-primary bg-primary/5 ring-2 ring-primary'
+                            : 'border-border hover:border-primary/50'
                         }`}
-                        style={formData.fulfillmentMethod === 'delivery' ? {
-                          borderColor: themeColor,
-                          backgroundColor: isLuxuryTheme ? undefined : `${themeColor}10`,
-                          ringColor: themeColor,
-                        } : undefined}
                         onClick={() => updateField('fulfillmentMethod', 'delivery')}
-                        data-testid="fulfillment-delivery-button"
                       >
-                        <Truck className="h-6 w-6" style={formData.fulfillmentMethod === 'delivery' ? { color: themeColor } : undefined} />
-                        <span className={`font-semibold ${isLuxuryTheme ? 'text-white' : ''}`}>Delivery</span>
-                        <span className={`text-xs ${isLuxuryTheme ? 'text-white/70' : 'text-muted-foreground'}`}>We deliver to you</span>
+                        <Truck className="h-6 w-6" />
+                        <span className="font-semibold">Delivery</span>
+                        <span className="text-xs text-muted-foreground">We deliver to you</span>
                       </button>
                       <button
                         type="button"
                         className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
                           formData.fulfillmentMethod === 'pickup'
-                            ? isLuxuryTheme
-                              ? 'border-white/30 bg-white/10 ring-1 ring-white/20'
-                              : 'ring-2 ring-offset-1'
-                            : isLuxuryTheme
-                              ? 'border-white/10 hover:border-white/20 text-white/60'
-                              : 'border-border hover:border-primary/50'
+                            ? 'border-primary bg-primary/5 ring-2 ring-primary'
+                            : 'border-border hover:border-primary/50'
                         }`}
-                        style={formData.fulfillmentMethod === 'pickup' ? {
-                          borderColor: themeColor,
-                          backgroundColor: isLuxuryTheme ? undefined : `${themeColor}10`,
-                          ringColor: themeColor,
-                        } : undefined}
                         onClick={() => updateField('fulfillmentMethod', 'pickup')}
-                        data-testid="fulfillment-pickup-button"
                       >
-                        <Store className="h-6 w-6" style={formData.fulfillmentMethod === 'pickup' ? { color: themeColor } : undefined} />
-                        <span className={`font-semibold ${isLuxuryTheme ? 'text-white' : ''}`}>Pickup</span>
-                        <span className={`text-xs ${isLuxuryTheme ? 'text-white/70' : 'text-muted-foreground'}`}>Pick up at store</span>
+                        <Store className="h-6 w-6" />
+                        <span className="font-semibold">Pickup</span>
+                        <span className="text-xs text-muted-foreground">Pick up at store</span>
                       </button>
                     </div>
 
                     {/* Pickup Info */}
                     {formData.fulfillmentMethod === 'pickup' && (
-                      <Card className={isLuxuryTheme ? 'bg-white/5 border-white/10' : 'bg-muted/50'} data-testid="pickup-info-card">
+                      <Card className="bg-muted/50">
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
-                            <Store className="h-5 w-5 mt-0.5" style={{ color: themeColor }} />
+                            <Store className="h-5 w-5 text-primary mt-0.5" />
                             <div>
-                              <p className={`font-semibold ${isLuxuryTheme ? 'text-white' : ''}`}>Pickup at {store?.store_name || 'our store'}</p>
-                              <p className={`text-sm mt-1 ${isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}`}>
+                              <p className="font-semibold">Pickup at {store?.store_name || 'our store'}</p>
+                              <p className="text-sm text-muted-foreground mt-1">
                                 You will receive pickup details after your order is confirmed.
                               </p>
                             </div>
@@ -2017,80 +1543,13 @@ export function CheckoutPage() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="zip">ZIP Code *</Label>
-                          <div className="relative">
-                            <Input
-                              id="zip"
-                              name="zip"
-                              value={formData.zip}
-                              onChange={(e) => updateField('zip', e.target.value)}
-                              placeholder="10001"
-                              maxLength={10}
-                              className={
-                                zipValidationStatus === 'invalid'
-                                  ? 'border-destructive focus-visible:ring-destructive pr-10'
-                                  : zipValidationStatus === 'valid'
-                                    ? 'border-success focus-visible:ring-success pr-10'
-                                    : zipValidationStatus === 'checking'
-                                      ? 'pr-10'
-                                      : ''
-                              }
-                            />
-                            {zipValidationStatus === 'checking' && (
-                              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-                            )}
-                            {zipValidationStatus === 'valid' && (
-                              <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-success" />
-                            )}
-                            {zipValidationStatus === 'invalid' && (
-                              <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
-                            )}
-                          </div>
-
-                          {/* Zone match info */}
-                          {zipValidationStatus === 'valid' && matchedZone && (
-                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-success/10 border border-success/20' : 'bg-success/10 border border-success/20'}`}>
-                              <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                              <div className={isLuxuryTheme ? 'text-success' : 'text-success'}>
-                                <p className="font-medium">Delivery available — {matchedZone.zone_name}</p>
-                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-success/70' : 'text-success'}`}>
-                                  {matchedZone.delivery_fee > 0
-                                    ? `${formatCurrency(matchedZone.delivery_fee)} delivery fee`
-                                    : 'Free delivery'}
-                                  {' · '}
-                                  Est. {matchedZone.estimated_time_min}–{matchedZone.estimated_time_max} min
-                                  {matchedZone.minimum_order > 0 && ` · ${formatCurrency(matchedZone.minimum_order)} minimum`}
-                                </p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* No match error */}
-                          {zipValidationStatus === 'invalid' && (
-                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-destructive/10 border border-destructive/20' : 'bg-destructive/10 border border-destructive/20'}`}>
-                              <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-                              <div className={isLuxuryTheme ? 'text-destructive' : 'text-destructive'}>
-                                <p className="font-medium">Sorry, we don&apos;t deliver to this area</p>
-                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-destructive/70' : 'text-destructive'}`}>
-                                  Try a different ZIP code or choose pickup instead.
-                                </p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Minimum order warning */}
-                          {zipValidationStatus === 'valid' && matchedZone && matchedZone.minimum_order > 0 && subtotal < matchedZone.minimum_order && (
-                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-warning/10 border border-warning/20' : 'bg-warning/10 border border-warning/20'}`}>
-                              <AlertCircle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
-                              <div className={isLuxuryTheme ? 'text-warning' : 'text-warning'}>
-                                <p className="font-medium">
-                                  Minimum order of {formatCurrency(matchedZone.minimum_order)} required
-                                </p>
-                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-warning/70' : 'text-warning'}`}>
-                                  Add {formatCurrency(matchedZone.minimum_order - subtotal)} more to qualify for delivery to this area.
-                                </p>
-                              </div>
-                            </div>
-                          )}
+                          <Input
+                            id="zip"
+                            name="zip"
+                            value={formData.zip}
+                            onChange={(e) => updateField('zip', e.target.value)}
+                            placeholder="10001"
+                          />
                         </div>
                         {store.checkout_settings?.show_delivery_notes && (
                           <div className="space-y-2">
@@ -2117,18 +1576,8 @@ export function CheckoutPage() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
+                    className="space-y-6"
                   >
-                    <PaymentMethodStep
-                      paymentMethods={store.payment_methods || ['cash']}
-                      selectedMethod={formData.paymentMethod}
-                      onMethodChange={(method) => updateField('paymentMethod', method)}
-                      isStripeConfigured={isStripeConfigured}
-                      checkoutSettings={store.checkout_settings}
-                      venmoConfirmed={venmoConfirmed}
-                      onVenmoConfirmedChange={setVenmoConfirmed}
-                      zelleConfirmed={zelleConfirmed}
-                      onZelleConfirmedChange={setZelleConfirmed}
-                    />
                     <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Payment Method</h2>
 
                     {/* Express Payment Options */}
@@ -2182,7 +1631,7 @@ export function CheckoutPage() {
                           <div className="space-y-2">
                             <p className="text-sm font-medium">
                               Send payment to{' '}
-                              <span className="font-bold">{store.checkout_settings?.venmo_handle}</span>
+                              <span className="font-bold">{store.checkout_settings.venmo_handle}</span>
                             </p>
                             <Button
                               type="button"
@@ -2219,7 +1668,7 @@ export function CheckoutPage() {
                           <div className="space-y-2">
                             <p className="text-sm font-medium">
                               Send Zelle payment to{' '}
-                              <span className="font-bold">{store.checkout_settings?.zelle_email}</span>
+                              <span className="font-bold">{store.checkout_settings.zelle_email}</span>
                             </p>
                             <Button
                               type="button"
@@ -2248,19 +1697,6 @@ export function CheckoutPage() {
                         </div>
                       </div>
                     )}
-
-                    {/* Card payment info */}
-                    {formData.paymentMethod === 'card' && (
-                      <div className="flex items-start gap-3 p-4 border rounded-lg bg-muted/30">
-                        <CreditCard className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium">Secure card payment</p>
-                          <p className="text-xs text-muted-foreground">
-                            You&apos;ll be redirected to Stripe&apos;s secure checkout to complete your payment after reviewing your order.
-                          </p>
-                        </div>
-                      </div>
-                    )}
                   </motion.div>
                 )}
 
@@ -2276,44 +1712,6 @@ export function CheckoutPage() {
                   >
                     <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Review Your Order</h2>
 
-                    {/* Out-of-stock per-item alert */}
-                    {outOfStockItems.length > 0 && (
-                      <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Some items are unavailable</AlertTitle>
-                        <AlertDescription className="mt-2 space-y-3">
-                          <ul className="space-y-1.5 text-sm">
-                            {outOfStockItems.map((item) => (
-                              <li key={item.productId} className="flex items-center gap-2">
-                                <span className="font-medium">{item.productName}</span>
-                                {item.available <= 0 ? (
-                                  <Badge variant="destructive" className="text-xs">Out of stock</Badge>
-                                ) : (
-                                  <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
-                                    Only {item.available} left (requested {item.requested})
-                                  </Badge>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                          <div className="flex flex-wrap gap-2 pt-1">
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={handleRemoveOutOfStockItems}
-                            >
-                              Remove unavailable items
-                            </Button>
-                            <Link to={`/shop/${storeSlug}/cart`}>
-                              <Button size="sm" variant="outline">
-                                Back to cart
-                              </Button>
-                            </Link>
-                          </div>
-                        </AlertDescription>
-                      </Alert>
-                    )}
-
                     {/* Contact Summary */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
@@ -2325,20 +1723,14 @@ export function CheckoutPage() {
                       <p className="text-sm text-muted-foreground">
                         {formData.firstName} {formData.lastName}<br />
                         {formData.email}<br />
-                        {formatPhoneNumber(formData.phone)}
+                        {formData.phone}
                         {formData.preferredContact && (
                           <>
                             <br />
                             Preferred contact: {formData.preferredContact.charAt(0).toUpperCase() + formData.preferredContact.slice(1)}
                           </>
                         )}
-                        {isSignedIn && (
-                          <>
-                            <br />
-                            <span className="text-success">Signed in</span>
-                          </>
-                        )}
-                        {!isSignedIn && createAccount && (
+                        {createAccount && (
                           <>
                             <br />
                             <span className="text-primary">Creating account with this email</span>
@@ -2360,7 +1752,7 @@ export function CheckoutPage() {
                         </Button>
                       </div>
                       {formData.fulfillmentMethod === 'pickup' ? (
-                        <p className="text-sm text-muted-foreground" data-testid="review-pickup-summary">
+                        <p className="text-sm text-muted-foreground">
                           Pickup at {store?.store_name || 'store'}
                         </p>
                       ) : (
@@ -2390,28 +1782,15 @@ export function CheckoutPage() {
                         </Button>
                       </div>
                       <p className="text-sm text-muted-foreground capitalize">
-                        {formData.paymentMethod === 'cash' && 'Cash'}
+                        {formData.paymentMethod === 'cash' && 'Cash on Delivery'}
                         {formData.paymentMethod === 'venmo' && 'Venmo'}
                         {formData.paymentMethod === 'zelle' && 'Zelle'}
-                        {formData.paymentMethod === 'card' && 'Credit / Debit Card'}
-                        {formData.paymentMethod === 'cashapp' && 'Cash App'}
-                        {!['cash', 'venmo', 'zelle', 'card', 'cashapp'].includes(formData.paymentMethod) && formData.paymentMethod}
+                        {formData.paymentMethod === 'card' && 'Credit/Debit Card'}
+                        {!['cash', 'venmo', 'zelle', 'card'].includes(formData.paymentMethod) && formData.paymentMethod}
                       </p>
                     </div>
 
                     <Separator />
-
-                    {/* Age Verification */}
-                    <div className="flex items-start gap-2">
-                      <Checkbox
-                        id="age-verify"
-                        checked={ageVerified}
-                        onCheckedChange={(checked) => setAgeVerified(checked as boolean)}
-                      />
-                      <Label htmlFor="age-verify" className="text-sm text-muted-foreground">
-                        I confirm that I am 21 years of age or older and legally eligible to purchase cannabis products.
-                      </Label>
-                    </div>
 
                     {/* Terms */}
                     <div className="flex items-start gap-2">
@@ -2427,25 +1806,6 @@ export function CheckoutPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
-
-              {/* Network error banner — shown after a failed order attempt */}
-              {placeOrderMutation.isError && currentStep === 4 && (
-                <Alert variant="destructive" className="mt-4">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Order could not be placed</AlertTitle>
-                  <AlertDescription>
-                    {(() => {
-                      const errMsg = placeOrderMutation.error?.message || '';
-                      const lower = errMsg.toLowerCase();
-                      const isNetwork = lower.includes('network') || lower.includes('fetch') ||
-                        lower.includes('timeout') || lower.includes('load failed') || errMsg === '';
-                      return isNetwork
-                        ? 'We had trouble connecting to the server. Your cart and information are saved — you can try again.'
-                        : humanizeError(placeOrderMutation.error);
-                    })()}
-                  </AlertDescription>
-                </Alert>
-              )}
 
               {/* Navigation Buttons — hidden on mobile (sticky bar handles it), visible on sm+ */}
               <div className="hidden sm:flex flex-row justify-between gap-3 mt-8">
@@ -2474,35 +1834,27 @@ export function CheckoutPage() {
                 ) : (
                   <Button
                     onClick={handlePlaceOrder}
-                    disabled={isSubmitting || placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
-                    disabled={placeOrderMutation.isPending || !agreeToTerms || !ageVerified || outOfStockItems.length > 0}
+                    disabled={placeOrderMutation.isPending}
                     style={{ backgroundColor: store.primary_color }}
                   >
-                    {isSubmitting || placeOrderMutation.isPending ? (
+                    {placeOrderMutation.isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {formData.paymentMethod === 'card' ? 'Redirecting to payment...' : 'Processing...'}
-                        {orderRetryCount > 0 ? `Retrying (${orderRetryCount}/3)...` : 'Processing...'}
-                      </>
-                    ) : placeOrderMutation.isError ? (
-                      <>
-                        <AlertCircle className="w-4 h-4 mr-2" />
-                        Retry Order
-                      </>
-                    ) : isStoreClosed ? (
-                      <>
-                        <Clock className="w-4 h-4 mr-2" />
-                        Place Pre-Order
-                      </>
-                    ) : formData.paymentMethod === 'card' ? (
-                      <>
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Pay with Card
+                        Processing...
                       </>
                     ) : (
                       <>
-                        <Check className="w-4 h-4 mr-2" />
-                        Place Order
+                        {isStoreClosed ? (
+                          <>
+                            <Clock className="w-4 h-4 mr-2" />
+                            Place Pre-Order
+                          </>
+                        ) : (
+                          <>
+                            <Check className="w-4 h-4 mr-2" />
+                            Place Order
+                          </>
+                        )}
                       </>
                     )}
                   </Button>
@@ -2544,27 +1896,24 @@ export function CheckoutPage() {
                 {cartItems.map((item) => (
                   <div key={item.productId} className="flex gap-3">
                     <div className="w-12 h-12 flex-shrink-0 bg-muted rounded overflow-hidden">
-                      <ProductImage
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="w-full h-full"
-                      />
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Package className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium line-clamp-1">{item.name}</p>
                       <p className="text-xs text-muted-foreground">
                         Qty: {item.quantity} × {formatCurrency(item.price)}
                       </p>
-                      {(() => {
-                        const oos = outOfStockItems.find(o => o.productId === item.productId);
-                        if (!oos) return null;
-                        return (
-                          <p className="text-xs text-destructive flex items-center gap-1 mt-0.5">
-                            <AlertCircle className="w-3 h-3" />
-                            {oos.available <= 0 ? 'Out of stock' : `Only ${oos.available} available`}
-                          </p>
-                        );
-                      })()}
                     </div>
                     <p className="text-sm font-medium">
                       {formatCurrency(item.price * item.quantity)}
@@ -2624,17 +1973,17 @@ export function CheckoutPage() {
                     </Button>
                   </div>
                   {couponError && (
-                    <p className="text-xs text-destructive">{couponError}</p>
+                    <p className="text-xs text-red-500">{couponError}</p>
                   )}
                 </div>
               ) : (
-                <div className={`flex items-center justify-between p-3 rounded-lg ${isLuxuryTheme ? 'bg-success/10' : 'bg-success/10'}`}>
+                <div className={`flex items-center justify-between p-3 rounded-lg ${isLuxuryTheme ? 'bg-green-500/10' : 'bg-green-50'}`}>
                   <div className="flex items-center gap-2">
-                    <Tag className={`w-4 h-4 ${isLuxuryTheme ? 'text-success' : 'text-success'}`} />
-                    <span className={`text-sm font-medium ${isLuxuryTheme ? 'text-success' : 'text-success'}`}>
+                    <Tag className={`w-4 h-4 ${isLuxuryTheme ? 'text-green-400' : 'text-green-600'}`} />
+                    <span className={`text-sm font-medium ${isLuxuryTheme ? 'text-green-400' : 'text-green-600'}`}>
                       {appliedCoupon.code}
                     </span>
-                    <span className={`text-xs ${isLuxuryTheme ? 'text-success/60' : 'text-success'}`}>
+                    <span className={`text-xs ${isLuxuryTheme ? 'text-green-400/60' : 'text-green-500'}`}>
                       (-{formatCurrency(couponDiscount)})
                     </span>
                   </div>
@@ -2642,7 +1991,7 @@ export function CheckoutPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => { removeCoupon(); toast.success('Coupon removed'); }}
-                    className={isLuxuryTheme ? 'text-destructive hover:text-destructive/80 hover:bg-white/5' : 'text-destructive hover:text-destructive/80'}
+                    className={isLuxuryTheme ? 'text-red-400 hover:text-red-300 hover:bg-white/5' : 'text-red-500 hover:text-red-600'}
                   >
                     Remove
                   </Button>
@@ -2674,11 +2023,11 @@ export function CheckoutPage() {
                   {appliedGiftCards.map(card => (
                     <div key={card.code} className={`flex items-center justify-between p-2 rounded text-sm ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted/50'}`}>
                       <div className="flex items-center gap-2">
-                        <CreditCard className="w-3 h-3 text-success" />
+                        <CreditCard className="w-3 h-3 text-emerald-500" />
                         <span className="font-mono">{card.code}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-success">-{formatCurrency(Math.min(card.balance, totalBeforeGiftCards))}</span>
+                        <span className="text-emerald-500">-{formatCurrency(Math.min(card.balance, totalBeforeGiftCards))}</span>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -2697,56 +2046,54 @@ export function CheckoutPage() {
               <Separator className={isLuxuryTheme ? 'bg-white/5' : ''} />
 
               <div className="space-y-2">
-                <div className="flex justify-between" data-testid="checkout-subtotal">
+                <div className="flex justify-between">
                   <span className={textMuted}>Subtotal</span>
                   <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(subtotal)}</span>
                 </div>
                 {formData.fulfillmentMethod === 'delivery' && effectiveDeliveryFee > 0 && (
-                  <div className="flex justify-between" data-testid="order-summary-delivery-fee">
-                  <div className="flex justify-between" data-testid="checkout-delivery-fee">
+                  <div className="flex justify-between">
                     <span className={textMuted}>Delivery</span>
                     <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(effectiveDeliveryFee)}</span>
                   </div>
                 )}
                 {formData.fulfillmentMethod === 'pickup' && (
-                  <div className="flex justify-between" data-testid="order-summary-pickup-free">
+                  <div className="flex justify-between">
                     <span className={textMuted}>Pickup</span>
-                    <span className="text-success">FREE</span>
+                    <span className="text-green-600">FREE</span>
                   </div>
                 )}
                 {dealsDiscount > 0 && (
-                  <div className="flex justify-between text-success">
+                  <div className="flex justify-between text-green-500">
                     <span>Deals & Discounts</span>
                     <span>-{formatCurrency(dealsDiscount)}</span>
                   </div>
                 )}
                 {couponDiscount > 0 && (
-                  <div className="flex justify-between text-success">
+                  <div className="flex justify-between text-green-500">
                     <span>Coupon</span>
                     <span>-{formatCurrency(couponDiscount)}</span>
                   </div>
                 )}
                 {loyaltyDiscount > 0 && (
-                  <div className="flex justify-between text-success">
+                  <div className="flex justify-between text-green-500">
                     <span>Loyalty Points</span>
                     <span>-{formatCurrency(loyaltyDiscount)}</span>
                   </div>
                 )}
                 {enableCartRounding && roundingAdjustment !== 0 && (
-                  <div className="flex justify-between text-info text-sm">
+                  <div className="flex justify-between text-blue-500 text-sm">
                     <span>Rounding Adjustment</span>
                     <span>{roundingAdjustment > 0 ? '+' : ''}{formatCurrency(roundingAdjustment)}</span>
                   </div>
                 )}
                 {giftCardAmount > 0 && (
-                  <div className="flex justify-between text-success font-medium">
+                  <div className="flex justify-between text-emerald-500 font-medium">
                     <span>Gift Card</span>
                     <span>-{formatCurrency(giftCardAmount)}</span>
                   </div>
                 )}
                 <Separator className={isLuxuryTheme ? 'bg-white/5' : ''} />
-                <div className="flex justify-between text-lg font-bold" data-testid="order-summary-total">
-                <div className="flex justify-between text-lg font-bold" data-testid="checkout-total">
+                <div className="flex justify-between text-lg font-bold">
                   <span className={isLuxuryTheme ? textPrimary : ''}>Total</span>
                   <span style={{ color: themeColor }}>{formatCurrency(total)}</span>
                 </div>
@@ -2754,8 +2101,8 @@ export function CheckoutPage() {
 
               {/* Only show Payment method step if total > 0 */}
               {total === 0 && (
-                <div className="p-3 bg-success/10 border border-success/20 rounded-lg text-center">
-                  <p className="text-success font-medium text-sm">Order fully covered by Gift Card</p>
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
+                  <p className="text-emerald-500 font-medium text-sm">Order fully covered by Gift Card</p>
                 </div>
               )}
             </CardContent>
@@ -2764,17 +2111,23 @@ export function CheckoutPage() {
       </div>
 
       {/* Sticky Mobile Checkout Bar */}
-      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background/95 backdrop-blur-md border-t px-3 sm:px-4 py-3 z-50" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background/95 backdrop-blur-md border-t px-3 sm:px-4 py-3 sm:py-4 z-50" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
         {currentStep < 4 ? (
-          <Button
-            onClick={nextStep}
-            disabled={placeOrderMutation.isPending}
-            style={{ backgroundColor: themeColor }}
-            className="w-full h-12 text-white text-base font-semibold rounded-lg"
-          >
-            Continue
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Total</p>
+              <p className="text-base sm:text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
+            </div>
+            <Button
+              onClick={nextStep}
+              disabled={placeOrderMutation.isPending}
+              style={{ backgroundColor: themeColor }}
+              className="flex-1 h-12 text-white text-base"
+            >
+              Continue
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         ) : (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
@@ -2783,31 +2136,19 @@ export function CheckoutPage() {
             </div>
             <Button
               onClick={handlePlaceOrder}
-              disabled={isSubmitting || placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
-              disabled={placeOrderMutation.isPending || !agreeToTerms || !ageVerified || outOfStockItems.length > 0}
+              disabled={placeOrderMutation.isPending || !agreeToTerms}
               style={{ backgroundColor: themeColor }}
               className="w-full h-12 text-white text-base font-semibold"
             >
-              {isSubmitting || placeOrderMutation.isPending ? (
+              {placeOrderMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {formData.paymentMethod === 'card' ? 'Redirecting to payment...' : 'Processing...'}
-                  {orderRetryCount > 0 ? `Retrying (${orderRetryCount}/3)...` : 'Processing...'}
-                </>
-              ) : placeOrderMutation.isError ? (
-                <>
-                  <AlertCircle className="w-4 h-4 mr-2" />
-                  Retry Order — {formatCurrency(total)}
+                  Processing...
                 </>
               ) : isStoreClosed ? (
                 <>
                   <Clock className="w-4 h-4 mr-2" />
                   Place Pre-Order — {formatCurrency(total)}
-                </>
-              ) : formData.paymentMethod === 'card' ? (
-                <>
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Pay with Card — {formatCurrency(total)}
                 </>
               ) : (
                 <>
@@ -2817,73 +2158,10 @@ export function CheckoutPage() {
               )}
             </Button>
           </div>
-          <Button
-            onClick={handlePlaceOrder}
-            disabled={placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
-            style={{ backgroundColor: themeColor }}
-            className="w-full h-12 text-white text-base font-semibold rounded-lg"
-          >
-            {placeOrderMutation.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Processing...
-              </>
-            ) : isStoreClosed ? (
-              <>
-                <Clock className="w-4 h-4 mr-2" />
-                Place Pre-Order — {formatCurrency(total)}
-              </>
-            ) : (
-              <>
-                <Check className="w-4 h-4 mr-2" />
-                Place Order — {formatCurrency(total)}
-              </>
-            )}
-          </Button>
         )}
       </div>
       {/* Spacer for mobile sticky bar */}
-      <div className="h-20 lg:hidden" />
-
-      {/* Sign In Dialog */}
-      {store?.tenant_id && (
-        <CheckoutSignInDialog
-          open={signInOpen}
-          onOpenChange={setSignInOpen}
-          tenantId={store.tenant_id}
-          onSignInSuccess={(customer) => {
-            setFormData((prev) => ({
-              ...prev,
-              firstName: customer.firstName || prev.firstName,
-              lastName: customer.lastName || prev.lastName,
-              email: customer.email || prev.email,
-              phone: customer.phone || prev.phone,
-            }));
-            setIsSignedIn(true);
-            setCreateAccount(false);
-            setAccountPassword('');
-          }}
-        />
-      )}
-      {/* Post-checkout confirmation popup */}
-      <PostCheckoutConfirmationDialog
-        open={showConfirmationPopup}
-        orderNumber={completedOrderData?.orderNumber ?? ''}
-        telegramLink={completedOrderData?.telegramLink}
-        storePrimaryColor={store?.primary_color ?? '#22c55e'}
-        storeName={store?.store_name ?? ''}
-        onViewOrderDetails={() => {
-          setShowConfirmationPopup(false);
-          navigate(`/shop/${storeSlug}/order-confirmation`, {
-            state: {
-              orderNumber: completedOrderData?.orderNumber,
-              trackingToken: completedOrderData?.trackingToken,
-              total: completedOrderData?.total,
-              telegramLink: completedOrderData?.telegramLink,
-            },
-          });
-        }}
-      />
+      <div className="h-28 lg:hidden" />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
-import { untypedClient } from '@/lib/supabaseUntyped';
 
 /**
  * Auto-Burn Security Module
@@ -95,7 +94,9 @@ export const logSuspiciousActivity = async (
       },
     };
 
-    await untypedClient.from('menu_security_events').insert(insertData);
+    // Use type assertion to handle dynamic table
+    const client = supabase;
+    await client.from('menu_security_events').insert(insertData);
 
     logger.warn('Suspicious activity logged', {
       menuId,
@@ -147,7 +148,8 @@ export const burnMenu = async (
     logger.warn('Initiating menu burn', { menuId, reason, burnType });
 
     // Log the burn event
-    await untypedClient.from('menu_security_events').insert({
+    const client = supabase;
+    await client.from('menu_security_events').insert({
       menu_id: menuId,
       event_type: 'auto_burn_triggered',
       severity: 'critical',

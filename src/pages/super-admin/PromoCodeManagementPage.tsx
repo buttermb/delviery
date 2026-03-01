@@ -395,7 +395,7 @@ function CreatePromoCodeDialog({
       code: code || generateCode(),
       creditsAmount: credits,
       maxUses,
-      validUntil: validUntil?.toISOString() ?? null,
+      validUntil: validUntil || undefined,
       description: description || undefined,
     }),
     onSuccess: (result) => {

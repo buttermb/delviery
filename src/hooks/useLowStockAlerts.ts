@@ -152,7 +152,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
     refetchOnWindowFocus: true,
   });
 
-  const products = data ?? [];
+  const products = useMemo(() => data ?? [], [data]);
 
   const summary = useMemo(() => {
     const outOfStock = products.filter((p) => p.alertLevel === 'out_of_stock');

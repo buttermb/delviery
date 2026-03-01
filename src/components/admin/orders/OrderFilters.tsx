@@ -316,7 +316,7 @@ export function useOrderFilters(storageKey = 'orders-list-filters') {
 export async function applyOrderFilters(
   tenantId: string,
   filters: ActiveFilters,
-  searchTerm?: string
+  _searchTerm?: string
 ): Promise<{
   orders: string[];
   orderIdsFromProduct: string[] | null;

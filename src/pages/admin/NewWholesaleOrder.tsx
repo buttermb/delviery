@@ -151,14 +151,14 @@ export default function NewWholesaleOrder() {
     tierId: '',
   });
 
-  // Steps configuration
-  const steps: { key: OrderStep; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  // Steps configuration - memoized to stabilize deps
+  const steps = useMemo<{ key: OrderStep; label: string; icon: React.ComponentType<{ className?: string }> }[]>(() => [
     { key: 'client', label: 'Select Client', icon: Users },
     { key: 'products', label: 'Products', icon: Package },
     { key: 'payment', label: 'Payment', icon: DollarSign },
     { key: 'delivery', label: 'Delivery', icon: Truck },
     { key: 'review', label: 'Review', icon: CheckCircle2 },
-  ];
+  ], []);
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
   const progressPercent = ((currentStepIndex + 1) / steps.length) * 100;

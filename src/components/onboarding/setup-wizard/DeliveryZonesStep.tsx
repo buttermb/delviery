@@ -75,7 +75,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
         ? data.zip_codes.split(',').map((z) => z.trim()).filter(Boolean)
         : [];
 
-      const { error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { error } = await supabase
         .from('delivery_zones')
         .insert({
           tenant_id: tenant.id,

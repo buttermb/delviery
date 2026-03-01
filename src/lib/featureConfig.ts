@@ -10,10 +10,9 @@
  */
 
 export type SubscriptionTier = 'starter' | 'professional' | 'enterprise';
-export type FeatureId = string;
 
 export interface Feature {
-  id: FeatureId;
+  id: string;
   name: string;
   description: string;
   tier: SubscriptionTier;
@@ -79,7 +78,7 @@ export const CATEGORY_ORDER: FeatureCategory[] = [
  * Each higher tier includes all features from lower tiers.
  */
 
-export const FEATURES: Record<FeatureId, Feature> = {
+export const FEATURES = {
   // ==========================================================================
   // STARTER TIER ($79/mo) - 20 Core Features
   // ==========================================================================
@@ -504,7 +503,7 @@ export const FEATURES: Record<FeatureId, Feature> = {
     description: 'Track and manage team commissions',
     tier: 'professional',
     category: 'Analytics & Finance',
-    route: '/admin/finance-hub?tab=commissions',
+    route: '/admin/commission-tracking',
   },
   'expense-tracking': {
     id: 'expense-tracking',
@@ -862,7 +861,10 @@ export const FEATURES: Record<FeatureId, Feature> = {
     category: 'Settings',
     route: '/admin/priority-support',
   },
-};
+} satisfies Record<string, Feature>;
+
+// Derived from FEATURES so invalid IDs fail at compile-time
+export type FeatureId = keyof typeof FEATURES;
 
 // =============================================================================
 // HELPER FUNCTIONS

@@ -92,7 +92,7 @@ export function useUpdateCRMSettings() {
 
                 const { data: newData, error: createError } = await supabase
                     .from('crm_settings')
-                    .insert(createPayload as typeof values & { account_id: string })
+                    .insert(createPayload)
                     .select()
                     .maybeSingle();
 
@@ -113,7 +113,7 @@ export function useUpdateCRMSettings() {
 
             const { data, error } = await supabase
                 .from('crm_settings')
-                .update(updatePayload as Partial<CRMSettings>)
+                .update(updatePayload)
                 .eq('id', currentSettings.id)
                 .eq('account_id', accountId)
                 .select()

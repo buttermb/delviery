@@ -621,7 +621,7 @@ function FleetView() {
               <line x1="0" y1="12.5" x2="50" y2="12.5" stroke="#e2e8f0" strokeWidth="1" />
             </pattern>
           </defs>
-          <rect x="0" y="0" width="100%" height="100%" fill="bg-slate-50" />
+          <rect x="0" y="0" width="100%" height="100%" fill="#f8fafc" />
           <rect x="0" y="0" width="100%" height="100%" fill="url(#nyc-grid-fleet-dash)" />
           {/* Central Park Area */}
           <rect x="0" y="0" width="30%" height="40%" fill="#dcfce7" />

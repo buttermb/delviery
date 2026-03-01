@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { untypedClient } from '@/lib/supabaseUntyped';
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { useCredits } from "@/contexts/CreditContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -76,8 +75,8 @@ export default function MarketplaceDashboard() {
         queryKey: queryKeys.marketplaceAnalytics.byProfile(profile?.id),
         queryFn: async () => {
             if (!profile?.id) return null;
-            const { data, error } = await untypedClient
-                .rpc('get_marketplace_analytics', { p_store_id: profile.id });
+            const rpc = supabase.rpc as unknown as (fn: string, params: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message?: string } | null }>;
+            const { data, error } = await rpc('get_marketplace_analytics', { p_store_id: profile.id }); // Supabase type limitation
 
             if (error) {
                 logger.error('Failed to fetch analytics', error);

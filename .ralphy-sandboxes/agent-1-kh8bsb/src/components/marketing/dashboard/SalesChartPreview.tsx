@@ -23,7 +23,7 @@ export function SalesChartPreview() {
       <div className="relative h-[120px] flex items-end justify-between gap-1.5 px-2">
         {salesData.map((data, index) => {
           const height = (data.amount / maxAmount) * 100;
-          
+
           return (
             <div key={data.day} className="flex-1 flex flex-col items-center gap-1">
               {/* Tooltip */}
@@ -38,12 +38,12 @@ export function SalesChartPreview() {
                   <div className="text-muted-foreground text-[9px]">{data.orders} orders</div>
                 </motion.div>
               )}
-              
+
               {/* Bar */}
               <motion.div
-                initial={{ height: 0 }}
+                initial={{ height: "0%" }}
                 animate={{ height: `${height}%` }}
-                transition={{ 
+                transition={{
                   delay: index * 0.1,
                   duration: 0.6,
                   ease: [0.21, 0.47, 0.32, 0.98]
@@ -51,10 +51,10 @@ export function SalesChartPreview() {
                 whileHover={{ scaleY: 1.05, originY: 1 }}
                 onMouseEnter={() => setHoveredBar(index)}
                 onMouseLeave={() => setHoveredBar(null)}
-                className="w-full bg-gradient-to-t from-primary to-primary/60 rounded-t cursor-pointer relative"
+                className="w-full bg-gradient-to-t from-[hsl(var(--marketing-primary))] to-[hsl(var(--marketing-primary))/0.7] border-t border-[hsl(var(--marketing-primary))/0.4] rounded-t-md cursor-pointer relative shadow-[inset_0_2px_4px_rgba(255,255,255,0.2)]"
                 style={{ minHeight: '20px' }}
               />
-              
+
               {/* Label */}
               <span className="text-[10px] text-muted-foreground font-medium">{data.day}</span>
             </div>

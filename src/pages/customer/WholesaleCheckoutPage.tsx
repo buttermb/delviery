@@ -128,7 +128,7 @@ export default function WholesaleCheckoutPage() {
     items: typeof cartItems;
   }
 
-  const itemsBySeller = cartItems.reduce<Record<string, SellerGroup>>((acc, item) => {
+  const itemsBySeller = cartItems.reduce((acc: Record<string, SellerGroup>, item: typeof cartItems[number]) => {
     const sellerId = item.marketplace_listings?.marketplace_profiles?.tenant_id;
     if (!sellerId) return acc;
 
@@ -170,8 +170,8 @@ export default function WholesaleCheckoutPage() {
       // Create orders for each seller (one order per seller)
       const orders = [];
 
-      for (const sellerGroup of Object.values(itemsBySeller)) {
-        const orderItems = sellerGroup.items.map((item) => ({
+      for (const sellerGroup of Object.values(itemsBySeller) as SellerGroup[]) {
+        const orderItems = (sellerGroup as SellerGroup).items.map((item: typeof cartItems[number]) => ({
           listing_id: item.listing_id,
           product_name: item.marketplace_listings?.product_name || 'Unknown Product',
           product_type: item.marketplace_listings?.product_type || null,
@@ -180,7 +180,7 @@ export default function WholesaleCheckoutPage() {
           total_price: (item.quantity as number) * (item.unit_price as number),
         }));
 
-        const orderSubtotal = orderItems.reduce((sum: number, item) => sum + item.total_price, 0);
+        const _orderSubtotal = orderItems.reduce((sum: number, item) => sum + item.total_price, 0);
 
         // Call edge function to create order
         const { data, error } = await supabase.functions.invoke('create-marketplace-order', {
@@ -443,14 +443,14 @@ export default function WholesaleCheckoutPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Items by Seller */}
-                {Object.values(itemsBySeller).map((sellerGroup) => (
+                {(Object.values(itemsBySeller) as SellerGroup[]).map((sellerGroup) => (
                   <div key={sellerGroup.sellerTenantId} className="pb-4 border-b last:border-0">
                     <div className="flex items-center gap-2 mb-2">
                       <Building2 className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm font-medium">{sellerGroup.sellerName}</span>
                     </div>
                     <div className="space-y-1 text-sm">
-                      {sellerGroup.items.map((item) => (
+                      {sellerGroup.items.map((item: typeof cartItems[number]) => (
                         <div key={item.id} className="flex justify-between text-muted-foreground">
                           <span>
                             {item.marketplace_listings?.product_name} × {item.quantity}

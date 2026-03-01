@@ -43,15 +43,16 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
         }
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cleanup only on unmount; refs to blob URLs are captured at unmount time
   }, []);
 
-  const validateFileSize = (file: File): boolean => {
+  const validateFileSize = useCallback((file: File): boolean => {
     if (file.size > MAX_FILE_SIZE_BYTES) {
       toast.error(`Maximum file size is ${MAX_FILE_SIZE_MB}MB. Selected file is ${(file.size / (1024 * 1024)).toFixed(1)}MB.`);
       return false;
     }
     return true;
-  };
+  }, []);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -63,7 +64,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
     }
   }, []);
 
-  const uploadImage = async (file: File, isMain = false) => {
+  const uploadImage = useCallback(async (file: File, isMain = false) => {
     // Client-side 2MB validation
     if (!validateFileSize(file)) return;
 
@@ -176,7 +177,7 @@ export function ImagesStep({ formData, updateFormData }: ImagesStepProps) {
       setUploading(false);
       setTimeout(() => setUploadProgress(0), 500);
     }
-  };
+  }, [formData.images, updateFormData, validateFileSize]);
 
   const handleDrop = useCallback(
     (e: React.DragEvent, isMain = false) => {

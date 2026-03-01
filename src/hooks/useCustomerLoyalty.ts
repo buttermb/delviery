@@ -366,7 +366,7 @@ async function fetchPointsHistory(
     throw error;
   }
 
-  return (data ?? []) as LoyaltyPointTransaction[];
+  return (data ?? []) as unknown as LoyaltyPointTransaction[];
 }
 
 // ============================================================================
@@ -657,7 +657,7 @@ export function usePointsMutations(): UsePointsMutationsReturn {
         component: 'usePointsMutations',
       });
 
-      return data as LoyaltyPointTransaction;
+      return data as unknown as LoyaltyPointTransaction;
     },
     onSuccess: (_data, variables) => {
       toast.success('Points awarded successfully');

@@ -62,6 +62,7 @@ export default function LocationsManagement() {
     if (tenant) {
       loadLocations();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadLocations is defined below, only run when tenant changes
   }, [tenant]);
 
   const loadLocations = async () => {

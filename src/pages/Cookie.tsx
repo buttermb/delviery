@@ -67,7 +67,7 @@ export default function Cookie() {
               Cookie Policy
             </h1>
             <p className="text-xl text-muted-foreground mb-4">
-              Last updated: March 1, 2024
+              Last updated: March 1, 2025
             </p>
             <p className="text-muted-foreground">
               This Cookie Policy explains how FloraIQ uses cookies and similar technologies to recognize you

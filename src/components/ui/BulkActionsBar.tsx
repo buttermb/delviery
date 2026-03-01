@@ -63,7 +63,7 @@ export function BulkActionsBar({
   };
 
   // Get selected data for export
-  const selectedData = data?.filter(item => selectedIds.includes(item.id)) ?? [];
+  const selectedData = data?.filter(item => selectedIds.includes(item.id as string)) ?? [];
 
   // Split actions into primary (first 2) and overflow
   const primaryActions = actions.slice(0, 2);

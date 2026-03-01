@@ -15,29 +15,30 @@ interface ReviewStepProps {
   updateFormData: (data: Partial<ProductFormData>) => void;
 }
 
-export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
-  const requiredFields = [
-    { field: "name", label: "Product name" },
-    { field: "category", label: "Category" },
-    { field: "thca_percentage", label: "Cannabinoid percentage" },
-    { field: "image_url", label: "Main image" },
-    { field: "price", label: "Price" },
-    { field: "description", label: "Description" },
-    { field: "coa_url", label: "COA" },
-  ];
+const requiredFields = [
+  { field: "name", label: "Product name" },
+  { field: "category", label: "Category" },
+  { field: "thca_percentage", label: "Cannabinoid percentage" },
+  { field: "image_url", label: "Main image" },
+  { field: "price", label: "Price" },
+  { field: "description", label: "Description" },
+  { field: "coa_url", label: "COA" },
+] as const;
 
-  const optionalFields = [
-    { field: "effects", label: "Effects tags" },
-    { field: "flavors", label: "Flavor tags" },
-    { field: "vendor_name", label: "Vendor name" },
-    { field: "weight_kg", label: "Shipping weight" },
-    { field: "length_cm", label: "Package dimensions" },
-  ];
+const optionalFields = [
+  { field: "effects", label: "Effects tags" },
+  { field: "flavors", label: "Flavor tags" },
+  { field: "vendor_name", label: "Vendor name" },
+  { field: "weight_kg", label: "Shipping weight" },
+  { field: "length_cm", label: "Package dimensions" },
+] as const;
+
+export function ReviewStep({ formData, updateFormData }: ReviewStepProps) {
 
   // Optimized: single pass for both filters with memoization
   const { missingRequired, missingOptional } = useMemo(() => {
-    const required: typeof requiredFields = [];
-    const optional: typeof optionalFields = [];
+    const required: Array<{ field: string; label: string }> = [];
+    const optional: Array<{ field: string; label: string }> = [];
     
     for (const f of requiredFields) {
       if (!formData[f.field]) {

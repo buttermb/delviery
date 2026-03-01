@@ -415,12 +415,12 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
                 return { changed: false, priceChanges: [] };
             }
 
-            const priceMap = new Map(data.map(p => [p.id, Number(p.price)]));
+            const priceMap = new Map<string, number>(data.map(p => [p.id, Number(p.price as any)]));
             const priceChanges: Array<{ productId: string; name: string; oldPrice: number; newPrice: number }> = [];
             let hasChanges = false;
 
             const updatedCart = cartItems.map(item => {
-                const currentPrice = priceMap.get(item.productId);
+                const currentPrice = priceMap.get(item.productId) as number | undefined;
                 if (currentPrice !== undefined && Math.abs(currentPrice - item.price) > 0.01) {
                     priceChanges.push({
                         productId: item.productId,
@@ -429,13 +429,13 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
                         newPrice: currentPrice,
                     });
                     hasChanges = true;
-                    return { ...item, price: currentPrice };
+                    return { ...item, price: currentPrice } as ShopCartItem;
                 }
                 return item;
             });
 
             if (hasChanges) {
-                saveCart(updatedCart);
+                saveCart(updatedCart as ShopCartItem[]);
                 logger.info('Cart prices synced with server', { priceChanges });
             }
 

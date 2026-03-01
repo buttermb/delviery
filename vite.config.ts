@@ -42,18 +42,15 @@ const FALLBACK_BACKEND = {
   projectId: 'aejugtmhwwknrowfyzie',
 } as const;
 
-// Sitemap generator plugin
+// Sitemap generator plugin — skipped gracefully in sandboxed / restricted environments
 function sitemapPlugin() {
   return {
     name: "sitemap-generator",
     buildEnd: () => {
-      console.log("Running sitemap generator...");
       try {
-        // Use tsx to run TypeScript directly
-        execSync("npx tsx src/lib/generate-sitemap.ts", { stdio: "inherit" });
-      } catch (error) {
-        console.error("Failed to generate sitemap:", error);
-        // Don't fail the build if sitemap generation fails
+        execSync("npx tsx src/lib/generate-sitemap.ts", { stdio: "pipe", timeout: 15_000 });
+      } catch {
+        // Non-fatal: sandbox environments may block IPC/process spawning
       }
     },
   };
@@ -207,26 +204,16 @@ export default defineConfig(({ mode }) => ({
         // Ensure React is not split into separate chunks
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) return 'vendor-react';
-            if (id.includes('react-router')) return 'vendor-router';
-            if (id.includes('@tanstack')) return 'vendor-query';
-            if (id.includes('framer-motion')) return 'vendor-motion';
+            // Only split out truly isolated vendor chunks that don't depend on React at module level.
+            // DO NOT split React, Radix, Recharts, Tremor, Tanstack, etc. into separate chunks — 
+            // they call React.forwardRef() and React.createContext() at module evaluation time,
+            // and separating them causes TDZ / circular initialization errors in production.
             if (id.includes('remotion') || id.includes('@remotion')) return 'vendor-remotion';
             if (id.includes('mapbox') || id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-map';
-            if (id.includes('@radix-ui')) return 'vendor-ui';
-            if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-') || id.includes('victory-vendor')) return 'vendor-charts';
             if (id.includes('react-pdf') || id.includes('@react-pdf') || id.includes('jspdf') || id.includes('html2canvas')) return 'vendor-pdf';
-            if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform/resolvers')) return 'vendor-forms';
-            if (id.includes('@supabase')) return 'vendor-supabase';
-            if (id.includes('@ai-sdk') || id.includes('@xenova')) return 'vendor-ai';
-            if (id.includes('crypto-js') || id.includes('bcryptjs') || id.includes('@aikidosec')) return 'vendor-crypto';
-            if (id.includes('date-fns') || id.includes('lodash')) return 'vendor-utils';
-            if (id.includes('qrcode') || id.includes('jsbarcode') || id.includes('html5-qrcode') || id.includes('@zxing')) return 'vendor-barcode';
-            if (id.includes('lucide-react') || id.includes('@phosphor-icons')) return 'vendor-icons';
             if (id.includes('xlsx')) return 'vendor-xlsx';
             if (id.includes('@capacitor')) return 'vendor-capacitor';
-            if (id.includes('reactflow')) return 'vendor-flow';
-            return 'vendor-misc';
+            if (id.includes('crypto-js') || id.includes('bcryptjs') || id.includes('@aikidosec')) return 'vendor-crypto';
           }
         },
       },

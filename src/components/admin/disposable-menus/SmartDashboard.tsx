@@ -655,9 +655,10 @@ export function SmartDashboard() {
 
   // Calculate quick stats
   const stats = useMemo(() => {
-    const activeMenus = menus.filter((m: MenuData) => m.status === 'active');
-    const burnedMenus = menus.filter((m: MenuData) => m.status === 'soft_burned' || m.status === 'hard_burned');
-    const totalViews = menus.reduce((sum: number, m: MenuData) => sum + (m.view_count ?? 0), 0);
+    const allMenus = menus as MenuData[];
+    const activeMenus = allMenus.filter((m) => m.status === 'active');
+    const burnedMenus = allMenus.filter((m) => m.status === 'soft_burned' || m.status === 'hard_burned');
+    const totalViews = allMenus.reduce((sum: number, m) => sum + (m.view_count ?? 0), 0);
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce((sum: number, o: OrderData) => sum + Number(o.total_amount || 0), 0);
     const pendingOrders = orders.filter((o: OrderData) => o.status === 'pending').length;
@@ -676,7 +677,7 @@ export function SmartDashboard() {
 
   // Filter menus
   const filteredMenus = useMemo(() => {
-    return menus.filter((menu: MenuData) => {
+    return (menus as MenuData[]).filter((menu) => {
       const matchesSearch = !searchQuery ||
         menu.name?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'all' ||
@@ -691,10 +692,10 @@ export function SmartDashboard() {
     totalMenus: menus.length,
     activeMenus: stats.activeMenus,
     burnedMenus: stats.burnedMenus,
-    totalViews: stats.totalViews,
+    totalViews: stats.totalViews as number,
     totalOrders: stats.totalOrders,
-    conversionRate: parseFloat(stats.conversionRate),
-    avgViewsPerMenu: menus.length > 0 ? stats.totalViews / menus.length : 0,
+    conversionRate: parseFloat(stats.conversionRate as string),
+    avgViewsPerMenu: menus.length > 0 ? (stats.totalViews as number) / menus.length : 0,
     avgTimeToFirstView: 0,
     burnReasons: {},
     viewsByHour: [],
@@ -712,11 +713,12 @@ export function SmartDashboard() {
   // Top performing menu
   const topMenu = useMemo(() => {
     if (menus.length === 0) return null;
-    return menus.reduce((top: MenuData, current: MenuData) => {
+    const allMenus = menus as MenuData[];
+    return allMenus.reduce((top: MenuData, current: MenuData) => {
       const currentRevenue = Number(current.total_revenue || 0);
       const topRevenue = Number(top?.total_revenue || 0);
       return currentRevenue > topRevenue ? current : top;
-    }, menus[0] as MenuData);
+    }, allMenus[0]) as MenuData;
   }, [menus]);
 
   return (

@@ -149,7 +149,7 @@ export default function CustomerMenuViewPage() {
   const {
     isProductAvailable: checkProductAvailable,
     getProductStatus,
-    isConnected: isRealtimeConnected,
+    isConnected: _isRealtimeConnected,
   } = useMenuInventorySync({
     menuId: menuId ?? '',
     tenantId: tenantId || null,
@@ -275,7 +275,7 @@ export default function CustomerMenuViewPage() {
 
       {/* Hero Section */}
       <div className="relative h-[200px] md:h-[300px] w-full overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-900 to-indigo-900">
+        <div className="absolute inset-0 bg-slate-50">
           {menu.image_url ? (
             <img
               src={menu.image_url}
@@ -287,12 +287,12 @@ export default function CustomerMenuViewPage() {
             <div className="w-full h-full opacity-30 bg-[url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center" />
           )}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-slate-50" />
 
         <div className="absolute bottom-0 left-0 right-0 p-6 container mx-auto">
           <div className="flex items-end justify-between">
             <div className="text-white space-y-2">
-              <Badge className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-md mb-2">
+              <Badge className="bg-white/20 hover:bg-white/30 text-white border-0  mb-2">
                 {tenant?.business_name || "Store"}
               </Badge>
               <h1 className="text-3xl md:text-5xl font-bold tracking-tight shadow-sm">{menu.name}</h1>
@@ -319,7 +319,7 @@ export default function CustomerMenuViewPage() {
           variant="ghost"
           size="icon"
           onClick={() => navigate(`/${tenant?.slug}/shop/dashboard`)}
-          className="absolute top-4 left-4 text-white hover:bg-white/20 rounded-full h-10 w-10 backdrop-blur-sm"
+          className="absolute top-4 left-4 text-white hover:bg-white/20 rounded-full h-10 w-10 "
           aria-label="Back to dashboard"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -327,7 +327,7 @@ export default function CustomerMenuViewPage() {
       </div>
 
       {/* Sticky Category Nav & Search */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-40 bg-white/80  border-b border-gray-100 shadow-sm">
         <div className="container mx-auto px-4 py-3">
           <div className="flex flex-col md:flex-row gap-4 items-center">
             {/* Search Trigger */}
@@ -362,13 +362,13 @@ export default function CustomerMenuViewPage() {
                 {/* Extract unique categories from products */}
                 {Array.from(new Set(products?.map((p) => p.products?.category).filter(Boolean))).map((category) => (
                   <Button
-                    key={category}
+                    key={String(category)}
                     variant="secondary"
                     size="sm"
                     className="rounded-full px-4 h-8 font-medium whitespace-nowrap hover:bg-primary/10 hover:text-primary transition-colors"
-                    onClick={() => setSearchTerm(category)}
+                    onClick={() => setSearchTerm(String(category))}
                   >
-                    {category}
+                    {String(category)}
                   </Button>
                 ))}
               </div>
@@ -411,7 +411,7 @@ export default function CustomerMenuViewPage() {
               <Button
                 size="lg"
                 onClick={() => navigate(`/${tenant?.slug}/shop/cart`)}
-                className="bg-gradient-to-r from-[hsl(var(--customer-primary))] to-[hsl(var(--customer-secondary))] hover:opacity-90 text-white px-8"
+                className="bg-slate-50(var(--customer-primary))] (var(--customer-secondary))] hover:opacity-90 text-white px-8"
               >
                 View Cart & Checkout
                 <ArrowLeft className="h-5 w-5 ml-2 rotate-180" />

@@ -19,23 +19,21 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
-interface FrontedInventoryItem {
-  id: string;
-  quantity_fronted: number;
-  quantity_sold: number;
-  quantity_returned: number;
-  expected_revenue: string | number | null;
-  payment_received: string | number | null;
-  payment_due_date: string | null;
-  dispatched_at: string;
-  products: { name: string; sku: string; wholesale_price: number } | null;
-  tenants: { slug: string } | null;
-}
-
 export default function DriverPortal() {
   const navigate = useNavigate();
   const [_loading, setLoading] = useState(true);
-  const [myFronts, setMyFronts] = useState<FrontedInventoryItem[]>([]);
+  const [myFronts, setMyFronts] = useState<Array<{
+    id: string;
+    quantity_fronted: number;
+    quantity_sold: number;
+    quantity_returned: number;
+    expected_revenue: string | number;
+    payment_received: string | number;
+    dispatched_at: string;
+    tenants?: { slug: string };
+    products?: { name: string };
+    [key: string]: unknown;
+  }>>([]);
   const [stats, setStats] = useState({
     totalUnits: 0,
     unitsSold: 0,
@@ -46,6 +44,7 @@ export default function DriverPortal() {
   useEffect(() => {
     loadDriverData();
     subscribeToUpdates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- subscribeToUpdates and loadDriverData are defined below; only run once on mount
   }, []);
 
   const subscribeToUpdates = () => {
@@ -271,7 +270,7 @@ export default function DriverPortal() {
             myFronts.map((front) => {
               const remaining = front.quantity_fronted - front.quantity_sold - front.quantity_returned;
               const progress = (front.quantity_sold / front.quantity_fronted) * 100;
-              const amountOwed = parseFloat(front.expected_revenue ?? 0) - parseFloat(front.payment_received ?? 0);
+              const amountOwed = parseFloat(String(front.expected_revenue ?? 0)) - parseFloat(String(front.payment_received ?? 0));
 
               return (
                 <Card
@@ -317,7 +316,7 @@ export default function DriverPortal() {
                         <p className="text-xs text-muted-foreground">Due Date</p>
                         <p className="text-sm font-medium">
                           {front.payment_due_date
-                            ? format(new Date(front.payment_due_date), "MMM dd")
+                            ? format(new Date(String(front.payment_due_date)), "MMM dd")
                             : "N/A"}
                         </p>
                       </div>

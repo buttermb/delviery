@@ -5,7 +5,7 @@
  * Includes tenant slug context and clickable navigation paths
  */
 
-import { Fragment, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { ChevronRight, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -286,9 +286,9 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
   // Tenant display name - use business_name if available, otherwise format the slug
   const tenantDisplayName = tenant?.business_name || (tenantSlug
     ? tenantSlug
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
     : 'Admin');
 
   return (
@@ -302,11 +302,11 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
       {/* Tenant context - always shown */}
       <Link
         to={`/${tenantSlug}/admin/dashboard`}
-        className="hover:text-foreground transition-colors flex items-center gap-1.5 flex-shrink-0"
+        className="hover:text-foreground transition-colors inline-flex items-center gap-1.5 flex-shrink-0"
         title={`${tenantDisplayName} Dashboard`}
       >
-        <Building2 className="h-3.5 w-3.5" />
-        <span className="font-medium max-w-[120px] truncate">
+        <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
+        <span className="font-medium">
           {tenantDisplayName}
         </span>
       </Link>
@@ -319,26 +319,24 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
           : crumb.label;
 
         return (
-          <Fragment key={crumb.path}>
+          <span key={crumb.path} className="inline-flex items-center gap-1.5 flex-shrink-0">
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0" />
             {crumb.isCurrentPage ? (
               <span
-                className="text-foreground font-medium whitespace-nowrap truncate max-w-[200px]"
+                className="text-foreground font-medium whitespace-nowrap"
                 aria-current="page"
-                title={displayLabel}
               >
                 {displayLabel}
               </span>
             ) : (
               <Link
                 to={crumb.path}
-                className="hover:text-foreground transition-colors whitespace-nowrap truncate max-w-[120px]"
-                title={crumb.label}
+                className="hover:text-foreground transition-colors whitespace-nowrap"
               >
                 {crumb.label}
               </Link>
             )}
-          </Fragment>
+          </span>
         );
       })}
     </nav>

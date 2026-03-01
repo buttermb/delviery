@@ -18,11 +18,48 @@ import {
   DollarSign,
 } from 'lucide-react';
 
+interface OrderItem {
+  id: string;
+  product_name: string;
+  quantity: number;
+  price: number;
+}
+
+interface DeliveryData {
+  status: string;
+  order_number?: string;
+  customer_name?: string;
+  customer_phone?: string;
+  delivery_address?: string;
+  delivery_borough?: string;
+  special_instructions?: string;
+  total_amount?: number;
+  created_at?: string;
+  accepted_at?: string;
+  courier_picked_up_at?: string;
+  delivered_at?: string;
+  assigned_at?: string;
+  picked_up_at?: string;
+  order_items?: OrderItem[];
+  order?: {
+    order_number?: string;
+    total_amount?: number;
+    delivery_address?: string;
+    delivery_instructions?: string;
+    client?: {
+      business_name?: string;
+      contact_name?: string;
+      phone?: string;
+    };
+  };
+  [key: string]: unknown;
+}
+
 export default function UnifiedActiveDeliveryPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { role } = useCourier();
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [data, setData] = useState<DeliveryData | null>(null);
   const [loading, setLoading] = useState(true);
   const { updateStatus, updating } = useDeliveryStatus();
 
@@ -51,6 +88,7 @@ export default function UnifiedActiveDeliveryPage() {
     return () => {
       supabase.removeChannel(channel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadData is defined below; only run when id/role change
   }, [id, role]);
 
   const loadData = async () => {
@@ -101,7 +139,7 @@ export default function UnifiedActiveDeliveryPage() {
     // Extract tenantId for isolation check
     const tenantId = role === 'courier' ? data?.tenant_id : data?.seller_tenant_id;
 
-    const success = await updateStatus(id!, newStatus, role, tenantId);
+    const success = await updateStatus(id!, newStatus, role, tenantId as string);
     if (success && newStatus === 'delivered') {
       navigate('/courier/dashboard');
     }

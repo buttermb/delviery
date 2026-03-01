@@ -187,11 +187,11 @@ export default function SuperAdminSettingsPage() {
                 <div>
                   <p className="font-medium text-[hsl(var(--super-admin-text))]">Two-Factor Authentication</p>
                   <p className="text-sm text-[hsl(var(--super-admin-text-light))]">
-                    {(superAdmin as Record<string, unknown> | null)?.two_factor_enabled ? "Enabled - Additional security layer active" : "Disabled - Enable for enhanced security"}
+                    {(superAdmin as unknown as Record<string, unknown>)?.two_factor_enabled ? "Enabled - Additional security layer active" : "Disabled - Enable for enhanced security"}
                   </p>
                 </div>
                 <Switch 
-                  checked={Boolean((superAdmin as Record<string, unknown> | null)?.two_factor_enabled)}
+                  checked={Boolean((superAdmin as unknown as Record<string, unknown>)?.two_factor_enabled)}
                   className="data-[state=checked]:bg-[hsl(var(--super-admin-primary))]"
                 />
               </div>

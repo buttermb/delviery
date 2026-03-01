@@ -423,7 +423,8 @@ export function MenuBuilderProductSelector({
         throw error;
       }
 
-      return (data ?? []).map((item) => ({
+      interface InventoryRow { id: string; product_name: string; base_price?: number; sku?: string; description?: string; image_url?: string; category?: string; quantity_units?: number }
+      return (data ?? []).map((item: InventoryRow) => ({
         id: item.id,
         name: item.product_name,
         price: item.base_price ?? 0,

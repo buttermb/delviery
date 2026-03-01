@@ -95,7 +95,8 @@ class BugFinder {
 
     // Store original fetch with proper binding to window
     this.originalFetch = window.fetch.bind(window);
-    const self = this;
+    const originalFetch = this.originalFetch;
+    const reportBug = this.reportBug.bind(this);
 
     window.fetch = async function(...args): Promise<Response> {
       const [url, options] = args;
@@ -105,7 +106,7 @@ class BugFinder {
 
       try {
         // Call with proper context using apply
-        const response = await self.originalFetch!.apply(window, args);
+        const response = await originalFetch!.apply(window, args);
         const duration = Date.now() - startTime;
 
         // Check for errors
@@ -115,17 +116,17 @@ class BugFinder {
             const clone = response.clone();
             errorBody = await clone.text();
             try {
-              errorBody = JSON.parse(errorBody);
+              errorBody = JSON.parse(errorBody as string);
             } catch (e) { logger.warn('[BugFinder] Failed to parse error response body as JSON', { error: e }); }
           } catch (e) { logger.warn('[BugFinder] Failed to read error response body', { error: e }); }
 
-          const severity = response.status >= 500 
-            ? 'critical' 
-            : response.status >= 400 
-            ? 'high' 
+          const severity = response.status >= 500
+            ? 'critical'
+            : response.status >= 400
+            ? 'high'
             : 'medium';
 
-          self.reportBug({
+          reportBug({
             type: response.status === 404 ? '404' : 'api',
             severity,
             message: `HTTP ${response.status} ${response.statusText}`,
@@ -143,8 +144,8 @@ class BugFinder {
         return response;
       } catch (error) {
         const duration = Date.now() - startTime;
-        
-        self.reportBug({
+
+        reportBug({
           type: 'fetch',
           severity: 'high',
           message: error instanceof Error ? error.message : String(error),

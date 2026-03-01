@@ -29,7 +29,7 @@ export function PostDetailPage() {
   const { data: profile } = useForumProfile();
   const createCommentMutation = useCreateComment();
   const deletePostMutation = useDeletePost();
-  const deleteCommentMutation = useDeleteComment();
+  const _deleteCommentMutation = useDeleteComment();
   const [commentContent, setCommentContent] = useState('');
 
   // Subscribe to real-time comment updates

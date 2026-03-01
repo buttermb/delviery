@@ -154,7 +154,7 @@ const DisposableMenuAnalytics = () => {
     return acc;
   }, {} as Record<string, ViewsByDate>);
 
-  const chartData: ChartDataPoint[] = Object.values(viewsByDate || {}).map((d) => ({
+  const chartData: ChartDataPoint[] = Object.values(viewsByDate || {}).map((d: ViewsByDate) => ({
     date: d.date,
     views: d.views,
     uniqueVisitors: d.uniqueVisitors.size,

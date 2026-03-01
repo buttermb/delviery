@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 
 import { useEffect, useState, useCallback } from 'react';
 import { clientEncryption } from '../encryption/clientEncryption';
-import type { EncryptionHookResult } from '../encryption/types';
+import type { EncryptionHookResult, EncryptableValue } from '../encryption/types';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 /**
@@ -71,7 +71,7 @@ export function useEncryption(): EncryptionHookResult {
     if (!isReady) {
       throw new Error('Encryption not ready');
     }
-    return clientEncryption.encrypt(value);
+    return clientEncryption.encrypt(value as EncryptableValue);
   }, [isReady]);
 
   /**

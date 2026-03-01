@@ -80,7 +80,7 @@ interface SettingsPageProps {
 }
 
 export default function SettingsPage({ embedded = false }: SettingsPageProps) {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { navigateToAdmin } = useTenantNavigation();
   const { account, accountSettings, refreshAccount, loading: accountLoading } = useAccount();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -146,24 +146,21 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
 
       const secSettings = (metadata?.security as Record<string, unknown>) || {};
       securityForm.reset({
-        twoFactorEnabled: secSettings.twoFactorEnabled ?? false,
-        requirePasswordChange: secSettings.requirePasswordChange ?? false,
-        sessionTimeout: secSettings.sessionTimeout || 30,
-        passwordMinLength: secSettings.passwordMinLength || 8,
+        twoFactorEnabled: secSettings.twoFactorEnabled as boolean ?? false,
+        requirePasswordChange: secSettings.requirePasswordChange as boolean ?? false,
+        sessionTimeout: secSettings.sessionTimeout as number || 30,
+        passwordMinLength: secSettings.passwordMinLength as number || 8,
       });
-
-      // Mark forms as initialized once account data is loaded
-      setFormsInitialized(true);
     }
 
     if (accountSettings) {
       const notifSettings = (accountSettings.notification_settings as Record<string, unknown>) || {};
       notificationForm.reset({
-        emailNotifications: notifSettings.emailNotifications ?? true,
-        smsNotifications: notifSettings.smsNotifications ?? false,
-        lowStockAlerts: notifSettings.lowStockAlerts ?? true,
-        overdueAlerts: notifSettings.overdueAlerts ?? true,
-        orderAlerts: notifSettings.orderAlerts ?? true,
+        emailNotifications: notifSettings.emailNotifications as boolean ?? true,
+        smsNotifications: notifSettings.smsNotifications as boolean ?? false,
+        lowStockAlerts: notifSettings.lowStockAlerts as boolean ?? true,
+        overdueAlerts: notifSettings.overdueAlerts as boolean ?? true,
+        orderAlerts: notifSettings.orderAlerts as boolean ?? true,
         telegram_auto_forward: (notifSettings.telegram_auto_forward as boolean) ?? false,
         telegram_bot_token: (notifSettings.telegram_bot_token as string) ?? '',
         telegram_chat_id: (notifSettings.telegram_chat_id as string) ?? '',
@@ -172,10 +169,16 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
         show_telegram_on_confirmation: (notifSettings.show_telegram_on_confirmation as boolean) ?? false,
       });
     }
-  }, [account, accountSettings, generalForm, securityForm, notificationForm]);
+
+    // Mark forms as initialized once account loading is complete
+    // (whether account exists or not — prevents infinite skeleton)
+    if (!accountLoading) {
+      setFormsInitialized(true);
+    }
+  }, [account, accountSettings, accountLoading, generalForm, securityForm, notificationForm]);
 
   // Determine if we should show loading skeletons
-  const showSkeletons = accountLoading || !formsInitialized;
+  const showSkeletons = accountLoading;
 
   // Warn on unsaved changes when navigating away
   const isDirty = formsInitialized && (
@@ -183,6 +186,7 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
     securityForm.formState.isDirty ||
     notificationForm.formState.isDirty
   );
+
   const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
     isDirty,
   });
@@ -197,7 +201,6 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
       else if (activeTab === 'notifications') notificationForm.handleSubmit(onSaveNotifications)();
     },
   });
-
 
   // --- Submit Handlers ---
 
@@ -531,6 +534,11 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
     return (
       <div className="p-2 sm:p-4 space-y-4">
         {generalSettingsContent}
+        <UnsavedChangesDialog
+          open={showBlockerDialog}
+          onConfirmLeave={confirmLeave}
+          onCancelLeave={cancelLeave}
+        />
       </div>
     );
   }

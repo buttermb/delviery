@@ -350,7 +350,7 @@ export default function StoreProductPage() {
               {product.strain_type && (
                 <span
                   className={cn(
-                    'absolute top-4 right-4 px-3 py-1 text-xs font-bold uppercase rounded-lg border backdrop-blur-sm shadow-sm',
+                    'absolute top-4 right-4 px-3 py-1 text-xs font-bold uppercase rounded-lg border  shadow-sm',
                     product.strain_type === 'Indica'
                       ? 'bg-purple-100/90 text-purple-700 border-purple-200'
                       : product.strain_type === 'Sativa'
@@ -371,7 +371,7 @@ export default function StoreProductPage() {
                         prev > 0 ? prev - 1 : allImages.length - 1
                       )
                     }
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-white transition-colors"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80  shadow-md flex items-center justify-center hover:bg-white transition-colors"
                     aria-label="Previous image"
                   >
                     <ChevronLeft className="w-5 h-5 text-neutral-700" />
@@ -382,7 +382,7 @@ export default function StoreProductPage() {
                         prev < allImages.length - 1 ? prev + 1 : 0
                       )
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center hover:bg-white transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80  shadow-md flex items-center justify-center hover:bg-white transition-colors"
                     aria-label="Next image"
                   >
                     <ChevronRight className="w-5 h-5 text-neutral-700" />
@@ -931,7 +931,7 @@ function RelatedProductCard({
           {product.strain_type && (
             <span
               className={cn(
-                'absolute top-2 left-2 px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border backdrop-blur-sm',
+                'absolute top-2 left-2 px-2 py-0.5 text-[10px] font-bold uppercase rounded-md border ',
                 product.strain_type === 'Indica'
                   ? 'bg-purple-100/90 text-purple-700 border-purple-200'
                   : product.strain_type === 'Sativa'

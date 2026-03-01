@@ -265,7 +265,7 @@ const useMenuTemplates = (tenantId?: string) => {
     queryFn: async (): Promise<MenuTemplate[]> => {
       if (!tenantId) return [];
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await supabase
         .from('menu_templates')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -277,19 +277,19 @@ const useMenuTemplates = (tenantId?: string) => {
       }
 
       return (data ?? []).map((template: Record<string, unknown>) => ({
-        id: template.id,
-        tenantId: template.tenant_id,
-        name: template.name,
-        description: template.description ?? '',
-        category: template.category || 'custom',
+        id: template.id as string,
+        tenantId: template.tenant_id as string,
+        name: template.name as string,
+        description: (template.description ?? '') as string,
+        category: (template.category || 'custom') as MenuTemplate['category'],
         config: template.config as unknown as MenuTemplateConfig,
-        isDefault: template.is_default,
-        isShared: template.is_shared,
-        version: template.version || 1,
-        usageCount: template.usage_count ?? 0,
-        createdAt: template.created_at,
-        updatedAt: template.updated_at,
-        createdBy: template.created_by,
+        isDefault: template.is_default as boolean,
+        isShared: template.is_shared as boolean,
+        version: (template.version || 1) as number,
+        usageCount: (template.usage_count ?? 0) as number,
+        createdAt: template.created_at as string,
+        updatedAt: template.updated_at as string,
+        createdBy: template.created_by as string,
       }));
     },
     enabled: !!tenantId,
@@ -303,7 +303,7 @@ const useTemplateVersions = (templateId?: string, tenantId?: string) => {
     queryFn: async (): Promise<TemplateVersion[]> => {
       if (!templateId || !tenantId) return [];
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await supabase
         .from('menu_template_versions')
         .select('*')
         .eq('template_id', templateId)
@@ -316,13 +316,13 @@ const useTemplateVersions = (templateId?: string, tenantId?: string) => {
       }
 
       return (data ?? []).map((version: Record<string, unknown>) => ({
-        id: version.id,
-        templateId: version.template_id,
-        version: version.version,
+        id: version.id as string,
+        templateId: version.template_id as string,
+        version: version.version as number,
         config: version.config as unknown as MenuTemplateConfig,
-        changelog: version.changelog ?? '',
-        createdAt: version.created_at,
-        createdBy: version.created_by,
+        changelog: (version.changelog ?? '') as string,
+        createdAt: version.created_at as string,
+        createdBy: version.created_by as string,
       }));
     },
     enabled: !!templateId && !!tenantId,
@@ -343,7 +343,7 @@ const useCreateTemplate = () => {
       isShared: boolean;
       createdBy: string;
     }) => {
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await supabase
         .from('menu_templates')
         .insert({
           tenant_id: templateData.tenantId,
@@ -390,7 +390,7 @@ const useUpdateTemplate = () => {
       changelog?: string;
     }) => {
       // Get current template for version increment
-      const { data: currentTemplate } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data: currentTemplate } = await supabase
         .from('menu_templates')
         .select('version, config')
         .eq('id', templateData.id)
@@ -414,7 +414,7 @@ const useUpdateTemplate = () => {
         updateData.version = newVersion;
 
         // Save version history
-        await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> }).from('menu_template_versions').insert({
+        await supabase.from('menu_template_versions').insert({
           template_id: templateData.id,
           tenant_id: templateData.tenantId,
           version: newVersion,
@@ -424,7 +424,7 @@ const useUpdateTemplate = () => {
         });
       }
 
-      const { data, error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { data, error } = await supabase
         .from('menu_templates')
         .update(updateData)
         .eq('id', templateData.id)
@@ -454,14 +454,14 @@ const useDeleteTemplate = () => {
   return useMutation({
     mutationFn: async ({ id, tenantId }: { id: string; tenantId: string }) => {
       // Delete version history first
-      await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      await supabase
         .from('menu_template_versions')
         .delete()
         .eq('template_id', id)
         .eq('tenant_id', tenantId);
 
       // Delete the template
-      const { error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+      const { error } = await supabase
         .from('menu_templates')
         .delete()
         .eq('id', id)
@@ -486,21 +486,21 @@ const useIncrementUsage = () => {
 
   return useMutation({
     mutationFn: async ({ id, tenantId }: { id: string; tenantId: string }) => {
-      const { error } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> }).rpc('increment_template_usage', {
+      const { error } = await supabase.rpc('increment_template_usage', {
         template_id: id,
         p_tenant_id: tenantId,
       });
 
       if (error) {
         // Fallback: manual increment if RPC doesn't exist
-        const { data: current } = await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        const { data: current } = await supabase
           .from('menu_templates')
           .select('usage_count')
           .eq('id', id)
           .eq('tenant_id', tenantId)
           .maybeSingle();
 
-        await (supabase as unknown as { from: (table: string) => ReturnType<typeof supabase.from> })
+        await supabase
           .from('menu_templates')
           .update({ usage_count: ((current as Record<string, unknown> | null)?.usage_count as number ?? 0) + 1 })
           .eq('id', id)

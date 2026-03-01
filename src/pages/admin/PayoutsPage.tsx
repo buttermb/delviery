@@ -13,14 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
   DollarSign,
   Calendar,
   Clock,
@@ -43,6 +35,9 @@ import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
 import { logger } from '@/lib/logger';
 import { format, addDays, startOfWeek, endOfWeek, parseISO } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
+import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
+import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
+import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 
 interface PayoutScheduleItem {
   id: string;
@@ -265,6 +260,39 @@ export default function PayoutsPage() {
     }
   };
 
+  const payoutHistoryColumns: ResponsiveColumn<PayoutHistoryItem>[] = [
+    {
+      header: 'Date',
+      accessorKey: 'created_at',
+      cell: (payout) => formatSmartDate(payout.created_at)
+    },
+    {
+      header: 'Reference',
+      accessorKey: 'reference_id',
+      cell: (payout) => <span className="font-mono text-xs">{payout.reference_id || '-'}</span>
+    },
+    {
+      header: 'Method',
+      accessorKey: 'method',
+      cell: (payout) => <span className="capitalize">{payout.method || 'Manual'}</span>
+    },
+    {
+      header: 'Status',
+      accessorKey: 'status',
+      cell: (payout) => getStatusBadge(payout.status)
+    },
+    {
+      header: 'Processed',
+      accessorKey: 'processed_at',
+      cell: (payout) => payout.processed_at ? formatSmartDate(payout.processed_at) : '-'
+    },
+    {
+      header: 'Amount',
+      accessorKey: 'amount',
+      cell: (payout) => <span className="font-bold">{formatCurrency(payout.amount)}</span>
+    }
+  ];
+
   if (isLoadingHistory || isLoadingOrders) {
     return (
       <div className="p-6">
@@ -275,26 +303,6 @@ export default function PayoutsPage() {
 
   return (
     <div className="p-4 space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Wallet className="h-8 w-8 text-emerald-500" />
-            Payouts
-          </h1>
-          <p className="text-muted-foreground">Track your payout schedules and history</p>
-        </div>
-        <Button
-          variant="outline"
-          onClick={handleExportCSV}
-          disabled={isExporting || payoutHistory.length === 0}
-          className="gap-2"
-        >
-          {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-          Export History
-        </Button>
-      </div>
-
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="bg-gradient-to-br from-emerald-500/10 to-background border-emerald-500/20">
@@ -426,61 +434,29 @@ export default function PayoutsPage() {
 
         {/* Payout History Tab */}
         <TabsContent value="history" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <History className="h-5 w-5" />
-                    Payout History
-                  </CardTitle>
-                  <CardDescription>
-                    Record of all your past payouts
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {payoutHistory.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Reference</TableHead>
-                      <TableHead>Method</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Processed</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {payoutHistory.map((payout: PayoutHistoryItem) => (
-                      <TableRow key={payout.id}>
-                        <TableCell>{formatSmartDate(payout.created_at)}</TableCell>
-                        <TableCell className="font-mono text-xs">
-                          {payout.reference_id || '-'}
-                        </TableCell>
-                        <TableCell className="capitalize">{payout.method || 'Manual'}</TableCell>
-                        <TableCell>{getStatusBadge(payout.status)}</TableCell>
-                        <TableCell>
-                          {payout.processed_at ? formatSmartDate(payout.processed_at) : '-'}
-                        </TableCell>
-                        <TableCell className="text-right font-bold">
-                          {formatCurrency(payout.amount)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <EnhancedEmptyState type="generic" compact
-                  icon={History}
-                  title="No Payout History"
-                  description="Your payout history will appear here once you receive your first payout."
-                />
-              )}
-            </CardContent>
-          </Card>
+          <AdminToolbar
+            hideSearch={true}
+            actions={
+              <Button
+                variant="outline"
+                onClick={handleExportCSV}
+                disabled={isExporting || payoutHistory.length === 0}
+                className="gap-2"
+              >
+                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                Export History
+              </Button>
+            }
+          />
+          <AdminDataTable
+            data={payoutHistory}
+            keyExtractor={(payout) => payout.id}
+            isLoading={isLoadingHistory}
+            columns={payoutHistoryColumns}
+            emptyStateIcon={History}
+            emptyStateTitle="No Payout History"
+            emptyStateDescription="Your payout history will appear here once you receive your first payout."
+          />
         </TabsContent>
       </Tabs>
 

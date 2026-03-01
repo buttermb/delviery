@@ -100,7 +100,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
     return (
       <UISidebarMenuItem ref={itemRef}>
         <SidebarMenuButton
-          onClick={() => onLockedItemClick(item.featureId!)}
+          onClick={() => onLockedItemClick(item.featureId! as FeatureId)}
           className="cursor-pointer opacity-60 hover:opacity-100"
           tooltip={item.name}
         >

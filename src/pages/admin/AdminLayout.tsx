@@ -95,6 +95,8 @@ const AdminLayout = () => {
   // Get tenant context for realtime sync
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
+  const isOrdersSurface = location.pathname.includes('/orders') || location.pathname.includes('/storefront');
+  const isOpsSurface = location.pathname.includes('/fulfillment') || location.pathname.includes('/delivery');
 
   // Enable real-time cross-panel data synchronization
   useRealtimeSync({
@@ -116,21 +118,22 @@ const AdminLayout = () => {
 
   // Enable real-time event notifications for orders and stock alerts
   useEventNotifications({
-    enabled: true,
+    enabled: isOrdersSurface || isOpsSurface,
     playSound: true,
     showBrowserNotification: true,
   });
 
   // Enable cross-panel toast notifications (separate from above)
-  useEventToasts({ enabled: !!tenant?.id });
+  useEventToasts({ enabled: !!tenant?.id && (isOrdersSurface || isOpsSurface) });
 
   // Enable menu order notifications to admin (sound + push)
-  useMenuOrderNotifications({ enabled: !!tenant?.id });
+  useMenuOrderNotifications({ enabled: !!tenant?.id && isOrdersSurface });
 
   // Initialize browser push notifications on first admin load
   useEffect(() => {
+    if (!(isOrdersSurface || isOpsSurface)) return;
     initBrowserNotifications();
-  }, []);
+  }, [isOrdersSurface, isOpsSurface]);
 
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 

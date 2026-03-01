@@ -109,7 +109,7 @@ export function CustomerComplianceVerification({
     isLoading,
     error,
     refetch,
-    isCompliantForOrdering,
+    isCompliantForOrdering: _isCompliantForOrdering,
   } = useCustomerCompliance(customerId);
 
   // Notify parent of compliance changes
