@@ -60,6 +60,7 @@ import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { EnhancedStickyAddToCart } from '@/components/shop/EnhancedStickyAddToCart';
 import { ScrollProgress } from '@/components/shop/ScrollProgress';
 import { CartPreviewPopup } from '@/components/shop/CartPreviewPopup';
+import ProductImage from '@/components/ProductImage';
 
 interface RpcProduct {
   product_id: string;
@@ -686,7 +687,7 @@ export function ProductDetailPage() {
                         : 'opacity-50 hover:opacity-80 hover:scale-105'
                         }`}
                     >
-                      <img src={img} alt={`${product.name} view ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                      <ProductImage src={img} alt={`${product.name} view ${idx + 1}`} className="w-full h-full" />
                     </button>
                   ))}
                 </div>

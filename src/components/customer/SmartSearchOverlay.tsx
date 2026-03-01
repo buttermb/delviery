@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, X, Clock, TrendingUp, ChevronRight, Package } from 'lucide-react';
+import { Search, X, Clock, TrendingUp, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cleanProductName } from '@/utils/productName';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import ProductImage from '@/components/ProductImage';
 
 interface Product {
     id: string;
@@ -111,12 +112,12 @@ export function SmartSearchOverlay({ isOpen, onClose, products, onProductSelect 
                                             }}
                                             className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors group"
                                         >
-                                            <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
-                                                {product.image_url ? (
-                                                    <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
-                                                ) : (
-                                                    <Package className="h-6 w-6 text-gray-400" />
-                                                )}
+                                            <div className="h-12 w-12 rounded-lg overflow-hidden">
+                                                <ProductImage
+                                                    src={product.image_url}
+                                                    alt={product.name}
+                                                    className="h-full w-full"
+                                                />
                                             </div>
                                             <div className="flex-1">
                                                 <h4 className="font-medium text-gray-900 group-hover:text-primary transition-colors">

@@ -34,6 +34,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { formatSmartDate } from '@/lib/formatters';
+import ProductImage from '@/components/ProductImage';
 
 interface Review {
   id: string;
@@ -272,13 +273,11 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                     : [product.image_url || "/placeholder.svg"]
                   ).map((image: string, index: number) => (
                     <CarouselItem key={index}>
-                      <img
+                      <ProductImage
                         src={image}
                         alt={`${product.name} - Image ${index + 1}`}
-                        loading="lazy"
-                        width="600"
-                        height="600"
                         className="w-full h-full object-cover"
+                        priority={index === 0}
                       />
                     </CarouselItem>
                   ))}
@@ -865,12 +864,11 @@ export const ProductDetailModal = ({ product, open, onOpenChange, onAuthRequired
                       {review.photo_urls && review.photo_urls.length > 0 && (
                         <div className="grid grid-cols-3 gap-2">
                           {review.photo_urls.map((url: string, index: number) => (
-                            <img
+                            <ProductImage
                               key={index}
                               src={url}
                               alt={`Review photo ${index + 1}`}
                               className="w-full h-24 object-cover rounded-lg"
-                              loading="lazy"
                             />
                           ))}
                         </div>

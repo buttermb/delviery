@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 interface OptimizedProductImageProps {
   src: string;
@@ -15,68 +18,76 @@ export const OptimizedProductImage = ({
 }: OptimizedProductImageProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [isInView, setIsInView] = useState(priority);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Handle different image source types
+  useEffect(() => {
+    if (priority || !containerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [priority]);
+
+  // Resolve image source
   let imageSrc = src;
-  
-  // If it's a local public path, use as-is
   if (src?.startsWith('/products/') || src?.startsWith('/public/')) {
     imageSrc = src;
-  }
-  // If it's already a full URL (Supabase storage), use as-is
-  else if (src?.startsWith('http://') || src?.startsWith('https://') || src?.startsWith('//')) {
+  } else if (src?.startsWith('http://') || src?.startsWith('https://') || src?.startsWith('//')) {
     imageSrc = src;
-  }
-  // If it's a placeholder, use as-is
-  else if (src?.startsWith('/placeholder') || src?.includes('placeholder')) {
+  } else if (src?.startsWith('/placeholder') || src?.includes('placeholder')) {
     imageSrc = src;
-  }
-  // Otherwise, assume it's a Supabase storage path and needs the public URL
-  else if (src && !src.startsWith('/')) {
-    imageSrc = src; // Already a storage URL
+  } else if (src && !src.startsWith('/')) {
+    imageSrc = src;
   }
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div ref={containerRef} className={cn('relative overflow-hidden', className)}>
+      {/* Skeleton placeholder */}
       {isLoading && !error && (
-        <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 to-black animate-pulse">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-16 h-16 bg-emerald-500/10 rounded-full border border-emerald-500/20 animate-pulse" />
-          </div>
-        </div>
+        <Skeleton className="absolute inset-0 rounded-none" />
       )}
+
       <img
-        src={imageSrc}
+        src={isInView ? imageSrc : undefined}
         alt={alt}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         fetchPriority={priority ? 'high' : 'auto'}
         onLoad={() => setIsLoading(false)}
         onError={() => {
-          // Silently handle error - no console logging
           setIsLoading(false);
           setError(true);
         }}
-        className={`
-          w-full h-full object-cover transition-opacity duration-300
-          ${isLoading ? 'opacity-0' : 'opacity-100'}
-          ${error ? 'opacity-50' : ''}
-        `}
+        className={cn(
+          'w-full h-full object-cover transition-opacity duration-300',
+          isLoading ? 'opacity-0' : 'opacity-100',
+          error && 'opacity-0',
+        )}
         style={{
           contentVisibility: 'auto',
-          willChange: isLoading ? 'opacity' : 'auto',
         }}
       />
+
+      {/* Error fallback */}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-neutral-900 to-black">
-          <div className="text-center p-8">
-            <div className="w-24 h-24 mx-auto mb-4 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20">
-              <svg className="w-12 h-12 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        <div className="absolute inset-0 flex items-center justify-center bg-neutral-100">
+          <div className="text-center p-4">
+            <div className="w-16 h-16 mx-auto mb-3 bg-neutral-200/60 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <p className="text-sm text-white/60 font-light">Product Image</p>
-            <p className="text-xs text-white/40 font-light mt-2">{alt}</p>
+            <p className="text-xs text-neutral-500 font-medium truncate max-w-[120px]">{alt}</p>
           </div>
         </div>
       )}
