@@ -401,3 +401,16 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
   3. Telegram notification was already handled (fire-and-forget call after fallback)
 - Note: Stripe checkout session creation intentionally NOT in fallback (requires server-side secret key)
 - TypeScript compilation passes with zero errors
+
+## Create customer upsert RPC function for checkout
+- RPC function `upsert_customer_on_checkout` already existed across migrations 000006, 000008, 000015
+- Migration 000006: initial function + total_orders/preferred_contact columns + phone+tenant_id index
+- Migration 000008: added source, type, first_order_at, last_order_at, admin_notes, name (generated) columns
+- Migration 000015: enhanced function with source='storefront', type='guest' on inserts + crm_customer_id on marketplace_orders
+- Created migration 20260228000017_grant_upsert_customer_on_checkout.sql:
+  - GRANT EXECUTE to anon, authenticated, service_role roles (was missing)
+- Updated CheckoutPage.tsx fallback path to call upsert_customer_on_checkout:
+  - Fires non-blocking after order creation in the direct RPC fallback path
+  - Edge function path already handled this (storefront-checkout/index.ts line 364)
+  - Ensures customer CRM sync happens regardless of whether edge function or fallback is used
+- TypeScript compilation passes with zero errors

@@ -1102,6 +1102,23 @@ export function CheckoutPage() {
 
           return fallbackResult;
           // 4. Fetch order details (tracking token, order number, total)
+          // 4. Customer upsert — sync to CRM customers table (non-blocking)
+          if (store.tenant_id) {
+            const customerName = `${formData.firstName} ${formData.lastName}`;
+            (supabase.rpc as unknown as SupabaseRpc)('upsert_customer_on_checkout', {
+              p_tenant_id: store.tenant_id,
+              p_name: customerName,
+              p_phone: formData.phone || '',
+              p_email: formData.email,
+              p_preferred_contact: formData.preferredContact || null,
+              p_address: deliveryAddress || null,
+              p_order_total: total,
+            }).catch((err: unknown) => {
+              logger.warn('Customer upsert failed in fallback path — skipping', err, { component: 'CheckoutPage' });
+            });
+          }
+
+          // 5. Fetch order details (tracking token, order number, total)
           const { data: orderRow } = await supabase
             .from('storefront_orders')
             .select('order_number, tracking_token, total')
