@@ -142,6 +142,8 @@ export const RATE_LIMITS = {
   LOGIN: { key: 'login', limit: 5, windowMs: 60 * 1000 }, // 5 per minute
   API: { key: 'api', limit: 100, windowMs: 60 * 1000 }, // 100 per minute
   ORDER_CREATE: { key: 'order_create', limit: 10, windowMs: 60 * 1000 }, // 10 per minute
+  CHECKOUT_IP: { key: 'checkout_ip', limit: 5, windowMs: 60 * 60 * 1000 }, // 5 per IP per hour
+  CHECKOUT_PHONE: { key: 'checkout_phone', limit: 3, windowMs: 60 * 60 * 1000 }, // 3 per phone per hour
   PASSWORD_RESET: { key: 'password_reset', limit: 3, windowMs: 60 * 60 * 1000 }, // 3 per hour
   EMAIL_VERIFICATION: { key: 'email_verify', limit: 5, windowMs: 60 * 1000 }, // 5 per minute
   CREDIT_CONSUME: { key: 'credit_consume', limit: 30, windowMs: 60 * 1000 }, // 30 per minute

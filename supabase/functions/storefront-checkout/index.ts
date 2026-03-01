@@ -14,47 +14,54 @@
 import { serve, createClient, corsHeaders, z } from "../_shared/deps.ts";
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { createLogger } from '../_shared/logger.ts';
+import { checkRateLimit, getRateLimitHeaders, RATE_LIMITS } from '../_shared/rateLimiting.ts';
+import { getClientIP } from '../_shared/bruteForceProtection.ts';
+import { sanitizeString } from '../_shared/validation.ts';
 import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const logger = createLogger('storefront-checkout');
 
 // ---------------------------------------------------------------------------
-// Input validation schemas
+// Input validation schemas (with sanitization transforms)
 // ---------------------------------------------------------------------------
+
+/** Sanitize a string: trim, enforce max length, strip HTML angle brackets */
+const sanitized = (maxLength = 255) =>
+  z.string().transform((val) => sanitizeString(val, maxLength));
 
 const CheckoutItemSchema = z.object({
   product_id: z.string().uuid(),
-  quantity: z.number().int().positive(),
-  variant: z.string().optional(),
+  quantity: z.number().int().positive().max(100),
+  variant: z.string().transform((v) => sanitizeString(v, 100)).optional(),
   // Client may send price for display — always overridden by DB price
   price: z.number().optional(),
 });
 
 const CustomerInfoSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().optional(),
+  firstName: sanitized(100).pipe(z.string().min(1)),
+  lastName: sanitized(100).pipe(z.string().min(1)),
+  email: z.string().email().transform((v) => v.trim().toLowerCase().slice(0, 255)),
+  phone: z.string().transform((v) => sanitizeString(v, 20)).optional(),
 });
 
 const CheckoutRequestSchema = z.object({
   // Store identification — slug is the canonical field
-  storeSlug: z.string().min(1),
+  storeSlug: sanitized(100).pipe(z.string().min(1)),
   // Cart items (prices are ALWAYS fetched server-side)
-  items: z.array(CheckoutItemSchema).min(1),
+  items: z.array(CheckoutItemSchema).min(1).max(50),
   // Customer details
   customerInfo: CustomerInfoSchema,
   // Fulfillment & payment
   fulfillmentMethod: z.enum(["delivery", "pickup"]).default("delivery"),
   paymentMethod: z.enum(["card", "cash"]).default("cash"),
   // Optional fields
-  deliveryAddress: z.string().optional(),
-  notes: z.string().optional(),
+  deliveryAddress: sanitized(500).optional(),
+  notes: sanitized(1000).optional(),
   preferredContactMethod: z.enum(["phone", "email", "text", "telegram"]).optional(),
   discountAmount: z.number().min(0).optional(),
   successUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
-  idempotencyKey: z.string().optional(),
+  idempotencyKey: sanitized(100).optional(),
   // Client-side total for discrepancy detection (always overridden by server)
   clientTotal: z.number().optional(),
 });
@@ -102,6 +109,48 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     const body = parseResult.data;
+
+    // ------------------------------------------------------------------
+    // Rate limiting — 5 orders per IP per hour, 3 per phone per hour
+    // ------------------------------------------------------------------
+    const clientIP = getClientIP(req);
+
+    const ipRateLimit = await checkRateLimit(RATE_LIMITS.CHECKOUT_IP, clientIP);
+    if (!ipRateLimit.allowed) {
+      logger.warn("Checkout rate limited by IP", { ip: clientIP });
+      return new Response(
+        JSON.stringify({ error: "Too many checkout attempts. Please try again later." }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            ...getRateLimitHeaders(ipRateLimit),
+          },
+        },
+      );
+    }
+
+    if (body.customerInfo.phone) {
+      const phoneRateLimit = await checkRateLimit(
+        RATE_LIMITS.CHECKOUT_PHONE,
+        body.customerInfo.phone,
+      );
+      if (!phoneRateLimit.allowed) {
+        logger.warn("Checkout rate limited by phone", { phone: body.customerInfo.phone });
+        return new Response(
+          JSON.stringify({ error: "Too many checkout attempts. Please try again later." }),
+          {
+            status: 429,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json",
+              ...getRateLimitHeaders(phoneRateLimit),
+            },
+          },
+        );
+      }
+    }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
