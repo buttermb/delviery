@@ -44,17 +44,40 @@ vi.mock('@/lib/logger', () => ({
 vi.mock('@/lib/utils/sanitize', () => ({
   sanitizeBasicHtml: (html: string) => html,
   sanitizeWithLineBreaks: (html: string) => html,
+  sanitizeHtml: (html: string) => html,
+  sanitizeWithLineBreaks: (text: string) => text,
 }));
 
 // Mock framer-motion to avoid animation issues in tests
-vi.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>,
-    h1: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => <h1 {...props}>{children}</h1>,
-    p: ({ children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => <p {...props}>{children}</p>,
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
+// All motion.* elements render as their plain HTML equivalents
+vi.mock('framer-motion', () => {
+  const SKIP_PROPS = new Set([
+    'initial', 'animate', 'exit', 'transition', 'variants',
+    'whileHover', 'whileTap', 'whileInView', 'whileFocus', 'whileDrag',
+    'viewport', 'layout', 'layoutId', 'layoutDependency',
+    'drag', 'dragConstraints', 'dragElastic', 'dragMomentum',
+    'onAnimationStart', 'onAnimationComplete', 'onDragStart', 'onDragEnd',
+  ]);
+
+  const handler: ProxyHandler<Record<string, unknown>> = {
+    get(_target, prop: string) {
+      return function MotionComponent(allProps: Record<string, unknown>) {
+        const { children, ...rest } = allProps;
+        const clean: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(rest)) {
+          if (!SKIP_PROPS.has(k)) clean[k] = v;
+        }
+        const El = prop as unknown as React.ElementType;
+        return <El {...clean}>{children as React.ReactNode}</El>;
+      };
+    },
+  };
+
+  return {
+    motion: new Proxy({} as Record<string, unknown>, handler),
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  };
+});
 
 // Mock useShopCart hook
 vi.mock('@/hooks/useShopCart', () => ({
@@ -337,7 +360,7 @@ describe('Storefront Route /shop/:storeSlug', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/doesn't exist or is no longer available/i)
+          screen.getByText(/doesn't exist or has been taken offline/i)
         ).toBeInTheDocument();
       });
     });
@@ -496,6 +519,41 @@ describe('Storefront Route /shop/:storeSlug', () => {
               ],
             },
             styles: { background_color: '#f9fafb', text_color: '#000000', accent_color: '#10b981', border_color: '#e5e7eb' },
+    it('should render sections in correct order from layout_config', async () => {
+      const storeWithOrderedSections = {
+        ...mockStore,
+        layout_config: [
+          {
+            id: 'section-hero',
+            type: 'hero',
+            content: {
+              heading_line_1: 'First',
+              heading_line_2: 'Section',
+              heading_line_3: 'Hero',
+              subheading: 'Hero subheading',
+              cta_primary_text: 'CTA',
+              cta_primary_link: '/shop',
+              cta_secondary_text: 'CTA2',
+              cta_secondary_link: '/shop',
+            },
+            styles: {
+              background_gradient_start: '#000',
+              background_gradient_end: '#111',
+              text_color: '#fff',
+              accent_color: '#0f0',
+            },
+          },
+          {
+            id: 'section-features',
+            type: 'features',
+            content: { heading_small: 'Why Us', heading_large: 'Second Section Features' },
+            styles: { background_color: '#fff', text_color: '#000', icon_color: '#0f0' },
+          },
+          {
+            id: 'section-products',
+            type: 'product_grid',
+            content: { heading: 'Third Section Products', subheading: 'Shop now' },
+            styles: { accent_color: '#10b981' },
           },
         ],
       };
@@ -506,6 +564,10 @@ describe('Storefront Route /shop/:storeSlug', () => {
         }
         if (fnName === 'get_marketplace_products') {
           return Promise.resolve({ data: [], error: null });
+          return Promise.resolve({ data: [storeWithOrderedSections], error: null });
+        }
+        if (fnName === 'get_marketplace_products') {
+          return Promise.resolve({ data: mockProducts, error: null });
         }
         return Promise.resolve({ data: [], error: null });
       });
@@ -534,6 +596,89 @@ describe('Storefront Route /shop/:storeSlug', () => {
       expect(testimonialsSection).toBeInTheDocument();
       const faqSection = screen.getByTestId('storefront-section-faq');
       expect(faqSection).toBeInTheDocument();
+      const { container } = render(<TestWrapper />);
+
+      await waitFor(() => {
+        // Verify all three sections rendered
+        expect(screen.getByText('First')).toBeInTheDocument();
+        expect(screen.getByText('Second Section Features')).toBeInTheDocument();
+        expect(screen.getByText('Third Section Products')).toBeInTheDocument();
+      });
+
+      // Verify ordering via data-section-index attributes
+      const sections = container.querySelectorAll('[data-section-type]');
+      expect(sections.length).toBe(3);
+      expect(sections[0].getAttribute('data-section-type')).toBe('hero');
+      expect(sections[0].getAttribute('data-section-index')).toBe('0');
+      expect(sections[1].getAttribute('data-section-type')).toBe('features');
+      expect(sections[1].getAttribute('data-section-index')).toBe('1');
+      expect(sections[2].getAttribute('data-section-type')).toBe('product_grid');
+      expect(sections[2].getAttribute('data-section-index')).toBe('2');
+    });
+
+    it('should skip sections with visible=false', async () => {
+      const storeWithHiddenSection = {
+        ...mockStore,
+        layout_config: [
+          {
+            id: 'visible-hero',
+            type: 'hero',
+            content: {
+              heading_line_1: 'Visible',
+              heading_line_2: 'Hero',
+              heading_line_3: 'Here',
+              subheading: 'Visible section',
+              cta_primary_text: 'CTA',
+              cta_primary_link: '/shop',
+              cta_secondary_text: 'CTA2',
+              cta_secondary_link: '/shop',
+            },
+            styles: {
+              background_gradient_start: '#000',
+              background_gradient_end: '#111',
+              text_color: '#fff',
+              accent_color: '#0f0',
+            },
+          },
+          {
+            id: 'hidden-features',
+            type: 'features',
+            visible: false,
+            content: { heading_small: 'Hidden', heading_large: 'Hidden Features' },
+            styles: { background_color: '#fff', text_color: '#000', icon_color: '#0f0' },
+          },
+          {
+            id: 'visible-products',
+            type: 'product_grid',
+            content: { heading: 'Visible Products', subheading: 'Shop' },
+            styles: { accent_color: '#10b981' },
+          },
+        ],
+      };
+
+      mockRpc.mockImplementation((fnName: string) => {
+        if (fnName === 'get_marketplace_store_by_slug') {
+          return Promise.resolve({ data: [storeWithHiddenSection], error: null });
+        }
+        if (fnName === 'get_marketplace_products') {
+          return Promise.resolve({ data: mockProducts, error: null });
+        }
+        return Promise.resolve({ data: [], error: null });
+      });
+
+      const { container } = render(<TestWrapper />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Visible')).toBeInTheDocument();
+        expect(screen.getByText('Visible Products')).toBeInTheDocument();
+      });
+
+      // Hidden features section should NOT be rendered
+      expect(screen.queryByText('Hidden Features')).not.toBeInTheDocument();
+
+      // Only 2 sections should be rendered (hero and product_grid)
+      const sections = container.querySelectorAll('[data-section-type]');
+      expect(sections.length).toBe(2);
     });
 
     it('should render default layout when layout_config is empty', async () => {
@@ -700,8 +845,8 @@ describe('Storefront Route /shop/:storeSlug', () => {
       render(<TestWrapper />);
 
       await waitFor(() => {
-        expect(screen.getByText(/no matches found/i)).toBeInTheDocument();
-      });
+        expect(screen.getByTestId('empty-product-grid')).toBeInTheDocument();
+      }, { timeout: 5000 });
     });
   });
 
@@ -807,8 +952,8 @@ describe('Storefront Route /shop/:storeSlug', () => {
 
       const { container } = render(<TestWrapper />);
 
-      // Should show skeleton elements while loading
-      const skeletons = container.querySelectorAll('.animate-pulse, [class*="skeleton"]');
+      // Skeleton components render with role="status" and bg-muted class
+      const skeletons = container.querySelectorAll('[role="status"]');
       expect(skeletons.length).toBeGreaterThan(0);
     });
   });

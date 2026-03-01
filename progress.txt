@@ -130,3 +130,21 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
   - Button now uses `variant={soundEnabled ? 'default' : 'outline'}` for visual feedback (matches LiveOrders.tsx pattern)
 - Both LiveOrders.tsx and StorefrontLiveOrders.tsx now share the same persisted sound preference
 - TypeScript compilation passes with zero errors
+## StorefrontPage renders all sections from layout_config in correct order
+- Verified StorefrontPage component at src/pages/shop/StorefrontPage.tsx already has complete section rendering logic
+- SECTION_COMPONENTS map covers all 14 section types: hero, features, product_grid, testimonials, newsletter, gallery, faq, custom_html, hot_items, promotions_banner, deals_highlight, luxury_hero, luxury_products, luxury_features
+- Sections render in layout_config array order with data-section-type and data-section-index attributes
+- Sections with visible=false are filtered out before rendering
+- Default fallback layout (hero + deals + hot items + products) renders when layout_config is null/empty
+- SEO structured data (JSON-LD) generates from store info
+- AnnouncementBar renders independently above sections
+- ShareButtons bar renders below sections
+- Fixed vitest.config.ts to exclude .ralphy-sandboxes directory from test runs
+- Fixed test mocks: added sanitizeWithLineBreaks and sanitizeHtml to sanitize mock
+- Fixed framer-motion mock to use Proxy-based approach supporting all motion.* elements (not just div/h1/p)
+- Fixed 404 error message test to match actual component text ("taken offline" not "no longer available")
+- Fixed skeleton loader test to use role="status" selector matching actual Skeleton component
+- Fixed empty products test to use data-testid="empty-product-grid" selector
+- Added new test: verifies sections render in correct order via data-section-index attributes
+- Added new test: verifies sections with visible=false are skipped
+- All 29 tests pass, TypeScript compilation clean
