@@ -72,7 +72,7 @@ export function StickyAddToCart({
               {formatCurrency(product.display_price)}
             </span>
             {hasDiscount && (
-              <span className="text-xs text-muted-foreground line-through">
+              <span className="text-sm text-muted-foreground line-through">
                 {formatCurrency(product.compare_at_price!)}
               </span>
             )}
@@ -84,23 +84,23 @@ export function StickyAddToCart({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-r-none"
+            className="h-11 w-11 rounded-r-none"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             disabled={quantity <= 1 || !product.in_stock}
             aria-label="Decrease quantity"
           >
-            <Minus className="w-3 h-3" />
+            <Minus className="w-4 h-4" />
           </Button>
-          <span className="w-6 text-center text-sm font-medium">{quantity}</span>
+          <span className="w-8 text-center text-sm font-medium">{quantity}</span>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-l-none"
+            className="h-11 w-11 rounded-l-none"
             onClick={() => setQuantity((q) => Math.min(99, q + 1))}
             disabled={!product.in_stock}
             aria-label="Increase quantity"
           >
-            <Plus className="w-3 h-3" />
+            <Plus className="w-4 h-4" />
           </Button>
         </div>
 
@@ -108,7 +108,7 @@ export function StickyAddToCart({
         <Button
           variant="outline"
           size="icon"
-          className={cn('h-10 w-10', isWishlisted && 'text-red-500 border-red-200')}
+          className={cn('h-11 w-11', isWishlisted && 'text-red-500 border-red-200')}
           onClick={onToggleWishlist}
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
         >

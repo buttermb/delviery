@@ -124,7 +124,7 @@ export function EnhancedStickyAddToCart({
       {isLowStock && (
         <div className="bg-amber-50 border-b border-amber-200 px-4 py-1.5 flex items-center justify-center gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-          <span className="text-xs text-amber-700 font-medium">
+          <span className="text-sm text-amber-700 font-medium">
             Only {stockStatus?.available} left in stock
           </span>
         </div>
@@ -139,7 +139,7 @@ export function EnhancedStickyAddToCart({
               {formatCurrency(product.display_price * quantity)}
             </span>
             {hasDiscount && quantity === 1 && (
-              <span className="text-xs text-muted-foreground line-through">
+              <span className="text-sm text-muted-foreground line-through">
                 {formatCurrency(product.compare_at_price!)}
               </span>
             )}

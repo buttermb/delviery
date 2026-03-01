@@ -113,19 +113,19 @@ export function StorefrontProductCard({
                             onClick={(e) => { e.preventDefault(); onToggleWishlist(); }}
                             aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
                             className={cn(
-                                "w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shadow-lg transition-colors border",
+                                "w-11 h-11 rounded-full flex items-center justify-center shadow-lg transition-colors border",
                                 isInWishlist ? "bg-red-50 text-red-500 border-red-100" : "bg-white dark:bg-zinc-900 text-neutral-400 hover:text-red-500 border-white dark:border-zinc-900"
                             )}
                         >
-                            <svg className={cn("w-4 h-4 sm:w-5 sm:h-5 transition-transform active:scale-75", isInWishlist && "fill-current")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
+                            <svg className={cn("w-5 h-5 transition-transform active:scale-75", isInWishlist && "fill-current")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
                         </button>
                         <button
                             onClick={(e) => { e.preventDefault(); onQuickView(); }}
                             aria-label="Quick view product"
-                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-zinc-900 text-neutral-400 hover:text-shop-primary border border-white dark:border-zinc-900 flex items-center justify-center shadow-lg transition-colors delay-75"
+                            className="w-11 h-11 rounded-full bg-white dark:bg-zinc-900 text-neutral-400 hover:text-shop-primary border border-white dark:border-zinc-900 flex items-center justify-center shadow-lg transition-colors delay-75"
                             style={{ color: isHovered ? accentColor : undefined }}
                         >
-                            <Eye className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+                            <Eye className="w-5 h-5" aria-hidden="true" />
                         </button>
                     </div>
 
@@ -171,14 +171,14 @@ export function StorefrontProductCard({
                 <div className="p-3 sm:p-5 flex flex-col flex-1">
                     <div className="flex-1 space-y-2">
                         <Link to={`/shop/${storeSlug}/products/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="group-hover:opacity-80 transition-colors block">
-                            <h3 className="font-bold text-sm sm:text-lg leading-snug line-clamp-2" style={{ color: accentColor }} title={cleanedName}>
+                            <h3 className="font-bold text-base sm:text-lg leading-snug line-clamp-2" style={{ color: accentColor }} title={cleanedName}>
                                 {cleanedName}
                             </h3>
                         </Link>
-                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">{product.category}</p>
+                        <p className="text-sm font-bold text-neutral-400 uppercase tracking-wider">{product.category}</p>
 
                         {(product.thc_content || product.cbd_content) && (
-                            <div className="flex flex-wrap gap-2 text-[10px] font-bold text-neutral-500 pt-1">
+                            <div className="flex flex-wrap gap-2 text-xs font-bold text-neutral-500 pt-1">
                                 {product.thc_content && <span className="bg-neutral-100 px-2 py-1 rounded-md">{product.thc_content}% THC</span>}
                                 {product.cbd_content && <span className="bg-neutral-100 px-2 py-1 rounded-md">{product.cbd_content}% CBD</span>}
                             </div>
@@ -190,7 +190,7 @@ export function StorefrontProductCard({
                                 {displayEffects.map((effect, idx) => (
                                     <span
                                         key={idx}
-                                        className="text-[10px] px-2 py-0.5 rounded-full border font-medium"
+                                        className="text-xs px-2 py-0.5 rounded-full border font-medium"
                                         style={{
                                             borderColor: `${accentColor}30`,
                                             color: accentColor,
@@ -218,7 +218,7 @@ export function StorefrontProductCard({
                                 <span className="text-sm text-neutral-400 line-through">{formatCurrency(product.price)}</span>
                             )}
                         </div>
-                        {product.unit_type && <span className="text-[10px] text-neutral-400 font-medium">per {product.unit_type}</span>}
+                        {product.unit_type && <span className="text-xs text-neutral-400 font-medium">per {product.unit_type}</span>}
                     </div>
 
                     <Button
@@ -226,7 +226,7 @@ export function StorefrontProductCard({
                         disabled={isOutStock}
                         size="sm"
                         className={cn(
-                            "rounded-full h-8 px-2 sm:h-10 sm:px-5 font-bold transition-all duration-300 shadow-md",
+                            "rounded-full h-11 px-3 sm:px-5 font-bold transition-all duration-300 shadow-md",
                             isAdded
                                 ? "bg-emerald-500 text-white hover:bg-emerald-600 w-auto"
                                 : isOutStock
@@ -244,12 +244,12 @@ export function StorefrontProductCard({
                                     className="flex items-center"
                                 >
                                     <Check className="w-4 h-4 sm:mr-1.5" strokeWidth={3} aria-hidden="true" />
-                                    <span className="hidden sm:inline text-xs uppercase tracking-wider">Added</span>
+                                    <span className="hidden sm:inline text-sm uppercase tracking-wider">Added</span>
                                 </motion.div>
                             ) : (
                                 <div className="flex items-center">
                                     <Plus className="w-4 h-4 sm:mr-1.5" strokeWidth={3} aria-hidden="true" />
-                                    <span className="hidden sm:inline text-xs uppercase tracking-wider">Add</span>
+                                    <span className="hidden sm:inline text-sm uppercase tracking-wider">Add</span>
                                 </div>
                             )}
                         </AnimatePresence>

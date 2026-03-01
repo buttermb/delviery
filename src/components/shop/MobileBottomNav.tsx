@@ -80,14 +80,14 @@ export function MobileBottomNav({ cartItemCount, primaryColor, onCartClick }: Mo
                 <Icon className="w-5 h-5" aria-hidden="true" />
                 {badge !== undefined && badge > 0 && (
                   <Badge
-                    className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
+                    className="absolute -top-2 -right-3 h-5 w-5 p-0 flex items-center justify-center text-[11px]"
                     style={{ backgroundColor: primaryColor }}
                   >
                     {badge > 99 ? '99+' : badge}
                   </Badge>
                 )}
               </div>
-              <span className="text-[10px] font-medium">{label}</span>
+              <span className="text-xs font-medium">{label}</span>
               {active && (
                 <div
                   className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"

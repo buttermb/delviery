@@ -182,7 +182,7 @@ export const THEME_PRESETS: ThemePreset[] = [
             fontFamily: 'Inter, system-ui, sans-serif',
             headingFamily: 'Inter, sans-serif',
             headingWeight: '600',
-            bodySize: '15px',
+            bodySize: '16px',
             headingSize: {
                 h1: '3rem',
                 h2: '2rem',

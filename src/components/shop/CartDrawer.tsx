@@ -80,7 +80,7 @@ export function CartDrawer({
               Your Cart
             </h2>
             {itemCount > 0 && (
-              <span className="px-2 py-0.5 bg-white/10 rounded-full text-white/60 text-xs">
+              <span className="px-2 py-0.5 bg-white/10 rounded-full text-white/60 text-sm">
                 {itemCount} {itemCount === 1 ? 'item' : 'items'}
               </span>
             )}
@@ -135,7 +135,7 @@ export function CartDrawer({
                         {item.name}
                       </h3>
                       {item.variant && (
-                        <p className="text-white/40 text-xs mb-2">{item.variant}</p>
+                        <p className="text-white/40 text-sm mb-2">{item.variant}</p>
                       )}
                       <p className="text-white/80 text-sm font-light">
                         {formatCurrency(item.price)}
@@ -151,22 +151,22 @@ export function CartDrawer({
                         <Trash2 className="w-4 h-4 text-white/40 hover:text-red-400 transition-colors" />
                       </button>
 
-                      <div className="flex items-center gap-2 bg-white/5 rounded-full p-1">
+                      <div className="flex items-center gap-1 bg-white/5 rounded-full p-0.5">
                         <button
                           onClick={() => onUpdateQuantity(item.productId, item.quantity - 1, item.variant)}
                           disabled={item.quantity <= 1}
-                          className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
-                          <Minus className="w-3 h-3 text-white" />
+                          <Minus className="w-3.5 h-3.5 text-white" />
                         </button>
                         <span className="text-white text-sm w-6 text-center">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() => onUpdateQuantity(item.productId, item.quantity + 1, item.variant)}
-                          className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+                          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
                         >
-                          <Plus className="w-3 h-3 text-white" />
+                          <Plus className="w-3.5 h-3.5 text-white" />
                         </button>
                       </div>
                     </div>
@@ -181,7 +181,7 @@ export function CartDrawer({
               {belowMinimum && (
                 <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                   <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-amber-300 text-xs">
+                  <p className="text-amber-300 text-sm">
                     Minimum order is {formatCurrency(minimumOrderAmount)}. Add{' '}
                     {formatCurrency(minimumOrderAmount! - subtotal)} more to checkout.
                   </p>
@@ -191,7 +191,7 @@ export function CartDrawer({
               {/* Free delivery progress */}
               {freeDeliveryThreshold != null && !qualifiesForFreeDelivery && subtotal > 0 && (
                 <div className="text-center">
-                  <p className="text-emerald-400/80 text-xs">
+                  <p className="text-emerald-400/80 text-sm">
                     Add {formatCurrency(freeDeliveryThreshold - subtotal)} more for free delivery
                   </p>
                   <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
@@ -237,7 +237,7 @@ export function CartDrawer({
                 </span>
               </div>
 
-              <p className="text-white/40 text-xs text-center">
+              <p className="text-white/40 text-sm text-center">
                 Taxes calculated at checkout
               </p>
 
