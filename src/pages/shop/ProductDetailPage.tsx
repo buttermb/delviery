@@ -32,7 +32,6 @@ import {
   Truck,
   Shield,
   RotateCcw,
-  Package,
   ChevronRight,
   X,
   Loader2,
@@ -63,6 +62,7 @@ import { ScrollProgress } from '@/components/shop/ScrollProgress';
 import { CartPreviewPopup } from '@/components/shop/CartPreviewPopup';
 import ProductImage from '@/components/ProductImage';
 import { useStorefrontProductVariants, StorefrontVariant } from '@/hooks/useStorefrontProductVariants';
+import ProductNotFound from '@/components/shop/ProductNotFound';
 
 interface RpcProduct {
   product_id: string;
@@ -568,20 +568,7 @@ export function ProductDetailPage() {
   }
 
   if (!product) {
-    return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-        <h1 className="text-2xl font-bold mb-2">Product Not Found</h1>
-        <p className="text-muted-foreground mb-6">
-          This product doesn't exist or is no longer available.
-        </p>
-        <Link to={`/shop/${storeSlug}/products`}>
-          <Button style={{ backgroundColor: store.primary_color }}>
-            Browse Products
-          </Button>
-        </Link>
-      </div>
-    );
+    return <ProductNotFound storeSlug={storeSlug ?? ''} routePrefix="shop" />;
   }
 
   const hasDiscount = product.compare_at_price && product.compare_at_price > displayPrice;

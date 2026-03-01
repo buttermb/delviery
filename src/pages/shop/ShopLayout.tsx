@@ -20,6 +20,7 @@ import {
   Clock,
   AlertTriangle,
   Store,
+  Leaf,
   Share2,
 } from 'lucide-react';
 import { logger } from '@/lib/logger';
@@ -35,6 +36,7 @@ import { CartDrawer } from '@/components/shop/CartDrawer';
 import { StorefrontShareDialog } from '@/components/shop/StorefrontShareDialog';
 import { useShopCart } from '@/hooks/useShopCart';
 import { queryKeys } from '@/lib/queryKeys';
+import StoreNotFound from '@/components/shop/StoreNotFound';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
 
@@ -370,27 +372,9 @@ export default function ShopLayout() {
     );
   }
 
-  // Store not found — styled 404 page
+  // Store not found
   if (error || !store) {
-    return (
-      <div className="min-h-dvh bg-gradient-to-b from-muted/40 to-background flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-muted">
-            <Store className="h-12 w-12 text-muted-foreground" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight mb-3">Store Not Found</h1>
-          <p className="text-muted-foreground mb-2">
-            The store you&apos;re looking for doesn&apos;t exist or has been taken offline.
-          </p>
-          <p className="text-sm text-muted-foreground mb-8">
-            Check the URL and try again.
-          </p>
-          <Button onClick={() => navigate('/')} size="lg">
-            Go Home
-          </Button>
-        </div>
-      </div>
-    );
+    return <StoreNotFound />;
   }
 
   // Store inactive - show different message for public vs preview

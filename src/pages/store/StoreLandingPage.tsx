@@ -18,6 +18,7 @@ import ProductImage from '@/components/ProductImage';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import StoreNotFound from '@/components/shop/StoreNotFound';
 
 interface StoreData {
   id: string;
@@ -185,20 +186,7 @@ export default function StoreLandingPage() {
 
   // Store not found
   if (storeError || !store) {
-    return (
-      <div className="min-h-dvh bg-neutral-50 flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <Leaf className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
-          <h1 className="text-2xl font-bold text-neutral-800 mb-2">Store Not Found</h1>
-          <p className="text-neutral-500 mb-6">
-            The store you&apos;re looking for doesn&apos;t exist or is no longer available.
-          </p>
-          <Link to="/">
-            <Button variant="outline">Return Home</Button>
-          </Link>
-        </div>
-      </div>
-    );
+    return <StoreNotFound />;
   }
 
   // Store inactive
