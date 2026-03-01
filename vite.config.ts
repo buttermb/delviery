@@ -97,15 +97,18 @@ export default defineConfig(({ mode }) => ({
     deferCssPlugin(),
     // Run sitemap generation only in production to avoid noisy logs and CI/tooling issues
     mode === "production" && sitemapPlugin(),
-    viteCompression({
+    // Pre-compress assets for self-hosted deployments (Vercel CDN compresses on-the-fly)
+    mode === "production" && viteCompression({
       algorithm: 'brotliCompress',
       ext: '.br',
-      threshold: 10240,
+      threshold: 1024,
+      deleteOriginFile: false,
     }),
-    viteCompression({
+    mode === "production" && viteCompression({
       algorithm: 'gzip',
       ext: '.gz',
-      threshold: 10240,
+      threshold: 1024,
+      deleteOriginFile: false,
     }),
     // Only include PWA manifest generation in production. We use a custom sw.js and
     // want to avoid any possible interference during development or testing.

@@ -4,6 +4,7 @@ require('@aikidosec/firewall');
 const path = require('path');
 const fs = require('fs');
 const express = require('express');
+const expressStaticGzip = require('express-static-gzip');
 
 const app = express();
 const PORT = process.env.PORT || 4173;
@@ -32,12 +33,16 @@ app.get('/health', (_req, res) => {
 });
 
 app.use(
-  express.static(DIST_PATH, {
-    maxAge: '1h',
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith('.html')) {
-        res.setHeader('Cache-Control', 'no-cache');
-      }
+  expressStaticGzip(DIST_PATH, {
+    enableBrotli: true,
+    orderPreference: ['br', 'gz'],
+    serveStatic: {
+      maxAge: '1h',
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html')) {
+          res.setHeader('Cache-Control', 'no-cache');
+        }
+      },
     },
   }),
 );

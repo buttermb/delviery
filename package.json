@@ -101,6 +101,7 @@
     "dompurify": "^3.3.0",
     "embla-carousel-react": "^8.6.0",
     "express": "^4.21.1",
+    "express-static-gzip": "^3.0.0",
     "framer-motion": "^12.23.24",
     "fuse.js": "^7.1.0",
     "html2canvas": "^1.4.1",
