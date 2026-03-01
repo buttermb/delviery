@@ -9,7 +9,7 @@
  * 4. Section render order matches what admin set in builder
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page, Browser } from '@playwright/test';
 
 const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:8080';
 
@@ -18,6 +18,19 @@ const STORE_SLUG = process.env.TEST_STORE_SLUG || 'willysbo';
 const TENANT_SLUG = process.env.TEST_TENANT_SLUG || 'willysbo';
 const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL || 'alex@gmail.com';
 const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || 'Test123!';
+
+// Known section types that the builder manages
+const CORE_SECTION_TYPES = [
+  'hero', 'features', 'product_grid', 'testimonials',
+  'newsletter', 'gallery', 'faq', 'custom_html',
+];
+
+// All known section types (including auto-injected ones)
+const ALL_KNOWN_TYPES = [
+  ...CORE_SECTION_TYPES,
+  'hot_items', 'promotions_banner', 'deals_highlight',
+  'luxury_hero', 'luxury_products', 'luxury_features',
+];
 
 // Helpers
 
@@ -75,7 +88,6 @@ async function ensureAdvancedMode(page: Page): Promise<boolean> {
   const isAdvancedVisible = await advancedButton.isVisible({ timeout: 3000 }).catch(() => false);
 
   if (isAdvancedVisible) {
-    // Check if already in advanced mode (button has default variant styling)
     const isAlreadyAdvanced = await advancedButton.evaluate(
       (el) => el.classList.contains('bg-primary') || el.getAttribute('data-state') === 'active',
     );
@@ -90,7 +102,7 @@ async function ensureAdvancedMode(page: Page): Promise<boolean> {
 }
 
 /**
- * Ensure the builder has both FAQ and Hero sections.
+ * Ensure the builder has specified section types.
  * If missing, add them via the "Add Section" buttons.
  */
 async function ensureSectionsExist(
@@ -101,7 +113,6 @@ async function ensureSectionsExist(
 
   for (const sectionType of requiredTypes) {
     if (!currentOrder.includes(sectionType)) {
-      // Click the matching "Add Section" button
       const SECTION_LABELS: Record<string, string> = {
         hero: 'Hero Section',
         faq: 'FAQ',
@@ -128,6 +139,49 @@ async function ensureSectionsExist(
   return true;
 }
 
+/**
+ * Navigate to builder and save/publish with the given layout
+ */
+async function saveOrPublish(page: Page): Promise<void> {
+  const publishButton = page.locator('button:has-text("Publish")');
+  const saveButton = page.locator('button:has-text("Save Draft")');
+  const hasPublish = await publishButton.isVisible({ timeout: 3000 }).catch(() => false);
+
+  if (hasPublish) {
+    await publishButton.click();
+  } else {
+    await saveButton.click();
+  }
+
+  // Wait for success toast
+  const successToast = page.locator(
+    '[data-sonner-toast]:has-text("saved"), [data-sonner-toast]:has-text("published"), [data-sonner-toast]:has-text("success")',
+  );
+  await expect(successToast.first()).toBeVisible({ timeout: 10000 });
+}
+
+/**
+ * Open storefront in a separate browser context and return the section order
+ */
+async function getStorefrontSectionOrderInNewContext(
+  browser: Browser,
+): Promise<{ order: string[]; cleanup: () => Promise<void> }> {
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+
+  await page.goto(`${BASE_URL}/shop/${STORE_SLUG}`);
+  await handleAgeVerification(page);
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(3000);
+
+  const order = await getStorefrontSectionOrder(page);
+
+  return {
+    order,
+    cleanup: () => ctx.close(),
+  };
+}
+
 // ============================================================================
 // TEST SUITE: Storefront Section Rendering Order
 // ============================================================================
@@ -140,18 +194,10 @@ test.describe('Storefront Section Rendering Order', () => {
 
     const sectionOrder = await getStorefrontSectionOrder(page);
 
-    // Store should have at least one section
     expect(sectionOrder.length).toBeGreaterThan(0);
 
-    // Each section should have a known type
-    const knownTypes = [
-      'hero', 'features', 'product_grid', 'testimonials',
-      'newsletter', 'gallery', 'faq', 'custom_html',
-      'hot_items', 'promotions_banner', 'deals_highlight',
-      'luxury_hero', 'luxury_products', 'luxury_features',
-    ];
     for (const type of sectionOrder) {
-      expect(knownTypes).toContain(type);
+      expect(ALL_KNOWN_TYPES).toContain(type);
     }
   });
 
@@ -168,7 +214,6 @@ test.describe('Storefront Section Rendering Order', () => {
       );
     });
 
-    // Indices should be sequential starting from 0
     expect(indices.length).toBeGreaterThan(0);
     for (let i = 0; i < indices.length; i++) {
       expect(indices[i]).toBe(i);
@@ -189,15 +234,12 @@ test.describe('Storefront Section Rendering Order', () => {
     }
   });
 
-  test('sections render in array order from layout_config', async ({ page }) => {
+  test('sections render in vertical order from layout_config', async ({ page }) => {
     await page.goto(`${BASE_URL}/shop/${STORE_SLUG}`);
     await handleAgeVerification(page);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 
-    const sectionOrder = await getStorefrontSectionOrder(page);
-
-    // Verify DOM order matches by checking position of each section
     const positions = await page.evaluate(() => {
       const sections = document.querySelectorAll('[data-section-type]');
       return Array.from(sections).map((el) => {
@@ -228,13 +270,10 @@ test.describe('Admin Builder Section Order', () => {
 
     const hasBuilder = await ensureAdvancedMode(page);
     test.skip(!hasBuilder, 'Advanced builder mode not available');
-
-    // Wait for sections to load
     await page.waitForTimeout(1000);
 
     const builderOrder = await getBuilderSectionOrder(page);
 
-    // Builder should show sections
     expect(builderOrder.length).toBeGreaterThan(0);
   });
 
@@ -248,12 +287,10 @@ test.describe('Admin Builder Section Order', () => {
     test.skip(!hasBuilder, 'Advanced builder mode not available');
     await page.waitForTimeout(1000);
 
-    // Each section item should have a drag handle (GripVertical icon button)
     const sectionItems = page.locator('[data-testid^="builder-section-"]');
     const count = await sectionItems.count();
 
     if (count > 0) {
-      // Check that each item has a grab handle
       for (let i = 0; i < Math.min(count, 3); i++) {
         const item = sectionItems.nth(i);
         const gripHandle = item.locator('button.cursor-grab, button.touch-none');
@@ -275,19 +312,14 @@ test.describe('Admin Builder Section Order', () => {
     const orderBefore = await getBuilderSectionOrder(page);
     test.skip(orderBefore.length < 2, 'Need at least 2 sections to test reorder');
 
-    // Get the first and second section items
     const firstItem = page.locator('[data-testid^="builder-section-"]').first();
     const secondItem = page.locator('[data-testid^="builder-section-"]').nth(1);
 
-    // Get their bounding boxes
     const firstBox = await firstItem.boundingBox();
     const secondBox = await secondItem.boundingBox();
 
     test.skip(!firstBox || !secondBox, 'Cannot get section bounding boxes');
 
-    // Drag the first section below the second
-    const startX = firstBox!.x + firstBox!.width / 2;
-    const startY = firstBox!.y + firstBox!.height / 2;
     const endX = secondBox!.x + secondBox!.width / 2;
     const endY = secondBox!.y + secondBox!.height + 5;
 
@@ -299,7 +331,6 @@ test.describe('Admin Builder Section Order', () => {
       await page.mouse.move(gripBox.x + gripBox.width / 2, gripBox.y + gripBox.height / 2);
       await page.mouse.down();
       await page.waitForTimeout(200);
-      // Move slowly to trigger dnd-kit
       await page.mouse.move(endX, endY, { steps: 10 });
       await page.waitForTimeout(200);
       await page.mouse.up();
@@ -308,22 +339,18 @@ test.describe('Admin Builder Section Order', () => {
 
     const orderAfter = await getBuilderSectionOrder(page);
 
-    // If drag succeeded, order should have changed
-    // Note: dnd-kit drag may not work reliably in CI — this test is best-effort
+    // dnd-kit drag may not trigger in all environments — verify no crash
     if (orderAfter.length === orderBefore.length && orderAfter.length >= 2) {
-      // Either the order changed (drag worked) or stayed the same (drag didn't trigger)
-      // Both are acceptable — the important thing is no crash
       expect(orderAfter.length).toBe(orderBefore.length);
     }
   });
 });
 
 // ============================================================================
-// TEST SUITE: Section Reorder Reflected on Storefront
+// TEST SUITE: Section Reorder Reflected on Storefront (Core E2E)
 // ============================================================================
 test.describe('Section Reorder Reflected on Storefront', () => {
   test('storefront section order matches builder layout_config order', async ({ page }) => {
-    // First, log in as admin and check builder order
     await loginAsAdmin(page, TENANT_SLUG, ADMIN_EMAIL, ADMIN_PASSWORD);
     await page.goto(`${BASE_URL}/${TENANT_SLUG}/admin/storefront-hub?tab=builder`);
     await page.waitForLoadState('networkidle');
@@ -336,7 +363,7 @@ test.describe('Section Reorder Reflected on Storefront', () => {
     const builderOrder = await getBuilderSectionOrder(page);
     test.skip(builderOrder.length === 0, 'No sections in builder');
 
-    // Now visit the storefront as a customer
+    // Visit the storefront
     await page.goto(`${BASE_URL}/shop/${STORE_SLUG}`);
     await handleAgeVerification(page);
     await page.waitForLoadState('networkidle');
@@ -344,67 +371,22 @@ test.describe('Section Reorder Reflected on Storefront', () => {
 
     const storefrontOrder = await getStorefrontSectionOrder(page);
 
-    // The storefront order should match the builder order
-    // Note: storefront may have additional default sections (hot_items, deals_highlight)
-    // that aren't in the builder's 8 core types
-    const coreTypes = ['hero', 'features', 'product_grid', 'testimonials', 'newsletter', 'gallery', 'faq', 'custom_html'];
-    const builderCoreOrder = builderOrder.filter((t) => coreTypes.includes(t));
-    const storefrontCoreOrder = storefrontOrder.filter((t) => coreTypes.includes(t));
+    const builderCoreOrder = builderOrder.filter((t) => CORE_SECTION_TYPES.includes(t));
+    const storefrontCoreOrder = storefrontOrder.filter((t) => CORE_SECTION_TYPES.includes(t));
 
-    // Core section ordering should match
     expect(storefrontCoreOrder).toEqual(builderCoreOrder);
   });
 
-  test('if FAQ is before Hero in builder, FAQ renders first on storefront', async ({ page }) => {
-    // Visit storefront and check current order
-    await page.goto(`${BASE_URL}/shop/${STORE_SLUG}`);
-    await handleAgeVerification(page);
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
-
-    const sectionOrder = await getStorefrontSectionOrder(page);
-
-    const faqIndex = sectionOrder.indexOf('faq');
-    const heroIndex = sectionOrder.indexOf('hero');
-
-    // Only run this test if both FAQ and Hero exist on the storefront
-    test.skip(faqIndex === -1 || heroIndex === -1, 'Store does not have both FAQ and Hero sections');
-
-    // Verify the relative order: if FAQ is configured before Hero, its index should be lower
-    // This verifies the layout_config order is respected in rendering
-    if (faqIndex < heroIndex) {
-      // FAQ is before Hero — verify DOM position
-      const faqTop = await page
-        .locator('[data-testid="storefront-section-faq"]')
-        .first()
-        .evaluate((el) => el.getBoundingClientRect().top);
-      const heroTop = await page
-        .locator('[data-testid="storefront-section-hero"]')
-        .first()
-        .evaluate((el) => el.getBoundingClientRect().top);
-
-      expect(faqTop).toBeLessThan(heroTop);
-    } else {
-      // Hero is before FAQ — verify DOM position
-      const faqTop = await page
-        .locator('[data-testid="storefront-section-faq"]')
-        .first()
-        .evaluate((el) => el.getBoundingClientRect().top);
-      const heroTop = await page
-        .locator('[data-testid="storefront-section-hero"]')
-        .first()
-        .evaluate((el) => el.getBoundingClientRect().top);
-
-      expect(heroTop).toBeLessThan(faqTop);
-    }
-  });
-
-  test('admin save persists section order to storefront', async ({ browser }) => {
-    // Use a fresh context so admin login doesn't leak to storefront
+  test('admin reorders FAQ above Hero, save, storefront reflects new order', async ({ browser }) => {
+    // This is the critical E2E test: reorder sections and verify on storefront
     const adminContext = await browser.newContext();
     const adminPage = await adminContext.newPage();
 
+    // Track original order so we can restore it at the end
+    let originalLayoutConfig: unknown[] | null = null;
+
     try {
+      // Step 1: Admin logs in and navigates to builder
       await loginAsAdmin(adminPage, TENANT_SLUG, ADMIN_EMAIL, ADMIN_PASSWORD);
       await adminPage.goto(`${BASE_URL}/${TENANT_SLUG}/admin/storefront-hub?tab=builder`);
       await adminPage.waitForLoadState('networkidle');
@@ -418,54 +400,211 @@ test.describe('Section Reorder Reflected on Storefront', () => {
       const hasSections = await ensureSectionsExist(adminPage, ['hero', 'faq']);
       test.skip(!hasSections, 'Could not ensure hero and faq sections exist');
 
-      const builderOrder = await getBuilderSectionOrder(adminPage);
-      test.skip(builderOrder.length < 2, 'Need at least 2 sections');
+      const builderOrderBefore = await getBuilderSectionOrder(adminPage);
+      const faqIdx = builderOrderBefore.indexOf('faq');
+      const heroIdx = builderOrderBefore.indexOf('hero');
+      test.skip(faqIdx === -1 || heroIdx === -1, 'Builder does not have both FAQ and Hero');
 
-      // Save the current layout
-      const saveButton = adminPage.locator('button:has-text("Save Draft")');
-      const publishButton = adminPage.locator('button:has-text("Publish")');
-      const hasSave = await saveButton.isVisible({ timeout: 3000 }).catch(() => false);
-      const hasPublish = await publishButton.isVisible({ timeout: 3000 }).catch(() => false);
+      // Step 2: Read the current layout_config from the database via the browser's Supabase client
+      const layoutData = await adminPage.evaluate(async (slug: string) => {
+        // Access the Supabase client from the app's module system
+        const { supabase } = await import('/src/integrations/supabase/client.ts');
+        const { data } = await supabase
+          .from('marketplace_stores')
+          .select('layout_config')
+          .eq('slug', slug)
+          .maybeSingle();
+        return data?.layout_config;
+      }, STORE_SLUG);
 
-      test.skip(!hasSave && !hasPublish, 'Save/Publish buttons not found');
+      test.skip(!Array.isArray(layoutData) || layoutData.length < 2, 'layout_config not found or too small');
+      originalLayoutConfig = layoutData as unknown[];
 
-      if (hasPublish) {
-        await publishButton.click();
-      } else {
-        await saveButton.click();
-      }
+      // Step 3: Reorder — move FAQ before Hero in the layout_config array
+      const sections = [...(layoutData as Array<{ id: string; type: string }>)];
+      const faqSectionIdx = sections.findIndex((s) => s.type === 'faq');
+      const heroSectionIdx = sections.findIndex((s) => s.type === 'hero');
 
-      // Wait for success toast
-      const successToast = adminPage.locator(
-        '[data-sonner-toast]:has-text("saved"), [data-sonner-toast]:has-text("published"), [data-sonner-toast]:has-text("success")',
+      test.skip(faqSectionIdx === -1 || heroSectionIdx === -1, 'layout_config missing faq or hero');
+
+      // Remove FAQ from its current position and insert it just before Hero
+      const [faqSection] = sections.splice(faqSectionIdx, 1);
+      const newHeroIdx = sections.findIndex((s) => s.type === 'hero');
+      sections.splice(newHeroIdx, 0, faqSection);
+
+      // Step 4: Update the layout_config in the database
+      const updateResult = await adminPage.evaluate(
+        async ({ slug, newConfig }: { slug: string; newConfig: unknown[] }) => {
+          const { supabase } = await import('/src/integrations/supabase/client.ts');
+          const { error } = await supabase
+            .from('marketplace_stores')
+            .update({ layout_config: newConfig, updated_at: new Date().toISOString() })
+            .eq('slug', slug);
+          return { error: error?.message ?? null };
+        },
+        { slug: STORE_SLUG, newConfig: sections },
       );
-      await expect(successToast.first()).toBeVisible({ timeout: 10000 });
 
-      // Now open storefront in a new context (customer perspective)
-      const customerContext = await browser.newContext();
-      const customerPage = await customerContext.newPage();
+      expect(updateResult.error).toBeNull();
 
+      // Step 5: Reload builder to pick up the change and publish
+      await adminPage.reload({ waitUntil: 'networkidle' });
+      await adminPage.waitForTimeout(2000);
+      await ensureAdvancedMode(adminPage);
+      await adminPage.waitForTimeout(1000);
+
+      // Verify builder now shows FAQ before Hero
+      const builderOrderAfter = await getBuilderSectionOrder(adminPage);
+      const newFaqIdx = builderOrderAfter.indexOf('faq');
+      const newHeroIdx2 = builderOrderAfter.indexOf('hero');
+      expect(newFaqIdx).toBeLessThan(newHeroIdx2);
+
+      // Publish to make it live
+      await saveOrPublish(adminPage);
+
+      // Step 6: Visit storefront in a separate context and verify order
+      const customerResult = await getStorefrontSectionOrderInNewContext(browser);
       try {
-        await customerPage.goto(`${BASE_URL}/shop/${STORE_SLUG}`);
-        await handleAgeVerification(customerPage);
-        await customerPage.waitForLoadState('networkidle');
-        await customerPage.waitForTimeout(3000);
+        const storefrontOrder = customerResult.order;
 
-        const storefrontOrder = await getStorefrontSectionOrder(customerPage);
-
-        // Verify the storefront has sections
         expect(storefrontOrder.length).toBeGreaterThan(0);
 
-        // The order saved from builder should match storefront rendering
-        const coreTypes = ['hero', 'features', 'product_grid', 'testimonials', 'newsletter', 'gallery', 'faq', 'custom_html'];
-        const builderCoreOrder = builderOrder.filter((t) => coreTypes.includes(t));
-        const storefrontCoreOrder = storefrontOrder.filter((t) => coreTypes.includes(t));
+        const storefrontFaqIdx = storefrontOrder.indexOf('faq');
+        const storefrontHeroIdx = storefrontOrder.indexOf('hero');
 
-        expect(storefrontCoreOrder).toEqual(builderCoreOrder);
+        expect(storefrontFaqIdx).not.toBe(-1);
+        expect(storefrontHeroIdx).not.toBe(-1);
+
+        // FAQ should appear before Hero on the storefront
+        expect(storefrontFaqIdx).toBeLessThan(storefrontHeroIdx);
+
+        // Also verify DOM positions — FAQ should be physically above Hero
+        const customerCtx = await browser.newContext();
+        const verifyPage = await customerCtx.newPage();
+        try {
+          await verifyPage.goto(`${BASE_URL}/shop/${STORE_SLUG}`);
+          await handleAgeVerification(verifyPage);
+          await verifyPage.waitForLoadState('networkidle');
+          await verifyPage.waitForTimeout(2000);
+
+          const faqTop = await verifyPage
+            .locator('[data-testid="storefront-section-faq"]')
+            .first()
+            .evaluate((el) => el.getBoundingClientRect().top);
+          const heroTop = await verifyPage
+            .locator('[data-testid="storefront-section-hero"]')
+            .first()
+            .evaluate((el) => el.getBoundingClientRect().top);
+
+          expect(faqTop).toBeLessThan(heroTop);
+        } finally {
+          await customerCtx.close();
+        }
       } finally {
-        await customerContext.close();
+        await customerResult.cleanup();
       }
     } finally {
+      // Restore original layout_config to avoid polluting other tests
+      if (originalLayoutConfig) {
+        await adminPage.evaluate(
+          async ({ slug, config }: { slug: string; config: unknown[] }) => {
+            const { supabase } = await import('/src/integrations/supabase/client.ts');
+            await supabase
+              .from('marketplace_stores')
+              .update({ layout_config: config, updated_at: new Date().toISOString() })
+              .eq('slug', slug);
+          },
+          { slug: STORE_SLUG, config: originalLayoutConfig },
+        );
+      }
+      await adminContext.close();
+    }
+  });
+
+  test('reversed section order persists and renders correctly', async ({ browser }) => {
+    // Reverse the entire section order, save, verify on storefront
+    const adminContext = await browser.newContext();
+    const adminPage = await adminContext.newPage();
+    let originalLayoutConfig: unknown[] | null = null;
+
+    try {
+      await loginAsAdmin(adminPage, TENANT_SLUG, ADMIN_EMAIL, ADMIN_PASSWORD);
+      await adminPage.goto(`${BASE_URL}/${TENANT_SLUG}/admin/storefront-hub?tab=builder`);
+      await adminPage.waitForLoadState('networkidle');
+      await adminPage.waitForTimeout(2000);
+
+      const hasBuilder = await ensureAdvancedMode(adminPage);
+      test.skip(!hasBuilder, 'Advanced builder mode not available');
+      await adminPage.waitForTimeout(1000);
+
+      // Get current layout_config from DB
+      const layoutData = await adminPage.evaluate(async (slug: string) => {
+        const { supabase } = await import('/src/integrations/supabase/client.ts');
+        const { data } = await supabase
+          .from('marketplace_stores')
+          .select('layout_config')
+          .eq('slug', slug)
+          .maybeSingle();
+        return data?.layout_config;
+      }, STORE_SLUG);
+
+      test.skip(!Array.isArray(layoutData) || layoutData.length < 2, 'layout_config not found or too small');
+      originalLayoutConfig = layoutData as unknown[];
+
+      // Reverse the order
+      const reversed = [...(layoutData as unknown[])].reverse();
+
+      // Update DB
+      const updateResult = await adminPage.evaluate(
+        async ({ slug, newConfig }: { slug: string; newConfig: unknown[] }) => {
+          const { supabase } = await import('/src/integrations/supabase/client.ts');
+          const { error } = await supabase
+            .from('marketplace_stores')
+            .update({ layout_config: newConfig, updated_at: new Date().toISOString() })
+            .eq('slug', slug);
+          return { error: error?.message ?? null };
+        },
+        { slug: STORE_SLUG, newConfig: reversed },
+      );
+      expect(updateResult.error).toBeNull();
+
+      // Reload and publish
+      await adminPage.reload({ waitUntil: 'networkidle' });
+      await adminPage.waitForTimeout(2000);
+      await ensureAdvancedMode(adminPage);
+      await adminPage.waitForTimeout(1000);
+      await saveOrPublish(adminPage);
+
+      // Verify storefront shows reversed order
+      const customerResult = await getStorefrontSectionOrderInNewContext(browser);
+      try {
+        const storefrontOrder = customerResult.order;
+        expect(storefrontOrder.length).toBeGreaterThan(0);
+
+        // Extract the expected reversed order (visible sections only)
+        const reversedTypes = (reversed as Array<{ type: string; visible?: boolean }>)
+          .filter((s) => s.visible !== false)
+          .map((s) => s.type);
+
+        // The storefront order should match the reversed config order
+        expect(storefrontOrder).toEqual(reversedTypes);
+      } finally {
+        await customerResult.cleanup();
+      }
+    } finally {
+      // Restore original
+      if (originalLayoutConfig) {
+        await adminPage.evaluate(
+          async ({ slug, config }: { slug: string; config: unknown[] }) => {
+            const { supabase } = await import('/src/integrations/supabase/client.ts');
+            await supabase
+              .from('marketplace_stores')
+              .update({ layout_config: config, updated_at: new Date().toISOString() })
+              .eq('slug', slug);
+          },
+          { slug: STORE_SLUG, config: originalLayoutConfig },
+        );
+      }
       await adminContext.close();
     }
   });
@@ -485,8 +624,37 @@ test.describe('Section Reorder Reflected on Storefront', () => {
 
     const orderAfter = await getStorefrontSectionOrder(page);
 
-    // Section order should be identical after refresh
     expect(orderAfter).toEqual(orderBefore);
+  });
+
+  test('FAQ before Hero verified by DOM position', async ({ page }) => {
+    await page.goto(`${BASE_URL}/shop/${STORE_SLUG}`);
+    await handleAgeVerification(page);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
+
+    const sectionOrder = await getStorefrontSectionOrder(page);
+
+    const faqIndex = sectionOrder.indexOf('faq');
+    const heroIndex = sectionOrder.indexOf('hero');
+
+    test.skip(faqIndex === -1 || heroIndex === -1, 'Store does not have both FAQ and Hero sections');
+
+    // Verify DOM positions match array order
+    const faqTop = await page
+      .locator('[data-testid="storefront-section-faq"]')
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().top);
+    const heroTop = await page
+      .locator('[data-testid="storefront-section-hero"]')
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().top);
+
+    if (faqIndex < heroIndex) {
+      expect(faqTop).toBeLessThan(heroTop);
+    } else {
+      expect(heroTop).toBeLessThan(faqTop);
+    }
   });
 });
 
@@ -500,7 +668,6 @@ test.describe('Section Visibility and Ordering', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 
-    // All rendered sections should be visible (hidden ones filtered out)
     const sectionOrder = await getStorefrontSectionOrder(page);
 
     for (const type of sectionOrder) {
@@ -522,7 +689,6 @@ test.describe('Section Visibility and Ordering', () => {
       );
     });
 
-    // Indices should be contiguous: 0, 1, 2, ...
     for (let i = 0; i < indices.length; i++) {
       expect(indices[i]).toBe(i);
     }
@@ -541,7 +707,6 @@ test.describe('Section Visibility and Ordering', () => {
       );
     });
 
-    // All indices should be unique
     const uniqueIndices = new Set(indices);
     expect(uniqueIndices.size).toBe(indices.length);
   });
@@ -560,7 +725,6 @@ test.describe('Builder Section Management', () => {
     const hasBuilder = await ensureAdvancedMode(page);
     test.skip(!hasBuilder, 'Advanced builder mode not available');
 
-    // The sections tab should be active by default
     const layerOrderLabel = page.locator('text="Layer Order"');
     await expect(layerOrderLabel).toBeVisible({ timeout: 5000 });
   });
@@ -574,23 +738,20 @@ test.describe('Builder Section Management', () => {
     const hasBuilder = await ensureAdvancedMode(page);
     test.skip(!hasBuilder, 'Advanced builder mode not available');
 
-    // Check for the "Add Section" label
     const addSectionLabel = page.locator('text="Add Section"');
     await expect(addSectionLabel).toBeVisible({ timeout: 5000 });
 
-    // Verify at least some of the section type buttons exist
     const expectedLabels = ['Hero Section', 'FAQ', 'Product Grid', 'Features Grid'];
     for (const label of expectedLabels) {
       const button = page.locator(`button:has-text("${label}")`);
       const isVisible = await button.isVisible({ timeout: 2000 }).catch(() => false);
-      // At least some should be visible
       if (isVisible) {
         expect(isVisible).toBeTruthy();
       }
     }
   });
 
-  test('builder section count matches save payload', async ({ page }) => {
+  test('builder section count matches storefront section count', async ({ page }) => {
     await loginAsAdmin(page, TENANT_SLUG, ADMIN_EMAIL, ADMIN_PASSWORD);
     await page.goto(`${BASE_URL}/${TENANT_SLUG}/admin/storefront-hub?tab=builder`);
     await page.waitForLoadState('networkidle');
@@ -602,7 +763,6 @@ test.describe('Builder Section Management', () => {
 
     const builderOrder = await getBuilderSectionOrder(page);
 
-    // Now visit storefront and compare count
     await page.goto(`${BASE_URL}/shop/${STORE_SLUG}`);
     await handleAgeVerification(page);
     await page.waitForLoadState('networkidle');
@@ -610,11 +770,8 @@ test.describe('Builder Section Management', () => {
 
     const storefrontOrder = await getStorefrontSectionOrder(page);
 
-    // The storefront may have additional auto-injected sections (hot_items, deals_highlight)
-    // but core builder types should all be present
-    const coreTypes = ['hero', 'features', 'product_grid', 'testimonials', 'newsletter', 'gallery', 'faq', 'custom_html'];
-    const builderCoreCount = builderOrder.filter((t) => coreTypes.includes(t)).length;
-    const storefrontCoreCount = storefrontOrder.filter((t) => coreTypes.includes(t)).length;
+    const builderCoreCount = builderOrder.filter((t) => CORE_SECTION_TYPES.includes(t)).length;
+    const storefrontCoreCount = storefrontOrder.filter((t) => CORE_SECTION_TYPES.includes(t)).length;
 
     expect(storefrontCoreCount).toBe(builderCoreCount);
   });
