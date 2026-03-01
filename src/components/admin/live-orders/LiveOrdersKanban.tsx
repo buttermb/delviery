@@ -78,6 +78,7 @@ export interface LiveOrder {
 interface LiveOrdersKanbanProps {
     orders: LiveOrder[];
     onStatusChange: (orderId: string, newStatus: string, source: 'menu' | 'app') => void;
+    onViewDetails?: (order: LiveOrder) => void;
     isLoading?: boolean;
     newOrderIds?: Set<string>;
   id: string;
@@ -223,6 +224,7 @@ export function getValidNextStatuses(
 
 function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChange: LiveOrdersKanbanProps['onStatusChange'] }) {
 function KanbanCard({ order, onStatusChange, isNew }: { order: LiveOrder; onStatusChange: LiveOrdersKanbanProps['onStatusChange']; isNew?: boolean }) {
+function KanbanCard({ order, onStatusChange, onViewDetails }: { order: LiveOrder, onStatusChange: LiveOrdersKanbanProps['onStatusChange'], onViewDetails?: (order: LiveOrder) => void }) {
     const [fleetDialogOpen, setFleetDialogOpen] = useState(false);
     const { isEnabled } = useTenantFeatureToggles();
     const deliveryEnabled = isEnabled('delivery_tracking');
@@ -286,6 +288,10 @@ function KanbanCardContent({
                 "mb-2 hover:shadow-md transition-all border-l-4 overflow-hidden relative group",
                 isNew && "animate-new-order-slide-in ring-2 ring-primary/40 border-l-primary"
             )}>
+            <Card
+                className="mb-2 hover:shadow-md transition-all border-l-4 overflow-hidden relative group cursor-pointer"
+                onClick={() => onViewDetails?.(order)}
+            >
                 <CardContent className="p-2.5 space-y-3">
                     {/* Header */}
                     <div className="flex justify-between items-start">
@@ -334,6 +340,23 @@ function KanbanCardContent({
                             </Button>
                         )}
                         {!cancelAction && <div />}
+                    {/* Actions — stop propagation so card click doesn't fire */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Order actions">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start">
+                                <DropdownMenuItem onClick={() => onStatusChange(order.id, 'rejected', order.source || 'app')}>
+                                    Reject Order
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => onStatusChange(order.id, 'cancelled', order.source || 'app')}>
+                                    Cancel Order
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
                         <div className="flex items-center gap-2">
                             {showAssignToFleet && (
@@ -509,6 +532,7 @@ function DroppableColumn({
 }
 
 export function LiveOrdersKanban({ orders, onStatusChange, isLoading, newOrderIds }: LiveOrdersKanbanProps) {
+export function LiveOrdersKanban({ orders, onStatusChange, onViewDetails, isLoading }: LiveOrdersKanbanProps) {
     // Group orders by column
     const columns = useMemo(() => {
         return COLUMNS.map(col => ({
@@ -586,6 +610,7 @@ export function LiveOrdersKanban({ orders, onStatusChange, isLoading }: LiveOrde
                                         order={order}
                                         onStatusChange={onStatusChange}
                                         isNew={newOrderIds?.has(order.id)}
+                                        onViewDetails={onViewDetails}
                                     />
                                 ))
                             )}

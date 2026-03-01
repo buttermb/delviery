@@ -174,4 +174,16 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Integrated into `src/pages/shop/CheckoutPage.tsx` — onSuccess stores order data in state and shows popup instead of navigating immediately
 - Integrated into `src/components/shop/SinglePageCheckout.tsx` — same pattern, shows popup before navigation
 - Uses store primary color for theming, shadcn Dialog component
+## Live Orders order detail slide-over panel with full info
+- Created `src/components/admin/live-orders/LiveOrderDetailPanel.tsx` — right-side Sheet panel with full order details
+- Fetches complete order data on demand when panel opens (from `orders` + `order_items` for app orders, `menu_orders` + parsed items for menu orders)
+- Sections: header with order # and status badge, action buttons (next status + cancel), customer info, fulfillment/delivery address, line items table, price breakdown (subtotal/delivery/discount/tip/total), payment method with status, notes (delivery/special/customer), menu info for menu orders, timeline, footer with call customer and print actions
+- Wired into `LiveOrdersKanban.tsx` — clicking a kanban card opens the detail panel
+- Added `onViewDetails` callback prop to `LiveOrdersKanban` and `KanbanCard` components
+- Added click stop propagation on action buttons row to prevent card click when using buttons
+- Integrated into `LiveOrders.tsx` with `selectedOrder` and `detailPanelOpen` state management
+- Uses `queryKeys.orders.detail()` for TanStack Query caching with 30s stale time
+- All Supabase queries filter by `tenant_id` for multi-tenant isolation
+- Uses `.maybeSingle()` for optional data fetching
+- Follows all FloraIQ coding standards: logger, @/ imports, sonner toast, shadcn/ui components
 - TypeScript compilation passes with zero errors

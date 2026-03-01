@@ -23,6 +23,7 @@ import {
 } from '@/components/admin/live-orders/LiveOrdersFilters';
 import { LiveOrdersTable } from '@/components/admin/live-orders/LiveOrdersTable';
 import { LiveOrdersListView } from '@/components/admin/live-orders/LiveOrdersListView';
+import { LiveOrderDetailPanel } from '@/components/admin/live-orders/LiveOrderDetailPanel';
 import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { useAdminOrdersRealtime } from '@/hooks/useAdminOrdersRealtime';
@@ -74,6 +75,8 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
   // Filter state
   const { filters, setFilters, clearFilters, searchValue, setSearchValue } = useLiveOrderFilters();
   const [viewMode, setViewMode] = useState<'board' | 'table'>('board');
+  const [selectedOrder, setSelectedOrder] = useState<LiveOrder | null>(null);
+  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
   const previousOrderCountRef = useRef<number>(0);
   const isFirstLoadRef = useRef(true);
 
@@ -404,6 +407,10 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
   };
 
   const hasActiveFilters = Object.keys(filters).length > 0 || searchValue.length > 0;
+  const handleViewDetails = (order: LiveOrder) => {
+    setSelectedOrder(order);
+    setDetailPanelOpen(true);
+  };
 
   return (
     <div className="flex flex-col h-dvh overflow-hidden bg-slate-50 dark:bg-zinc-950">
@@ -577,6 +584,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
                 orders={orders}
                 isLoading={isLoading}
                 onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
+                onViewDetails={handleViewDetails}
               />
             )}
           </div>
@@ -593,6 +601,14 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           onDismiss={commit}
         />
       )}
+
+      {/* Order Detail Slide-Over */}
+      <LiveOrderDetailPanel
+        order={selectedOrder}
+        open={detailPanelOpen}
+        onOpenChange={setDetailPanelOpen}
+        onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
+      />
     </div>
   );
 }
