@@ -1,0 +1,1024 @@
+tasks:
+  - title: Run npx tsc --noEmit and fix ALL TypeScript errors to zero
+    completed: true
+    parallel_group: 1
+    description: Run npx tsc --noEmit. Fix every error. No @ts-ignore or
+      @ts-nocheck. Cast with 'as' only when truly needed.
+  - title: Run npx vite build and fix ALL build errors to zero
+    completed: true
+    parallel_group: 1
+    description: Run npx vite build. Fix missing imports, circular deps, unresolved
+      aliases. Build must complete clean.
+  - title: Fix all console errors on admin dashboard page
+    completed: true
+    parallel_group: 2
+    description: Navigate to /:tenantSlug/admin/dashboard. Fix all red console
+      errors, failed network requests, React key warnings.
+  - title: Fix all console errors on storefront builder page
+    completed: true
+    parallel_group: 2
+    description: Navigate to /:tenantSlug/admin/storefront. Fix all console errors.
+      Page must load without crashing.
+  - title: Fix all console errors on storefront settings page
+    completed: true
+    parallel_group: 2
+    description: Navigate to /:tenantSlug/admin/storefront/settings. Fix all console
+      errors. All tabs must render.
+  - title: Fix all console errors on live orders page
+    completed: true
+    parallel_group: 2
+    description: Navigate to /:tenantSlug/admin/storefront/orders. Fix errors.
+      Realtime subscription must connect.
+  - title: Fix all console errors on analytics page
+    completed: true
+    parallel_group: 2
+    description: Navigate to /:tenantSlug/admin/storefront/analytics. Fix errors.
+      Charts must render even with no data.
+  - title: Fix all console errors on public storefront homepage
+    completed: true
+    parallel_group: 2
+    description: Navigate to /shop/:storeSlug. Fix all console errors on the public
+      storefront.
+  - title: Fix all console errors on product catalog page
+    completed: true
+    parallel_group: 2
+    description: Navigate to /shop/:storeSlug/products. Fix errors. Products must
+      load or empty state shows.
+  - title: Fix all console errors on product detail page
+    completed: true
+    parallel_group: 2
+    description: Navigate to /shop/:storeSlug/products/:productId. Fix errors.
+      Create test data if needed.
+  - title: Fix all console errors on cart page
+    completed: true
+    parallel_group: 2
+    description: Navigate to /shop/:storeSlug/cart. Fix errors. Empty cart state
+      must render cleanly.
+  - title: Fix all console errors on checkout page
+    completed: true
+    parallel_group: 2
+    description: Navigate to /shop/:storeSlug/checkout. Fix errors. Empty cart
+      should redirect to cart page.
+  - title: Replace all console.log statements with logger from @/lib/logger
+    completed: true
+    parallel_group: 3
+    description: grep -rn 'console\.' src/ --include='*.ts' --include='*.tsx'.
+      Replace with logger.debug/warn/error. Keep console.error in error
+      boundaries only.
+  - title: Remove all @ts-ignore and @ts-nocheck and fix underlying type issues
+    completed: true
+    parallel_group: 3
+    description: grep -rn '@ts-' src/. Fix the actual type issue instead of suppressing it.
+  - title: Remove all any types and replace with proper types or unknown
+    completed: true
+    parallel_group: 3
+    description: "grep -rn ': any' src/. Replace with proper interfaces or unknown
+      with type guards."
+  - title: Verify all storefront routes exist in App.tsx for admin and public pages
+    completed: true
+    parallel_group: 2
+    description: "Check App.tsx has: admin routes (/:tenantSlug/admin/storefront,
+      /settings, /orders, /analytics) and public routes (/shop/:storeSlug,
+      /products, /products/:id, /cart, /checkout, /order/:orderId). Add missing
+      routes."
+  - title: Verify storefront nav items exist in admin sidebar with correct icons and
+      links
+    completed: true
+    parallel_group: 2
+    description: "Check navigation constants. Storefront group needs: Builder,
+      Settings, Live Orders, Analytics sub-items with Lucide icons."
+  - title: Verify Supabase connection and marketplace_stores table schema has all
+      required columns
+    completed: true
+    parallel_group: 1
+    description: "Query marketplace_stores. Verify: id, tenant_id, name, slug,
+      theme, layout_config JSONB, status, delivery_enabled, pickup_enabled,
+      tax_rate, delivery_zones JSONB, seo columns. Add missing columns via
+      migration."
+  - title: Verify orders and order_items table schema has all required columns with
+      RLS
+    completed: true
+    parallel_group: 1
+    description: "Verify orders has: id, tenant_id, store_id, order_number, customer
+      fields, status, totals, payment_method, source, customer_id. Verify
+      order_items has line item fields. Add missing via migration."
+  - title: Store creation empty state shows Create Your Store card when no store
+      exists
+    completed: true
+    parallel_group: 3
+    description: When tenant has no store in marketplace_stores, builder shows
+      Create Your Store card with name input, slug input, theme picker, and
+      Create button.
+  - title: Store creation auto-generates URL-safe slug from store name
+    completed: true
+    parallel_group: 3
+    description: "Typing store name auto-generates slug (lowercase, hyphens). Show
+      live preview: Your store URL: /shop/slug. Slug field editable after
+      generation."
+  - title: Store creation validates slug uniqueness with debounced check
+    completed: true
+    parallel_group: 3
+    description: Before saving, check slug uniqueness in marketplace_stores.
+      Debounce 300ms. Show inline error if duplicate.
+  - title: Store creation uses credit gating with graceful fallback
+    completed: true
+    parallel_group: 3
+    description: Store creation costs 500 credits via useCreditGatedAction. If
+      credits system not active, allow creation without credits. Don't crash.
+  - title: Store creation inserts into marketplace_stores with correct defaults
+    completed: true
+    parallel_group: 3
+    description: "On create: validate name/slug, insert with tenant_id, status
+      draft, layout_config []. Toast on success, transition to editor."
+  - title: Add Section dropdown lists all 8 section types with icons
+    completed: true
+    parallel_group: 4
+    description: "Add Section button/dropdown shows: Hero Banner, Product Grid,
+      Features, Testimonials, Newsletter, Gallery, FAQ, Custom HTML. Each with
+      icon + label."
+  - title: Hero section edit dialog has all fields and saves correctly
+    completed: true
+    parallel_group: 4
+    description: "Hero edit dialog: headline, subheadline, CTA text, CTA link,
+      background image upload, overlay opacity slider, text alignment, text
+      color. Save updates section config."
+  - title: Product Grid section edit dialog has all fields and saves correctly
+    completed: true
+    parallel_group: 4
+    description: "Product Grid dialog: title, columns (2/3/4), max products,
+      category filter dropdown, sort order, Show All link toggle. Save
+      persists."
+  - title: Features section edit dialog with icon picker and add/remove items
+    completed: true
+    parallel_group: 4
+    description: "Features dialog: section title, array of items (icon picker,
+      title, description). Add/Remove buttons. Default 3 items."
+  - title: Testimonials section edit dialog with star ratings
+    completed: true
+    parallel_group: 4
+    description: "Testimonials dialog: section title, array of testimonials (quote,
+      name, 1-5 star rating). Add/Remove buttons."
+  - title: Newsletter FAQ Gallery and CustomHTML section edit dialogs all work
+    completed: true
+    parallel_group: 4
+    description: "Newsletter: title, description, button text, placeholder. FAQ: Q&A
+      pairs with add/remove. Gallery: image uploads, layout style. CustomHTML:
+      code editor with DOMPurify preview."
+  - title: All section edit dialogs save to local state and mark unsaved changes
+    completed: true
+    parallel_group: 4
+    description: All dialogs open pre-filled, have Save/Cancel, update local
+      sections array, mark builder as having unsaved changes, don't auto-save to
+      DB.
+  - title: Section delete shows confirmation dialog and removes section
+    completed: true
+    parallel_group: 4
+    description: Delete button on section card shows confirmation. Confirm removes
+      from array. Cancel closes dialog.
+  - title: Drag and drop sections reorder correctly with dnd-kit
+    completed: true
+    parallel_group: 4
+    description: Verify DndContext, SortableContext, GripVertical drag handle,
+      visual feedback during drag. arrayMove on dragEnd.
+  - title: Drag and drop order persists to layout_config on save
+    completed: true
+    parallel_group: 4
+    description: After reorder, save → refresh → sections in new order.
+      layout_config JSONB stores ordered array.
+  - title: Theme selector shows 4 themes with preview thumbnails and correct CSS
+      variables
+    completed: true
+    parallel_group: 4
+    description: "storefrontThemes.ts: Dark (#0a0a0a/#22c55e), Minimalist
+      (#fff/#0f172a), Strain (#fefce8/#65a30d), Luxury (#1a1a2e/#d4af37).
+      Preview cards with checkmark on selected."
+  - title: Theme CSS variables apply to preview panel immediately without save
+    completed: true
+    parallel_group: 4
+    description: "Selecting theme updates preview panel CSS variables in real-time.
+      Verify: select Luxury → preview shows dark bg with gold."
+  - title: Theme persists to database and applies on public storefront
+    completed: true
+    parallel_group: 4
+    description: Theme saves to marketplace_stores.theme. Customer visiting
+      /shop/:slug sees correct theme colors.
+  - title: Preview panel renders sections live with viewport toggle
+    completed: true
+    parallel_group: 5
+    description: Right panel shows scaled preview updating as sections added/edited.
+      Desktop/Tablet/Mobile toggle resizes container.
+  - title: Full-screen editor portal opens and preserves all state on exit
+    completed: true
+    parallel_group: 5
+    description: Entry card → Launch Studio → portal to document.body. ESC/Close
+      exits. All state preserved (no remount).
+  - title: Save Draft persists sections and theme to database
+    completed: true
+    parallel_group: 5
+    description: "Save Draft: serializes sections → layout_config, saves theme,
+      status stays draft. Toast success. Clears unsaved flag."
+  - title: Publish makes store live and accessible at public URL
+    completed: true
+    parallel_group: 5
+    description: "Publish: same as Save + status published + published_at timestamp.
+      Toast with clickable URL. Store accessible at /shop/:slug."
+  - title: Unpublish takes store offline and public URL returns 404
+    completed: true
+    parallel_group: 5
+    description: Unpublish sets status to draft. Public storefront shows Store Not
+      Found page.
+  - title: Unsaved changes warning when navigating away from builder
+    completed: true
+    parallel_group: 5
+    description: "UnsavedChangesDialog: Save & Leave, Leave Without Saving, Cancel.
+      Also beforeunload browser event."
+  - title: Easy Mode editor provides simplified builder interface
+    completed: true
+    parallel_group: 5
+    description: "EasyModeEditor: store name, logo upload, color picker, product
+      toggle. Auto-generates Hero + ProductGrid + FAQ."
+  - title: Settings General tab loads and saves store name slug description logo
+    completed: true
+    parallel_group: 5
+    description: "General tab: name, slug with uniqueness check, description, logo
+      upload to Supabase Storage. Save persists. React Hook Form + Zod."
+  - title: Settings SEO tab saves meta title description OG image keywords
+    completed: true
+    parallel_group: 5
+    description: "SEO tab: meta title, meta description with char count, OG image
+      upload, keywords tag input. Save to seo columns."
+  - title: Settings Delivery tab with zones manager and fulfillment toggles
+    completed: true
+    parallel_group: 5
+    description: "Delivery tab: enable delivery/pickup toggles, tax rate, delivery
+      zones list (zone name, ZIPs, fee, minimum, est time). Add/Remove zone
+      buttons."
+  - title: Add Payment Methods tab with Cash Venmo Zelle Stripe toggles
+    completed: true
+    parallel_group: 5
+    description: "Payment Methods tab: Cash toggle (default on), Venmo toggle +
+      handle input, Zelle toggle + info input, Stripe toggle + connection
+      status. Save to settings."
+  - title: Add Telegram notification settings with bot token chat ID and test button
+    completed: true
+    parallel_group: 5
+    description: "Notifications tab: bot token (password input), chat ID,
+      auto-forward toggle, customer-facing link URL, button label, show on
+      confirmation toggle. Test button sends test message."
+  - title: All settings tabs save independently with loading states and toasts
+    completed: true
+    parallel_group: 5
+    description: Each tab has own Save button. Loading state during save.
+      Success/error toasts. Saving one tab doesn't affect others.
+  - title: Products sync to storefront respecting visibility and stock
+    completed: true
+    parallel_group: 5
+    description: Products from admin products table appear on storefront filtered by
+      tenant_id. Respect visible_on_storefront flag. Show Out of Stock when
+      quantity = 0.
+  - title: Add product visibility toggle for storefront on admin products page
+    completed: true
+    parallel_group: 5
+    description: Each product has Show on Storefront toggle (visible_on_storefront
+      boolean). Only enabled products appear publicly. Default true.
+  - title: Product images render correctly with placeholders on all storefront pages
+    completed: true
+    parallel_group: 5
+    description: Product images show on cards, catalog, detail pages. No image shows
+      clean placeholder, not broken img icon.
+  - title: ShopLayout loads store by slug applies theme and shows 404 for missing
+      stores
+    completed: true
+    parallel_group: 6
+    description: ShopLayout fetches store by slug. Published → apply theme CSS vars,
+      render header/children/footer. Not found → styled 404 page.
+  - title: ShopLayout sticky header with logo nav and cart badge
+    completed: true
+    parallel_group: 6
+    description: "Header: logo, store name, Home/Products/Cart links, cart icon with
+      count badge. Sticky on scroll. Mobile hamburger."
+  - title: ShopLayout age verification gate for cannabis stores
+    completed: true
+    parallel_group: 6
+    description: "Full-page overlay: Are you 21+? Yes → localStorage flag, show
+      store. No → redirects. Persists per store slug."
+  - title: ShopLayout cart drawer slides in from right showing items and checkout
+      button
+    completed: true
+    parallel_group: 6
+    description: Cart icon click → Sheet from right with items, quantities,
+      subtotal, View Cart + Checkout buttons.
+  - title: StorefrontPage renders all sections from layout_config in correct order
+    completed: true
+    parallel_group: 6
+    description: Reads layout_config, renders each section component in order. Empty
+      layout shows Coming Soon. Each section type maps to correct component.
+  - title: HeroSection renders with background image overlay headline CTA
+    completed: true
+    parallel_group: 6
+    description: Full-width bg image, gradient overlay, headline, subheadline, CTA
+      button. Fallback gradient if no image. Responsive text.
+  - title: ProductGridSection fetches real tenant products and renders cards
+    completed: true
+    parallel_group: 6
+    description: Fetches products by tenant_id with section config (columns, max,
+      category filter, sort). ProductCard components. View All link. Empty
+      state.
+  - title: FeaturesSection TestimonialsSection FAQSection all render correctly
+    completed: true
+    parallel_group: 6
+    description: "Features: icon/title/description grid. Testimonials: quote
+      carousel with stars. FAQ: shadcn Accordion. Empty configs don't render."
+  - title: ProductCatalogPage loads all visible products with loading skeletons
+    completed: true
+    parallel_group: 7
+    description: Fetches products where visible_on_storefront=true for tenant.
+      Skeleton cards during load. Error state with retry.
+  - title: Product catalog category filter works with checkboxes
+    completed: true
+    parallel_group: 7
+    description: Sidebar checkboxes from product_categories or distinct categories.
+      Multiple selection OR logic. All clears filter.
+  - title: Product catalog search with debounced input and clear button
+    completed: true
+    parallel_group: 7
+    description: Search input filters by name case-insensitive. 300ms debounce. No
+      results message. Clear X button.
+  - title: Product catalog sort options and grid/list view toggle
+    completed: true
+    parallel_group: 7
+    description: "Sort: Popular, Price Low/High, Newest, Name A-Z. Grid/List toggle.
+      View preference in localStorage."
+  - title: Product catalog pagination for large product lists
+    completed: true
+    parallel_group: 7
+    description: "20+ products: paginate with Load More or numbered pages. Show
+      count: Showing 1-20 of 156."
+  - title: Product catalog mobile filter drawer with apply button and badge
+    completed: true
+    parallel_group: 7
+    description: "Mobile: Filters button opens slide-up Sheet. All filter options
+      inside. Apply button closes. Badge shows active filter count."
+  - title: Product catalog empty state with clear filters button
+    completed: true
+    parallel_group: 7
+    description: "No matches: illustration + No products found + Clear Filters. Zero
+      products: Products coming soon."
+  - title: ProductCard displays image name price badge stock and add to cart
+    completed: true
+    parallel_group: 7
+    description: "Card: image (placeholder if none), name, price, category badge,
+      stock status, Add to Cart button. Hover scale+shadow. Click navigates to
+      detail."
+  - title: ProductDetailPage loads product with image gallery and info section
+    completed: true
+    parallel_group: 7
+    description: "Fetch by ID. 404 if not found. Left: main image + thumbnails +
+      lightbox. Right: breadcrumb, name, price, description, stock."
+  - title: Product detail variant selector with price updates
+    completed: true
+    parallel_group: 7
+    description: "If variants exist: pill buttons (1g, 3.5g, 7g etc). Each variant
+      can have different price. Selection updates displayed price."
+  - title: Product detail quantity selector and Add to Cart button
+    completed: true
+    parallel_group: 7
+    description: Minus/Plus with number. Min 1, max stock. Add to Cart calls
+      useShopCart.addItem. Toast. Out of stock disables button.
+  - title: Product detail related products carousel from same category
+    completed: true
+    parallel_group: 7
+    description: "You May Also Like: 4 products from same category. Horizontal
+      scroll. Hidden if no related products."
+  - title: useShopCart hook works correctly with localStorage persistence
+    completed: true
+    parallel_group: 6
+    description: addItem, updateQuantity, removeItem, clearCart, subtotal, itemCount
+      all work. localStorage with try-catch. Scoped to storeSlug.
+  - title: CartPage displays items with quantity controls and order summary
+    completed: true
+    parallel_group: 7
+    description: "Line items: image, name, variant, price, quantity controls, line
+      total, remove X. Order summary: subtotal, tax, delivery, total, checkout
+      button."
+  - title: CartPage empty state with continue shopping link
+    completed: true
+    parallel_group: 7
+    description: "Empty cart: icon + Your cart is empty + Continue Shopping button.
+      No checkout button when empty."
+  - title: CartPage stock validation before proceeding to checkout
+    completed: true
+    parallel_group: 7
+    description: "Before checkout: validate items still in stock. Out of stock items
+      show warning. Disable checkout until resolved."
+  - title: CheckoutPage multi-step with visual progress indicator
+    completed: true
+    parallel_group: 8
+    description: "Step 1: Your Info → Step 2: Payment → Step 3: Confirmation.
+      Numbered circles connected by lines. Current step highlighted."
+  - title: Checkout Step 1 customer info form with name phone email preferred contact
+    completed: true
+    parallel_group: 8
+    description: "Fields: full name (required), phone (required, validated), email
+      (optional), preferred contact method radio (Phone/Email/Text/Telegram).
+      React Hook Form + Zod."
+  - title: Checkout Step 1 fulfillment method with delivery address and zone
+      validation
+    completed: true
+    parallel_group: 8
+    description: "Delivery/Pickup toggle. Delivery: address form + ZIP zone
+      validation (fee, minimum, est time). Invalid ZIP: error. Pickup: show
+      store address."
+  - title: Checkout Step 1 guest vs account creation toggle
+    completed: true
+    parallel_group: 8
+    description: Sign in link → login modal. Continue as guest (default). Create
+      account checkbox → password fields. Guest creates lead, account creates
+      auth user.
+  - title: Checkout Step 2 payment method selection with Cash Venmo Zelle Stripe
+    completed: true
+    parallel_group: 8
+    description: "Show enabled methods from settings. Cash: no extra fields. Venmo:
+      show handle + I've sent payment checkbox. Zelle: show info + checkbox.
+      Stripe: Elements card form. Single method auto-selected."
+  - title: Checkout Step 2 order summary recap alongside payment
+    completed: true
+    parallel_group: 8
+    description: "Right side/above: items, quantities, line totals, subtotal, tax,
+      delivery fee, discount, total. Read-only recap."
+  - title: Checkout Step 2 age verification checkbox and Place Order button
+    completed: true
+    parallel_group: 8
+    description: "Age verify checkbox (required for cannabis). Place Order disabled
+      until: payment selected, confirmations checked, age verified. Loading
+      spinner on click."
+  - title: Checkout handler creates order in database with server-side price
+      validation
+    completed: true
+    parallel_group: 8
+    description: "Call storefront-checkout edge function or client fallback. Server
+      validates: store exists, products in stock, recalculates prices
+      server-side. Insert order + order_items. Return orderId."
+  - title: Checkout handler creates guest customer profile in customers table
+    completed: true
+    parallel_group: 8
+    description: "Check customers by phone+tenant_id. Exists: update, link order.
+      New: insert with name, phone, email, preferred_contact, source storefront,
+      type guest. Set customer_id on order."
+  - title: Checkout handler creates registered account when requested
+    completed: true
+    parallel_group: 8
+    description: "If create account checked: create Supabase auth user + customer
+      profile type registered. Auto-login. If fails: complete as guest."
+  - title: Checkout handler processes Stripe payment when selected
+    completed: true
+    parallel_group: 8
+    description: "Create PaymentIntent via edge function. Confirm with Elements.
+      Success: paid_at timestamp. Fail: show error, don't create order. If
+      Stripe not configured: hide option."
+  - title: Checkout handler deducts inventory after order creation
+    completed: true
+    parallel_group: 8
+    description: UPDATE products SET stock_quantity = stock_quantity - qty WHERE
+      stock_quantity >= qty. Check affected rows. Handle race condition.
+  - title: Checkout handler generates sequential order number per tenant
+    completed: true
+    parallel_group: 8
+    description: "Format #1001, #1002. Query MAX(order_number) for tenant + 1 or use
+      RPC function. Must be unique per tenant."
+  - title: OrderConfirmationPage shows success animation order number and details
+    completed: true
+    parallel_group: 9
+    description: "Checkmark/confetti, Thank you, Order # confirmed, items summary,
+      totals, payment method, delivery/pickup info."
+  - title: OrderConfirmationPage shows prominent tenant Telegram/custom link button
+    completed: true
+    parallel_group: 9
+    description: "Large branded button with icon: Message us on Telegram (or custom
+      label). Opens configured link in new tab. Primary CTA on page."
+  - title: OrderConfirmationPage shows real-time status tracking timeline
+    completed: true
+    parallel_group: 9
+    description: "Status timeline: Confirmed → Preparing → Ready → Delivering →
+      Completed. Supabase Realtime subscription updates live."
+  - title: Post-checkout confirmation popup before navigation
+    completed: true
+    parallel_group: 9
+    description: "Immediate modal: Order Confirmed! Thanks for your order! Tenant
+      link button + View Order Details button. Auto-closes 10s."
+  - title: Post-checkout sends email confirmation if email provided
+    completed: true
+    parallel_group: 9
+    description: "Edge function sends HTML email: order number, items, total,
+      delivery info, contact link. Failure doesn't block order."
+  - title: Post-checkout Telegram auto-forward sends order details to tenant group
+    completed: true
+    parallel_group: 9
+    description: "If Telegram configured: POST to Bot API with formatted order
+      (number, customer, phone, items, total, payment, address). Edge function.
+      Failure doesn't block."
+  - title: Create forward-order-telegram edge function
+    completed: true
+    parallel_group: 9
+    description: "supabase/functions/forward-order-telegram/index.ts. Input:
+      orderId, tenantId. Fetch order+items+customer+telegram config. Send
+      formatted message. CORS. Error handling."
+  - title: Admin gets realtime notification for new storefront orders
+    completed: true
+    parallel_group: 9
+    description: Supabase Realtime triggers on admin side. Browser notification.
+      Optional sound. Notification bell count update.
+  - title: Live Orders page loads orders with all table columns and status badges
+    completed: true
+    parallel_group: 10
+    description: "Orders table: order #, customer, phone, items count, total,
+      payment, fulfillment, status badge (colored), time (relative), actions
+      dropdown."
+  - title: Live Orders status change actions with valid next-status progression
+    completed: true
+    parallel_group: 10
+    description: "Actions show only valid next statuses: pending→confirm/cancel,
+      confirmed→preparing/cancel, etc. Status change updates DB and triggers
+      Realtime."
+  - title: Live Orders order detail slide-over panel with full info
+    completed: true
+    parallel_group: 10
+    description: "Click order → Sheet from right: order #, status, customer info,
+      line items, totals, payment, notes, timeline, contact shortcuts, print."
+  - title: Live Orders Kanban view toggle with drag between status columns
+    completed: true
+    parallel_group: 10
+    description: "Table/Kanban toggle. Kanban: columns per status. Order cards. Drag
+      between columns changes status."
+  - title: Live Orders realtime subscription shows new orders with animation
+    completed: true
+    parallel_group: 10
+    description: Supabase Realtime on orders INSERT filtered by tenant_id. New
+      orders slide in at top. Stats bar updates.
+  - title: Live Orders stats bar with today counts revenue pending and average
+    completed: true
+    parallel_group: 10
+    description: "Top cards: Orders Today, Revenue Today, Pending (pulsing if >0),
+      Average Order Value. Real-time updates."
+  - title: Live Orders filters for status date range search fulfillment payment
+    completed: true
+    parallel_group: 10
+    description: Status tabs, date range picker, search by order# or customer,
+      fulfillment filter, payment filter. AND logic.
+  - title: Live Orders one-click contact shortcuts for phone SMS email Telegram
+    completed: true
+    parallel_group: 10
+    description: "In order detail: phone icon → tel: link, SMS → sms: link, email →
+      mailto:, Telegram → configured link."
+  - title: Live Orders notification sound on new order with settings toggle
+    completed: true
+    parallel_group: 10
+    description: New order via Realtime plays bell/ding sound. Toggle in settings.
+      Audio API with MP3 in public/.
+  - title: Storefront customers appear in admin customers list with source tag
+    completed: true
+    parallel_group: 10
+    description: "Admin Customers page shows auto-created storefront customers.
+      Columns: name, phone, email, orders, spent, source, last order."
+  - title: Customer profile shows order history items preferences and contact info
+    completed: true
+    parallel_group: 10
+    description: "Profile: name, phone (clickable), email, preferred contact,
+      addresses. Orders table. Most ordered products. Lifetime value."
+  - title: Customers list has search filter by source sort and pagination
+    completed: true
+    parallel_group: 10
+    description: Search by name/phone/email. Filter by source (storefront/pos/all).
+      Sort by name/orders/spent. Pagination.
+  - title: Admin products page shows all products with stock and storefront visibility
+    completed: true
+    parallel_group: 10
+    description: "Products table: image, name, category, price, stock qty (color
+      coded), status, storefront toggle, edit/delete."
+  - title: Add new product form with name price stock images and quick add flow
+    completed: true
+    parallel_group: 10
+    description: "Add Product: name, description, category, price, stock qty,
+      images, variants, storefront toggle. Quick Add shows minimal fields."
+  - title: Edit product form pre-fills all fields and saves changes
+    completed: true
+    parallel_group: 10
+    description: Click edit → same form pre-filled. Update all fields. Changes
+      reflect on storefront immediately.
+  - title: Product stock management with inline edit and color coding
+    completed: true
+    parallel_group: 10
+    description: Click stock number → inline edit → save. Green (>10), yellow
+      (1-10), red (0). Stock 0 shows Out of Stock on storefront.
+  - title: Product categories management with add edit delete
+    completed: true
+    parallel_group: 10
+    description: View/add/edit/delete categories. Categories appear in storefront
+      filters. Delete reassigns products.
+  - title: Analytics KPI cards with revenue orders average and period selector
+    completed: true
+    parallel_group: 11
+    description: "Cards: Total Revenue, Orders, Average Order Value, Unique
+      Customers. % change vs previous. Period: Today/7d/30d/90d/All."
+  - title: Analytics revenue line chart and top products bar chart with Recharts
+    completed: true
+    parallel_group: 11
+    description: Revenue over time line chart with selectable range. Top 10 products
+      horizontal bar chart. Data from orders/order_items.
+  - title: Analytics empty state with share store link and QR code
+    completed: true
+    parallel_group: 11
+    description: "No data: No sales yet message + store URL with copy button + share
+      buttons + QR code generation."
+  - title: Static HTML menu page generator in admin
+    completed: true
+    parallel_group: 11
+    description: "Generate Menu Page: title, product selection, show
+      prices/descriptions/images toggles, color scheme, contact info, custom
+      slug. Generates self-contained HTML file."
+  - title: Static menu page URL management with list view regenerate and delete
+    completed: true
+    parallel_group: 11
+    description: "List of generated menu pages: title, URL (copy button), created
+      date, products count. Regenerate and delete actions."
+  - title: Store sharing dialog with URL copy QR code and social buttons
+    completed: true
+    parallel_group: 11
+    description: "Share Store dialog: URL + copy button, QR code (qrcode library),
+      social share (WhatsApp, SMS, email), download QR as PNG."
+  - title: Prevent double order submission with button disable and loading
+    completed: false
+    parallel_group: 12
+    description: Disable Place Order on click. Loading spinner. Second click no-op.
+      Don't re-enable until response.
+  - title: Handle checkout network errors with retry and cart preservation
+    completed: false
+    parallel_group: 12
+    description: "API failure: clear error message, re-enable button, don't
+      navigate, don't clear cart. User can retry."
+  - title: Handle out-of-stock during checkout with per-item error
+    completed: false
+    parallel_group: 12
+    description: "Server validates stock. If out: return specific products. Show
+      per-item warning. Let user continue with remaining."
+  - title: Styled 404 pages for nonexistent store and product
+    completed: false
+    parallel_group: 12
+    description: /shop/fake → Store Not Found with illustration. /products/fake →
+      Product Not Found with Browse Products button.
+  - title: Cart validates items on checkout page load for stock and price changes
+    completed: false
+    parallel_group: 12
+    description: "CheckoutPage mount: verify items exist, in stock, prices current.
+      Update prices if changed. Remove deleted items."
+  - title: Delivery zone ZIP validation at checkout
+    completed: false
+    parallel_group: 12
+    description: "Customer ZIP → check against delivery_zones. Match: show fee +
+      time. No match: Sorry, we don't deliver here."
+  - title: Phone number validation and normalization on checkout
+    completed: false
+    parallel_group: 12
+    description: Accept common formats. Normalize to standard. Validate 10 digits
+      US. Formatted display.
+  - title: Consistent price formatting as dollar amount throughout app
+    completed: false
+    parallel_group: 12
+    description: "formatPrice utility: $XX.XX format everywhere. Cart, checkout,
+      confirmation, admin orders, analytics. No float weirdness."
+  - title: Image lazy loading with skeleton placeholders and error fallbacks
+    completed: false
+    parallel_group: 12
+    description: "All product images: loading=lazy. Skeleton during load. onError
+      shows styled placeholder, not broken icon."
+  - title: Search input sanitization preventing XSS and SQL injection
+    completed: false
+    parallel_group: 12
+    description: "Product search: sanitize input. Supabase parameterized queries.
+      Sanitize before displaying in No results for."
+  - title: Cart persistence across page nav browser restart and scoped to store
+    completed: false
+    parallel_group: 12
+    description: "Cart survives: refresh, navigation, tab close/reopen. localStorage
+      with STORAGE_KEYS. Different stores have separate carts."
+  - title: Cart clears after successful order but not on failure
+    completed: false
+    parallel_group: 12
+    description: "Success: clearCart(), badge goes to 0. Failure: cart preserved for retry."
+  - title: All forms use React Hook Form and Zod with inline error display
+    completed: false
+    parallel_group: 12
+    description: "Every form: React Hook Form + Zod. Red inline errors below fields.
+      Red border. Asterisk on required. Clear on fix."
+  - title: Every page has loading skeleton empty state and error state
+    completed: false
+    parallel_group: 12
+    description: "Audit all pages: skeletons for loading, illustrated empty states
+      with actions, error cards with retry buttons."
+  - title: RLS policies on marketplace_stores orders customers products
+    completed: false
+    parallel_group: 13
+    description: "marketplace_stores: public read published, admin CRUD own. orders:
+      service role insert, admin see own. customers: admin own. products: public
+      read active."
+  - title: Server-side price validation in storefront-checkout edge function
+    completed: false
+    parallel_group: 13
+    description: "Don't trust client prices. Fetch from DB. Calculate totals
+      server-side. If client differs: use server."
+  - title: Rate limiting checkout endpoint and input sanitization
+    completed: false
+    parallel_group: 13
+    description: Max 5 orders per IP per hour. Max 3 per phone per hour. 429 if
+      limited. All inputs trimmed, sanitized for XSS, Zod validated.
+  - title: No sensitive keys in client bundle and proper CORS on edge functions
+    completed: false
+    parallel_group: 13
+    description: No sk_test_, sk_live_, bot_token in src/. Only VITE_* in client.
+      Edge functions return proper CORS headers.
+  - title: Cross-tenant data isolation test
+    completed: false
+    parallel_group: 13
+    description: /shop/store-a shows only store-a products. Orders from store-a only
+      in tenant-a admin. Full isolation.
+  - title: CustomHTML section sanitizes with DOMPurify preventing XSS
+    completed: false
+    parallel_group: 13
+    description: Test script injection. DOMPurify strips scripts, onerror handlers.
+      Sanitized before dangerouslySetInnerHTML.
+  - title: Storefront homepage mobile layout at 375px with no horizontal scroll
+    completed: false
+    parallel_group: 14
+    description: Hero text scales, CTA full-width. Product grid 2 col. Features
+      stack. No horizontal overflow on any section.
+  - title: Product catalog mobile layout with filter drawer
+    completed: false
+    parallel_group: 14
+    description: "375px: filters hidden, Filters button → drawer. Grid 2 col. Search
+      full-width. Cards readable."
+  - title: Product detail mobile layout with swipe gallery and fixed Add to Cart
+    completed: false
+    parallel_group: 14
+    description: "375px: image carousel swipeable. Info stacks below. Add to Cart as
+      fixed bottom bar. All readable."
+  - title: Cart and checkout mobile layout with stacked items and full-width buttons
+    completed: false
+    parallel_group: 14
+    description: "Cart: items vertical, 44px touch targets. Checkout: compact steps,
+      stacked form, full-width Place Order."
+  - title: All touch targets minimum 44px and font sizes minimum 14px body
+    completed: false
+    parallel_group: 14
+    description: Audit buttons, links, quantity controls, checkboxes, remove
+      buttons. Min 44x44px. Min 14px body, 12px labels.
+  - title: Admin live orders mobile layout with card list instead of table
+    completed: false
+    parallel_group: 14
+    description: "Mobile: orders as cards (order #, customer, total, status, time).
+      Tap → full-screen detail."
+  - title: Consistent Sonner toast usage for all success error and info messages
+    completed: false
+    parallel_group: 15
+    description: All toasts via Sonner. Success green, Error red, Info blue, Warning
+      yellow. Bottom-right desktop, top-center mobile.
+  - title: Button loading states with spinners on all async actions
+    completed: false
+    parallel_group: 15
+    description: Save Draft → Saving..., Publish → Publishing..., Place Order →
+      Processing..., Add to Cart → Added ✓. Loader2 spinner.
+  - title: Theme consistency with no hardcoded colors breaking themes
+    completed: false
+    parallel_group: 15
+    description: "For each theme: verify all pages use CSS variables for bg, text,
+      primary, card, border, link colors. No rogue hex values."
+  - title: Dark theme all elements readable and Luxury theme gold accents applied
+    completed: false
+    parallel_group: 15
+    description: "Dark: all text readable, inputs visible. Luxury: gold
+      buttons/links/badges, serif headings, dark bg."
+  - title: Product cards uniform height with consistent image aspect ratio
+    completed: false
+    parallel_group: 15
+    description: Grid cards same height per row. Image fixed aspect ratio. Name max
+      2 lines clamp. Price and button aligned bottom.
+  - title: Confirmation page prominent tenant link with store branding
+    completed: false
+    parallel_group: 15
+    description: Large branded button for Telegram/WhatsApp link. Store name + logo.
+      Themed colors. Not a text link.
+  - title: Admin dashboard storefront widget with today stats and links
+    completed: false
+    parallel_group: 15
+    description: "Dashboard card: store status, today orders, today revenue. Links
+      to Manage Store and Live Orders."
+  - title: Getting started checklist for new tenants
+    completed: false
+    parallel_group: 15
+    description: "For new tenants: checklist (create store, add products, customize,
+      configure delivery, set payments, publish, share). Items check off as
+      done."
+  - title: Settings use plain English labels with helpful descriptions
+    completed: false
+    parallel_group: 15
+    description: Sales Tax (%) not Tax Rate. Help text below complex fields. Simple
+      language throughout.
+  - title: Builder section type descriptions in Add Section dropdown
+    completed: false
+    parallel_group: 15
+    description: "Each option: brief description. Hero: full-width image banner.
+      Product Grid: showcase products. etc."
+  - title: Builder preview shows real products not placeholders
+    completed: false
+    parallel_group: 15
+    description: "ProductGridSection in preview fetches actual tenant products. No
+      products: Add products to see them here."
+  - title: Order cancel with reason and stock restoration
+    completed: false
+    parallel_group: 15
+    description: Cancel prompts for reason dropdown. Saves reason. Sets cancelled.
+      Restores stock quantities. Optional cancellation email.
+  - title: storefront-checkout edge function exists and handles all cases
+    completed: false
+    parallel_group: 16
+    description: Verify/create. POST with CORS. Validates store, products, stock.
+      Server-side price calc. Creates order + items. Returns orderId. Error
+      handling for all cases.
+  - title: storefront-checkout has client-side fallback if edge function fails
+    completed: false
+    parallel_group: 16
+    description: "If edge function 500s: client inserts directly into Supabase. TRY
+      edge function first, THEN fallback. Both produce identical results."
+  - title: Create deduct_stock RPC function for atomic stock deduction
+    completed: false
+    parallel_group: 16
+    description: "PostgreSQL function: UPDATE products SET stock_quantity =
+      stock_quantity - qty WHERE id = id AND stock_quantity >= qty. Returns
+      boolean. SECURITY DEFINER."
+  - title: Create customer upsert RPC function for checkout
+    completed: false
+    parallel_group: 16
+    description: "Find by phone+tenant_id. Exists: update. New: insert with all
+      fields. Returns customer_id. SECURITY DEFINER."
+  - title: Create next_order_number RPC function
+    completed: false
+    parallel_group: 16
+    description: SELECT COALESCE(MAX(order_number), 1000) + 1 FROM orders WHERE
+      tenant_id. Handle race condition.
+  - title: Verify customers table has all columns including preferred_contact and
+      source
+    completed: false
+    parallel_group: 16
+    description: "Columns: id, tenant_id, name, phone, email,
+      preferred_contact_method, source, type, total_orders, total_spent,
+      admin_notes. Index on (tenant_id, phone)."
+  - title: Add payment method and Telegram config columns to settings
+    completed: false
+    parallel_group: 16
+    description: "marketplace_stores or tenant_settings: cash/venmo/zelle/stripe
+      enabled + handles. Telegram bot_token, chat_id, auto_forward,
+      customer_link."
+  - title: Add database indexes for orders products customers performance
+    completed: false
+    parallel_group: 16
+    description: "Indexes: orders(tenant_id, created_at DESC), orders(tenant_id,
+      status), products(tenant_id, visible_on_storefront), customers(tenant_id,
+      phone), marketplace_stores(slug) UNIQUE."
+  - title: Keyboard navigation for all interactive elements with visible focus rings
+    completed: false
+    parallel_group: 16
+    description: Tab reaches all buttons/links/inputs. Visible focus ring.
+      Enter/Space activates. Tab order follows visual order.
+  - title: ARIA labels on all icon-only buttons and alt text on all images
+    completed: false
+    parallel_group: 16
+    description: "Cart icon, delete, edit, close, search: all have aria-label.
+      Product images: alt=product name. Decorative: aria-hidden."
+  - title: Color contrast meets WCAG AA and semantic HTML heading hierarchy
+    completed: false
+    parallel_group: 16
+    description: Text contrast 4.5:1 on all themes. One h1 per page. h1>h2>h3 no
+      skipping. Proper section/nav/main/footer elements.
+  - title: E2E test admin creates store adds sections publishes customer shops and
+      orders
+    completed: false
+    parallel_group: 17
+    description: "Full flow: create store, add Hero+ProductGrid, publish, visit
+      /shop/slug, see sections, click product, add to cart, checkout as guest
+      with cash, see confirmation, admin sees order + customer."
+  - title: E2E test guest checkout with cash creates customer profile in admin
+    completed: false
+    parallel_group: 17
+    description: "Browse, add 3 items, adjust qty, checkout: name+phone, delivery,
+      cash. Confirmation popup. Profile in admin with name, phone, items."
+  - title: E2E test guest checkout with Venmo payment flow
+    completed: false
+    parallel_group: 17
+    description: "Same flow: Venmo selected, shows handle, I've sent payment
+      checked, order created with payment_method=venmo."
+  - title: E2E test guest checkout with Zelle payment flow
+    completed: false
+    parallel_group: 17
+    description: "Zelle: shows info, confirmation checkbox, order saved with
+      payment_method=zelle."
+  - title: E2E test pickup order without delivery fee
+    completed: false
+    parallel_group: 17
+    description: Select Pickup. No address form. Store address shown. No delivery
+      fee. Order has fulfillment_method=pickup.
+  - title: E2E test Telegram auto-forward fires on new order
+    completed: false
+    parallel_group: 17
+    description: "Configure Telegram. Place order. Verify edge function called with
+      order details. If fails: order still saves."
+  - title: E2E test admin processes order through all status transitions
+    completed: false
+    parallel_group: 17
+    description: Pending → Confirm → Preparing → Ready → Delivering → Delivered.
+      Customer confirmation page updates at each step.
+  - title: E2E test admin cancels order and stock restores
+    completed: false
+    parallel_group: 18
+    description: Cancel with reason. Status cancelled. Stock quantities restored.
+      Customer sees cancelled.
+  - title: E2E test multiple stores have complete data isolation
+    completed: false
+    parallel_group: 18
+    description: Store A shows only Store A products. Orders from Store A only in
+      Tenant A admin. Full isolation.
+  - title: E2E test product price change reflects on storefront and checkout
+    completed: false
+    parallel_group: 18
+    description: "Admin changes price $10→$15. Customer refreshes: $15. Cart at
+      checkout: $15. Server validates $15."
+  - title: E2E test out of stock during shopping prevents checkout
+    completed: false
+    parallel_group: 18
+    description: "Product stock goes to 0 after cart add. Checkout catches it: item
+      unavailable. Customer can remove and continue."
+  - title: E2E test theme change reflects on public storefront
+    completed: false
+    parallel_group: 18
+    description: "Admin changes Minimalist → Dark. Save/publish. Customer refresh:
+      dark bg green accents. All sections correct in new theme."
+  - title: E2E test section reorder reflects on storefront
+    completed: false
+    parallel_group: 18
+    description: "Admin reorders FAQ above Hero. Save. Customer: FAQ first, then Hero."
+  - title: E2E test returning customer recognized by phone
+    completed: false
+    parallel_group: 18
+    description: "Same phone at checkout: system finds existing customer. Links new
+      order. Admin sees updated totals."
+  - title: E2E test cart persists across browser restart
+    completed: false
+    parallel_group: 18
+    description: Add items, close tab, reopen. Cart still has items. Complete
+      checkout normally.
+  - title: E2E test settings round-trip for payment delivery and Telegram config
+    completed: false
+    parallel_group: 18
+    description: Set Cash+Venmo on, delivery zone LES ZIPs $3 fee, Telegram
+      configured. Save. Refresh. All persists. Checkout shows correct options.
+  - title: E2E test order totals match everywhere cart to DB
+    completed: false
+    parallel_group: 18
+    description: Cart subtotal = checkout total = confirmation total = admin total =
+      DB total. Tax and delivery calculated correctly.
+  - title: E2E test all 4 themes render correctly end to end
+    completed: false
+    parallel_group: 18
+    description: "For each theme: set, save, visit storefront, navigate all pages.
+      Correct colors, no visual bugs, readable text."
+  - title: Final TypeScript check zero errors after all changes
+    completed: false
+    parallel_group: 19
+    description: npx tsc --noEmit. Zero errors. Fix any new type issues from this sprint.
+  - title: Final Vite build zero errors production ready
+    completed: false
+    parallel_group: 19
+    description: npx vite build. Zero errors. Check for critical warnings.
+  - title: Final console audit all storefront pages clean
+    completed: false
+    parallel_group: 19
+    description: "Navigate every page admin and customer. Console clean: no red
+      errors, no unhandled rejections."
+  - title: Test with zero data new tenant every page shows empty state not crash
+    completed: false
+    parallel_group: 19
+    description: Simulate brand new tenant. No store, no products, no orders. Every
+      page shows appropriate empty state.
+  - title: Test with lots of data 100 products 50 orders pagination works
+    completed: false
+    parallel_group: 19
+    description: Catalog pagination works. Orders scrollable and filterable.
+      Analytics charts render. No slowness.
+  - title: Verify no sensitive data in production client bundle
+    completed: false
+    parallel_group: 19
+    description: Build → grep dist/ for sk_test, sk_live, service_role, bot_token.
+      Only VITE_* vars in client.
+  - title: Remove dead code unused imports and commented-out blocks
+    completed: false
+    parallel_group: 19
+    description: "Clean up storefront files: unused imports, variables, commented
+      code blocks."

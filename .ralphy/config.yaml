@@ -1,33 +1,41 @@
 project:
-  name: vite_react_shadcn_ts
-  language: TypeScript
-  framework: React + Vite
-  description: FloraIQ multi-tenant cannabis wholesale SaaS
+  name: "FloraIQ"
+  language: "TypeScript"
+  framework: "React 18 + Vite 5 + Supabase"
+
 commands:
-  test: npx vitest --run
-  lint: npm run lint
-  build: npm run build
+  test: "npx tsc --noEmit"
+  lint: "npx eslint src/ --ext .ts,.tsx"
+  build: "npx vite build"
+
 rules:
-  - Read CLAUDE.md for project rules
-  - Use logger from @/lib/logger never console.log
-  - Use @/ imports always
-  - Filter all queries by tenant_id
-  - Use useTenantAdminAuth() for tenant context
-  - Use .maybeSingle() not .single()
-  - "Commit with message: feat: [task title]"
-  - Never create files named nul, con, prn, aux - Windows reserved names
-  - Never run git add on dist/ or nul files
-  - Read CLAUDE.md for project rules
-  - Use logger from @/lib/logger never console.log
-  - Use @/ imports always
-  - Filter all Supabase queries by tenant_id
-  - Use sonner toast not useToast
-  - Use (supabase as any) for untyped tables
-  - If component does not exist mark task SKIP
-  - Commit after each task with descriptive message
+  - "ALWAYS use logger from @/lib/logger — NEVER use console.log"
+  - "ALWAYS use @/ alias for all imports"
+  - "ALWAYS filter Supabase queries by tenant_id"
+  - "ALWAYS use useTenantAdminAuth() for admin tenant context"
+  - "ALWAYS include tenant slug in admin routes: navigate(`/${tenantSlug}/admin/...`)"
+  - "NEVER edit auto-generated files: src/integrations/supabase/client.ts, types.ts"
+  - "Use .maybeSingle() not .single() for optional data"
+  - "All tables MUST have RLS enabled with tenant_id filter"
+  - "SECURITY DEFINER functions MUST SET search_path = public"
+  - "NEVER use 'any' type — use 'unknown' if needed"
+  - "ALWAYS define interfaces for component props"
+  - "ALWAYS wrap localStorage in try-catch using STORAGE_KEYS constants"
+  - "Import order: React → Third-party → Types → Components → Utils"
+  - "Use React Hook Form + Zod for ALL forms"
+  - "Use shadcn/ui components (Dialog, Sheet, Table, Badge, Skeleton, Accordion)"
+  - "Use Sonner for all toast notifications"
+  - "Use TanStack Query with queryKeys factory for all data fetching"
+  - "Invalidate TanStack queries on mutations"
+  - "Use Supabase Realtime for live order updates"
+  - "Store CSS theme variables via storefrontThemes.ts"
+  - "Product images go to Supabase Storage bucket"
+  - "Edge functions handle CORS and return proper error JSON"
+
 boundaries:
   never_touch:
-    - src/integrations/supabase/client.ts
-    - src/integrations/supabase/types.ts
-    - supabase/config.toml
-    - .env
+    - "src/integrations/supabase/client.ts"
+    - "src/integrations/supabase/types.ts"
+    - "supabase/config.toml"
+    - ".env"
+    - "*.lock"
