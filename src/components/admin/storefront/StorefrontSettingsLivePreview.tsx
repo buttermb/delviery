@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Monitor, Smartphone, Tablet, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { applyPreviewCSSVariables } from '@/lib/storefrontThemes';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface PreviewProduct {
   id: string;
@@ -290,7 +291,7 @@ export function StorefrontSettingsLivePreview({
                             className="text-[8px] font-bold"
                             style={{ color: 'var(--storefront-primary)' }}
                           >
-                            ${product.price.toFixed(2)}
+                            {formatCurrency(product.price)}
                           </p>
                         </div>
                       </div>

@@ -35,6 +35,7 @@ import { humanizeError } from '@/lib/humanizeError';
 import { CartPreviewPopup } from '../CartPreviewPopup';
 import type { StorefrontHotItem } from '@/types/storefront-hot-items';
 import { formatSmartDate } from '@/lib/formatters';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export interface HotItemsSectionProps {
   content?: {
@@ -421,11 +422,11 @@ function HotItemCard({
                 className="text-lg font-bold"
                 style={{ color: accentColor }}
               >
-                ${displayPrice?.toFixed(2)}
+                {formatCurrency(displayPrice)}
               </span>
               {hasSalePrice && (
                 <span className="text-xs text-neutral-400 line-through">
-                  ${product.price?.toFixed(2)}
+                  {formatCurrency(product.price)}
                 </span>
               )}
             </div>

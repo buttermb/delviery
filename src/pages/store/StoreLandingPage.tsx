@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import ProductImage from '@/components/ProductImage';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface StoreData {
   id: string;
@@ -564,12 +565,12 @@ function FeaturedProductCard({
               <span className="text-lg font-extrabold text-emerald-600">Free</span>
             ) : (
               <span className="text-lg font-extrabold" style={{ color: accentColor }}>
-                ${displayPrice.toFixed(2)}
+                {formatCurrency(displayPrice)}
               </span>
             )}
             {hasSalePrice && (
               <span className="text-xs text-neutral-400 line-through">
-                ${product.price.toFixed(2)}
+                {formatCurrency(product.price)}
               </span>
             )}
           </div>

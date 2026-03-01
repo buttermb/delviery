@@ -6,6 +6,7 @@ import { Eye, Check, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ProductImage from '@/components/ProductImage';
 import { cleanProductName } from '@/utils/productName';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export interface MarketplaceProduct {
     product_id: string;
@@ -211,10 +212,10 @@ export function StorefrontProductCard({
                             {displayPrice === 0 ? (
                                 <span className="text-base sm:text-xl font-extrabold text-emerald-600">Free</span>
                             ) : (
-                                <span className="text-base sm:text-xl font-extrabold" style={{ color: accentColor }}>${displayPrice?.toFixed(2)}</span>
+                                <span className="text-base sm:text-xl font-extrabold" style={{ color: accentColor }}>{formatCurrency(displayPrice)}</span>
                             )}
                             {hasSalePrice && (
-                                <span className="text-sm text-neutral-400 line-through">${product.price?.toFixed(2)}</span>
+                                <span className="text-sm text-neutral-400 line-through">{formatCurrency(product.price)}</span>
                             )}
                         </div>
                         {product.unit_type && <span className="text-[10px] text-neutral-400 font-medium">per {product.unit_type}</span>}
