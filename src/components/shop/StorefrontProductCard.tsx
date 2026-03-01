@@ -90,7 +90,7 @@ export function StorefrontProductCard({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.4, delay: index * 0.05 }}
-            className="group"
+            className="group h-full"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -205,7 +205,7 @@ export function StorefrontProductCard({
                 </div>
 
                 {/* Footer */}
-                <div className="px-3 pt-2 pb-3 sm:px-5 sm:pt-5 sm:pb-0 mt-2 flex items-center justify-between border-t border-neutral-50">
+                <div className="px-3 pt-2 pb-3 sm:px-5 sm:pt-3 sm:pb-5 mt-auto flex items-center justify-between border-t border-neutral-50">
                     <div className="flex flex-col">
                         <div className="flex items-baseline gap-2">
                             {displayPrice === 0 ? (
