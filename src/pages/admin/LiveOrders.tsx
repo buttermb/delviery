@@ -8,6 +8,7 @@ import { humanizeError } from '@/lib/humanizeError';
 import { Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
 
 import type { DateRangeValue } from '@/components/admin/shared/FilterBar';
+import { LayoutGrid, List, Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -19,6 +20,7 @@ import {
   useLiveOrderFilters,
   parseLiveOrderFilters,
 } from '@/components/admin/live-orders/LiveOrdersFilters';
+import { LiveOrdersTable } from '@/components/admin/live-orders/LiveOrdersTable';
 import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { useAdminOrdersRealtime } from '@/hooks/useAdminOrdersRealtime';
@@ -37,6 +39,10 @@ interface MenuOrderRaw {
   status: string;
   total_amount: number;
   synced_order_id: string | null;
+  contact_phone: string | null;
+  payment_method: string | null;
+  delivery_method: string | null;
+  items: unknown[] | null;
   disposable_menus: {
     name: string;
     title?: string | null;
@@ -62,6 +68,9 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
 
   // Filter state
   const { filters, setFilters, clearFilters, searchValue, setSearchValue } = useLiveOrderFilters();
+  const [viewMode, setViewMode] = useState<'board' | 'table'>('board');
+  const previousOrderCountRef = useRef<number>(0);
+  const isFirstLoadRef = useRef(true);
 
   // Undo hook for status changes
   const { pendingAction, timeRemaining, executeWithUndo, undo, commit } = useUndo<{
@@ -127,7 +136,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
         const [ordersRes, menuOrdersRes] = await Promise.all([
           supabase
             .from('orders')
-            .select('*')
+            .select('*, order_items(id)')
             .eq('tenant_id', tenant.id)
             .in('status', ['pending', 'confirmed', 'preparing', 'ready_for_pickup', 'in_transit', 'delivered'])
             .order('created_at', { ascending: false }),
@@ -136,6 +145,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
             .from('menu_orders')
             .select(`
               id, created_at, status, total_amount, synced_order_id,
+              contact_phone, payment_method, delivery_method, items,
               disposable_menus (name, title)
             `)
             .eq('tenant_id', tenant.id)
@@ -152,7 +162,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
               'cancelled',
             ])
             .is('synced_order_id', null) // Only show unsynced
-            .order('created_at', { ascending: false })
+            .order('created_at', { ascending: false }),
         ]);
 
         if (ordersRes.error) throw ordersRes.error;
@@ -171,19 +181,35 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           payment_status: o.payment_status || undefined,
           payment_method: o.payment_method || undefined,
           customer_name: o.customer_name || undefined,
+          source: 'app' as const,
+          total_amount: Number(o.total_amount ?? 0),
+          customer_name: o.customer_name ?? undefined,
+          customer_phone: o.customer_phone ?? undefined,
+          delivery_address: o.delivery_address || undefined,
+          payment_method: o.payment_method || undefined,
+          payment_status: o.payment_status ?? undefined,
+          order_type: o.order_type ?? undefined,
+          items_count: Array.isArray(o.order_items) ? o.order_items.length : 0,
         }));
 
         // Transform Menu Orders
-        const normMenuOrders: LiveOrder[] = ((menuOrdersRes.data ?? []) as unknown as MenuOrderRaw[]).map((mo) => ({
-          id: mo.id,
-          order_number: 'MENU-' + mo.id.slice(0, 5).toUpperCase(),
-          status: mo.status === 'completed' ? 'delivered' : mo.status, // Map completed -> delivered
-          created_at: mo.created_at,
-          user_id: 'guest',
-          source: 'menu',
-          menu_title: mo.disposable_menus?.name || mo.disposable_menus?.title || undefined,
-          total_amount: Number(mo.total_amount ?? 0)
-        }));
+        const normMenuOrders: LiveOrder[] = ((menuOrdersRes.data ?? []) as unknown as MenuOrderRaw[]).map((mo) => {
+          const menuItems = Array.isArray(mo.items) ? mo.items : [];
+          return {
+            id: mo.id,
+            order_number: 'MENU-' + mo.id.slice(0, 5).toUpperCase(),
+            status: mo.status === 'completed' ? 'delivered' : mo.status,
+            created_at: mo.created_at,
+            user_id: 'guest',
+            source: 'menu' as const,
+            menu_title: mo.disposable_menus?.name || mo.disposable_menus?.title || undefined,
+            total_amount: Number(mo.total_amount ?? 0),
+            customer_phone: mo.contact_phone ?? undefined,
+            payment_method: mo.payment_method ?? undefined,
+            order_type: mo.delivery_method ?? undefined,
+            items_count: menuItems.length,
+          };
+        });
 
         // Combine
         let combined = [...normOrders, ...normMenuOrders].sort(
@@ -389,6 +415,33 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+              {orders.length} active orders
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* View Toggle */}
+            <div className="flex items-center border rounded-lg overflow-hidden">
+              <Button
+                variant={viewMode === 'board' ? 'default' : 'ghost'}
+                size="sm"
+                className="rounded-none"
+                onClick={() => setViewMode('board')}
+              >
+                <LayoutGrid className="h-4 w-4 mr-1" />
+                Board
+              </Button>
+              <Button
+                variant={viewMode === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                className="rounded-none"
+                onClick={() => setViewMode('table')}
+              >
+                <List className="h-4 w-4 mr-1" />
+                Table
+              </Button>
+            </div>
+
             {/* Connection Status */}
             <div
               className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1 rounded-full text-[10px] sm:text-xs font-medium transition-colors ${isConnected
@@ -452,6 +505,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
       </div>
 
       {/* Kanban Board Container */}
+      {/* Content Area */}
       <div className="flex-1 overflow-auto p-3">
         <PullToRefresh onRefresh={async () => { await refetch(); }}>
           <div className="h-full">
@@ -463,6 +517,14 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
               />
             ) : isMobile ? (
               <LiveOrdersMobileList
+            ) : viewMode === 'table' ? (
+              <LiveOrdersTable
+                orders={orders}
+                isLoading={isLoading}
+                onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
+              />
+            ) : (
+              <LiveOrdersKanban
                 orders={orders}
                 isLoading={isLoading}
                 onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
