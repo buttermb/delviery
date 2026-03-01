@@ -237,6 +237,9 @@ export const STORAGE_KEYS = {
 
   // Onboarding completed (tenant-scoped)
   ONBOARDING_COMPLETED_PREFIX: 'onboarding_completed_',
+
+  // Storefront getting started checklist dismissed (tenant-scoped)
+  STOREFRONT_CHECKLIST_DISMISSED_PREFIX: 'storefront_checklist_dismissed_',
 } as const;
 
 /**
