@@ -178,6 +178,122 @@ export function ReviewForm({
                   )}
                   <FormMessage />
                 </FormItem>
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          {/* Star Rating */}
+          <div className="space-y-2">
+            <Label>Your Rating *</Label>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  className="p-1 transition-transform hover:scale-110"
+                >
+                  <Star
+                    className={cn(
+                      'w-8 h-8 transition-colors',
+                      (hoverRating || rating) >= star
+                        ? 'fill-warning text-warning'
+                        : 'fill-muted text-muted-foreground'
+                    )}
+                  />
+                </button>
+              ))}
+            </div>
+            {rating > 0 && (
+              <p className="text-sm text-muted-foreground">
+                {rating === 1 && 'Poor'}
+                {rating === 2 && 'Fair'}
+                {rating === 3 && 'Good'}
+                {rating === 4 && 'Very Good'}
+                {rating === 5 && 'Excellent'}
+              </p>
+            )}
+          </div>
+
+          {/* Name */}
+          <div className="space-y-2">
+            <Label htmlFor="reviewer-name">Your Name</Label>
+            <Input
+              id="reviewer-name"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              placeholder="John Doe (or leave blank for Anonymous)"
+            />
+          </div>
+
+          {/* Email (optional) */}
+          <div className="space-y-2">
+            <Label htmlFor="reviewer-email">Email (optional)</Label>
+            <Input
+              id="reviewer-email"
+              type="email"
+              value={customerEmail}
+              onChange={(e) => setCustomerEmail(e.target.value)}
+              placeholder="john@example.com"
+            />
+            <p className="text-xs text-muted-foreground">
+              Your email won't be displayed publicly
+            </p>
+          </div>
+
+          {/* Title */}
+          <div className="space-y-2">
+            <Label htmlFor="review-title">Review Title</Label>
+            <Input
+              id="review-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Summarize your experience"
+              maxLength={100}
+            />
+          </div>
+
+          {/* Comment */}
+          <div className="space-y-2">
+            <Label htmlFor="review-comment">Your Review</Label>
+            <Textarea
+              id="review-comment"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Tell others what you liked or didn't like about this product..."
+              rows={4}
+              maxLength={1000}
+            />
+            <p className="text-xs text-muted-foreground text-right">
+              {comment.length}/1000
+            </p>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="flex-1"
+              style={{ backgroundColor: primaryColor }}
+              disabled={submitReviewMutation.isPending || rating === 0}
+            >
+              {submitReviewMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Submit Review
+                </>
               )}
             />
 

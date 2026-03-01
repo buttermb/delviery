@@ -60,14 +60,14 @@ const STATUS_TABS = [
 ] as const;
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
-  preparing: 'bg-purple-100 text-purple-800 border-purple-200',
-  ready: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-  out_for_delivery: 'bg-orange-100 text-orange-800 border-orange-200',
-  delivered: 'bg-green-100 text-green-800 border-green-200',
-  cancelled: 'bg-red-100 text-red-800 border-red-200',
-  refunded: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700',
+  pending: 'bg-warning/10 text-warning border-warning/20',
+  confirmed: 'bg-info/10 text-info border-info/20',
+  preparing: 'bg-primary/10 text-primary border-primary/20',
+  ready: 'bg-primary/10 text-primary border-primary/20',
+  out_for_delivery: 'bg-warning/10 text-warning border-warning/20',
+  delivered: 'bg-success/10 text-success border-success/20',
+  cancelled: 'bg-destructive/10 text-destructive border-destructive/20',
+  refunded: 'bg-muted text-muted-foreground border-border',
 };
 
 export function OrdersHubPage() {
@@ -124,20 +124,20 @@ export function OrdersHubPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'delivered':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-success" />;
       case 'cancelled':
       case 'refunded':
-        return <XCircle className="w-4 h-4 text-red-500" />;
+        return <XCircle className="w-4 h-4 text-destructive" />;
       case 'out_for_delivery':
-        return <Truck className="w-4 h-4 text-orange-500" />;
+        return <Truck className="w-4 h-4 text-warning" />;
       default:
-        return <Clock className="w-4 h-4 text-yellow-500" />;
+        return <Clock className="w-4 h-4 text-warning" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     return (
-      <Badge variant="outline" className={STATUS_COLORS[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}>
+      <Badge variant="outline" className={STATUS_COLORS[status] || 'bg-muted text-muted-foreground'}>
         {status.replace('_', ' ')}
       </Badge>
     );
@@ -182,7 +182,7 @@ export function OrdersHubPage() {
   if (!isLoggedIn) {
     return (
       <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[60vh]">
-        <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-white dark:bg-zinc-950">
+        <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-card">
           <CardHeader className="text-center pb-2 pt-8">
             <div
               className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center shadow-inner"
@@ -190,10 +190,10 @@ export function OrdersHubPage() {
             >
               <Package className="w-10 h-10" style={{ color: store.primary_color }} />
             </div>
-            <CardTitle className="text-3xl font-extrabold tracking-tight text-neutral-900">
+            <CardTitle className="text-3xl font-extrabold tracking-tight text-foreground">
               View Your Orders
             </CardTitle>
-            <CardDescription className="text-neutral-500 text-base mt-2">
+            <CardDescription className="text-muted-foreground text-base mt-2">
               Sign in to view your order history and track deliveries
             </CardDescription>
           </CardHeader>
@@ -209,7 +209,7 @@ export function OrdersHubPage() {
             </Link>
             <div className="mt-6 text-center">
               <Link to={`/shop/${storeSlug}/products`}>
-                <Button variant="ghost" className="font-semibold text-neutral-600">
+                <Button variant="ghost" className="font-semibold text-muted-foreground">
                   Continue Shopping
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -233,13 +233,13 @@ export function OrdersHubPage() {
           <span className="text-foreground font-medium">Orders</span>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-zinc-950 p-6 rounded-2xl shadow-sm border border-neutral-100 dark:border-neutral-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-6 rounded-2xl shadow-sm border border-border">
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-neutral-900 flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
               <Receipt className="w-8 h-8" style={{ color: store.primary_color }} />
               My Orders
             </h1>
-            <p className="text-neutral-500 mt-1">
+            <p className="text-muted-foreground mt-1">
               {orderStats.total > 0 ? (
                 <>
                   {orderStats.total} order{orderStats.total !== 1 ? 's' : ''} &bull;{' '}
@@ -254,11 +254,11 @@ export function OrdersHubPage() {
           {/* Stats badges */}
           {orderStats.total > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+              <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20">
                 <Clock className="w-3 h-3 mr-1" />
                 {orderStats.active} active
               </Badge>
-              <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
                 <CheckCircle className="w-3 h-3 mr-1" />
                 {orderStats.completed} delivered
               </Badge>
@@ -269,20 +269,20 @@ export function OrdersHubPage() {
 
       {/* Filters and Tabs */}
       <Tabs value={orderFilters.status} onValueChange={handleTabChange} className="space-y-6">
-        <div className="bg-white dark:bg-zinc-950 p-4 rounded-2xl shadow-sm border border-neutral-100 dark:border-neutral-800">
+        <div className="bg-card p-4 rounded-2xl shadow-sm border border-border">
           {/* Tab navigation */}
           <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <TabsList className="flex-wrap bg-neutral-100/50">
+            <TabsList className="flex-wrap bg-muted/50">
               {STATUS_TABS.map((tab) => (
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
-                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900"
+                  className="flex items-center gap-2 data-[state=active]:bg-card"
                 >
                   <tab.icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
                   {tab.id === 'active' && orderStats.active > 0 && (
-                    <Badge variant="secondary" className="ml-1 bg-yellow-100 text-yellow-800 text-xs">
+                    <Badge variant="secondary" className="ml-1 bg-warning/10 text-warning text-xs">
                       {orderStats.active}
                     </Badge>
                   )}
@@ -346,6 +346,13 @@ export function OrdersHubPage() {
                       : 'No orders yet'}
                   </h2>
                   <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
+                  <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-xl font-bold mb-2 text-foreground">
+                    {orderFilters.status !== 'all' || orderFilters.search || orderFilters.dateRange !== 'all'
+                      ? 'No matching orders'
+                      : 'No orders yet'}
+                  </h3>
+                  <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
                     {orderFilters.status !== 'all' || orderFilters.search || orderFilters.dateRange !== 'all'
                       ? 'Try adjusting your filters to see more orders.'
                       : "You haven't placed any orders yet. Start exploring our collection today."}
@@ -411,7 +418,7 @@ function OrderCard({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <Card className="border-none shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-zinc-950">
+    <Card className="border-none shadow-sm hover:shadow-md transition-shadow bg-card">
       <CardContent className="p-0">
         {/* Order Header */}
         <div
@@ -426,8 +433,8 @@ function OrderCard({
               {getStatusIcon(order.status)}
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-neutral-900">{`#${order.order_number}`}</p>
-              <p className="text-sm text-neutral-500">
+              <p className="font-bold text-foreground">{`#${order.order_number}`}</p>
+              <p className="text-sm text-muted-foreground">
                 {formatSmartDate(order.created_at)} &bull; {order.items?.length ?? 0} item
                 {(order.items?.length ?? 0) !== 1 ? 's' : ''}
               </p>
@@ -442,32 +449,32 @@ function OrderCard({
               <div className="mt-1">{getStatusBadge(order.status)}</div>
             </div>
             <ChevronRight
-              className={`w-5 h-5 text-neutral-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+              className={`w-5 h-5 text-muted-foreground transition-transform ${isExpanded ? 'rotate-90' : ''}`}
             />
           </div>
         </div>
 
         {/* Expanded Details */}
         {isExpanded && (
-          <div className="border-t border-neutral-100 p-5 bg-neutral-50/50">
+          <div className="border-t border-border p-5 bg-muted/50">
             {/* Order Items */}
             {order.items && order.items.length > 0 && (
               <div className="space-y-3 mb-4">
-                <p className="text-sm font-semibold text-neutral-600">Order Items</p>
+                <p className="text-sm font-semibold text-muted-foreground">Order Items</p>
                 {order.items.map((item) => (
-                  <div key={item.product_id} className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-zinc-950 border border-neutral-100 dark:border-neutral-800">
-                    <div className="w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                  <div key={item.product_id} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
+                    <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                       {item.image_url ? (
                         <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-6 h-6 text-neutral-300" />
+                          <Package className="w-6 h-6 text-muted-foreground" />
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-neutral-900 line-clamp-1">{item.name}</p>
-                      <p className="text-xs text-neutral-500">
+                      <p className="text-sm font-medium text-foreground line-clamp-1">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">
                         Qty: {item.quantity} &times; {formatCurrency(item.price)}
                       </p>
                     </div>

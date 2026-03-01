@@ -282,25 +282,25 @@ export default function AccountPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'delivered':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-success" />;
       case 'cancelled':
       case 'refunded':
-        return <XCircle className="w-4 h-4 text-red-500" />;
+        return <XCircle className="w-4 h-4 text-destructive" />;
       default:
-        return <Clock className="w-4 h-4 text-yellow-500" />;
+        return <Clock className="w-4 h-4 text-warning" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     const colors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-blue-100 text-blue-800',
-      preparing: 'bg-purple-100 text-purple-800',
-      ready: 'bg-indigo-100 text-indigo-800',
-      out_for_delivery: 'bg-orange-100 text-orange-800',
-      delivered: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
-      refunded: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+      pending: 'bg-warning/10 text-warning',
+      confirmed: 'bg-info/10 text-info',
+      preparing: 'bg-primary/10 text-primary',
+      ready: 'bg-primary/10 text-primary',
+      out_for_delivery: 'bg-warning/10 text-warning',
+      delivered: 'bg-success/10 text-success',
+      cancelled: 'bg-destructive/10 text-destructive',
+      refunded: 'bg-muted text-muted-foreground',
     };
     return (
       <Badge variant="outline" className={colors[status] ?? ''}>
@@ -315,7 +315,7 @@ export default function AccountPage() {
   if (!isLoggedIn) {
     return (
       <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-[60vh]">
-        <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-white dark:bg-zinc-950">
+        <Card className="w-full max-w-md border-none shadow-xl rounded-3xl overflow-hidden bg-card">
           <CardHeader className="text-center pb-2 pt-8">
             <div
               className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center shadow-inner"
@@ -323,8 +323,8 @@ export default function AccountPage() {
             >
               <User className="w-10 h-10" style={{ color: store.primary_color }} />
             </div>
-            <CardTitle className="text-3xl font-extrabold tracking-tight text-neutral-900">Welcome Back</CardTitle>
-            <CardDescription className="text-neutral-500 text-base mt-2">
+            <CardTitle className="text-3xl font-extrabold tracking-tight text-foreground">Welcome Back</CardTitle>
+            <CardDescription className="text-muted-foreground text-base mt-2">
               Sign in to view orders and manage your account
             </CardDescription>
           </CardHeader>
@@ -332,12 +332,12 @@ export default function AccountPage() {
             {/* Magic Code Entry Mode */}
             {showMagicCode ? (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                <div className="text-center bg-neutral-50 p-6 rounded-2xl border border-neutral-100">
-                  <Mail className="w-10 h-10 mx-auto mb-3 text-neutral-400" />
-                  <p className="text-sm text-neutral-500 mb-1">
+                <div className="text-center bg-muted p-6 rounded-2xl border border-border">
+                  <Mail className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground mb-1">
                     We sent a 6-digit code to
                   </p>
-                  <p className="font-bold text-neutral-900 text-lg">{codeSentTo}</p>
+                  <p className="font-bold text-foreground text-lg">{codeSentTo}</p>
                 </div>
                 <div className="space-y-3">
                   <Input
@@ -350,11 +350,11 @@ export default function AccountPage() {
                     onChange={(e) => setMagicCode(e.target.value.replace(/\D/g, ''))}
                     placeholder="000000"
                     aria-label="Verification code"
-                    className="text-center text-3xl tracking-[1em] font-mono h-16 rounded-xl border-neutral-200 focus-visible:border-neutral-900 focus-visible:ring-neutral-900 bg-white dark:bg-zinc-950"
+                    className="text-center text-3xl tracking-[1em] font-mono h-16 rounded-xl border-neutral-200 focus-visible:border-neutral-900 focus-visible:ring-neutral-900 bg-card"
                     onKeyDown={(e) => e.key === 'Enter' && handleVerifyMagicCode()}
                     autoFocus
                   />
-                  <p className="text-xs text-center text-neutral-400">Enter the 6-digit verification code</p>
+                  <p className="text-xs text-center text-muted-foreground">Enter the 6-digit verification code</p>
                 </div>
                 <Button
                   className="w-full h-14 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
@@ -373,14 +373,14 @@ export default function AccountPage() {
                 </Button>
                 <div className="flex justify-center gap-6 text-sm pt-2">
                   <button
-                    className="text-neutral-500 hover:text-neutral-900 font-medium transition-colors"
+                    className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                     onClick={() => handleSendMagicCode()}
                     disabled={isSendingCode}
                   >
                     Resend code
                   </button>
                   <button
-                    className="text-neutral-500 hover:text-neutral-900 font-medium transition-colors"
+                    className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                     onClick={() => {
                       setShowMagicCode(false);
                       setMagicCode('');
@@ -394,14 +394,14 @@ export default function AccountPage() {
               /* Normal Email Entry Mode */
               <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
                 <div className="space-y-3">
-                  <Label htmlFor="email" className="text-neutral-700 font-semibold ml-1">Email Address</Label>
+                  <Label htmlFor="email" className="text-foreground font-semibold ml-1">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@example.com"
-                    className="h-14 px-4 text-lg rounded-xl border-neutral-200 focus-visible:border-neutral-900 focus-visible:ring-neutral-900 bg-neutral-50 dark:bg-neutral-900 focus-visible:bg-white dark:focus-visible:bg-zinc-950 transition-all"
+                    className="h-14 px-4 text-lg rounded-xl border-neutral-200 focus-visible:border-neutral-900 focus-visible:ring-neutral-900 bg-muted focus-visible:bg-card transition-all"
                     onKeyDown={(e) => e.key === 'Enter' && handleEmailLookup()}
                   />
                 </div>
@@ -428,13 +428,13 @@ export default function AccountPage() {
                       <span className="w-full border-t border-neutral-200" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase tracking-wider font-bold">
-                      <span className="bg-white dark:bg-zinc-950 px-4 text-neutral-400">or continue with</span>
+                      <span className="bg-card px-4 text-muted-foreground">or continue with</span>
                     </div>
                   </div>
 
                   <Button
                     variant="outline"
-                    className="w-full h-14 text-lg font-semibold rounded-xl border-2 hover:bg-neutral-50 hover:border-neutral-300 transition-all text-neutral-700"
+                    className="w-full h-14 text-lg font-semibold rounded-xl border-2 hover:bg-muted hover:border-neutral-300 transition-all text-foreground"
                     onClick={handleSendMagicCode}
                     disabled={!email || isSendingCode}
                   >
@@ -450,7 +450,7 @@ export default function AccountPage() {
                       </>
                     )}
                   </Button>
-                  <p className="text-xs text-center text-neutral-400 px-4">
+                  <p className="text-xs text-center text-muted-foreground px-4">
                     We'll determine if you have an account. If not, we'll help you create one or track your order.
                   </p>
                 </div>
@@ -463,7 +463,7 @@ export default function AccountPage() {
                   <span className="w-full border-t border-dashed border-neutral-200" />
                 </div>
               </div>
-              <p className="text-sm text-center text-neutral-500 mb-4 font-medium">
+              <p className="text-sm text-center text-muted-foreground mb-4 font-medium">
                 Just looking to track an order?
               </p>
               <div className="flex gap-2">
@@ -472,7 +472,7 @@ export default function AccountPage() {
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleTrackOrder()}
-                  className="h-12 rounded-lg bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 focus-visible:bg-white dark:focus-visible:bg-zinc-950"
+                  className="h-12 rounded-lg bg-muted border-border focus-visible:bg-card"
                   aria-label="Order number or tracking code"
                 />
                 <Button variant="secondary" onClick={handleTrackOrder} disabled={isTracking || !trackingNumber.trim()} className="h-12 w-12 rounded-lg shrink-0" aria-label="Track order">
@@ -481,14 +481,14 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <Separator className="bg-neutral-100" />
+            <Separator className="bg-muted" />
 
             <div className="text-center pb-2">
-              <p className="text-sm text-neutral-500 mb-3">
+              <p className="text-sm text-muted-foreground mb-3">
                 Don't have an account yet?
               </p>
               <Link to={`/shop/${storeSlug}/products`}>
-                <Button variant="ghost" className="font-bold text-neutral-900 hover:bg-neutral-100 rounded-full px-6">
+                <Button variant="ghost" className="font-bold text-foreground hover:bg-muted rounded-full px-6">
                   Start Shopping <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
@@ -502,22 +502,22 @@ export default function AccountPage() {
   // Logged in view
   return (
     <div className="container mx-auto px-4 py-8 min-h-dvh bg-shop-bg">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 bg-white dark:bg-zinc-950 p-6 rounded-3xl shadow-sm border border-neutral-100 dark:border-neutral-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 bg-card p-6 rounded-3xl shadow-sm border border-border">
         <div className="flex items-center gap-5">
           <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg" style={{ backgroundColor: store.primary_color }}>
             {email.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900">
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
               {customerName ? `Hi, ${customerName}` : 'My Account'}
             </h1>
-            <div className="flex items-center gap-2 text-neutral-500 font-medium">
+            <div className="flex items-center gap-2 text-muted-foreground font-medium">
               <Mail className="w-4 h-4" />
               {email}
             </div>
           </div>
         </div>
-        <Button variant="outline" onClick={handleLogout} className="rounded-full px-6 py-5 border-neutral-200 hover:bg-neutral-50 hover:text-red-600 hover:border-red-200 transition-colors">
+        <Button variant="outline" onClick={handleLogout} className="rounded-full px-6 py-5 border-neutral-200 hover:bg-muted hover:text-destructive hover:border-destructive/30 transition-colors">
           <LogOut className="w-4 h-4 mr-2" />
           Sign Out
         </Button>
@@ -558,10 +558,10 @@ export default function AccountPage() {
                 </div>
                 {orderStats.total > 0 && (
                   <div className="flex items-center gap-2 text-xs">
-                    <Badge variant="secondary" className="bg-yellow-50 text-yellow-700">
+                    <Badge variant="secondary" className="bg-warning/10 text-warning">
                       {orderStats.active} active
                     </Badge>
-                    <Badge variant="secondary" className="bg-green-50 text-green-700">
+                    <Badge variant="secondary" className="bg-success/10 text-success">
                       {orderStats.completed} delivered
                     </Badge>
                   </div>
@@ -634,6 +634,14 @@ export default function AccountPage() {
                       : 'No orders yet'}
                   </h2>
                   <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
+                <div className="text-center py-16 bg-muted rounded-2xl border border-dashed border-border">
+                  <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+                  <h3 className="text-xl font-bold mb-2 text-foreground">
+                    {orderFilters.status !== 'all' || orderFilters.search || orderFilters.dateRange !== 'all'
+                      ? 'No matching orders'
+                      : 'No orders yet'}
+                  </h3>
+                  <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
                     {orderFilters.status !== 'all' || orderFilters.search || orderFilters.dateRange !== 'all'
                       ? 'Try adjusting your filters to see more orders.'
                       : 'You haven\'t placed any orders yet. Start exploring our collection today.'}
@@ -746,7 +754,7 @@ export default function AccountPage() {
                     )}
                   </Button>
                 </div>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-muted-foreground">
                   You can find your order number in the confirmation email sent to you.
                 </p>
               </div>
@@ -871,6 +879,10 @@ function WishlistSection({
             <Heart className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
             <h2 className="text-xl font-bold mb-2 text-neutral-900">Your wishlist is empty</h2>
             <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
+          <div className="text-center py-16 bg-muted rounded-2xl border border-dashed border-border">
+            <Heart className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+            <h3 className="text-xl font-bold mb-2 text-foreground">Your wishlist is empty</h3>
+            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
               Save items you love by clicking the heart icon while shopping.
             </p>
             <Link to={`/shop/${storeSlug}/products`}>
@@ -887,10 +899,10 @@ function WishlistSection({
             {products.map((product) => (
               <div
                 key={product.product_id as string}
-                className="flex items-center gap-6 p-6 border border-neutral-100 dark:border-neutral-800 rounded-2xl bg-white dark:bg-zinc-950 hover:shadow-md transition-shadow group"
+                className="flex items-center gap-6 p-6 border border-border rounded-2xl bg-card hover:shadow-md transition-shadow group"
               >
                 <Link to={`/shop/${storeSlug}/products/${product.product_id as string}`}>
-                  <div className="w-24 h-24 bg-neutral-100 rounded-xl overflow-hidden flex-shrink-0 relative">
+                  <div className="w-24 h-24 bg-muted rounded-xl overflow-hidden flex-shrink-0 relative">
                     {product.image_url ? (
                       <img
                         src={product.image_url as string}
@@ -900,7 +912,7 @@ function WishlistSection({
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Package className="w-8 h-8 text-neutral-300" />
+                        <Package className="w-8 h-8 text-muted-foreground/50" />
                       </div>
                     )}
                   </div>
@@ -908,12 +920,13 @@ function WishlistSection({
                 <div className="flex-1 min-w-0 space-y-1">
                   <Link to={`/shop/${storeSlug}/products/${product.product_id as string}`}>
                     <h3 className="font-bold text-lg text-neutral-900 hover:text-neutral-700 transition-colors">{product.name as string}</h3>
+                    <h4 className="font-bold text-lg text-foreground hover:text-foreground/80 transition-colors">{product.name as string}</h4>
                   </Link>
                   <p className="text-xl font-bold" style={{ color: primaryColor }}>
                     {formatCurrency(product.display_price as number)}
                   </p>
                   {!product.in_stock && (
-                    <Badge variant="secondary" className="bg-neutral-100 text-neutral-500">Out of Stock</Badge>
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground">Out of Stock</Badge>
                   )}
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -930,7 +943,7 @@ function WishlistSection({
                   <Button
                     size="lg"
                     variant="ghost"
-                    className="text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-full"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
                     onClick={() => removeFromWishlist(product.product_id as string)}
                   >
                     <Trash2 className="w-5 h-5" />
@@ -1350,8 +1363,8 @@ function ProfileSection({
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <User className="w-12 h-12 mx-auto mb-3 text-neutral-300" />
-            <p className="text-neutral-500">Profile not found. Place an order to create your profile.</p>
+            <User className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+            <p className="text-muted-foreground">Profile not found. Place an order to create your profile.</p>
           </div>
         </CardContent>
       </Card>
@@ -1393,7 +1406,7 @@ function ProfileSection({
                   className="h-11"
                 />
               ) : (
-                <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                <p className="text-base py-2 px-3 bg-muted rounded-lg min-h-[44px] flex items-center">
                   {profile.first_name || '—'}
                 </p>
               )}
@@ -1409,7 +1422,7 @@ function ProfileSection({
                   className="h-11"
                 />
               ) : (
-                <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                <p className="text-base py-2 px-3 bg-muted rounded-lg min-h-[44px] flex items-center">
                   {profile.last_name || '—'}
                 </p>
               )}
@@ -1419,7 +1432,7 @@ function ProfileSection({
           {/* Email (read-only) */}
           <div className="space-y-2">
             <Label>Email</Label>
-            <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center text-neutral-500">
+            <p className="text-base py-2 px-3 bg-muted rounded-lg min-h-[44px] flex items-center text-muted-foreground">
               {profile.email}
             </p>
           </div>
@@ -1437,7 +1450,7 @@ function ProfileSection({
                 className="h-11"
               />
             ) : (
-              <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+              <p className="text-base py-2 px-3 bg-muted rounded-lg min-h-[44px] flex items-center">
                 {formatPhoneNumber(profile.phone)}
               </p>
             )}
@@ -1448,6 +1461,7 @@ function ProfileSection({
           {/* Address */}
           <div className="space-y-4">
             <h2 className="font-semibold text-neutral-900">Delivery Address</h2>
+            <h3 className="font-semibold text-foreground">Delivery Address</h3>
 
             <div className="space-y-2">
               <Label htmlFor="address">Street Address</Label>
@@ -1460,7 +1474,7 @@ function ProfileSection({
                   className="h-11"
                 />
               ) : (
-                <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                <p className="text-base py-2 px-3 bg-muted rounded-lg min-h-[44px] flex items-center">
                   {profile.address || '—'}
                 </p>
               )}
@@ -1478,7 +1492,7 @@ function ProfileSection({
                     className="h-11"
                   />
                 ) : (
-                  <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                  <p className="text-base py-2 px-3 bg-muted rounded-lg min-h-[44px] flex items-center">
                     {profile.city || '—'}
                   </p>
                 )}
@@ -1494,7 +1508,7 @@ function ProfileSection({
                     className="h-11"
                   />
                 ) : (
-                  <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                  <p className="text-base py-2 px-3 bg-muted rounded-lg min-h-[44px] flex items-center">
                     {profile.state || '—'}
                   </p>
                 )}
@@ -1510,7 +1524,7 @@ function ProfileSection({
                     className="h-11"
                   />
                 ) : (
-                  <p className="text-base py-2 px-3 bg-neutral-50 rounded-lg min-h-[44px] flex items-center">
+                  <p className="text-base py-2 px-3 bg-muted rounded-lg min-h-[44px] flex items-center">
                     {profile.zip_code || '—'}
                   </p>
                 )}

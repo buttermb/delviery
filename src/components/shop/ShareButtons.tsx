@@ -123,7 +123,7 @@ export function ShareButtons({
                     title="Copy link"
                     aria-label="Copy link"
                 >
-                    {copied ? <Check className="h-4 w-4 text-green-500" /> : <Link2 className="h-4 w-4" />}
+                    {copied ? <Check className="h-4 w-4 text-success" /> : <Link2 className="h-4 w-4" />}
                 </Button>
             </div>
         );
@@ -165,7 +165,7 @@ export function ShareButtons({
                 onClick={handleCopyLink}
                 className="gap-2"
             >
-                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Link2 className="h-4 w-4" />}
+                {copied ? <Check className="h-4 w-4 text-success" /> : <Link2 className="h-4 w-4" />}
                 {copied ? 'Copied!' : 'Copy Link'}
             </Button>
         </div>

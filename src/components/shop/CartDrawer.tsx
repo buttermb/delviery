@@ -65,7 +65,7 @@ export function CartDrawer({
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <SheetContent
         side="right"
-        className="w-full max-w-md sm:max-w-md bg-neutral-950 border-l border-white/10 p-0 flex flex-col gap-0 overflow-hidden [&>button:last-child]:hidden"
+        className="w-full max-w-md sm:max-w-md bg-card border-l border-border p-0 flex flex-col gap-0 overflow-hidden [&>button:last-child]:hidden"
       >
         <SheetTitle className="sr-only">Shopping Cart</SheetTitle>
         <SheetDescription className="sr-only">
@@ -73,14 +73,15 @@ export function CartDrawer({
         </SheetDescription>
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <ShoppingBag className="w-5 h-5 text-white" />
-            <h2 className="text-white text-lg font-light tracking-wide">
+            <ShoppingBag className="w-5 h-5 text-foreground" />
+            <h2 className="text-foreground text-lg font-light tracking-wide">
               Your Cart
             </h2>
             {itemCount > 0 && (
               <span className="px-2 py-0.5 bg-white/10 rounded-full text-white/60 text-sm">
+              <span className="px-2 py-0.5 bg-muted rounded-full text-muted-foreground text-xs">
                 {itemCount} {itemCount === 1 ? 'item' : 'items'}
               </span>
             )}
@@ -89,22 +90,24 @@ export function CartDrawer({
             onClick={onClose}
             className="p-2 rounded-full hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             aria-label="Close cart"
+            className="p-2 rounded-full hover:bg-muted transition-colors"
           >
-            <X className="w-5 h-5 text-white/60" />
+            <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
         {/* Cart Items */}
         {items.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
-            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
-              <ShoppingBag className="w-8 h-8 text-white/20" />
+            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
+              <ShoppingBag className="w-8 h-8 text-muted-foreground/50" />
             </div>
             <p className="text-white/70 text-center mb-6">Your cart is empty</p>
+            <p className="text-muted-foreground text-center mb-6">Your cart is empty</p>
             <Button
               onClick={onClose}
               variant="outline"
-              className="text-white border-white/20 hover:bg-white/10 rounded-full px-8"
+              className="rounded-full px-8"
             >
               Continue Shopping
             </Button>
@@ -130,17 +133,28 @@ export function CartDrawer({
                           className="w-full h-full object-cover"
                         />
                       </div>
+                    className="flex gap-4 p-4 bg-muted/30 rounded-xl border border-border"
+                  >
+                    {/* Image */}
+                    <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                      <ProductImage
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
 
                     {/* Details */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-white text-sm font-medium truncate mb-1">
+                      <h3 className="text-foreground text-sm font-medium truncate mb-1">
                         {item.name}
                       </h3>
                       {item.variant && (
                         <p className="text-white/40 text-sm mb-2">{item.variant}</p>
                         <p className="text-white/70 text-xs mb-2">{item.variant}</p>
+                        <p className="text-muted-foreground text-xs mb-2">{item.variant}</p>
                       )}
-                      <p className="text-white/80 text-sm font-light">
+                      <p className="text-foreground/80 text-sm font-light">
                         {formatCurrency(item.price)}
                       </p>
                     </div>
@@ -164,6 +178,9 @@ export function CartDrawer({
                         aria-label="Remove item"
                       >
                         <Trash2 className="w-4 h-4 text-white/70 hover:text-red-400 transition-colors" />
+                        className="p-1 rounded hover:bg-muted transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
                       </button>
                     </div>
 
@@ -186,6 +203,15 @@ export function CartDrawer({
                           <Minus className="w-3.5 h-3.5 text-white" />
                         </button>
                         <span className="text-white text-sm w-8 text-center font-medium">
+                      <div className="flex items-center gap-2 bg-muted rounded-full p-1">
+                        <button
+                          onClick={() => onUpdateQuantity(item.productId, item.quantity - 1, item.variant)}
+                          disabled={item.quantity <= 1}
+                          className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-muted/80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <Minus className="w-3 h-3 text-foreground" />
+                        </button>
+                        <span className="text-foreground text-sm w-6 text-center">
                           {item.quantity}
                         </span>
                         <button
@@ -197,6 +223,9 @@ export function CartDrawer({
                           aria-label="Increase quantity"
                         >
                           <Plus className="w-3.5 h-3.5 text-white" />
+                          className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-muted/80 transition-colors"
+                        >
+                          <Plus className="w-3 h-3 text-foreground" />
                         </button>
                       </div>
                       <span className="text-white text-sm font-medium">
@@ -209,12 +238,15 @@ export function CartDrawer({
             </ScrollArea>
 
             {/* Footer */}
-            <div className="p-4 sm:p-6 border-t border-white/10 space-y-3">
+            <div className="p-4 sm:p-6 border-t border-border space-y-3">
               {/* Minimum Order Notice */}
               {belowMinimum && (
                 <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                   <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                   <p className="text-amber-300 text-sm">
+                <div className="flex items-start gap-2 p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                  <AlertCircle className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
+                  <p className="text-warning text-xs">
                     Minimum order is {formatCurrency(minimumOrderAmount)}. Add{' '}
                     {formatCurrency(minimumOrderAmount! - subtotal)} more to checkout.
                   </p>
@@ -225,9 +257,10 @@ export function CartDrawer({
               {freeDeliveryThreshold != null && !qualifiesForFreeDelivery && subtotal > 0 && (
                 <div className="text-center">
                   <p className="text-emerald-400/80 text-sm">
+                  <p className="text-success text-xs">
                     Add {formatCurrency(freeDeliveryThreshold - subtotal)} more for free delivery
                   </p>
-                  <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div className="mt-1.5 h-1 bg-muted rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{
@@ -241,37 +274,39 @@ export function CartDrawer({
 
               {/* Subtotal */}
               <div className="flex items-center justify-between">
-                <span className="text-white/60 text-sm">Subtotal</span>
-                <span className="text-white text-sm">
+                <span className="text-muted-foreground text-sm">Subtotal</span>
+                <span className="text-foreground text-sm">
                   {formatCurrency(subtotal)}
                 </span>
               </div>
 
               {/* Delivery Fee */}
               <div className="flex items-center justify-between">
-                <span className="text-white/60 text-sm flex items-center gap-1.5">
+                <span className="text-muted-foreground text-sm flex items-center gap-1.5">
                   <Truck className="w-3.5 h-3.5" />
                   Delivery
                 </span>
                 {qualifiesForFreeDelivery ? (
-                  <span className="text-emerald-400 text-sm font-medium">Free</span>
+                  <span className="text-success text-sm font-medium">Free</span>
                 ) : effectiveDeliveryFee > 0 ? (
-                  <span className="text-white text-sm">{formatCurrency(effectiveDeliveryFee)}</span>
+                  <span className="text-foreground text-sm">{formatCurrency(effectiveDeliveryFee)}</span>
                 ) : (
                   <span className="text-white/70 text-sm">Free</span>
+                  <span className="text-muted-foreground text-sm">Free</span>
                 )}
               </div>
 
               {/* Total */}
-              <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                <span className="text-white text-sm font-medium">Total</span>
-                <span className="text-white text-xl font-light">
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <span className="text-foreground text-sm font-medium">Total</span>
+                <span className="text-foreground text-xl font-light">
                   {formatCurrency(total)}
                 </span>
               </div>
 
               <p className="text-white/40 text-sm text-center">
               <p className="text-white/70 text-xs text-center">
+              <p className="text-muted-foreground text-xs text-center">
                 Taxes calculated at checkout
               </p>
 
@@ -292,6 +327,7 @@ export function CartDrawer({
               <button
                 onClick={onClose}
                 className="w-full text-center text-white/70 text-sm hover:text-white/60 transition-colors"
+                className="w-full text-center text-muted-foreground text-sm hover:text-foreground transition-colors"
               >
                 Continue Shopping
               </button>

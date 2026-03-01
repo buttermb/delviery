@@ -100,6 +100,10 @@ export function StorefrontProductCard({
 
                 {/* Image Container */}
                 <Link to={`/shop/${storeSlug}/products/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="block relative aspect-square overflow-hidden cursor-pointer" style={{ backgroundColor: 'var(--storefront-card-bg, #fafafa)' }}>
+            <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 h-full flex flex-col relative transform hover:-translate-y-2 backface-hidden">
+
+                {/* Image Container */}
+                <Link to={`/shop/${storeSlug}/products/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="block relative aspect-square overflow-hidden bg-muted cursor-pointer">
                     <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-105">
                         <ProductImage
                             src={displayImage}
@@ -118,6 +122,8 @@ export function StorefrontProductCard({
                                 isInWishlist ? "bg-red-50 text-red-500 border-red-100" : "bg-white dark:bg-zinc-900 text-neutral-400 hover:text-red-500 border-white dark:border-zinc-900"
                                 "w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shadow-lg transition-colors border",
                                 isInWishlist ? "bg-red-50 text-red-500 border-red-100" : "hover:text-red-500"
+                                "w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shadow-lg transition-colors border",
+                                isInWishlist ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-card text-muted-foreground hover:text-destructive border-card"
                             )}
                             style={!isInWishlist ? { backgroundColor: 'var(--storefront-card-bg, white)', borderColor: 'var(--storefront-border, white)', color: 'var(--storefront-text, #a3a3a3)' } : undefined}
                         >
@@ -127,6 +133,7 @@ export function StorefrontProductCard({
                             onClick={(e) => { e.preventDefault(); onQuickView(); }}
                             aria-label="Quick view product"
                             className="w-11 h-11 rounded-full bg-white dark:bg-zinc-900 text-neutral-400 hover:text-shop-primary border border-white dark:border-zinc-900 flex items-center justify-center shadow-lg transition-colors delay-75"
+                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-card text-muted-foreground hover:text-shop-primary border border-card flex items-center justify-center shadow-lg transition-colors delay-75"
                             style={{ color: isHovered ? accentColor : undefined }}
                             className="w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:text-shop-primary flex items-center justify-center shadow-lg transition-colors delay-75"
                             style={{ backgroundColor: 'var(--storefront-card-bg, white)', borderColor: 'var(--storefront-border, white)', color: isHovered ? accentColor : 'var(--storefront-text, #a3a3a3)' }}
@@ -138,12 +145,12 @@ export function StorefrontProductCard({
                     {/* Stock / Type / Sale / New Badges - controlled by feature toggles */}
                     <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none">
                         {showNewBadge && isNew && !hasSalePrice && (
-                            <span className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm">
+                            <span className="bg-gradient-to-r from-info to-primary text-info-foreground backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm">
                                 New
                             </span>
                         )}
                         {showSaleBadge && hasSalePrice && (
-                            <span className="bg-red-500 text-white backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm">
+                            <span className="bg-destructive text-destructive-foreground backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm">
                                 Sale
                             </span>
                         )}
@@ -158,7 +165,7 @@ export function StorefrontProductCard({
                             </span>
                         )}
                         {showStockWarning && isLowStock && (
-                            <span className="bg-orange-500/90 text-white backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm">
+                            <span className="bg-warning/90 text-warning-foreground backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm">
                                 Low Stock
                             </span>
                         )}
@@ -167,6 +174,8 @@ export function StorefrontProductCard({
                     {isOutStock && (
                         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-20">
                             <span className="bg-neutral-900 text-white px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-lg shadow-xl transform -rotate-6">
+                        <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] flex items-center justify-center z-20">
+                            <span className="bg-foreground text-background px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-lg shadow-xl transform -rotate-6">
                                 Sold Out
                             </span>
                         </div>
@@ -198,6 +207,12 @@ export function StorefrontProductCard({
                             <div className="flex flex-wrap gap-2 text-[10px] font-bold pt-1" style={{ color: 'var(--storefront-text, #737373)' }}>
                                 {product.thc_content && <span className="px-2 py-1 rounded-md" style={{ backgroundColor: 'var(--storefront-border, #f5f5f5)' }}>{product.thc_content}% THC</span>}
                                 {product.cbd_content && <span className="px-2 py-1 rounded-md" style={{ backgroundColor: 'var(--storefront-border, #f5f5f5)' }}>{product.cbd_content}% CBD</span>}
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{product.category}</p>
+
+                        {(product.thc_content || product.cbd_content) && (
+                            <div className="flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground pt-1">
+                                {product.thc_content && <span className="bg-muted px-2 py-1 rounded-md">{product.thc_content}% THC</span>}
+                                {product.cbd_content && <span className="bg-muted px-2 py-1 rounded-md">{product.cbd_content}% CBD</span>}
                             </div>
                         )}
 
@@ -237,10 +252,11 @@ export function StorefrontProductCard({
                 {/* Footer */}
                 <div className="px-3 pt-2 pb-3 sm:px-5 sm:pt-3 sm:pb-5 mt-auto flex items-center justify-between border-t border-neutral-50">
                 <div className="px-3 pt-2 pb-3 sm:px-5 sm:pt-5 sm:pb-0 mt-2 flex items-center justify-between border-t" style={{ borderColor: 'var(--storefront-border, #fafafa)' }}>
+                <div className="px-3 pt-2 pb-3 sm:px-5 sm:pt-5 sm:pb-0 mt-2 flex items-center justify-between border-t border-border">
                     <div className="flex flex-col">
                         <div className="flex items-baseline gap-2">
                             {displayPrice === 0 ? (
-                                <span className="text-base sm:text-xl font-extrabold text-emerald-600">Free</span>
+                                <span className="text-base sm:text-xl font-extrabold text-success">Free</span>
                             ) : (
                                 <span className="text-base sm:text-xl font-extrabold" style={{ color: accentColor }}>{formatCurrency(displayPrice)}</span>
                             )}
@@ -253,6 +269,10 @@ export function StorefrontProductCard({
                             )}
                         </div>
                         {product.unit_type && <span className="text-[10px] font-medium" style={{ color: 'var(--storefront-text, #a3a3a3)', opacity: 0.5 }}>per {product.unit_type}</span>}
+                                <span className="text-sm text-muted-foreground line-through">${product.price?.toFixed(2)}</span>
+                            )}
+                        </div>
+                        {product.unit_type && <span className="text-[10px] text-muted-foreground font-medium">per {product.unit_type}</span>}
                     </div>
 
                     <Button
@@ -262,9 +282,10 @@ export function StorefrontProductCard({
                         className={cn(
                             "rounded-full h-11 px-3 sm:px-5 font-bold transition-all duration-300 shadow-md",
                             isAdded
-                                ? "bg-emerald-500 text-white hover:bg-emerald-600 w-auto"
+                                ? "bg-success text-success-foreground hover:bg-success/90 w-auto"
                                 : isOutStock
                                     ? "cursor-not-allowed opacity-30"
+                                    ? "bg-muted text-muted-foreground cursor-not-allowed"
                                     : "text-white hover:opacity-90 hover:shadow-lg active:scale-95"
                         )}
                         style={!isAdded && !isOutStock ? { backgroundColor: accentColor } : undefined}

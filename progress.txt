@@ -429,3 +429,28 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - All sold-out overlays changed from bg-white/40 to bg-black/40 for universal readability
 - Out-of-stock buttons changed from bg-neutral-100 text-neutral-300 to opacity-based approach
 - TypeScript compilation passes with zero errors
+
+## Theme consistency: Replace hardcoded colors with semantic theme tokens
+- Added `warning`, `success`, `info` color mappings to `tailwind.config.ts` (CSS vars existed in index.css but weren't exposed as Tailwind utilities)
+- Replaced hardcoded Tailwind color classes across 18 storefront files with semantic theme tokens:
+  - `tailwind.config.ts` — added warning/success/info color definitions
+  - `StorefrontProductCard.tsx` — bg-white/dark:bg-zinc→bg-card, bg-red-500→bg-destructive, bg-emerald-500→bg-success, etc.
+  - `CartDrawer.tsx` — bg-neutral-950→bg-card, text-white→text-foreground, text-amber→text-warning, text-emerald→text-success
+  - `WishlistButton.tsx` — fill-red-500→fill-destructive
+  - `CartStockWarning.tsx` — text-amber-500→text-warning, border-amber-500→border-warning
+  - `EnhancedStickyAddToCart.tsx` — bg-amber-50→bg-warning/10, text-red-500→text-destructive
+  - `HotItemsSection.tsx` — card/badge/button colors to semantic tokens
+  - `ProductQuickViewModal.tsx` — bg-neutral-950→bg-card, text-white→text-foreground
+  - `CartPreviewPopup.tsx` — text-emerald-400→text-success
+  - `CheckoutSignInDialog.tsx` — text-red-500→text-destructive
+  - `ReviewForm.tsx` — fill-yellow-400→fill-warning
+  - `SinglePageCheckout.tsx` — text-green-600→text-success
+  - `ShareButtons.tsx` — text-green-500→text-success
+  - `CheckoutPage.tsx` — comprehensive color replacements (13+ patterns)
+  - `ProductDetailPage.tsx` — 25 replacements (stars, badges, stock, buttons, tabs)
+  - `ShopLayout.tsx` — preview banners, header, navigation, closed badge
+  - `AccountPage.tsx` — status icons, cards, text, backgrounds, badges
+  - `OrdersHubPage.tsx` — STATUS_COLORS map, status icons, cards, stats badges
+  - `OrderTrackingPage.tsx` — payment badges, cancelled icon, discount text
+- Preserved intentionally: strain-type colors (indica/sativa/hybrid), social media brand colors, accentColor dynamic props, ambient decorative gradients
+- TypeScript compilation passes with zero errors

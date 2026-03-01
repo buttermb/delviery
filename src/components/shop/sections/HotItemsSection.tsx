@@ -142,6 +142,7 @@ export function HotItemsSection({
   if (isLoading) {
     return (
       <section className="py-16" style={{ background: 'linear-gradient(to bottom, var(--storefront-card-bg, #fafafa), var(--storefront-bg, white))' }}>
+      <section className="py-16 bg-gradient-to-b from-muted to-background">
         <div className="container mx-auto px-4 md:px-8">
           <div className="flex items-center gap-4 mb-8">
             <Skeleton className="w-14 h-14 rounded-2xl" />
@@ -153,6 +154,7 @@ export function HotItemsSection({
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="rounded-2xl p-3 space-y-3" style={{ backgroundColor: 'var(--storefront-card-bg, white)' }}>
+              <div key={i} className="bg-card rounded-2xl p-3 space-y-3">
                 <Skeleton className="aspect-square w-full rounded-xl" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
@@ -209,6 +211,10 @@ export function HotItemsSection({
                 {config.title}
               </h2>
               <p className="text-sm md:text-base" style={{ color: 'var(--storefront-text, #737373)', opacity: 0.6 }}>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                {config.title}
+              </h2>
+              <p className="text-muted-foreground text-sm md:text-base">
                 {config.subtitle}
               </p>
             </div>
@@ -319,6 +325,11 @@ function HotItemCard({
         <Link
           to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`}
           className="block relative aspect-square overflow-hidden" style={{ backgroundColor: 'var(--storefront-card-bg, #fafafa)' }}
+      <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col relative transform hover:-translate-y-1">
+        {/* Image */}
+        <Link
+          to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`}
+          className="block relative aspect-square overflow-hidden bg-muted"
         >
           <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105">
             <ProductImage
@@ -343,7 +354,7 @@ function HotItemCard({
 
           {/* Sale Badge */}
           {hasSalePrice && (
-            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide text-white bg-red-500 shadow-md">
+            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide text-destructive-foreground bg-destructive shadow-md">
               Sale
             </div>
           )}
@@ -362,6 +373,8 @@ function HotItemCard({
               isInWishlist
                 ? 'bg-red-50 text-red-500'
                 : 'hover:text-red-500'
+                ? 'bg-destructive/10 text-destructive'
+                : 'bg-card/90 text-muted-foreground hover:text-destructive'
             )}
             style={!isInWishlist ? { backgroundColor: 'var(--storefront-card-bg, rgba(255,255,255,0.9))', color: 'var(--storefront-text, #a3a3a3)' } : undefined}
           >
@@ -386,6 +399,8 @@ function HotItemCard({
           {isOutStock && (
             <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
               <span className="bg-neutral-900 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg">
+            <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] flex items-center justify-center">
+              <span className="bg-foreground text-background px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg">
                 Sold Out
               </span>
             </div>
@@ -407,17 +422,20 @@ function HotItemCard({
               </h3>
             </Link>
             <p className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--storefront-text, #a3a3a3)', opacity: 0.6 }}>
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
               {product.category}
             </p>
 
             {/* Hot reason */}
             <p className="text-xs italic line-clamp-1" style={{ color: 'var(--storefront-text, #737373)', opacity: 0.6 }}>
+            <p className="text-xs text-muted-foreground italic line-clamp-1">
               {product.hotReason}
             </p>
           </div>
 
           {/* Footer */}
           <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: 'var(--storefront-border, #fafafa)' }}>
+          <div className="flex items-center justify-between pt-3 border-t border-border">
             <div className="flex items-baseline gap-1.5">
               <span
                 className="text-lg font-bold"
@@ -429,6 +447,7 @@ function HotItemCard({
                 <span className="text-xs text-neutral-400 line-through">
                   {formatCurrency(product.price)}
                 <span className="text-xs line-through" style={{ color: 'var(--storefront-text, #a3a3a3)', opacity: 0.5 }}>
+                <span className="text-xs text-muted-foreground line-through">
                   ${product.price?.toFixed(2)}
                 </span>
               )}
@@ -441,9 +460,10 @@ function HotItemCard({
               className={cn(
                 'rounded-full h-8 w-8 p-0 transition-all duration-200 shadow',
                 isAdded
-                  ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                  ? 'bg-success text-success-foreground hover:bg-success/90'
                   : isOutStock
                     ? 'cursor-not-allowed opacity-30'
+                    ? 'bg-muted text-muted-foreground cursor-not-allowed'
                     : 'text-white hover:opacity-90'
               )}
               style={

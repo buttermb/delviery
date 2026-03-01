@@ -64,7 +64,7 @@ export function WishlistButton({
             transition={{ type: 'spring', stiffness: 500, damping: 15 }}
           >
             <Heart
-              className={cn(iconSizes[size], 'fill-red-500 text-red-500')}
+              className={cn(iconSizes[size], 'fill-destructive text-destructive')}
             />
           </motion.div>
         ) : (
@@ -88,7 +88,7 @@ export function WishlistButton({
             animate={{ scale: 2.5, opacity: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="absolute inset-0 rounded-full bg-red-500/30 pointer-events-none"
+            className="absolute inset-0 rounded-full bg-destructive/30 pointer-events-none"
           />
         )}
       </AnimatePresence>

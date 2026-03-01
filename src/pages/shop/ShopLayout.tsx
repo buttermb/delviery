@@ -417,6 +417,40 @@ export default function ShopLayout() {
         primaryColor={store.primary_color}
         onVerify={(verified) => handleAgeVerification(verified)}
       />
+      <div
+        className="min-h-dvh flex items-center justify-center"
+        style={{ backgroundColor: store.primary_color }}
+      >
+        <div className="bg-card rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+          {store.logo_url && (
+            <img
+              src={store.logo_url}
+              alt={store.store_name}
+              className="h-16 mx-auto mb-6"
+            />
+          )}
+          <h1 className="text-2xl font-bold text-center mb-2">Age Verification Required</h1>
+          <p className="text-center text-muted-foreground mb-6">
+            You must be {store.minimum_age}+ years old to access this store.
+          </p>
+          <div className="flex gap-4">
+            <Button
+              className="flex-1"
+              variant="outline"
+              onClick={() => handleAgeVerification(false)}
+            >
+              I'm Under {store.minimum_age}
+            </Button>
+            <Button
+              className="flex-1"
+              style={{ backgroundColor: store.primary_color }}
+              onClick={() => handleAgeVerification(true)}
+            >
+              I'm {store.minimum_age}+
+            </Button>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -464,13 +498,14 @@ export default function ShopLayout() {
           </a>
 
         <div className="min-h-dvh bg-shop-bg" style={{ ...themeStyles, color: 'var(--storefront-text, #fafaf9)' }} data-testid="storefront-wrapper" data-theme="luxury">
+        <div className="min-h-dvh bg-shop-bg text-foreground" style={themeStyles} data-testid="storefront-wrapper" data-theme="luxury">
           {/* Admin Preview Banner */}
           {isPreviewMode && (
-            <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
+            <div className="bg-warning text-warning-foreground px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
               <AlertTriangle className="w-4 h-4" />
               <span>Preview Mode - This store is not yet live</span>
               {!store.is_active && (
-                <Badge variant="secondary" className="ml-2 bg-amber-600 text-white">
+                <Badge variant="secondary" className="ml-2 bg-warning/90 text-warning-foreground">
                   Draft
                 </Badge>
               )}
@@ -558,11 +593,11 @@ export default function ShopLayout() {
 
         {/* Admin Preview Banner */}
         {isPreviewMode && (
-          <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
+          <div className="bg-warning text-warning-foreground px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
             <AlertTriangle className="w-4 h-4" />
             <span>Preview Mode - This store is not yet live</span>
             {!store.is_active && (
-              <Badge variant="secondary" className="ml-2 bg-amber-600 text-white">
+              <Badge variant="secondary" className="ml-2 bg-warning/90 text-warning-foreground">
                 Draft
               </Badge>
             )}
@@ -571,6 +606,8 @@ export default function ShopLayout() {
 
         {/* Sticky Header */}
         <header className="sticky top-0 z-50 bg-white dark:bg-zinc-950 border-b shadow-sm">
+        {/* Header - Luxury vs Standard */}
+        <header className={`sticky top-0 z-50 ${isLuxuryTheme ? 'bg-background/80 backdrop-blur-xl border-b border-border' : 'bg-card border-b shadow-sm'}`}>
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               {/* Logo / Store Name */}
@@ -613,6 +650,7 @@ export default function ShopLayout() {
                 </Link>
                 {!isStoreOpen() && !isPreviewMode && (
                   <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                  <Badge variant="secondary" className={isLuxuryTheme ? 'bg-muted text-muted-foreground' : 'bg-warning/10 text-warning'}>
                     <Clock className="w-3 h-3 mr-1" />
                     Currently Closed
                   </Badge>

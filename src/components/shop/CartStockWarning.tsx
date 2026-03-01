@@ -131,6 +131,8 @@ export function CartItemStockWarning({
       return (
         <span className={cn("text-sm text-amber-500 flex items-center gap-1", className)}>
           <AlertTriangle className="w-3.5 h-3.5" />
+        <span className={cn("text-xs text-warning flex items-center gap-1", className)}>
+          <AlertTriangle className="w-3 h-3" />
           Only {available} left
         </span>
       );
@@ -139,6 +141,8 @@ export function CartItemStockWarning({
       return (
         <span className={cn("text-sm text-amber-500 flex items-center gap-1", className)}>
           <Package className="w-3.5 h-3.5" />
+        <span className={cn("text-xs text-warning flex items-center gap-1", className)}>
+          <Package className="w-3 h-3" />
           Low stock
         </span>
       );
@@ -156,7 +160,7 @@ export function CartItemStockWarning({
     }
     if (isInsufficient) {
       return (
-        <Badge variant="outline" className={cn("text-xs border-amber-500 text-amber-500", className)}>
+        <Badge variant="outline" className={cn("text-xs border-warning text-warning", className)}>
           <AlertTriangle className="w-3 h-3 mr-1" />
           Only {available} available
         </Badge>
@@ -183,13 +187,13 @@ export function CartStockSummary({
 
   return (
     <div className={cn(
-      "p-4 rounded-lg border border-amber-500/50 bg-amber-500/10",
+      "p-4 rounded-lg border border-warning/50 bg-warning/10",
       className
     )}>
       <div className="flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+        <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="font-medium text-amber-600 dark:text-amber-400">
+          <p className="font-medium text-warning">
             Some items have limited stock
           </p>
           <ul className="text-sm text-muted-foreground space-y-1">

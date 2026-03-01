@@ -64,7 +64,7 @@ export function ProductQuickViewModal({
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent
-                className="max-w-3xl p-0 bg-neutral-950 border-white/10 overflow-hidden rounded-2xl"
+                className="max-w-3xl p-0 bg-card border-border overflow-hidden rounded-2xl"
                 aria-describedby="product-quick-view-description"
             >
                 <VisuallyHidden>
@@ -96,7 +96,7 @@ export function ProductQuickViewModal({
                         </motion.div>
 
                         {/* Gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent md:bg-gradient-to-r pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent md:bg-gradient-to-r pointer-events-none" />
 
                         {/* Strain badge */}
                         {product.strain_type && (
@@ -124,12 +124,13 @@ export function ProductQuickViewModal({
                             {/* Category */}
                             {product.category && (
                                 <p className="text-white/70 text-xs tracking-widest uppercase mb-2">
+                                <p className="text-muted-foreground text-xs tracking-widest uppercase mb-2">
                                     {product.category}
                                 </p>
                             )}
 
                             {/* Product Name */}
-                            <h2 className="text-white text-2xl md:text-3xl mb-4">
+                            <h2 className="text-foreground text-2xl md:text-3xl mb-4">
                                 {cleanedName}
                             </h2>
 
@@ -146,6 +147,15 @@ export function ProductQuickViewModal({
                                         <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                                             <span className="text-white/70 text-xs mr-2">CBD</span>
                                             <span className="text-white font-medium">{product.cbd_content}%</span>
+                                        <div className="px-3 py-1.5 rounded-lg bg-muted border border-border">
+                                            <span className="text-muted-foreground text-xs mr-2">THC</span>
+                                            <span className="text-foreground font-medium">{product.thc_content}%</span>
+                                        </div>
+                                    )}
+                                    {product.cbd_content && (
+                                        <div className="px-3 py-1.5 rounded-lg bg-muted border border-border">
+                                            <span className="text-muted-foreground text-xs mr-2">CBD</span>
+                                            <span className="text-foreground font-medium">{product.cbd_content}%</span>
                                         </div>
                                     )}
                                 </div>
@@ -154,7 +164,7 @@ export function ProductQuickViewModal({
                             {/* Description */}
                             <p
                                 id="product-quick-view-description"
-                                className="text-white/60 text-sm leading-relaxed mb-6 line-clamp-4"
+                                className="text-muted-foreground text-sm leading-relaxed mb-6 line-clamp-4"
                             >
                                 {product.description || 'Premium quality product from our curated selection.'}
                             </p>
@@ -162,6 +172,7 @@ export function ProductQuickViewModal({
                             {/* Price */}
                             <div className="mb-6">
                                 <span className="text-white/70 text-xs tracking-wider uppercase">Price</span>
+                                <span className="text-muted-foreground text-xs tracking-wider uppercase">Price</span>
                                 <p
                                     className="text-3xl"
                                     style={{ color: accentColor }}
@@ -173,19 +184,20 @@ export function ProductQuickViewModal({
                             {/* Quantity Selector */}
                             <div className="flex items-center gap-4 mb-6">
                                 <span className="text-white/70 text-sm">Quantity</span>
+                                <span className="text-muted-foreground text-sm">Quantity</span>
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                                        className="w-8 h-8 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
                                     >
-                                        <Minus className="w-4 h-4 text-white" />
+                                        <Minus className="w-4 h-4 text-foreground" />
                                     </button>
-                                    <span className="text-white font-medium w-8 text-center">{quantity}</span>
+                                    <span className="text-foreground font-medium w-8 text-center">{quantity}</span>
                                     <button
                                         onClick={() => setQuantity(quantity + 1)}
-                                        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                                        className="w-8 h-8 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
                                     >
-                                        <Plus className="w-4 h-4 text-white" />
+                                        <Plus className="w-4 h-4 text-foreground" />
                                     </button>
                                 </div>
                             </div>

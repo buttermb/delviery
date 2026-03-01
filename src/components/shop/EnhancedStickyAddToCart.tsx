@@ -125,6 +125,9 @@ export function EnhancedStickyAddToCart({
         <div className="bg-amber-50 border-b border-amber-200 px-4 py-1.5 flex items-center justify-center gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
           <span className="text-sm text-amber-700 font-medium">
+        <div className="bg-warning/10 border-b border-warning/20 px-4 py-1.5 flex items-center justify-center gap-2">
+          <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+          <span className="text-xs text-warning font-medium">
             Only {stockStatus?.available} left in stock
           </span>
         </div>
@@ -177,12 +180,12 @@ export function EnhancedStickyAddToCart({
           size="icon"
           className={cn(
             'h-10 w-10 rounded-xl active:scale-95 transition-transform',
-            isWishlisted && 'text-red-500 border-red-200 bg-red-50'
+            isWishlisted && 'text-destructive border-destructive/20 bg-destructive/10'
           )}
           onClick={onToggleWishlist}
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
         >
-          <Heart className={cn('w-4 h-4', isWishlisted && 'fill-red-500')} />
+          <Heart className={cn('w-4 h-4', isWishlisted && 'fill-destructive')} />
         </Button>
 
         {/* Add to Cart Button */}

@@ -698,6 +698,24 @@ export function SinglePageCheckout() {
                         </FormControl>
                         <FormMessage />
                       </FormItem>
+                ))}
+              </div>
+
+              <Separator />
+
+              {/* Totals */}
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>{formatCurrency(subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Delivery</span>
+                  <span>
+                    {deliveryFee === 0 ? (
+                      <span className="text-success">FREE</span>
+                    ) : (
+                      formatCurrency(deliveryFee)
                     )}
                   />
                   <FormField

@@ -539,7 +539,7 @@ export function ProductDetailPage() {
             className={cn(
               size,
               star <= rating
-                ? 'fill-yellow-400 text-yellow-400'
+                ? 'fill-warning text-warning'
                 : 'fill-muted text-muted'
             )}
           />
@@ -552,7 +552,7 @@ export function ProductDetailPage() {
 
   if (productLoading) {
     return (
-      <div className="min-h-dvh bg-neutral-950 pt-16 sm:pt-24 pb-12">
+      <div className="min-h-dvh bg-card pt-16 sm:pt-24 pb-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12">
             <Skeleton className="h-[300px] sm:h-[600px] w-full rounded-2xl sm:rounded-3xl bg-white/5" />
@@ -577,7 +577,7 @@ export function ProductDetailPage() {
     : 0;
 
   return (
-    <div className={`min-h-dvh overflow-x-hidden ${isLuxuryTheme ? 'bg-zinc-950 text-white selection:bg-white/20' : 'bg-background'}`}>
+    <div className={`min-h-dvh overflow-x-hidden ${isLuxuryTheme ? 'bg-background text-white selection:bg-white/20' : 'bg-background'}`}>
       {/* Ambient Background Effects */}
       {isLuxuryTheme && (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
@@ -738,6 +738,7 @@ export function ProductDetailPage() {
                     aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                   >
                     <Heart className={cn('w-5 h-5', isWishlisted && 'fill-red-500 text-red-500')} />
+                    <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-destructive text-destructive' : ''}`} />
                   </Button>
                   <Button
                     size="icon"
@@ -751,22 +752,41 @@ export function ProductDetailPage() {
 
                 <div className="absolute top-4 left-4 flex flex-col gap-2">
                   {discountPercent > 0 && (
-                    <Badge className="bg-red-500/90 hover:bg-red-500 backdrop-blur border-none text-white px-3 py-1 text-xs uppercase tracking-widest">
+                    <Badge className="bg-destructive/90 hover:bg-destructive backdrop-blur border-none text-white px-3 py-1 text-xs uppercase tracking-widest">
                       Sale
                     </Badge>
                   )}
                   {!product.in_stock && (
-                    <Badge className="bg-zinc-800/90 text-zinc-300 backdrop-blur border-white/10 px-3 py-1 text-xs uppercase tracking-widest">
+                    <Badge className="bg-muted text-muted-foreground backdrop-blur border-white/10 px-3 py-1 text-xs uppercase tracking-widest">
                       Sold Out
                     </Badge>
                   )}
                   {product.in_stock && product.stock_quantity < 10 && (
-                    <Badge className="bg-amber-500/90 text-black backdrop-blur border-none px-3 py-1 text-xs uppercase tracking-widest">
+                    <Badge className="bg-warning/90 text-warning-foreground backdrop-blur border-none px-3 py-1 text-xs uppercase tracking-widest">
                       Low Stock
                     </Badge>
                   )}
                 </div>
               </div>
+
+              {/* Mobile dot indicators */}
+              {allImages.length > 1 && (
+                <div className="flex sm:hidden justify-center gap-2 mt-3">
+                  {allImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImage(idx)}
+                      aria-label={`View image ${idx + 1}`}
+                      className={cn(
+                        'rounded-full transition-all duration-300',
+                        selectedImage === idx
+                          ? 'w-6 h-2 bg-success'
+                          : 'w-2 h-2 bg-white/30'
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Desktop thumbnails */}
               {allImages.length > 1 && (
@@ -814,7 +834,7 @@ export function ProductDetailPage() {
                       )}
                     </div>
                     <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <Star className="w-4 h-4 fill-warning text-warning" />
                       <span className={`text-sm font-medium ${isLuxuryTheme ? 'text-white' : ''}`}>{averageRating.toFixed(1)}</span>
                       <span className={`text-xs ${isLuxuryTheme ? 'text-white/70' : 'text-muted-foreground'}`}>({reviews.length})</span>
                     </div>
@@ -836,6 +856,8 @@ export function ProductDetailPage() {
                   <div className="flex items-baseline gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <span className="text-2xl sm:text-3xl font-medium text-emerald-400">
                       {formatCurrency(displayPrice)}
+                    <span className="text-2xl sm:text-3xl font-medium text-success">
+                      {formatCurrency(product.display_price)}
                     </span>
                     {product.compare_at_price && product.compare_at_price > displayPrice && (
                       <span className={`text-base sm:text-lg line-through ${isLuxuryTheme ? 'text-white/30 decoration-white/30' : 'text-muted-foreground'}`}>
@@ -852,13 +874,13 @@ export function ProductDetailPage() {
                       {product.thc_content !== null && (
                         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-muted'}`}>
                           <span className={`text-xs uppercase tracking-wider font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>THC</span>
-                          <span className={`text-sm font-bold ${isLuxuryTheme ? 'text-emerald-400' : 'text-foreground'}`}>{product.thc_content}%</span>
+                          <span className={`text-sm font-bold ${isLuxuryTheme ? 'text-success' : 'text-foreground'}`}>{product.thc_content}%</span>
                         </div>
                       )}
                       {product.cbd_content !== null && (
                         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isLuxuryTheme ? 'bg-white/5 border border-white/10' : 'bg-muted'}`}>
                           <span className={`text-xs uppercase tracking-wider font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>CBD</span>
-                          <span className={`text-sm font-bold ${isLuxuryTheme ? 'text-blue-400' : 'text-foreground'}`}>{product.cbd_content}%</span>
+                          <span className={`text-sm font-bold ${isLuxuryTheme ? 'text-info' : 'text-foreground'}`}>{product.cbd_content}%</span>
                         </div>
                       )}
                     </div>
@@ -868,13 +890,13 @@ export function ProductDetailPage() {
                   <div className="mb-6">
                     {product.in_stock ? (
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className={`text-sm ${isLuxuryTheme ? 'text-emerald-400' : 'text-green-600'}`}>In Stock</span>
+                        <div className="w-2 h-2 rounded-full bg-success" />
+                        <span className={`text-sm ${isLuxuryTheme ? 'text-success' : 'text-success'}`}>In Stock</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-red-500" />
-                        <span className={`text-sm ${isLuxuryTheme ? 'text-red-400' : 'text-red-600'}`}>Out of Stock</span>
+                        <div className="w-2 h-2 rounded-full bg-destructive" />
+                        <span className={`text-sm ${isLuxuryTheme ? 'text-destructive' : 'text-destructive'}`}>Out of Stock</span>
                       </div>
                     )}
                   </div>
@@ -952,8 +974,10 @@ export function ProductDetailPage() {
                           disabled={!product.in_stock || isAddingToCart}
                           className={`w-full py-4 rounded-xl font-medium text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group ${!product.in_stock
                             ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                          className={`w-full py-3 sm:py-4 rounded-xl font-medium text-base sm:text-lg flex items-center justify-center gap-2 sm:gap-3 transition-all relative overflow-hidden group ${!product.in_stock
+                            ? 'bg-muted text-muted-foreground cursor-not-allowed'
                             : isLuxuryTheme
-                              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white shadow-[0_0_30px_rgba(16,185,129,0.3)]'
+                              ? 'bg-gradient-to-r from-success to-success/80 hover:from-success/90 hover:to-success text-white shadow-[0_0_30px_rgba(16,185,129,0.3)]'
                               : 'bg-primary text-primary-foreground hover:bg-primary/90'
                             }`}
                         >
@@ -991,7 +1015,7 @@ export function ProductDetailPage() {
                           return (
                             <div key={effect} className="flex flex-col items-center gap-2 group">
                               <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
-                                <IconComponent className="w-5 h-5 text-emerald-400" />
+                                <IconComponent className="w-5 h-5 text-success" />
                               </div>
                               <span className="text-xs uppercase tracking-wider text-white/70 font-medium">{effect}</span>
                             </div>
@@ -1037,13 +1061,13 @@ export function ProductDetailPage() {
                 <TabsList className="w-full justify-start bg-transparent border-b border-white/10 p-0 h-auto mb-6 sm:mb-8">
                   <TabsTrigger
                     value="description"
-                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
+                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-success data-[state=active]:text-success transition-all"
                   >
                     Description
                   </TabsTrigger>
                   <TabsTrigger
                     value="reviews"
-                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-emerald-500 data-[state=active]:text-emerald-400 transition-all"
+                    className="text-sm sm:text-lg px-4 sm:px-8 py-3 sm:py-4 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-success data-[state=active]:text-success transition-all"
                   >
                     Reviews ({reviews.length})
                   </TabsTrigger>
@@ -1120,7 +1144,7 @@ export function ProductDetailPage() {
                                     <div className="flex items-center gap-2">
                                       {renderStars(review.rating, 'w-3 h-3')}
                                       {review.is_verified_purchase && (
-                                        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 border-0 text-[10px] h-5 px-1.5">
+                                        <Badge variant="secondary" className="bg-success/10 text-success border-0 text-[10px] h-5 px-1.5">
                                           Verified
                                         </Badge>
                                       )}

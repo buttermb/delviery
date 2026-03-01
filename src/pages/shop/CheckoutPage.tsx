@@ -1587,7 +1587,7 @@ export function CheckoutPage() {
                     </div>
                   )}
                   {couponDiscount > 0 && (
-                    <div className="flex justify-between text-green-600">
+                    <div className="flex justify-between text-success">
                       <span>Discount</span>
                       <span>-{formatCurrency(couponDiscount)}</span>
                     </div>
@@ -1612,10 +1612,10 @@ export function CheckoutPage() {
 
           {/* Store Closed Warning */}
           {isStoreClosed && (
-            <Alert className="border-yellow-500/50 bg-yellow-500/10 mb-6">
-              <Clock className="h-4 w-4 text-yellow-500" />
-              <AlertTitle className="text-yellow-500">Store is currently closed</AlertTitle>
-              <AlertDescription className="text-yellow-500/90">
+            <Alert className="border-warning/50 bg-warning/10 mb-6">
+              <Clock className="h-4 w-4 text-warning" />
+              <AlertTitle className="text-warning">Store is currently closed</AlertTitle>
+              <AlertDescription className="text-warning/90">
                 {storeStatus?.reason || 'We are currently closed for new orders.'}
                 {storeStatus?.nextOpen && ` We open again at ${storeStatus.nextOpen}.`}
                 {' '}You can still place a pre-order for delivery/pickup when we open.
@@ -1709,7 +1709,7 @@ export function CheckoutPage() {
                         </button>
                       )}
                       {isSignedIn && (
-                        <span className="inline-flex items-center gap-1.5 text-sm text-green-600">
+                        <span className="inline-flex items-center gap-1.5 text-sm text-success">
                           <Check className="h-4 w-4" />
                           Signed in
                         </span>
@@ -1724,10 +1724,10 @@ export function CheckoutPage() {
                           value={formData.firstName}
                           onChange={(e) => updateField('firstName', e.target.value)}
                           placeholder="John"
-                          className={showErrors && !formData.firstName ? "border-red-500 focus-visible:ring-red-500" : ""}
+                          className={showErrors && !formData.firstName ? "border-destructive focus-visible:ring-destructive" : ""}
                         />
                         {showErrors && !formData.firstName && (
-                          <p className="text-xs text-red-500">Required</p>
+                          <p className="text-xs text-destructive">Required</p>
                         )}
                       </div>
                       <div className="space-y-2">
@@ -1738,10 +1738,10 @@ export function CheckoutPage() {
                           value={formData.lastName}
                           onChange={(e) => updateField('lastName', e.target.value)}
                           placeholder="Doe"
-                          className={showErrors && !formData.lastName ? "border-red-500 focus-visible:ring-red-500" : ""}
+                          className={showErrors && !formData.lastName ? "border-destructive focus-visible:ring-destructive" : ""}
                         />
                         {showErrors && !formData.lastName && (
-                          <p className="text-xs text-red-500">Required</p>
+                          <p className="text-xs text-destructive">Required</p>
                         )}
                       </div>
                     </div>
@@ -1754,10 +1754,10 @@ export function CheckoutPage() {
                         value={formData.email}
                         onChange={(e) => updateField('email', e.target.value)}
                         placeholder="john@example.com"
-                        className={showErrors && !formData.email ? "border-red-500 focus-visible:ring-red-500" : ""}
+                        className={showErrors && !formData.email ? "border-destructive focus-visible:ring-destructive" : ""}
                       />
                       {showErrors && !formData.email && (
-                        <p className="text-xs text-red-500">Required</p>
+                        <p className="text-xs text-destructive">Required</p>
                       )}
                     </div>
                     <div className="space-y-2">
@@ -1779,14 +1779,14 @@ export function CheckoutPage() {
                           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
                         )}
                         {isRecognized && !isLookingUpCustomer && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-success" />
                         )}
                       </div>
                       {showErrors && formData.phone && !isValidUSPhone(formData.phone) && (
                         <p className="text-xs text-red-500">Please enter a valid 10-digit US phone number</p>
                       )}
                       {isRecognized && (
-                        <p className="text-xs text-green-600">Welcome back, {returningCustomer?.firstName}!</p>
+                        <p className="text-xs text-success">Welcome back, {returningCustomer?.firstName}!</p>
                       )}
                     </div>
                     <div className="space-y-2">
@@ -1852,10 +1852,10 @@ export function CheckoutPage() {
                                 placeholder="At least 8 characters"
                                 autoComplete="new-password"
                                 minLength={8}
-                                className={showErrors && createAccount && accountPassword.length < 8 ? "border-red-500 focus-visible:ring-red-500" : ""}
+                                className={showErrors && createAccount && accountPassword.length < 8 ? "border-destructive focus-visible:ring-destructive" : ""}
                               />
                               {showErrors && createAccount && accountPassword.length < 8 && (
-                                <p className="text-xs text-red-500">Password must be at least 8 characters</p>
+                                <p className="text-xs text-destructive">Password must be at least 8 characters</p>
                               )}
                             </div>
                           )}
@@ -2027,9 +2027,9 @@ export function CheckoutPage() {
                               maxLength={10}
                               className={
                                 zipValidationStatus === 'invalid'
-                                  ? 'border-red-500 focus-visible:ring-red-500 pr-10'
+                                  ? 'border-destructive focus-visible:ring-destructive pr-10'
                                   : zipValidationStatus === 'valid'
-                                    ? 'border-green-500 focus-visible:ring-green-500 pr-10'
+                                    ? 'border-success focus-visible:ring-success pr-10'
                                     : zipValidationStatus === 'checking'
                                       ? 'pr-10'
                                       : ''
@@ -2039,20 +2039,20 @@ export function CheckoutPage() {
                               <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
                             )}
                             {zipValidationStatus === 'valid' && (
-                              <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                              <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-success" />
                             )}
                             {zipValidationStatus === 'invalid' && (
-                              <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
+                              <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
                             )}
                           </div>
 
                           {/* Zone match info */}
                           {zipValidationStatus === 'valid' && matchedZone && (
-                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-green-500/10 border border-green-500/20' : 'bg-green-50 border border-green-200'}`}>
-                              <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                              <div className={isLuxuryTheme ? 'text-green-400' : 'text-green-700'}>
+                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-success/10 border border-success/20' : 'bg-success/10 border border-success/20'}`}>
+                              <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                              <div className={isLuxuryTheme ? 'text-success' : 'text-success'}>
                                 <p className="font-medium">Delivery available — {matchedZone.zone_name}</p>
-                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-green-400/70' : 'text-green-600'}`}>
+                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-success/70' : 'text-success'}`}>
                                   {matchedZone.delivery_fee > 0
                                     ? `${formatCurrency(matchedZone.delivery_fee)} delivery fee`
                                     : 'Free delivery'}
@@ -2066,11 +2066,11 @@ export function CheckoutPage() {
 
                           {/* No match error */}
                           {zipValidationStatus === 'invalid' && (
-                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-red-500/10 border border-red-500/20' : 'bg-red-50 border border-red-200'}`}>
-                              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
-                              <div className={isLuxuryTheme ? 'text-red-400' : 'text-red-700'}>
+                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-destructive/10 border border-destructive/20' : 'bg-destructive/10 border border-destructive/20'}`}>
+                              <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                              <div className={isLuxuryTheme ? 'text-destructive' : 'text-destructive'}>
                                 <p className="font-medium">Sorry, we don&apos;t deliver to this area</p>
-                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-red-400/70' : 'text-red-600'}`}>
+                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-destructive/70' : 'text-destructive'}`}>
                                   Try a different ZIP code or choose pickup instead.
                                 </p>
                               </div>
@@ -2079,13 +2079,13 @@ export function CheckoutPage() {
 
                           {/* Minimum order warning */}
                           {zipValidationStatus === 'valid' && matchedZone && matchedZone.minimum_order > 0 && subtotal < matchedZone.minimum_order && (
-                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-yellow-50 border border-yellow-200'}`}>
-                              <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                              <div className={isLuxuryTheme ? 'text-yellow-400' : 'text-yellow-700'}>
+                            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${isLuxuryTheme ? 'bg-warning/10 border border-warning/20' : 'bg-warning/10 border border-warning/20'}`}>
+                              <AlertCircle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
+                              <div className={isLuxuryTheme ? 'text-warning' : 'text-warning'}>
                                 <p className="font-medium">
                                   Minimum order of {formatCurrency(matchedZone.minimum_order)} required
                                 </p>
-                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-yellow-400/70' : 'text-yellow-600'}`}>
+                                <p className={`text-xs mt-0.5 ${isLuxuryTheme ? 'text-warning/70' : 'text-warning'}`}>
                                   Add {formatCurrency(matchedZone.minimum_order - subtotal)} more to qualify for delivery to this area.
                                 </p>
                               </div>
@@ -2335,7 +2335,7 @@ export function CheckoutPage() {
                         {isSignedIn && (
                           <>
                             <br />
-                            <span className="text-green-600">Signed in</span>
+                            <span className="text-success">Signed in</span>
                           </>
                         )}
                         {!isSignedIn && createAccount && (
@@ -2624,17 +2624,17 @@ export function CheckoutPage() {
                     </Button>
                   </div>
                   {couponError && (
-                    <p className="text-xs text-red-500">{couponError}</p>
+                    <p className="text-xs text-destructive">{couponError}</p>
                   )}
                 </div>
               ) : (
-                <div className={`flex items-center justify-between p-3 rounded-lg ${isLuxuryTheme ? 'bg-green-500/10' : 'bg-green-50'}`}>
+                <div className={`flex items-center justify-between p-3 rounded-lg ${isLuxuryTheme ? 'bg-success/10' : 'bg-success/10'}`}>
                   <div className="flex items-center gap-2">
-                    <Tag className={`w-4 h-4 ${isLuxuryTheme ? 'text-green-400' : 'text-green-600'}`} />
-                    <span className={`text-sm font-medium ${isLuxuryTheme ? 'text-green-400' : 'text-green-600'}`}>
+                    <Tag className={`w-4 h-4 ${isLuxuryTheme ? 'text-success' : 'text-success'}`} />
+                    <span className={`text-sm font-medium ${isLuxuryTheme ? 'text-success' : 'text-success'}`}>
                       {appliedCoupon.code}
                     </span>
-                    <span className={`text-xs ${isLuxuryTheme ? 'text-green-400/60' : 'text-green-500'}`}>
+                    <span className={`text-xs ${isLuxuryTheme ? 'text-success/60' : 'text-success'}`}>
                       (-{formatCurrency(couponDiscount)})
                     </span>
                   </div>
@@ -2642,7 +2642,7 @@ export function CheckoutPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => { removeCoupon(); toast.success('Coupon removed'); }}
-                    className={isLuxuryTheme ? 'text-red-400 hover:text-red-300 hover:bg-white/5' : 'text-red-500 hover:text-red-600'}
+                    className={isLuxuryTheme ? 'text-destructive hover:text-destructive/80 hover:bg-white/5' : 'text-destructive hover:text-destructive/80'}
                   >
                     Remove
                   </Button>
@@ -2674,11 +2674,11 @@ export function CheckoutPage() {
                   {appliedGiftCards.map(card => (
                     <div key={card.code} className={`flex items-center justify-between p-2 rounded text-sm ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted/50'}`}>
                       <div className="flex items-center gap-2">
-                        <CreditCard className="w-3 h-3 text-emerald-500" />
+                        <CreditCard className="w-3 h-3 text-success" />
                         <span className="font-mono">{card.code}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-emerald-500">-{formatCurrency(Math.min(card.balance, totalBeforeGiftCards))}</span>
+                        <span className="text-success">-{formatCurrency(Math.min(card.balance, totalBeforeGiftCards))}</span>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -2711,35 +2711,35 @@ export function CheckoutPage() {
                 {formData.fulfillmentMethod === 'pickup' && (
                   <div className="flex justify-between" data-testid="order-summary-pickup-free">
                     <span className={textMuted}>Pickup</span>
-                    <span className="text-green-600">FREE</span>
+                    <span className="text-success">FREE</span>
                   </div>
                 )}
                 {dealsDiscount > 0 && (
-                  <div className="flex justify-between text-green-500">
+                  <div className="flex justify-between text-success">
                     <span>Deals & Discounts</span>
                     <span>-{formatCurrency(dealsDiscount)}</span>
                   </div>
                 )}
                 {couponDiscount > 0 && (
-                  <div className="flex justify-between text-green-500">
+                  <div className="flex justify-between text-success">
                     <span>Coupon</span>
                     <span>-{formatCurrency(couponDiscount)}</span>
                   </div>
                 )}
                 {loyaltyDiscount > 0 && (
-                  <div className="flex justify-between text-green-500">
+                  <div className="flex justify-between text-success">
                     <span>Loyalty Points</span>
                     <span>-{formatCurrency(loyaltyDiscount)}</span>
                   </div>
                 )}
                 {enableCartRounding && roundingAdjustment !== 0 && (
-                  <div className="flex justify-between text-blue-500 text-sm">
+                  <div className="flex justify-between text-info text-sm">
                     <span>Rounding Adjustment</span>
                     <span>{roundingAdjustment > 0 ? '+' : ''}{formatCurrency(roundingAdjustment)}</span>
                   </div>
                 )}
                 {giftCardAmount > 0 && (
-                  <div className="flex justify-between text-emerald-500 font-medium">
+                  <div className="flex justify-between text-success font-medium">
                     <span>Gift Card</span>
                     <span>-{formatCurrency(giftCardAmount)}</span>
                   </div>
@@ -2754,8 +2754,8 @@ export function CheckoutPage() {
 
               {/* Only show Payment method step if total > 0 */}
               {total === 0 && (
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
-                  <p className="text-emerald-500 font-medium text-sm">Order fully covered by Gift Card</p>
+                <div className="p-3 bg-success/10 border border-success/20 rounded-lg text-center">
+                  <p className="text-success font-medium text-sm">Order fully covered by Gift Card</p>
                 </div>
               )}
             </CardContent>

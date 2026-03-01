@@ -60,7 +60,7 @@ export function CartPreviewPopup({
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-                        <div className="flex items-center gap-2 text-emerald-400">
+                        <div className="flex items-center gap-2 text-success">
                             <Check className="w-4 h-4" />
                             <span className="text-sm font-medium">Added to Cart</span>
                         </div>
