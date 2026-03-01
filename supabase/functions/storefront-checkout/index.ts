@@ -737,6 +737,8 @@ serve(secureHeadersMiddleware(async (req) => {
       const notifSettings = cachedSettings.notification_settings as Record<string, unknown> | null;
       telegramLink = (notifSettings?.telegram_customer_link as string) || null;
     } else if (tenantAccount) {
+    let telegramButtonLabel: string | null = null;
+    if (tenantAccount) {
       const { data: acctSettings } = await supabase
         .from("account_settings")
         .select("notification_settings")
@@ -763,6 +765,7 @@ serve(secureHeadersMiddleware(async (req) => {
         // Fallback to legacy telegram_video_link field
         telegramLink = (acctSettings?.telegram_video_link as string) || null;
       }
+      telegramButtonLabel = (notifSettings?.telegram_button_label as string) || null;
     }
 
     const result: Record<string, unknown> = {
@@ -787,6 +790,7 @@ serve(secureHeadersMiddleware(async (req) => {
       result.accountToken = accountToken;
       result.accountCustomer = accountCustomer;
       result.accountTenant = accountTenant;
+      result.telegramButtonLabel = telegramButtonLabel || 'Chat with us on Telegram';
     }
 
     // Include discrepancy info so clients can reconcile
