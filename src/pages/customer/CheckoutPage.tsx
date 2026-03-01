@@ -87,6 +87,7 @@ export default function CheckoutPage() {
       return data;
     },
     enabled: !!user,
+    staleTime: Infinity,
   });
 
   // Fetch product details for guest cart
@@ -103,6 +104,7 @@ export default function CheckoutPage() {
       return data;
     },
     enabled: !user && guestCart.length > 0,
+    staleTime: Infinity,
   });
 
   // Fetch saved addresses for authenticated users

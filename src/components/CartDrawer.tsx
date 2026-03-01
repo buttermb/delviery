@@ -54,6 +54,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
       return (data ?? []) as DbCartItem[];
     },
     enabled: !!user && !!tenantId,
+    staleTime: Infinity,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
@@ -78,7 +79,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
       return data as Product[];
     },
     enabled: !user && guestCart.length > 0,
-    staleTime: 30 * 1000, // Cache for 30 seconds
+    staleTime: Infinity,
   });
 
   // Memoize guest cart items to prevent recalculation (optimized: single pass with reduce)
