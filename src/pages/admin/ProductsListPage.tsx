@@ -236,6 +236,7 @@ export function ProductsListPage() {
       return data as Product[];
     },
     enabled: !!tenant?.id,
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
   // Delete mutation

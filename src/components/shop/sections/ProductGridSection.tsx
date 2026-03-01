@@ -290,6 +290,7 @@ export function ProductGridSection({ content, styles, storeId, tenantId }: Produ
             }
         },
         enabled: !!storeId || !!tenantId,
+        staleTime: 2 * 60 * 1000, // 2 minutes
         retry: 1,
     });
 
