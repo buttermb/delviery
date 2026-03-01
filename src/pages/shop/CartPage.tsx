@@ -23,7 +23,6 @@ import {
   Minus,
   Trash2,
   ArrowRight,
-  Package,
   Truck,
   Tag,
   Loader2,
@@ -36,6 +35,7 @@ import { CartItemStockWarning, CartStockSummary, useCartStockCheck } from '@/com
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CartUpsellsSection } from '@/components/shop/CartUpsellsSection';
 import { SwipeableCartItem } from '@/components/SwipeableCartItem';
+import ProductImage from '@/components/ProductImage';
 
 export default function CartPage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -382,18 +382,11 @@ export default function CartPage() {
                         {/* Top row: image + product info + desktop controls */}
                         <div className="flex gap-3 sm:gap-4">
                           <div className={`w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden ${isLuxuryTheme ? 'bg-white/5' : 'bg-muted'}`}>
-                            {item.imageUrl ? (
-                              <img
-                                src={item.imageUrl}
-                                alt={item.name}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Package className={`w-8 h-8 ${isLuxuryTheme ? 'text-white/20' : 'text-muted-foreground'}`} />
-                              </div>
-                            )}
+                            <ProductImage
+                              src={item.imageUrl}
+                              alt={item.name}
+                              className="w-full h-full"
+                            />
                           </div>
                           <div className="flex-1 min-w-0">
                             <Link

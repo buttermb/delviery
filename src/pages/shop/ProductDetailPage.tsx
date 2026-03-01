@@ -720,16 +720,24 @@ export function ProductDetailPage() {
                 onClick={() => setShowZoom(true)}
               >
                 <AnimatePresence mode="wait">
-                  <motion.img
-                    key={selectedImage}
-                    src={allImages[selectedImage] || '/placeholder.png'}
-                    alt={product.name}
-                    className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isHovering ? 'scale-110' : 'scale-100'}`}
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: isHovering ? 1.1 : 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                  />
+                  {allImages[selectedImage] ? (
+                    <motion.img
+                      key={selectedImage}
+                      src={allImages[selectedImage]}
+                      alt={product.name}
+                      className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isHovering ? 'scale-110' : 'scale-100'}`}
+                      initial={{ opacity: 0, scale: 1.1 }}
+                      animate={{ opacity: 1, scale: isHovering ? 1.1 : 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.4 }}
+                    />
+                  ) : (
+                    <ProductImage
+                      src={null}
+                      alt={product.name}
+                      className="w-full h-full"
+                    />
+                  )}
                 </AnimatePresence>
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
@@ -1154,6 +1162,52 @@ export function ProductDetailPage() {
                 currentProductId={product.product_id}
                 category={product.category}
               />
+            {/* Related Products */}
+            {relatedProducts.length > 0 && (
+              <div className="relative">
+                <div className="flex items-center justify-between mb-6 sm:mb-8">
+                  <h2 className="text-2xl sm:text-3xl font-light text-white">You May Also Like</h2>
+                  <Link to={`/shop/${storeSlug}/products`} className="text-sm sm:text-base text-white/50 hover:text-white transition-colors">
+                    View All
+                  </Link>
+                </div>
+                <div className="flex overflow-x-auto gap-4 snap-x snap-mandatory pb-4 scrollbar-hide sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0">
+                  {relatedProducts.map((relatedProduct) => (
+                    <Link
+                      key={relatedProduct.product_id}
+                      to={`/shop/${storeSlug}/products/${relatedProduct.product_id}`}
+                      className="flex-shrink-0 w-[65vw] snap-start sm:w-auto"
+                    >
+                      <div className="group relative rounded-2xl overflow-hidden bg-white/5 border border-white/5 hover:border-emerald-500/50 transition-all duration-300 h-full hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-900/20">
+                        <div className="aspect-[4/5] relative overflow-hidden">
+                          <ProductImage
+                            src={relatedProduct.image_url}
+                            alt={relatedProduct.name}
+                            className="w-full h-full transition-transform duration-700 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 pointer-events-none" />
+                          <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                            <Button size="sm" className="w-full bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-lg shadow-emerald-900/50">
+                              View Details
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="p-3 sm:p-5">
+                          <h3 className="font-medium text-sm sm:text-base text-white line-clamp-1 mb-1 group-hover:text-emerald-400 transition-colors">
+                            {relatedProduct.name}
+                          </h3>
+                          <div className="flex items-center justify-between">
+                            <span className="text-white/60 text-xs sm:text-sm">{relatedProduct.category}</span>
+                            <span className="font-bold text-sm sm:text-base text-emerald-400">
+                              {formatCurrency(relatedProduct.display_price)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
             )}
 
             {/* Recently Viewed */}

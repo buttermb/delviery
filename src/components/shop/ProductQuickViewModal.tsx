@@ -29,6 +29,7 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
+import ProductImage from '@/components/ProductImage';
 
 interface ProductQuickViewModalProps {
     productId: string | null;
@@ -141,18 +142,11 @@ export function ProductQuickViewModal({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Image */}
                         <div className="aspect-square relative bg-muted rounded-lg overflow-hidden">
-                            {product.image_url ? (
-                                <img
-                                    src={product.image_url}
-                                    alt={product.product_name || 'Product image'}
-                                    className="w-full h-full object-cover"
-                                    loading="lazy"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <Package className="w-16 h-16 text-muted-foreground" />
-                                </div>
-                            )}
+                            <ProductImage
+                                src={product.image_url}
+                                alt={product.product_name || 'Product image'}
+                                className="w-full h-full"
+                            />
                             {hasDiscount && (
                                 <Badge className="absolute top-2 left-2" style={{ backgroundColor: store.primary_color }}>
                                     Sale

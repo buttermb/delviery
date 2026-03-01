@@ -26,7 +26,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  Package,
   User,
   MapPin,
   CreditCard,
@@ -57,6 +56,7 @@ import { safeStorage } from '@/utils/safeStorage';
 import { queryKeys } from '@/lib/queryKeys';
 import { useReturningCustomerLookup } from '@/hooks/useReturningCustomerLookup';
 import type { DeliveryZone } from '@/types/delivery-zone';
+import ProductImage from '@/components/ProductImage';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -2073,18 +2073,11 @@ export function CheckoutPage() {
                 {cartItems.map((item) => (
                   <div key={item.productId} className="flex gap-3">
                     <div className="w-12 h-12 flex-shrink-0 bg-muted rounded overflow-hidden">
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-5 h-5 text-muted-foreground" />
-                        </div>
-                      )}
+                      <ProductImage
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="w-full h-full"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium line-clamp-1">{item.name}</p>

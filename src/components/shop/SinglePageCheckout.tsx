@@ -12,6 +12,7 @@ import { useShop } from '@/pages/shop/ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useInventoryCheck } from '@/hooks/useInventoryCheck';
+import ProductImage from '@/components/ProductImage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -540,17 +541,12 @@ export function SinglePageCheckout() {
               <div className="space-y-3 max-h-60 overflow-y-auto">
                 {cartItems.map((item) => (
                   <div key={`${item.productId}-${item.variant ?? ''}`} className="flex gap-3">
-                    <div className="w-14 h-14 bg-muted rounded flex-shrink-0">
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="w-full h-full object-cover rounded"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <Package className="w-full h-full p-3 text-muted-foreground" />
-                      )}
+                    <div className="w-14 h-14 bg-muted rounded flex-shrink-0 overflow-hidden">
+                      <ProductImage
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="w-full h-full"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.name}</p>

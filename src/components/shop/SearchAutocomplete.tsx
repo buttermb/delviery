@@ -16,6 +16,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useDebounce } from '@/hooks/useDebounce';
 import { queryKeys } from '@/lib/queryKeys';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import ProductImage from '@/components/ProductImage';
 
 interface SearchAutocompleteProps {
   storeId: string;
@@ -215,18 +216,11 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
                 >
                   <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex-shrink-0">
-                    {product.image_url ? (
-                      <img
-                        src={product.image_url}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Package className="w-5 h-5 text-muted-foreground" />
-                      </div>
-                    )}
+                    <ProductImage
+                      src={product.image_url}
+                      alt={product.name}
+                      className="w-full h-full"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{product.name}</p>
