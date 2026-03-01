@@ -1,48 +1,48 @@
 
 
-# Fix Build Errors: CheckoutPage + Storefront Checkout Edge Function
+# Fix: "Upgrade Required" Showing Despite Enterprise Plan
 
-## Problem
+## Root Cause
 
-Two separate build errors:
-
-1. **`src/pages/shop/CheckoutPage.tsx`** -- Lines 491, 505, 511, 514, 2167 all show "Declaration or statement expected". Root cause: `case 2:` in the `validateStep` switch statement (around line 460) declares `const deliveryZones` and `const matchingZone` without wrapping the case body in block braces `{}`. TypeScript does not allow lexical declarations (`const`/`let`) in bare case clauses.
-
-2. **`supabase/functions/storefront-checkout/index.ts`** -- Deno's type checker cannot narrow `parseResult.error` inside the `if (!parseResult.success)` block. The `SafeParseReturnType` union is not being narrowed correctly.
-
-## Fix 1: CheckoutPage.tsx (wrap case 2 in braces)
-
-Wrap the body of `case 2:` (lines 460-489) in curly braces so the `const` declarations are in a proper block scope:
+In `src/components/tenant-admin/FeatureProtectedRoute.tsx` line 74, the prop name is wrong:
 
 ```typescript
-case 2: {
-  if (!formData.fulfillmentMethod) { ... }
-  if (formData.fulfillmentMethod === 'pickup') return true;
-  ...
-  const deliveryZones = ...;
-  const matchingZone = ...;
-  ...
-  return true;
-}
+// CURRENT (broken) - "feature" is not a valid prop on FeatureGate
+return <FeatureGate feature={featureId as unknown as FeatureToggleKey}>{content}</FeatureGate>;
+
+// CORRECT - FeatureGate expects "featureId"
+return <FeatureGate featureId={featureId}>{content}</FeatureGate>;
 ```
 
-This is a single-character addition (`{` after `case 2:` and `}` before `case 3:`).
+The `FeatureGate` component from `@/components/tenant-admin/FeatureGate` accepts `featureId: FeatureId`, not `feature`. Because the prop doesn't match, TypeScript errors out, the build partially fails, and the component renders the "Upgrade Required" fallback.
 
-## Fix 2: storefront-checkout/index.ts (Zod type narrowing)
+Your tenant (`big-mike`) has `subscription_plan: enterprise` and `subscription_status: active`, so `canAccess()` should return `true` for every feature once the correct prop is passed.
 
-Change the error access to use a type guard pattern that Deno respects:
+## Fix
 
+**File: `src/components/tenant-admin/FeatureProtectedRoute.tsx`** -- Line 74
+
+Change:
 ```typescript
-if (!parseResult.success) {
-  const errorResult = parseResult as z.SafeParseError<unknown>;
-  return jsonResponse(
-    { error: "Validation failed", details: errorResult.error.flatten().fieldErrors },
-    400,
-  );
-}
+return <FeatureGate feature={featureId as unknown as FeatureToggleKey}>{content}</FeatureGate>;
+```
+To:
+```typescript
+return <FeatureGate featureId={featureId}>{content}</FeatureGate>;
 ```
 
-## Files Changed
-- `src/pages/shop/CheckoutPage.tsx` -- Add block braces around case 2 body
-- `supabase/functions/storefront-checkout/index.ts` -- Fix Zod type narrowing for Deno
+This removes the broken `as unknown as FeatureToggleKey` cast and passes the `featureId` prop correctly. Since `featureId` is already typed as `FeatureId`, no cast is needed.
 
+## Other Build Errors (batch fix)
+
+Several other TypeScript errors need fixing in the same pass:
+
+1. **`src/App.tsx` lines 168, 250-251** -- `window` possibly undefined + missing `.default` exports. Wrap `window` access in a typeof guard; fix lazy import syntax.
+2. **Sidebar files** (SidebarFavorites, SidebarHotItems, SidebarMenuItem, SidebarSection) -- `string` not assignable to `FeatureId`. Cast sidebar item IDs through `as FeatureId`.
+3. **`FeatureComparisonTable.tsx`** -- No index signature on FEATURES. Use `FEATURES[key as FeatureId]`.
+4. **`VirtualizedTable.tsx` / `VirtualizedTableTanstack.tsx`** -- `unknown` not assignable to `ReactNode`. Cast cell render results.
+5. **`src/main.tsx` line 33** -- Same `window` guard needed.
+
+## Impact
+
+All admin panels (Dashboard, Hotbox, Orders, Inventory, Customers, Finance) will load correctly once the prop name is fixed, since the enterprise tier grants access to every feature.
