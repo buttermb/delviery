@@ -268,7 +268,8 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
       }
     },
     enabled: !!tenant?.id,
-    refetchInterval: 30000 // Fallback poll every 30s
+    refetchInterval: 30000, // Fallback poll every 30s
+    refetchOnWindowFocus: true, // Re-fetch when admin switches back to tab
   });
 
   // Apply client-side filters
