@@ -82,6 +82,10 @@ export function ProductGridSection({ content, styles, storeId, storeSlug: storeS
     const { storeSlug: routeStoreSlug } = useParams<{ storeSlug: string }>();
     const storeSlug = storeSlugProp || routeStoreSlug || '';
 
+    tenantId?: string;
+}
+
+export function ProductGridSection({ content, styles, storeId, tenantId }: ProductGridSectionProps) {
     const {
         heading = "Shop Premium Flower",
         subheading = "Premium indoor-grown flower from licensed NYC cultivators",
@@ -145,6 +149,13 @@ export function ProductGridSection({ content, styles, storeId, storeSlug: storeS
 
     const { data: allProducts = [], isLoading, error } = useQuery<MarketplaceProduct[]>({
         queryKey: queryKeys.shopProducts.list(storeId),
+    const isBuilderPreview = !storeId && !!tenantId;
+
+    // Fetch products - normalized to LocalProduct[]
+    const { data: allProducts = [], isLoading, error } = useQuery<LocalProduct[]>({
+        queryKey: storeId
+            ? queryKeys.shopProducts.list(storeId)
+            : ['builder-preview-products', tenantId],
         queryFn: async () => {
             if (!storeId) return [];
 
@@ -236,6 +247,44 @@ export function ProductGridSection({ content, styles, storeId, storeSlug: storeS
             }
         },
         enabled: !!storeId,
+            } else if (tenantId) {
+                // Admin Builder Preview — fetch tenant's products directly
+                try {
+                    const { data, error } = await supabase
+                        .from('products')
+                        .select('product_id, product_name, category, strain_type, price, image_url, description, is_visible')
+                        .eq('tenant_id', tenantId)
+                        .eq('is_visible', true)
+                        .order('display_order', { ascending: true })
+                        .limit(max_products);
+
+                    if (error) {
+                        logger.warn('Builder preview product fetch failed', { message: error.message });
+                        return [];
+                    }
+
+                    return ((data as unknown[]) ?? []).map((item: unknown) => {
+                        const p = item as Record<string, unknown>;
+                        return {
+                            id: p.product_id as string,
+                            name: p.product_name as string,
+                            price: (p.price as number) ?? 0,
+                            description: p.description as string | undefined,
+                            images: (p.image_url as string) ? [p.image_url as string] : [],
+                            category: p.category as string | undefined,
+                            in_stock: true,
+                            strain_type: (p.strain_type as string) ?? '',
+                        };
+                    }) as LocalProduct[];
+                } catch (err) {
+                    logger.error('Error fetching builder preview products', err);
+                    return [];
+                }
+            } else {
+                return [];
+            }
+        },
+        enabled: !!storeId || !!tenantId,
         retry: 1,
     });
 
@@ -412,6 +461,17 @@ export function ProductGridSection({ content, styles, storeId, storeSlug: storeS
                         illustration="no-data"
                         data-testid="empty-product-grid"
                     />
+                    <div className="text-center py-20" data-testid="empty-product-grid">
+                        <Package className="w-16 h-16 mx-auto mb-4 opacity-40" style={{ color: text_color }} />
+                        <h3 className="text-xl font-semibold mb-2 opacity-70">
+                            {isBuilderPreview ? 'No products yet' : 'Coming soon'}
+                        </h3>
+                        <p className="opacity-50">
+                            {isBuilderPreview
+                                ? 'Add products to see them here'
+                                : 'Check back soon for new arrivals'}
+                        </p>
+                    </div>
                 ) : limitedProducts.length === 0 ? (
                     <div className="text-center py-20 opacity-50">
                         <p>No products match your search.</p>

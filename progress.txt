@@ -318,3 +318,11 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
   - items array: capped at max 50
 - All sanitization uses existing sanitizeString from _shared/validation.ts
 - TypeScript compilation passes with zero errors
+
+## Builder preview shows real products not placeholders
+- Added `tenantId` prop to `ProductGridSectionProps` interface
+- Updated `ProductGridSection` queryFn: when `storeId` is absent but `tenantId` is present (builder preview mode), fetches products directly from `products` table filtered by `tenant_id` and `is_visible=true`
+- Updated empty state: shows "No products yet / Add products to see them here" in builder mode vs "Coming soon / Check back soon" on public storefront
+- Passed `tenantId={tenant?.id}` through StorefrontBuilder inline preview and BuilderPreview component to section components
+- Updated component type casts in both StorefrontBuilder.tsx and BuilderPreview.tsx to include `tenantId` prop
+- TypeScript compilation passes with zero errors
