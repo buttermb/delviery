@@ -1,10 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
 
 @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================
+   BASE LAYER — Resets, typography, theme vars
+   ======================================== */
 
 @layer base {
   body {
+    @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
 
   h1,
@@ -20,375 +31,72 @@
   .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
-}
-
-@tailwind utilities;
-@tailwind components;
-
-/* Navigation loading animation */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* Optimize scroll performance */
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 80px;
-  /* Account for fixed header */
-}
-
-body {
-  will-change: scroll-position;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* GPU acceleration removed - was causing stacking context issues */
-
-/* Performance optimizations for animations */
-.animate-fade-in,
-.animate-scale-in,
-[class*="animate-"] {
-  will-change: transform, opacity;
-}
-
-/* Section containment adjusted for scroll compatibility */
-section {
-  contain: style;
-}
-
-/* Scroll anchor offset for hash navigation */
-section[id] {
-  scroll-margin-top: 80px;
-}
-
-/* Hide scrollbar for bottom nav */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Mobile bottom navigation spacing */
-@media (max-width: 1024px) {
-  main:not(.custom-mobile-padding) {
-    padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom)));
-  }
-
-  /* Prevent horizontal scrolling on mobile while allowing vertical scroll */
-  html {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-
-  /* Body rules moved to global scope to prevent conflicts */
-}
-
-/* Ensure main layout containers respect viewport width (scoped to avoid breaking scrollable content) */
-body>#root {
-  max-width: 100vw;
-  width: 100%;
-}
-
-/* Ensure inputs are scrollable into view when keyboard opens */
-body {
-  /* position: relative; - REMOVED: Causes scroll trapping on some devices */
-}
-
-/* Fix for iOS Safari viewport */
-@supports (-webkit-touch-callout: none) {
-  body {
-    min-height: -webkit-fill-available;
-  }
-}
-
-/* REMOVED: All body.keyboard-open rules - they interfere with admin scroll
-   * Main content containers handle their own scrolling independently
-   */
-
-/* Dialog content should be scrollable when keyboard opens */
-body.keyboard-open [role="dialog"],
-body.keyboard-open [data-radix-dialog-content] {
-  max-height: calc(100dvh - 2rem);
-  overflow-y: auto;
-}
-
-
-@keyframes blob {
-
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-}
-
-.animate-blob {
-  animation: blob 7s infinite;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-@keyframes pulse-slow {
-
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-
-  50% {
-    opacity: 0.1;
-  }
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 8s ease-in-out infinite;
-}
-
-/* Performance Optimizations */
-
-/* Respect user preference for reduced motion - uses :root prefix for higher specificity */
-@media (prefers-reduced-motion: reduce) {
-
-  :root *,
-  :root *::before,
-  :root *::after {
-    animation-duration: 0.01ms;
-    animation-iteration-count: 1;
-    transition-duration: 0.01ms;
-  }
-}
-
-/* Force GPU acceleration for animated elements */
-.hero-gradient,
-.glass-card,
-[class*="motion-div"],
-[data-framer-motion] {
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-}
-
-/* ========================================
-   MOBILE PERFORMANCE OPTIMIZATIONS
-   Disable expensive GPU effects on mobile
-   ======================================== */
-
-@media (max-width: 768px) {
-
-  /* Reduce animation complexity on mobile */
-  [data-framer-motion] {
-    animation-duration: 0.3s !important;
-  }
-
-  /* Use simpler gradients on mobile */
-  .hero-gradient {
-    background: linear-gradient(135deg, hsl(var(--marketing-primary)) 0%, hsl(var(--marketing-secondary)) 100%);
-  }
-
-  /* DISABLE EXPENSIVE BLUR EFFECTS ON MOBILE */
-  /* These are extremely expensive on mobile GPUs and cause jank */
-  .blur-3xl,
-  .blur-2xl,
-  .blur-xl,
-  [class*="blur-[100px]"],
-  [class*="blur-[80px]"] {
-    filter: none !important;
-    opacity: 0.3 !important;
-    /* Fallback - just fade */
-  }
-
-  /* Disable backdrop-blur on mobile (very expensive) */
-  .backdrop-blur-sm,
-  .backdrop-blur,
-  .backdrop-blur-md,
-  .backdrop-blur-lg,
-  .backdrop-blur-xl,
-  .backdrop-blur-2xl,
-  .backdrop-blur-3xl,
-  [class*="backdrop-blur"] {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background-color: hsl(var(--card) / 0.95) !important;
-    /* Solid fallback using theme card color */
-  }
-
-  /* Disable complex box shadows on mobile */
-  .shadow-2xl,
-  [class*="shadow-[0_0_100px"] {
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2) !important;
-  }
-
-  /* Reduce glow effects */
-  [class*="shadow-emerald"],
-  [class*="shadow-[0_0_20px"],
-  [class*="shadow-[0_0_30px"] {
-    box-shadow: none !important;
-  }
-
-  /* Optimize large background blobs - hide them on mobile */
-  [class*="w-[400px]"][class*="blur"],
-  [class*="w-[350px]"][class*="blur"],
-  [class*="w-[800px]"][class*="blur"] {
-    display: none !important;
-  }
-
-  /* Reduce will-change usage which reserves GPU memory */
-  .hero-gradient,
-  .glass-card,
-  [class*="motion-div"],
-  [data-framer-motion] {
-    will-change: auto !important;
-  }
-
-  /* Simpler transitions on mobile */
-  * {
-    transition-duration: 0.15s !important;
-  }
-
-  /* Force hardware acceleration off for decorative elements */
-  .pointer-events-none {
-    transform: none !important;
-    will-change: auto !important;
-  }
-}
-
-/* Also apply optimizations when user prefers reduced motion - uses :root prefix for higher specificity */
-@media (prefers-reduced-motion: reduce) {
-
-  :root .backdrop-blur-sm,
-  :root .backdrop-blur,
-  :root .backdrop-blur-md,
-  :root .backdrop-blur-lg,
-  :root .backdrop-blur-xl,
-  :root [class*="backdrop-blur"] {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  :root .blur-3xl,
-  :root .blur-2xl,
-  :root .blur-xl {
-    filter: none;
-    opacity: 0.2;
-  }
-}
-
-/* NYM Design System - Dark Slate & Teal Premium Brand */
-
-@layer base {
 
   html,
   body {
     min-height: 100dvh;
-    /* overflow-x: hidden; - handled by specific containers if needed */
   }
 
+  * {
+    @apply border-border;
+  }
+
+  /* ---- Theme Variables: Light Mode ---- */
+
   :root {
-    /* Light Mode - Modern CRM Colors (Emerald Green Brand) */
     --background: 0 0% 100%;
-    /* #FFFFFF - White */
     --foreground: 215 25% 27%;
-    /* #374151 - gray-700 - Body text */
 
     --card: 0 0% 100%;
-    /* #FFFFFF - White */
     --card-foreground: 215 25% 27%;
-    /* #374151 - gray-700 */
 
     --popover: 0 0% 100%;
-    /* #FFFFFF */
     --popover-foreground: 215 25% 27%;
-    /* #374151 */
 
     --primary: 254 70% 28%;
-    /* #2E1679 - Indigo (Flowhub Style) */
     --primary-foreground: 0 0% 100%;
-    /* #FFFFFF */
 
     --secondary: 220 13% 96%;
-    /* #f3f4f6 - Very light gray */
     --secondary-foreground: 215 25% 27%;
-    /* #374151 */
 
     --muted: 254 20% 96%;
-    /* Indigo tinted muted */
     --muted-foreground: 254 20% 40%;
-    /* Indigo tinted muted text — WCAG AA 4.5:1 on white (≈6.3:1) */
 
     --accent: 35 89% 60%;
-    /* #F3A73D - Gold */
     --accent-foreground: 0 0% 100%;
-    /* #FFFFFF */
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --warning: 35 89% 60%;
-    /* Match accent gold */
     --warning-foreground: 0 0% 100%;
 
     --success: 254 70% 35%;
-    /* Use lighter indigo for success to keep theme */
     --success-foreground: 0 0% 100%;
 
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
 
     --border: 254 15% 92%;
-    /* Indigo tinted border */
     --input: 254 15% 96%;
-    /* Indigo tinted input */
     --ring: 254 70% 28%;
-    /* Primary Indigo ring — WCAG 1.4.11 compliant (12.5:1 on white vs Gold's 2.1:1) */
 
     --radius: 0.5rem;
 
     /* Chart colors */
     --chart-1: 254 70% 28%;
-    /* Indigo */
     --chart-2: 35 89% 60%;
-    /* Gold */
     --chart-3: 254 60% 50%;
-    /* Lighter Indigo */
     --chart-4: 217 91% 60%;
-    /* Blue */
     --chart-5: 271 91% 65%;
-    /* Purple */
     --chart-6: 160 84% 39%;
-    /* Emerald */
     --chart-7: 0 84% 60%;
-    /* Red */
     --chart-8: 38 92% 50%;
-    /* Amber */
     --chart-9: 330 81% 60%;
-    /* Pink */
     --chart-10: 142 71% 45%;
-    /* Green */
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(254 70% 28%), hsl(254 60% 40%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--marketing-primary)) 0%, hsl(var(--marketing-primary) / 0.8) 50%, hsl(var(--marketing-accent)) 100%);
     --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(254 20% 98%));
 
     /* Shadows */
@@ -397,106 +105,61 @@ body.keyboard-open [data-radix-dialog-content] {
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
     --shadow-elegant: 0 20px 60px -10px hsl(254 70% 28% / 0.15);
+    --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.3), 0 0 40px rgba(37, 99, 235, 0.1);
 
     /* Storefront Brand Colors — NYM Design Teal */
     --shop-primary: 184 78% 17%;
-    /* #015358 - Dark Teal */
     --shop-accent: 174 87% 42%;
-    /* #0EC7BA - Bright Teal */
     --shop-accent-hover: 174 87% 37%;
-    /* #0AB0A5 - Teal hover */
     --shop-bg: 200 20% 97%;
-    /* #F5F7F8 - Light off-white */
 
     /* SaaS Brand Colors — Warm Forest Green */
     --saas-primary: 150 48% 15%;
-    /* #1B4332 - Forest Green */
     --saas-text: 214 20% 23%;
-    /* #2D3748 - Warm Gray */
     --saas-bg: 30 30% 96%;
-    /* #F8F5F0 - Warm Linen */
 
-    /* Marketing Site Colors - Flowhub Inspired */
+    /* Marketing Site Colors */
     --marketing-primary: 254 70% 28%;
-    /* #2E1679 - Flowhub Indigo */
     --marketing-secondary: 254 70% 28%;
-    /* Same as primary */
     --marketing-accent: 35 89% 60%;
-    /* #F3A73D - Gold Accent */
     --marketing-text: 215 25% 27%;
-    /* #374151 - Slate Gray Body Text */
     --marketing-text-light: 215 16% 47%;
-    /* #64748b - Slate 500 */
     --marketing-bg: 0 0% 100%;
-    /* Pure White */
     --marketing-bg-subtle: 227 100% 98%;
-    /* #F4F7FF - Light Lavender/Blue */
     --marketing-border: 214 32% 91%;
-    /* #e2e8f0 - Subtle border */
-    --radius: 0.5rem;
 
-    /* Unified Design System - Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--marketing-primary)) 0%, hsl(var(--marketing-primary) / 0.8) 50%, hsl(var(--marketing-accent)) 100%);
-
-    /* Unified Design System - Depth Hierarchy Shadows */
-    --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.3), 0 0 40px rgba(37, 99, 235, 0.1);
-
-    /* Unified Design System - Motion Variables */
+    /* Motion Variables */
     --motion-normal: 1;
 
-    /* Super Admin Colors - Light Theme - Premium Indigo */
+    /* Super Admin Colors - Light Theme */
     --super-admin-primary: 254 70% 28%;
-    /* #2E1679 - Deep Indigo */
     --super-admin-secondary: 265 89% 60%;
-    /* #A855F7 - Vivid Purple */
     --super-admin-accent: 35 89% 60%;
-    /* #F3A73D - Gold */
     --super-admin-bg: 0 0% 100%;
-    /* #ffffff - White */
     --super-admin-surface: 254 30% 98.5%;
-    /* #fdfdff - Very faint indigo tint */
     --super-admin-border: 254 20% 93%;
-    /* #eef2ff - Subtle indigo border */
     --super-admin-text: 222 47% 11%;
-    /* #111827 - Gray 900 */
     --super-admin-text-light: 215 20% 65%;
-    /* #6b7280 - Gray 500 */
 
-    /* Tenant Admin Colors - Light Theme - Premium Indigo */
+    /* Tenant Admin Colors - Light Theme */
     --tenant-primary: 254 70% 28%;
-    /* #2E1679 - Deep Indigo */
     --tenant-secondary: 265 89% 60%;
-    /* #A855F7 - Vivid Purple */
     --tenant-accent: 35 89% 60%;
-    /* #F3A73D - Gold */
     --tenant-bg: 0 0% 100%;
-    /* #ffffff - White */
     --tenant-surface: 254 30% 98.5%;
-    /* #fdfdff - Very faint indigo tint */
     --tenant-border: 254 20% 93%;
-    /* #eef2ff - Subtle indigo border */
     --tenant-text: 222 47% 11%;
-    /* #1e293b - Slate 800 */
     --tenant-text-light: 215 20% 65%;
-    /* #64748b - Slate 500 */
 
-    /* Customer Portal Colors - Light Theme - Premium Emerald */
+    /* Customer Portal Colors - Light Theme */
     --customer-primary: 160 84% 39%;
-    /* #10B981 - Rich Emerald */
     --customer-secondary: 254 70% 28%;
-    /* #2E1679 - Indigo Accent */
     --customer-accent: 35 89% 60%;
-    /* #F3A73D - Gold */
     --customer-bg: 0 0% 100%;
-    /* #ffffff - White */
     --customer-surface: 254 30% 99%;
-    /* #fdfdff - Hint of tint */
     --customer-border: 220 13% 91%;
-    /* #e5e7eb - Gray 200 */
     --customer-text: 222 47% 11%;
-    /* #111827 - Gray 900 */
     --customer-text-light: 215 20% 65%;
-    /* #6b7280 - Gray 500 */
 
     /* Z-Index Scale */
     --z-base: 0;
@@ -509,159 +172,100 @@ body.keyboard-open [data-radix-dialog-content] {
     --z-max: 9999;
   }
 
+  /* ---- Theme Variables: Dark Mode ---- */
+
   .dark {
-    /* Dark Mode - CRM Colors */
     --background: 222 47% 8%;
-    /* Dark background */
     --foreground: 0 0% 100%;
-    /* White text */
 
     --card: 222 40% 12%;
-    /* Dark card */
     --card-foreground: 0 0% 100%;
-    /* White text */
 
     --popover: 222 40% 12%;
-    /* Dark popover */
     --popover-foreground: 0 0% 100%;
-    /* White text */
 
     --primary: 160 84% 39%;
-    /* #10B981 - emerald-500 */
     --primary-foreground: 0 0% 100%;
-    /* White */
 
     --secondary: 222 47% 15%;
-    /* Dark secondary */
     --secondary-foreground: 0 0% 100%;
-    /* White */
 
     --muted: 222 30% 20%;
-    /* Dark muted */
     --muted-foreground: 215 20% 65%;
-    /* Gray text */
 
     --accent: 160 84% 39%;
-    /* emerald-500 */
     --accent-foreground: 0 0% 100%;
-    /* White */
 
     --destructive: 0 84% 60%;
-    /* red-500 */
     --destructive-foreground: 0 0% 100%;
-    /* White */
 
     --warning: 38 92% 50%;
-    /* amber-500 */
     --warning-foreground: 0 0% 100%;
-    /* White */
 
     --success: 160 84% 39%;
-    /* emerald-500 */
     --success-foreground: 0 0% 100%;
-    /* White */
 
     --info: 217 91% 60%;
-    /* blue-500 */
     --info-foreground: 0 0% 100%;
-    /* White */
 
     --border: 222 30% 25%;
-    /* Dark border */
     --input: 222 30% 18%;
-    /* Dark input */
     --ring: 160 84% 39%;
-    /* emerald-500 */
 
     /* Storefront Brand Colors — Dark Mode */
     --shop-primary: 174 87% 42%;
-    /* Swap: accent becomes primary in dark */
     --shop-accent: 184 78% 30%;
-    /* Lighter teal */
     --shop-accent-hover: 184 78% 25%;
     --shop-bg: 222 47% 11%;
-    /* Dark background */
 
-    /* Marketing Site Colors - Dark Theme (Forced Light Mode for consistency) */
+    /* Marketing Site Colors - Dark Theme */
     --marketing-primary: 254 70% 28%;
-    /* #2E1679 - Flowhub Indigo */
     --marketing-secondary: 254 70% 28%;
-    /* Same as primary */
     --marketing-accent: 35 89% 60%;
-    /* #F3A73D - Gold Accent */
     --marketing-text: 222 47% 11%;
-    /* #0f172a - Slate 900 (High Contrast) */
     --marketing-text-light: 215 16% 47%;
-    /* #64748b - Slate 500 */
     --marketing-bg: 0 0% 100%;
-    /* #ffffff - Pure White */
     --marketing-bg-subtle: 227 100% 98%;
-    /* #F4F7FF - Light Lavender/Blue */
     --marketing-border: 214 32% 91%;
-    /* #e2e8f0 - Slate 200 */
 
-    /* Unified Design System - Gradients (adjusted for dark) */
+    /* Gradients (dark) */
     --gradient-primary: linear-gradient(135deg, hsl(var(--marketing-primary)) 0%, hsl(var(--marketing-primary) / 0.8) 50%, hsl(var(--marketing-accent)) 100%);
 
-    /* Unified Design System - Depth Hierarchy Shadows (adjusted for dark) */
+    /* Shadows (dark) */
     --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2);
 
-    /* Unified Design System - Motion Variables */
+    /* Motion Variables */
     --motion-normal: 1;
 
-    /* Super Admin Colors - Dark Theme - Premium Indigo */
+    /* Super Admin Colors - Dark Theme */
     --super-admin-primary: 254 80% 65%;
-    /* Bright Indigo */
     --super-admin-secondary: 265 89% 65%;
-    /* Bright Purple */
     --super-admin-accent: 35 89% 60%;
-    /* Gold */
     --super-admin-bg: 222 47% 8%;
-    /* Dark Slate */
     --super-admin-surface: 222 40% 12%;
-    /* Dark Surface */
     --super-admin-border: 222 30% 20%;
-    /* Dark Border */
     --super-admin-text: 210 40% 98%;
-    /* White */
     --super-admin-text-light: 215 20% 70%;
-    /* Gray 400 */
 
-    /* Tenant Admin Colors - Dark Theme - Premium Indigo */
+    /* Tenant Admin Colors - Dark Theme */
     --tenant-primary: 254 80% 65%;
-    /* Bright Indigo */
     --tenant-secondary: 265 89% 65%;
-    /* Bright Purple */
     --tenant-accent: 35 89% 60%;
-    /* Gold */
     --tenant-bg: 222 47% 8%;
-    /* Dark Slate */
     --tenant-surface: 222 40% 12%;
-    /* Dark Surface */
     --tenant-border: 222 30% 20%;
-    /* Dark Border */
     --tenant-text: 0 0% 100%;
-    /* White */
     --tenant-text-light: 215 20% 75%;
-    /* Light gray */
 
     /* Customer Portal Colors - Dark Theme */
     --customer-primary: 160 84% 45%;
-    /* Emerald */
     --customer-secondary: 254 70% 60%;
-    /* Indigo Accent */
     --customer-accent: 35 89% 60%;
-    /* Gold */
     --customer-bg: 222 47% 8%;
-    /* Dark Slate */
     --customer-surface: 222 40% 12%;
-    /* Dark Surface */
     --customer-border: 222 30% 20%;
-    /* Dark Border */
     --customer-text: 0 0% 100%;
-    /* White */
     --customer-text-light: 215 20% 75%;
-    /* Light gray */
 
     /* Z-Index Scale */
     --z-base: 0;
@@ -673,17 +277,10 @@ body.keyboard-open [data-radix-dialog-content] {
     --z-tooltip: 400;
     --z-max: 9999;
   }
-}
 
-@layer base {
-  * {
-    @apply border-border;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  }
+  /* ---- Mobile-first improvements ---- */
 
-  /* Mobile-first improvements */
   @media (max-width: 768px) {
-
     /* Better tap targets */
     button,
     a,
@@ -699,43 +296,6 @@ body.keyboard-open [data-radix-dialog-content] {
     a {
       -webkit-tap-highlight-color: transparent;
       tap-highlight-color: transparent;
-    }
-
-    /* Smooth scrolling for iOS */
-    /* Prefixed for Safari iOS */
-    @supports (-webkit-overflow-scrolling: touch) {
-      html {
-        -webkit-overflow-scrolling: touch;
-      }
-    }
-
-    /* Better font rendering on mobile */
-    body {
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
-    }
-
-    /* Safe area insets for notched devices - see consolidated definitions at end of file */
-
-    /* Better mobile spacing */
-    .mobile-padding {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-
-    /* Prevent zoom on input focus (iOS Safari) */
-    input,
-    select,
-    textarea {
-      font-size: 16px;
-    }
-
-    /* Mobile table optimization */
-    table {
-      display: block;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
     }
 
     /* Better mobile typography */
@@ -759,7 +319,21 @@ body.keyboard-open [data-radix-dialog-content] {
       width: 100%;
     }
 
-    /* Mobile dialog/modal improvements — nearly full-screen on small devices */
+    /* Prevent zoom on input focus (iOS Safari) */
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+
+    /* Mobile table optimization */
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Mobile dialog/modal improvements */
     [role="dialog"],
     [data-radix-dialog-content] {
       max-width: calc(100vw - 1rem);
@@ -779,14 +353,16 @@ body.keyboard-open [data-radix-dialog-content] {
       border-radius: 0.5rem;
     }
 
+    /* Mobile input focus — no transform to prevent positioning issues */
+    input:focus,
+    textarea:focus,
+    select:focus {
+      transform: none !important;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
   }
 
-  body {
-    @apply bg-background text-foreground transition-colors;
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-  }
-
-  /* Safe area for mobile devices with notches - see consolidated definitions at end of file */
+  /* Safe area for mobile devices with notches */
   .pt-safe {
     padding-top: env(safe-area-inset-top);
   }
@@ -794,23 +370,6 @@ body.keyboard-open [data-radix-dialog-content] {
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
-
-  /* Improve touch scrolling and interaction on mobile */
-  * {
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Better font rendering on mobile */
-  body {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-  }
-
-  /* Backdrop blur support check */
-  /* REMOVED: All body.keyboard-open rules - they interfere with admin scroll
-   * Main content containers handle their own scrolling independently
-   */
 
   /* Dialog content should be scrollable when keyboard opens */
   body.keyboard-open [role="dialog"],
@@ -821,7 +380,6 @@ body.keyboard-open [data-radix-dialog-content] {
 
   /* Prevent zoom on input focus (iOS Safari) */
   @supports (-webkit-touch-callout: none) {
-
     input[type="text"],
     input[type="email"],
     input[type="tel"],
@@ -832,9 +390,8 @@ body.keyboard-open [data-radix-dialog-content] {
     }
   }
 
-  /* Enhanced form field animations - disabled on mobile to prevent z-index issues */
+  /* Enhanced form field animations — desktop only */
   @media (min-width: 769px) {
-
     input:focus,
     textarea:focus,
     select:focus {
@@ -842,108 +399,244 @@ body.keyboard-open [data-radix-dialog-content] {
       transition: transform 0.15s ease-out, border-color 0.2s ease, box-shadow 0.2s ease;
     }
   }
-
-  /* Mobile: no transform on focus to prevent positioning issues */
-  @media (max-width: 768px) {
-
-    input:focus,
-    textarea:focus,
-    select:focus {
-      transform: none !important;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-  }
-
 }
 
-@layer utilities {
+/* ========================================
+   GLOBAL STYLES (outside layers)
+   Performance, scroll, animations
+   ======================================== */
 
-  /* Prevent horizontal overflow on mobile */
-  /* Prevent horizontal overflow on mobile */
+/* Optimize scroll performance */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  overflow-x: hidden;
+  max-width: 100vw;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Performance optimizations for animations */
+.animate-fade-in,
+.animate-scale-in,
+[class*="animate-"] {
+  will-change: transform, opacity;
+}
+
+/* Section containment for scroll compatibility */
+section {
+  contain: style;
+}
+
+/* Scroll anchor offset for hash navigation */
+section[id] {
+  scroll-margin-top: 80px;
+}
+
+/* Ensure main layout containers respect viewport width */
+body>#root {
+  max-width: 100vw;
+  width: 100%;
+}
+
+/* Fix for iOS Safari viewport */
+@supports (-webkit-touch-callout: none) {
   body {
-    width: 100%;
-    /* max-width: 100vw; - Removed to prevent scroll trapping */
-    /* position: relative; - CRITICAL FIX: Removed to prevent scroll trapping */
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Navigation loading animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes blob {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.1;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+/* Mobile bottom navigation spacing */
+@media (max-width: 1024px) {
+  main:not(.custom-mobile-padding) {
+    padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom)));
   }
 
+  /* Prevent horizontal scrolling on mobile */
   html {
     overflow-x: hidden;
     max-width: 100vw;
-    scroll-behavior: smooth;
-    text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
-    -moz-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
+  }
+}
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  :root *,
+  :root *::before,
+  :root *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
   }
 
-  /* Ensure all page containers respect viewport width */
-  [class*="container"] {
-    max-width: 100% !important;
-    overflow-x: hidden;
+  :root .backdrop-blur-sm,
+  :root .backdrop-blur,
+  :root .backdrop-blur-md,
+  :root .backdrop-blur-lg,
+  :root .backdrop-blur-xl,
+  :root [class*="backdrop-blur"] {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
-  /* Prevent any element from causing horizontal scroll */
+  :root .blur-3xl,
+  :root .blur-2xl,
+  :root .blur-xl {
+    filter: none;
+    opacity: 0.2;
+  }
+}
+
+/* GPU acceleration for animated elements */
+.hero-gradient,
+.glass-card,
+[class*="motion-div"],
+[data-framer-motion] {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* ========================================
+   MOBILE PERFORMANCE OPTIMIZATIONS
+   Disable expensive GPU effects on mobile
+   ======================================== */
+
+@media (max-width: 768px) {
+  /* Reduce animation complexity */
+  [data-framer-motion] {
+    animation-duration: 0.3s !important;
+  }
+
+  /* Simpler gradients */
+  .hero-gradient {
+    background: linear-gradient(135deg, hsl(var(--marketing-primary)) 0%, hsl(var(--marketing-secondary)) 100%);
+  }
+
+  /* DISABLE EXPENSIVE BLUR EFFECTS */
+  .blur-3xl,
+  .blur-2xl,
+  .blur-xl,
+  [class*="blur-[100px]"],
+  [class*="blur-[80px]"] {
+    filter: none !important;
+    opacity: 0.3 !important;
+  }
+
+  /* Disable backdrop-blur (very expensive on mobile) */
+  .backdrop-blur-sm,
+  .backdrop-blur,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl,
+  [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: hsl(var(--card) / 0.95) !important;
+  }
+
+  /* Simplify heavy shadows */
+  .shadow-2xl,
+  [class*="shadow-[0_0_100px"] {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2) !important;
+  }
+
+  /* Reduce glow effects */
+  [class*="shadow-emerald"],
+  [class*="shadow-[0_0_20px"],
+  [class*="shadow-[0_0_30px"] {
+    box-shadow: none !important;
+  }
+
+  /* Hide large background blobs */
+  [class*="w-[400px]"][class*="blur"],
+  [class*="w-[350px]"][class*="blur"],
+  [class*="w-[800px]"][class*="blur"] {
+    display: none !important;
+  }
+
+  /* Reduce will-change usage (reserves GPU memory) */
+  .hero-gradient,
+  .glass-card,
+  [class*="motion-div"],
+  [data-framer-motion] {
+    will-change: auto !important;
+  }
+
+  /* Simpler transitions */
   * {
-    box-sizing: border-box;
+    transition-duration: 0.15s !important;
   }
 
-  /* Ensure tables and wide content don't break layout */
-  table,
-  .table {
-    max-width: 100%;
-    table-layout: auto;
+  /* Disable transforms on decorative elements */
+  .pointer-events-none {
+    transform: none !important;
+    will-change: auto !important;
   }
+}
 
-  /* Ensure buttons and interactive elements are fully visible */
-  button,
-  [role="button"],
-  a[href] {
-    min-width: 48px;
-    min-height: 48px;
-    touch-action: manipulation;
-  }
+/* ========================================
+   UTILITIES LAYER
+   ======================================== */
 
-  /* Better tap target sizes for all interactive elements */
-  button,
-  a,
-  input[type="button"],
-  input[type="submit"],
-  select {
-    min-height: 44px;
-  }
-
-  /* Enhanced form field animations */
-  input:focus,
-  textarea:focus,
-  select:focus {
-    transform: scale(1.01);
-    transition: transform 0.15s ease-out, border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  /* Smooth label transitions */
-  label {
-    transition: color 0.2s ease;
-  }
-
-  /* Better button press feedback */
-  button:active:not(:disabled) {
-    transform: scale(0.98);
-    transition: transform 0.1s ease;
-  }
-
-  /* Smooth hover states */
-  button:hover:not(:disabled),
-  a:hover {
-    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Ensure minimum touch target sizes for accessibility */
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  /* Scrollbar utilities */
+@layer utilities {
+  /* Scrollbar hide utilities */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -967,7 +660,19 @@ body.keyboard-open [data-radix-dialog-content] {
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
   }
 
-  /* All mobile devices - prevent images from blocking scroll */
+  /* Touch target utility */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Mobile padding utility */
+  .mobile-padding {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Prevent images from blocking scroll on mobile */
   @media (max-width: 767px) {
     img {
       pointer-events: none;
@@ -976,7 +681,6 @@ body.keyboard-open [data-radix-dialog-content] {
     }
   }
 
-  /* Desktop and trackpad - normal behavior */
   @media (min-width: 768px) {
     img {
       pointer-events: auto;
@@ -985,33 +689,21 @@ body.keyboard-open [data-radix-dialog-content] {
     }
   }
 
-  /* Smooth scroll behavior */
-  html {
-    scroll-behavior: smooth;
-  }
-
-  /* Focus visible for better keyboard navigation — ring-2 consistent with shadcn/ui.
-     Excludes non-interactive containers and Radix menu items (which use focus: bg change). */
+  /* Focus visible for keyboard navigation */
   *:focus-visible:not([role="dialog"]):not([role="menu"]):not([role="listbox"]):not([data-radix-scroll-area-viewport]) {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background rounded-sm;
   }
 
-  /* Interactive non-button elements (clickable cards, rows, list items) */
   [role="button"]:not(button):focus-visible,
   [tabindex="0"]:focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background rounded-md;
-  }
-
-  /* Ensure links have visible hover and focus states */
-  a:hover {
-    opacity: 0.85;
   }
 
   a:focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background rounded-sm;
   }
 
-  /* Skip-to-content link for keyboard users — hidden until focused */
+  /* Skip-to-content link for keyboard users */
   .skip-to-content {
     @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999]
            focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground
@@ -1023,28 +715,14 @@ body.keyboard-open [data-radix-dialog-content] {
     background: linear-gradient(135deg, hsl(217 91% 55%) 0%, hsl(271 81% 56%) 100%);
   }
 
-  @keyframes pulse {
-
-    0%,
-    100% {
-      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
-    }
-
-    50% {
-      box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-    }
-  }
-
-  /* Success animations */
+  /* Success animation */
   @keyframes scale-in {
     0% {
       transform: scale(0);
     }
-
     50% {
       transform: scale(1.1);
     }
-
     100% {
       transform: scale(1);
     }
@@ -1054,23 +732,12 @@ body.keyboard-open [data-radix-dialog-content] {
     animation: scale-in 0.5s ease-out;
   }
 
-  .skeleton {
-    background: linear-gradient(90deg,
-        rgba(255, 255, 255, 0.1) 25%,
-        rgba(255, 255, 255, 0.2) 50%,
-        rgba(255, 255, 255, 0.1) 75%);
-    background-size: 200% 100%;
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
-  }
-
   /* Error shake animation */
   @keyframes shake {
-
     0%,
     100% {
       transform: translateX(0);
     }
-
     10%,
     30%,
     50%,
@@ -1078,7 +745,6 @@ body.keyboard-open [data-radix-dialog-content] {
     90% {
       transform: translateX(-4px);
     }
-
     20%,
     40%,
     60%,
@@ -1091,24 +757,9 @@ body.keyboard-open [data-radix-dialog-content] {
     animation: shake 0.5s ease-in-out;
   }
 
-  /* Loading spinner */
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  .animate-spin {
-    animation: spin 1s linear infinite;
-  }
-
   /* Glassmorphism Utility Classes */
   .glass-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: var(--shadow-glass);
+    @apply bg-card/70 backdrop-blur-sm border border-border/40 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20 hover:bg-card/90;
   }
 
   .dark .glass-card {
@@ -1116,24 +767,111 @@ body.keyboard-open [data-radix-dialog-content] {
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* Reduced Motion Support - uses :root prefix for higher specificity without !important */
-  @media (prefers-reduced-motion: reduce) {
-
-    :root *,
-    :root *::before,
-    :root *::after {
-      animation-duration: 0.01ms;
-      animation-iteration-count: 1;
-      transition-duration: 0.01ms;
-      scroll-behavior: auto;
-    }
-
+  .glass-floating {
+    @apply bg-background/60 backdrop-blur-xl border-b border-border/30 shadow-sm sticky top-0 z-40 supports-[backdrop-filter]:bg-background/60;
   }
 
-  /* Mobile-First Enhancements */
-  @media (max-width: 768px) {
+  .premium-gradient-mesh {
+    background-image:
+      radial-gradient(at 0% 0%, hsla(var(--marketing-primary) / 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(var(--marketing-accent) / 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(var(--marketing-primary) / 0.03) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(var(--marketing-accent) / 0.03) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
 
-    /* Touch-optimized tap targets - minimum 48x48px (iOS/Android standard) */
+  /* Fade in animation */
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  /* 3D Transform Utilities for Flippable Cards */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Touch device optimizations */
+  @media (hover: none) and (pointer: coarse) {
+    /* Better tap feedback */
+    button:active,
+    a:active,
+    [role="button"]:active {
+      transform: scale(0.95);
+      transition: transform 0.1s;
+    }
+
+    /* Remove hover states on touch devices */
+    .hover\:scale-105:hover {
+      transform: none;
+    }
+
+    .hover\:shadow-xl:hover {
+      box-shadow: none;
+    }
+  }
+
+  /* Safe area insets for notched devices (consolidated) */
+  @supports (padding: max(0px)) {
+    .safe-area-bottom {
+      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+
+    .safe-area-top {
+      padding-top: max(0.5rem, env(safe-area-inset-top));
+    }
+  }
+
+  /* iOS-Specific Mobile Optimizations */
+  @media (max-width: 1024px) {
+    main {
+      overflow: visible;
+    }
+  }
+
+  /* ---- Storefront Accessibility — WCAG Touch & Typography ---- */
+
+  [data-testid="storefront-wrapper"] {
+    font-size: max(0.875rem, 14px);
+  }
+
+  [data-testid="storefront-wrapper"] button,
+  [data-testid="storefront-wrapper"] a,
+  [data-testid="storefront-wrapper"] [role="button"],
+  [data-testid="storefront-wrapper"] input[type="button"],
+  [data-testid="storefront-wrapper"] input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  [data-testid="storefront-wrapper"] p a,
+  [data-testid="storefront-wrapper"] span a,
+  [data-testid="storefront-wrapper"] li a {
+    min-width: unset;
+    min-height: unset;
+  }
+
+  [data-testid="storefront-wrapper"] button [class*="badge"],
+  [data-testid="storefront-wrapper"] button span {
+    min-height: unset;
+    min-width: unset;
+  }
+
+  /* Mobile touch target sizes (48px for mobile) */
+  @media (max-width: 768px) {
     button,
     a,
     [role="button"],
@@ -1143,7 +881,6 @@ body.keyboard-open [data-radix-dialog-content] {
       min-width: 48px;
     }
 
-    /* Larger touch targets for interactive elements */
     .touch-target {
       min-height: 48px;
       min-width: 48px;
@@ -1158,23 +895,23 @@ body.keyboard-open [data-radix-dialog-content] {
       transform: none !important;
     }
 
-    /* Fix chat widget z-index — modal level */
+    /* Fix chat widget z-index */
     [data-chat-widget] {
       z-index: var(--z-modal) !important;
     }
 
-    /* Bottom navigation — sticky level */
+    /* Bottom navigation */
     nav[class*="fixed"][class*="bottom"]:not([style*="z-index"]) {
       z-index: var(--z-sticky) !important;
     }
 
-    /* Input containers in modals/sheets — relative positioning only */
+    /* Input containers in modals/sheets */
     .chat-input-container,
     .mobile-input-container:not([style*="z-index"]) {
       position: relative;
     }
 
-    /* Dialog and Sheet inputs should be above siblings */
+    /* Dialog and Sheet inputs */
     [role="dialog"] input:focus,
     [role="dialog"] textarea:focus,
     [data-radix-dialog-content] input:focus,
@@ -1205,182 +942,18 @@ body.keyboard-open [data-radix-dialog-content] {
       z-index: 1;
     }
   }
-
-  /* ========================================
-   * STOREFRONT ACCESSIBILITY — WCAG Touch & Typography
-   * Minimum 44px touch targets, minimum 14px body text
-   * Scoped to [data-testid="storefront-wrapper"] to avoid admin impact
-   * ======================================== */
-
-  /* Storefront minimum body font size: 14px */
-  [data-testid="storefront-wrapper"] {
-    font-size: max(0.875rem, 14px);
-  }
-
-  /* Storefront interactive elements: minimum 44×44px touch targets */
-  [data-testid="storefront-wrapper"] button,
-  [data-testid="storefront-wrapper"] a,
-  [data-testid="storefront-wrapper"] [role="button"],
-  [data-testid="storefront-wrapper"] input[type="button"],
-  [data-testid="storefront-wrapper"] input[type="submit"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  /* Inline interactive elements (within text) should not enforce min-width */
-  [data-testid="storefront-wrapper"] p a,
-  [data-testid="storefront-wrapper"] span a,
-  [data-testid="storefront-wrapper"] li a {
-    min-width: unset;
-    min-height: unset;
-  }
-
-  /* Badge-style elements inside buttons don't need their own target */
-  [data-testid="storefront-wrapper"] button [class*="badge"],
-  [data-testid="storefront-wrapper"] button span {
-    min-height: unset;
-    min-width: unset;
-  }
-
-  /* Touch device optimizations - uses :root prefix for higher specificity without !important */
-  @media (hover: none) and (pointer: coarse) {
-
-    /* Disable expensive animations on touch devices */
-    :root .animate-fade-in,
-    :root .animate-scale-in,
-    :root [class*="animate-"] {
-      animation: none;
-    }
-
-    /* Reduce motion for better performance */
-    :root *,
-    :root *::before,
-    :root *::after {
-      animation-duration: 0.01ms;
-      animation-iteration-count: 1;
-      transition-duration: 0.01ms;
-    }
-
-    /* Better tap feedback */
-    button:active,
-    a:active,
-    [role="button"]:active {
-      transform: scale(0.95);
-      transition: transform 0.1s;
-    }
-
-    /* Remove hover states on touch devices */
-    .hover\:scale-105:hover {
-      transform: none;
-    }
-
-    .hover\:shadow-xl:hover {
-      box-shadow: none;
-    }
-  }
-
-  /* Safe area insets for notched devices (consolidated) */
-  @supports (padding: max(0px)) {
-    .safe-area-bottom {
-      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-    }
-
-    .safe-area-top {
-      padding-top: max(0.5rem, env(safe-area-inset-top));
-    }
-
-    /* Legacy safe area classes for backward compatibility */
-    .pb-safe {
-      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-    }
-
-    .pt-safe {
-      padding-top: max(0.5rem, env(safe-area-inset-top));
-    }
-  }
-
-  /* iOS-Specific Mobile Optimizations */
-  @media (max-width: 1024px) {
-
-    /* REMOVED: Global html/body scroll lock - was preventing admin layout scrolling
-     * Instead, let body scroll naturally and main content containers handle their own scrolling
-     * Prevent bounce scroll effects while allowing normal scrolling
-     */
-    html,
-    body {
-      /* overscroll-behavior: none; */
-    }
-
-    /* CRITICAL FIX: main element should NOT have overflow-y: auto
-     * This was creating a nested scroll container that hijacked page scroll.
-     * The page (body) should scroll, not individual content containers.
-     */
-    main {
-      overflow: visible;
-      /* Removed fixed height constraint - let content determine height */
-    }
-  }
-
-  /* 3D Transform Utilities for Flippable Cards */
-  .perspective-1000 {
-    perspective: 1000px;
-  }
-
-  .backface-hidden {
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  /* ========================================
-   * SIGNUP PAGE - PREMIUM ANIMATIONS
-   * Modern SaaS aesthetic (Stripe/Linear/Vercel inspired)
-   * ======================================== */
-
-  /* Fade in animation */
-  @keyframes fade-in {
-    0% {
-      opacity: 0;
-    }
-
-    100% {
-      opacity: 1;
-    }
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.5s ease-out forwards;
-  }
-
-  /* Stagger delay utilities for signup */
-  .delay-75 {
-    animation-delay: 75ms;
-  }
-
-  .delay-100 {
-    animation-delay: 100ms;
-  }
-
-  .delay-200 {
-    animation-delay: 200ms;
-  }
-
 }
 
 /* ========================================
    STOREFRONT DARK THEME READABILITY
-   When data-theme is dark-mode or luxury,
-   override neutral Tailwind colors that
-   assume light backgrounds.
    ======================================== */
 
 [data-theme="dark-mode"],
 [data-theme="luxury"] {
-  /* Ensure card backgrounds and borders use theme vars */
   --storefront-card-bg: var(--storefront-card-bg);
   --storefront-border: var(--storefront-border);
 }
 
-/* Override hardcoded light backgrounds inside dark storefronts */
 [data-theme="dark-mode"] .bg-neutral-50,
 [data-theme="luxury"] .bg-neutral-50 {
   background-color: var(--storefront-card-bg, #171717);
@@ -1396,7 +969,6 @@ body.keyboard-open [data-radix-dialog-content] {
   background-color: var(--storefront-card-bg, #171717);
 }
 
-/* Override dark text on dark backgrounds */
 [data-theme="dark-mode"] .text-neutral-900,
 [data-theme="luxury"] .text-neutral-900 {
   color: var(--storefront-text, #fafafa);
@@ -1420,7 +992,6 @@ body.keyboard-open [data-radix-dialog-content] {
   opacity: 0.5;
 }
 
-/* Fix light borders */
 [data-theme="dark-mode"] .border-neutral-100,
 [data-theme="luxury"] .border-neutral-100 {
   border-color: var(--storefront-border, #262626);
@@ -1436,7 +1007,6 @@ body.keyboard-open [data-radix-dialog-content] {
   border-color: var(--storefront-border, #262626);
 }
 
-/* Fix hover states */
 [data-theme="dark-mode"] .hover\:text-neutral-900:hover,
 [data-theme="luxury"] .hover\:text-neutral-900:hover {
   color: var(--storefront-text, #fafafa);
@@ -1449,8 +1019,6 @@ body.keyboard-open [data-radix-dialog-content] {
 
 /* ========================================
    LUXURY THEME GOLD ACCENTS
-   Gold (#d4af37) applied to interactive
-   and accent elements in luxury theme.
    ======================================== */
 
 [data-theme="luxury"] .text-emerald-600,
@@ -1458,17 +1026,14 @@ body.keyboard-open [data-radix-dialog-content] {
   color: var(--storefront-primary, #d4af37);
 }
 
-/* Luxury gold focus rings */
 [data-theme="luxury"] *:focus-visible {
   --tw-ring-color: var(--storefront-primary, #d4af37);
 }
 
-/* Luxury gold scrollbar track */
 [data-theme="luxury"] ::-webkit-scrollbar-thumb {
   background-color: var(--storefront-primary, #d4af37);
 }
 
-/* Luxury selection color */
 [data-theme="luxury"] ::selection {
   background-color: rgba(212, 175, 55, 0.3);
   color: #fafaf9;
@@ -1476,24 +1041,6 @@ body.keyboard-open [data-radix-dialog-content] {
 
 /* ========================================
    WCAG AA COLOR CONTRAST FIXES
-   Boost low-contrast gray text utilities
-   to meet 4.5:1 minimum contrast ratio
-   on light backgrounds.
-
-   gray-400 (#9CA3AF) → gray-500 (#6B7280) ≈ 4.6:1
-   gray-300 (#D1D5DB) → gray-500 (#6B7280) ≈ 4.6:1
-   slate-400 (#94A3B8) → slate-500 (#64748B) ≈ 4.6:1
-   slate-300 (#CBD5E1) → slate-500 (#64748B) ≈ 4.6:1
-   neutral-400 (#A3A3A3) → neutral-500 (#737373) ≈ 4.7:1
-   neutral-300 (#D4D4D4) → neutral-500 (#737373) ≈ 4.7:1
-   zinc-400 (#A1A1AA) → zinc-500 (#71717A) ≈ 4.7:1
-   zinc-300 (#D4D4D8) → zinc-500 (#71717A) ≈ 4.7:1
-
-   Dark mode (.dark) is excluded — gray-300/400
-   are fine on dark backgrounds.
-
-   Dark-background panels in light mode use
-   [data-dark-panel] to preserve original values.
    ======================================== */
 
 :root:not(.dark) .text-gray-400 {
@@ -1528,10 +1075,7 @@ body.keyboard-open [data-radix-dialog-content] {
   color: #71717A;
 }
 
-/* Restore original low-contrast colors inside
-   dark-background panels that are dark in light mode
-   (e.g., debug console, courier modals, map overlays,
-   financial dashboard, TV dashboard, home sections) */
+/* Restore original colors inside dark-background panels */
 [data-dark-panel] .text-gray-400,
 [data-dark-panel] .text-gray-300,
 [data-dark-panel].text-gray-400,
@@ -1560,38 +1104,19 @@ body.keyboard-open [data-radix-dialog-content] {
   color: #A1A1AA;
 }
 
-@layer utilities {
-  .glass-card {
-    @apply bg-card/70 backdrop-blur-sm border border-border/40 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20 hover:bg-card/90;
-  }
+/* ========================================
+   NEW ORDER ANIMATIONS
+   ======================================== */
 
-  .glass-floating {
-    @apply bg-background/60 backdrop-blur-xl border-b border-border/30 shadow-sm sticky top-0 z-40 supports-[backdrop-filter]:bg-background/60;
-  }
-
-  .premium-gradient-mesh {
-    background-image:
-      radial-gradient(at 0% 0%, hsla(var(--marketing-primary) / 0.03) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(var(--marketing-accent) / 0.03) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, hsla(var(--marketing-primary) / 0.03) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, hsla(var(--marketing-accent) / 0.03) 0px, transparent 50%);
-    background-attachment: fixed;
-  }
-
-}
-
-/* New order highlight animation */
 @keyframes new-order-highlight {
   0% {
     background-color: hsl(var(--primary) / 0.15);
     transform: scale(1.005);
   }
-
   50% {
     background-color: hsl(var(--primary) / 0.08);
     transform: scale(1);
   }
-
   100% {
     background-color: hsl(var(--primary) / 0.03);
     transform: scale(1);
@@ -1603,18 +1128,15 @@ body.keyboard-open [data-radix-dialog-content] {
   transition: background-color 0.5s ease-out, border-color 0.5s ease-out;
 }
 
-/* New order slide-in animation for kanban cards */
 @keyframes new-order-slide-in {
   0% {
     opacity: 0;
     transform: translateY(-12px) scale(0.97);
   }
-
   60% {
     opacity: 1;
     transform: translateY(2px) scale(1.01);
   }
-
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -1627,24 +1149,22 @@ body.keyboard-open [data-radix-dialog-content] {
 
 /* ========================================
    PRINT STYLES — Orders & Invoices
-   Hides sidebar/nav, formats A4 with business header
    ======================================== */
 
 @media print {
-
-  /* Force color printing */
   * {
     print-color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
+    animation: none !important;
+    transition: none !important;
   }
 
-  /* A4 page setup */
   @page {
     size: A4;
     margin: 1.5cm 2cm;
   }
 
-  /* Hide all navigation and chrome */
+  /* Hide navigation and chrome */
   [data-sidebar],
   .glass-floating,
   .mobile-bottom-nav,
@@ -1661,7 +1181,6 @@ body.keyboard-open [data-radix-dialog-content] {
     display: none !important;
   }
 
-  /* Reset layout — full width, no overflow hiding */
   body {
     background: white !important;
     color: black !important;
@@ -1679,7 +1198,6 @@ body.keyboard-open [data-radix-dialog-content] {
     overflow: visible !important;
   }
 
-  /* Make main content full width, remove padding adjustments */
   .flex-1.flex.flex-col {
     width: 100% !important;
   }
@@ -1693,7 +1211,6 @@ body.keyboard-open [data-radix-dialog-content] {
     max-width: 100% !important;
   }
 
-  /* Remove backgrounds and shadows */
   .premium-gradient-mesh {
     background-image: none !important;
     background: white !important;
@@ -1705,7 +1222,6 @@ body.keyboard-open [data-radix-dialog-content] {
     box-shadow: none !important;
   }
 
-  /* Card styling for print */
   [data-slot="card"] {
     border: 1px solid theme(colors.gray.300) !important;
     box-shadow: none !important;
@@ -1713,7 +1229,6 @@ body.keyboard-open [data-radix-dialog-content] {
     page-break-inside: avoid;
   }
 
-  /* Tables should not break across pages */
   table {
     page-break-inside: auto;
   }
@@ -1727,41 +1242,29 @@ body.keyboard-open [data-radix-dialog-content] {
     display: table-header-group;
   }
 
-  /* Print business header */
   .print-business-header {
     display: block !important;
   }
 
-  /* Badge styling for print */
   [data-slot="badge"] {
     border: 1px solid currentColor !important;
   }
 
-  /* Remove animations and transitions */
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-
-  /* Remove max-height constraints so content isn't truncated */
   [class*="max-h-"] {
     max-height: none !important;
   }
 
-  /* Hide all fixed/sticky positioned UI chrome */
   .fixed,
   .sticky {
     position: static !important;
   }
 
-  /* Reset main content area for print — full width, no extra padding */
   #main-content {
     padding: 0 !important;
     overflow: visible !important;
     flex: none !important;
   }
 
-  /* Reset layout padding that compensates for fixed nav/sidebar */
   .pt-16,
   .pt-28 {
     padding-top: 0 !important;
@@ -1771,13 +1274,11 @@ body.keyboard-open [data-radix-dialog-content] {
     padding-left: 0 !important;
   }
 
-  /* Ensure links show URL in print if useful */
   a[href^="http"]::after {
     content: none;
-    /* Don't clutter with URLs */
   }
 
-  /* ---- Invoice Print Styles ---- */
+  /* Invoice Print Styles */
   .invoice-print-document {
     border: none !important;
     box-shadow: none !important;
@@ -1816,7 +1317,6 @@ body.keyboard-open [data-radix-dialog-content] {
     color: theme(colors.gray.700) !important;
   }
 
-  /* Totals section prints clearly */
   .invoice-print-document .text-muted-foreground {
     color: theme(colors.gray.600) !important;
   }
@@ -1828,9 +1328,8 @@ body.keyboard-open [data-radix-dialog-content] {
 
 /* ========================================
    NPROGRESS CUSTOM STYLES
-   Thin animated loading bar at page top
-   during route navigation
    ======================================== */
+
 #nprogress {
   pointer-events: none;
 }
