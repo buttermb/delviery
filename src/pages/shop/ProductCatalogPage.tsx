@@ -32,7 +32,6 @@ import {
   Grid3X3,
   List,
   X,
-  RefreshCw,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -43,6 +42,7 @@ import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 import { FilterDrawer, FilterTriggerButton, getActiveFilterCount, type FilterState } from '@/components/shop/FilterDrawer';
 import { SearchInput } from '@/components/shared/SearchInput';
+import { EmptyState, ErrorState } from '@/components/ui/empty-state';
 import { FilterDrawer, FilterTriggerButton, type FilterState } from '@/components/shop/FilterDrawer';
 import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
@@ -746,25 +746,31 @@ export function ProductCatalogPage() {
             Try Again
           </Button>
         </div>
+        <ErrorState
+          title="Unable to load products"
+          description="There was a problem loading the products. Please try again."
+          onRetry={() => refetchProducts()}
+          retryLabel="Try Again"
+        />
       ) : products.length === 0 ? (
-        <div className="text-center py-16" data-testid="empty-catalog">
-          <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-xl font-semibold mb-2">No products yet</h2>
-          <p className="text-muted-foreground mb-4">
-            Check back later.
-          </p>
-        </div>
+        <EmptyState
+          title="Products coming soon"
+          description="Check back later for new arrivals."
+          illustration="no-data"
+          data-testid="empty-catalog"
+        />
       ) : filteredProducts.length === 0 ? (
-        <div className="text-center py-16">
-          <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-xl font-semibold mb-2">No products found</h2>
-          <p className="text-muted-foreground mb-4">
-            Try adjusting your search or filters
-          </p>
-          <Button variant="outline" onClick={clearFilters}>
-            Clear Filters
-          </Button>
-        </div>
+        <EmptyState
+          title="No products found"
+          description="Try adjusting your search or filters to find what you're looking for."
+          illustration="no-results"
+          action={{
+            label: "Clear Filters",
+            onClick: clearFilters,
+            variant: "outline",
+          }}
+          data-testid="empty-filtered"
+        />
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4" data-testid="product-catalog-grid">
           {paginatedProducts.map((product) => (

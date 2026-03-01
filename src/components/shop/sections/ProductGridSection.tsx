@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, Package, Grid3X3, List, ArrowUpDown } from "lucide-react";
+import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
 import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, Package } from "lucide-react";
 import { useShopCart } from "@/hooks/useShopCart";
@@ -381,17 +383,32 @@ export function ProductGridSection({ content, styles, storeId, storeSlug: storeS
                         <p>Unable to load products.</p>
                     </div>
                 ) : allProducts.length === 0 ? (
-                    <div className="text-center py-20" data-testid="empty-product-grid">
-                        <Package className="w-16 h-16 mx-auto mb-4 opacity-40" style={{ color: text_color }} />
-                        <h3 className="text-xl font-semibold mb-2 opacity-70">Coming soon</h3>
-                        <p className="opacity-50">Check back soon for new arrivals</p>
-                    </div>
+                    <EmptyState
+                        title="Products coming soon"
+                        description="Check back soon for new arrivals."
+                        illustration="no-data"
+                        data-testid="empty-product-grid"
+                    />
                 ) : limitedProducts.length === 0 ? (
                     <div className="text-center py-20 opacity-50">
                         <p>No products match your search.</p>
                     </div>
                 ) : viewMode === 'list' ? (
                     /* ── List View ──────────────────────────────────────── */
+                    <EmptyState
+                        title="No products found"
+                        description="Try adjusting your search or filters."
+                        illustration="no-results"
+                        action={searchQuery ? {
+                            label: "Clear Filters",
+                            onClick: () => {
+                                setSearchQuery("");
+                                setPremiumFilter(false);
+                            },
+                            variant: "outline",
+                        } : undefined}
+                    />
+                ) : (
                     <div className="space-y-12 md:space-y-16">
                         {categories
                             .slice(0, showAllCategories ? categories.length : (initial_categories_shown || 2))
