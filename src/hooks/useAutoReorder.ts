@@ -10,7 +10,6 @@
  * with one-click purchase order creation.
  */
 
-import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -263,25 +262,29 @@ export function useAutoReorder(): AutoReorderSummary {
     enabled: !!tenantId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: true,
+    // select derives summary counts from raw suggestions array.
+    // TanStack Query's structural sharing ensures re-renders only occur
+    // when the derived counts or suggestions actually change.
+    select: (suggestions) => ({
+      suggestions,
+      criticalCount: suggestions.filter((s) => s.priority === 'critical').length,
+      highCount: suggestions.filter((s) => s.priority === 'high').length,
+      totalEstimatedCost: suggestions.reduce((sum, s) => sum + s.estimatedCost, 0),
+    }),
   });
 
-  const suggestions = useMemo(() => data ?? [], [data]);
-
-  const summary = useMemo(() => {
-    const critical = suggestions.filter((s) => s.priority === 'critical');
-    const high = suggestions.filter((s) => s.priority === 'high');
-    const totalCost = suggestions.reduce((sum, s) => sum + s.estimatedCost, 0);
-
-    return {
-      criticalCount: critical.length,
-      highCount: high.length,
-      totalEstimatedCost: totalCost,
-    };
-  }, [suggestions]);
+  const selected = data ?? {
+    suggestions: [],
+    criticalCount: 0,
+    highCount: 0,
+    totalEstimatedCost: 0,
+  };
 
   return {
-    suggestions,
-    ...summary,
+    suggestions: selected.suggestions,
+    criticalCount: selected.criticalCount,
+    highCount: selected.highCount,
+    totalEstimatedCost: selected.totalEstimatedCost,
     isLoading,
     error: error as Error | null,
     refetch,

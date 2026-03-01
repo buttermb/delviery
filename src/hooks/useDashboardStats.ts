@@ -165,8 +165,6 @@ function useRawDashboardStats(period: DashboardPeriod = '30d') {
       const periodStart = getPeriodStartDate(period);
       const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const [
         // Orders queries
@@ -556,6 +554,39 @@ function getEmptyStatsWithTrends(): DashboardStatsWithTrends {
 }
 
 /**
+ * Derive trend-enriched stats from raw dashboard stats.
+ * Extracted as a stable function reference so it can be used with
+ * useMemo without causing unnecessary recalculations.
+ */
+function deriveStatsWithTrends(data: DashboardStats): DashboardStatsWithTrends {
+  return {
+    ordersToday: createStatWithTrend(data.totalOrdersToday, data.totalOrdersYesterday),
+    revenueToday: createStatWithTrend(data.revenueToday, data.revenueYesterday),
+    newCustomers: createStatWithTrend(data.newCustomersToday, data.newCustomersYesterday),
+    lowStockCount: {
+      ...createStatWithTrend(data.lowStockItems, data.lowStockItemsYesterday),
+      trend: calculateTrend(-calculateChangePercent(data.lowStockItems, data.lowStockItemsYesterday)),
+    },
+    pendingDeliveries: createStatWithTrend(data.activeDeliveries, data.activeDeliveriesYesterday),
+    activeMenus: {
+      value: data.activeMenus,
+      changePercent: 0,
+      trend: 'flat' as TrendDirection,
+    },
+    totalProducts: {
+      value: data.totalProducts,
+      changePercent: 0,
+      trend: 'flat' as TrendDirection,
+    },
+    avgOrderValue: {
+      value: data.avgOrderValue,
+      changePercent: data.revenueGrowthPercent,
+      trend: calculateTrend(data.revenueGrowthPercent),
+    },
+  };
+}
+
+/**
  * Dashboard stats hook that aggregates stats from all modules
  * with trend indicators (change percentage and trend direction)
  *
@@ -591,55 +622,7 @@ export function useDashboardStats(period: DashboardPeriod = '30d') {
     if (!data) {
       return getEmptyStatsWithTrends();
     }
-
-    logger.debug('[useDashboardStats] Calculating stats with trends', {
-      ordersToday: data.totalOrdersToday,
-      ordersYesterday: data.totalOrdersYesterday,
-    });
-
-    return {
-      // Orders today with trend from yesterday
-      ordersToday: createStatWithTrend(data.totalOrdersToday, data.totalOrdersYesterday),
-
-      // Revenue today with trend from yesterday
-      revenueToday: createStatWithTrend(data.revenueToday, data.revenueYesterday),
-
-      // New customers today with trend from yesterday
-      newCustomers: createStatWithTrend(data.newCustomersToday, data.newCustomersYesterday),
-
-      // Low stock count (for low stock, down is actually good)
-      // We invert the trend direction for this metric
-      lowStockCount: {
-        ...createStatWithTrend(data.lowStockItems, data.lowStockItemsYesterday),
-        // Invert trend: more low stock items is bad (down is good)
-        trend: calculateTrend(-calculateChangePercent(data.lowStockItems, data.lowStockItemsYesterday)),
-      },
-
-      // Pending deliveries (active deliveries in transit)
-      pendingDeliveries: createStatWithTrend(data.activeDeliveries, data.activeDeliveriesYesterday),
-
-      // Active menus (no historical tracking, so flat trend)
-      activeMenus: {
-        value: data.activeMenus,
-        changePercent: 0,
-        trend: 'flat' as TrendDirection,
-      },
-
-      // Total products (relatively stable metric)
-      totalProducts: {
-        value: data.totalProducts,
-        changePercent: 0,
-        trend: 'flat' as TrendDirection,
-      },
-
-      // Average order value with trend
-      // We use MTD avgOrderValue since that's what we calculate
-      avgOrderValue: {
-        value: data.avgOrderValue,
-        changePercent: data.revenueGrowthPercent,
-        trend: calculateTrend(data.revenueGrowthPercent),
-      },
-    };
+    return deriveStatsWithTrends(data);
   }, [rawQuery.data]);
 
   return {

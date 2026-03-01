@@ -4,6 +4,7 @@
  * for the storefront (shop) side.
  */
 
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -191,8 +192,8 @@ export function useStorefrontOrders({
     return ['pending', 'confirmed'].includes(order.status);
   };
 
-  // Order statistics
-  const orderStats = {
+  // Memoize order statistics to avoid recomputing on every render
+  const orderStats = useMemo(() => ({
     total: orders.length,
     active: orders.filter((o) => ACTIVE_STATUSES.includes(o.status)).length,
     completed: orders.filter((o) => COMPLETED_STATUSES.includes(o.status)).length,
@@ -200,7 +201,7 @@ export function useStorefrontOrders({
     totalSpent: orders
       .filter((o) => !CANCELLED_STATUSES.includes(o.status))
       .reduce((sum, o) => sum + (o.total || o.total_amount || 0), 0),
-  };
+  }), [orders]);
 
   return {
     orders,

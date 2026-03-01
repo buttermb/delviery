@@ -4,7 +4,7 @@
  * Provides real-time updates via Supabase subscription.
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import type { RealtimePayload } from '@/hooks/useRealtimeSubscription';
@@ -140,8 +140,11 @@ export function useNotifications(): UseNotificationsResult {
     staleTime: 10000, // Consider data stale after 10 seconds
   });
 
-  // Calculate unread count
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // Memoize unread count to avoid recomputing on every render
+  const unreadCount = useMemo(
+    () => notifications.filter((n) => !n.read).length,
+    [notifications]
+  );
 
   // Handle realtime changes callback
   const handleRealtimeChange = useCallback(

@@ -7,7 +7,6 @@
  * out-of-stock and low-stock products.
  */
 
-import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -150,31 +149,44 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
     enabled: !!tenant?.id,
     staleTime: 60000, // 1 minute
     refetchOnWindowFocus: true,
+    // select transforms raw data into summary + products.
+    // TanStack Query's structural sharing ensures re-renders only occur
+    // when the derived values actually change, not on every refetch.
+    select: (products) => {
+      const outOfStock = products.filter((p) => p.alertLevel === 'out_of_stock');
+      const critical = products.filter((p) => p.alertLevel === 'critical');
+      const warning = products.filter((p) => p.alertLevel === 'warning');
+
+      return {
+        products,
+        outOfStockCount: outOfStock.length,
+        criticalCount: critical.length,
+        warningCount: warning.length,
+        totalAlerts: products.length,
+        outOfStockIds: new Set(outOfStock.map((p) => p.id)),
+        lowStockIds: new Set(products.map((p) => p.id)),
+      };
+    },
   });
 
-  const products = useMemo(() => data ?? [], [data]);
-
-  const summary = useMemo(() => {
-    const outOfStock = products.filter((p) => p.alertLevel === 'out_of_stock');
-    const critical = products.filter((p) => p.alertLevel === 'critical');
-    const warning = products.filter((p) => p.alertLevel === 'warning');
-
-    const outOfStockIds = new Set(outOfStock.map((p) => p.id));
-    const lowStockIds = new Set(products.map((p) => p.id));
-
-    return {
-      outOfStockCount: outOfStock.length,
-      criticalCount: critical.length,
-      warningCount: warning.length,
-      totalAlerts: products.length,
-      outOfStockIds,
-      lowStockIds,
-    };
-  }, [products]);
+  const selected = data ?? {
+    products: [],
+    outOfStockCount: 0,
+    criticalCount: 0,
+    warningCount: 0,
+    totalAlerts: 0,
+    outOfStockIds: new Set<string>(),
+    lowStockIds: new Set<string>(),
+  };
 
   return {
-    products,
-    ...summary,
+    products: selected.products,
+    outOfStockCount: selected.outOfStockCount,
+    criticalCount: selected.criticalCount,
+    warningCount: selected.warningCount,
+    totalAlerts: selected.totalAlerts,
+    outOfStockIds: selected.outOfStockIds,
+    lowStockIds: selected.lowStockIds,
     isLoading,
     error: error as Error | null,
     refetch,

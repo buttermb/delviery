@@ -6,6 +6,7 @@
  * use different customer tables, we match orders by email address.
  */
 
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -122,15 +123,15 @@ export function useCustomerPortalOrders({
     enabled: enabled && !!customerEmail && !!tenantId,
   });
 
-  // Calculate order statistics
-  const orderStats: CustomerOrderStats = {
+  // Memoize order statistics to avoid recomputing on every render
+  const orderStats: CustomerOrderStats = useMemo(() => ({
     totalOrders: orders.length,
     activeOrders: orders.filter((o) => ACTIVE_STATUSES.includes(o.status)).length,
     completedOrders: orders.filter((o) => COMPLETED_STATUSES.includes(o.status)).length,
     totalSpent: orders
       .filter((o) => !CANCELLED_STATUSES.includes(o.status))
       .reduce((sum, o) => sum + (o.total_amount ?? 0), 0),
-  };
+  }), [orders]);
 
   // Helper to get order by ID
   const getOrderById = (orderId: string): CustomerPortalOrder | undefined => {
