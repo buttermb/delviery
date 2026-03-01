@@ -443,7 +443,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
 
                                         <div className={`grid ${gridColsClass} gap-3 md:gap-6`}>
                                             {products.map((product, index) => (
-                                                <div key={product.id || index}>
+                                                <div key={product.id || index} className="h-full">
                                                     <StorefrontProductCard
                                                         product={{
                                                             product_id: product.id ?? '',
