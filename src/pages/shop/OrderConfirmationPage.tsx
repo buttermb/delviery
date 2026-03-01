@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { CheckCircle, Package, Clock, Mail, MapPin, Copy, Check, Loader2, ShoppingBag, Truck, MessageCircle, XCircle, CreditCard, Store, Banknote, Wallet } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { useShopCart } from '@/hooks/useShopCart';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +38,12 @@ const STATUS_STEPS = [
   { status: 'out_for_delivery', label: 'Out for Delivery', description: 'On the way to you', icon: Truck },
   { status: 'delivered', label: 'Delivered', description: 'Order has been delivered', icon: CheckCircle },
 ];
+const PAYMENT_METHOD_LABELS: Record<string, { label: string; icon: typeof CreditCard }> = {
+  cash: { label: 'Cash on Delivery', icon: Banknote },
+  card: { label: 'Credit/Debit Card', icon: CreditCard },
+  venmo: { label: 'Venmo', icon: Wallet },
+  zelle: { label: 'Zelle', icon: Wallet },
+};
 
 export function OrderConfirmationPage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -78,6 +85,7 @@ export function OrderConfirmationPage() {
       let query = supabase
         .from('storefront_orders')
         .select('id, order_number, items, subtotal, delivery_fee, total, status, created_at, delivery_address, customer_name');
+        .select('order_number, items, subtotal, delivery_fee, total, status, created_at, delivery_address, customer_name, payment_method, fulfillment_method');
 
       if (trackingToken) {
         query = query.eq('tracking_token', trackingToken);
@@ -250,17 +258,22 @@ export function OrderConfirmationPage() {
         ) : (
           <>
             <div
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-3 sm:mb-4 flex items-center justify-center animate-[bounce-in_0.5s_ease-out]"
               style={{ backgroundColor: `${store.primary_color}20` }}
             >
               <CheckCircle
-                className="w-10 h-10 sm:w-12 sm:h-12"
+                className="w-10 h-10 sm:w-12 sm:h-12 animate-[draw-check_0.6s_ease-out_0.2s_both]"
                 style={{ color: store.primary_color }}
               />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Order Confirmed!</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Thank you for your order. We&apos;ll send you updates on your delivery.
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 animate-[fade-up_0.4s_ease-out_0.4s_both]">
+              Thank You!
+            </h1>
+            <p className="text-lg sm:text-xl font-semibold mb-1 animate-[fade-up_0.4s_ease-out_0.5s_both]" style={{ color: store.primary_color }}>
+              Order #{displayOrderNumber} Confirmed
+            </p>
+            <p className="text-sm sm:text-base text-muted-foreground animate-[fade-up_0.4s_ease-out_0.6s_both]">
+              We&apos;ll send you updates on your delivery.
             </p>
           </>
         )}
@@ -273,10 +286,42 @@ export function OrderConfirmationPage() {
             <p className="text-xl sm:text-2xl font-bold" style={{ color: store.primary_color }}>
               #{displayOrderNumber}
             </p>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm mb-4 sm:mb-6">
             {displayTotal != null && (
-              <p className="text-base sm:text-lg mt-1 sm:mt-2">
-                Total: <strong>{formatCurrency(displayTotal)}</strong>
-              </p>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Total</p>
+                <p className="text-lg font-bold" style={{ color: store.primary_color }}>
+                  {formatCurrency(displayTotal)}
+                </p>
+              </div>
+            )}
+            {orderDetails?.payment_method && (
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Payment</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  {(() => {
+                    const pm = PAYMENT_METHOD_LABELS[orderDetails.payment_method];
+                    const Icon = pm?.icon ?? CreditCard;
+                    return <Icon className="w-4 h-4 text-muted-foreground" />;
+                  })()}
+                  <p className="font-medium">
+                    {PAYMENT_METHOD_LABELS[orderDetails.payment_method]?.label ?? orderDetails.payment_method}
+                  </p>
+                </div>
+              </div>
+            )}
+            {orderDetails?.fulfillment_method && (
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Fulfillment</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  {orderDetails.fulfillment_method === 'pickup' ? (
+                    <Store className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <Truck className="w-4 h-4 text-muted-foreground" />
+                  )}
+                  <p className="font-medium capitalize">{orderDetails.fulfillment_method}</p>
+                </div>
+              </div>
             )}
           </div>
 
@@ -424,12 +469,19 @@ export function OrderConfirmationPage() {
       </Card>
 
       {/* Delivery Details (hidden when cancelled) */}
+      {/* Delivery/Pickup Details (hidden when cancelled) */}
       {orderDetails && !isCancelled && (
         <Card className="mb-4 sm:mb-6">
           <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
-              <Truck className="w-5 h-5" style={{ color: store.primary_color }} />
-              <h3 className="font-semibold text-base sm:text-lg">Delivery Details</h3>
+              {orderDetails.fulfillment_method === 'pickup' ? (
+                <Store className="w-5 h-5" style={{ color: store.primary_color }} />
+              ) : (
+                <Truck className="w-5 h-5" style={{ color: store.primary_color }} />
+              )}
+              <h3 className="font-semibold text-base sm:text-lg">
+                {orderDetails.fulfillment_method === 'pickup' ? 'Pickup Details' : 'Delivery Details'}
+              </h3>
             </div>
             <div className="space-y-3">
               {orderDetails.customer_name && (
@@ -440,7 +492,7 @@ export function OrderConfirmationPage() {
                   </div>
                 </div>
               )}
-              {orderDetails.delivery_address && (
+              {orderDetails.delivery_address && orderDetails.fulfillment_method !== 'pickup' && (
                 <div className="flex items-start gap-3">
                   <MapPin className="w-4 h-4 mt-0.5 text-muted-foreground" />
                   <div>
@@ -451,13 +503,18 @@ export function OrderConfirmationPage() {
               <div className="flex items-start gap-3">
                 <Clock className="w-4 h-4 mt-0.5 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">Estimated Delivery</p>
+                  <p className="text-sm font-medium">
+                    {orderDetails.fulfillment_method === 'pickup' ? 'Pickup Estimate' : 'Estimated Delivery'}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {orderDetails.status === 'delivered'
                       ? 'Delivered'
                       : orderDetails.status === 'out_for_delivery'
                         ? 'Out for delivery — arriving soon'
                         : 'Within 30\u201360 minutes'}
+                        : orderDetails.fulfillment_method === 'pickup'
+                          ? 'Ready for pickup in 15–30 minutes'
+                          : 'Within 30–60 minutes'}
                   </p>
                 </div>
               </div>
