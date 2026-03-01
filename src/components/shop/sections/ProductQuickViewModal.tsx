@@ -13,6 +13,7 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useState } from 'react';
 import ProductImage from '@/components/ProductImage';
 import { cleanProductName } from '@/utils/productName';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface MarketplaceProduct {
     product_id: string;
@@ -165,7 +166,7 @@ export function ProductQuickViewModal({
                                     className="text-3xl"
                                     style={{ color: accentColor }}
                                 >
-                                    ${product.price?.toFixed(2) || '0.00'}
+                                    {formatCurrency(product.price)}
                                 </p>
                             </div>
 
@@ -199,7 +200,7 @@ export function ProductQuickViewModal({
                                 }}
                             >
                                 <ShoppingCart className="w-4 h-4 mr-2" />
-                                Add to Cart - ${(product.price * quantity).toFixed(2)}
+                                Add to Cart - {formatCurrency(product.price * quantity)}
                             </Button>
                         </motion.div>
                     </div>

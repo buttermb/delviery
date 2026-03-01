@@ -9,6 +9,7 @@ import { ShoppingCart, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import ProductImage from '@/components/ProductImage';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface CartPreviewItem {
     name: string;
@@ -86,7 +87,7 @@ export function CartPreviewPopup({
                         <div className="flex-1 min-w-0">
                             <p className="text-white text-sm font-medium truncate">{item.name}</p>
                             <p className="text-white/50 text-xs">Qty: {item.quantity}</p>
-                            <p className="text-white font-medium">${item.price.toFixed(2)}</p>
+                            <p className="text-white font-medium">{formatCurrency(item.price)}</p>
                         </div>
                     </div>
 
@@ -94,7 +95,7 @@ export function CartPreviewPopup({
                     <div className="px-4 py-3 bg-white/[0.02] border-t border-white/5">
                         <div className="flex items-center justify-between text-sm mb-3">
                             <span className="text-white/50">Cart ({cartCount} items)</span>
-                            <span className="text-white font-medium">${cartTotal.toFixed(2)}</span>
+                            <span className="text-white font-medium">{formatCurrency(cartTotal)}</span>
                         </div>
 
                         {/* Actions */}

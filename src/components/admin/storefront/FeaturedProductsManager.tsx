@@ -35,6 +35,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 import {
   Search,
   Star,
@@ -118,7 +119,7 @@ function SortableFeaturedProduct({ product, index, onRemove }: SortableFeaturedP
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{product.name}</p>
         <p className="text-xs text-muted-foreground">
-          ${product.price.toFixed(2)}
+          {formatCurrency(product.price)}
           {product.category && ` · ${product.category}`}
         </p>
       </div>
@@ -161,7 +162,7 @@ function DragOverlayContent({ product, index }: { product: Product; index: numbe
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{product.name}</p>
         <p className="text-xs text-muted-foreground">
-          ${product.price.toFixed(2)}
+          {formatCurrency(product.price)}
           {product.category && ` · ${product.category}`}
         </p>
       </div>
@@ -399,7 +400,7 @@ export function FeaturedProductsManager({
                     <p className="text-sm font-medium truncate">{product.name}</p>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">
-                        ${product.price.toFixed(2)}
+                        {formatCurrency(product.price)}
                       </span>
                       {product.category && (
                         <Badge variant="outline" className="text-[10px] h-4 px-1">
