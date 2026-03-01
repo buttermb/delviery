@@ -299,6 +299,7 @@ export function useUnifiedOrder(orderId: string | undefined) {
       return data as unknown as UnifiedOrder;
     },
     enabled: !!tenant?.id && !!orderId,
+    staleTime: 30000, // 30 seconds
   });
 }
 
@@ -1003,7 +1004,7 @@ export function useOrderStats(orderType: OrderType = 'all') {
       return stats;
     },
     enabled: !!tenant?.id,
-    staleTime: 60000, // 1 minute
+    staleTime: 30000, // 30 seconds
   });
 }
 

@@ -91,6 +91,7 @@ export function useRecurringOrders() {
       })) as RecurringOrderSchedule[];
     },
     enabled: !!tenant?.id,
+    staleTime: 30000, // 30 seconds
   });
 
   const createSchedule = useMutation({

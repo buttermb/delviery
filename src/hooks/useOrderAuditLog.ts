@@ -131,6 +131,7 @@ export function useOrderAuditLog(options: UseOrderAuditLogOptions = {}) {
       }
     },
     enabled: !!tenantId && enabled,
+    staleTime: 30000, // 30 seconds
   });
 
   const logAudit = useMutation({

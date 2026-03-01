@@ -98,6 +98,7 @@ export function useVendorsWithStats() {
             });
         },
         enabled: !!tenant?.id,
+        staleTime: 30000, // 30 seconds
     });
 }
 
@@ -124,5 +125,6 @@ export function useVendorOrders(vendorId: string | null) {
             return (data ?? []) as VendorOrder[];
         },
         enabled: !!tenant?.id && !!vendorId,
+        staleTime: 30000, // 30 seconds
     });
 }
