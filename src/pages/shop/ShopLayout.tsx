@@ -311,15 +311,15 @@ export default function ShopLayout() {
     }
   }, [store?.id]);
 
-  // Check age verification
+  // Check age verification (persists per store slug)
   useEffect(() => {
     if (store?.require_age_verification) {
-      const verified = safeStorage.getItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${store.id}`);
+      const verified = safeStorage.getItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeSlug}`);
       setAgeVerified(verified === 'true');
     } else {
       setAgeVerified(true);
     }
-  }, [store]);
+  }, [store, storeSlug]);
   // Check if store is open
   const isStoreOpen = () => {
     if (!store?.operating_hours) return true;
@@ -334,13 +334,14 @@ export default function ShopLayout() {
     return currentTime >= hours.open && currentTime <= hours.close;
   };
 
-  // Handle age verification
+  // Handle age verification (persists per store slug)
   const handleAgeVerification = (verified: boolean) => {
-    if (verified && store?.id) {
-      safeStorage.setItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${store.id}`, 'true');
+    if (verified && storeSlug) {
+      safeStorage.setItem(`${STORAGE_KEYS.AGE_VERIFIED_PREFIX}${storeSlug}`, 'true');
       setAgeVerified(true);
     } else {
-      navigate('/');
+      // Redirect underage users away from the store
+      window.location.href = 'https://www.google.com';
     }
   };
 
@@ -419,47 +420,19 @@ export default function ShopLayout() {
           storeName={store.store_name}
           logoUrl={store.logo_url}
           minimumAge={store.minimum_age}
-          storeId={store.id}
           onVerify={(verified) => handleAgeVerification(verified)}
         />
       );
     }
 
     return (
-      <div
-        className="min-h-dvh flex items-center justify-center"
-        style={{ backgroundColor: store.primary_color }}
-      >
-        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
-          {store.logo_url && (
-            <img
-              src={store.logo_url}
-              alt={store.store_name}
-              className="h-16 mx-auto mb-6"
-            />
-          )}
-          <h1 className="text-2xl font-bold text-center mb-2">Age Verification Required</h1>
-          <p className="text-center text-muted-foreground mb-6">
-            You must be {store.minimum_age}+ years old to access this store.
-          </p>
-          <div className="flex gap-4">
-            <Button
-              className="flex-1"
-              variant="outline"
-              onClick={() => handleAgeVerification(false)}
-            >
-              I'm Under {store.minimum_age}
-            </Button>
-            <Button
-              className="flex-1"
-              style={{ backgroundColor: store.primary_color }}
-              onClick={() => handleAgeVerification(true)}
-            >
-              I'm {store.minimum_age}+
-            </Button>
-          </div>
-        </div>
-      </div>
+      <StorefrontAgeGate
+        storeName={store.store_name}
+        logoUrl={store.logo_url}
+        minimumAge={store.minimum_age}
+        primaryColor={store.primary_color}
+        onVerify={(verified) => handleAgeVerification(verified)}
+      />
     );
   }
 
@@ -574,9 +547,6 @@ export default function ShopLayout() {
 
           {/* Offline Indicator */}
           <OfflineIndicator position="top" showSyncStatus />
-
-          {/* Global Age Gate */}
-          <StorefrontAgeGate storeId={store?.id} />
         </div>
       </ShopContext.Provider>
     );
@@ -846,9 +816,6 @@ export default function ShopLayout() {
 
         {/* Offline Indicator */}
         <OfflineIndicator position="top" showSyncStatus />
-
-        {/* Global Age Gate */}
-        <StorefrontAgeGate storeId={store?.id} />
       </div>
     </ShopContext.Provider>
   );

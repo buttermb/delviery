@@ -148,3 +148,13 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Added new test: verifies sections render in correct order via data-section-index attributes
 - Added new test: verifies sections with visible=false are skipped
 - All 29 tests pass, TypeScript compilation clean
+## ShopLayout age verification gate for cannabis stores
+- Rewrote StorefrontAgeGate as a presentational full-page overlay component with props (storeName, logoUrl, minimumAge, primaryColor, onVerify)
+- Removed broken self-querying logic from StorefrontAgeGate (was querying non-existent enable_age_gate/age_gate_min_age columns)
+- ShopLayout now uses StorefrontAgeGate for default theme and LuxuryAgeVerification for luxury theme
+- Simplified LuxuryAgeVerification to be a pure presentational component (removed internal localStorage management)
+- ShopLayout owns all age verification state: checks require_age_verification flag, persists per store slug in localStorage
+- Removed redundant StorefrontAgeGate instances from bottom of both layout renders (unreachable after inline gate)
+- "No" redirects to google.com, "Yes" saves to localStorage and shows store
+- Preview mode bypasses age gate
+- TypeScript compilation passes with zero errors
