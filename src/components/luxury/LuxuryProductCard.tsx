@@ -49,11 +49,11 @@ export default function LuxuryProductCard({
         )}
         
         {/* Image container with ProductImage */}
-        <div className="relative h-72 overflow-hidden">
+        <div className="relative aspect-[4/3] overflow-hidden">
           <ProductImage
             src={image}
             alt={cleanedName}
-            className="h-72 group-hover:scale-110 transition-transform duration-700"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
           />
           {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />

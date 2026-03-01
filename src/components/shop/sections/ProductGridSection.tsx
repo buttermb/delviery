@@ -784,7 +784,7 @@ function ProductGridListItem({ product, accentColor, onQuickAdd }: ProductGridLi
 
     return (
         <Card className="flex overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="w-24 h-24 md:w-36 md:h-36 flex-shrink-0" style={{ backgroundColor: 'var(--storefront-card-bg, #fafafa)' }}>
+            <div className="w-24 md:w-36 aspect-square flex-shrink-0" style={{ backgroundColor: 'var(--storefront-card-bg, #fafafa)' }}>
                 <ProductImage
                     src={product.images?.[0]}
                     alt={product.name ?? ''}
