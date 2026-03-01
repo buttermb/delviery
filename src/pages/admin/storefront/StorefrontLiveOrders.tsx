@@ -42,7 +42,7 @@ import { OrderDetailPanel } from '@/components/admin/storefront/OrderDetailPanel
 import { CancelOrderDialog } from '@/components/admin/storefront/CancelOrderDialog';
 import { queryKeys } from '@/lib/queryKeys';
 import { humanizeError } from '@/lib/humanizeError';
-import { playNewOrderSound as playSoundAlert, initAudio } from '@/lib/soundAlerts';
+import { playNewOrderSound as playSoundAlert, initAudio, isSoundEnabled, setSoundEnabled as persistSoundEnabled } from '@/lib/soundAlerts';
 
 /** Status progression order */
 const STATUS_PROGRESSION = [
@@ -175,7 +175,7 @@ export function StorefrontLiveOrders() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(isSoundEnabled);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [detailPanelOpen, setDetailPanelOpen] = useState(false);
@@ -553,9 +553,14 @@ export function StorefrontLiveOrders() {
         <div className="flex flex-wrap items-center gap-3">
           {/* Sound Toggle */}
           <Button
-            variant="outline"
+            variant={soundEnabled ? 'default' : 'outline'}
             size="icon"
-            onClick={() => setSoundEnabled(!soundEnabled)}
+            onClick={() => {
+              const next = !soundEnabled;
+              setSoundEnabled(next);
+              persistSoundEnabled(next);
+              initAudio();
+            }}
             title={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
             aria-label={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
           >

@@ -116,12 +116,17 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
 - TypeScript compilation passes with zero errors
 
-## CartPage stock validation before proceeding to checkout
-- Enhanced CartPage.tsx with proactive stock validation using useCartStockCheck hook
-- Checkout buttons (desktop + mobile sticky bar) now disabled when stock issues detected
-- Button text changes to "Fix Stock Issues to Checkout" with warning icon when stock insufficient
-- Express payment buttons also disabled when stock issues exist
-- handleCheckout() has dual-layer validation: fast check from cached useCartStockCheck + fresh server-side checkInventoryAvailability() at click time
-- Low stock items show info toast but don't block checkout; insufficient stock blocks with item names listed
-- Added data-testid attributes to checkout buttons for testability
+## Live Orders notification sound on new order with settings toggle
+- Added synthesized tone fallback to `src/lib/soundAlerts.ts` using Web Audio API oscillators
+  - When MP3 files are unavailable (no `/public/sounds/*.mp3` present), the system now plays synthesized tones instead of silently failing
+  - `newOrder`: Two-tone ascending chime (C5 → E5) — distinct and attention-grabbing
+  - `success`: Quick ascending ding (A5)
+  - All other types: Default notification beep (F#5)
+  - Volume-controlled via gain node, consistent with existing volume settings
+- Fixed `StorefrontLiveOrders.tsx` sound toggle to persist to localStorage
+  - Changed `useState(true)` → `useState(isSoundEnabled)` to load saved preference
+  - Toggle now calls `persistSoundEnabled()` to save state via `STORAGE_KEYS.SOUND_ALERTS_ENABLED`
+  - Toggle also calls `initAudio()` to ensure AudioContext is initialized on interaction
+  - Button now uses `variant={soundEnabled ? 'default' : 'outline'}` for visual feedback (matches LiveOrders.tsx pattern)
+- Both LiveOrders.tsx and StorefrontLiveOrders.tsx now share the same persisted sound preference
 - TypeScript compilation passes with zero errors
