@@ -9,11 +9,26 @@
  * Receives: { storeSlug, items, customerInfo, fulfillmentMethod, paymentMethod, ... }
  * Returns:  { orderId, orderNumber } on success
  * Returns:  { error: string } with appropriate HTTP status on failure
+ *
+ * Handles all cases:
+ *  - Store validation (exists, active)
+ *  - Server-side price calculation (NEVER trusts client prices)
+ *  - Stock validation with per-item error reporting
+ *  - Delivery zone ZIP validation with fee/minimum lookup
+ *  - Tax calculation from account_settings
+ *  - Payment method validation (cash, card, venmo, zelle)
+ *  - Rate limiting (IP + phone based)
+ *  - Discount capping (never exceeds subtotal)
+ *  - Atomic order creation + inventory deduction via RPC
+ *  - Customer CRM upsert
+ *  - Telegram notification (fire-and-forget)
+ *  - Stripe Checkout session for card payments
  */
 
 import { serve, createClient, corsHeaders, z } from "../_shared/deps.ts";
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { createLogger } from '../_shared/logger.ts';
+import { checkRateLimit } from '../_shared/rateLimiting.ts';
 import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const logger = createLogger('storefront-checkout');
@@ -24,37 +39,38 @@ const logger = createLogger('storefront-checkout');
 
 const CheckoutItemSchema = z.object({
   product_id: z.string().uuid(),
-  quantity: z.number().int().positive(),
+  quantity: z.number().int().positive().max(100),
   variant: z.string().optional(),
   // Client may send price for display — always overridden by DB price
   price: z.number().optional(),
 });
 
 const CustomerInfoSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().optional(),
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  email: z.string().email().optional().or(z.literal("")),
+  phone: z.string().min(1).max(30),
 });
 
 const CheckoutRequestSchema = z.object({
   // Store identification — slug is the canonical field
-  storeSlug: z.string().min(1),
+  storeSlug: z.string().min(1).max(100),
   // Cart items (prices are ALWAYS fetched server-side)
-  items: z.array(CheckoutItemSchema).min(1),
+  items: z.array(CheckoutItemSchema).min(1).max(50),
   // Customer details
   customerInfo: CustomerInfoSchema,
   // Fulfillment & payment
   fulfillmentMethod: z.enum(["delivery", "pickup"]).default("delivery"),
-  paymentMethod: z.enum(["card", "cash"]).default("cash"),
+  paymentMethod: z.enum(["card", "cash", "venmo", "zelle"]).default("cash"),
   // Optional fields
-  deliveryAddress: z.string().optional(),
-  notes: z.string().optional(),
+  deliveryAddress: z.string().max(500).optional(),
+  deliveryZip: z.string().max(20).optional(),
+  notes: z.string().max(1000).optional(),
   preferredContactMethod: z.enum(["phone", "email", "text", "telegram"]).optional(),
   discountAmount: z.number().min(0).optional(),
   successUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
-  idempotencyKey: z.string().optional(),
+  idempotencyKey: z.string().max(200).optional(),
   // Client-side total for discrepancy detection (always overridden by server)
   clientTotal: z.number().optional(),
 });
@@ -63,11 +79,27 @@ const CheckoutRequestSchema = z.object({
 // Helpers
 // ---------------------------------------------------------------------------
 
-const jsonResponse = (body: Record<string, unknown>, status: number) =>
+const jsonResponse = (body: Record<string, unknown>, status: number, extraHeaders?: Record<string, string>) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...corsHeaders, "Content-Type": "application/json", ...extraHeaders },
   });
+
+/** Extract client IP from request headers (Supabase/Cloudflare standard) */
+function getClientIp(req: Request): string {
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("cf-connecting-ip") ||
+    req.headers.get("x-real-ip") ||
+    "unknown"
+  );
+}
+
+/** Extract ZIP from delivery address string (last 5-digit group) */
+function extractZipFromAddress(address: string): string | null {
+  const match = address.match(/\b(\d{5})(?:-\d{4})?\b/);
+  return match ? match[1] : null;
+}
 
 // ---------------------------------------------------------------------------
 // Handler
@@ -103,21 +135,58 @@ serve(secureHeadersMiddleware(async (req) => {
 
     const body = parseResult.data;
 
+    // ------------------------------------------------------------------
+    // 0. Rate limiting — prevent checkout abuse
+    // ------------------------------------------------------------------
+    const clientIp = getClientIp(req);
+
+    // IP-based: max 5 orders per hour
+    const ipRateLimit = await checkRateLimit(
+      { key: "storefront_checkout_ip", limit: 5, windowMs: 60 * 60 * 1000 },
+      clientIp,
+    );
+    if (!ipRateLimit.allowed) {
+      logger.warn("Rate limit exceeded (IP)", { ip: clientIp });
+      return jsonResponse(
+        { error: "Too many orders. Please try again later." },
+        429,
+        { "Retry-After": String(Math.ceil((ipRateLimit.resetAt - Date.now()) / 1000)) },
+      );
+    }
+
+    // Phone-based: max 3 orders per hour
+    const phoneKey = body.customerInfo.phone.replace(/\D/g, "");
+    if (phoneKey) {
+      const phoneRateLimit = await checkRateLimit(
+        { key: "storefront_checkout_phone", limit: 3, windowMs: 60 * 60 * 1000 },
+        phoneKey,
+      );
+      if (!phoneRateLimit.allowed) {
+        logger.warn("Rate limit exceeded (phone)", { phone: phoneKey.slice(-4) });
+        return jsonResponse(
+          { error: "Too many orders from this phone number. Please try again later." },
+          429,
+          { "Retry-After": String(Math.ceil((phoneRateLimit.resetAt - Date.now()) / 1000)) },
+        );
+      }
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
     // ------------------------------------------------------------------
-    // 1. Resolve store by slug
+    // 1. Resolve store by slug — include checkout & payment config
     // ------------------------------------------------------------------
     const { data: store, error: storeError } = await supabase
       .from("marketplace_stores")
-      .select("id, store_name, tenant_id, is_active, default_delivery_fee, free_delivery_threshold")
+      .select("id, store_name, tenant_id, is_active, default_delivery_fee, free_delivery_threshold, checkout_settings, payment_methods")
       .eq("slug", body.storeSlug)
       .maybeSingle();
 
     if (storeError) {
+      logger.error("Store lookup failed", { slug: body.storeSlug, error: storeError.message });
       return jsonResponse({ error: "Unable to resolve store" }, 500);
     }
 
@@ -127,6 +196,21 @@ serve(secureHeadersMiddleware(async (req) => {
 
     if (!store.is_active) {
       return jsonResponse({ error: "This store is not currently accepting orders" }, 403);
+    }
+
+    // ------------------------------------------------------------------
+    // 1b. Validate payment method is enabled for this store
+    // ------------------------------------------------------------------
+    const paymentMethods = store.payment_methods as Record<string, boolean> | null;
+    if (paymentMethods) {
+      const methodEnabled = paymentMethods[body.paymentMethod];
+      // If payment_methods config exists and method is explicitly disabled
+      if (methodEnabled === false) {
+        return jsonResponse(
+          { error: `Payment method "${body.paymentMethod}" is not available for this store` },
+          400,
+        );
+      }
     }
 
     // ------------------------------------------------------------------
@@ -210,21 +294,95 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     // ------------------------------------------------------------------
-    // 4. Calculate delivery fee from store settings (server-side)
+    // 4. Delivery zone validation & fee calculation (server-side)
     // ------------------------------------------------------------------
-    const storeDeliveryFee = Number(store.default_delivery_fee || 0);
-    const freeThreshold = Number(store.free_delivery_threshold || 0);
-    const deliveryFee =
-      body.fulfillmentMethod === "pickup"
-        ? 0
-        : freeThreshold > 0 && subtotal >= freeThreshold
-          ? 0
-          : storeDeliveryFee;
-    const tax = 0; // Tax placeholder — extend when tax rules are configured
-    const total = subtotal + tax + deliveryFee;
+    let deliveryFee = 0;
+
+    if (body.fulfillmentMethod === "delivery") {
+      // Extract ZIP from the explicit field or from the address string
+      const zip = body.deliveryZip || (body.deliveryAddress ? extractZipFromAddress(body.deliveryAddress) : null);
+
+      // Check delivery_zones table for this tenant
+      const { data: zones } = await supabase
+        .from("delivery_zones")
+        .select("name, delivery_fee, minimum_order, zip_codes, is_active")
+        .eq("tenant_id", store.tenant_id)
+        .eq("is_active", true);
+
+      if (zones && zones.length > 0 && zip) {
+        // Find matching zone by ZIP
+        const matchedZone = zones.find((zone) => {
+          const zipCodes = zone.zip_codes as string[] | null;
+          return zipCodes?.includes(zip);
+        });
+
+        if (!matchedZone) {
+          return jsonResponse(
+            { error: `We don't currently deliver to ZIP code ${zip}. Please try a different address or choose pickup.` },
+            400,
+          );
+        }
+
+        // Check minimum order for the zone
+        const minOrder = Number(matchedZone.minimum_order || 0);
+        if (minOrder > 0 && subtotal < minOrder) {
+          return jsonResponse(
+            {
+              error: `Delivery to ${matchedZone.name} requires a minimum order of $${minOrder.toFixed(2)}.`,
+              minimumOrder: minOrder,
+              currentSubtotal: subtotal,
+            },
+            400,
+          );
+        }
+
+        deliveryFee = Number(matchedZone.delivery_fee || 0);
+      } else {
+        // No zones configured — use store's default delivery fee
+        const storeDeliveryFee = Number(store.default_delivery_fee || 0);
+        const freeThreshold = Number(store.free_delivery_threshold || 0);
+        deliveryFee = freeThreshold > 0 && subtotal >= freeThreshold ? 0 : storeDeliveryFee;
+      }
+    }
 
     // ------------------------------------------------------------------
-    // 4b. SECURITY — Detect client/server price discrepancy
+    // 4b. Tax calculation from account_settings
+    // ------------------------------------------------------------------
+    const { data: tenantAccount } = await supabase
+      .from("accounts")
+      .select("id")
+      .eq("tenant_id", store.tenant_id)
+      .maybeSingle();
+
+    let taxRate = 0;
+    if (tenantAccount) {
+      const { data: acctSettings } = await supabase
+        .from("account_settings")
+        .select("tax_rate, notification_settings")
+        .eq("account_id", tenantAccount.id)
+        .maybeSingle();
+
+      if (acctSettings?.tax_rate) {
+        taxRate = Number(acctSettings.tax_rate) / 100; // stored as percentage (e.g. 8.875)
+      }
+
+      // Cache notification_settings for Telegram link later
+      (store as Record<string, unknown>)._acctSettings = acctSettings;
+    }
+
+    const tax = Math.round(subtotal * taxRate * 100) / 100; // Round to 2 decimal places
+
+    // ------------------------------------------------------------------
+    // 4c. Discount validation — cap to subtotal, never trust client amount
+    // ------------------------------------------------------------------
+    const discountAmount = body.discountAmount
+      ? Math.min(body.discountAmount, subtotal)
+      : 0;
+
+    const total = Math.round((subtotal + tax + deliveryFee - discountAmount) * 100) / 100;
+
+    // ------------------------------------------------------------------
+    // 4d. SECURITY — Detect client/server price discrepancy
     // ------------------------------------------------------------------
     let priceDiscrepancy: { clientTotal: number; serverTotal: number } | null = null;
     if (body.clientTotal !== undefined) {
@@ -235,6 +393,11 @@ serve(secureHeadersMiddleware(async (req) => {
           clientTotal: body.clientTotal,
           serverTotal: total,
         };
+        logger.info("Price discrepancy detected", {
+          storeId: store.id,
+          clientTotal: body.clientTotal,
+          serverTotal: total,
+        });
       }
     }
 
@@ -292,6 +455,7 @@ serve(secureHeadersMiddleware(async (req) => {
     //      entire transaction (order + prior decrements) is rolled back
     // ------------------------------------------------------------------
     const customerName = `${body.customerInfo.firstName} ${body.customerInfo.lastName}`;
+    const customerEmail = body.customerInfo.email || "";
 
     const itemSummary = orderItems.map((item) => ({
       product_id: item.product_id,
@@ -302,6 +466,8 @@ serve(secureHeadersMiddleware(async (req) => {
       storeId: store.id,
       itemCount: orderItems.length,
       items: itemSummary,
+      paymentMethod: body.paymentMethod,
+      fulfillmentMethod: body.fulfillmentMethod,
     });
 
     const { data: orderId, error: orderError } = await supabase.rpc(
@@ -309,7 +475,7 @@ serve(secureHeadersMiddleware(async (req) => {
       {
         p_store_id: store.id,
         p_customer_name: customerName,
-        p_customer_email: body.customerInfo.email,
+        p_customer_email: customerEmail,
         p_customer_phone: body.customerInfo.phone ?? null,
         p_delivery_address: body.deliveryAddress ?? null,
         p_delivery_notes: body.notes ?? null,
@@ -327,6 +493,19 @@ serve(secureHeadersMiddleware(async (req) => {
 
     if (orderError || !orderId) {
       const rawMsg = orderError?.message ?? "";
+
+      // Idempotency: if the idempotency key already exists, the RPC may
+      // return the existing order ID — check for that pattern
+      if (rawMsg.includes("duplicate") || rawMsg.includes("idempotency")) {
+        logger.info("Duplicate order detected via idempotency key", {
+          tenantId: store.tenant_id,
+          idempotencyKey: body.idempotencyKey,
+        });
+        return jsonResponse(
+          { error: "This order has already been placed." },
+          409,
+        );
+      }
 
       // Stock-related RPC errors: the RPC raises exceptions for insufficient
       // stock (pre-validation) and for race-condition deduction failures.
@@ -372,12 +551,6 @@ serve(secureHeadersMiddleware(async (req) => {
     //    - total_spent accumulation
     //    - address & preferred_contact updates
     // ------------------------------------------------------------------
-    const { data: tenantAccount } = await supabase
-      .from("accounts")
-      .select("id")
-      .eq("tenant_id", store.tenant_id)
-      .maybeSingle();
-
     let upsertedCustomerId: string | null = null;
 
     if (tenantAccount) {
@@ -387,7 +560,7 @@ serve(secureHeadersMiddleware(async (req) => {
           p_tenant_id: store.tenant_id,
           p_name: customerName,
           p_phone: body.customerInfo.phone ?? "",
-          p_email: body.customerInfo.email,
+          p_email: customerEmail,
           p_preferred_contact: body.preferredContactMethod ?? null,
           p_address: body.deliveryAddress ?? null,
           p_order_total: total,
@@ -423,16 +596,14 @@ serve(secureHeadersMiddleware(async (req) => {
         customerName,
         customerPhone: body.customerInfo.phone ?? null,
         orderTotal: total,
-        items: orderItems.map((item) => {
-          const product = productMap.get(item.product_id as string);
-          return {
-            productName: product?.name ?? "Unknown",
-            quantity: item.quantity,
-            price: (item.price as number) * (item.quantity as number),
-          };
-        }),
+        items: orderItems.map((item) => ({
+          productName: item.name ?? "Unknown",
+          quantity: item.quantity,
+          price: (item.price as number) * (item.quantity as number),
+        })),
         storeName: store.store_name,
         fulfillmentMethod: body.fulfillmentMethod,
+        paymentMethod: body.paymentMethod,
         preferredContactMethod: body.preferredContactMethod ?? null,
       }),
     }).catch(() => {
@@ -443,7 +614,11 @@ serve(secureHeadersMiddleware(async (req) => {
     // 7b. Fetch Telegram contact link for confirmation page (if configured)
     // ------------------------------------------------------------------
     let telegramLink: string | null = null;
-    if (tenantAccount) {
+    const cachedSettings = (store as Record<string, unknown>)._acctSettings as Record<string, unknown> | undefined;
+    if (cachedSettings) {
+      const notifSettings = cachedSettings.notification_settings as Record<string, unknown> | null;
+      telegramLink = (notifSettings?.telegram_customer_link as string) || null;
+    } else if (tenantAccount) {
       const { data: acctSettings } = await supabase
         .from("account_settings")
         .select("notification_settings")
@@ -462,6 +637,7 @@ serve(secureHeadersMiddleware(async (req) => {
       subtotal,
       tax,
       deliveryFee,
+      discountAmount,
     };
 
     if (telegramLink) {
@@ -531,12 +707,22 @@ serve(secureHeadersMiddleware(async (req) => {
           });
         }
 
+        if (tax > 0) {
+          lineItems.push({
+            price_data: {
+              currency: "usd",
+              product_data: { name: "Tax" },
+              unit_amount: Math.round(tax * 100),
+            },
+            quantity: 1,
+          });
+        }
+
         // Handle discount coupon if applicable
         let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
-        if (body.discountAmount && body.discountAmount > 0) {
-          const cappedDiscount = Math.min(body.discountAmount, subtotal);
+        if (discountAmount > 0) {
           const coupon = await stripe.coupons.create({
-            amount_off: Math.round(cappedDiscount * 100),
+            amount_off: Math.round(discountAmount * 100),
             currency: "usd",
             name: "Order Discount",
             duration: "once",
@@ -545,7 +731,7 @@ serve(secureHeadersMiddleware(async (req) => {
         }
 
         const session = await stripe.checkout.sessions.create({
-          customer_email: body.customerInfo.email,
+          ...(customerEmail ? { customer_email: customerEmail } : {}),
           line_items: lineItems,
           mode: "payment",
           success_url:
@@ -590,9 +776,22 @@ serve(secureHeadersMiddleware(async (req) => {
       }
     }
 
+    // ------------------------------------------------------------------
+    // 9. For venmo/zelle, mark payment_status as awaiting_confirmation
+    // ------------------------------------------------------------------
+    if (body.paymentMethod === "venmo" || body.paymentMethod === "zelle") {
+      await supabase
+        .from("marketplace_orders")
+        .update({ payment_status: "awaiting_confirmation" })
+        .eq("id", orderId);
+    }
+
     return jsonResponse(result, 200);
-  } catch (_err: unknown) {
+  } catch (err: unknown) {
     // Generic 500 — never leak internal error details to the client
+    logger.error("Unhandled checkout error", {
+      error: err instanceof Error ? err.message : String(err),
+    });
     return jsonResponse({ error: "Internal server error" }, 500);
   }
 }));
