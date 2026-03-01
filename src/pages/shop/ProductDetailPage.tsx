@@ -13,7 +13,7 @@ import { useShopCart } from '@/hooks/useShopCart';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ProductDetailSkeleton } from '@/components/shop/ProductDetailSkeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -522,20 +522,7 @@ export function ProductDetailPage() {
   if (!store) return null;
 
   if (productLoading) {
-    return (
-      <div className="min-h-dvh bg-neutral-950 pt-16 sm:pt-24 pb-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12">
-            <Skeleton className="h-[300px] sm:h-[600px] w-full rounded-2xl sm:rounded-3xl bg-white/5" />
-            <div className="space-y-6 sm:space-y-8">
-              <Skeleton className="h-8 sm:h-12 w-3/4 bg-white/5" />
-              <Skeleton className="h-6 w-1/4 bg-white/5" />
-              <Skeleton className="h-24 w-full bg-white/5" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (!product) {
