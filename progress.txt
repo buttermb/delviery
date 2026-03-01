@@ -194,3 +194,14 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - All storefront pages, components, hooks, and utilities correctly use `logger` from `@/lib/logger`
 - Edge functions (supabase/functions/) use console.* which is appropriate for Deno runtime
 - TypeScript compilation passes with zero errors
+
+## E2E test guest checkout with Venmo payment flow
+- Created tests/e2e/guest-checkout-venmo.spec.ts with 4 test cases
+- Test 1: Complete guest checkout with Venmo — full flow from browse to order confirmation
+  - Adds product, fills contact info, delivery address, selects Venmo, confirms payment, places order
+- Test 2: Venmo requires confirmation checkbox — validates that skipping checkbox shows error toast
+- Test 3: Venmo handle and copy button displayed — verifies handle text, copy button, and checkbox label
+- Test 4: Review step shows Venmo — confirms payment method displays as "Venmo" in review summary
+- Follows existing E2E test patterns (helpers, age verification, flexible selectors)
+- Handles stores without Venmo enabled via test.skip
+- TypeScript compilation passes with zero errors
