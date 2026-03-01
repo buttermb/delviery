@@ -39,9 +39,10 @@ import { CustomHTMLSection } from '@/components/shop/sections/CustomHTMLSection'
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import { ThemePresetStrip, ThemePresetGrid } from '@/components/admin/storefront/ThemePresetSelector';
 import { type ThemePreset } from '@/lib/storefrontThemes';
 import { useEasyModeBuilder } from '@/hooks/useEasyModeBuilder';
@@ -249,6 +250,7 @@ export function StorefrontBuilder({
     const [advancedIsDirty, setAdvancedIsDirty] = useState(false);
 
     // Builder State
+    const [activeDragId, setActiveDragId] = useState<string | null>(null);
     const [layoutConfig, setLayoutConfig] = useState<SectionConfig[]>([]);
     const [themeConfig, setThemeConfig] = useState<ExtendedThemeConfig>({
         colors: { primary: '#000000', secondary: '#ffffff', accent: '#3b82f6', background: '#ffffff', text: '#000000' },
@@ -774,8 +776,13 @@ export function StorefrontBuilder({
         toast.success(`Applied "${template.name}" template`);
     };
 
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveDragId(String(event.active.id));
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
+        setActiveDragId(null);
         if (over && active.id !== over.id) {
             const oldIndex = layoutConfig.findIndex(s => s.id === active.id);
             const newIndex = layoutConfig.findIndex(s => s.id === over.id);
@@ -1099,7 +1106,13 @@ export function StorefrontBuilder({
                                         </div>
                                         <Separator />
                                         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Layer Order</p>
-                                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                        <DndContext
+                                            sensors={sensors}
+                                            collisionDetection={closestCenter}
+                                            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                                            onDragStart={handleDragStart}
+                                            onDragEnd={handleDragEnd}
+                                        >
                                             <SortableContext items={layoutConfig.map(s => s.id)} strategy={verticalListSortingStrategy}>
                                                 <div className="space-y-1">
                                                     {layoutConfig.map((section) => (
@@ -1116,6 +1129,20 @@ export function StorefrontBuilder({
                                                     ))}
                                                 </div>
                                             </SortableContext>
+                                            <DragOverlay>
+                                                {activeDragId ? (() => {
+                                                    const section = layoutConfig.find(s => s.id === activeDragId);
+                                                    if (!section) return null;
+                                                    return (
+                                                        <div className="flex items-center gap-3 p-3 rounded-md border border-primary bg-background shadow-lg">
+                                                            <GripVertical className="w-4 h-4 text-muted-foreground" />
+                                                            <span className="text-sm font-medium">
+                                                                {SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.label || section.type}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })() : null}
+                                            </DragOverlay>
                                         </DndContext>
                                         {layoutConfig.length === 0 && (
                                             <p className="text-xs text-muted-foreground text-center py-4">

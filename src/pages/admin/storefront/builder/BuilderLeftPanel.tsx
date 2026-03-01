@@ -3,7 +3,8 @@
  * Left sidebar with Sections, Theme, and Templates tabs
  */
 
-import { FileText } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, FileText, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,8 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import { SortableSectionItem } from './SortableSectionItem';
 import {
     type SectionConfig,
@@ -56,6 +58,8 @@ export function BuilderLeftPanel({
     onApplyTemplate,
     saveToHistory,
 }: BuilderLeftPanelProps) {
+    const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
     // DnD sensors
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -66,8 +70,13 @@ export function BuilderLeftPanel({
         })
     );
 
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveDragId(String(event.active.id));
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
+        setActiveDragId(null);
         if (over && active.id !== over.id) {
             const oldIndex = layoutConfig.findIndex(s => s.id === active.id);
             const newIndex = layoutConfig.findIndex(s => s.id === over.id);
@@ -117,6 +126,8 @@ export function BuilderLeftPanel({
                                 <DndContext
                                     sensors={sensors}
                                     collisionDetection={closestCenter}
+                                    modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                                    onDragStart={handleDragStart}
                                     onDragEnd={handleDragEnd}
                                 >
                                     <SortableContext
@@ -138,6 +149,20 @@ export function BuilderLeftPanel({
                                             ))}
                                         </div>
                                     </SortableContext>
+                                    <DragOverlay>
+                                        {activeDragId ? (() => {
+                                            const section = layoutConfig.find(s => s.id === activeDragId);
+                                            if (!section) return null;
+                                            return (
+                                                <div className="flex items-center gap-3 p-3 rounded-md border border-primary bg-background shadow-lg">
+                                                    <GripVertical className="w-4 h-4 text-muted-foreground" />
+                                                    <span className="text-sm font-medium">
+                                                        {SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.label || section.type}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })() : null}
+                                    </DragOverlay>
                                 </DndContext>
                                 {layoutConfig.length === 0 && (
                                     <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg">
