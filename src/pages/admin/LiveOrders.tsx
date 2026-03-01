@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -12,6 +12,8 @@ import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import { LiveOrdersKanban, type LiveOrder } from '@/components/admin/live-orders/LiveOrdersKanban';
 import { LiveOrdersMobileList } from '@/components/admin/live-orders/LiveOrdersMobileList';
 import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
+import { initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
+import { useAdminOrdersRealtime } from '@/hooks/useAdminOrdersRealtime';
 import { useUndo } from '@/hooks/useUndo';
 import { UndoToast } from '@/components/ui/undo-toast';
 import { queryKeys } from '@/lib/queryKeys';
@@ -43,8 +45,6 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
   const isMobile = useIsMobile();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [soundEnabled, setSoundEnabledState] = useState(isSoundEnabled);
-  const previousOrderCountRef = useRef<number>(0);
-  const isFirstLoadRef = useRef(true);
 
   // Undo hook for status changes
   const { pendingAction, timeRemaining, executeWithUndo, undo, commit } = useUndo<{
@@ -85,6 +85,18 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
     tenantId: tenant?.id,
     tables: ['orders', 'menu_orders'], // Listen to both tables
     enabled: !!tenant?.id
+  });
+
+  // Realtime subscription for new order notifications with highlight tracking
+  const { newOrderIds } = useAdminOrdersRealtime({
+    enabled: !!tenant?.id,
+    onNewOrder: (event) => {
+      logger.info('Live orders: new order received', {
+        orderId: event.id,
+        source: event.source,
+        component: 'LiveOrders',
+      });
+    },
   });
 
   // Fetch Orders Query
@@ -179,29 +191,12 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
     refetchInterval: 30000 // Fallback poll every 30s
   });
 
-  // Play sound when new orders arrive
+  // Log new order count changes for debugging
   useEffect(() => {
-    if (isLoading) return;
-
-    const currentCount = orders.length;
-
-    // Skip first load - don't play sound when page opens
-    if (isFirstLoadRef.current) {
-      previousOrderCountRef.current = currentCount;
-      isFirstLoadRef.current = false;
-      return;
+    if (!isLoading && orders.length > 0) {
+      logger.debug('Live orders updated', { count: orders.length, component: 'LiveOrders' });
     }
-
-    // Play sound if we have more orders than before
-    if (currentCount > previousOrderCountRef.current && soundEnabled) {
-      playNewOrderSound();
-      toast.info('New order received!', {
-        duration: 3000,
-      });
-    }
-
-    previousOrderCountRef.current = currentCount;
-  }, [orders.length, isLoading, soundEnabled]);
+  }, [orders.length, isLoading]);
 
   // Helper function to update status in database
   const updateStatusInDb = async (
@@ -364,6 +359,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
                 orders={orders}
                 isLoading={isLoading}
                 onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
+                newOrderIds={newOrderIds}
               />
             )}
           </div>

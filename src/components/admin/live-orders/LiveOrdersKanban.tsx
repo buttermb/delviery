@@ -40,6 +40,7 @@ interface LiveOrdersKanbanProps {
     orders: LiveOrder[];
     onStatusChange: (orderId: string, newStatus: string, source: 'menu' | 'app') => void;
     isLoading?: boolean;
+    newOrderIds?: Set<string>;
 }
 
 // Column Configuration
@@ -159,6 +160,7 @@ export function getValidNextStatuses(
 }
 
 function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChange: LiveOrdersKanbanProps['onStatusChange'] }) {
+function KanbanCard({ order, onStatusChange, isNew }: { order: LiveOrder; onStatusChange: LiveOrdersKanbanProps['onStatusChange']; isNew?: boolean }) {
     const [fleetDialogOpen, setFleetDialogOpen] = useState(false);
     const { isEnabled } = useTenantFeatureToggles();
     const deliveryEnabled = isEnabled('delivery_tracking');
@@ -172,7 +174,10 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
 
     return (
         <>
-            <Card className="mb-2 hover:shadow-md transition-all border-l-4 overflow-hidden relative group">
+            <Card className={cn(
+                "mb-2 hover:shadow-md transition-all border-l-4 overflow-hidden relative group",
+                isNew && "animate-new-order-slide-in ring-2 ring-primary/40 border-l-primary"
+            )}>
                 <CardContent className="p-2.5 space-y-3">
                     {/* Header */}
                     <div className="flex justify-between items-start">
@@ -182,6 +187,9 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
                                     <OrderLink orderId={order.id} orderNumber={`#${order.order_number}`} />
                                 </span>
                                 <LiveOrderStatusBadge status={order.status} />
+                                {isNew && (
+                                    <Badge className="text-[10px] h-5 px-1 bg-primary text-primary-foreground animate-pulse">NEW</Badge>
+                                )}
                                 {order.source === 'menu' && (
                                     <Badge variant="secondary" className="text-[10px] h-5 px-1">Menu</Badge>
                                 )}
@@ -266,7 +274,7 @@ function KanbanCard({ order, onStatusChange }: { order: LiveOrder, onStatusChang
     );
 }
 
-export function LiveOrdersKanban({ orders, onStatusChange, isLoading }: LiveOrdersKanbanProps) {
+export function LiveOrdersKanban({ orders, onStatusChange, isLoading, newOrderIds }: LiveOrdersKanbanProps) {
     // Group orders by column
     const columns = useMemo(() => {
         return COLUMNS.map(col => ({
@@ -307,6 +315,7 @@ export function LiveOrdersKanban({ orders, onStatusChange, isLoading }: LiveOrde
                                         key={order.id}
                                         order={order}
                                         onStatusChange={onStatusChange}
+                                        isNew={newOrderIds?.has(order.id)}
                                     />
                                 ))
                             )}
