@@ -169,15 +169,16 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white border-b border-neutral-200"
+            className="border-b"
+            style={{ backgroundColor: 'var(--storefront-card-bg, white)', borderColor: 'var(--storefront-border, #e5e7eb)' }}
           >
             <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-              <span className="text-neutral-500 text-sm">Showing results for <strong>"{searchQuery}"</strong></span>
+              <span className="text-sm" style={{ color: 'var(--storefront-text, #737373)', opacity: 0.7 }}>Showing results for <strong>"{searchQuery}"</strong></span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setSearchQuery('')}
-                className="text-neutral-400 hover:text-neutral-900"
+                style={{ color: 'var(--storefront-text, #a3a3a3)' }}
               >
                 Clear Search
               </Button>
@@ -187,7 +188,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
       </AnimatePresence>
 
       {/* Sticky Category Strip - Premium Glassmorphism */}
-      <div className="sticky top-20 z-40 bg-white/80 backdrop-blur-md border-b border-white/20 shadow-sm transition-all duration-300">
+      <div className="sticky top-20 z-40 backdrop-blur-md border-b shadow-sm transition-all duration-300" style={{ backgroundColor: 'color-mix(in srgb, var(--storefront-bg, white) 80%, transparent)', borderColor: 'var(--storefront-border, rgba(255,255,255,0.2))' }}>
         <div className="container mx-auto px-4 md:px-8">
           <div
             className="flex items-center gap-1 overflow-x-auto py-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0"
@@ -201,8 +202,9 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
                   onClick={() => setSelectedCategory(cat === "All" ? null : cat)}
                   className={cn(
                     "relative px-6 py-2.5 rounded-full text-sm font-bold transition-colors z-10 whitespace-nowrap",
-                    isActive ? "text-white" : "text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100"
+                    isActive ? "text-white" : ""
                   )}
+                  style={!isActive ? { color: 'var(--storefront-text, #737373)', opacity: 0.7 } : undefined}
                 >
                   {isActive && (
                     <motion.div
@@ -232,7 +234,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
             style={{ borderLeft: `4px solid ${customAccent}` }}
           >
             <h2 className="text-2xl sm:text-4xl font-extrabold ml-4 tracking-tight" style={{ color: customAccent }}>{heading}</h2>
-            {subheading && <p className="text-neutral-500 ml-4 mt-2 font-medium">{subheading}</p>}
+            {subheading && <p className="ml-4 mt-2 font-medium" style={{ color: 'var(--storefront-text, #737373)', opacity: 0.6 }}>{subheading}</p>}
           </motion.div>
         )}
 
@@ -240,28 +242,28 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="bg-white rounded-2xl p-4 space-y-4 shadow-sm border border-neutral-100">
-                <Skeleton className="h-56 w-full rounded-xl bg-neutral-100" />
-                <Skeleton className="h-4 w-2/3 bg-neutral-100" />
-                <Skeleton className="h-4 w-1/3 bg-neutral-100" />
+              <div key={i} className="rounded-2xl p-4 space-y-4 shadow-sm border" style={{ backgroundColor: 'var(--storefront-card-bg, white)', borderColor: 'var(--storefront-border, #f5f5f5)' }}>
+                <Skeleton className="h-56 w-full rounded-xl" style={{ backgroundColor: 'var(--storefront-border, #f5f5f5)' }} />
+                <Skeleton className="h-4 w-2/3" style={{ backgroundColor: 'var(--storefront-border, #f5f5f5)' }} />
+                <Skeleton className="h-4 w-1/3" style={{ backgroundColor: 'var(--storefront-border, #f5f5f5)' }} />
               </div>
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 text-center bg-white rounded-3xl border border-dashed border-neutral-300" data-testid="empty-product-grid">
-            <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center mb-6 text-neutral-300">
-              <Package className="w-10 h-10" />
+          <div className="flex flex-col items-center justify-center py-32 text-center rounded-3xl border border-dashed" style={{ backgroundColor: 'var(--storefront-card-bg, white)', borderColor: 'var(--storefront-border, #d4d4d4)' }} data-testid="empty-product-grid">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: 'var(--storefront-border, #fafafa)', color: 'var(--storefront-text, #d4d4d4)' }}>
+              <Package className="w-10 h-10" style={{ opacity: 0.4 }} />
             </div>
             <h3 className="text-2xl font-bold" style={{ color: customAccent }}>Coming soon</h3>
-            <p className="text-neutral-500 mt-2 max-w-md mx-auto">Check back soon for new arrivals</p>
+            <p className="mt-2 max-w-md mx-auto" style={{ color: 'var(--storefront-text, #737373)', opacity: 0.6 }}>Check back soon for new arrivals</p>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 text-center bg-white rounded-3xl border border-dashed border-neutral-300">
-            <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center mb-6 text-neutral-300">
-              <Search className="w-10 h-10" />
+          <div className="flex flex-col items-center justify-center py-32 text-center rounded-3xl border border-dashed" style={{ backgroundColor: 'var(--storefront-card-bg, white)', borderColor: 'var(--storefront-border, #d4d4d4)' }}>
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: 'var(--storefront-border, #fafafa)', color: 'var(--storefront-text, #d4d4d4)' }}>
+              <Search className="w-10 h-10" style={{ opacity: 0.4 }} />
             </div>
             <h3 className="text-2xl font-bold" style={{ color: customAccent }}>No matches found</h3>
-            <p className="text-neutral-500 mt-2 max-w-md mx-auto">We couldn&apos;t find any products matching your filters.</p>
+            <p className="mt-2 max-w-md mx-auto" style={{ color: 'var(--storefront-text, #737373)', opacity: 0.6 }}>We couldn&apos;t find any products matching your filters.</p>
             <Button
               onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
               className="mt-8 text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg"

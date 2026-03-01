@@ -94,10 +94,10 @@ export function StorefrontProductCard({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-neutral-100 dark:border-neutral-800 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-neutral-200/50 transition-all duration-500 h-full flex flex-col relative transform hover:-translate-y-2 backface-hidden">
+            <div className="rounded-3xl border overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 h-full flex flex-col relative transform hover:-translate-y-2 backface-hidden" style={{ backgroundColor: 'var(--storefront-card-bg, white)', borderColor: 'var(--storefront-border, #f5f5f5)' }}>
 
                 {/* Image Container */}
-                <Link to={`/shop/${storeSlug}/products/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="block relative aspect-square overflow-hidden bg-neutral-50 cursor-pointer">
+                <Link to={`/shop/${storeSlug}/products/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`} className="block relative aspect-square overflow-hidden cursor-pointer" style={{ backgroundColor: 'var(--storefront-card-bg, #fafafa)' }}>
                     <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-105">
                         <ProductImage
                             src={displayImage}
@@ -113,16 +113,17 @@ export function StorefrontProductCard({
                             aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
                             className={cn(
                                 "w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shadow-lg transition-colors border",
-                                isInWishlist ? "bg-red-50 text-red-500 border-red-100" : "bg-white dark:bg-zinc-900 text-neutral-400 hover:text-red-500 border-white dark:border-zinc-900"
+                                isInWishlist ? "bg-red-50 text-red-500 border-red-100" : "hover:text-red-500"
                             )}
+                            style={!isInWishlist ? { backgroundColor: 'var(--storefront-card-bg, white)', borderColor: 'var(--storefront-border, white)', color: 'var(--storefront-text, #a3a3a3)' } : undefined}
                         >
                             <svg className={cn("w-4 h-4 sm:w-5 sm:h-5 transition-transform active:scale-75", isInWishlist && "fill-current")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
                         </button>
                         <button
                             onClick={(e) => { e.preventDefault(); onQuickView(); }}
                             aria-label="Quick view product"
-                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-zinc-900 text-neutral-400 hover:text-shop-primary border border-white dark:border-zinc-900 flex items-center justify-center shadow-lg transition-colors delay-75"
-                            style={{ color: isHovered ? accentColor : undefined }}
+                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:text-shop-primary flex items-center justify-center shadow-lg transition-colors delay-75"
+                            style={{ backgroundColor: 'var(--storefront-card-bg, white)', borderColor: 'var(--storefront-border, white)', color: isHovered ? accentColor : 'var(--storefront-text, #a3a3a3)' }}
                         >
                             <Eye className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
                         </button>
@@ -158,7 +159,7 @@ export function StorefrontProductCard({
                     </div>
 
                     {isOutStock && (
-                        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center z-20">
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-20">
                             <span className="bg-neutral-900 text-white px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-lg shadow-xl transform -rotate-6">
                                 Sold Out
                             </span>
@@ -174,12 +175,12 @@ export function StorefrontProductCard({
                                 {cleanedName}
                             </h3>
                         </Link>
-                        <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">{product.category}</p>
+                        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--storefront-text, #a3a3a3)', opacity: 0.6 }}>{product.category}</p>
 
                         {(product.thc_content || product.cbd_content) && (
-                            <div className="flex flex-wrap gap-2 text-[10px] font-bold text-neutral-500 pt-1">
-                                {product.thc_content && <span className="bg-neutral-100 px-2 py-1 rounded-md">{product.thc_content}% THC</span>}
-                                {product.cbd_content && <span className="bg-neutral-100 px-2 py-1 rounded-md">{product.cbd_content}% CBD</span>}
+                            <div className="flex flex-wrap gap-2 text-[10px] font-bold pt-1" style={{ color: 'var(--storefront-text, #737373)' }}>
+                                {product.thc_content && <span className="px-2 py-1 rounded-md" style={{ backgroundColor: 'var(--storefront-border, #f5f5f5)' }}>{product.thc_content}% THC</span>}
+                                {product.cbd_content && <span className="px-2 py-1 rounded-md" style={{ backgroundColor: 'var(--storefront-border, #f5f5f5)' }}>{product.cbd_content}% CBD</span>}
                             </div>
                         )}
 
@@ -205,7 +206,7 @@ export function StorefrontProductCard({
                 </div>
 
                 {/* Footer */}
-                <div className="px-3 pt-2 pb-3 sm:px-5 sm:pt-5 sm:pb-0 mt-2 flex items-center justify-between border-t border-neutral-50">
+                <div className="px-3 pt-2 pb-3 sm:px-5 sm:pt-5 sm:pb-0 mt-2 flex items-center justify-between border-t" style={{ borderColor: 'var(--storefront-border, #fafafa)' }}>
                     <div className="flex flex-col">
                         <div className="flex items-baseline gap-2">
                             {displayPrice === 0 ? (
@@ -214,10 +215,10 @@ export function StorefrontProductCard({
                                 <span className="text-base sm:text-xl font-extrabold" style={{ color: accentColor }}>${displayPrice?.toFixed(2)}</span>
                             )}
                             {hasSalePrice && (
-                                <span className="text-sm text-neutral-400 line-through">${product.price?.toFixed(2)}</span>
+                                <span className="text-sm line-through" style={{ color: 'var(--storefront-text, #a3a3a3)', opacity: 0.5 }}>${product.price?.toFixed(2)}</span>
                             )}
                         </div>
-                        {product.unit_type && <span className="text-[10px] text-neutral-400 font-medium">per {product.unit_type}</span>}
+                        {product.unit_type && <span className="text-[10px] font-medium" style={{ color: 'var(--storefront-text, #a3a3a3)', opacity: 0.5 }}>per {product.unit_type}</span>}
                     </div>
 
                     <Button
@@ -229,7 +230,7 @@ export function StorefrontProductCard({
                             isAdded
                                 ? "bg-emerald-500 text-white hover:bg-emerald-600 w-auto"
                                 : isOutStock
-                                    ? "bg-neutral-100 text-neutral-300 cursor-not-allowed"
+                                    ? "cursor-not-allowed opacity-30"
                                     : "text-white hover:opacity-90 hover:shadow-lg active:scale-95"
                         )}
                         style={!isAdded && !isOutStock ? { backgroundColor: accentColor } : undefined}
