@@ -27,6 +27,7 @@ import {
     ThumbsUp,
 } from 'lucide-react';
 import { lazy, Suspense, useCallback, Fragment } from 'react';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
@@ -40,7 +41,7 @@ const StorefrontProducts = lazy(() => import('@/pages/admin/storefront/Storefron
 const StorefrontOrders = lazy(() => import('@/pages/admin/storefront/StorefrontOrders'));
 const StorefrontCustomers = lazy(() => import('@/pages/admin/storefront/StorefrontCustomers'));
 const StorefrontCoupons = lazy(() => import('@/pages/admin/storefront/StorefrontCoupons'));
-const StorefrontSettings = lazy(() => import('@/pages/admin/storefront/StorefrontSettings'));
+const StorefrontSettings = lazyWithRetry(() => import('@/pages/admin/storefront/StorefrontSettings'));
 const StorefrontDesignPage = lazy(() => import('@/pages/admin/storefront/StorefrontDesignPage').then(m => ({ default: m.StorefrontDesignPage })));
 const StorefrontBundles = lazy(() => import('@/pages/admin/storefront/StorefrontBundles'));
 const StorefrontLiveOrders = lazy(() => import('@/pages/admin/storefront/StorefrontLiveOrders'));
