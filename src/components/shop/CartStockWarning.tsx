@@ -121,24 +121,24 @@ export function CartItemStockWarning({
   if (variant === 'minimal') {
     if (isOutOfStock) {
       return (
-        <span className={cn("text-xs text-destructive flex items-center gap-1", className)}>
-          <Ban className="w-3 h-3" />
+        <span className={cn("text-sm text-destructive flex items-center gap-1", className)}>
+          <Ban className="w-3.5 h-3.5" />
           Out of stock
         </span>
       );
     }
     if (isInsufficient) {
       return (
-        <span className={cn("text-xs text-amber-500 flex items-center gap-1", className)}>
-          <AlertTriangle className="w-3 h-3" />
+        <span className={cn("text-sm text-amber-500 flex items-center gap-1", className)}>
+          <AlertTriangle className="w-3.5 h-3.5" />
           Only {available} left
         </span>
       );
     }
     if (isLowStock) {
       return (
-        <span className={cn("text-xs text-amber-500 flex items-center gap-1", className)}>
-          <Package className="w-3 h-3" />
+        <span className={cn("text-sm text-amber-500 flex items-center gap-1", className)}>
+          <Package className="w-3.5 h-3.5" />
           Low stock
         </span>
       );

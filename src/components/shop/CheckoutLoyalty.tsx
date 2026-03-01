@@ -113,7 +113,7 @@ export function CheckoutLoyalty({
             <h3 className="font-semibold text-sm text-purple-900 dark:text-purple-100">
               Loyalty Points
             </h3>
-            <p className="text-xs text-purple-600 dark:text-purple-400">
+            <p className="text-sm text-purple-600 dark:text-purple-400">
               Earn & redeem points on every order
             </p>
           </div>
@@ -130,7 +130,7 @@ export function CheckoutLoyalty({
               {currentPoints.toLocaleString()} pts
             </Badge>
             {currentPoints > 0 && (
-              <span className="text-xs text-purple-500">
+              <span className="text-sm text-purple-500">
                 (worth {formatCurrency(currentPoints / pointsToDollarRatio)})
               </span>
             )}
@@ -155,7 +155,7 @@ export function CheckoutLoyalty({
               <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
                 {redeemedPoints} points applied
               </p>
-              <p className="text-xs text-purple-600 dark:text-purple-400">
+              <p className="text-sm text-purple-600 dark:text-purple-400">
                 Saving {formatCurrency(redeemedDiscount)}
               </p>
             </div>
@@ -195,7 +195,7 @@ export function CheckoutLoyalty({
                       setShowRedemption(false);
                       setPointsToRedeem(0);
                     }}
-                    className="h-6 w-6 p-0"
+                    className="h-9 w-9 p-0"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -222,7 +222,7 @@ export function CheckoutLoyalty({
                     variant="outline"
                     size="sm"
                     onClick={() => setPointsToRedeem(Math.floor(maxRedeemablePoints / 2))}
-                    className="flex-1 text-xs"
+                    className="flex-1 text-sm"
                   >
                     Use Half
                   </Button>
@@ -230,7 +230,7 @@ export function CheckoutLoyalty({
                     variant="outline"
                     size="sm"
                     onClick={() => setPointsToRedeem(maxRedeemablePoints)}
-                    className="flex-1 text-xs"
+                    className="flex-1 text-sm"
                   >
                     Use All
                   </Button>
@@ -259,8 +259,8 @@ export function CheckoutLoyalty({
         )}
 
         {/* Earning Info */}
-        <div className="flex items-start gap-2 text-xs text-purple-600 dark:text-purple-400">
-          <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
+        <div className="flex items-start gap-2 text-sm text-purple-600 dark:text-purple-400">
+          <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
           <span>
             Earn {pointsPerDollar} point{pointsPerDollar !== 1 ? 's' : ''} per dollar spent.
             {pointsToDollarRatio} points = $1 discount.

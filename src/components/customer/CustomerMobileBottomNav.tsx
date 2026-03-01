@@ -154,7 +154,7 @@ export function CustomerMobileBottomNav() {
                       </Badge>
                     )}
                   </div>
-                  <span className={cn("text-[10px] font-medium transition-all duration-200", isActive && "font-bold")}>{item.label}</span>
+                  <span className={cn("text-xs font-medium transition-all duration-200", isActive && "font-bold")}>{item.label}</span>
                   {isActive && (
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[hsl(var(--customer-primary))] rounded-full" />
                   )}

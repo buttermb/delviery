@@ -180,7 +180,7 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
               type="button"
               variant="ghost"
               size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+              className="absolute right-0.5 top-1/2 -translate-y-1/2 h-11 w-11"
               onClick={() => {
                 setQuery('');
                 inputRef.current?.focus();
@@ -206,7 +206,7 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
           {/* Search Results */}
           {!isLoading && results.length > 0 && (
             <div className="p-2">
-              <p className="px-2 py-1 text-xs font-medium text-muted-foreground">Products</p>
+              <p className="px-2 py-1 text-sm font-medium text-muted-foreground">Products</p>
               {results.map((product) => (
                 <Link
                   key={product.product_id}
@@ -269,13 +269,13 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
               {recentSearches.length > 0 && (
                 <div className="mb-4">
                   <div className="flex items-center justify-between px-2 py-1">
-                    <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
                       Recent Searches
                     </p>
                     <button
                       onClick={clearRecentSearches}
-                      className="text-xs text-muted-foreground hover:text-foreground"
+                      className="text-sm text-muted-foreground hover:text-foreground"
                     >
                       Clear
                     </button>
@@ -296,8 +296,8 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
               {/* Popular Categories */}
               {categories.length > 0 && (
                 <div>
-                  <p className="px-2 py-1 text-xs font-medium text-muted-foreground flex items-center gap-1">
-                    <TrendingUp className="w-3 h-3" />
+                  <p className="px-2 py-1 text-sm font-medium text-muted-foreground flex items-center gap-1">
+                    <TrendingUp className="w-3.5 h-3.5" />
                     Popular Categories
                   </p>
                   <div className="flex flex-wrap gap-2 p-2">

@@ -1198,6 +1198,42 @@ body.keyboard-open [data-radix-dialog-content] {
     }
   }
 
+  /* ========================================
+   * STOREFRONT ACCESSIBILITY — WCAG Touch & Typography
+   * Minimum 44px touch targets, minimum 14px body text
+   * Scoped to [data-testid="storefront-wrapper"] to avoid admin impact
+   * ======================================== */
+
+  /* Storefront minimum body font size: 14px */
+  [data-testid="storefront-wrapper"] {
+    font-size: max(0.875rem, 14px);
+  }
+
+  /* Storefront interactive elements: minimum 44×44px touch targets */
+  [data-testid="storefront-wrapper"] button,
+  [data-testid="storefront-wrapper"] a,
+  [data-testid="storefront-wrapper"] [role="button"],
+  [data-testid="storefront-wrapper"] input[type="button"],
+  [data-testid="storefront-wrapper"] input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Inline interactive elements (within text) should not enforce min-width */
+  [data-testid="storefront-wrapper"] p a,
+  [data-testid="storefront-wrapper"] span a,
+  [data-testid="storefront-wrapper"] li a {
+    min-width: unset;
+    min-height: unset;
+  }
+
+  /* Badge-style elements inside buttons don't need their own target */
+  [data-testid="storefront-wrapper"] button [class*="badge"],
+  [data-testid="storefront-wrapper"] button span {
+    min-height: unset;
+    min-width: unset;
+  }
+
   /* Touch device optimizations - uses :root prefix for higher specificity without !important */
   @media (hover: none) and (pointer: coarse) {
 

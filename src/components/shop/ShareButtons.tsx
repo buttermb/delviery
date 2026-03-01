@@ -87,14 +87,14 @@ export function ShareButtons({
         return (
             <div className={`flex items-center gap-1 ${className}`}>
                 {hasNativeShare && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNativeShare} title="Share" aria-label="Share">
+                    <Button variant="ghost" size="icon" className="h-11 w-11" onClick={handleNativeShare} title="Share" aria-label="Share">
                         <Share2 className="h-4 w-4" />
                     </Button>
                 )}
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-11 w-11"
                     onClick={() => openInNewWindow(twitterUrl)}
                     title="Share on Twitter"
                     aria-label="Share on Twitter"
@@ -106,7 +106,7 @@ export function ShareButtons({
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-11 w-11"
                     onClick={() => openInNewWindow(facebookUrl)}
                     title="Share on Facebook"
                     aria-label="Share on Facebook"
@@ -118,7 +118,7 @@ export function ShareButtons({
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-11 w-11"
                     onClick={handleCopyLink}
                     title="Copy link"
                     aria-label="Copy link"

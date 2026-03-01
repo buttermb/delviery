@@ -129,19 +129,19 @@ export function RecentlyViewedSection({ currentProductId, className = '' }: Rece
                         variant="outline"
                         size="icon"
                         onClick={() => scroll('left')}
-                        className="h-8 w-8"
+                        className="h-11 w-11"
                         aria-label="Previous"
                     >
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronLeft className="w-5 h-5" />
                     </Button>
                     <Button
                         variant="outline"
                         size="icon"
                         onClick={() => scroll('right')}
-                        className="h-8 w-8"
+                        className="h-11 w-11"
                         aria-label="Next"
                     >
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-5 h-5" />
                     </Button>
                 </div>
             </div>

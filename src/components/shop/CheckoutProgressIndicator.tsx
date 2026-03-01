@@ -46,7 +46,7 @@ export function CheckoutProgressIndicator({
                 type="button"
                 onClick={() => isComplete && onStepClick?.(step.id)}
                 disabled={isFuture}
-                className={`relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${
+                className={`relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
                   isFuture
                     ? isLuxuryTheme
                       ? 'bg-white/5 text-white/30'
@@ -62,7 +62,7 @@ export function CheckoutProgressIndicator({
                 {isComplete ? (
                   <Check className="w-3 h-3" />
                 ) : (
-                  <span className="w-3 h-3 flex items-center justify-center text-[10px]">{step.id}</span>
+                  <span className="w-4 h-4 flex items-center justify-center text-xs">{step.id}</span>
                 )}
                 <span>{step.name}</span>
 
@@ -174,7 +174,7 @@ export function CheckoutProgressIndicator({
 
               {/* Step Label */}
               <span
-                className={`text-xs uppercase tracking-widest mt-4 font-semibold transition-colors duration-300 ${
+                className={`text-sm uppercase tracking-widest mt-4 font-semibold transition-colors duration-300 ${
                   isActive
                     ? 'text-primary'
                     : isLuxuryTheme
@@ -191,7 +191,7 @@ export function CheckoutProgressIndicator({
       </nav>
 
       {/* Step counter text (mobile only) */}
-      <p className="sm:hidden text-center text-[11px] text-muted-foreground mt-2">
+      <p className="sm:hidden text-center text-xs text-muted-foreground mt-2">
         Step {currentStep} of {steps.length}
       </p>
     </div>
