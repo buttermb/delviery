@@ -51,6 +51,7 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
 import { queryKeys } from '@/lib/queryKeys';
 import { useReturningCustomerLookup } from '@/hooks/useReturningCustomerLookup';
+import { useStripePreconnect } from '@/hooks/useStripePreconnect';
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -158,6 +159,9 @@ export function CheckoutPage() {
     enabled: !!store?.id && currentStep >= 3,
     staleTime: 5 * 60 * 1000, // cache for 5 minutes
   });
+
+  // Preconnect to Stripe when card payment is available
+  useStripePreconnect(isStripeConfigured === true);
 
   // Handle cancelled Stripe checkout return
   useEffect(() => {
