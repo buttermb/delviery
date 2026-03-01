@@ -212,7 +212,7 @@ export default function CartPage() {
   const themeColor = isLuxuryTheme ? accentColor : store.primary_color;
 
   return (
-    <div className={`container mx-auto px-4 py-4 sm:py-8 ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
+    <div className={`container mx-auto px-3 sm:px-4 py-4 sm:py-8 overflow-x-hidden ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
       <h1 className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-8 ${isLuxuryTheme ? 'text-white font-extralight tracking-wide' : ''}`}>
         Shopping Cart
       </h1>
@@ -443,8 +443,8 @@ export default function CartPage() {
                         </div>
 
                         {/* Mobile controls row — 44px touch targets */}
-                        <div className="flex sm:hidden items-center justify-between mt-3 ml-[76px]">
-                          <div className="flex items-center gap-3">
+                        <div className="flex sm:hidden items-center justify-between mt-3">
+                          <div className="flex items-center gap-2">
                             <Button
                               variant="outline"
                               size="icon"
@@ -458,7 +458,7 @@ export default function CartPage() {
                               key={item.quantity}
                               initial={{ scale: 1.3 }}
                               animate={{ scale: 1 }}
-                              className={`w-6 text-center font-semibold text-base ${isLuxuryTheme ? textPrimary : ''}`}
+                              className={`w-8 text-center font-semibold text-base ${isLuxuryTheme ? textPrimary : ''}`}
                             >
                               {item.quantity}
                             </motion.span>
@@ -472,15 +472,20 @@ export default function CartPage() {
                               <Plus className="w-4 h-4" />
                             </Button>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Remove item"
-                            className={`h-11 w-11 ${isLuxuryTheme ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
-                            onClick={() => handleRemoveItem(item.productId, item.variant)}
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold" style={{ color: themeColor }}>
+                              {formatCurrency(item.price * item.quantity)}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label="Remove item"
+                              className={`h-11 w-11 ${isLuxuryTheme ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
+                              onClick={() => handleRemoveItem(item.productId, item.variant)}
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </Button>
+                          </div>
                         </div>
                       </motion.div>
                     </SwipeableCartItem>
@@ -657,14 +662,14 @@ export default function CartPage() {
       {cartItems.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 lg:hidden z-50">
           <div
-            className={`p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t shadow-lg ${isLuxuryTheme ? 'bg-black/95 border-white/10 backdrop-blur-xl' : 'bg-white border-gray-200'}`}
+            className={`px-3 sm:px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t shadow-lg ${isLuxuryTheme ? 'bg-black/95 border-white/10 backdrop-blur-xl' : 'bg-white border-gray-200'}`}
           >
             <div className="flex items-center justify-between mb-2">
               <p className={`text-sm ${textMuted}`}>{cartCount} item{cartCount !== 1 ? 's' : ''}</p>
               <p className="text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
             </div>
             <Button
-              className="w-full h-12 text-base"
+              className="w-full h-12 text-base font-semibold rounded-lg"
               style={{ backgroundColor: themeColor }}
               onClick={handleCheckout}
               disabled={isCheckingStock}
@@ -673,7 +678,7 @@ export default function CartPage() {
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : (
                 <>
-                  Checkout
+                  Checkout — {formatCurrency(total)}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </>
               )}
@@ -683,7 +688,7 @@ export default function CartPage() {
       )}
 
       {/* Spacer for sticky bar on mobile */}
-      {cartItems.length > 0 && <div className="h-28 lg:hidden" />}
+      {cartItems.length > 0 && <div className="h-24 lg:hidden" />}
     </div>
   );
 }
