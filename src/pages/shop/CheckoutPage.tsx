@@ -1149,6 +1149,10 @@ export function CheckoutPage() {
         onStepClick={(stepId) => setCurrentStep(stepId)}
       />
 
+      <h1 className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 ${isLuxuryTheme ? 'text-white font-extralight tracking-wide' : ''}`}>
+        Checkout
+      </h1>
+
       {/* Mobile Order Summary - Collapsible (visible only on mobile) */}
       <div className="lg:hidden mb-4 sm:mb-6">
         <button
@@ -1497,7 +1501,7 @@ export function CheckoutPage() {
                       >
                         <Truck className="h-6 w-6" style={formData.fulfillmentMethod === 'delivery' ? { color: themeColor } : undefined} />
                         <span className={`font-semibold ${isLuxuryTheme ? 'text-white' : ''}`}>Delivery</span>
-                        <span className={`text-xs ${isLuxuryTheme ? 'text-white/40' : 'text-muted-foreground'}`}>We deliver to you</span>
+                        <span className={`text-xs ${isLuxuryTheme ? 'text-white/70' : 'text-muted-foreground'}`}>We deliver to you</span>
                       </button>
                       <button
                         type="button"
@@ -1519,7 +1523,7 @@ export function CheckoutPage() {
                       >
                         <Store className="h-6 w-6" style={formData.fulfillmentMethod === 'pickup' ? { color: themeColor } : undefined} />
                         <span className={`font-semibold ${isLuxuryTheme ? 'text-white' : ''}`}>Pickup</span>
-                        <span className={`text-xs ${isLuxuryTheme ? 'text-white/40' : 'text-muted-foreground'}`}>Pick up at store</span>
+                        <span className={`text-xs ${isLuxuryTheme ? 'text-white/70' : 'text-muted-foreground'}`}>Pick up at store</span>
                       </button>
                     </div>
 

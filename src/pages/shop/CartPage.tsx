@@ -406,7 +406,7 @@ export default function CartPage() {
                               variant="ghost"
                               size="icon"
                               aria-label="Remove item"
-                              className={`h-8 w-8 ${isLuxuryTheme ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
+                              className={`h-8 w-8 ${isLuxuryTheme ? 'text-white/70 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
                               onClick={() => handleRemoveItem(item.productId, item.variant)}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -476,7 +476,7 @@ export default function CartPage() {
                             variant="ghost"
                             size="icon"
                             aria-label="Remove item"
-                            className={`h-11 w-11 ${isLuxuryTheme ? 'text-white/40 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
+                            className={`h-11 w-11 ${isLuxuryTheme ? 'text-white/70 hover:text-red-400 hover:bg-white/10' : 'text-muted-foreground hover:text-destructive'}`}
                             onClick={() => handleRemoveItem(item.productId, item.variant)}
                           >
                             <Trash2 className="w-5 h-5" />

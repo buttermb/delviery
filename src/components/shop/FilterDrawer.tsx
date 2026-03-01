@@ -109,7 +109,7 @@ export function FilterDrawer({
             {activeFilterCount > 0 && (
               <button
                 onClick={clearAllFilters}
-                className="text-xs text-white/40 hover:text-white transition-colors"
+                className="text-xs text-white/70 hover:text-white transition-colors"
               >
                 Clear all
               </button>
@@ -269,7 +269,7 @@ function FilterSection({
         </span>
         <ChevronDown
           className={cn(
-            'w-4 h-4 text-white/40 transition-transform duration-200',
+            'w-4 h-4 text-white/70 transition-transform duration-200',
             isExpanded && 'rotate-180'
           )}
         />

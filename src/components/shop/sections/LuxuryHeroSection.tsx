@@ -206,7 +206,7 @@ export function LuxuryHeroSection({ content, styles, storeId: _storeId }: Luxury
         transition={{ delay: 1.2, duration: 0.6 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
-        <span className="text-white/40 text-xs font-medium uppercase tracking-widest">Scroll</span>
+        <span className="text-white/70 text-xs font-medium uppercase tracking-widest">Scroll</span>
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}

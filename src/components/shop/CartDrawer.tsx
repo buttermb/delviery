@@ -99,7 +99,7 @@ export function CartDrawer({
             <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
               <ShoppingBag className="w-8 h-8 text-white/20" />
             </div>
-            <p className="text-white/40 text-center mb-6">Your cart is empty</p>
+            <p className="text-white/70 text-center mb-6">Your cart is empty</p>
             <Button
               onClick={onClose}
               variant="outline"
@@ -135,7 +135,7 @@ export function CartDrawer({
                         {item.name}
                       </h3>
                       {item.variant && (
-                        <p className="text-white/40 text-xs mb-2">{item.variant}</p>
+                        <p className="text-white/70 text-xs mb-2">{item.variant}</p>
                       )}
                       <p className="text-white/80 text-sm font-light">
                         {formatCurrency(item.price)}
@@ -148,7 +148,7 @@ export function CartDrawer({
                         onClick={() => onRemoveItem(item.productId, item.variant)}
                         className="p-1 rounded hover:bg-white/10 transition-colors"
                       >
-                        <Trash2 className="w-4 h-4 text-white/40 hover:text-red-400 transition-colors" />
+                        <Trash2 className="w-4 h-4 text-white/70 hover:text-red-400 transition-colors" />
                       </button>
 
                       <div className="flex items-center gap-2 bg-white/5 rounded-full p-1">
@@ -225,7 +225,7 @@ export function CartDrawer({
                 ) : effectiveDeliveryFee > 0 ? (
                   <span className="text-white text-sm">{formatCurrency(effectiveDeliveryFee)}</span>
                 ) : (
-                  <span className="text-white/40 text-sm">Free</span>
+                  <span className="text-white/70 text-sm">Free</span>
                 )}
               </div>
 
@@ -237,7 +237,7 @@ export function CartDrawer({
                 </span>
               </div>
 
-              <p className="text-white/40 text-xs text-center">
+              <p className="text-white/70 text-xs text-center">
                 Taxes calculated at checkout
               </p>
 
@@ -257,7 +257,7 @@ export function CartDrawer({
               {/* Continue Shopping */}
               <button
                 onClick={onClose}
-                className="w-full text-center text-white/40 text-sm hover:text-white/60 transition-colors"
+                className="w-full text-center text-white/70 text-sm hover:text-white/60 transition-colors"
               >
                 Continue Shopping
               </button>

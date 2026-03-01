@@ -107,14 +107,14 @@ export default function DealsPage() {
                         )}
                     </div>
 
-                    <h3 className={`text-xl font-bold ${isLuxuryTheme ? textPrimary : ''}`}>
+                    <h2 className={`text-xl font-bold ${isLuxuryTheme ? textPrimary : ''}`}>
                         {deal.name}
-                    </h3>
+                    </h2>
                     <p className={`text-sm ${isLuxuryTheme ? textMuted : 'text-muted-foreground'}`}>
                         {deal.description || `Get ${deal.discount_value}${deal.discount_type === 'percentage' ? '%' : '$'} off ${deal.target_value ? deal.target_value : 'your entire order'}.`}
                     </p>
 
-                    <div className={`flex flex-wrap gap-4 pt-2 text-xs font-medium ${isLuxuryTheme ? 'text-white/40' : 'text-muted-foreground'}`}>
+                    <div className={`flex flex-wrap gap-4 pt-2 text-xs font-medium ${isLuxuryTheme ? 'text-white/70' : 'text-muted-foreground'}`}>
                         <div className="flex items-center gap-1.5">
                             <Calendar className="w-4 h-4" />
                             {getDayNames(deal.active_days)}
@@ -167,7 +167,7 @@ export default function DealsPage() {
                     <Card className={isLuxuryTheme ? 'bg-white/5 border-white/10' : ''}>
                         <CardContent className="py-16 text-center">
                             <Tag className={`w-12 h-12 mx-auto mb-4 opacity-50 ${isLuxuryTheme ? 'text-white' : 'text-gray-400'}`} />
-                            <h3 className={`text-xl font-semibold mb-2 ${isLuxuryTheme ? 'text-white' : ''}`}>No active deals right now</h3>
+                            <h2 className={`text-xl font-semibold mb-2 ${isLuxuryTheme ? 'text-white' : ''}`}>No active deals right now</h2>
                             <p className={`text-muted-foreground mb-6 ${isLuxuryTheme ? 'text-gray-400' : ''}`}>
                                 Check back later for new promotions!
                             </p>

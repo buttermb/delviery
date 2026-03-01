@@ -73,7 +73,7 @@ export default function EncryptedStorePage() {
         <Card className="w-full max-w-md">
           <CardContent className="pt-8 pb-8 flex flex-col items-center text-center">
             <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Loading Store...</h2>
+            <h1 className="text-xl font-semibold mb-2">Loading Store...</h1>
             <p className="text-muted-foreground">
               Please wait while we verify your access
             </p>
@@ -91,7 +91,7 @@ export default function EncryptedStorePage() {
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
               <AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Link Unavailable</h2>
+            <h1 className="text-xl font-semibold mb-2">Link Unavailable</h1>
             <p className="text-muted-foreground mb-6">
               {error}
             </p>
@@ -112,9 +112,9 @@ export default function EncryptedStorePage() {
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
             <Store className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-xl font-semibold mb-2">
+          <h1 className="text-xl font-semibold mb-2">
             {store?.store_name || 'Accessing Store...'}
-          </h2>
+          </h1>
           <p className="text-muted-foreground">
             Redirecting you to the store...
           </p>
