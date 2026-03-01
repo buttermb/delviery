@@ -297,3 +297,61 @@ export function GridSkeleton({ items = 6, cols = 3, className }: GridSkeletonPro
     </div>
   );
 }
+
+/**
+ * ProductGridSkeleton - Displays a loading grid of product card skeletons
+ * Mimics the StorefrontProductCard layout (image, badges, name, price, button)
+ */
+interface ProductGridSkeletonProps {
+  items?: number;
+  columns?: 2 | 3 | 4;
+  className?: string;
+}
+
+function ProductCardPlaceholder() {
+  return (
+    <div
+      className="rounded-3xl border overflow-hidden bg-card h-full flex flex-col"
+      role="status"
+      aria-label="Loading product..."
+    >
+      {/* Image area - aspect-square */}
+      <Skeleton className="aspect-square w-full rounded-none" />
+
+      {/* Content area */}
+      <div className="p-4 space-y-3 flex-1 flex flex-col">
+        {/* Category label */}
+        <Skeleton className="h-3 w-16" />
+        {/* Product name */}
+        <Skeleton className="h-5 w-3/4" />
+        {/* Strain badge */}
+        <Skeleton className="h-5 w-20 rounded-full" />
+        {/* Price + button row */}
+        <div className="flex items-center justify-between mt-auto pt-2">
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-9 w-9 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ProductGridSkeleton({ items = 8, columns = 4, className }: ProductGridSkeletonProps) {
+  const colsClass = {
+    2: "grid-cols-1 md:grid-cols-2",
+    3: "grid-cols-2 md:grid-cols-3",
+    4: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
+  };
+
+  return (
+    <div
+      className={cn("grid gap-3 md:gap-6", colsClass[columns], className)}
+      role="status"
+      aria-label="Loading products..."
+    >
+      {Array.from({ length: items }).map((_, i) => (
+        <ProductCardPlaceholder key={i} />
+      ))}
+    </div>
+  );
+}
