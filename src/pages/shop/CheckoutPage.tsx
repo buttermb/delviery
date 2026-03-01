@@ -3,7 +3,7 @@
  * Multi-step checkout flow
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -40,7 +40,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
-import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
+const ExpressPaymentButtons = lazy(() => import('@/components/shop/ExpressPaymentButtons'));
 import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
 import { useStoreStatus } from '@/hooks/useStoreStatus';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -144,7 +144,7 @@ export function CheckoutPage() {
   const { data: storeStatus } = useStoreStatus(store?.id);
   const isStoreClosed = storeStatus?.isOpen === false;
 
-  // Check if Stripe is configured — hide card option if not
+  // Check if Stripe is configured — deferred until payment step to avoid loading Stripe resources early
   const { data: isStripeConfigured } = useQuery({
     queryKey: queryKeys.marketplaceStores.stripeConfigured(store?.id),
     queryFn: async () => {
@@ -155,7 +155,7 @@ export function CheckoutPage() {
       if (error) return false;
       return Boolean(data);
     },
-    enabled: !!store?.id,
+    enabled: !!store?.id && currentStep >= 3,
     staleTime: 5 * 60 * 1000, // cache for 5 minutes
   });
 
@@ -1580,13 +1580,15 @@ export function CheckoutPage() {
                   >
                     <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Payment Method</h2>
 
-                    {/* Express Payment Options */}
-                    <div className="space-y-4">
-                      <ExpressPaymentButtons
-                        showDivider={true}
-                        size="lg"
-                      />
-                    </div>
+                    {/* Express Payment Options — lazy-loaded */}
+                    <Suspense fallback={null}>
+                      <div className="space-y-4">
+                        <ExpressPaymentButtons
+                          showDivider={true}
+                          size="lg"
+                        />
+                      </div>
+                    </Suspense>
 
                     {/* Standard Payment Methods */}
                     <RadioGroup
