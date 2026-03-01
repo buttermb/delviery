@@ -152,6 +152,11 @@ vi.mock('sonner', () => ({
   }),
 }));
 
+// Mock embla-carousel-react
+vi.mock('embla-carousel-react', () => ({
+  default: () => [vi.fn(), null],
+}));
+
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
@@ -187,8 +192,8 @@ vi.mock('@/components/shop/StockWarning', () => ({
   StockWarning: () => null,
 }));
 
-vi.mock('@/components/shop/EnhancedStickyAddToCart', () => ({
-  EnhancedStickyAddToCart: () => null,
+vi.mock('@/components/shop/MobileFixedAddToCart', () => ({
+  MobileFixedAddToCart: () => null,
 }));
 
 vi.mock('@/components/shop/ScrollProgress', () => ({
