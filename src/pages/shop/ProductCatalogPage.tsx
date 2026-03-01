@@ -4,14 +4,13 @@
  * Includes real-time inventory syncing for stock updates
  */
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -43,6 +42,8 @@ import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
 import { FilterDrawer, FilterTriggerButton, getActiveFilterCount, type FilterState } from '@/components/shop/FilterDrawer';
+import { SearchInput } from '@/components/shared/SearchInput';
+import { FilterDrawer, FilterTriggerButton, type FilterState } from '@/components/shop/FilterDrawer';
 import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
 import { useShopCart } from '@/hooks/useShopCart';
@@ -151,6 +152,9 @@ export function ProductCatalogPage() {
   const { store } = useShop();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? '');
+  const handleSearch = useCallback((value: string) => {
+    setSearchQuery(value);
+  }, []);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'name');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
@@ -527,6 +531,15 @@ export function ProductCatalogPage() {
             />
           </div>
         </div>
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        {/* Search with debounce and clear button */}
+        <SearchInput
+          placeholder="Search products..."
+          onSearch={handleSearch}
+          defaultValue={searchQuery}
+          delay={300}
+          className="flex-1"
+        />
 
         {/* Row 2: Desktop inline filters (hidden on mobile - use drawer instead) */}
         <div className="hidden md:flex items-center gap-3">
