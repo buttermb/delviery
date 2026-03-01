@@ -3,9 +3,10 @@
  * Full product view with gallery, variants, reviews, and add-to-cart
  */
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import useEmblaCarousel from 'embla-carousel-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
@@ -57,7 +58,7 @@ import { RecentlyViewedSection } from '@/components/shop/RecentlyViewedSection';
 import { RelatedProductsCarousel } from '@/components/shop/RelatedProductsCarousel';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
-import { EnhancedStickyAddToCart } from '@/components/shop/EnhancedStickyAddToCart';
+import { MobileFixedAddToCart } from '@/components/shop/MobileFixedAddToCart';
 import { ScrollProgress } from '@/components/shop/ScrollProgress';
 import { CartPreviewPopup } from '@/components/shop/CartPreviewPopup';
 
@@ -187,30 +188,26 @@ export function ProductDetailPage() {
     quantity: number;
   } | null>(null);
 
-  // Touch swipe state for mobile image carousel
-  const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
-  const imageCountRef = useRef(0);
+  // Embla carousel for mobile swipe gallery
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, dragFree: false });
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.targetTouches[0].clientX;
-  }, []);
+  // Sync Embla carousel selection with selectedImage state
+  const onEmblaSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedImage(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
-  }, []);
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on('select', onEmblaSelect);
+    return () => { emblaApi.off('select', onEmblaSelect); };
+  }, [emblaApi, onEmblaSelect]);
 
-  const handleTouchEnd = useCallback(() => {
-    const delta = touchStartX.current - touchEndX.current;
-    const threshold = 50;
-    if (Math.abs(delta) > threshold) {
-      setSelectedImage((prev) => {
-        const max = Math.max(imageCountRef.current - 1, 0);
-        if (delta > 0) return Math.min(prev + 1, max); // swipe left = next
-        return Math.max(prev - 1, 0); // swipe right = prev
-      });
-    }
-  }, []);
+  // When selectedImage changes externally (thumbnail click, dot click), scroll Embla
+  const scrollToImage = useCallback((index: number) => {
+    setSelectedImage(index);
+    emblaApi?.scrollTo(index);
+  }, [emblaApi]);
 
   // Track recently viewed products
   const { addToRecentlyViewed } = useRecentlyViewed();
@@ -334,9 +331,6 @@ export function ProductDetailPage() {
     }
     return images.length ? images : [product.image_url].filter(Boolean);
   }, [product]);
-
-  // Keep ref in sync for touch handler (avoids temporal dead zone)
-  imageCountRef.current = allImages.length;
 
   // SEO: Update page title, meta tags, and structured data
   useEffect(() => {
@@ -576,7 +570,8 @@ export function ProductDetailPage() {
         onClose={() => setLastAddedItem(null)}
       />
 
-      <div className="relative z-10 pt-16 sm:pt-24 pb-20">
+      {/* pb-36 on mobile for fixed add-to-cart bar + bottom nav clearance */}
+      <div className="relative z-10 pt-16 sm:pt-24 pb-36 sm:pb-20">
         <div className="container mx-auto px-4 max-w-7xl">
           {/* Breadcrumbs */}
           <nav className="flex items-center space-x-2 text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
@@ -589,15 +584,101 @@ export function ProductDetailPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-12 lg:gap-20">
             {/* Left Column: Image Gallery (Span 7) */}
-            <div className="lg:col-span-7 space-y-6">
+            <div className="lg:col-span-7 space-y-4 sm:space-y-6">
+              {/* Mobile: Embla Carousel for swipe gallery */}
+              <div className="sm:hidden relative">
+                <div className="overflow-hidden rounded-2xl" ref={emblaRef}>
+                  <div className="flex">
+                    {(allImages.length > 0 ? allImages : ['/placeholder.png']).map((img, idx) => (
+                      <div key={idx} className="flex-[0_0_100%] min-w-0">
+                        <div className="relative aspect-square bg-white/5">
+                          <img
+                            src={img}
+                            alt={`${product.name} - image ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                            loading={idx === 0 ? 'eager' : 'lazy'}
+                            onClick={() => setShowZoom(true)}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Mobile overlay buttons */}
+                <div className="absolute top-3 right-3 z-20 flex flex-col gap-2">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-9 w-9 rounded-full bg-black/30 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white"
+                    onClick={toggleWishlist}
+                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                  >
+                    <Heart className={cn('w-4 h-4', isWishlisted && 'fill-red-500 text-red-500')} />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-9 w-9 rounded-full bg-black/30 backdrop-blur-md border border-white/10 hover:bg-white/20 text-white"
+                    aria-label="Share"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {/* Mobile badges */}
+                <div className="absolute top-3 left-3 flex flex-col gap-2">
+                  {discountPercent > 0 && (
+                    <Badge className="bg-red-500/90 hover:bg-red-500 backdrop-blur border-none text-white px-2.5 py-0.5 text-[11px] uppercase tracking-widest">
+                      Sale
+                    </Badge>
+                  )}
+                  {!product.in_stock && (
+                    <Badge className="bg-zinc-800/90 text-zinc-300 backdrop-blur border-white/10 px-2.5 py-0.5 text-[11px] uppercase tracking-widest">
+                      Sold Out
+                    </Badge>
+                  )}
+                  {product.in_stock && product.stock_quantity < 10 && (
+                    <Badge className="bg-amber-500/90 text-black backdrop-blur border-none px-2.5 py-0.5 text-[11px] uppercase tracking-widest">
+                      Low Stock
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Mobile dot indicators */}
+                {allImages.length > 1 && (
+                  <div className="flex justify-center gap-1.5 mt-3">
+                    {allImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => scrollToImage(idx)}
+                        aria-label={`View image ${idx + 1}`}
+                        className={cn(
+                          'rounded-full transition-all duration-300',
+                          selectedImage === idx
+                            ? 'w-6 h-2 bg-emerald-400'
+                            : 'w-2 h-2 bg-white/30'
+                        )}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Image counter */}
+                {allImages.length > 1 && (
+                  <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                    {selectedImage + 1} / {allImages.length}
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop: Static image with hover zoom */}
               <div
-                className="relative aspect-square md:aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-white/5 group border border-white/5 cursor-zoom-in"
+                className="hidden sm:block relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden bg-white/5 group border border-white/5 cursor-zoom-in"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
                 onClick={() => setShowZoom(true)}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
               >
                 <AnimatePresence mode="wait">
                   <motion.img
@@ -612,7 +693,6 @@ export function ProductDetailPage() {
                   />
                 </AnimatePresence>
 
-                {/* Luxury overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
 
                 <div className="absolute top-4 right-4 z-20 flex flex-col gap-3">
@@ -623,7 +703,7 @@ export function ProductDetailPage() {
                     onClick={toggleWishlist}
                     aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                   >
-                    <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
+                    <Heart className={cn('w-5 h-5', isWishlisted && 'fill-red-500 text-red-500')} />
                   </Button>
                   <Button
                     size="icon"
@@ -635,7 +715,6 @@ export function ProductDetailPage() {
                   </Button>
                 </div>
 
-                {/* Badges */}
                 <div className="absolute top-4 left-4 flex flex-col gap-2">
                   {discountPercent > 0 && (
                     <Badge className="bg-red-500/90 hover:bg-red-500 backdrop-blur border-none text-white px-3 py-1 text-xs uppercase tracking-widest">
@@ -655,36 +734,19 @@ export function ProductDetailPage() {
                 </div>
               </div>
 
-              {/* Mobile dot indicators */}
-              {allImages.length > 1 && (
-                <div className="flex sm:hidden justify-center gap-2 mt-3">
-                  {allImages.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedImage(idx)}
-                      aria-label={`View image ${idx + 1}`}
-                      className={cn(
-                        'rounded-full transition-all duration-300',
-                        selectedImage === idx
-                          ? 'w-6 h-2 bg-emerald-400'
-                          : 'w-2 h-2 bg-white/30'
-                      )}
-                    />
-                  ))}
-                </div>
-              )}
-
               {/* Desktop thumbnails */}
               {allImages.length > 1 && (
                 <div className="hidden sm:flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                   {allImages.map((img, idx) => (
                     <button
                       key={img}
-                      onClick={() => setSelectedImage(idx)}
-                      className={`relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden transition-all duration-300 ${selectedImage === idx
-                        ? 'ring-2 ring-primary ring-offset-2 ring-offset-black scale-105 opacity-100'
-                        : 'opacity-50 hover:opacity-80 hover:scale-105'
-                        }`}
+                      onClick={() => scrollToImage(idx)}
+                      className={cn(
+                        'relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden transition-all duration-300',
+                        selectedImage === idx
+                          ? 'ring-2 ring-primary ring-offset-2 ring-offset-black scale-105 opacity-100'
+                          : 'opacity-50 hover:opacity-80 hover:scale-105'
+                      )}
                     >
                       <img src={img} alt={`${product.name} view ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" />
                     </button>
@@ -807,9 +869,9 @@ export function ProductDetailPage() {
                     </div>
                   )}
 
-                  {/* Add To Cart Actions */}
-                  <div className="space-y-4 sm:space-y-6">
-                    <div className="flex items-center gap-3 sm:gap-4">
+                  {/* Add To Cart Actions - hidden on mobile, shown via fixed bar instead */}
+                  <div className="hidden sm:block space-y-6">
+                    <div className="flex items-center gap-4">
                       <div className={`flex items-center rounded-xl border p-1 ${isLuxuryTheme ? 'bg-black/30 border-white/10' : 'bg-muted'}`}>
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -843,7 +905,7 @@ export function ProductDetailPage() {
                           whileTap={{ scale: 0.98 }}
                           onClick={handleAddToCart}
                           disabled={!product.in_stock || isAddingToCart}
-                          className={`w-full py-3 sm:py-4 rounded-xl font-medium text-base sm:text-lg flex items-center justify-center gap-2 sm:gap-3 transition-all relative overflow-hidden group ${!product.in_stock
+                          className={`w-full py-4 rounded-xl font-medium text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group ${!product.in_stock
                             ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                             : isLuxuryTheme
                               ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white shadow-[0_0_30px_rgba(16,185,129,0.3)]'
@@ -1054,22 +1116,20 @@ export function ProductDetailPage() {
           </div>
 
 
-          {/* Enhanced Mobile Sticky Add to Cart (kept as is) */}
-          <EnhancedStickyAddToCart
+          {/* Mobile Fixed Add to Cart Bar - always visible on mobile */}
+          <MobileFixedAddToCart
             product={{
-              product_id: product.product_id,
               name: product.name,
               display_price: product.display_price,
-              compare_at_price: product.compare_at_price,
               in_stock: product.in_stock,
               image_url: product.image_url,
             }}
+            quantity={quantity}
+            onQuantityChange={setQuantity}
+            maxQuantity={maxQuantity}
+            onAddToCart={handleAddToCart}
+            isAddingToCart={isAddingToCart}
             primaryColor={store.primary_color}
-            onAddToCart={async () => {
-              handleAddToCart();
-            }}
-            onToggleWishlist={toggleWishlist}
-            isWishlisted={isWishlisted}
           />
         </div>
       </div>
