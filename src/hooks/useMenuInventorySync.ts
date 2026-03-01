@@ -107,7 +107,7 @@ function getStockStatus(quantity: number | null | undefined, threshold: number):
  *   tenantId,
  *   menuId: 'menu-123',
  *   onProductUnavailable: (change) => {
- *     toast({ title: 'Product unavailable', description: change.productName });
+ *     toast.error('Product unavailable', { description: change.productName });
  *   },
  * });
  *

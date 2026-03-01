@@ -58,25 +58,22 @@ Check limits before actions:
 
 ```tsx
 import { useTenantLimits } from '@/hooks/useTenantLimits';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 function CreateProductForm() {
   const { canCreate, getRemaining } = useTenantLimits();
-  const { toast } = useToast();
 
   const handleSubmit = async (data) => {
     if (!canCreate('products')) {
-      toast({
-        title: 'Limit Reached',
+      toast.error('Limit Reached', {
         description: `You can only create ${getRemaining('products')} more products.`,
-        variant: 'destructive',
       });
       return;
     }
 
     // Create product
     await createProduct(data);
-    
+
     // Update usage
     await updateResourceUsage(tenantId, 'products', 1);
   };

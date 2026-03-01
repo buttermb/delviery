@@ -290,12 +290,9 @@ describe('SessionManagement', () => {
       render(<SessionManagement />);
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith(
-          expect.objectContaining({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to load active sessions',
-          })
+        expect(mockToast.error).toHaveBeenCalledWith(
+          'Failed to load active sessions',
+          expect.anything()
         );
       });
     });
@@ -342,11 +339,8 @@ describe('SessionManagement', () => {
       });
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith(
-          expect.objectContaining({
-            title: 'Session Revoked',
-            description: 'The session has been revoked successfully.',
-          })
+        expect(mockToast.success).toHaveBeenCalledWith(
+          expect.stringContaining('Session Revoked')
         );
       });
     });
@@ -413,12 +407,9 @@ describe('SessionManagement', () => {
       }
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith(
-          expect.objectContaining({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to revoke session',
-          })
+        expect(mockToast.error).toHaveBeenCalledWith(
+          'Failed to revoke session',
+          expect.anything()
         );
       });
     });
@@ -538,11 +529,8 @@ describe('SessionManagement', () => {
       await user.click(screen.getByText('Revoke All Others'));
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith(
-          expect.objectContaining({
-            title: 'All Sessions Revoked',
-            description: 'All other sessions have been revoked. You will remain logged in on this device.',
-          })
+        expect(mockToast.success).toHaveBeenCalledWith(
+          expect.stringContaining('All Sessions Revoked')
         );
       });
     });
@@ -588,12 +576,9 @@ describe('SessionManagement', () => {
       await user.click(screen.getByText('Revoke All Others'));
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith(
-          expect.objectContaining({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to revoke sessions',
-          })
+        expect(mockToast.error).toHaveBeenCalledWith(
+          'Failed to revoke sessions',
+          expect.anything()
         );
       });
     });
@@ -826,10 +811,9 @@ describe('SessionManagement', () => {
       render(<SessionManagement />);
 
       await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith(
-          expect.objectContaining({
-            variant: 'destructive',
-          })
+        expect(mockToast.error).toHaveBeenCalledWith(
+          'Failed to load active sessions',
+          expect.anything()
         );
       });
     });

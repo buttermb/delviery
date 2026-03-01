@@ -45,13 +45,13 @@ export const useAdminKeyboardShortcuts = (options: KeyboardShortcutsOptions = {}
         if (e.shiftKey) {
           e.preventDefault();
           if (isFreeTier) {
-            toast('Credit Balance', {
+            toast.info('Credit Balance', {
               description: `You have ${balance.toLocaleString()} credits remaining.`,
               icon: <Coins className="h-4 w-4 text-emerald-500" />,
               duration: 2000,
             });
           } else {
-            toast('Credit Balance', {
+            toast.info('Credit Balance', {
               description: 'You are on an unlimited plan.',
               icon: <Coins className="h-4 w-4 text-emerald-500" />,
               duration: 2000,

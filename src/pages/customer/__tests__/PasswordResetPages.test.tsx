@@ -165,7 +165,7 @@ describe('ForgotPasswordPage', () => {
     });
   });
 
-  it('should show error toast on API failure', async () => {
+  it('should always show success for security regardless of API result', async () => {
     mockApiFetch.mockResolvedValue({
       ok: false,
       json: () => Promise.resolve({ error: 'Store not found or inactive' }),
@@ -179,13 +179,9 @@ describe('ForgotPasswordPage', () => {
     const submitButton = screen.getByRole('button', { name: /send reset link/i });
     fireEvent.click(submitButton);
 
+    // Should always show success to prevent email enumeration
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          variant: 'destructive',
-          title: 'Failed to Send',
-        })
-      );
+      expect(screen.getByText(/check your email/i)).toBeInTheDocument();
     });
   });
 
@@ -358,7 +354,7 @@ describe('ResetPasswordPage', () => {
     });
   });
 
-  it('should show error toast when reset fails', async () => {
+  it('should show error inline when reset fails', async () => {
     mockApiFetch.mockResolvedValue({
       ok: false,
       json: () => Promise.resolve({ error: 'Invalid or expired reset token' }),
@@ -375,13 +371,9 @@ describe('ResetPasswordPage', () => {
     const submitButton = screen.getByRole('button', { name: /reset password/i });
     fireEvent.click(submitButton);
 
+    // Error is shown inline via AuthErrorAlert, not via toast
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          variant: 'destructive',
-          title: 'Reset Failed',
-        })
-      );
+      expect(screen.getByRole('alert')).toBeInTheDocument();
     });
   });
 
