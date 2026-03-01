@@ -300,7 +300,7 @@ export function CheckoutPage() {
   const [showErrors, setShowErrors] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
-  const [, setOrderRetryCount] = useState(0);
+  const [orderRetryCount, setOrderRetryCount] = useState(0);
 
   // Double-submit guard — state disables button immediately on click
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -839,6 +839,18 @@ export function CheckoutPage() {
         }
       }
 
+      // Helper: detect network errors worth retrying
+      const isNetworkError = (err: unknown): boolean => {
+        const msg = err instanceof Error ? err.message : String(err);
+        const lower = msg.toLowerCase();
+        return lower.includes('network') ||
+          lower.includes('fetch') ||
+          lower.includes('timeout') ||
+          lower.includes('failed to fetch') ||
+          lower.includes('load failed') ||
+          msg === '';
+      };
+
       // Primary path: edge function checkout (handles order, customer, stock, Telegram, Stripe)
       const tryEdgeFunction = async (): Promise<OrderResult | null> => {
         try {
@@ -934,15 +946,16 @@ export function CheckoutPage() {
       };
 
       // Fallback path: direct RPC (if edge function is unavailable)
-      const attemptOrder = async (attempt: number): Promise<OrderResult> => {
-        try {
-          if (!store?.id) throw new Error('Store ID missing');
+      const tryRpcFallback = async (): Promise<OrderResult> => {
+        if (!store?.id) throw new Error('Store ID missing');
 
-          // Session ID for reservation (using guest email or random string if not available yet)
-          const sessionId = formData.email || `guest_${Date.now()}`;
+        // Session ID for reservation (using guest email or random string if not available yet)
+        const sessionId = formData.email || `guest_${Date.now()}`;
 
-          // Skip inventory reservation if the RPC doesn't match expected signature
-          // The existing reserve_inventory uses (p_menu_id, p_items) not per-product calls
+        // 1. Create Order using the actual function signature
+        const deliveryAddress = formData.fulfillmentMethod === 'pickup'
+          ? null
+          : `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
 
           // 1. Create Order using the actual function signature
           const deliveryAddress = formData.fulfillmentMethod === 'pickup'
@@ -987,44 +1000,117 @@ export function CheckoutPage() {
           await (supabase.rpc as unknown as SupabaseRpc)('complete_reservation', {
             p_session_id: sessionId,
             p_order_id: orderId
+        const { data: orderId, error: orderError } = await supabase
+          .rpc('create_marketplace_order', {
+            p_store_id: store.id,
+            p_customer_name: `${formData.firstName} ${formData.lastName}`,
+            p_customer_email: formData.email,
+            p_customer_phone: formData.phone || undefined,
+            p_delivery_address: deliveryAddress,
+            p_delivery_notes: formData.deliveryNotes || undefined,
+            p_items: cartItems.map(item => ({
+              product_id: item.productId,
+              quantity: item.quantity,
+              price: item.price,
+              variant: item.variant
+            })),
+            p_subtotal: subtotal,
+            p_tax: 0,
+            p_delivery_fee: effectiveDeliveryFee,
+            p_total: total,
+            p_payment_method: formData.paymentMethod,
+            p_idempotency_key: idempotencyKey, // Prevent double orders on retry
+            p_preferred_contact_method: formData.preferredContact || undefined,
+            p_fulfillment_method: formData.fulfillmentMethod,
           });
 
-          // 3. Redeem Coupon
-          if (appliedCoupon?.coupon_id) {
-            await (supabase.rpc as unknown as SupabaseRpc)('redeem_coupon', { p_coupon_id: appliedCoupon.coupon_id });
+        if (orderError) {
+          // Handle case where RPC function doesn't exist - don't retry
+          if (orderError.message?.includes('function') || orderError.code === '42883') {
+            throw new Error('Order system is not configured. Please contact the store.');
+          }
+          throw orderError;
+        }
+
+        if (!orderId) throw new Error('Failed to create order');
+
+        // 2. Complete Reservations
+        await (supabase.rpc as unknown as SupabaseRpc)('complete_reservation', {
+          p_session_id: sessionId,
+          p_order_id: orderId
+        });
+
+        // 3. Redeem Coupon
+        if (appliedCoupon?.coupon_id) {
+          await (supabase.rpc as unknown as SupabaseRpc)('redeem_coupon', { p_coupon_id: appliedCoupon.coupon_id });
+        }
+
+        // 4. Fetch order details (tracking token, order number, total)
+        const { data: orderRow } = await supabase
+          .from('storefront_orders')
+          .select('order_number, tracking_token, total')
+          .eq('id', orderId as string)
+          .maybeSingle();
+
+        return {
+          order_id: orderId as string,
+          order_number: (orderRow?.order_number as string) || (orderId as string),
+          tracking_token: (orderRow?.tracking_token as string) || undefined,
+          total: (orderRow?.total as number) ?? undefined,
+        };
+      };
+
+      // Submit order with retry: tries edge function → RPC fallback, retries on network errors
+      const MAX_RETRIES = 3;
+      const submitWithRetry = async (attempt: number): Promise<OrderResult> => {
+        try {
+          // Try edge function first
+          const edgeResult = await tryEdgeFunction();
+          if (edgeResult) return edgeResult;
+
+          // Edge function unavailable, use RPC fallback
+          logger.warn('Edge function unavailable, using client-side fallback', null, { component: 'CheckoutPage' });
+          const fallbackResult = await tryRpcFallback();
+
+          // Telegram fallback: edge function handles Telegram server-side,
+          // but the RPC fallback path skips it. Fire-and-forget notification.
+          if (store?.tenant_id) {
+            supabase.functions.invoke('forward-order-telegram', {
+              body: {
+                orderId: fallbackResult.order_id,
+                tenantId: store.tenant_id,
+                orderNumber: fallbackResult.order_number,
+                customerName: `${formData.firstName} ${formData.lastName}`,
+                customerPhone: formData.phone || null,
+                orderTotal: fallbackResult.total ?? total,
+                items: cartItems.map((item) => ({
+                  productName: item.name,
+                  quantity: item.quantity,
+                  price: item.price * item.quantity,
+                })),
+                storeName: store.store_name || 'Store',
+                fulfillmentMethod: formData.fulfillmentMethod,
+              },
+            }).catch((err) => {
+              logger.warn('Telegram fallback notification failed — skipping', err, { component: 'CheckoutPage' });
+            });
           }
 
-          // 4. Fetch order details (tracking token, order number, total)
-          const { data: orderRow } = await supabase
-            .from('storefront_orders')
-            .select('order_number, tracking_token, total')
-            .eq('id', orderId as string)
-            .maybeSingle();
-
-          return {
-            order_id: orderId as string,
-            order_number: (orderRow?.order_number as string) || (orderId as string),
-            tracking_token: (orderRow?.tracking_token as string) || undefined,
-            total: (orderRow?.total as number) ?? undefined,
-          };
-
+          return fallbackResult;
         } catch (err: unknown) {
-          const errMessage = err instanceof Error ? err.message : String(err);
-          const isNetworkError =
-            errMessage.toLowerCase().includes('network') ||
-              errMessage.toLowerCase().includes('fetch') ||
-              errMessage.toLowerCase().includes('timeout') ||
-              errMessage.toLowerCase().includes('failed to fetch');
+          // Don't retry business errors (out of stock, blocked, limits, etc.)
+          if (err instanceof OutOfStockError) throw err;
 
-          // Retry on network errors
-          if (isNetworkError && attempt < 3) { // Hardcoded 3 for simplicity or import constant
+          if (isNetworkError(err) && attempt < MAX_RETRIES) {
             setOrderRetryCount(attempt);
-            toast.warning(`Connection issue, retrying (${attempt}/3)...`);
+            toast.warning(`Connection issue, retrying (${attempt}/${MAX_RETRIES})...`, {
+              description: 'Your cart is safe. Retrying automatically.',
+            });
             await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
-            return attemptOrder(attempt + 1);
+            return submitWithRetry(attempt + 1);
           }
 
-          logger.error('Order RPC error', err, { attempt, component: 'CheckoutPage' });
+          logger.error('Order submission error', err, { attempt, component: 'CheckoutPage' });
           throw err;
         }
       };
@@ -1087,6 +1173,7 @@ export function CheckoutPage() {
       }
 
       return fallbackResult;
+      return submitWithRetry(1);
     },
     onSuccess: async (data) => {
       setOrderRetryCount(0);
@@ -1249,30 +1336,37 @@ export function CheckoutPage() {
           toast.info('Your cart has been updated. You can continue with the remaining items.');
           setCurrentStep(4); // Stay on review step
         }
-        // If cart is now empty, the existing redirect effect (line ~236) will handle navigation
+        // If cart is now empty, the existing redirect effect will handle navigation
         return;
       }
 
+      // Determine if the error is a connection issue (retryable)
       const errorMessage = error.message || '';
       const lowerMsg = errorMessage.toLowerCase();
       const isRetryableError =
         lowerMsg.includes('network') ||
         lowerMsg.includes('fetch') ||
         lowerMsg.includes('timeout') ||
+        lowerMsg.includes('load failed') ||
         lowerMsg.includes('internal server error') ||
         lowerMsg.includes('500') ||
         lowerMsg.includes('failed to create order') ||
         errorMessage === '';
 
-      toast.error('Order failed', {
-        description: isRetryableError
-          ? 'Something went wrong. Please try again.'
-          : errorMessage,
-        action: {
-          label: 'Retry',
-          onClick: () => handlePlaceOrder(),
+      // Cart is preserved — user can retry without losing anything
+      toast.error(
+        isRetryableError ? 'Connection error' : 'Order failed',
+        {
+          description: isRetryableError
+            ? 'Could not reach the server. Your cart is saved — tap Retry when ready.'
+            : humanizeError(error),
+          duration: 10000,
+          action: {
+            label: 'Retry',
+            onClick: () => handlePlaceOrder(),
+          },
         },
-      });
+      );
     },
     onSettled: () => {
       setIsSubmitting(false);
@@ -2179,6 +2273,25 @@ export function CheckoutPage() {
                 )}
               </AnimatePresence>
 
+              {/* Network error banner — shown after a failed order attempt */}
+              {placeOrderMutation.isError && currentStep === 4 && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Order could not be placed</AlertTitle>
+                  <AlertDescription>
+                    {(() => {
+                      const errMsg = placeOrderMutation.error?.message || '';
+                      const lower = errMsg.toLowerCase();
+                      const isNetwork = lower.includes('network') || lower.includes('fetch') ||
+                        lower.includes('timeout') || lower.includes('load failed') || errMsg === '';
+                      return isNetwork
+                        ? 'We had trouble connecting to the server. Your cart and information are saved — you can try again.'
+                        : humanizeError(placeOrderMutation.error);
+                    })()}
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {/* Navigation Buttons — hidden on mobile (sticky bar handles it), visible on sm+ */}
               <div className="hidden sm:flex flex-row justify-between gap-3 mt-8">
                 {currentStep > 1 ? (
@@ -2213,6 +2326,12 @@ export function CheckoutPage() {
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         {formData.paymentMethod === 'card' ? 'Redirecting to payment...' : 'Processing...'}
+                        {orderRetryCount > 0 ? `Retrying (${orderRetryCount}/3)...` : 'Processing...'}
+                      </>
+                    ) : placeOrderMutation.isError ? (
+                      <>
+                        <AlertCircle className="w-4 h-4 mr-2" />
+                        Retry Order
                       </>
                     ) : isStoreClosed ? (
                       <>
@@ -2510,6 +2629,12 @@ export function CheckoutPage() {
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {formData.paymentMethod === 'card' ? 'Redirecting to payment...' : 'Processing...'}
+                  {orderRetryCount > 0 ? `Retrying (${orderRetryCount}/3)...` : 'Processing...'}
+                </>
+              ) : placeOrderMutation.isError ? (
+                <>
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  Retry Order — {formatCurrency(total)}
                 </>
               ) : isStoreClosed ? (
                 <>
