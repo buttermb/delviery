@@ -204,16 +204,17 @@ export default defineConfig(({ mode }) => ({
         // Ensure React is not split into separate chunks
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // Only split out truly isolated vendor chunks that don't depend on React at module level.
-            // DO NOT split React, Radix, Recharts, Tremor, Tanstack, etc. into separate chunks — 
-            // they call React.forwardRef() and React.createContext() at module evaluation time,
-            // and separating them causes TDZ / circular initialization errors in production.
+            // Split vendor dependencies into isolated chunks for better caching.
+            // DO NOT split React, Radix, or react-dom — they use React.forwardRef()
+            // and React.createContext() at module evaluation time, causing TDZ errors.
             if (id.includes('remotion') || id.includes('@remotion')) return 'vendor-remotion';
             if (id.includes('mapbox') || id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-map';
             if (id.includes('react-pdf') || id.includes('@react-pdf') || id.includes('jspdf') || id.includes('html2canvas')) return 'vendor-pdf';
             if (id.includes('xlsx')) return 'vendor-xlsx';
             if (id.includes('@capacitor')) return 'vendor-capacitor';
             if (id.includes('crypto-js') || id.includes('bcryptjs') || id.includes('@aikidosec')) return 'vendor-crypto';
+            if (id.includes('@tanstack')) return 'vendor-query';
+            if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-') || id.includes('victory-vendor')) return 'vendor-charts';
           }
         },
       },
