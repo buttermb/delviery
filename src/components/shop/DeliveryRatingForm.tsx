@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { Star } from 'lucide-react';
+import { Star, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -176,7 +176,14 @@ export function DeliveryRatingForm({
           className="w-full"
           style={{ backgroundColor: primaryColor }}
         >
-          {submitMutation.isPending ? 'Submitting...' : 'Submit Rating'}
+          {submitMutation.isPending ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            'Submit Rating'
+          )}
         </Button>
 
         {submitMutation.isError && (
