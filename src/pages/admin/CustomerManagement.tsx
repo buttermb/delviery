@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
@@ -36,7 +36,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useTenantFeatureToggles } from "@/hooks/useTenantFeatureToggles";
 import { usePermissions } from "@/hooks/usePermissions";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { usePagination } from "@/hooks/usePagination";
 import { StandardPagination } from "@/components/shared/StandardPagination";
 import { useEncryption } from "@/lib/hooks/useEncryption";
 import { motion } from "framer-motion";
@@ -54,6 +53,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
 import { AdminToolbar } from '@/components/admin/shared/AdminToolbar';
 import type { ResponsiveColumn } from '@/components/shared/ResponsiveTable';
+import { escapePostgresLike } from '@/lib/utils/searchSanitize';
 
 import { useCustomersByTags } from "@/hooks/useAutoTagRules";
 
@@ -73,6 +73,14 @@ interface Customer {
   /** Indicates data is encrypted but cannot be decrypted with current key */
   _encryptedIndicator?: boolean;
 }
+
+interface CustomerListResult {
+  customers: Customer[];
+  totalCount: number;
+}
+
+const DEFAULT_PAGE_SIZE = 25;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 /**
  * Detects if a value looks like encrypted ciphertext (Base64 encoded)
@@ -107,19 +115,67 @@ export function CustomerManagement() {
   const { canEdit, canDelete, canExport } = usePermissions();
   const posEnabled = isFeatureEnabled('pos');
 
+  // Server-side pagination state via URL params
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = Math.max(1, parseInt(searchParams.get('customers') ?? '1', 10));
+  const pageSize = parseInt(searchParams.get('customersSize') ?? String(DEFAULT_PAGE_SIZE), 10);
+
+  const goToPage = useCallback((page: number) => {
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev);
+      if (page > 1) {
+        params.set('customers', String(page));
+      } else {
+        params.delete('customers');
+      }
+      return params;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const changePageSize = useCallback((newSize: number) => {
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev);
+      // Reset to page 1 when changing page size
+      params.delete('customers');
+      if (newSize !== DEFAULT_PAGE_SIZE) {
+        params.set('customersSize', String(newSize));
+      } else {
+        params.delete('customersSize');
+      }
+      return params;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  // Reset to page 1 when filters or search change
+  useEffect(() => {
+    if (currentPage > 1) {
+      goToPage(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm, filterType, filterStatus]);
+
   // Get customer IDs filtered by tags
   const { data: customerIdsByTags } = useCustomersByTags(filterTagIds);
 
-  const { data: customers = [], isLoading: loading } = useQuery({
-    queryKey: queryKeys.customers.list(tenant?.id, { filterType, filterStatus }),
-    queryFn: async () => {
-      if (!tenant) return [];
+  const { data: customerResult, isLoading: loading } = useQuery({
+    queryKey: queryKeys.customers.list(tenant?.id, {
+      filterType,
+      filterStatus,
+      search: debouncedSearchTerm,
+      page: currentPage,
+      pageSize,
+    }),
+    queryFn: async (): Promise<CustomerListResult> => {
+      if (!tenant) return { customers: [], totalCount: 0 };
+
+      const from = (currentPage - 1) * pageSize;
+      const to = from + pageSize - 1;
 
       let query = supabase
         .from("customers")
-        .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, phone_encrypted, email_encrypted, deleted_at, created_at")
+        .select("id, tenant_id, first_name, last_name, email, phone, customer_type, total_spent, loyalty_points, loyalty_tier, last_purchase_at, status, medical_card_expiration, phone_encrypted, email_encrypted, deleted_at, created_at", { count: 'exact' })
         .eq("tenant_id", tenant.id)
-        .is("deleted_at", null); // Exclude soft-deleted customers
+        .is("deleted_at", null);
 
       if (filterType !== "all") {
         query = query.eq("customer_type", filterType);
@@ -129,7 +185,17 @@ export function CustomerManagement() {
         query = query.eq("status", filterStatus);
       }
 
-      const { data, error } = await query.order("created_at", { ascending: false });
+      // Server-side search across name, email, and phone
+      if (debouncedSearchTerm) {
+        const escaped = escapePostgresLike(debouncedSearchTerm);
+        query = query.or(
+          `first_name.ilike.%${escaped}%,last_name.ilike.%${escaped}%,email.ilike.%${escaped}%,phone.ilike.%${escaped}%`
+        );
+      }
+
+      const { data, error, count } = await query
+        .order("created_at", { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
 
@@ -190,9 +256,47 @@ export function CustomerManagement() {
         });
       }
 
-      return decryptedCustomers as unknown as Customer[];
+      return {
+        customers: decryptedCustomers as unknown as Customer[],
+        totalCount: count ?? 0,
+      };
     },
     enabled: !!tenant && !accountLoading,
+  });
+
+  const customers = customerResult?.customers ?? [];
+  const totalCount = customerResult?.totalCount ?? 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  // Separate lightweight stats query (unaffected by pagination/search)
+  const { data: statsData } = useQuery({
+    queryKey: queryKeys.customers.list(tenant?.id, { _stats: true }),
+    queryFn: async () => {
+      if (!tenant) return { total: 0, active: 0, medical: 0, revenue: 0, atRisk: 0 };
+
+      const { data, error } = await supabase
+        .from("customers")
+        .select("status, customer_type, total_spent, last_purchase_at")
+        .eq("tenant_id", tenant.id)
+        .is("deleted_at", null);
+
+      if (error) throw error;
+
+      const rows = data ?? [];
+      const total = rows.length;
+      const active = rows.filter(c => c.status === 'active').length;
+      const medical = rows.filter(c => c.customer_type === 'medical').length;
+      const revenue = rows.reduce((sum, c) => sum + ((c.total_spent as number) ?? 0), 0);
+      const atRisk = rows.filter(c => {
+        if (!c.last_purchase_at) return false;
+        const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
+        return days > 60;
+      }).length;
+
+      return { total, active, medical, revenue, atRisk };
+    },
+    enabled: !!tenant && !accountLoading,
+    staleTime: 30_000, // Stats don't need to refresh as often
   });
 
   const handleDeleteClick = useCallback((customerId: string, customerName: string) => {
@@ -205,10 +309,19 @@ export function CustomerManagement() {
     if (!customerToDelete || !tenant) return;
 
     // Snapshot current cache and optimistically remove customer
-    const queryKey = queryKeys.customers.list(tenant.id, { filterType, filterStatus });
-    const previousCustomers = queryClient.getQueryData<Customer[]>(queryKey);
-    queryClient.setQueryData<Customer[]>(queryKey, (old) =>
-      old?.filter((c) => c.id !== customerToDelete.id)
+    const queryKey = queryKeys.customers.list(tenant.id, {
+      filterType,
+      filterStatus,
+      search: debouncedSearchTerm,
+      page: currentPage,
+      pageSize,
+    });
+    const previousResult = queryClient.getQueryData<CustomerListResult>(queryKey);
+    queryClient.setQueryData<CustomerListResult>(queryKey, (old) =>
+      old ? {
+        customers: old.customers.filter((c) => c.id !== customerToDelete.id),
+        totalCount: old.totalCount - 1,
+      } : old
     );
 
     // Close dialog and drawer immediately for snappy UX
@@ -257,8 +370,8 @@ export function CustomerManagement() {
       setCustomerToDelete(null);
     } catch (error: unknown) {
       // Rollback optimistic update on failure
-      if (previousCustomers) {
-        queryClient.setQueryData(queryKey, previousCustomers);
+      if (previousResult) {
+        queryClient.setQueryData(queryKey, previousResult);
       }
       logger.error("Failed to delete customer", error, { component: "CustomerManagement" });
       toast.error("Failed to delete customer", {
@@ -274,7 +387,7 @@ export function CustomerManagement() {
   const handleExport = () => {
     const csv = [
       ["Name", "Email", "Phone", "Type", "Total Spent", "Loyalty Points", "Status"],
-      ...filteredCustomers.map(c => [
+      ...displayedCustomers.map(c => [
         displayName(c.first_name, c.last_name),
         c.email ?? '',
         c.phone ?? '',
@@ -294,21 +407,13 @@ export function CustomerManagement() {
     toast.success("Customer data exported");
   };
 
-  const filteredCustomers = useMemo(() => customers.filter((customer) => {
-    const fullName = displayName(customer.first_name, customer.last_name).toLowerCase();
-    const search = debouncedSearchTerm.toLowerCase();
-    const matchesSearch =
-      fullName.includes(search) ||
-      customer.email?.toLowerCase().includes(search) ||
-      customer.phone?.includes(search);
-
-    // Filter by tags if any are selected
-    const matchesTags =
-      filterTagIds.length === 0 ||
-      (customerIdsByTags && customerIdsByTags.includes(customer.id));
-
-    return matchesSearch && matchesTags;
-  }), [customers, debouncedSearchTerm, filterTagIds, customerIdsByTags]);
+  // Apply client-side tag filtering on server-paginated results
+  const displayedCustomers = useMemo(() => {
+    if (filterTagIds.length === 0) return customers;
+    return customers.filter((customer) =>
+      customerIdsByTags && customerIdsByTags.includes(customer.id)
+    );
+  }, [customers, filterTagIds, customerIdsByTags]);
 
   useEffect(() => {
     if (!debouncedSearchTerm) return;
@@ -322,44 +427,26 @@ export function CustomerManagement() {
     if (import.meta.env.DEV) {
       logger.debug('[perf] customer filter latency', {
         durationMs: Math.round(duration),
-        resultCount: filteredCustomers.length,
+        resultCount: displayedCustomers.length,
       });
     }
     searchInteractionStartRef.current = null;
-  }, [filteredCustomers, debouncedSearchTerm]);
-
-  // Use standardized pagination
-  const {
-    paginatedItems: paginatedCustomers,
-    currentPage,
-    pageSize,
-    totalPages,
-    totalItems,
-    goToPage,
-    changePageSize,
-    pageSizeOptions,
-  } = usePagination(filteredCustomers, {
-    defaultPageSize: 25,
-    persistInUrl: true,
-    urlKey: 'customers',
-  });
+  }, [displayedCustomers, debouncedSearchTerm]);
 
   // Batch-fetch tags for visible rows to avoid N+1 tag queries.
   const visibleCustomerIds = useMemo(
-    () => paginatedCustomers.map((customer) => customer.id),
-    [paginatedCustomers]
+    () => displayedCustomers.map((customer) => customer.id),
+    [displayedCustomers]
   );
   const { data: visibleTagsByCustomer = {} } = useContactTagsBatch(visibleCustomerIds);
 
-  // Calculate stats
-  const { totalCustomers, activeCustomers, medicalPatients, totalRevenue, avgLifetimeValue } = useMemo(() => {
-    const total = customers.length;
-    const active = customers.filter(c => c.status === 'active').length;
-    const medical = customers.filter(c => c.customer_type === 'medical').length;
-    const revenue = customers.reduce((sum, c) => sum + (c.total_spent ?? 0), 0);
-    const avgLTV = total > 0 ? revenue / total : 0;
-    return { totalCustomers: total, activeCustomers: active, medicalPatients: medical, totalRevenue: revenue, avgLifetimeValue: avgLTV };
-  }, [customers]);
+  // Stats from separate lightweight query
+  const totalCustomers = statsData?.total ?? 0;
+  const activeCustomers = statsData?.active ?? 0;
+  const medicalPatients = statsData?.medical ?? 0;
+  const totalRevenue = statsData?.revenue ?? 0;
+  const avgLifetimeValue = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
+  const atRiskCount = statsData?.atRisk ?? 0;
 
   const getCustomerStatus = (customer: Customer) => {
     if (!customer.last_purchase_at) return <Badge variant="outline">New</Badge>;
@@ -373,11 +460,6 @@ export function CustomerManagement() {
     return <Badge variant="secondary">Regular</Badge>;
   };
 
-  const atRiskCount = useMemo(() => customers.filter(c => {
-    if (!c.last_purchase_at) return false;
-    const days = Math.floor((Date.now() - new Date(c.last_purchase_at).getTime()) / (1000 * 60 * 60 * 24));
-    return days > 60;
-  }).length, [customers]);
   const customerColumns = useMemo<ResponsiveColumn<Customer>[]>(() => [
     {
       header: 'Customer',
@@ -819,7 +901,7 @@ export function CustomerManagement() {
         />
 
         <AdminDataTable
-          data={paginatedCustomers}
+          data={displayedCustomers}
           columns={customerColumns}
           keyExtractor={(c) => c.id}
           isLoading={loading}
@@ -838,13 +920,13 @@ export function CustomerManagement() {
           }
         />
 
-        {filteredCustomers.length > 0 && (
+        {totalCount > 0 && (
           <StandardPagination
             currentPage={currentPage}
             totalPages={totalPages}
             pageSize={pageSize}
-            totalItems={totalItems}
-            pageSizeOptions={pageSizeOptions}
+            totalItems={totalCount}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
             onPageChange={goToPage}
             onPageSizeChange={changePageSize}
           />
