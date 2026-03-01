@@ -87,6 +87,9 @@ export function HeroSection({ content, styles }: HeroSectionProps) {
                             src={background_image}
                             alt=""
                             className="absolute inset-0 w-full h-full object-cover"
+                            loading="eager"
+                            decoding="async"
+                            fetchPriority="high"
                         />
                         {/* Gradient overlay on image */}
                         <div

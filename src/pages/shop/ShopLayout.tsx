@@ -212,6 +212,36 @@ export default function ShopLayout() {
     }
   }, [store?.store_name, store?.tagline]);
 
+  // LCP: Preload hero background image for fastest render
+  useEffect(() => {
+    if (!store?.layout_config) return;
+
+    const sections = store.layout_config as unknown as Array<{
+      type?: string;
+      content?: { background_image?: string };
+      visible?: boolean;
+    }>;
+
+    const heroSection = sections.find(
+      (s) => (s.type === 'hero' || s.type === 'luxury_hero') && s.visible !== false
+    );
+
+    const heroImageUrl = heroSection?.content?.background_image;
+    if (!heroImageUrl) return;
+
+    // Inject <link rel="preload"> for the hero image
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = heroImageUrl;
+    link.fetchPriority = 'high';
+    document.head.appendChild(link);
+
+    return () => {
+      link.remove();
+    };
+  }, [store?.layout_config]);
+
   // GA4 Analytics: Inject Google Analytics script
   useEffect(() => {
     if (store?.ga4_measurement_id && !isPreviewMode) {
