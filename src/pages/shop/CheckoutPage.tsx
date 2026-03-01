@@ -1589,6 +1589,7 @@ export function CheckoutPage() {
                           ringColor: themeColor,
                         } : undefined}
                         onClick={() => updateField('fulfillmentMethod', 'delivery')}
+                        data-testid="fulfillment-delivery-button"
                       >
                         <Truck className="h-6 w-6" style={formData.fulfillmentMethod === 'delivery' ? { color: themeColor } : undefined} />
                         <span className={`font-semibold ${isLuxuryTheme ? 'text-white' : ''}`}>Delivery</span>
@@ -1611,6 +1612,7 @@ export function CheckoutPage() {
                           ringColor: themeColor,
                         } : undefined}
                         onClick={() => updateField('fulfillmentMethod', 'pickup')}
+                        data-testid="fulfillment-pickup-button"
                       >
                         <Store className="h-6 w-6" style={formData.fulfillmentMethod === 'pickup' ? { color: themeColor } : undefined} />
                         <span className={`font-semibold ${isLuxuryTheme ? 'text-white' : ''}`}>Pickup</span>
@@ -1620,7 +1622,7 @@ export function CheckoutPage() {
 
                     {/* Pickup Info */}
                     {formData.fulfillmentMethod === 'pickup' && (
-                      <Card className={isLuxuryTheme ? 'bg-white/5 border-white/10' : 'bg-muted/50'}>
+                      <Card className={isLuxuryTheme ? 'bg-white/5 border-white/10' : 'bg-muted/50'} data-testid="pickup-info-card">
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
                             <Store className="h-5 w-5 mt-0.5" style={{ color: themeColor }} />
@@ -1968,7 +1970,7 @@ export function CheckoutPage() {
                         </Button>
                       </div>
                       {formData.fulfillmentMethod === 'pickup' ? (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground" data-testid="review-pickup-summary">
                           Pickup at {store?.store_name || 'store'}
                         </p>
                       ) : (
@@ -2279,13 +2281,13 @@ export function CheckoutPage() {
                   <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(subtotal)}</span>
                 </div>
                 {formData.fulfillmentMethod === 'delivery' && effectiveDeliveryFee > 0 && (
-                  <div className="flex justify-between">
+                  <div className="flex justify-between" data-testid="order-summary-delivery-fee">
                     <span className={textMuted}>Delivery</span>
                     <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(effectiveDeliveryFee)}</span>
                   </div>
                 )}
                 {formData.fulfillmentMethod === 'pickup' && (
-                  <div className="flex justify-between">
+                  <div className="flex justify-between" data-testid="order-summary-pickup-free">
                     <span className={textMuted}>Pickup</span>
                     <span className="text-green-600">FREE</span>
                   </div>
@@ -2321,7 +2323,7 @@ export function CheckoutPage() {
                   </div>
                 )}
                 <Separator className={isLuxuryTheme ? 'bg-white/5' : ''} />
-                <div className="flex justify-between text-lg font-bold">
+                <div className="flex justify-between text-lg font-bold" data-testid="order-summary-total">
                   <span className={isLuxuryTheme ? textPrimary : ''}>Total</span>
                   <span style={{ color: themeColor }}>{formatCurrency(total)}</span>
                 </div>
