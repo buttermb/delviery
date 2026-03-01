@@ -2,14 +2,19 @@
  * FilterDrawer - Mobile-friendly filter panel
  * Uses shadcn Sheet for consistent drawer behavior
  * Theme-aware: adapts to storefront CSS variables
+ * FilterDrawer - Mobile-friendly filter panel with draft-and-apply pattern
+ * Uses shadcn Sheet for consistent drawer behavior.
+ * Filters are edited in a draft state and only applied when the user taps "Apply".
  */
 
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, SlidersHorizontal, ChevronDown } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { EnhancedPriceSlider } from './EnhancedPriceSlider';
 
@@ -27,7 +32,7 @@ interface FilterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   filters: FilterState;
-  onFiltersChange: (filters: FilterState) => void;
+  onApply: (filters: FilterState) => void;
   availableCategories: string[];
   availableStrainTypes: string[];
   maxPrice: number;
@@ -44,18 +49,37 @@ const SORT_OPTIONS = [
   { value: 'thc_asc', label: 'THC%: Low to High' },
 ];
 
+/** Count how many filters are active (non-default) */
+export function getActiveFilterCount(filters: FilterState, maxPrice: number): number {
+  return (
+    filters.categories.length +
+    filters.strainTypes.length +
+    (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice ? 1 : 0) +
+    (filters.sortBy !== 'name' ? 1 : 0)
+  );
+}
+
 export function FilterDrawer({
   isOpen,
   onClose,
   filters,
-  onFiltersChange,
+  onApply,
   availableCategories,
   availableStrainTypes,
   maxPrice,
   accentColor = '#10b981',
   resultCount,
 }: FilterDrawerProps) {
+  // Draft state — initialized from committed filters when drawer opens
+  const [draft, setDraft] = useState<FilterState>(filters);
   const [expandedSections, setExpandedSections] = useState<string[]>(['categories', 'price', 'sort']);
+
+  // Reset draft to committed filters whenever the drawer opens
+  useEffect(() => {
+    if (isOpen) {
+      setDraft(filters);
+    }
+  }, [isOpen, filters]);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev =>
@@ -63,22 +87,26 @@ export function FilterDrawer({
     );
   };
 
-  const toggleCategory = (category: string) => {
-    const newCategories = filters.categories.includes(category)
-      ? filters.categories.filter(c => c !== category)
-      : [...filters.categories, category];
-    onFiltersChange({ ...filters, categories: newCategories });
-  };
+  const toggleCategory = useCallback((category: string) => {
+    setDraft(prev => ({
+      ...prev,
+      categories: prev.categories.includes(category)
+        ? prev.categories.filter(c => c !== category)
+        : [...prev.categories, category],
+    }));
+  }, []);
 
-  const toggleStrainType = (strainType: string) => {
-    const newStrainTypes = filters.strainTypes.includes(strainType)
-      ? filters.strainTypes.filter(s => s !== strainType)
-      : [...filters.strainTypes, strainType];
-    onFiltersChange({ ...filters, strainTypes: newStrainTypes });
-  };
+  const toggleStrainType = useCallback((strainType: string) => {
+    setDraft(prev => ({
+      ...prev,
+      strainTypes: prev.strainTypes.includes(strainType)
+        ? prev.strainTypes.filter(s => s !== strainType)
+        : [...prev.strainTypes, strainType],
+    }));
+  }, []);
 
-  const clearAllFilters = () => {
-    onFiltersChange({
+  const clearAllFilters = useCallback(() => {
+    setDraft({
       categories: [],
       strainTypes: [],
       priceRange: [0, maxPrice],
@@ -87,9 +115,15 @@ export function FilterDrawer({
       thcRange: [0, 100],
       cbdRange: [0, 100],
     });
+  }, [maxPrice]);
+
+  const handleApply = () => {
+    onApply(draft);
+    onClose();
   };
 
   const activeFilterCount = getActiveFilterCount(filters, maxPrice);
+  const draftActiveCount = getActiveFilterCount(draft, maxPrice);
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -121,11 +155,16 @@ export function FilterDrawer({
                 style={{ backgroundColor: accentColor }}
               >
                 {activeFilterCount}
+            <SlidersHorizontal className="w-4 h-4 text-white/60" />
+            <h3 className="text-white font-light tracking-wide">Filters</h3>
+            {draftActiveCount > 0 && (
+              <span className="px-2 py-0.5 bg-white/10 rounded-full text-white/60 text-xs">
+                {draftActiveCount}
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            {activeFilterCount > 0 && (
+            {draftActiveCount > 0 && (
               <button
                 onClick={clearAllFilters}
                 className="text-xs opacity-50 hover:opacity-100 transition-opacity"
@@ -156,12 +195,16 @@ export function FilterDrawer({
               {SORT_OPTIONS.map(option => (
                 <button
                   key={option.value}
-                  onClick={() => onFiltersChange({ ...filters, sortBy: option.value })}
+                  onClick={() => setDraft(prev => ({ ...prev, sortBy: option.value }))}
                   className={cn(
                     'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors min-h-[44px] flex items-center',
                     filters.sortBy === option.value
                       ? 'font-medium'
                       : 'opacity-60 hover:opacity-80'
+                    'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors',
+                    draft.sortBy === option.value
+                      ? 'bg-white/10 text-white'
+                      : 'text-white/50 hover:bg-white/5 hover:text-white/70'
                   )}
                   style={filters.sortBy === option.value ? {
                     backgroundColor: `${accentColor}15`,
@@ -182,6 +225,7 @@ export function FilterDrawer({
               onToggle={() => toggleSection('categories')}
               count={filters.categories.length}
               accentColor={accentColor}
+              count={draft.categories.length}
             >
               <div className="space-y-1">
                 {availableCategories.map(category => (
@@ -190,7 +234,7 @@ export function FilterDrawer({
                     className="flex items-center gap-3 px-2 py-2 rounded cursor-pointer hover:opacity-80 min-h-[44px]"
                   >
                     <Checkbox
-                      checked={filters.categories.includes(category)}
+                      checked={draft.categories.includes(category)}
                       onCheckedChange={() => toggleCategory(category)}
                     />
                     <span className="text-sm">{category}</span>
@@ -208,6 +252,7 @@ export function FilterDrawer({
               onToggle={() => toggleSection('strain')}
               count={filters.strainTypes.length}
               accentColor={accentColor}
+              count={draft.strainTypes.length}
             >
               <div className="space-y-1">
                 {availableStrainTypes.map(strain => (
@@ -216,7 +261,7 @@ export function FilterDrawer({
                     className="flex items-center gap-3 px-2 py-2 rounded cursor-pointer hover:opacity-80 min-h-[44px]"
                   >
                     <Checkbox
-                      checked={filters.strainTypes.includes(strain)}
+                      checked={draft.strainTypes.includes(strain)}
                       onCheckedChange={() => toggleStrainType(strain)}
                     />
                     <span className="text-sm">{strain}</span>
@@ -253,8 +298,8 @@ export function FilterDrawer({
           >
             <div className="px-2 pt-2 pb-4">
               <EnhancedPriceSlider
-                value={filters.priceRange}
-                onChange={(value) => onFiltersChange({ ...filters, priceRange: value })}
+                value={draft.priceRange}
+                onChange={(value) => setDraft(prev => ({ ...prev, priceRange: value }))}
                 max={maxPrice}
                 step={5}
                 accentColor={accentColor}
@@ -270,11 +315,13 @@ export function FilterDrawer({
         >
           <Button
             onClick={onClose}
+            onClick={handleApply}
             className="w-full py-3 rounded-full text-white font-medium"
             style={{ backgroundColor: accentColor }}
           >
             {resultCount !== undefined
               ? `Show ${resultCount} Product${resultCount !== 1 ? 's' : ''}`
+              ? `Show ${resultCount} Result${resultCount !== 1 ? 's' : ''}`
               : 'Apply Filters'}
           </Button>
         </div>
@@ -363,17 +410,26 @@ interface FilterTriggerButtonProps {
 }
 
 /** Trigger button that opens the filter drawer on mobile */
+/** Trigger button for opening the filter drawer on mobile */
 export function FilterTriggerButton({
   onClick,
   activeCount,
+  accentColor,
   className,
 }: FilterTriggerButtonProps) {
+}: {
+  onClick: () => void;
+  activeCount: number;
+  accentColor?: string;
+  className?: string;
+}) {
   return (
     <Button
       variant="outline"
       onClick={onClick}
       className={cn(
         'gap-2 rounded-full min-h-[44px]',
+        'relative gap-2 bg-white/[0.02] border-white/10 text-white/60 hover:bg-white/5 hover:text-white rounded-full',
         className
       )}
     >
@@ -383,6 +439,13 @@ export function FilterTriggerButton({
         <span className="px-1.5 py-0.5 bg-primary text-primary-foreground rounded-full text-xs font-medium">
           {activeCount}
         </span>
+      {activeCount > 0 && (
+        <Badge
+          className="ml-1 h-5 min-w-5 px-1.5 text-[10px] font-bold text-white border-0"
+          style={{ backgroundColor: accentColor ?? '#10b981' }}
+        >
+          {activeCount}
+        </Badge>
       )}
     </Button>
   );

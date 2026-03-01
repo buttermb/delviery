@@ -231,6 +231,7 @@ vi.mock('@/components/shop/FilterDrawer', () => ({
   FilterTriggerButton: ({ onClick }: { onClick: () => void }) => (
     <button onClick={onClick} data-testid="filter-trigger">Filters</button>
   ),
+  getActiveFilterCount: () => 0,
 }));
 
 // Mock ProductQuickViewModal

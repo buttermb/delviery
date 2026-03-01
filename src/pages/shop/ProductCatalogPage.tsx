@@ -480,6 +480,10 @@ export function ProductCatalogPage() {
 
   const handleFiltersChange = (newFilters: FilterState) => {
     setSelectedCategories(newFilters.categories);
+  const drawerActiveCount = getActiveFilterCount(filterState, maxPrice);
+
+  const handleApplyFilters = (newFilters: FilterState) => {
+    setSelectedCategory(newFilters.categories[0] ?? '');
     setSelectedStrainTypes(newFilters.strainTypes);
     setPriceRange(newFilters.priceRange);
     setSortBy(newFilters.sortBy);
@@ -503,7 +507,7 @@ export function ProductCatalogPage() {
         isOpen={filterDrawerOpen}
         onClose={() => setFilterDrawerOpen(false)}
         filters={filterState}
-        onFiltersChange={handleFiltersChange}
+        onApply={handleApplyFilters}
         availableCategories={productCategories}
         availableStrainTypes={strainTypes}
         maxPrice={maxPrice}
@@ -649,6 +653,31 @@ export function ProductCatalogPage() {
               <List className="w-4 h-4" />
             </Button>
           </div>
+          {/* Advanced Filter Button */}
+          <FilterTriggerButton
+            onClick={() => setFilterDrawerOpen(true)}
+            activeCount={drawerActiveCount}
+            accentColor={store.primary_color}
+            className="md:hidden"
+          />
+        </div>
+
+        {/* View Toggle */}
+        <div className="hidden md:flex items-center gap-1 border rounded-lg p-1">
+          <Button
+            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('grid')}
+          >
+            <Grid3X3 className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+          >
+            <List className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
