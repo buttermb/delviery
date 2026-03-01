@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ export interface ProductGridSectionProps {
 }
 
 export function ProductGridSection({ content, styles, storeId }: ProductGridSectionProps) {
+    const { storeSlug } = useParams<{ storeSlug: string }>();
     const {
         heading = "Shop Premium Flower",
         subheading = "Premium indoor-grown flower from licensed NYC cultivators",
@@ -476,6 +478,40 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                     />
                                                 </div>
                                             ))}
+                                                {products.map((product, index) => (
+                                                    <div key={product.id || index}>
+                                                        <StorefrontProductCard
+                                                            product={{
+                                                                product_id: product.id ?? '',
+                                                                product_name: product.name ?? '',
+                                                                category: product.category ?? '',
+                                                                strain_type: product.strain_type ?? '',
+                                                                price: Number(product.price) || 0,
+                                                                description: product.description ?? '',
+                                                                image_url: product.images?.[0] || null,
+                                                                images: product.images ?? [],
+                                                                thc_content: null,
+                                                                cbd_content: null,
+                                                                is_visible: true,
+                                                                display_order: 0,
+                                                                stock_quantity: product.in_stock ? 100 : 0
+                                                            }}
+                                                            storeSlug={storeSlug}
+                                                            isPreviewMode={false}
+                                                            onQuickAdd={(e) => handleQuickAdd(e, { ...product, id: product.id || '' })}
+                                                            isAdded={false}
+                                                            onToggleWishlist={() => { }}
+                                                            isInWishlist={false}
+                                                            onQuickView={() => { }}
+                                                            index={index}
+                                                            accentColor={accent_color}
+                                                            showSaleBadge={show_sale_badges}
+                                                            showNewBadge={show_new_badges}
+                                                            showStrainBadge={show_strain_badges}
+                                                            showStockWarning={show_stock_warnings}
+                                                        />
+                                                    </div>
+                                                ))}
                                         </div>
                                     </div>
                                 );
