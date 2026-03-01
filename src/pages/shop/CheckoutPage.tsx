@@ -34,7 +34,6 @@ import {
   Loader2,
   ChevronUp,
   ChevronDown,
-  Copy,
   Truck,
   Store,
   AlertCircle,
@@ -45,6 +44,7 @@ import { formatPhoneInput, normalizePhoneNumber, formatPhoneNumber } from '@/lib
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
 import { CheckoutProgressIndicator } from '@/components/shop/CheckoutProgressIndicator';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
+import { PaymentMethodStep } from '@/components/shop/PaymentMethodStep';
 import { CheckoutLoyalty } from '@/components/shop/CheckoutLoyalty';
 import { CheckoutSignInDialog } from '@/components/shop/CheckoutSignInDialog';
 import { useStoreStatus } from '@/hooks/useStoreStatus';
@@ -1056,6 +1056,10 @@ export function CheckoutPage() {
         toast.success('Zelle payment received!', {
           description: `Order #${data.order_number} placed successfully.`,
         });
+      } else if (formData.paymentMethod === 'cashapp') {
+        toast.success('Cash App payment received!', {
+          description: `Order #${data.order_number} placed successfully.`,
+        });
       } else if (formData.paymentMethod === 'card') {
         toast.info('Order placed! The store will follow up regarding payment.');
       }
@@ -1791,127 +1795,18 @@ export function CheckoutPage() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
-                    className="space-y-6"
                   >
-                    <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Payment Method</h2>
-
-                    {/* Express Payment Options */}
-                    <div className="space-y-4">
-                      <ExpressPaymentButtons
-                        showDivider={true}
-                        size="lg"
-                      />
-                    </div>
-
-                    {/* Standard Payment Methods */}
-                    <RadioGroup
-                      value={formData.paymentMethod}
-                      onValueChange={(value) => {
-                        updateField('paymentMethod', value);
-                        if (value !== 'venmo') setVenmoConfirmed(false);
-                        if (value !== 'zelle') setZelleConfirmed(false);
-                      }}
-                      className="space-y-2 sm:space-y-3"
-                    >
-                      {(store.payment_methods || ['cash']).filter((method: string) =>
-                        method !== 'card' || isStripeConfigured !== false
-                      ).map((method: string) => (
-                        <div
-                          key={method}
-                          className="flex items-center space-x-3 p-3 sm:p-4 border rounded-lg cursor-pointer hover:bg-muted/50 w-full"
-                          onClick={() => {
-                            updateField('paymentMethod', method);
-                            if (method !== 'venmo') setVenmoConfirmed(false);
-                            if (method !== 'zelle') setZelleConfirmed(false);
-                          }}
-                        >
-                          <RadioGroupItem value={method} id={method} />
-                          <Label htmlFor={method} className="flex-1 cursor-pointer capitalize">
-                            {method === 'cash' && 'Cash on Delivery'}
-                            {method === 'card' && 'Credit/Debit Card'}
-                            {method === 'paypal' && 'PayPal'}
-                            {method === 'bitcoin' && 'Bitcoin'}
-                            {method === 'venmo' && 'Venmo'}
-                            {method === 'zelle' && 'Zelle'}
-                            {!['cash', 'card', 'paypal', 'bitcoin', 'venmo', 'zelle'].includes(method) && method}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-
-                    {/* Venmo payment details */}
-                    {formData.paymentMethod === 'venmo' && (
-                      <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-                        {store.checkout_settings?.venmo_handle && (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium">
-                              Send payment to{' '}
-                              <span className="font-bold">{store.checkout_settings?.venmo_handle}</span>
-                            </p>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="gap-2"
-                              onClick={() => {
-                                navigator.clipboard.writeText(store.checkout_settings?.venmo_handle || '');
-                                toast.success('Venmo handle copied!');
-                              }}
-                            >
-                              <Copy className="h-3 w-3" />
-                              Copy Venmo handle
-                            </Button>
-                          </div>
-                        )}
-                        <div className="flex items-start gap-2 pt-2">
-                          <Checkbox
-                            id="venmo-confirmed"
-                            checked={venmoConfirmed}
-                            onCheckedChange={(checked) => setVenmoConfirmed(checked as boolean)}
-                          />
-                          <Label htmlFor="venmo-confirmed" className="text-sm cursor-pointer">
-                            I&apos;ve sent payment via Venmo
-                          </Label>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Zelle payment details */}
-                    {formData.paymentMethod === 'zelle' && (
-                      <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-                        {store.checkout_settings?.zelle_email && (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium">
-                              Send Zelle payment to{' '}
-                              <span className="font-bold">{store.checkout_settings?.zelle_email}</span>
-                            </p>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="gap-2"
-                              onClick={() => {
-                                navigator.clipboard.writeText(store.checkout_settings?.zelle_email || '');
-                                toast.success('Zelle contact copied!');
-                              }}
-                            >
-                              <Copy className="h-3 w-3" />
-                              Copy Zelle contact
-                            </Button>
-                          </div>
-                        )}
-                        <div className="flex items-start gap-2 pt-2">
-                          <Checkbox
-                            id="zelle-confirmed"
-                            checked={zelleConfirmed}
-                            onCheckedChange={(checked) => setZelleConfirmed(checked as boolean)}
-                          />
-                          <Label htmlFor="zelle-confirmed" className="text-sm cursor-pointer">
-                            I&apos;ve sent payment via Zelle
-                          </Label>
-                        </div>
-                      </div>
-                    )}
+                    <PaymentMethodStep
+                      paymentMethods={store.payment_methods || ['cash']}
+                      selectedMethod={formData.paymentMethod}
+                      onMethodChange={(method) => updateField('paymentMethod', method)}
+                      isStripeConfigured={isStripeConfigured}
+                      checkoutSettings={store.checkout_settings}
+                      venmoConfirmed={venmoConfirmed}
+                      onVenmoConfirmedChange={setVenmoConfirmed}
+                      zelleConfirmed={zelleConfirmed}
+                      onZelleConfirmedChange={setZelleConfirmed}
+                    />
                   </motion.div>
                 )}
 
@@ -2003,11 +1898,12 @@ export function CheckoutPage() {
                         </Button>
                       </div>
                       <p className="text-sm text-muted-foreground capitalize">
-                        {formData.paymentMethod === 'cash' && 'Cash on Delivery'}
+                        {formData.paymentMethod === 'cash' && 'Cash'}
                         {formData.paymentMethod === 'venmo' && 'Venmo'}
                         {formData.paymentMethod === 'zelle' && 'Zelle'}
-                        {formData.paymentMethod === 'card' && 'Credit/Debit Card'}
-                        {!['cash', 'venmo', 'zelle', 'card'].includes(formData.paymentMethod) && formData.paymentMethod}
+                        {formData.paymentMethod === 'card' && 'Credit / Debit Card'}
+                        {formData.paymentMethod === 'cashapp' && 'Cash App'}
+                        {!['cash', 'venmo', 'zelle', 'card', 'cashapp'].includes(formData.paymentMethod) && formData.paymentMethod}
                       </p>
                     </div>
 

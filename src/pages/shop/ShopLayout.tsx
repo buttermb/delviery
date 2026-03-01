@@ -77,6 +77,12 @@ interface StoreInfo {
     show_delivery_notes?: boolean;
     venmo_handle?: string;
     zelle_email?: string;
+    zelle_phone?: string;
+    cashapp_username?: string;
+    cash_instructions?: string;
+    venmo_instructions?: string;
+    zelle_instructions?: string;
+    cashapp_instructions?: string;
   };
   payment_methods?: string[];
   // Analytics
