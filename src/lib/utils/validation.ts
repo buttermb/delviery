@@ -59,14 +59,17 @@ export function validateUUID(uuid: string): boolean {
 }
 
 /**
- * Validate phone number (US format)
+ * Validate phone number (US format, 10 digits after stripping)
  */
 export function validatePhoneNumber(phone: string): boolean {
   if (!phone) return false;
 
-  const cleaned = phone.replace(/\D/g, '');
-  // E.164 supports up to 15 digits, min length usually 7 for local numbers
-  return cleaned.length >= 7 && cleaned.length <= 15;
+  let digits = phone.replace(/\D/g, '');
+  // Strip leading US country code
+  if (digits.length === 11 && digits.startsWith('1')) {
+    digits = digits.slice(1);
+  }
+  return digits.length === 10;
 }
 
 /**
@@ -89,8 +92,14 @@ export function validateURL(url: string): boolean {
 export const validationSchemas = {
   email: z.string().email().max(255),
   uuid: z.string().uuid(),
-  // Allow international phone numbers: digits, spaces, dashes, plus, parentheses
-  phone: z.string().regex(/^[\d\s\-+()]+$/, "Invalid phone number").min(7, "Phone number must be at least 7 characters").max(20, "Phone number must be 20 characters or less"),
+  // US phone: accepts common formats, validates 10 digits after stripping
+  phone: z.string()
+    .min(1, "Phone number is required")
+    .refine((val) => {
+      let digits = val.replace(/\D/g, '');
+      if (digits.length === 11 && digits.startsWith('1')) digits = digits.slice(1);
+      return digits.length === 10;
+    }, "Please enter a valid 10-digit US phone number"),
   url: z.string().url(),
   nonEmptyString: z.string().min(1).max(255),
   positiveNumber: z.number().positive(),

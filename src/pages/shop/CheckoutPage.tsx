@@ -41,6 +41,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
+import { formatPhoneInput, normalizePhoneNumber, formatPhoneNumber } from '@/lib/utils/formatPhone';
 import { CheckoutAddressAutocomplete } from '@/components/shop/CheckoutAddressAutocomplete';
 import { CheckoutProgressIndicator } from '@/components/shop/CheckoutProgressIndicator';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
@@ -60,8 +61,10 @@ import type { DeliveryZone } from '@/types/delivery-zone';
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Phone validation - accepts formats: (555) 123-4567, 555-123-4567, 5551234567, +1 555-123-4567
-const PHONE_REGEX = /^[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+// Phone validation: normalize to 10-digit US format and check
+function isValidUSPhone(value: string): boolean {
+  return normalizePhoneNumber(value) !== null;
+}
 
 interface CheckoutData {
   // Contact
@@ -614,9 +617,9 @@ export function CheckoutPage() {
           toast.error('Phone number is required');
           return false;
         }
-        // Validate phone format if provided
-        if (formData.phone && !PHONE_REGEX.test(formData.phone.replace(/\s/g, ''))) {
-          toast.error('Invalid phone number', { description: 'Please enter a valid phone number.' });
+        // Validate phone format if provided — must be 10-digit US number
+        if (formData.phone && !isValidUSPhone(formData.phone)) {
+          toast.error('Invalid phone number', { description: 'Please enter a valid 10-digit US phone number.' });
           return false;
         }
         // Validate password if creating account
@@ -828,7 +831,7 @@ export function CheckoutPage() {
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 email: formData.email,
-                phone: formData.phone || undefined,
+                phone: normalizePhoneNumber(formData.phone) || undefined,
               },
               fulfillmentMethod: formData.fulfillmentMethod,
               paymentMethod: formData.paymentMethod,
@@ -915,7 +918,7 @@ export function CheckoutPage() {
               p_store_id: store.id,
               p_customer_name: `${formData.firstName} ${formData.lastName}`,
               p_customer_email: formData.email,
-              p_customer_phone: formData.phone || undefined,
+              p_customer_phone: normalizePhoneNumber(formData.phone) || undefined,
               p_delivery_address: deliveryAddress,
               p_delivery_notes: formData.deliveryNotes || undefined,
               p_items: cartItems.map(item => ({
@@ -1007,7 +1010,7 @@ export function CheckoutPage() {
             tenantId: store.tenant_id,
             orderNumber: fallbackResult.order_number,
             customerName: `${formData.firstName} ${formData.lastName}`,
-            customerPhone: formData.phone || null,
+            customerPhone: normalizePhoneNumber(formData.phone) || null,
             orderTotal: fallbackResult.total ?? total,
             items: cartItems.map((item) => ({
               productName: item.name,
@@ -1108,7 +1111,7 @@ export function CheckoutPage() {
             password: accountPassword,
             firstName: formData.firstName,
             lastName: formData.lastName,
-            phone: formData.phone || null,
+            phone: normalizePhoneNumber(formData.phone) || null,
             tenantId: store.tenant_id,
           }),
         }).then(async (response) => {
@@ -1468,8 +1471,10 @@ export function CheckoutPage() {
                           name="phone"
                           type="tel"
                           value={formData.phone}
-                          onChange={(e) => updateField('phone', e.target.value)}
+                          onChange={(e) => updateField('phone', formatPhoneInput(e.target.value))}
                           placeholder="(555) 123-4567"
+                          maxLength={14}
+                          className={showErrors && formData.phone && !isValidUSPhone(formData.phone) ? "border-red-500 focus-visible:ring-red-500" : ""}
                         />
                         {isLookingUpCustomer && (
                           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
@@ -1478,6 +1483,9 @@ export function CheckoutPage() {
                           <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
                         )}
                       </div>
+                      {showErrors && formData.phone && !isValidUSPhone(formData.phone) && (
+                        <p className="text-xs text-red-500">Please enter a valid 10-digit US phone number</p>
+                      )}
                       {isRecognized && (
                         <p className="text-xs text-green-600">Welcome back, {returningCustomer?.firstName}!</p>
                       )}
@@ -1935,7 +1943,7 @@ export function CheckoutPage() {
                       <p className="text-sm text-muted-foreground">
                         {formData.firstName} {formData.lastName}<br />
                         {formData.email}<br />
-                        {formData.phone}
+                        {formatPhoneNumber(formData.phone)}
                         {formData.preferredContact && (
                           <>
                             <br />
