@@ -175,6 +175,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
   return (
     <>
       <Card
+        data-testid="product-card"
         onMouseEnter={handleMouseEnter}
         className="group overflow-hidden backdrop-blur-2xl transition-all duration-500 cursor-pointer relative bg-card/50 border border-border/50 hover:border-border hover:-translate-y-3 hover:scale-[1.02]"
         onClick={handleCardClick}
@@ -289,6 +290,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
         <CardFooter className="p-6 pt-0 flex flex-col gap-3">
           {/* ONE BIG ADD TO CART BUTTON - Primary CTA */}
           <Button
+            data-testid="add-to-cart-button"
             type="button"
             onClick={(e) => {
               e.preventDefault();

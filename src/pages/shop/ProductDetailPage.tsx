@@ -902,6 +902,7 @@ export function ProductDetailPage() {
                       </div>
                       <div className="flex-1">
                         <motion.button
+                          data-testid="add-to-cart-button"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={handleAddToCart}

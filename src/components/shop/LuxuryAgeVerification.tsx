@@ -91,7 +91,7 @@ export function LuxuryAgeVerification({
           transition={{ duration: 0.5 }}
           className="relative z-10 w-full max-w-md"
         >
-          <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] rounded-3xl p-10 text-center">
+          <div className="bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] rounded-3xl p-10 text-center" data-testid="age-verification-modal">
             {/* Logo or Icon */}
             <div className="mb-8 flex justify-center">
               {logoUrl ? (

@@ -111,7 +111,7 @@ export function StorefrontAgeGate({ storeId }: StorefrontAgeGateProps) {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.1 }}
                 >
-                    <Card className="w-full max-w-md bg-zinc-950 border-zinc-800 text-white shadow-2xl" data-dark-panel>
+                    <Card className="w-full max-w-md bg-zinc-950 border-zinc-800 text-white shadow-2xl" data-dark-panel data-testid="age-verification-modal">
                         <CardHeader className="text-center space-y-4 pt-8">
                             <div className="mx-auto w-16 h-16 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center mb-2">
                                 <ShieldCheck className="w-8 h-8 text-emerald-500" />
