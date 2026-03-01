@@ -176,8 +176,8 @@ export default function TenantAdminDashboardPage() {
       today.setHours(0, 0, 0, 0);
 
       try {
-        // Aggregate orders from all sources with tenant isolation
-        const [wholesaleResult, menuResult, ordersResult] = await Promise.allSettled([
+        // Aggregate orders from all sources AND inventory in parallel
+        const [wholesaleResult, menuResult, ordersResult, inventorySettled] = await Promise.allSettled([
           supabase
             .from("wholesale_orders")
             .select("total_amount, status")
@@ -205,6 +205,23 @@ export default function TenantAdminDashboardPage() {
             .select("total_amount, status")
             .eq("tenant_id", tenantId)
             .gte("created_at", today.toISOString()),
+          // Inventory runs in parallel with order queries (no dependency)
+          (async () => {
+            let result: { data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null } = await (supabase
+              .from("products")
+              .select("id, name, stock_quantity, available_quantity, low_stock_alert")
+              .eq("tenant_id", tenantId) as unknown as Promise<{ data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null }>);
+
+            // Fallback without tenant filter if column doesn't exist
+            if (result.error && (result.error.code === '42703' || result.error.message?.includes('column'))) {
+              logger.warn("tenant_id filter failed for products, retrying without filter", result.error, { component: 'DashboardPage' });
+              result = await (supabase
+                .from("products")
+                .select("id, name, stock_quantity, available_quantity, low_stock_alert")
+                .limit(100) as unknown as Promise<{ data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null }>);
+            }
+            return result;
+          })(),
         ]);
 
         // Safely extract data from settled promises
@@ -221,21 +238,8 @@ export default function TenantAdminDashboardPage() {
         const sales = allOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
         const orderCount = allOrders.length;
 
-        // Get low stock items from products table (including low_stock_alert field)
-        let inventoryResult: { data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null } = await (supabase
-          .from("products")
-          .select("id, name, stock_quantity, available_quantity, low_stock_alert")
-          .eq("tenant_id", tenantId) as unknown as Promise<{ data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null }>);
-
-        // Fallback without tenant filter if column doesn't exist
-        if (inventoryResult.error && (inventoryResult.error.code === '42703' || inventoryResult.error.message?.includes('column'))) {
-          logger.warn("tenant_id filter failed for products, retrying without filter", inventoryResult.error, { component: 'DashboardPage' });
-          inventoryResult = await (supabase
-            .from("products")
-            .select("id, name, stock_quantity, available_quantity, low_stock_alert")
-            .limit(100) as unknown as Promise<{ data: Record<string, unknown>[] | null; error: { code?: string; message?: string } | null }>);
-        }
-
+        // Extract inventory from parallel result
+        const inventoryResult = inventorySettled.status === 'fulfilled' ? inventorySettled.value : { data: null, error: { message: 'Inventory fetch rejected' } };
         const inventory = inventoryResult.error ? [] : (inventoryResult.data ?? []);
 
         if (inventoryResult.error && inventory.length === 0) {
@@ -324,48 +328,54 @@ export default function TenantAdminDashboardPage() {
 
         const menuIds = tenantMenus.map((m) => m.id);
 
-        // Get recent menu views (from menu_access_logs via menus)
-        const { data: menuLogs, error: logsError } = await supabase
-          .from("menu_access_logs")
-          .select("menu_id, accessed_at, actions_taken, disposable_menus(name)")
-          .in("menu_id", menuIds)
-          .order("accessed_at", { ascending: false })
-          .limit(5);
+        // Fetch menu views and orders in parallel (both depend on menuIds but not each other)
+        const [logsResult, ordersResultSettled] = await Promise.allSettled([
+          supabase
+            .from("menu_access_logs")
+            .select("menu_id, accessed_at, actions_taken, disposable_menus(name)")
+            .in("menu_id", menuIds)
+            .order("accessed_at", { ascending: false })
+            .limit(5),
+          supabase
+            .from("menu_orders")
+            .select("id, total_amount, created_at, disposable_menus(name)")
+            .in("menu_id", menuIds)
+            .order("created_at", { ascending: false })
+            .limit(5),
+        ]);
 
-        if (logsError) {
-          logger.warn('Failed to fetch menu access logs', { component: 'DashboardPage', error: logsError });
-        }
-
-        if (!logsError && menuLogs) {
-          menuLogs.forEach((log) => {
-            activities.push({
-              type: "menu_view",
-              message: `Customer viewed menu "${log.disposable_menus?.name || "Unknown"}"`,
-              timestamp: log.accessed_at,
+        // Process menu access logs
+        if (logsResult.status === 'fulfilled') {
+          const { data: menuLogs, error: logsError } = logsResult.value;
+          if (logsError) {
+            logger.warn('Failed to fetch menu access logs', { component: 'DashboardPage', error: logsError });
+          }
+          if (!logsError && menuLogs) {
+            menuLogs.forEach((log) => {
+              activities.push({
+                type: "menu_view",
+                message: `Customer viewed menu "${log.disposable_menus?.name || "Unknown"}"`,
+                timestamp: log.accessed_at,
+              });
             });
-          });
+          }
         }
 
-        // Get recent orders (via menu_id)
-        const { data: orders, error: ordersError } = await supabase
-          .from("menu_orders")
-          .select("id, total_amount, created_at, disposable_menus(name)")
-          .in("menu_id", menuIds)
-          .order("created_at", { ascending: false })
-          .limit(5);
-
-        if (ordersError) {
-          logger.warn('Failed to fetch menu orders', { component: 'DashboardPage', error: ordersError });
-        }
-
-        if (!ordersError && orders) {
-          orders.forEach((order) => {
-            activities.push({
-              type: "order_placed",
-              message: `Order #${order.id.slice(0, 8)} placed - ${formatCurrency(order.total_amount ?? 0)}`,
-              timestamp: order.created_at,
+        // Process menu orders
+        if (ordersResultSettled.status === 'fulfilled') {
+          const { data: orders, error: ordersError } = ordersResultSettled.value;
+          if (ordersError) {
+            logger.warn('Failed to fetch menu orders', { component: 'DashboardPage', error: ordersError });
+          }
+          if (!ordersError && orders) {
+            orders.forEach((order) => {
+              activities.push({
+                type: "order_placed",
+                message: `Order #${order.id.slice(0, 8)} placed - ${formatCurrency(order.total_amount ?? 0)}`,
+                timestamp: order.created_at,
+              });
             });
-          });
+          }
         }
 
         // Get recent menu creations (most recent 5)
@@ -479,24 +489,28 @@ export default function TenantAdminDashboardPage() {
 
     const checkIfEmpty = async () => {
       try {
-        // Check if account has ANY data (must filter by tenant_id)
-        const { data: clients } = await supabase
-          .from("wholesale_clients")
-          .select("id")
-          .eq("tenant_id", tenantId)
-          .limit(1);
+        // Check if account has ANY data (must filter by tenant_id) — run in parallel
+        const [clientsResult, productsResult, menusResult] = await Promise.allSettled([
+          supabase
+            .from("wholesale_clients")
+            .select("id")
+            .eq("tenant_id", tenantId)
+            .limit(1),
+          supabase
+            .from("products")
+            .select("id")
+            .eq("tenant_id", tenantId)
+            .limit(1),
+          supabase
+            .from("disposable_menus")
+            .select("id")
+            .eq("tenant_id", tenantId)
+            .limit(1),
+        ]);
 
-        const { data: products } = await supabase
-          .from("products")
-          .select("id")
-          .eq("tenant_id", tenantId)
-          .limit(1);
-
-        const { data: menus } = await supabase
-          .from("disposable_menus")
-          .select("id")
-          .eq("tenant_id", tenantId)
-          .limit(1);
+        const clients = clientsResult.status === 'fulfilled' ? clientsResult.value.data : null;
+        const products = productsResult.status === 'fulfilled' ? productsResult.value.data : null;
+        const menus = menusResult.status === 'fulfilled' ? menusResult.value.data : null;
 
         const isEmpty = (!clients || clients.length === 0) &&
           (!products || products.length === 0) &&
