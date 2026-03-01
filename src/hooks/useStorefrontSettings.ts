@@ -68,6 +68,6 @@ export function useStorefrontSettings() {
       }
     },
     enabled: !!tenant?.id,
-    staleTime: 60_000,
+    staleTime: 5 * 60 * 1000, // 5 minutes — store config changes infrequently
   });
 }
