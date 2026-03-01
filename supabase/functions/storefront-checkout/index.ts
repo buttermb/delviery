@@ -423,6 +423,7 @@ serve(secureHeadersMiddleware(async (req) => {
     // 7b. Fetch Telegram contact link for confirmation page (if configured)
     // ------------------------------------------------------------------
     let telegramLink: string | null = null;
+    let telegramButtonLabel: string | null = null;
     if (tenantAccount) {
       const { data: acctSettings } = await supabase
         .from("account_settings")
@@ -431,6 +432,7 @@ serve(secureHeadersMiddleware(async (req) => {
         .maybeSingle();
       const notifSettings = acctSettings?.notification_settings as Record<string, unknown> | null;
       telegramLink = (notifSettings?.telegram_customer_link as string) || null;
+      telegramButtonLabel = (notifSettings?.telegram_button_label as string) || null;
     }
 
     const result: Record<string, unknown> = {
@@ -446,6 +448,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
     if (telegramLink) {
       result.telegramLink = telegramLink;
+      result.telegramButtonLabel = telegramButtonLabel || 'Chat with us on Telegram';
     }
 
     // Include discrepancy info so clients can reconcile

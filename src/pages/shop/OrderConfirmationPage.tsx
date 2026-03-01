@@ -8,7 +8,7 @@ import { Link, useParams, useLocation, useNavigate, useSearchParams } from 'reac
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
-import { CheckCircle, Package, Clock, Copy, Check, Loader2, ShoppingBag, Truck, MessageCircle, XCircle, MapPin, Mail } from 'lucide-react';
+import { CheckCircle, Package, Clock, Copy, Check, Loader2, ShoppingBag, Truck, MessageCircle, XCircle, MapPin, Mail, ExternalLink } from 'lucide-react';
 
 import { useShop } from './ShopLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -61,6 +61,7 @@ export function OrderConfirmationPage() {
     trackingToken?: string;
     total?: number;
     telegramLink?: string;
+    telegramButtonLabel?: string;
   };
 
   const orderNumber = stateData.orderNumber || stateData.orderId || searchParams.get('order') || null;
@@ -230,6 +231,7 @@ export function OrderConfirmationPage() {
     ? `${window.location.origin}/shop/${storeSlug}/track/${trackingToken}`
     : null;
   const telegramLink = stateData.telegramLink || null;
+  const telegramButtonLabel = stateData.telegramButtonLabel || 'Chat with us on Telegram';
   const isCancelled = orderDetails?.status === 'cancelled';
   const currentStatus = orderDetails?.status ?? 'pending';
   const currentStepIndex = STATUS_STEPS.findIndex((s) => s.status === currentStatus);
@@ -401,27 +403,66 @@ export function OrderConfirmationPage() {
             </div>
           )}
 
-          {/* Telegram contact link */}
-          {telegramLink && (
-            <div className="mt-4">
+        </CardContent>
+      </Card>
+
+      {/* Prominent tenant contact link with store branding */}
+      {telegramLink && !isCancelled && (
+        <Card
+          className="mb-4 sm:mb-6 overflow-hidden border-2"
+          style={{ borderColor: `${store.primary_color}40` }}
+        >
+          <CardContent className="p-0">
+            <div
+              className="px-5 py-5 sm:px-6 sm:py-6 text-center"
+              style={{ backgroundColor: `${store.primary_color}08` }}
+            >
+              {/* Store branding: logo + name */}
+              <div className="flex items-center justify-center gap-3 mb-3">
+                {store.logo_url ? (
+                  <img
+                    src={store.logo_url}
+                    alt={store.store_name}
+                    className="h-10 w-10 sm:h-12 sm:w-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                    style={{ backgroundColor: store.primary_color }}
+                  >
+                    {store.store_name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="text-base sm:text-lg font-semibold">
+                  {store.store_name}
+                </span>
+              </div>
+
+              <p className="text-sm text-muted-foreground mb-4">
+                Have questions about your order? Reach out to us directly.
+              </p>
+
+              {/* Large branded CTA button */}
               <a
                 href={telegramLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full"
+                className="block"
               >
                 <Button
-                  className="w-full h-12 sm:h-11 text-base sm:text-sm font-semibold gap-2"
+                  className="w-full h-14 sm:h-12 text-base font-semibold gap-2.5 text-white shadow-md hover:shadow-lg transition-shadow"
                   style={{ backgroundColor: store.primary_color }}
+                  size="lg"
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  Chat with us on Telegram
+                  <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+                  {telegramButtonLabel}
+                  <ExternalLink className="w-4 h-4 opacity-70" />
                 </Button>
               </a>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Delivery Details (hidden when cancelled) */}
       {orderDetails && !isCancelled && (
