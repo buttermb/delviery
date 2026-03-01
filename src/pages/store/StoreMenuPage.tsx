@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import ProductImage from '@/components/ProductImage';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -350,10 +351,11 @@ export default function StoreMenuPage() {
             {/* Logo & Back */}
             <Link to={`/store/${store.slug}`} className="flex items-center gap-2 shrink-0">
               {store.logo_url ? (
-                <img
+                <OptimizedImage
                   src={store.logo_url}
                   alt={store.store_name}
                   className="h-8 object-contain"
+                  priority
                 />
               ) : (
                 <Leaf className="w-6 h-6" style={{ color: primaryColor }} />
@@ -741,11 +743,10 @@ export default function StoreMenuPage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <Link to={`/store/${store.slug}`} className="flex items-center gap-2">
               {store.logo_url ? (
-                <img
+                <OptimizedImage
                   src={store.logo_url}
                   alt={store.store_name}
                   className="h-5 object-contain"
-                  loading="lazy"
                 />
               ) : (
                 <Leaf className="w-4 h-4" style={{ color: primaryColor }} />

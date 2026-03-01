@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { Badge } from '@/components/ui/badge';
 import ProductImage from '@/components/ProductImage';
 import { logger } from '@/lib/logger';
@@ -229,10 +230,11 @@ export default function StoreLandingPage() {
           <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
             {/* Logo */}
             {store.logo_url ? (
-              <img
+              <OptimizedImage
                 src={store.logo_url}
                 alt={store.store_name}
                 className="h-20 sm:h-24 lg:h-28 object-contain mb-6 drop-shadow-lg"
+                priority
               />
             ) : (
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/20  flex items-center justify-center mb-6">
@@ -449,11 +451,10 @@ export default function StoreLandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               {store.logo_url ? (
-                <img
+                <OptimizedImage
                   src={store.logo_url}
                   alt={store.store_name}
                   className="h-6 object-contain"
-                  loading="lazy"
                 />
               ) : (
                 <Leaf className="w-5 h-5" style={{ color: primaryColor }} />

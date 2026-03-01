@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Printer, Store } from "lucide-react";
 import { useProductThumbnail } from "@/hooks/useOptimizedImage";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import LongPressMenu from "@/components/mobile/LongPressMenu";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 
@@ -101,11 +102,10 @@ export function ProductCard({
       {/* Product Image */}
       {product.image_url ? (
         <div className="relative aspect-square overflow-hidden bg-[hsl(var(--tenant-surface))]">
-          <img
+          <OptimizedImage
             src={optimizedImageSrc || product.image_url}
             srcSet={srcSet}
             alt={product.name}
-            loading="lazy"
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
           {product.category && (

@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -835,11 +836,10 @@ export default function StoreProductPage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <Link to={`/store/${store.slug}`} className="flex items-center gap-2">
               {store.logo_url ? (
-                <img
+                <OptimizedImage
                   src={store.logo_url}
                   alt={store.store_name}
                   className="h-5 object-contain"
-                  loading="lazy"
                 />
               ) : (
                 <Leaf className="w-4 h-4" style={{ color: primaryColor }} />
@@ -874,10 +874,11 @@ function StoreHeader({
         <div className="flex items-center justify-between">
           <Link to={`/store/${store.slug}`} className="flex items-center gap-2">
             {store.logo_url ? (
-              <img
+              <OptimizedImage
                 src={store.logo_url}
                 alt={store.store_name}
                 className="h-8 object-contain"
+                priority
               />
             ) : (
               <Leaf className="w-6 h-6" style={{ color: primaryColor }} />

@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Package, Plus, Minus, Loader2 } from 'lucide-react';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { cleanProductName } from '@/utils/productName';
 import { cn } from '@/lib/utils';
 
@@ -86,11 +87,10 @@ export const MenuProductGrid = ({
               {showImages && (
                 <div className="relative h-56 overflow-hidden bg-gray-50">
                   {product.image_url ? (
-                    <img
+                    <OptimizedImage
                       src={product.image_url}
                       alt={cleanProductName(product.name)}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300">
