@@ -143,8 +143,10 @@ export function useAdminOrdersRealtime({
 
   useEffect(() => {
     if (!enabled || !tenant?.id) return;
+    let cancelled = false;
 
     const setupSubscriptions = async () => {
+      if (cancelled) return;
       // 1. Subscribe to regular orders table inserts
       const ordersChannel = supabase
         .channel(`admin-orders-realtime-${tenant.id}`)
@@ -174,7 +176,7 @@ export function useAdminOrdersRealtime({
           }
         });
 
-      channelsRef.current.push(ordersChannel);
+      if (!cancelled) channelsRef.current.push(ordersChannel);
 
       // 2. Subscribe to unified_orders for POS transactions
       const unifiedOrdersChannel = supabase
@@ -211,7 +213,7 @@ export function useAdminOrdersRealtime({
           }
         });
 
-      channelsRef.current.push(unifiedOrdersChannel);
+      if (!cancelled) channelsRef.current.push(unifiedOrdersChannel);
 
       // 3. Subscribe to storefront_orders table for direct storefront orders
       const storefrontOrdersChannel = supabase
@@ -246,7 +248,7 @@ export function useAdminOrdersRealtime({
           }
         });
 
-      channelsRef.current.push(storefrontOrdersChannel);
+      if (!cancelled) channelsRef.current.push(storefrontOrdersChannel);
 
       // 4. Fetch stores for this tenant and subscribe to marketplace_orders
       const { data: stores } = await supabase
@@ -254,7 +256,7 @@ export function useAdminOrdersRealtime({
         .select('id, store_name')
         .eq('tenant_id', tenant.id);
 
-      if (stores && stores.length > 0) {
+      if (!cancelled && stores && stores.length > 0) {
         storeIdsRef.current = stores.map((s) => s.id);
         const storeNameMap = Object.fromEntries(stores.map((s) => [s.id, s.store_name]));
 
@@ -296,13 +298,14 @@ export function useAdminOrdersRealtime({
             }
           });
 
-        channelsRef.current.push(storefrontChannel);
+        if (!cancelled) channelsRef.current.push(storefrontChannel);
       }
     };
 
     setupSubscriptions();
 
     return () => {
+      cancelled = true;
       channelsRef.current.forEach((channel) => {
         supabase.removeChannel(channel).catch((err) => {
           logger.warn('Error removing realtime channel', { error: err, component: 'useAdminOrdersRealtime' });

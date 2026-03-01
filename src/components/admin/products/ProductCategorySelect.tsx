@@ -136,6 +136,7 @@ export function ProductCategorySelect({
     if (!search.trim()) return tree;
 
     const query = search.toLowerCase();
+    const categoryById = new Map(flattened.map((cat) => [cat.id, cat]));
 
     // Find all matching categories and their ancestors
     const matchingIds = new Set<string>();
@@ -149,10 +150,10 @@ export function ProductCategorySelect({
         matchingIds.add(cat.id);
 
         // Add all ancestors to ensure path is visible
-        let current = flattened.find((f) => f.id === cat.parent_id);
+        let current = cat.parent_id ? categoryById.get(cat.parent_id) : undefined;
         while (current) {
           ancestorIds.add(current.id);
-          current = flattened.find((f) => f.id === current?.parent_id);
+          current = current.parent_id ? categoryById.get(current.parent_id) : undefined;
         }
       }
     });

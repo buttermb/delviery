@@ -141,7 +141,8 @@ export function OrdersListPage() {
 
   // Fetch orders with cross-module data
   const { data: orders = [], isLoading, refetch } = useQuery({
-    queryKey: queryKeys.orders.list(tenant?.id, { filters: activeFilters, sort }),
+    // Filters are currently applied client-side below; avoid full refetch on every filter change.
+    queryKey: queryKeys.orders.list(tenant?.id, { sort }),
     queryFn: async () => {
       if (!tenant?.id) return [];
 

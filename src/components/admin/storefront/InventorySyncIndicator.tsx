@@ -6,7 +6,7 @@
  * Used in admin header near other status indicators.
  */
 
-import { useState, useCallback, useRef, useMemo } from 'react';
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -232,17 +232,24 @@ export function InventorySyncIndicator({
       ? 'connected'
       : 'connecting';
 
-  // Mark as synced once connected
-  if (realtimeActive && !lastSyncAt) {
-    // Use a ref-guarded setter to avoid infinite render loops
-    if (!syncTimeoutRef.current) {
-      syncTimeoutRef.current = setTimeout(() => {
-        setSyncStatus('synced');
-        setLastSyncAt(new Date());
+  // Mark as synced once connected (effect to avoid render-time side effects)
+  useEffect(() => {
+    if (!realtimeActive || lastSyncAt || syncTimeoutRef.current) return;
+    syncTimeoutRef.current = setTimeout(() => {
+      setSyncStatus('synced');
+      setLastSyncAt(new Date());
+      syncTimeoutRef.current = null;
+    }, 0);
+  }, [realtimeActive, lastSyncAt]);
+
+  useEffect(() => {
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
         syncTimeoutRef.current = null;
-      }, 0);
-    }
-  }
+      }
+    };
+  }, []);
 
   const statusConfig = useMemo(() => getSyncStatusConfig(syncStatus), [syncStatus]);
   const connectionConfig = useMemo(() => getConnectionConfig(connectionStatus), [connectionStatus]);

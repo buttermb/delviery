@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,6 +48,7 @@ import { CustomerImportDialog } from "@/components/admin/CustomerImportDialog";
 import CopyButton from "@/components/CopyButton";
 import { CustomerTagFilter } from "@/components/admin/customers/CustomerTagFilter";
 import { CustomerTagBadges } from "@/components/admin/customers/CustomerTagBadges";
+import { useContactTagsBatch } from "@/hooks/useCustomerTags";
 import { TruncatedText } from "@/components/shared/TruncatedText";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminDataTable } from '@/components/admin/shared/AdminDataTable';
@@ -101,6 +102,7 @@ export function CustomerManagement() {
   const [selectedCustomerForDrawer, setSelectedCustomerForDrawer] = useState<Customer | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [filterTagIds, setFilterTagIds] = useState<string[]>([]);
+  const searchInteractionStartRef = useRef<number | null>(null);
   const { isEnabled: isFeatureEnabled } = useTenantFeatureToggles();
   const { canEdit, canDelete, canExport } = usePermissions();
   const posEnabled = isFeatureEnabled('pos');
@@ -308,6 +310,24 @@ export function CustomerManagement() {
     return matchesSearch && matchesTags;
   }), [customers, debouncedSearchTerm, filterTagIds, customerIdsByTags]);
 
+  useEffect(() => {
+    if (!debouncedSearchTerm) return;
+    searchInteractionStartRef.current = performance.now();
+  }, [searchTerm, debouncedSearchTerm]);
+
+  useEffect(() => {
+    if (searchInteractionStartRef.current === null || !debouncedSearchTerm) return;
+    const duration = performance.now() - searchInteractionStartRef.current;
+    performance.mark('customers-filter-end');
+    if (import.meta.env.DEV) {
+      logger.debug('[perf] customer filter latency', {
+        durationMs: Math.round(duration),
+        resultCount: filteredCustomers.length,
+      });
+    }
+    searchInteractionStartRef.current = null;
+  }, [filteredCustomers, debouncedSearchTerm]);
+
   // Use standardized pagination
   const {
     paginatedItems: paginatedCustomers,
@@ -323,6 +343,13 @@ export function CustomerManagement() {
     persistInUrl: true,
     urlKey: 'customers',
   });
+
+  // Batch-fetch tags for visible rows to avoid N+1 tag queries.
+  const visibleCustomerIds = useMemo(
+    () => paginatedCustomers.map((customer) => customer.id),
+    [paginatedCustomers]
+  );
+  const { data: visibleTagsByCustomer = {} } = useContactTagsBatch(visibleCustomerIds);
 
   // Calculate stats
   const { totalCustomers, activeCustomers, medicalPatients, totalRevenue, avgLifetimeValue } = useMemo(() => {
@@ -423,7 +450,14 @@ export function CustomerManagement() {
     {
       header: 'Tags',
       accessorKey: 'id',
-      cell: (customer) => <CustomerTagBadges customerId={customer.id} maxVisible={2} />
+      cell: (customer) => (
+        <CustomerTagBadges
+          customerId={customer.id}
+          maxVisible={2}
+          tags={visibleTagsByCustomer[customer.id]}
+          showLoading={!visibleTagsByCustomer[customer.id]}
+        />
+      )
     },
     {
       header: 'Status',
@@ -474,7 +508,7 @@ export function CustomerManagement() {
         </DropdownMenu>
       )
     }
-  ], [tenant?.slug, navigate, canEdit, canDelete, posEnabled, handleDeleteClick]);
+  ], [tenant?.slug, navigate, canEdit, canDelete, posEnabled, handleDeleteClick, visibleTagsByCustomer]);
 
   if (accountLoading || loading) {
     return (
@@ -601,7 +635,13 @@ export function CustomerManagement() {
                   {customer.customer_type === 'medical' ? 'Medical' : 'Rec'}
                 </Badge>
                 {getCustomerStatus(customer)}
-                <CustomerTagBadges customerId={customer.id} maxVisible={2} size="sm" />
+                <CustomerTagBadges
+                  customerId={customer.id}
+                  maxVisible={2}
+                  size="sm"
+                  tags={visibleTagsByCustomer[customer.id]}
+                  showLoading={!visibleTagsByCustomer[customer.id]}
+                />
               </div>
             </div>
           </div>

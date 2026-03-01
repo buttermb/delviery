@@ -8,7 +8,6 @@
  * - Live: Real-time order tracking
  */
 
-import Papa from 'papaparse';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -71,7 +70,7 @@ type TabId = typeof tabs[number]['id'];
 /**
  * Export orders to CSV file using papaparse
  */
-function exportToCSV(orders: UnifiedOrder[], filename: string = 'orders-export'): void {
+async function exportToCSV(orders: UnifiedOrder[], filename: string = 'orders-export'): Promise<void> {
     if (!orders || orders.length === 0) {
         toast.error('No orders to export');
         return;
@@ -104,6 +103,9 @@ function exportToCSV(orders: UnifiedOrder[], filename: string = 'orders-export')
         cancelled_at: order.cancelled_at ?? '',
         cancellation_reason: order.cancellation_reason ?? '',
     }));
+
+    // Lazy-load papaparse only when export is requested.
+    const Papa = (await import('papaparse')).default;
 
     // Generate CSV using papaparse
     const csv = Papa.unparse(csvData, {
@@ -149,7 +151,7 @@ export default function OrdersHubPage() {
         try {
             const { data } = await refetchOrders();
             if (data) {
-                exportToCSV(data, 'orders-export');
+                await exportToCSV(data, 'orders-export');
             }
         } catch (error) {
             toast.error('Failed to export orders', { description: humanizeError(error) });

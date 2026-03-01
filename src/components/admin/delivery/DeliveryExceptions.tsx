@@ -7,7 +7,7 @@
 
 import { useState, useMemo, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -317,6 +317,9 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
       resolution_notes: '',
     },
   });
+  const watchedReason = useWatch({ control: exceptionForm.control, name: 'reason' });
+  const watchedResolution = useWatch({ control: resolutionForm.control, name: 'resolution' });
+  const watchedNewCourierId = useWatch({ control: resolutionForm.control, name: 'new_courier_id' });
 
   // =============================================================================
   // Queries
@@ -1452,7 +1455,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
               <Label>Exception Reason *</Label>
               <div className="grid grid-cols-2 gap-2">
                 {EXCEPTION_REASONS.map((reason) => {
-                  const isSelected = exceptionForm.watch('reason') === reason.value;
+                  const isSelected = watchedReason === reason.value;
                   const ReasonIcon = reason.icon;
 
                   return (
@@ -1591,7 +1594,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
             <div className="space-y-2">
               <Label>Resolution Action *</Label>
               <Select
-                value={resolutionForm.watch('resolution')}
+                value={watchedResolution}
                 onValueChange={(v: string) => resolutionForm.setValue('resolution', v as Exclude<ExceptionResolution, 'pending'>)}
               >
                 <SelectTrigger>
@@ -1611,7 +1614,7 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
             </div>
 
             {/* Conditional: Reschedule Date */}
-            {resolutionForm.watch('resolution') === 'rescheduled' && (
+            {watchedResolution === 'rescheduled' && (
               <div className="space-y-2">
                 <Label htmlFor="reschedule_date">New Delivery Date *</Label>
                 <Input
@@ -1623,11 +1626,11 @@ export function DeliveryExceptions({ className }: DeliveryExceptionsProps) {
             )}
 
             {/* Conditional: New Courier */}
-            {resolutionForm.watch('resolution') === 'rerouted' && (
+            {watchedResolution === 'rerouted' && (
               <div className="space-y-2">
                 <Label>Assign New Courier *</Label>
                 <Select
-                  value={resolutionForm.watch('new_courier_id') ?? ''}
+                  value={watchedNewCourierId ?? ''}
                   onValueChange={(v) => resolutionForm.setValue('new_courier_id', v)}
                 >
                   <SelectTrigger>

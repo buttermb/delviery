@@ -41,6 +41,24 @@ const DEFAULT_TABLES = [
 // Track failed connection attempts per table
 const connectionFailures = new Map<string, number>();
 const MAX_FAILURES = 3; // Disable after 3 failures
+const INVALIDATION_DEDUPE_MS = 300;
+
+const TENANT_FILTER_TABLES = new Set([
+  'orders',
+  'order_items',
+  'products',
+  'inventory',
+  'deliveries',
+  'customers',
+  'payments',
+  'inventory_transfers',
+  'wholesale_orders',
+  'courier_earnings',
+  'storefront_orders',
+  'invoices',
+  'disposable_menus',
+  'pos_shifts',
+]);
 
 // Type guards for payload inspection
 function hasId(obj: unknown): obj is { id: string } {
@@ -313,6 +331,7 @@ export function useRealtimeSync({
   const channelsRef = useRef<RealtimeChannel[]>([]);
   const isConnectingRef = useRef(false);
   const cleanupRef = useRef<(() => void) | null>(null);
+  const lastInvalidationRef = useRef<Map<string, number>>(new Map());
 
   useEffect(() => {
     if (!enabled || !tenantId) {
@@ -388,9 +407,8 @@ export function useRealtimeSync({
               event: '*',
               schema: 'public',
               table,
-              // Don't filter by tenant_id to avoid 400 errors
-              // RLS policies handle tenant isolation
-              filter: undefined,
+              // Apply tenant filter only for known tenant-scoped tables.
+              filter: TENANT_FILTER_TABLES.has(table) ? `tenant_id=eq.${tenantId}` : undefined,
             },
             (payload) => {
               try {
@@ -412,6 +430,15 @@ export function useRealtimeSync({
                 );
 
                 if (result) {
+                  // Deduplicate bursty realtime events to avoid invalidation storms.
+                  const invalidationKey = `${tenantId}:${result.event}:${JSON.stringify(result.metadata ?? {})}`;
+                  const now = Date.now();
+                  const lastAt = lastInvalidationRef.current.get(invalidationKey) ?? 0;
+                  if (now - lastAt < INVALIDATION_DEDUPE_MS) {
+                    return;
+                  }
+                  lastInvalidationRef.current.set(invalidationKey, now);
+
                   // Use centralized invalidation system for consistent cross-panel sync
                   invalidateOnEvent(queryClient, result.event, tenantId, result.metadata);
                 } else {
