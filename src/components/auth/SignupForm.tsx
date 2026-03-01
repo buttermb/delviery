@@ -4,15 +4,54 @@
  * full name, phone (with formatting), terms checkbox, and error display.
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { FormField, ErrorSummary } from '@/components/ui/form-field';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { cn } from '@/lib/utils';
+
+const signupSchema = z.object({
+  fullName: z.string()
+    .min(1, 'Full name is required')
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name is too long'),
+  email: z.string()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address')
+    .max(255, 'Email is too long'),
+  phone: z.string()
+    .min(1, 'Phone number is required')
+    .refine((val) => val.replace(/\D/g, '').length === 10, 'Phone number must be 10 digits'),
+  password: z.string()
+    .min(1, 'Password is required')
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[a-zA-Z]/, 'Password must contain at least one letter')
+    .regex(/\d/, 'Password must contain at least one number'),
+  confirmPassword: z.string()
+    .min(1, 'Please confirm your password'),
+  termsAccepted: z.literal(true, {
+    errorMap: () => ({ message: 'You must accept the terms and conditions' }),
+  }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+});
+
+type SignupFormValues = z.infer<typeof signupSchema>;
 
 export interface SignupFormData {
   email: string;
@@ -48,42 +87,6 @@ function formatPhoneNumber(value: string): string {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
-function validateEmail(email: string): string | undefined {
-  if (!email.trim()) return 'Email is required';
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) return 'Please enter a valid email address';
-  if (email.length > 255) return 'Email is too long';
-  return;
-}
-
-function validatePassword(password: string): string | undefined {
-  if (!password) return 'Password is required';
-  if (password.length < 8) return 'Password must be at least 8 characters';
-  if (!/[a-zA-Z]/.test(password)) return 'Password must contain at least one letter';
-  if (!/\d/.test(password)) return 'Password must contain at least one number';
-  return;
-}
-
-function validateConfirmPassword(password: string, confirmPassword: string): string | undefined {
-  if (!confirmPassword) return 'Please confirm your password';
-  if (password !== confirmPassword) return 'Passwords do not match';
-  return;
-}
-
-function validateFullName(name: string): string | undefined {
-  if (!name.trim()) return 'Full name is required';
-  if (name.trim().length < 2) return 'Name must be at least 2 characters';
-  if (name.trim().length > 100) return 'Name is too long';
-  return;
-}
-
-function validatePhone(phone: string): string | undefined {
-  if (!phone) return 'Phone number is required';
-  const digits = phone.replace(/\D/g, '');
-  if (digits.length !== 10) return 'Phone number must be 10 digits';
-  return;
-}
-
 export function SignupForm({
   onSubmit,
   loading = false,
@@ -93,22 +96,24 @@ export function SignupForm({
   termsUrl = '/terms',
   privacyUrl = '/privacy',
 }: SignupFormProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [termsAccepted, setTermsAccepted] = useState(false);
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-
   const firstInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus first input on mount for better keyboard accessibility
+  const form = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      fullName: '',
+      email: '',
+      phone: '',
+      password: '',
+      confirmPassword: '',
+      termsAccepted: undefined as unknown as true,
+    },
+    mode: 'onBlur',
+  });
+
+  // Auto-focus first input on mount
   useEffect(() => {
     const timer = setTimeout(() => {
       firstInputRef.current?.focus();
@@ -116,329 +121,236 @@ export function SignupForm({
     return () => clearTimeout(timer);
   }, []);
 
-  const markTouched = useCallback((field: string) => {
-    setTouched(prev => ({ ...prev, [field]: true }));
-  }, []);
+  const watchPassword = form.watch('password');
 
-  const validateField = useCallback((field: string, value?: string): string | undefined => {
-    switch (field) {
-      case 'email':
-        return validateEmail(value ?? email);
-      case 'password':
-        return validatePassword(value ?? password);
-      case 'confirmPassword':
-        return validateConfirmPassword(value ?? password, value ?? confirmPassword);
-      case 'fullName':
-        return validateFullName(value ?? fullName);
-      case 'phone':
-        return validatePhone(value ?? phone);
-      case 'termsAccepted':
-        return !termsAccepted ? 'You must accept the terms and conditions' : undefined;
-      default:
-        return;
-    }
-  }, [email, password, confirmPassword, fullName, phone, termsAccepted]);
-
-  const handleBlur = useCallback((field: string) => {
-    markTouched(field);
-    const fieldError = validateField(field);
-    setErrors(prev => {
-      if (fieldError) {
-        return { ...prev, [field]: fieldError };
-      }
-      const next = { ...prev };
-      delete next[field];
-      return next;
-    });
-  }, [markTouched, validateField]);
-
-  const validateAll = useCallback((): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    const emailError = validateEmail(email);
-    if (emailError) newErrors.email = emailError;
-
-    const passwordError = validatePassword(password);
-    if (passwordError) newErrors.password = passwordError;
-
-    const confirmError = validateConfirmPassword(password, confirmPassword);
-    if (confirmError) newErrors.confirmPassword = confirmError;
-
-    const nameError = validateFullName(fullName);
-    if (nameError) newErrors.fullName = nameError;
-
-    const phoneError = validatePhone(phone);
-    if (phoneError) newErrors.phone = phoneError;
-
-    if (!termsAccepted) {
-      newErrors.termsAccepted = 'You must accept the terms and conditions';
-    }
-
-    setErrors(newErrors);
-    setTouched({
-      email: true,
-      password: true,
-      confirmPassword: true,
-      fullName: true,
-      phone: true,
-      termsAccepted: true,
-    });
-
-    return Object.keys(newErrors).length === 0;
-  }, [email, password, confirmPassword, fullName, phone, termsAccepted]);
-
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateAll()) return;
-
+  const handleFormSubmit = async (values: SignupFormValues) => {
     await onSubmit({
-      email: email.trim(),
-      password,
-      confirmPassword,
-      fullName: fullName.trim(),
-      phone: phone.replace(/\D/g, ''),
-      termsAccepted,
+      email: values.email.trim(),
+      password: values.password,
+      confirmPassword: values.confirmPassword,
+      fullName: values.fullName.trim(),
+      phone: values.phone.replace(/\D/g, ''),
+      termsAccepted: values.termsAccepted,
     });
-  }, [validateAll, onSubmit, email, password, confirmPassword, fullName, phone, termsAccepted]);
-
-  const handlePhoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setPhone(formatted);
-  }, []);
-
-  const handlePasswordChange = useCallback((value: string) => {
-    setPassword(value);
-    // Re-validate confirm password if it has been touched
-    if (touched.confirmPassword && confirmPassword) {
-      const confirmError = validateConfirmPassword(value, confirmPassword);
-      setErrors(prev => {
-        if (confirmError) return { ...prev, confirmPassword: confirmError };
-        const next = { ...prev };
-        delete next.confirmPassword;
-        return next;
-      });
-    }
-  }, [touched.confirmPassword, confirmPassword]);
+  };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={cn('space-y-4', className)}
-      noValidate
-    >
-      {/* External error display */}
-      {error && (
-        <div
-          className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
-          role="alert"
-        >
-          {error}
-        </div>
-      )}
-
-      {/* Error summary (shown after submit attempt with multiple errors) */}
-      {Object.keys(errors).length > 2 && touched.email && (
-        <ErrorSummary errors={errors} />
-      )}
-
-      {/* Full Name */}
-      <FormField
-        label="Full Name"
-        htmlFor="signup-fullName"
-        required
-        error={touched.fullName ? errors.fullName : undefined}
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+        className={cn('space-y-4', className)}
+        noValidate
       >
-        <Input
-          ref={firstInputRef}
-          id="signup-fullName"
-          type="text"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          onBlur={() => handleBlur('fullName')}
-          placeholder="Enter your full name"
-          autoComplete="name"
-          error={!!(touched.fullName && errors.fullName)}
-          disabled={loading}
-          aria-invalid={!!(touched.fullName && errors.fullName)}
-          aria-describedby={touched.fullName && errors.fullName ? 'fullName-error' : undefined}
-        />
-      </FormField>
-
-      {/* Email */}
-      <FormField
-        label="Email"
-        htmlFor="signup-email"
-        required
-        error={touched.email ? errors.email : undefined}
-      >
-        <Input
-          id="signup-email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onBlur={() => handleBlur('email')}
-          placeholder="you@example.com"
-          autoComplete="email"
-          error={!!(touched.email && errors.email)}
-          disabled={loading}
-          aria-invalid={!!(touched.email && errors.email)}
-          aria-describedby={touched.email && errors.email ? 'email-error' : undefined}
-        />
-      </FormField>
-
-      {/* Phone */}
-      <FormField
-        label="Phone"
-        htmlFor="signup-phone"
-        required
-        error={touched.phone ? errors.phone : undefined}
-      >
-        <Input
-          id="signup-phone"
-          type="tel"
-          value={phone}
-          onChange={handlePhoneChange}
-          onBlur={() => handleBlur('phone')}
-          placeholder="(555) 123-4567"
-          autoComplete="tel"
-          error={!!(touched.phone && errors.phone)}
-          disabled={loading}
-          aria-invalid={!!(touched.phone && errors.phone)}
-          aria-describedby={touched.phone && errors.phone ? 'phone-error' : undefined}
-        />
-      </FormField>
-
-      {/* Password */}
-      <FormField
-        label="Password"
-        htmlFor="signup-password"
-        required
-        error={touched.password ? errors.password : undefined}
-      >
-        <div className="relative">
-          <Input
-            id="signup-password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => handlePasswordChange(e.target.value)}
-            onBlur={() => handleBlur('password')}
-            placeholder="Create a strong password"
-            autoComplete="new-password"
-            error={!!(touched.password && errors.password)}
-            disabled={loading}
-            className="pr-10"
-            aria-invalid={!!(touched.password && errors.password)}
-            aria-describedby={touched.password && errors.password ? 'password-error' : 'password-requirements'}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
-            tabIndex={-1}
+        {/* External error display */}
+        {error && (
+          <div
+            className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+            role="alert"
           >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </button>
-        </div>
-        <PasswordStrengthIndicator password={password} className="mt-2" />
-      </FormField>
-
-      {/* Confirm Password */}
-      <FormField
-        label="Confirm Password"
-        htmlFor="signup-confirmPassword"
-        required
-        error={touched.confirmPassword ? errors.confirmPassword : undefined}
-      >
-        <div className="relative">
-          <Input
-            id="signup-confirmPassword"
-            type={showConfirmPassword ? 'text' : 'password'}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            onBlur={() => handleBlur('confirmPassword')}
-            placeholder="Re-enter your password"
-            autoComplete="new-password"
-            error={!!(touched.confirmPassword && errors.confirmPassword)}
-            disabled={loading}
-            className="pr-10"
-            aria-invalid={!!(touched.confirmPassword && errors.confirmPassword)}
-            aria-describedby={touched.confirmPassword && errors.confirmPassword ? 'confirmPassword-error' : undefined}
-          />
-          <button
-            type="button"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-            tabIndex={-1}
-          >
-            {showConfirmPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </button>
-        </div>
-      </FormField>
-
-      {/* Terms Checkbox */}
-      <div className="space-y-2">
-        <div className="flex items-start gap-3">
-          <Checkbox
-            id="signup-terms"
-            checked={termsAccepted}
-            onCheckedChange={(checked) => setTermsAccepted(checked === true)}
-            disabled={loading}
-            aria-invalid={!!(touched.termsAccepted && errors.termsAccepted)}
-            className="mt-0.5"
-          />
-          <Label
-            htmlFor="signup-terms"
-            className="text-sm font-normal leading-snug cursor-pointer"
-          >
-            I agree to the{' '}
-            <a
-              href={termsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary underline hover:no-underline"
-              tabIndex={0}
-            >
-              Terms of Service
-            </a>{' '}
-            and{' '}
-            <a
-              href={privacyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary underline hover:no-underline"
-              tabIndex={0}
-            >
-              Privacy Policy
-            </a>
-          </Label>
-        </div>
-        {touched.termsAccepted && errors.termsAccepted && (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.termsAccepted}
-          </p>
+            {error}
+          </div>
         )}
-      </div>
 
-      {/* Submit Button */}
-      <Button
-        type="submit"
-        variant="hero"
-        className="w-full"
-        disabled={loading}
-        loading={loading}
-      >
-        {loading ? 'Creating Account...' : submitLabel}
-      </Button>
-    </form>
+        {/* Full Name */}
+        <FormField
+          control={form.control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel required>Full Name</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  ref={(e) => {
+                    field.ref(e);
+                    (firstInputRef as React.MutableRefObject<HTMLInputElement | null>).current = e;
+                  }}
+                  type="text"
+                  placeholder="Enter your full name"
+                  autoComplete="name"
+                  disabled={loading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Email */}
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel required>Email</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  type="email"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  disabled={loading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Phone */}
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel required>Phone</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  onChange={(e) => field.onChange(formatPhoneNumber(e.target.value))}
+                  type="tel"
+                  placeholder="(555) 123-4567"
+                  autoComplete="tel"
+                  disabled={loading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Password */}
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel required>Password</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input
+                    {...field}
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Create a strong password"
+                    autoComplete="new-password"
+                    disabled={loading}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </FormControl>
+              <PasswordStrengthIndicator password={watchPassword} className="mt-2" />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Confirm Password */}
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel required>Confirm Password</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input
+                    {...field}
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Re-enter your password"
+                    autoComplete="new-password"
+                    disabled={loading}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Terms Checkbox */}
+        <FormField
+          control={form.control}
+          name="termsAccepted"
+          render={({ field }) => (
+            <FormItem>
+              <div className="flex items-start gap-3">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value === true}
+                    onCheckedChange={(checked) => field.onChange(checked === true ? true : undefined)}
+                    disabled={loading}
+                    className="mt-0.5"
+                  />
+                </FormControl>
+                <Label
+                  className="text-sm font-normal leading-snug cursor-pointer"
+                  onClick={() => field.onChange(field.value === true ? undefined : true)}
+                >
+                  I agree to the{' '}
+                  <a
+                    href={termsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:no-underline"
+                    tabIndex={0}
+                  >
+                    Terms of Service
+                  </a>{' '}
+                  and{' '}
+                  <a
+                    href={privacyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline hover:no-underline"
+                    tabIndex={0}
+                  >
+                    Privacy Policy
+                  </a>
+                </Label>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          variant="hero"
+          className="w-full"
+          disabled={loading}
+          loading={loading}
+        >
+          {loading ? 'Creating Account...' : submitLabel}
+        </Button>
+      </form>
+    </Form>
   );
 }
