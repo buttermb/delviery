@@ -2,11 +2,13 @@
  * Product Catalog Page
  * Browse all products with search and filters
  * Includes real-time inventory syncing for stock updates
+ * Prefetches next page images when user scrolls near bottom
  */
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useShop } from './ShopLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,13 +29,10 @@ import {
 } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Search,
   Package,
   Grid3X3,
   List,
   X,
-  ChevronLeft,
-  ChevronRight,
   ChevronDown,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -43,13 +42,13 @@ import { queryKeys } from '@/lib/queryKeys';
 import { FilterDrawer, FilterTriggerButton, getActiveFilterCount, type FilterState } from '@/components/shop/FilterDrawer';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { EmptyState, ErrorState } from '@/components/ui/empty-state';
-import { FilterDrawer, FilterTriggerButton, type FilterState } from '@/components/shop/FilterDrawer';
 import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
 import { useShopCart } from '@/hooks/useShopCart';
 import { StorefrontProductCard, type MarketplaceProduct } from '@/components/shop/StorefrontProductCard';
 import { StandardPagination } from '@/components/shared/StandardPagination';
 import { usePagination } from '@/hooks/usePagination';
+import { useNextPagePrefetch } from '@/hooks/useNextPagePrefetch';
 import { toast } from 'sonner';
 import { useStorefrontInventorySync } from '@/hooks/useStorefrontInventorySync';
 import { VirtualizedProductGrid, VIRTUALIZATION_THRESHOLD } from '@/components/shop/VirtualizedProductGrid';
@@ -131,7 +130,7 @@ function transformProduct(rpc: RpcProduct): ProductWithSettings {
     image_url: rpc.image_url,
     images: rpc.images ?? [],
     in_stock: rpc.stock_quantity > 0,
-    is_featured: rpc.display_order === 0, // First items are featured
+    is_featured: rpc.display_order === 0,
     marketplace_category_id: null,
     marketplace_category_name: rpc.category,
     tags: [],
@@ -139,7 +138,6 @@ function transformProduct(rpc: RpcProduct): ProductWithSettings {
     thc_content: rpc.thc_content,
     cbd_content: rpc.cbd_content,
     effects: rpc.effects,
-    // Inventory data for real-time sync
     stock_quantity: rpc.stock_quantity,
     metrc_retail_id: rpc.metrc_retail_id,
     exclude_from_discounts: rpc.exclude_from_discounts ?? false,
@@ -152,7 +150,8 @@ function transformProduct(rpc: RpcProduct): ProductWithSettings {
 
 export function ProductCatalogPage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { store } = useShop();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? '');
@@ -187,7 +186,6 @@ export function ProductCatalogPage() {
     e.preventDefault();
     e.stopPropagation();
 
-    // Check stock before adding
     if (product.stock_quantity <= 0) {
       toast.error('Out of Stock', {
         description: `${product.name} is currently unavailable.`,
@@ -265,7 +263,6 @@ export function ProductCatalogPage() {
       const { data, error } = await supabase
         .rpc('get_marketplace_products', { p_store_id: store.id });
 
-      // Handle missing RPC function gracefully
       if (error) {
         if (error.code === 'PGRST202' || error.message?.includes('does not exist') || error.code === '42883') {
           logger.warn('get_marketplace_products RPC not found or signature mismatch', { storeId: store.id, error });
@@ -390,7 +387,6 @@ export function ProductCatalogPage() {
         result.sort((a, b) => (a.thc_content ?? 0) - (b.thc_content ?? 0));
         break;
       case 'newest':
-        // Keep original API order (newest products from DB)
         break;
       case 'name':
       default:
@@ -417,12 +413,19 @@ export function ProductCatalogPage() {
     urlKey: 'page',
   });
 
+  // Prefetch next page images when user scrolls near bottom of product grid
+  const { sentinelRef } = useNextPagePrefetch({
+    allItems: filteredProducts,
+    currentPage,
+    pageSize,
+    totalPages,
+    enabled: !productsLoading && totalPages > 1,
+  });
+
   // Reset to page 1 when filters change
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, selectedCategories, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]);
     goToPage(1);
-  }, [searchQuery, selectedCategory, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchQuery, selectedCategories, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Get unique categories from products
   const productCategories = useMemo(() => {
@@ -479,12 +482,8 @@ export function ProductCatalogPage() {
 
   const activeFilterCount = getActiveFilterCount(filterState, maxPrice);
 
-  const handleFiltersChange = (newFilters: FilterState) => {
-    setSelectedCategories(newFilters.categories);
-  const drawerActiveCount = getActiveFilterCount(filterState, maxPrice);
-
   const handleApplyFilters = (newFilters: FilterState) => {
-    setSelectedCategory(newFilters.categories[0] ?? '');
+    setSelectedCategories(newFilters.categories);
     setSelectedStrainTypes(newFilters.strainTypes);
     setPriceRange(newFilters.priceRange);
     setSortBy(newFilters.sortBy);
@@ -515,6 +514,7 @@ export function ProductCatalogPage() {
         accentColor={store.primary_color}
         resultCount={filteredProducts.length}
       />
+
       {/* Header */}
       <div className="mb-4 sm:mb-8">
         <h1 className="text-xl sm:text-3xl font-bold mb-1">All Products</h1>
@@ -524,36 +524,6 @@ export function ProductCatalogPage() {
       </div>
 
       {/* Filters Bar */}
-      <div className="flex flex-col gap-3 mb-6">
-        {/* Row 1: Search + Filter trigger (mobile) */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-              aria-label="Search products"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                aria-label="Clear search"
-              >
-                <X className="w-4 h-4 text-muted-foreground" />
-              </button>
-            )}
-          </div>
-          {/* Mobile filter trigger */}
-          <div className="md:hidden">
-            <FilterTriggerButton
-              onClick={() => setFilterDrawerOpen(true)}
-              activeCount={activeFilterCount}
-            />
-          </div>
-        </div>
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         {/* Search with debounce and clear button */}
         <SearchInput
@@ -564,7 +534,7 @@ export function ProductCatalogPage() {
           className="flex-1"
         />
 
-        {/* Row 2: Desktop inline filters (hidden on mobile - use drawer instead) */}
+        {/* Desktop inline filters (hidden on mobile - use drawer instead) */}
         <div className="hidden md:flex items-center gap-3">
           {/* Category Filter (Checkbox Popover) */}
           <Popover>
@@ -654,31 +624,40 @@ export function ProductCatalogPage() {
               <List className="w-4 h-4" />
             </Button>
           </div>
-          {/* Advanced Filter Button */}
+
+          {/* Advanced Filter Button (desktop) */}
           <FilterTriggerButton
             onClick={() => setFilterDrawerOpen(true)}
-            activeCount={drawerActiveCount}
+            activeCount={activeFilterCount}
             accentColor={store.primary_color}
-            className="md:hidden"
           />
         </div>
 
-        {/* View Toggle */}
-        <div className="hidden md:flex items-center gap-1 border rounded-lg p-1">
-          <Button
-            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('grid')}
-          >
-            <Grid3X3 className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('list')}
-          >
-            <List className="w-4 h-4" />
-          </Button>
+        {/* Mobile filter trigger */}
+        <div className="flex md:hidden items-center gap-2">
+          <FilterTriggerButton
+            onClick={() => setFilterDrawerOpen(true)}
+            activeCount={activeFilterCount}
+            accentColor={store.primary_color}
+          />
+          <div className="flex items-center gap-1 border rounded-lg p-1 ml-auto">
+            <Button
+              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              aria-label="Grid view"
+            >
+              <Grid3X3 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              aria-label="List view"
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -774,9 +753,7 @@ export function ProductCatalogPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4" data-testid="product-catalog-loading">
           {Array.from({ length: 8 }, (_, i) => (
             <div key={i} className="bg-white dark:bg-zinc-950 rounded-3xl border border-neutral-100 dark:border-neutral-800 overflow-hidden shadow-sm h-full flex flex-col">
-              {/* Image placeholder */}
               <Skeleton className="aspect-square w-full rounded-none" />
-              {/* Content */}
               <div className="p-3 sm:p-5 flex flex-col flex-1 space-y-2">
                 <Skeleton className="h-4 sm:h-5 w-3/4" />
                 <Skeleton className="h-3 w-1/3" />
@@ -785,7 +762,6 @@ export function ProductCatalogPage() {
                   <Skeleton className="h-5 w-16 rounded-md" />
                 </div>
               </div>
-              {/* Footer */}
               <div className="px-3 pb-3 sm:px-5 sm:pb-5 flex items-center justify-between border-t border-neutral-50 pt-2">
                 <Skeleton className="h-6 w-20" />
                 <Skeleton className="h-8 w-8 sm:h-10 sm:w-20 rounded-full" />
@@ -794,17 +770,6 @@ export function ProductCatalogPage() {
           ))}
         </div>
       ) : productsError ? (
-        <div className="text-center py-16" data-testid="product-catalog-error">
-          <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-xl font-semibold mb-2">Unable to load products</h2>
-          <p className="text-muted-foreground mb-4">
-            There was a problem loading the products. Please try again.
-          </p>
-          <Button onClick={() => refetchProducts()} data-testid="retry-button">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Try Again
-          </Button>
-        </div>
         <ErrorState
           title="Unable to load products"
           description="There was a problem loading the products. Please try again."
@@ -855,39 +820,47 @@ export function ProductCatalogPage() {
           onQuickView={(productId) => setQuickViewProductId(productId)}
         />
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4" data-testid="product-catalog-grid">
-          {paginatedProducts.map((product) => (
-            <StorefrontProductCard
-              key={product.product_id}
-              product={mapToMarketplaceProduct(product)}
-              storeSlug={storeSlug!}
-              isPreviewMode={false}
-              onQuickAdd={(e) => handleQuickAdd(e, product)}
-              isAdded={addedProducts.has(product.product_id)}
-              onToggleWishlist={() => toggleWishlist({
-                productId: product.product_id,
-                name: product.name,
-                price: product.display_price,
-                imageUrl: product.image_url,
-              })}
-              isInWishlist={isInWishlist(product.product_id)}
-              onQuickView={() => setQuickViewProductId(product.product_id)}
-              index={0}
-              accentColor={store.primary_color}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4" data-testid="product-catalog-grid">
+            {paginatedProducts.map((product) => (
+              <StorefrontProductCard
+                key={product.product_id}
+                product={mapToMarketplaceProduct(product)}
+                storeSlug={storeSlug!}
+                isPreviewMode={false}
+                onQuickAdd={(e) => handleQuickAdd(e, product)}
+                isAdded={addedProducts.has(product.product_id)}
+                onToggleWishlist={() => toggleWishlist({
+                  productId: product.product_id,
+                  name: product.name,
+                  price: product.display_price,
+                  imageUrl: product.image_url,
+                })}
+                isInWishlist={isInWishlist(product.product_id)}
+                onQuickView={() => setQuickViewProductId(product.product_id)}
+                index={0}
+                accentColor={store.primary_color}
+              />
+            ))}
+          </div>
+          {/* Sentinel element: triggers next-page image prefetch when visible */}
+          <div ref={sentinelRef} className="h-px" aria-hidden="true" />
+        </>
       ) : (
-        <div className="space-y-4">
-          {paginatedProducts.map((product) => (
-            <ProductListItem
-              key={product.product_id}
-              product={product}
-              storeSlug={storeSlug!}
-              primaryColor={store.primary_color}
-            />
-          ))}
-        </div>
+        <>
+          <div className="space-y-4">
+            {paginatedProducts.map((product) => (
+              <ProductListItem
+                key={product.product_id}
+                product={product}
+                storeSlug={storeSlug!}
+                primaryColor={store.primary_color}
+              />
+            ))}
+          </div>
+          {/* Sentinel element: triggers next-page image prefetch when visible */}
+          <div ref={sentinelRef} className="h-px" aria-hidden="true" />
+        </>
       )}
 
       {/* Pagination - hidden when virtualized grid is active */}
@@ -916,9 +889,6 @@ export function ProductCatalogPage() {
     </div>
   );
 }
-
-// Product Card Component (Grid View) - Legacy component removed, replaced by shared StorefrontProductCard
-
 
 // Product List Item Component (List View)
 function ProductListItem({
@@ -982,8 +952,3 @@ function ProductListItem({
     </Link>
   );
 }
-
-
-
-
-
