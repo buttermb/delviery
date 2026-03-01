@@ -423,7 +423,7 @@ export default function ShopLayout() {
         className="min-h-dvh flex items-center justify-center"
         style={{ backgroundColor: store.primary_color }}
       >
-        <div className="bg-white dark:bg-zinc-950 rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+        <div className="bg-card rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
           {store.logo_url && (
             <img
               src={store.logo_url}
@@ -494,14 +494,14 @@ export default function ShopLayout() {
   if (isLuxuryTheme) {
     return (
       <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
-        <div className="min-h-dvh bg-shop-bg text-neutral-900" style={themeStyles} data-testid="storefront-wrapper" data-theme="luxury">
+        <div className="min-h-dvh bg-shop-bg text-foreground" style={themeStyles} data-testid="storefront-wrapper" data-theme="luxury">
           {/* Admin Preview Banner */}
           {isPreviewMode && (
-            <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
+            <div className="bg-warning text-warning-foreground px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
               <AlertTriangle className="w-4 h-4" />
               <span>Preview Mode - This store is not yet live</span>
               {!store.is_active && (
-                <Badge variant="secondary" className="ml-2 bg-amber-600 text-white">
+                <Badge variant="secondary" className="ml-2 bg-warning/90 text-warning-foreground">
                   Draft
                 </Badge>
               )}
@@ -587,11 +587,11 @@ export default function ShopLayout() {
       >
         {/* Admin Preview Banner */}
         {isPreviewMode && (
-          <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
+          <div className="bg-warning text-warning-foreground px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
             <AlertTriangle className="w-4 h-4" />
             <span>Preview Mode - This store is not yet live</span>
             {!store.is_active && (
-              <Badge variant="secondary" className="ml-2 bg-amber-600 text-white">
+              <Badge variant="secondary" className="ml-2 bg-warning/90 text-warning-foreground">
                 Draft
               </Badge>
             )}
@@ -599,7 +599,7 @@ export default function ShopLayout() {
         )}
 
         {/* Header - Luxury vs Standard */}
-        <header className={`sticky top-0 z-50 ${isLuxuryTheme ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : 'bg-white dark:bg-zinc-950 border-b shadow-sm'}`}>
+        <header className={`sticky top-0 z-50 ${isLuxuryTheme ? 'bg-background/80 backdrop-blur-xl border-b border-border' : 'bg-card border-b shadow-sm'}`}>
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               {/* Logo / Store Name */}
@@ -642,7 +642,7 @@ export default function ShopLayout() {
                   Deals
                 </Link>
                 {!isStoreOpen() && !isPreviewMode && (
-                  <Badge variant="secondary" className={isLuxuryTheme ? 'bg-white/10 text-white/70' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}>
+                  <Badge variant="secondary" className={isLuxuryTheme ? 'bg-muted text-muted-foreground' : 'bg-warning/10 text-warning'}>
                     <Clock className="w-3 h-3 mr-1" />
                     Currently Closed
                   </Badge>

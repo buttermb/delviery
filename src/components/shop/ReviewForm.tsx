@@ -137,7 +137,7 @@ export function ReviewForm({
                     className={cn(
                       'w-8 h-8 transition-colors',
                       (hoverRating || rating) >= star
-                        ? 'fill-yellow-400 text-yellow-400'
+                        ? 'fill-warning text-warning'
                         : 'fill-muted text-muted-foreground'
                     )}
                   />

@@ -573,7 +573,7 @@ export function SinglePageCheckout() {
                   <span className="text-muted-foreground">Delivery</span>
                   <span>
                     {deliveryFee === 0 ? (
-                      <span className="text-green-600">FREE</span>
+                      <span className="text-success">FREE</span>
                     ) : (
                       formatCurrency(deliveryFee)
                     )}
