@@ -238,6 +238,17 @@ serve(secureHeadersMiddleware(async (req) => {
       }
     }
 
+    // Log total-level discrepancy for security audit
+    if (priceDiscrepancy) {
+      logger.warn("Price discrepancy detected — using server-side total", {
+        tenantId: store.tenant_id,
+        storeId: store.id,
+        clientTotal: priceDiscrepancy.clientTotal,
+        serverTotal: priceDiscrepancy.serverTotal,
+        difference: Math.abs(priceDiscrepancy.clientTotal - priceDiscrepancy.serverTotal),
+      });
+    }
+
     // Also check per-item price discrepancies
     const itemPriceAdjustments: Array<{
       productId: string;
@@ -258,6 +269,15 @@ serve(secureHeadersMiddleware(async (req) => {
           }
         }
       }
+    }
+
+    // Log per-item discrepancies for security audit
+    if (itemPriceAdjustments.length > 0) {
+      logger.warn("Per-item price discrepancies detected — using server prices", {
+        tenantId: store.tenant_id,
+        storeId: store.id,
+        adjustments: itemPriceAdjustments,
+      });
     }
 
     // ------------------------------------------------------------------
