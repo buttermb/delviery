@@ -420,3 +420,150 @@ test.describe('Cart Persistence — Full E2E Flow', () => {
     await context.close();
   });
 });
+
+// ============================================================================
+// TEST SUITE: Cart persists across browser restart (new context)
+// ============================================================================
+test.describe('Cart Persistence — Browser Restart', () => {
+
+  test('cart items survive full browser restart via storageState transfer', async ({ browser }) => {
+    // --- Session 1: Add items to cart in first browser context ---
+    const context1 = await browser.newContext();
+    const page1 = await context1.newPage();
+    await navigateToStore(page1);
+    await addFirstProductToCart(page1);
+
+    // Verify cart has the item
+    await goToCart(page1);
+    const cartItems1 = page1.locator('[data-testid="cart-item"]');
+    await expect(cartItems1.first()).toBeVisible();
+    const itemCountBefore = await cartItems1.count();
+    expect(itemCountBefore).toBeGreaterThanOrEqual(1);
+
+    // Save the browser's storage state (localStorage + cookies)
+    const storageState = await context1.storageState();
+
+    // --- Simulate browser restart: destroy the entire context ---
+    await page1.close();
+    await context1.close();
+
+    // --- Session 2: New browser context with restored storage state ---
+    const context2 = await browser.newContext({ storageState });
+    const page2 = await context2.newPage();
+    await page2.goto(`${BASE_URL}/shop/${STORE_SLUG}`);
+    await handleAgeVerification(page2);
+
+    // Cart count badge should reflect persisted items
+    await expect(page2.locator('[data-testid="cart-count"]')).toHaveText(/[1-9]/, { timeout: 5000 });
+
+    // Navigate to cart and verify items survived the restart
+    await page2.click('[data-testid="cart-button"]');
+    await page2.waitForURL(`**/shop/${STORE_SLUG}/cart`, { timeout: 5000 });
+
+    const cartItems2 = page2.locator('[data-testid="cart-item"]');
+    await expect(cartItems2.first()).toBeVisible({ timeout: 5000 });
+    const itemCountAfter = await cartItems2.count();
+    expect(itemCountAfter).toBe(itemCountBefore);
+
+    await page2.screenshot({ path: 'test-results/screenshots/cart-persistence-browser-restart.png', fullPage: true });
+
+    await page2.close();
+    await context2.close();
+  });
+
+  test('multiple items and quantities persist across browser restart', async ({ browser }) => {
+    // --- Session 1: Add multiple products ---
+    const context1 = await browser.newContext();
+    const page1 = await context1.newPage();
+    await navigateToStore(page1);
+    await addFirstProductToCart(page1);
+    await addSecondProductToCart(page1);
+
+    // Go to cart and verify multiple items
+    await goToCart(page1);
+    const cartItems1 = page1.locator('[data-testid="cart-item"]');
+    await expect(cartItems1.first()).toBeVisible();
+    const itemCountBefore = await cartItems1.count();
+    expect(itemCountBefore).toBeGreaterThanOrEqual(2);
+
+    // Save storage state before browser "closes"
+    const storageState = await context1.storageState();
+    await page1.close();
+    await context1.close();
+
+    // --- Session 2: Brand new browser context ---
+    const context2 = await browser.newContext({ storageState });
+    const page2 = await context2.newPage();
+    await page2.goto(`${BASE_URL}/shop/${STORE_SLUG}/cart`);
+    await handleAgeVerification(page2);
+
+    const cartItems2 = page2.locator('[data-testid="cart-item"]');
+    await expect(cartItems2.first()).toBeVisible({ timeout: 5000 });
+    const itemCountAfter = await cartItems2.count();
+    expect(itemCountAfter).toBe(itemCountBefore);
+
+    await page2.screenshot({ path: 'test-results/screenshots/cart-persistence-browser-restart-multiple.png', fullPage: true });
+
+    await page2.close();
+    await context2.close();
+  });
+
+  test('cart persists across browser restart and completes checkout normally', async ({ browser }) => {
+    // --- Session 1: Add items then "close browser" ---
+    const context1 = await browser.newContext();
+    const page1 = await context1.newPage();
+    await navigateToStore(page1);
+    await addFirstProductToCart(page1);
+
+    // Confirm item is in cart
+    await goToCart(page1);
+    await expect(page1.locator('[data-testid="cart-item"]').first()).toBeVisible();
+
+    // Save state and destroy context (full browser restart)
+    const storageState = await context1.storageState();
+    await page1.close();
+    await context1.close();
+
+    // --- Session 2: Reopen browser, go straight to checkout ---
+    const context2 = await browser.newContext({ storageState });
+    const page2 = await context2.newPage();
+    await page2.goto(`${BASE_URL}/shop/${STORE_SLUG}/cart`);
+    await handleAgeVerification(page2);
+
+    // Verify cart loaded from storage
+    const cartItems = page2.locator('[data-testid="cart-item"]');
+    await expect(cartItems.first()).toBeVisible({ timeout: 5000 });
+
+    // Proceed to checkout
+    const checkoutBtn = page2.locator('button:has-text("Proceed to Checkout"), button:has-text("Checkout")').first();
+    await expect(checkoutBtn).toBeVisible();
+    await expect(checkoutBtn).toBeEnabled();
+    await checkoutBtn.click();
+    await page2.waitForURL(`**/shop/${STORE_SLUG}/checkout`, { timeout: 5000 });
+
+    // Verify checkout page loaded with items
+    await page2.waitForLoadState('networkidle');
+    const checkoutContent = page2.locator('text=/Contact|Checkout|Order/i').first();
+    await expect(checkoutContent).toBeVisible({ timeout: 5000 });
+
+    // Fill checkout contact info
+    const firstNameField = page2.locator('input[name="firstName"]');
+    if (await firstNameField.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await firstNameField.fill('BrowserRestart');
+      await page2.fill('input[name="lastName"]', 'Tester');
+      await page2.fill('input[name="email"]', `restart-test-${Date.now()}@test.com`);
+      await page2.fill('input[name="phone"]', '555-000-0077');
+      await page2.click('button:has-text("Continue")');
+    }
+
+    // Verify progression past contact step
+    const streetField = page2.locator('input[name="street"]');
+    const progressedToDelivery = await streetField.isVisible({ timeout: 5000 }).catch(() => false);
+    expect(progressedToDelivery).toBe(true);
+
+    await page2.screenshot({ path: 'test-results/screenshots/cart-persistence-browser-restart-checkout.png', fullPage: true });
+
+    await page2.close();
+    await context2.close();
+  });
+});

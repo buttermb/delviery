@@ -219,3 +219,14 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Uses parseDollarAmount helper to extract and compare numeric prices
 - Follows existing E2E patterns: handleAgeVerification, clearBrowserStorage, loginAsAdmin
 - TypeScript compilation passes with zero errors
+
+## E2E test cart persists across browser restart
+- Added "Cart Persistence — Browser Restart" test suite to tests/e2e/cart-persistence.spec.ts
+- Three new tests using Playwright's storageState API to simulate full browser restart:
+  1. Single item survives full browser restart (context destroyed and recreated with saved storage state)
+  2. Multiple items persist across browser restart
+  3. Cart persists across browser restart and completes checkout normally
+- Key technique: context1.storageState() saves localStorage + cookies, context2 created with that state
+- This differs from existing tab-close tests which reuse the same context — these tests destroy/recreate contexts
+- Tests verify: cart count badge, cart item count, checkout progression
+- TypeScript compilation passes with zero errors
