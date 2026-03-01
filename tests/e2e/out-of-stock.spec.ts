@@ -1,5 +1,5 @@
 /**
- * E2E: Out of stock during shopping
+ * E2E: Out of stock during shopping prevents checkout
  *
  * Scenario:
  * 1. Product X has limited stock
@@ -15,7 +15,7 @@
  * - CheckoutPage: OutOfStockError handling from edge function/RPC
  */
 
-import { test, expect, Page, BrowserContext } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 const BASE_URL = process.env.VITE_APP_URL || 'http://localhost:8080';
 const STORE_SLUG = process.env.TEST_STORE_SLUG || 'willysbo';
@@ -25,7 +25,12 @@ const STORE_SLUG = process.env.TEST_STORE_SLUG || 'willysbo';
 async function handleAgeVerification(page: Page): Promise<void> {
   const ageModal = page.locator('[data-testid="age-verification-modal"]');
   if (await ageModal.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await page.click('button:has-text("Yes, I am 21+")');
+    // StorefrontAgeGate uses "I am 21+", LuxuryAgeVerification uses "Yes, I am"
+    const verifyBtn = page.locator('button:has-text("I am 21"), button:has-text("Yes, I am")').first();
+    if (await verifyBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await verifyBtn.click();
+      await ageModal.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+    }
   }
 }
 
@@ -141,13 +146,11 @@ test.describe('Out of Stock During Shopping', () => {
     // If any items have low stock, badges like "Out of stock", "Only X left", "Low stock" appear
     // This validates the CartItemStockWarning component renders correctly
     const stockWarnings = page.locator('text=/Out of stock|Only \\d+ left|Low stock/i');
-    const hasWarnings = await stockWarnings.count() > 0;
+    await stockWarnings.count(); // Query present warnings (informational)
 
     // Also check for the CartStockSummary component (amber border warning box)
-    const stockSummary = page.locator('text=/Some items have limited stock/i');
-    const hasSummary = await stockSummary.isVisible({ timeout: 3000 }).catch(() => false);
+    await page.locator('text=/Some items have limited stock/i').isVisible({ timeout: 3000 }).catch(() => false);
 
-    // Log state for debugging (these are informational, not hard assertions)
     // The test passes regardless — the goal is to verify the UI renders without error
     await page.screenshot({ path: 'test-results/screenshots/cart-stock-warnings.png', fullPage: true });
   });
@@ -157,7 +160,7 @@ test.describe('Out of Stock During Shopping', () => {
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
     await navigateToStore(pageA);
-    const productName = await addFirstProductToCart(pageA);
+    await addFirstProductToCart(pageA);
 
     // Also add a second product so Customer A has remaining items after removal
     await addSecondProductToCart(pageA);
@@ -166,7 +169,6 @@ test.describe('Out of Stock During Shopping', () => {
     // Verify cart has items
     const cartItems = pageA.locator('[data-testid="cart-item"]');
     await expect(cartItems.first()).toBeVisible();
-    const initialItemCount = await cartItems.count();
 
     // Customer B: in a separate context, buys the same product to deplete stock
     const contextB = await browser.newContext();
@@ -176,7 +178,7 @@ test.describe('Out of Stock During Shopping', () => {
     // Customer B clicks same first product and goes through checkout
     await addFirstProductToCart(pageB);
 
-    // Try to increase quantity to max stock (click + multiple times)
+    // Customer B goes to cart before checkout
     await pageB.click('[data-testid="cart-button"]');
     await pageB.waitForURL(`**/shop/${STORE_SLUG}/cart`, { timeout: 5000 });
 
@@ -185,7 +187,6 @@ test.describe('Out of Stock During Shopping', () => {
 
     if (!orderPlaced) {
       // If checkout failed (product may already be out of stock), skip the race scenario
-      // but still test the cart stock warning UI
       test.skip(true, 'Could not complete checkout for Customer B — product may already be out of stock');
     }
 
@@ -211,16 +212,10 @@ test.describe('Out of Stock During Shopping', () => {
       const wasBlocked = await outOfStockToast.isVisible({ timeout: 5000 }).catch(() => false);
 
       if (wasBlocked) {
-        // Cart-level validation caught it — good
+        // Cart-level validation caught it
         await expect(outOfStockToast).toBeVisible();
-
-        // Verify stock warning badges are visible in cart
-        const warnings = pageA.locator('text=/Out of stock|no longer available/i');
-        const warningCount = await warnings.count();
-        expect(warningCount).toBeGreaterThanOrEqual(0); // May or may not show depending on refetch timing
       } else {
         // Checkout page validation will catch it when placing order
-        // This is also a valid path — the edge function or RPC will reject
         const currentUrl = pageA.url();
         expect(currentUrl).toContain('/checkout');
       }
@@ -232,7 +227,7 @@ test.describe('Out of Stock During Shopping', () => {
     await contextB.close();
   });
 
-  test('customer can remove out-of-stock item from cart', async ({ page }) => {
+  test('customer can remove out-of-stock item from cart and continue', async ({ page }) => {
     await navigateToStore(page);
 
     // Add two different products to cart
@@ -283,11 +278,11 @@ test.describe('Out of Stock During Shopping', () => {
       await clearAllBtn.click();
       await page.waitForTimeout(500);
 
-      // Verify empty state
-      const emptyMessage = page.locator('text=/empty|no items/i');
+      // Verify empty state — CartPage shows "Your cart is currently empty"
+      const emptyMessage = page.locator('text=/empty/i');
       await expect(emptyMessage).toBeVisible({ timeout: 5000 });
 
-      // Checkout button should not be visible
+      // Checkout button should not be visible when cart is empty
       const checkoutBtn = page.locator('button:has-text("Proceed to Checkout")');
       await expect(checkoutBtn).not.toBeVisible();
 
@@ -301,8 +296,6 @@ test.describe('Out of Stock During Shopping', () => {
 
   test('checkout page handles out-of-stock error during order placement', async ({ page }) => {
     // This test validates the OutOfStockError handling in CheckoutPage
-    // by intercepting the stock check API response
-
     await navigateToStore(page);
     await addFirstProductToCart(page);
 
@@ -314,8 +307,8 @@ test.describe('Out of Stock During Shopping', () => {
     await handleAgeVerification(page);
     await page.waitForLoadState('networkidle');
 
-    // Verify checkout page loaded
-    const checkoutContent = page.locator('text=/Contact|Checkout|Order/i').first();
+    // Verify checkout page loaded with cart items
+    const checkoutContent = page.locator('text=/Contact|Checkout|Order Summary/i').first();
     const checkoutLoaded = await checkoutContent.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (checkoutLoaded) {
@@ -323,7 +316,7 @@ test.describe('Out of Stock During Shopping', () => {
       // The actual out-of-stock error would be triggered by the mutation
       // when the edge function or RPC detects insufficient stock
 
-      // Check for order review/summary section
+      // Check for order review/summary section showing items
       const orderItems = page.locator('text=/item|product|cart/i');
       const hasItems = await orderItems.first().isVisible({ timeout: 3000 }).catch(() => false);
       expect(hasItems).toBe(true);
@@ -355,12 +348,7 @@ test.describe('Out of Stock During Shopping', () => {
 
     // If any warnings are visible, they should be formatted correctly
     const outOfStockBadge = page.locator('text="Out of stock"');
-    const lowStockBadge = page.locator('text=/Only \\d+ left/');
-    const lowStockLabel = page.locator('text="Low stock"');
-
     const hasOutOfStock = await outOfStockBadge.count() > 0;
-    const hasLowStock = await lowStockBadge.count() > 0;
-    const hasLowStockLabel = await lowStockLabel.count() > 0;
 
     // If out of stock, the checkout button should still exist but clicking it should be blocked
     if (hasOutOfStock) {
