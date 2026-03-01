@@ -130,7 +130,7 @@ export const REALTIME_QUERY_CONFIG = {
 export const ORDERS_QUERY_CONFIG = {
   staleTime: 30 * 1000, // 30 seconds
   gcTime: 2 * 60 * 1000, // 2 minutes
-  refetchOnWindowFocus: true,
+  refetchOnWindowFocus: false,
 };
 
 /**

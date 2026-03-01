@@ -170,6 +170,6 @@ export function useProductStock(productId: string | undefined, tenantId?: string
     },
     enabled: !!productId,
     staleTime: 30000, // 30 seconds
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
   });
 }
