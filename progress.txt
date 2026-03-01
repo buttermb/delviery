@@ -298,3 +298,23 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - StorefrontDashboard.tsx: Added storesError + PageErrorState (already had skeleton + empty states)
 - CustomerDashboard.tsx and DeliveryTracking.tsx already had all three states — no changes needed
 - TypeScript compilation passes with zero errors
+
+## Rate limiting checkout endpoint and input sanitization
+- Added CHECKOUT_IP (5/hour) and CHECKOUT_PHONE (3/hour) rate limit configs to rateLimiting.ts
+- Integrated rate limiting into storefront-checkout edge function:
+  - IP-based: max 5 checkout attempts per IP per hour via checkRateLimit + getClientIP
+  - Phone-based: max 3 checkout attempts per phone per hour (when phone provided)
+  - Returns 429 with rate limit headers when exceeded
+- Added input sanitization via Zod transforms in checkout schemas:
+  - firstName/lastName: trimmed, max 100 chars, HTML stripped, min 1 after sanitization
+  - email: trimmed, lowercased, max 255 chars
+  - phone: trimmed, max 20 chars, HTML stripped
+  - storeSlug: trimmed, max 100 chars, HTML stripped
+  - deliveryAddress: trimmed, max 500 chars, HTML stripped
+  - notes: trimmed, max 1000 chars, HTML stripped
+  - variant: trimmed, max 100 chars, HTML stripped
+  - idempotencyKey: trimmed, max 100 chars, HTML stripped
+  - quantity: capped at max 100
+  - items array: capped at max 50
+- All sanitization uses existing sanitizeString from _shared/validation.ts
+- TypeScript compilation passes with zero errors
