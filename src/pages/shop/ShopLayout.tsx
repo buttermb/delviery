@@ -32,6 +32,7 @@ import { StorefrontAgeGate } from '@/components/shop/StorefrontAgeGate';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 import { CartDrawer } from '@/components/shop/CartDrawer';
 import { useShopCart } from '@/hooks/useShopCart';
+import { useCartPagePrefetch } from '@/hooks/useCartPagePrefetch';
 import { queryKeys } from '@/lib/queryKeys';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 
@@ -198,6 +199,9 @@ export default function ShopLayout() {
   });
 
   const openCartDrawer = () => setCartDrawerOpen(true);
+
+  // Prefetch cart page data (deals, stock, upsells) when cart has items
+  useCartPagePrefetch({ storeId: store?.id, cartItemCount });
 
   // SEO: Update page title - MUST be before conditional returns
   useEffect(() => {
