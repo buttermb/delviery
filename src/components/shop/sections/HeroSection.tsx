@@ -60,7 +60,7 @@ export function HeroSection({ content, styles }: HeroSectionProps) {
 
     return (
         <section
-            className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
+            className="relative min-h-[80vh] aspect-[21/9] flex items-center justify-center overflow-hidden"
             style={{ backgroundColor: background_gradient_start }}
         >
             {/* Announcement Banner */}
