@@ -454,3 +454,11 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
   - `OrderTrackingPage.tsx` — payment badges, cancelled icon, discount text
 - Preserved intentionally: strain-type colors (indica/sativa/hybrid), social media brand colors, accentColor dynamic props, ambient decorative gradients
 - TypeScript compilation passes with zero errors
+
+## Lazy load ProductCatalogPage with React.lazy
+- Already implemented — no changes needed
+- ProductCatalogPage is lazy-loaded in src/routes/lazyImports.ts:187 as ShopProductCatalogPage
+- Uses React.lazy with .then() pattern to handle named export: `lazy(() => import("@/pages/shop/ProductCatalogPage").then(m => ({ default: m.ProductCatalogPage })))`
+- Imported in src/App.tsx:124 from @/routes/lazyImports
+- Rendered at route /shop/:storeSlug/products inside Suspense boundary with SkeletonStorefront fallback
+- No direct (non-lazy) imports of ProductCatalogPage exist in routing files
