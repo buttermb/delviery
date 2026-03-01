@@ -55,7 +55,9 @@ import { DocumentTitleManager } from "./components/DocumentTitleManager";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
 import { useVersionCheck } from "./hooks/useVersionCheck";
 import { FeatureFlagsProvider } from "./config/featureFlags";
-import { AdminDebugPanel } from "./components/admin/AdminDebugPanel";
+// AdminDebugPanel is lazy-loaded to ensure admin code never ships in public bundles.
+// It's only used in DEV mode (see usage below), so we defer-load it there.
+const AdminDebugPanel = lazy(() => import("./components/admin/AdminDebugPanel").then(m => ({ default: m.AdminDebugPanel })));
 import { PerformanceMonitor } from "./utils/performance";
 
 import { initCapacitor } from '@/lib/capacitor';
@@ -955,8 +957,8 @@ const App = () => {
                               </TenantProvider>
                             </CreditProvider>
                           </CustomerAuthProvider>
-                          {/* Debug Panel - Only visible in development */}
-                          {import.meta.env.DEV && <AdminDebugPanel />}
+                          {/* Debug Panel - Only visible in development, lazy-loaded */}
+                          {import.meta.env.DEV && <Suspense fallback={null}><AdminDebugPanel /></Suspense>}
                         </TenantAdminAuthProvider>
                       </SuperAdminAuthProvider>
                     </BrowserRouter>
