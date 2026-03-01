@@ -9,6 +9,7 @@ import { Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react'
 
 import type { DateRangeValue } from '@/components/admin/shared/FilterBar';
 import { LayoutGrid, List, Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react';
+import { Radio, RefreshCw, Volume2, VolumeX, Wifi, WifiOff, LayoutGrid, List } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -21,6 +22,7 @@ import {
   parseLiveOrderFilters,
 } from '@/components/admin/live-orders/LiveOrdersFilters';
 import { LiveOrdersTable } from '@/components/admin/live-orders/LiveOrdersTable';
+import { LiveOrdersListView } from '@/components/admin/live-orders/LiveOrdersListView';
 import { playNewOrderSound, initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { initAudio, isSoundEnabled, setSoundEnabled } from '@/lib/soundAlerts';
 import { useAdminOrdersRealtime } from '@/hooks/useAdminOrdersRealtime';
@@ -31,6 +33,9 @@ import { EmptyState } from '@/components/admin/shared/EmptyState';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { LiveOrdersStatsBar } from '@/components/admin/live-orders/LiveOrdersStatsBar';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
+
+type ViewMode = 'kanban' | 'list';
 
 // Type Definitions matching Supabase response
 interface MenuOrderRaw {
@@ -71,6 +76,17 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
   const [viewMode, setViewMode] = useState<'board' | 'table'>('board');
   const previousOrderCountRef = useRef<number>(0);
   const isFirstLoadRef = useRef(true);
+
+  // View mode persisted to localStorage
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = safeStorage.getItem(STORAGE_KEYS.LIVE_ORDERS_VIEW);
+    return (saved === 'list' || saved === 'kanban') ? saved : 'kanban';
+  });
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    safeStorage.setItem(STORAGE_KEYS.LIVE_ORDERS_VIEW, mode);
+  };
 
   // Undo hook for status changes
   const { pendingAction, timeRemaining, executeWithUndo, undo, commit } = useUndo<{
@@ -416,6 +432,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
 
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
               {orders.length} active orders
+              {orders.length} active orders • {viewMode === 'kanban' ? 'Swimlane View' : 'List View'}
             </p>
           </div>
 
@@ -439,6 +456,26 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
               >
                 <List className="h-4 w-4 mr-1" />
                 Table
+            <div className="flex items-center rounded-lg border bg-muted/50 p-0.5">
+              <Button
+                variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-7 px-2.5 gap-1.5"
+                onClick={() => handleViewModeChange('kanban')}
+                aria-label="Kanban view"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                <span className="hidden sm:inline text-xs">Board</span>
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-7 px-2.5 gap-1.5"
+                onClick={() => handleViewModeChange('list')}
+                aria-label="List view"
+              >
+                <List className="h-4 w-4" />
+                <span className="hidden sm:inline text-xs">List</span>
               </Button>
             </div>
 
@@ -506,6 +543,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
 
       {/* Kanban Board Container */}
       {/* Content Area */}
+      {/* Content */}
       <div className="flex-1 overflow-auto p-3">
         <PullToRefresh onRefresh={async () => { await refetch(); }}>
           <div className="h-full">
@@ -523,7 +561,7 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
                 isLoading={isLoading}
                 onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
               />
-            ) : (
+            ) : viewMode === 'kanban' ? (
               <LiveOrdersKanban
                 orders={orders}
                 isLoading={isLoading}
@@ -535,6 +573,10 @@ export default function LiveOrders({ statusFilter }: LiveOrdersProps) {
                 isLoading={isLoading}
                 onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
                 newOrderIds={newOrderIds}
+              <LiveOrdersListView
+                orders={orders}
+                isLoading={isLoading}
+                onStatusChange={(id, status, source) => handleStatusChange(id, status, source)}
               />
             )}
           </div>

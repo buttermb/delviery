@@ -237,6 +237,9 @@ export const STORAGE_KEYS = {
 
   // Onboarding completed (tenant-scoped)
   ONBOARDING_COMPLETED_PREFIX: 'onboarding_completed_',
+
+  // Live Orders view preference
+  LIVE_ORDERS_VIEW: 'live_orders_view',
 } as const;
 
 /**

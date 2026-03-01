@@ -8,3 +8,4 @@ export { LiveOrderStatusBadge } from './LiveOrderStatusBadge';
 export { LiveOrdersMobileList } from './LiveOrdersMobileList';
 export { LiveOrdersTable } from './LiveOrdersTable';
 
+export { LiveOrdersListView } from './LiveOrdersListView';
