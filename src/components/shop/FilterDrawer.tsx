@@ -1,6 +1,7 @@
 /**
  * FilterDrawer - Mobile-friendly filter panel
  * Uses shadcn Sheet for consistent drawer behavior
+ * Theme-aware: adapts to storefront CSS variables
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,6 +18,9 @@ export interface FilterState {
   strainTypes: string[];
   priceRange: [number, number];
   sortBy: string;
+  inStockOnly?: boolean;
+  thcRange?: [number, number];
+  cbdRange?: [number, number];
 }
 
 interface FilterDrawerProps {
@@ -28,6 +32,7 @@ interface FilterDrawerProps {
   availableStrainTypes: string[];
   maxPrice: number;
   accentColor?: string;
+  resultCount?: number;
 }
 
 const SORT_OPTIONS = [
@@ -35,6 +40,8 @@ const SORT_OPTIONS = [
   { value: 'price_asc', label: 'Price: Low to High' },
   { value: 'price_desc', label: 'Price: High to Low' },
   { value: 'newest', label: 'Newest First' },
+  { value: 'thc_desc', label: 'THC%: High to Low' },
+  { value: 'thc_asc', label: 'THC%: Low to High' },
 ];
 
 export function FilterDrawer({
@@ -46,6 +53,7 @@ export function FilterDrawer({
   availableStrainTypes,
   maxPrice,
   accentColor = '#10b981',
+  resultCount,
 }: FilterDrawerProps) {
   const [expandedSections, setExpandedSections] = useState<string[]>(['categories', 'price', 'sort']);
 
@@ -75,19 +83,24 @@ export function FilterDrawer({
       strainTypes: [],
       priceRange: [0, maxPrice],
       sortBy: 'name',
+      inStockOnly: false,
+      thcRange: [0, 100],
+      cbdRange: [0, 100],
     });
   };
 
-  const activeFilterCount =
-    filters.categories.length +
-    filters.strainTypes.length +
-    (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice ? 1 : 0);
+  const activeFilterCount = getActiveFilterCount(filters, maxPrice);
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <SheetContent
         side="left"
-        className="w-full max-w-xs sm:max-w-xs bg-neutral-950 border-r border-white/10 p-0 flex flex-col gap-0 overflow-hidden [&>button:last-child]:hidden"
+        className="w-full max-w-xs sm:max-w-xs p-0 flex flex-col gap-0 overflow-hidden [&>button:last-child]:hidden"
+        style={{
+          backgroundColor: 'var(--storefront-card-bg, white)',
+          borderColor: 'var(--storefront-border, #e5e7eb)',
+          color: 'var(--storefront-text, #111)',
+        }}
       >
         <SheetTitle className="sr-only">Filters</SheetTitle>
         <SheetDescription className="sr-only">
@@ -95,12 +108,18 @@ export function FilterDrawer({
         </SheetDescription>
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10">
+        <div
+          className="flex items-center justify-between p-4 border-b"
+          style={{ borderColor: 'var(--storefront-border, #e5e7eb)' }}
+        >
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-white/60" />
-            <h3 className="text-white font-light tracking-wide">Filters</h3>
+            <SlidersHorizontal className="w-4 h-4 opacity-60" />
+            <h3 className="font-semibold tracking-wide">Filters</h3>
             {activeFilterCount > 0 && (
-              <span className="px-2 py-0.5 bg-white/10 rounded-full text-white/60 text-xs">
+              <span
+                className="px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                style={{ backgroundColor: accentColor }}
+              >
                 {activeFilterCount}
               </span>
             )}
@@ -109,16 +128,17 @@ export function FilterDrawer({
             {activeFilterCount > 0 && (
               <button
                 onClick={clearAllFilters}
-                className="text-xs text-white/40 hover:text-white transition-colors"
+                className="text-xs opacity-50 hover:opacity-100 transition-opacity"
               >
                 Clear all
               </button>
             )}
             <button
               onClick={onClose}
-              className="p-1 rounded hover:bg-white/10 transition-colors"
+              className="p-1 rounded hover:opacity-70 transition-opacity min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Close filters"
             >
-              <X className="w-5 h-5 text-white/60" />
+              <X className="w-5 h-5 opacity-60" />
             </button>
           </div>
         </div>
@@ -130,18 +150,23 @@ export function FilterDrawer({
             title="Sort By"
             isExpanded={expandedSections.includes('sort')}
             onToggle={() => toggleSection('sort')}
+            accentColor={accentColor}
           >
-            <div className="space-y-2">
+            <div className="space-y-1">
               {SORT_OPTIONS.map(option => (
                 <button
                   key={option.value}
                   onClick={() => onFiltersChange({ ...filters, sortBy: option.value })}
                   className={cn(
-                    'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors',
+                    'w-full text-left px-3 py-2 rounded-lg text-sm transition-colors min-h-[44px] flex items-center',
                     filters.sortBy === option.value
-                      ? 'bg-white/10 text-white'
-                      : 'text-white/50 hover:bg-white/5 hover:text-white/70'
+                      ? 'font-medium'
+                      : 'opacity-60 hover:opacity-80'
                   )}
+                  style={filters.sortBy === option.value ? {
+                    backgroundColor: `${accentColor}15`,
+                    color: accentColor,
+                  } : undefined}
                 >
                   {option.label}
                 </button>
@@ -156,21 +181,19 @@ export function FilterDrawer({
               isExpanded={expandedSections.includes('categories')}
               onToggle={() => toggleSection('categories')}
               count={filters.categories.length}
+              accentColor={accentColor}
             >
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {availableCategories.map(category => (
                   <label
                     key={category}
-                    className="flex items-center gap-3 px-2 py-1.5 rounded hover:bg-white/5 cursor-pointer group"
+                    className="flex items-center gap-3 px-2 py-2 rounded cursor-pointer hover:opacity-80 min-h-[44px]"
                   >
                     <Checkbox
                       checked={filters.categories.includes(category)}
                       onCheckedChange={() => toggleCategory(category)}
-                      className="border-white/30 data-[state=checked]:bg-white data-[state=checked]:border-white"
                     />
-                    <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors">
-                      {category}
-                    </span>
+                    <span className="text-sm">{category}</span>
                   </label>
                 ))}
               </div>
@@ -184,32 +207,49 @@ export function FilterDrawer({
               isExpanded={expandedSections.includes('strain')}
               onToggle={() => toggleSection('strain')}
               count={filters.strainTypes.length}
+              accentColor={accentColor}
             >
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {availableStrainTypes.map(strain => (
                   <label
                     key={strain}
-                    className="flex items-center gap-3 px-2 py-1.5 rounded hover:bg-white/5 cursor-pointer group"
+                    className="flex items-center gap-3 px-2 py-2 rounded cursor-pointer hover:opacity-80 min-h-[44px]"
                   >
                     <Checkbox
                       checked={filters.strainTypes.includes(strain)}
                       onCheckedChange={() => toggleStrainType(strain)}
-                      className="border-white/30 data-[state=checked]:bg-white data-[state=checked]:border-white"
                     />
-                    <span className="text-sm text-white/60 group-hover:text-white/80 transition-colors">
-                      {strain}
-                    </span>
+                    <span className="text-sm">{strain}</span>
                   </label>
                 ))}
               </div>
             </FilterSection>
           )}
 
-          {/* Price Range - Enhanced Slider */}
+          {/* In Stock Only */}
+          <FilterSection
+            title="Availability"
+            isExpanded={expandedSections.includes('availability')}
+            onToggle={() => toggleSection('availability')}
+            accentColor={accentColor}
+          >
+            <label className="flex items-center gap-3 px-2 py-2 rounded cursor-pointer hover:opacity-80 min-h-[44px]">
+              <Checkbox
+                checked={filters.inStockOnly ?? false}
+                onCheckedChange={(checked) =>
+                  onFiltersChange({ ...filters, inStockOnly: !!checked })
+                }
+              />
+              <span className="text-sm">In Stock Only</span>
+            </label>
+          </FilterSection>
+
+          {/* Price Range */}
           <FilterSection
             title="Price Range"
             isExpanded={expandedSections.includes('price')}
             onToggle={() => toggleSection('price')}
+            accentColor={accentColor}
           >
             <div className="px-2 pt-2 pb-4">
               <EnhancedPriceSlider
@@ -218,20 +258,24 @@ export function FilterDrawer({
                 max={maxPrice}
                 step={5}
                 accentColor={accentColor}
-                className="[&_input]:bg-white/5 [&_input]:border-white/10 [&_input]:text-white [&_label]:text-white/50 [&_button]:border-white/20 [&_button]:text-white/60 [&_button:hover]:bg-white/10"
               />
             </div>
           </FilterSection>
         </div>
 
         {/* Apply Button */}
-        <div className="p-4 border-t border-white/10">
+        <div
+          className="p-4 border-t"
+          style={{ borderColor: 'var(--storefront-border, #e5e7eb)' }}
+        >
           <Button
             onClick={onClose}
-            className="w-full py-3 rounded-full"
+            className="w-full py-3 rounded-full text-white font-medium"
             style={{ backgroundColor: accentColor }}
           >
-            Apply Filters
+            {resultCount !== undefined
+              ? `Show ${resultCount} Product${resultCount !== 1 ? 's' : ''}`
+              : 'Apply Filters'}
           </Button>
         </div>
       </SheetContent>
@@ -239,37 +283,58 @@ export function FilterDrawer({
   );
 }
 
-// Collapsible filter section
+/** Calculate active filter count for badge display */
+export function getActiveFilterCount(filters: FilterState, maxPrice: number): number {
+  let count = 0;
+  count += filters.categories.length;
+  count += filters.strainTypes.length;
+  if (filters.priceRange[0] > 0 || filters.priceRange[1] < maxPrice) count += 1;
+  if (filters.inStockOnly) count += 1;
+  if (filters.thcRange && (filters.thcRange[0] > 0 || filters.thcRange[1] < 100)) count += 1;
+  if (filters.cbdRange && (filters.cbdRange[0] > 0 || filters.cbdRange[1] < 100)) count += 1;
+  return count;
+}
+
+interface FilterSectionProps {
+  title: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  count?: number;
+  accentColor?: string;
+  children: React.ReactNode;
+}
+
 function FilterSection({
   title,
   isExpanded,
   onToggle,
   count,
+  accentColor,
   children,
-}: {
-  title: string;
-  isExpanded: boolean;
-  onToggle: () => void;
-  count?: number;
-  children: React.ReactNode;
-}) {
+}: FilterSectionProps) {
   return (
-    <div className="border-b border-white/5 pb-4">
+    <div
+      className="border-b pb-4"
+      style={{ borderColor: 'var(--storefront-border, #e5e7eb)', opacity: 0.95 }}
+    >
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between py-2 text-left"
+        className="w-full flex items-center justify-between py-2 text-left min-h-[44px]"
       >
-        <span className="text-white/80 text-sm font-medium tracking-wide flex items-center gap-2">
+        <span className="text-sm font-medium tracking-wide flex items-center gap-2">
           {title}
           {count !== undefined && count > 0 && (
-            <span className="px-1.5 py-0.5 bg-white/10 rounded text-[10px] text-white/60">
+            <span
+              className="px-1.5 py-0.5 rounded text-[10px] text-white font-medium"
+              style={{ backgroundColor: accentColor }}
+            >
               {count}
             </span>
           )}
         </span>
         <ChevronDown
           className={cn(
-            'w-4 h-4 text-white/40 transition-transform duration-200',
+            'w-4 h-4 opacity-40 transition-transform duration-200',
             isExpanded && 'rotate-180'
           )}
         />
@@ -291,29 +356,33 @@ function FilterSection({
   );
 }
 
-// Trigger button for mobile
+interface FilterTriggerButtonProps {
+  onClick: () => void;
+  activeCount?: number;
+  className?: string;
+}
+
+/** Trigger button that opens the filter drawer on mobile */
 export function FilterTriggerButton({
   onClick,
   activeCount,
   className,
-}: {
-  onClick: () => void;
-  activeCount?: number;
-  className?: string;
-}) {
+}: FilterTriggerButtonProps) {
   return (
     <Button
       variant="outline"
       onClick={onClick}
       className={cn(
-        'gap-2 bg-white/[0.02] border-white/10 text-white/60 hover:bg-white/5 hover:text-white rounded-full',
+        'gap-2 rounded-full min-h-[44px]',
         className
       )}
     >
       <SlidersHorizontal className="w-4 h-4" />
       Filters
       {activeCount !== undefined && activeCount > 0 && (
-        <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-xs">{activeCount}</span>
+        <span className="px-1.5 py-0.5 bg-primary text-primary-foreground rounded-full text-xs font-medium">
+          {activeCount}
+        </span>
       )}
     </Button>
   );
