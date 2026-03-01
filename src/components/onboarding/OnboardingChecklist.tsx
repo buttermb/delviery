@@ -208,6 +208,7 @@ export function OnboardingChecklist({
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => setIsExpanded(!isExpanded)}
+                aria-label={isExpanded ? "Collapse checklist" : "Expand checklist"}
               >
                 {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </Button>

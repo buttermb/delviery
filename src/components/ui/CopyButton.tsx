@@ -53,6 +53,7 @@ export function CopyButton({
         className
       )}
       onClick={handleCopy}
+      aria-label={label ? `Copy ${label}` : "Copy to clipboard"}
     >
       {copied ? (
         <Check className="h-4 w-4 text-green-500 dark:text-green-400" />

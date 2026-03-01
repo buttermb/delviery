@@ -431,7 +431,7 @@ export default function TenantsListPage() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar>
-                            <AvatarImage src={(tenant.white_label as Record<string, unknown> | null)?.logo as string | undefined} />
+                            <AvatarImage src={(tenant.white_label as Record<string, unknown> | null)?.logo as string | undefined} alt={tenant.business_name as string} />
                             <AvatarFallback>
                               {(tenant.business_name as string)?.charAt(0) || 'T'}
                             </AvatarFallback>

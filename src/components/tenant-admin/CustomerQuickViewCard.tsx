@@ -59,7 +59,7 @@ export function CustomerQuickViewCard({ children, customer }: CustomerQuickViewC
                 {/* Header */}
                 <div className="bg-muted/30 p-4 border-b flex items-start gap-3">
                     <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
-                        <AvatarImage src={`https://avatar.vercel.sh/${customer.business_name}.png`} />
+                        <AvatarImage src={`https://avatar.vercel.sh/${customer.business_name}.png`} alt={customer.business_name} />
                         <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">

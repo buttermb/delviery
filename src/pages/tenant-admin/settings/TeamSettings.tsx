@@ -248,7 +248,7 @@ export default function TeamSettings() {
       cell: (member) => (
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9 border">
-            <AvatarImage src={member.avatar_url} />
+            <AvatarImage src={member.avatar_url} alt={member.full_name || member.email || "Team member"} />
             <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
               {getInitials(member.full_name || member.email || '?')}
             </AvatarFallback>
@@ -521,7 +521,7 @@ export default function TeamSettings() {
             mobileRenderer={(member) => (
               <div className="flex items-center gap-4">
                 <Avatar className="h-10 w-10 border">
-                  <AvatarImage src={member.avatar_url} />
+                  <AvatarImage src={member.avatar_url} alt={member.full_name || member.email || "Team member"} />
                   <AvatarFallback>{getInitials(member.full_name || '?')}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">

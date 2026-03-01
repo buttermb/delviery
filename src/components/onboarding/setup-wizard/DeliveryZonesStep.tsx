@@ -168,6 +168,7 @@ export function DeliveryZonesStep({ onComplete }: DeliveryZonesStepProps) {
                 size="icon"
                 className="h-11 w-11 sm:h-7 sm:w-7"
                 onClick={() => { setZoneToDelete(i); setDeleteDialogOpen(true); }}
+                aria-label={`Delete ${zone.name} delivery zone`}
               >
                 <Trash2 className="h-3 w-3 text-red-500" />
               </Button>

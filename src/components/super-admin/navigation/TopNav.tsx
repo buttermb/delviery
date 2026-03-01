@@ -640,7 +640,7 @@ export function TopNav({
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={admin?.avatar_url} />
+                <AvatarImage src={admin?.avatar_url} alt={adminName} />
                 <AvatarFallback>{adminInitials}</AvatarFallback>
               </Avatar>
               <div className="text-left hidden xl:block">

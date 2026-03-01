@@ -248,6 +248,7 @@ function PendingActionsList() {
                                     variant="ghost"
                                     className="h-7 w-7"
                                     onClick={() => retry(action.id)}
+                                    aria-label="Retry action"
                                 >
                                     <RefreshCw className="h-3.5 w-3.5" />
                                 </Button>
@@ -257,6 +258,7 @@ function PendingActionsList() {
                                 variant="ghost"
                                 className="h-7 w-7 text-muted-foreground"
                                 onClick={() => remove(action.id)}
+                                aria-label="Remove action"
                             >
                                 <X className="h-3.5 w-3.5" />
                             </Button>

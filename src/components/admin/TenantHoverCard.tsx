@@ -44,7 +44,7 @@ export function TenantHoverCard({ tenant, children }: TenantHoverCardProps) {
             <HoverCardContent className="w-80">
                 <div className="flex justify-between space-x-4">
                     <Avatar>
-                        <AvatarImage src={`https://avatar.vercel.sh/${tenant.slug}.png`} />
+                        <AvatarImage src={`https://avatar.vercel.sh/${tenant.slug}.png`} alt={tenant.business_name} />
                         <AvatarFallback>{getInitials(tenant.business_name)}</AvatarFallback>
                     </Avatar>
                     <div className="space-y-1">

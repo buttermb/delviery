@@ -383,6 +383,7 @@ export function QuickAddProductDialog({
                     size="icon"
                     className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={removeImage}
+                    aria-label="Remove image"
                   >
                     <X className="h-4 w-4" />
                   </Button>
