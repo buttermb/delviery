@@ -94,7 +94,7 @@ export function LuxuryHeroSection({ content, styles, storeId: _storeId }: Luxury
           </motion.div>
 
           {/* Heading */}
-          <h1 className="text-5xl md:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[1.1] drop-shadow-sm">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-[1.1] drop-shadow-sm">
             {content.heading_line_1 && (
               <span className="block">{content.heading_line_1}</span>
             )}

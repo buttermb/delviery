@@ -111,7 +111,7 @@ export function PromotionsBannerSection({ content, styles, storeId }: Promotions
                     />
 
                     {/* Content */}
-                    <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 text-center">
+                    <div className="relative z-10 h-full flex flex-col items-center justify-center px-4 sm:px-6 text-center">
                         {/* Promotion Badge */}
                         <motion.div
                             initial={{ opacity: 0, y: -20 }}
