@@ -44,6 +44,8 @@ import {
   AlertCircle,
   Loader2,
   ExternalLink,
+  Bell,
+  Send,
 } from 'lucide-react';
 import { StoreShareDialog } from '@/components/admin/storefront/StoreShareDialog';
 import { generateUrlToken } from '@/utils/menuHelpers';
@@ -72,6 +74,24 @@ interface ThemeConfig {
     accent?: string;
   };
 }
+
+interface TelegramConfig {
+  bot_token: string;
+  chat_id: string;
+  auto_forward: boolean;
+  customer_link: string;
+  button_label: string;
+  show_on_confirmation: boolean;
+}
+
+const DEFAULT_TELEGRAM_CONFIG: TelegramConfig = {
+  bot_token: '',
+  chat_id: '',
+  auto_forward: false,
+  customer_link: '',
+  button_label: 'Chat with us on Telegram',
+  show_on_confirmation: false,
+};
 
 interface StoreSettings {
   id: string;
@@ -123,6 +143,8 @@ interface StoreSettings {
   } | null;
   // Featured products
   featured_product_ids: string[];
+  // Telegram notifications
+  telegram_config: TelegramConfig;
 }
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -187,6 +209,10 @@ export default function StorefrontSettings() {
       setFormData({
         ...store,
         featured_product_ids: store.featured_product_ids ?? [],
+        telegram_config: {
+          ...DEFAULT_TELEGRAM_CONFIG,
+          ...(store.telegram_config as Partial<TelegramConfig> | null),
+        },
       });
     }
   }, [store]);
@@ -278,6 +304,19 @@ export default function StorefrontSettings() {
     setIsDirty(true);
   };
 
+  // Update telegram config
+  const updateTelegramConfig = (key: keyof TelegramConfig, value: string | boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      telegram_config: {
+        ...DEFAULT_TELEGRAM_CONFIG,
+        ...(prev.telegram_config as TelegramConfig | undefined),
+        [key]: value,
+      },
+    }));
+    setIsDirty(true);
+  };
+
   // Update operating hours
   const updateHours = (day: string, field: 'open' | 'close' | 'closed', value: string | boolean) => {
     setFormData((prev) => ({
@@ -331,6 +370,7 @@ export default function StorefrontSettings() {
           operating_hours: formData.operating_hours,
           purchase_limits: formData.purchase_limits,
           featured_product_ids: formData.featured_product_ids ?? [],
+          telegram_config: formData.telegram_config ?? DEFAULT_TELEGRAM_CONFIG,
         })
         .eq('id', store.id)
         .eq('tenant_id', tenantId);
@@ -551,6 +591,7 @@ export default function StorefrontSettings() {
             <TabsTrigger value="zones">Zones</TabsTrigger>
             <TabsTrigger value="timeslots">Time Slots</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="checkout">Checkout</TabsTrigger>
             <TabsTrigger value="hours">Hours</TabsTrigger>
             <TabsTrigger value="seo">SEO</TabsTrigger>
@@ -1228,6 +1269,141 @@ export default function StorefrontSettings() {
                 <p className="text-xs text-muted-foreground">
                   At least one payment method must be enabled.
                 </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="w-5 h-5" />
+                  Telegram Notifications
+                </CardTitle>
+                <CardDescription>
+                  Get new order notifications forwarded to your Telegram group and show a contact link on the order confirmation page
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Auto-forward toggle */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Auto-Forward Orders to Telegram</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Send order details to your Telegram group when a new order is placed
+                    </p>
+                  </div>
+                  <Switch
+                    checked={(formData.telegram_config as TelegramConfig | undefined)?.auto_forward ?? false}
+                    onCheckedChange={(checked) => updateTelegramConfig('auto_forward', checked)}
+                  />
+                </div>
+
+                {(formData.telegram_config as TelegramConfig | undefined)?.auto_forward && (
+                  <div className="space-y-4 pl-4 border-l-2 border-muted">
+                    <div className="space-y-2">
+                      <Label htmlFor="telegram_bot_token">Bot Token</Label>
+                      <Input
+                        id="telegram_bot_token"
+                        type="password"
+                        placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+                        value={(formData.telegram_config as TelegramConfig | undefined)?.bot_token ?? ''}
+                        onChange={(e) => updateTelegramConfig('bot_token', e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Get a bot token from @BotFather on Telegram
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="telegram_chat_id">Chat ID</Label>
+                      <Input
+                        id="telegram_chat_id"
+                        placeholder="-1001234567890"
+                        value={(formData.telegram_config as TelegramConfig | undefined)?.chat_id ?? ''}
+                        onChange={(e) => updateTelegramConfig('chat_id', e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        The Telegram group or channel ID where order notifications will be sent
+                      </p>
+                    </div>
+
+                    {/* Test button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={
+                        !(formData.telegram_config as TelegramConfig | undefined)?.bot_token ||
+                        !(formData.telegram_config as TelegramConfig | undefined)?.chat_id
+                      }
+                      onClick={async () => {
+                        try {
+                          const { error } = await supabase.functions.invoke('test-telegram', {
+                            body: {
+                              bot_token: (formData.telegram_config as TelegramConfig | undefined)?.bot_token,
+                              chat_id: (formData.telegram_config as TelegramConfig | undefined)?.chat_id,
+                            },
+                          });
+                          if (error) throw error;
+                          toast.success('Test message sent to Telegram');
+                        } catch (err: unknown) {
+                          logger.error('Telegram test failed', err, { component: 'StorefrontSettings' });
+                          toast.error('Failed to send test message. Check your bot token and chat ID.');
+                        }
+                      }}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      Send Test Message
+                    </Button>
+                  </div>
+                )}
+
+                <Separator />
+
+                {/* Customer-facing Telegram link */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Show Telegram Link on Order Confirmation</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Display a button linking to your Telegram on the order confirmation page
+                    </p>
+                  </div>
+                  <Switch
+                    checked={(formData.telegram_config as TelegramConfig | undefined)?.show_on_confirmation ?? false}
+                    onCheckedChange={(checked) => updateTelegramConfig('show_on_confirmation', checked)}
+                  />
+                </div>
+
+                {(formData.telegram_config as TelegramConfig | undefined)?.show_on_confirmation && (
+                  <div className="space-y-4 pl-4 border-l-2 border-muted">
+                    <div className="space-y-2">
+                      <Label htmlFor="telegram_customer_link">Telegram Link URL</Label>
+                      <Input
+                        id="telegram_customer_link"
+                        placeholder="https://t.me/your_group"
+                        value={(formData.telegram_config as TelegramConfig | undefined)?.customer_link ?? ''}
+                        onChange={(e) => updateTelegramConfig('customer_link', e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Public link customers can use to reach you on Telegram
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="telegram_button_label">Button Label</Label>
+                      <Input
+                        id="telegram_button_label"
+                        placeholder="Chat with us on Telegram"
+                        value={(formData.telegram_config as TelegramConfig | undefined)?.button_label ?? 'Chat with us on Telegram'}
+                        onChange={(e) => updateTelegramConfig('button_label', e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Text shown on the button on your order confirmation page
+                      </p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
