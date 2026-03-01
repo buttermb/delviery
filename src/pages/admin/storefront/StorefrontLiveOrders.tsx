@@ -196,7 +196,7 @@ export function StorefrontLiveOrders() {
       if (!tenantId) return null;
       const { data } = await supabase
         .from('marketplace_stores')
-        .select('id')
+        .select('id, name')
         .eq('tenant_id', tenantId)
         .maybeSingle();
       return data;
@@ -385,6 +385,36 @@ export function StorefrontLiveOrders() {
           } else {
             logger.info('Inventory restored for cancelled order', { orderId, result: restoreResult }, { component: 'StorefrontLiveOrders' });
           }
+        }
+
+        // Send optional cancellation email (fire-and-forget)
+        if (order?.customer_email && cancellationReason) {
+          const emailItems = items.map((item) => {
+            const i = item as Record<string, unknown>;
+            return {
+              name: (i.name || i.product_name || 'Item') as string,
+              quantity: typeof i.quantity === 'number' ? i.quantity : 1,
+              price: typeof i.unit_price === 'number' ? i.unit_price : typeof i.price === 'number' ? i.price : 0,
+            };
+          });
+
+          supabase.functions
+            .invoke('send-order-cancellation', {
+              body: {
+                customer_email: order.customer_email,
+                customer_name: order.customer_name || 'Customer',
+                order_number: order.order_number,
+                cancellation_reason: cancellationReason,
+                store_name: store?.name || 'Store',
+                items: emailItems,
+                total: order.total || order.total_amount || 0,
+              },
+            })
+            .then(({ error: emailError }) => {
+              if (emailError) {
+                logger.warn('Cancellation email failed (non-blocking)', emailError, { component: 'StorefrontLiveOrders', orderId });
+              }
+            });
         }
       }
 
