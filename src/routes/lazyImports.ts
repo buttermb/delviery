@@ -185,7 +185,7 @@ export const ProductSyncPage = lazy(() => import("@/pages/admin/marketplace/Prod
 export const ShopLayout = lazy(() => import("@/pages/shop/ShopLayout"));
 export const ShopStorefrontPage = lazy(() => import("@/pages/shop/StorefrontPage"));
 export const ShopProductCatalogPage = lazy(() => import("@/pages/shop/ProductCatalogPage").then(m => ({ default: m.ProductCatalogPage })));
-export const ShopProductDetailPage = lazy(() => import("@/pages/shop/ProductDetailPage").then(m => ({ default: m.ProductDetailPage })));
+export const ShopProductDetailPage = lazyWithRetry(() => import("@/pages/shop/ProductDetailPage").then(m => ({ default: m.ProductDetailPage })));
 export const ShopCartPage = lazy(() => import("@/pages/shop/CartPage"));
 export const ShopCheckoutPage = lazy(() => import("@/pages/shop/CheckoutPage"));
 export const ShopOrderConfirmationPage = lazy(() => import("@/pages/shop/OrderConfirmationPage"));
