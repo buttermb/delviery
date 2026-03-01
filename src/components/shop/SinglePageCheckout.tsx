@@ -30,11 +30,14 @@ import {
   ShoppingCart,
   Loader2,
   AlertTriangle,
+  AlertCircle,
   Check,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { humanizeError } from '@/lib/humanizeError';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { safeStorage } from '@/utils/safeStorage';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -76,6 +79,7 @@ export function SinglePageCheckout() {
   const [stockIssues, setStockIssues] = useState<Array<{ productName: string; available: number; requested: number }>>([]);
   const [isCheckingStock, setIsCheckingStock] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormData, string>>>({});
+  const [orderRetryCount, setOrderRetryCount] = useState(0);
 
   // Cart hook
   const { cartItems, subtotal, clearCart: _clearCart, isInitialized } = useShopCart({
@@ -89,7 +93,7 @@ export function SinglePageCheckout() {
   useEffect(() => {
     if (formStorageKey) {
       try {
-        const saved = localStorage.getItem(formStorageKey);
+        const saved = safeStorage.getItem(formStorageKey);
         if (saved) {
           setFormData((prev) => ({ ...prev, ...JSON.parse(saved) }));
         }
@@ -101,7 +105,7 @@ export function SinglePageCheckout() {
   useEffect(() => {
     if (formStorageKey && formData.email) {
       try {
-        localStorage.setItem(formStorageKey, JSON.stringify(formData));
+        safeStorage.setItem(formStorageKey, JSON.stringify(formData));
       } catch (e) { logger.warn('[Checkout] Failed to save form data', { error: e }); }
     }
   }, [formData, formStorageKey]);
@@ -175,7 +179,19 @@ export function SinglePageCheckout() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Place order mutation
+  // Helper: detect network errors worth retrying
+  const isNetworkError = (err: unknown): boolean => {
+    const msg = err instanceof Error ? err.message : String(err);
+    const lower = msg.toLowerCase();
+    return lower.includes('network') ||
+      lower.includes('fetch') ||
+      lower.includes('timeout') ||
+      lower.includes('failed to fetch') ||
+      lower.includes('load failed') ||
+      msg === '';
+  };
+
+  // Place order mutation with retry logic
   const placeOrderMutation = useMutation({
     mutationFn: async () => {
       if (!store?.id) throw new Error('No store');
@@ -210,31 +226,51 @@ export function SinglePageCheckout() {
       const sanitizedState = sanitizeFormInput(formData.state, 50);
       const sanitizedZip = sanitizeFormInput(formData.zip, 20);
 
-      const { data: orderId, error } = await supabase.rpc('create_marketplace_order', {
-        p_store_id: store.id,
-        p_items: orderItems,
-        p_customer_name: `${sanitizedFirstName} ${sanitizedLastName}`,
-        p_customer_email: sanitizeEmail(formData.email),
-        p_customer_phone: formData.phone ? sanitizePhoneInput(formData.phone) : null,
-        p_delivery_address: `${sanitizedStreet}${sanitizedApt ? ', ' + sanitizedApt : ''}, ${sanitizedCity}, ${sanitizedState} ${sanitizedZip}`,
-        p_delivery_notes: formData.deliveryNotes ? sanitizeTextareaInput(formData.deliveryNotes, 500) : null,
-        p_subtotal: subtotal,
-        p_tax: 0,
-        p_delivery_fee: deliveryFee,
-        p_total: total,
-        p_payment_method: formData.paymentMethod,
-      });
+      // Submit with retry on network errors
+      const MAX_RETRIES = 3;
+      const submitWithRetry = async (attempt: number): Promise<{ order_id: string }> => {
+        try {
+          const { data: orderId, error } = await supabase.rpc('create_marketplace_order', {
+            p_store_id: store.id,
+            p_items: orderItems,
+            p_customer_name: `${sanitizedFirstName} ${sanitizedLastName}`,
+            p_customer_email: sanitizeEmail(formData.email),
+            p_customer_phone: formData.phone ? sanitizePhoneInput(formData.phone) : null,
+            p_delivery_address: `${sanitizedStreet}${sanitizedApt ? ', ' + sanitizedApt : ''}, ${sanitizedCity}, ${sanitizedState} ${sanitizedZip}`,
+            p_delivery_notes: formData.deliveryNotes ? sanitizeTextareaInput(formData.deliveryNotes, 500) : null,
+            p_subtotal: subtotal,
+            p_tax: 0,
+            p_delivery_fee: deliveryFee,
+            p_total: total,
+            p_payment_method: formData.paymentMethod,
+          });
 
-      if (error) throw error;
-      if (!orderId) throw new Error('Failed to create order');
+          if (error) throw error;
+          if (!orderId) throw new Error('Failed to create order');
 
-      return { order_id: orderId };
+          return { order_id: orderId as string };
+        } catch (err: unknown) {
+          if (isNetworkError(err) && attempt < MAX_RETRIES) {
+            setOrderRetryCount(attempt);
+            toast.warning(`Connection issue, retrying (${attempt}/${MAX_RETRIES})...`, {
+              description: 'Your cart is safe. Retrying automatically.',
+            });
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)));
+            return submitWithRetry(attempt + 1);
+          }
+          logger.error('Order submission error', err, { attempt, component: 'SinglePageCheckout' });
+          throw err;
+        }
+      };
+
+      return submitWithRetry(1);
     },
     onSuccess: async (data) => {
-      // Clear cart and form
+      setOrderRetryCount(0);
+      // Clear cart and form only on success — never on failure
       if (store?.id) {
-        localStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
-        if (formStorageKey) localStorage.removeItem(formStorageKey);
+        safeStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
+        if (formStorageKey) safeStorage.removeItem(formStorageKey);
         setCartItemCount(0);
       }
 
@@ -266,10 +302,27 @@ export function SinglePageCheckout() {
       });
     },
     onError: (error: Error) => {
-      logger.error('Order failed', error);
-      toast.error('Order failed', {
-        description: humanizeError(error, 'Something went wrong'),
-      });
+      setOrderRetryCount(0);
+      logger.error('Order failed', error, { component: 'SinglePageCheckout' });
+
+      const isRetryable = isNetworkError(error) ||
+        error.message.toLowerCase().includes('internal server error') ||
+        error.message.toLowerCase().includes('500');
+
+      // Cart is preserved — user can retry without losing anything
+      toast.error(
+        isRetryable ? 'Connection error' : 'Order failed',
+        {
+          description: isRetryable
+            ? 'Could not reach the server. Your cart is saved — tap Retry when ready.'
+            : humanizeError(error, 'Something went wrong'),
+          duration: 10000,
+          action: {
+            label: 'Retry',
+            onClick: () => handleSubmit(),
+          },
+        },
+      );
     },
   });
 
@@ -605,6 +658,19 @@ export function SinglePageCheckout() {
                 </span>
               </label>
 
+              {/* Error banner after failed attempt */}
+              {placeOrderMutation.isError && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Order could not be placed</AlertTitle>
+                  <AlertDescription>
+                    {isNetworkError(placeOrderMutation.error)
+                      ? 'We had trouble connecting to the server. Your cart and information are saved — you can try again.'
+                      : humanizeError(placeOrderMutation.error)}
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {/* Submit */}
               <Button
                 className="w-full h-12 text-base"
@@ -619,7 +685,12 @@ export function SinglePageCheckout() {
                 {placeOrderMutation.isPending ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Processing...
+                    {orderRetryCount > 0 ? `Retrying (${orderRetryCount}/3)...` : 'Processing...'}
+                  </>
+                ) : placeOrderMutation.isError ? (
+                  <>
+                    <AlertCircle className="w-5 h-5 mr-2" />
+                    Retry Order • {formatCurrency(total)}
                   </>
                 ) : (
                   <>
@@ -659,7 +730,12 @@ export function SinglePageCheckout() {
             {placeOrderMutation.isPending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Processing...
+                {orderRetryCount > 0 ? `Retrying (${orderRetryCount}/3)...` : 'Processing...'}
+              </>
+            ) : placeOrderMutation.isError ? (
+              <>
+                <AlertCircle className="w-4 h-4 mr-2" />
+                Retry Order
               </>
             ) : (
               <>
