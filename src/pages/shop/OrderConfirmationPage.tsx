@@ -68,6 +68,7 @@ export function OrderConfirmationPage() {
     trackingToken?: string;
     total?: number;
     telegramLink?: string;
+    telegramButtonLabel?: string;
   };
 
   const orderNumber = stateData.orderNumber || stateData.orderId || searchParams.get('order') || null;
@@ -238,6 +239,7 @@ export function OrderConfirmationPage() {
     ? `${window.location.origin}/shop/${storeSlug}/track/${trackingToken}`
     : null;
   const telegramLink = stateData.telegramLink || null;
+  const telegramButtonLabel = stateData.telegramButtonLabel || 'Chat with us on Telegram';
   const isCancelled = orderDetails?.status === 'cancelled';
   const currentStatus = orderDetails?.status ?? 'pending';
   const currentStepIndex = STATUS_STEPS.findIndex((s) => s.status === currentStatus);
@@ -447,8 +449,9 @@ export function OrderConfirmationPage() {
           )}
 
           {/* Telegram contact link */}
+          {/* Tenant contact link — large, prominent, full-width branded CTA */}
           {telegramLink && (
-            <div className="mt-4">
+            <div className="mt-4 sm:mt-6">
               <a
                 href={telegramLink}
                 target="_blank"
@@ -456,11 +459,11 @@ export function OrderConfirmationPage() {
                 className="block w-full"
               >
                 <Button
-                  className="w-full h-12 sm:h-11 text-base sm:text-sm font-semibold gap-2"
+                  className="w-full h-14 sm:h-12 text-base font-semibold gap-2.5 shadow-md hover:shadow-lg transition-shadow"
                   style={{ backgroundColor: store.primary_color }}
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  Chat with us on Telegram
+                  <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+                  {telegramButtonLabel}
                 </Button>
               </a>
             </div>

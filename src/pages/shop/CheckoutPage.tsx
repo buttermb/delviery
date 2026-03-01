@@ -118,6 +118,7 @@ interface OrderResult {
   accountToken?: string;
   accountCustomer?: Record<string, unknown>;
   accountTenant?: Record<string, unknown>;
+  telegramButtonLabel?: string;
 }
 
 interface UnavailableProduct {
@@ -897,6 +898,7 @@ export function CheckoutPage() {
             accountToken: (responseData.accountToken as string) || undefined,
             accountCustomer: (responseData.accountCustomer as Record<string, unknown>) || undefined,
             accountTenant: (responseData.accountTenant as Record<string, unknown>) || undefined,
+            telegramButtonLabel: (responseData.telegramButtonLabel as string) || undefined,
           };
         } catch (err: unknown) {
           // Re-throw known Error instances (business errors from edge function)
@@ -1183,6 +1185,7 @@ export function CheckoutPage() {
           trackingToken: data.tracking_token,
           total: data.total,
           telegramLink: data.telegramLink,
+          telegramButtonLabel: data.telegramButtonLabel,
         },
       });
     },
