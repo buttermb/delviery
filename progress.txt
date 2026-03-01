@@ -414,3 +414,18 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
   - Edge function path already handled this (storefront-checkout/index.ts line 364)
   - Ensures customer CRM sync happens regardless of whether edge function or fallback is used
 - TypeScript compilation passes with zero errors
+
+## Dark theme all elements readable and Luxury theme gold accents applied
+- Fixed StorefrontProductCard: replaced hardcoded bg-white/bg-neutral-50/bg-neutral-100/text-neutral-400/text-neutral-500 with CSS variable-driven colors using --storefront-card-bg, --storefront-border, --storefront-text
+- Fixed HotItemsSection: same pattern - card backgrounds, text colors, borders, loading skeletons all use CSS variables
+- Fixed LuxuryProductGridSection: search overlay, category strip, empty states, loading skeletons all theme-aware
+- Fixed ProductGridSection: list view image backgrounds and text colors use CSS variables
+- Fixed CartPreviewPopup: "View Cart" button uses --storefront-primary for theme-aware styling
+- Fixed ShopLayout: luxury wrapper uses --storefront-text instead of hardcoded text-neutral-900; dark mode wrapper also sets text color from theme vars
+- Updated LuxuryNav: nav background, cart button, logo badge, mobile menu accent dots, mobile menu background all use --storefront-primary (gold #d4af37) and --storefront-bg
+- Updated LuxuryFooter: footer heading colors use gold accent via --storefront-primary, background uses --storefront-bg, social buttons hover to gold
+- Added CSS overrides in index.css scoped to [data-theme="dark-mode"] and [data-theme="luxury"] that automatically fix: bg-neutral-50/100, bg-white, text-neutral-300/400/500/900, border-neutral-100/200/300, hover states
+- Added luxury-specific gold accent CSS: focus rings, scrollbar thumb, selection highlight, emerald->gold replacement
+- All sold-out overlays changed from bg-white/40 to bg-black/40 for universal readability
+- Out-of-stock buttons changed from bg-neutral-100 text-neutral-300 to opacity-based approach
+- TypeScript compilation passes with zero errors

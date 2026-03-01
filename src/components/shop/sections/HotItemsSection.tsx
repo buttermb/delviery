@@ -141,7 +141,7 @@ export function HotItemsSection({
   // Loading state
   if (isLoading) {
     return (
-      <section className="py-16 bg-gradient-to-b from-neutral-50 to-white">
+      <section className="py-16" style={{ background: 'linear-gradient(to bottom, var(--storefront-card-bg, #fafafa), var(--storefront-bg, white))' }}>
         <div className="container mx-auto px-4 md:px-8">
           <div className="flex items-center gap-4 mb-8">
             <Skeleton className="w-14 h-14 rounded-2xl" />
@@ -152,7 +152,7 @@ export function HotItemsSection({
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white dark:bg-zinc-950 rounded-2xl p-3 space-y-3">
+              <div key={i} className="rounded-2xl p-3 space-y-3" style={{ backgroundColor: 'var(--storefront-card-bg, white)' }}>
                 <Skeleton className="aspect-square w-full rounded-xl" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
@@ -205,10 +205,10 @@ export function HotItemsSection({
               <IconComponent className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-neutral-900">
+              <h2 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--storefront-text, #171717)' }}>
                 {config.title}
               </h2>
-              <p className="text-neutral-500 text-sm md:text-base">
+              <p className="text-sm md:text-base" style={{ color: 'var(--storefront-text, #737373)', opacity: 0.6 }}>
                 {config.subtitle}
               </p>
             </div>
@@ -218,7 +218,7 @@ export function HotItemsSection({
             {show_time_indicator && (
               <Badge
                 variant="outline"
-                className="px-3 py-1.5 text-sm font-medium bg-white/80 backdrop-blur-sm"
+                className="px-3 py-1.5 text-sm font-medium backdrop-blur-sm"
                 style={{ borderColor: `${accentColor}30`, color: accentColor }}
               >
                 <Clock className="w-3.5 h-3.5 mr-1.5" />
@@ -314,11 +314,11 @@ function HotItemCard({
       transition={{ duration: 0.4, delay: index * 0.05 }}
       className="group"
     >
-      <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-neutral-100 dark:border-neutral-800 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col relative transform hover:-translate-y-1">
+      <div className="rounded-2xl border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col relative transform hover:-translate-y-1" style={{ backgroundColor: 'var(--storefront-card-bg, white)', borderColor: 'var(--storefront-border, #f5f5f5)' }}>
         {/* Image */}
         <Link
           to={`/shop/${storeSlug}/product/${product.product_id}${isPreviewMode ? '?preview=true' : ''}`}
-          className="block relative aspect-square overflow-hidden bg-neutral-50"
+          className="block relative aspect-square overflow-hidden" style={{ backgroundColor: 'var(--storefront-card-bg, #fafafa)' }}
         >
           <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105">
             <ProductImage
@@ -361,8 +361,9 @@ function HotItemCard({
               'absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0',
               isInWishlist
                 ? 'bg-red-50 text-red-500'
-                : 'bg-white/90 text-neutral-400 hover:text-red-500'
+                : 'hover:text-red-500'
             )}
+            style={!isInWishlist ? { backgroundColor: 'var(--storefront-card-bg, rgba(255,255,255,0.9))', color: 'var(--storefront-text, #a3a3a3)' } : undefined}
           >
             <svg
               className={cn(
@@ -383,7 +384,7 @@ function HotItemCard({
           </button>
 
           {isOutStock && (
-            <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
               <span className="bg-neutral-900 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg shadow-lg">
                 Sold Out
               </span>
@@ -405,18 +406,18 @@ function HotItemCard({
                 {cleanedName}
               </h3>
             </Link>
-            <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">
+            <p className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--storefront-text, #a3a3a3)', opacity: 0.6 }}>
               {product.category}
             </p>
 
             {/* Hot reason */}
-            <p className="text-xs text-neutral-500 italic line-clamp-1">
+            <p className="text-xs italic line-clamp-1" style={{ color: 'var(--storefront-text, #737373)', opacity: 0.6 }}>
               {product.hotReason}
             </p>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-3 border-t border-neutral-50">
+          <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: 'var(--storefront-border, #fafafa)' }}>
             <div className="flex items-baseline gap-1.5">
               <span
                 className="text-lg font-bold"
@@ -427,6 +428,8 @@ function HotItemCard({
               {hasSalePrice && (
                 <span className="text-xs text-neutral-400 line-through">
                   {formatCurrency(product.price)}
+                <span className="text-xs line-through" style={{ color: 'var(--storefront-text, #a3a3a3)', opacity: 0.5 }}>
+                  ${product.price?.toFixed(2)}
                 </span>
               )}
             </div>
@@ -440,7 +443,7 @@ function HotItemCard({
                 isAdded
                   ? 'bg-emerald-500 text-white hover:bg-emerald-600'
                   : isOutStock
-                    ? 'bg-neutral-100 text-neutral-300 cursor-not-allowed'
+                    ? 'cursor-not-allowed opacity-30'
                     : 'text-white hover:opacity-90'
               )}
               style={

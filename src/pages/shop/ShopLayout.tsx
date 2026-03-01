@@ -463,6 +463,7 @@ export default function ShopLayout() {
             Skip to main content
           </a>
 
+        <div className="min-h-dvh bg-shop-bg" style={{ ...themeStyles, color: 'var(--storefront-text, #fafaf9)' }} data-testid="storefront-wrapper" data-theme="luxury">
           {/* Admin Preview Banner */}
           {isPreviewMode && (
             <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
@@ -546,7 +547,7 @@ export default function ShopLayout() {
     <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
       <div
         className={`min-h-dvh ${resolvedPreset?.darkMode ? 'bg-black' : 'bg-background'}`}
-        style={themeStyles}
+        style={{ ...themeStyles, color: resolvedPreset?.darkMode ? 'var(--storefront-text, #fafafa)' : undefined }}
         data-testid="storefront-wrapper"
         data-theme={store.theme_config?.theme_id || (isLuxuryTheme ? 'luxury' : 'default')}
       >

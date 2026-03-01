@@ -757,7 +757,7 @@ function ProductGridListItem({ product, accentColor, onQuickAdd }: ProductGridLi
 
     return (
         <Card className="flex overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="w-24 h-24 md:w-36 md:h-36 flex-shrink-0 bg-neutral-50">
+            <div className="w-24 h-24 md:w-36 md:h-36 flex-shrink-0" style={{ backgroundColor: 'var(--storefront-card-bg, #fafafa)' }}>
                 <ProductImage
                     src={product.images?.[0]}
                     alt={product.name ?? ''}
@@ -766,14 +766,14 @@ function ProductGridListItem({ product, accentColor, onQuickAdd }: ProductGridLi
             </div>
             <CardContent className="flex-1 p-3 md:p-4 flex flex-col justify-between min-w-0">
                 <div>
-                    <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-1">
+                    <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--storefront-text, #a3a3a3)', opacity: 0.6 }}>
                         {product.category}
                     </p>
                     <h3 className="font-bold text-sm md:text-base line-clamp-1" style={{ color: accentColor }}>
                         {product.name}
                     </h3>
                     {product.description && (
-                        <p className="text-xs text-neutral-500 line-clamp-2 mt-1 hidden sm:block">
+                        <p className="text-xs line-clamp-2 mt-1 hidden sm:block" style={{ color: 'var(--storefront-text, #737373)', opacity: 0.6 }}>
                             {product.description}
                         </p>
                     )}

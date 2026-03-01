@@ -1367,6 +1367,114 @@ body.keyboard-open [data-radix-dialog-content] {
 }
 
 /* ========================================
+   STOREFRONT DARK THEME READABILITY
+   When data-theme is dark-mode or luxury,
+   override neutral Tailwind colors that
+   assume light backgrounds.
+   ======================================== */
+
+[data-theme="dark-mode"],
+[data-theme="luxury"] {
+  /* Ensure card backgrounds and borders use theme vars */
+  --storefront-card-bg: var(--storefront-card-bg);
+  --storefront-border: var(--storefront-border);
+}
+
+/* Override hardcoded light backgrounds inside dark storefronts */
+[data-theme="dark-mode"] .bg-neutral-50,
+[data-theme="luxury"] .bg-neutral-50 {
+  background-color: var(--storefront-card-bg, #171717);
+}
+
+[data-theme="dark-mode"] .bg-neutral-100,
+[data-theme="luxury"] .bg-neutral-100 {
+  background-color: var(--storefront-border, #262626);
+}
+
+[data-theme="dark-mode"] .bg-white,
+[data-theme="luxury"] .bg-white {
+  background-color: var(--storefront-card-bg, #171717);
+}
+
+/* Override dark text on dark backgrounds */
+[data-theme="dark-mode"] .text-neutral-900,
+[data-theme="luxury"] .text-neutral-900 {
+  color: var(--storefront-text, #fafafa);
+}
+
+[data-theme="dark-mode"] .text-neutral-500,
+[data-theme="luxury"] .text-neutral-500 {
+  color: var(--storefront-text, #a3a3a3);
+  opacity: 0.7;
+}
+
+[data-theme="dark-mode"] .text-neutral-400,
+[data-theme="luxury"] .text-neutral-400 {
+  color: var(--storefront-text, #a3a3a3);
+  opacity: 0.6;
+}
+
+[data-theme="dark-mode"] .text-neutral-300,
+[data-theme="luxury"] .text-neutral-300 {
+  color: var(--storefront-text, #a3a3a3);
+  opacity: 0.5;
+}
+
+/* Fix light borders */
+[data-theme="dark-mode"] .border-neutral-100,
+[data-theme="luxury"] .border-neutral-100 {
+  border-color: var(--storefront-border, #262626);
+}
+
+[data-theme="dark-mode"] .border-neutral-200,
+[data-theme="luxury"] .border-neutral-200 {
+  border-color: var(--storefront-border, #262626);
+}
+
+[data-theme="dark-mode"] .border-neutral-300,
+[data-theme="luxury"] .border-neutral-300 {
+  border-color: var(--storefront-border, #262626);
+}
+
+/* Fix hover states */
+[data-theme="dark-mode"] .hover\:text-neutral-900:hover,
+[data-theme="luxury"] .hover\:text-neutral-900:hover {
+  color: var(--storefront-text, #fafafa);
+}
+
+[data-theme="dark-mode"] .hover\:bg-neutral-100:hover,
+[data-theme="luxury"] .hover\:bg-neutral-100:hover {
+  background-color: var(--storefront-border, #262626);
+}
+
+/* ========================================
+   LUXURY THEME GOLD ACCENTS
+   Gold (#d4af37) applied to interactive
+   and accent elements in luxury theme.
+   ======================================== */
+
+[data-theme="luxury"] .text-emerald-600,
+[data-theme="luxury"] .text-emerald-500 {
+  color: var(--storefront-primary, #d4af37);
+}
+
+/* Luxury gold focus rings */
+[data-theme="luxury"] *:focus-visible {
+  --tw-ring-color: var(--storefront-primary, #d4af37);
+}
+
+/* Luxury gold scrollbar track */
+[data-theme="luxury"] ::-webkit-scrollbar-thumb {
+  background-color: var(--storefront-primary, #d4af37);
+}
+
+/* Luxury selection color */
+[data-theme="luxury"] ::selection {
+  background-color: rgba(212, 175, 55, 0.3);
+  color: #fafaf9;
+}
+
+/* ========================================
    WCAG AA COLOR CONTRAST FIXES
    Boost low-contrast gray text utilities
    to meet 4.5:1 minimum contrast ratio

@@ -114,7 +114,7 @@ export function CartPreviewPopup({
                             <Link to={`/shop/${storeSlug}/cart`} className="flex-1">
                                 <Button
                                     size="sm"
-                                    className="w-full bg-white text-black hover:bg-neutral-200 rounded-full text-xs"
+                                    className="w-full rounded-full text-xs" style={{ backgroundColor: 'var(--storefront-primary, white)', color: 'var(--storefront-bg, black)' }}
                                 >
                                     <ShoppingCart className="w-3 h-3 mr-1" />
                                     View Cart

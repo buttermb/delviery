@@ -11,10 +11,13 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
   const { store, isPreviewMode } = useShop();
 
   const previewParam = isPreviewMode ? '?preview=true' : '';
+  const goldAccent = 'var(--storefront-primary, #d4af37)';
 
   return (
     <footer className="bg-shop-primary text-white pt-20 pb-12 border-t border-shop-accent/20">
       <div className="container mx-auto px-4 sm:px-6">
+    <footer className="text-white pt-20 pb-12 border-t" style={{ backgroundColor: 'var(--storefront-bg, #0c0a09)', borderColor: 'var(--storefront-border, rgba(212,175,55,0.2))' }}>
+      <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between gap-12 mb-16">
 
           {/* Brand Column */}
@@ -29,7 +32,7 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-shop-accent flex items-center justify-center text-shop-primary font-bold text-xl rounded-bl-sm">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xl rounded-bl-sm" style={{ backgroundColor: goldAccent, color: 'var(--storefront-bg, #0c0a09)' }}>
                     {store?.store_name?.charAt(0) || 'Q'}
                   </div>
                   <span className="text-xl font-bold tracking-tight">
@@ -43,7 +46,7 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
             </p>
             <div className="flex gap-4">
               {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
-                <button key={i} type="button" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-shop-accent hover:text-shop-primary transition-all" aria-label={['Facebook', 'Twitter', 'Instagram', 'LinkedIn'][i]}>
+                <button key={i} type="button" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center transition-all" style={{ '--hover-bg': goldAccent } as React.CSSProperties} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = goldAccent; (e.currentTarget as HTMLElement).style.color = 'var(--storefront-bg, #0c0a09)'; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.color = ''; }} aria-label={['Facebook', 'Twitter', 'Instagram', 'LinkedIn'][i]}>
                   <Icon className="w-5 h-5" />
                 </button>
               ))}
@@ -53,7 +56,7 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
           {/* Links Columns */}
           <div className="md:w-2/3 grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
-              <h4 className="font-bold mb-6 text-shop-accent">Shop</h4>
+              <h4 className="font-bold mb-6" style={{ color: goldAccent }}>Shop</h4>
               <ul className="space-y-4">
                 <li><Link to={`/shop/${storeSlug}/products${previewParam}`} className="text-white/80 hover:text-white hover:underline">All Products</Link></li>
                 <li><Link to={`/shop/${storeSlug}/products${previewParam}`} className="text-white/80 hover:text-white hover:underline">Featured</Link></li>
@@ -61,7 +64,7 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-6 text-shop-accent">Support</h4>
+              <h4 className="font-bold mb-6" style={{ color: goldAccent }}>Support</h4>
               <ul className="space-y-4">
                 <li><span className="text-white/80 cursor-default">Help Center</span></li>
                 <li><span className="text-white/80 cursor-default">Contact Us</span></li>
@@ -69,7 +72,7 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-6 text-shop-accent">Legal</h4>
+              <h4 className="font-bold mb-6" style={{ color: goldAccent }}>Legal</h4>
               <ul className="space-y-4">
                 <li><span className="text-white/80 cursor-default">Privacy Policy</span></li>
                 <li><span className="text-white/80 cursor-default">Terms of Service</span></li>
@@ -77,7 +80,7 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-6 text-shop-accent">Account</h4>
+              <h4 className="font-bold mb-6" style={{ color: goldAccent }}>Account</h4>
               <ul className="space-y-4">
                 {!isPreviewMode ? (
                   <>
