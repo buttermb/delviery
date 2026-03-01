@@ -116,20 +116,31 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
 - TypeScript compilation passes with zero errors
 
-## Static menu page URL management with list view regenerate and delete
-- Created `src/hooks/useStaticMenuPages.ts` with:
-  - `useStaticMenuPages(tenantId)`: Fetches active disposable menus where security_settings.menu_type === 'static_page', returns id, name, encrypted_url_token, created_at, status, product_count
-  - `useDeleteStaticMenuPage()`: Mutation to soft-delete (burn) a static page by setting status to 'burned'
-  - Queries filter by tenant_id, uses queryKeys.menus.all base key
-- Created `src/components/admin/disposable-menus/StaticMenuPagesList.tsx`:
-  - List view showing each generated page: title, URL (truncated), product count badge, created date (relative)
-  - Copy URL button with clipboard API and visual feedback (check icon)
-  - Open page button (opens in new tab)
-  - Regenerate button (opens GenerateMenuPageDialog with pre-filled menu name)
-  - Delete button with ConfirmDeleteDialog confirmation
-  - Empty state with call-to-action to generate first page
-  - Loading state with skeletons
-  - Tooltips on all action buttons
-- Integrated into SmartDashboard as new "Pages" tab between Analytics and Setup
-- Wired regenerate action to open GenerateMenuPageDialog with preselectedMenuName prop
+## Static HTML menu page generator in admin - Enhanced
+- Enhanced GenerateMenuPageDialog with full feature set:
+  - Display toggles: show prices, show descriptions, show product images (Switch components)
+  - Color scheme selector: 4 presets (Light, Dark, Warm, Mint) with visual preview dots
+  - Contact info field (optional, shown at bottom of generated page)
+  - Custom message field (optional, shown as highlighted banner on page)
+  - All options passed through appearance_settings JSON to create-encrypted-menu
+- Updated serve-menu-page edge function:
+  - Reads appearance_settings for color scheme (bg, text, accent, cardBg, border)
+  - Respects show_prices and show_descriptions toggles
+  - Renders contact info section at bottom when provided
+  - Adaptive dark/light mode detection for muted text and badge colors
+  - All CSS colors are now dynamic based on selected color scheme
+- Updated StaticMenuPage React fallback:
+  - Reads appearance_settings from direct Supabase query
+  - Applies color scheme via inline styles
+  - Respects show_prices and show_descriptions toggles
+  - Renders contact info section
+- Updated create-encrypted-menu edge function:
+  - Added custom_message and show_product_images to Zod schema
+  - Passes both fields through to disposable_menus insert
+- Files changed:
+  - src/components/admin/disposable-menus/GenerateMenuPageDialog.tsx (enhanced)
+  - supabase/functions/serve-menu-page/index.ts (enhanced)
+  - src/pages/public/StaticMenuPage.tsx (enhanced)
+  - supabase/functions/create-encrypted-menu/index.ts (schema + insert updated)
 - TypeScript compilation passes with zero errors
+- Vite build succeeds

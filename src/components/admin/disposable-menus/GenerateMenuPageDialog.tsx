@@ -12,6 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
 import { useProductsForMenu } from '@/hooks/useProductsForMenu';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +28,64 @@ import {
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
+// ---------- Color scheme presets ----------
+
+interface ColorScheme {
+  id: string;
+  name: string;
+  bg: string;
+  text: string;
+  accent: string;
+  cardBg: string;
+  border: string;
+  preview: string; // tailwind classes for the preview dot
+}
+
+const COLOR_SCHEMES: ColorScheme[] = [
+  {
+    id: 'light',
+    name: 'Light',
+    bg: '#f8f9fa',
+    text: '#1a1a2e',
+    accent: '#059669',
+    cardBg: '#ffffff',
+    border: '#e5e7eb',
+    preview: 'bg-gray-100 border-gray-300',
+  },
+  {
+    id: 'dark',
+    name: 'Dark',
+    bg: '#0f172a',
+    text: '#f1f5f9',
+    accent: '#22c55e',
+    cardBg: '#1e293b',
+    border: '#334155',
+    preview: 'bg-slate-800 border-slate-600',
+  },
+  {
+    id: 'warm',
+    name: 'Warm',
+    bg: '#fefce8',
+    text: '#422006',
+    accent: '#ca8a04',
+    cardBg: '#ffffff',
+    border: '#fde68a',
+    preview: 'bg-yellow-50 border-yellow-300',
+  },
+  {
+    id: 'mint',
+    name: 'Mint',
+    bg: '#f0fdf4',
+    text: '#14532d',
+    accent: '#16a34a',
+    cardBg: '#ffffff',
+    border: '#bbf7d0',
+    preview: 'bg-green-50 border-green-300',
+  },
+];
+
+// ---------- Types ----------
+
 interface GenerateMenuPageDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -32,6 +93,14 @@ interface GenerateMenuPageDialogProps {
   preselectedMenuId?: string;
   preselectedMenuName?: string;
 }
+
+interface DisplayOptions {
+  showPrices: boolean;
+  showDescriptions: boolean;
+  showImages: boolean;
+}
+
+// ---------- Component ----------
 
 export function GenerateMenuPageDialog({
   open,
@@ -42,9 +111,26 @@ export function GenerateMenuPageDialog({
   const queryClient = useQueryClient();
   const { data: products = [], isLoading: productsLoading } = useProductsForMenu(tenant?.id);
 
+  // Core fields
   const [title, setTitle] = useState(preselectedMenuName ?? '');
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Display options
+  const [displayOptions, setDisplayOptions] = useState<DisplayOptions>({
+    showPrices: true,
+    showDescriptions: true,
+    showImages: true,
+  });
+
+  // Color scheme
+  const [colorSchemeId, setColorSchemeId] = useState('light');
+
+  // Contact info & custom message
+  const [contactInfo, setContactInfo] = useState('');
+  const [customMessage, setCustomMessage] = useState('');
+
+  // Generation state
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -76,8 +162,14 @@ export function GenerateMenuPageDialog({
     setSelectedProducts(new Set());
   };
 
+  const toggleDisplayOption = (key: keyof DisplayOptions) => {
+    setDisplayOptions((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const handleGenerate = async () => {
     if (!tenant?.id || selectedProducts.size === 0 || !title.trim()) return;
+
+    const selectedScheme = COLOR_SCHEMES.find((s) => s.id === colorSchemeId) ?? COLOR_SCHEMES[0];
 
     setIsGenerating(true);
     try {
@@ -87,13 +179,27 @@ export function GenerateMenuPageDialog({
           tenant_id: tenant.id,
           name: title.trim(),
           description: `Static menu page: ${title.trim()}`,
+          custom_message: customMessage.trim() || undefined,
+          show_product_images: displayOptions.showImages,
           products: Array.from(selectedProducts).map((pid, idx) => ({
             product_id: pid,
             display_availability: true,
             display_order: idx,
           })),
           security_settings: { menu_type: 'static_page' },
-          appearance_settings: {},
+          appearance_settings: {
+            color_scheme: selectedScheme.id,
+            colors: {
+              bg: selectedScheme.bg,
+              text: selectedScheme.text,
+              accent: selectedScheme.accent,
+              cardBg: selectedScheme.cardBg,
+              border: selectedScheme.border,
+            },
+            show_prices: displayOptions.showPrices,
+            show_descriptions: displayOptions.showDescriptions,
+            contact_info: contactInfo.trim() || undefined,
+          },
           access_code: generateAccessCode(),
           never_expires: true,
         },
@@ -116,6 +222,7 @@ export function GenerateMenuPageDialog({
         component: 'GenerateMenuPageDialog',
         menuTitle: title.trim(),
         productCount: selectedProducts.size,
+        colorScheme: selectedScheme.id,
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to generate page';
@@ -148,6 +255,10 @@ export function GenerateMenuPageDialog({
       setTitle(preselectedMenuName ?? '');
       setSelectedProducts(new Set());
       setSearchQuery('');
+      setDisplayOptions({ showPrices: true, showDescriptions: true, showImages: true });
+      setColorSchemeId('light');
+      setContactInfo('');
+      setCustomMessage('');
       setGeneratedUrl(null);
       setCopied(false);
     }
@@ -193,7 +304,7 @@ export function GenerateMenuPageDialog({
           </div>
         ) : (
           /* Creation form */
-          <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
+          <div className="space-y-4 flex-1 overflow-y-auto min-h-0">
             {/* Title */}
             <div className="space-y-1.5">
               <Label htmlFor="page-title">Page Title</Label>
@@ -207,7 +318,7 @@ export function GenerateMenuPageDialog({
             </div>
 
             {/* Product selection */}
-            <div className="space-y-2 flex-1 overflow-hidden flex flex-col">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Select Products</Label>
                 <div className="flex gap-2">
@@ -231,7 +342,7 @@ export function GenerateMenuPageDialog({
                 />
               </div>
 
-              <div className="flex-1 overflow-y-auto border rounded-lg divide-y min-h-0">
+              <div className="max-h-48 overflow-y-auto border rounded-lg divide-y">
                 {productsLoading ? (
                   <div className="p-4 space-y-3">
                     {[1, 2, 3].map((i) => (
@@ -274,6 +385,101 @@ export function GenerateMenuPageDialog({
                   {selectedProducts.size} product{selectedProducts.size !== 1 ? 's' : ''} selected
                 </Badge>
               )}
+            </div>
+
+            <Separator />
+
+            {/* Display options */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Display Options</Label>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="toggle-prices" className="text-sm font-normal cursor-pointer">
+                    Show prices
+                  </Label>
+                  <Switch
+                    id="toggle-prices"
+                    checked={displayOptions.showPrices}
+                    onCheckedChange={() => toggleDisplayOption('showPrices')}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="toggle-descriptions" className="text-sm font-normal cursor-pointer">
+                    Show descriptions
+                  </Label>
+                  <Switch
+                    id="toggle-descriptions"
+                    checked={displayOptions.showDescriptions}
+                    onCheckedChange={() => toggleDisplayOption('showDescriptions')}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="toggle-images" className="text-sm font-normal cursor-pointer">
+                    Show product images
+                  </Label>
+                  <Switch
+                    id="toggle-images"
+                    checked={displayOptions.showImages}
+                    onCheckedChange={() => toggleDisplayOption('showImages')}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Color scheme */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Color Scheme</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {COLOR_SCHEMES.map((scheme) => (
+                  <button
+                    key={scheme.id}
+                    type="button"
+                    onClick={() => setColorSchemeId(scheme.id)}
+                    className={cn(
+                      'flex flex-col items-center gap-1.5 p-2 rounded-lg border transition-all text-xs',
+                      colorSchemeId === scheme.id
+                        ? 'border-primary ring-2 ring-primary/20 bg-primary/5'
+                        : 'border-border hover:border-muted-foreground/30'
+                    )}
+                  >
+                    <div
+                      className={cn('w-8 h-8 rounded-full border-2', scheme.preview)}
+                      style={{ backgroundColor: scheme.bg }}
+                    />
+                    <span className="font-medium">{scheme.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Contact info */}
+            <div className="space-y-1.5">
+              <Label htmlFor="contact-info">Contact Info (optional)</Label>
+              <Input
+                id="contact-info"
+                placeholder="e.g. Call us: (555) 123-4567"
+                value={contactInfo}
+                onChange={(e) => setContactInfo(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Shown at the bottom of the page</p>
+            </div>
+
+            {/* Custom message */}
+            <div className="space-y-1.5">
+              <Label htmlFor="custom-message">Custom Message (optional)</Label>
+              <Textarea
+                id="custom-message"
+                placeholder="e.g. Free delivery on orders over $100!"
+                value={customMessage}
+                onChange={(e) => setCustomMessage(e.target.value)}
+                rows={2}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">Displayed as a highlighted banner</p>
             </div>
           </div>
         )}
