@@ -116,13 +116,20 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Updated ProductGridSection component to apply: category filtering, sort ordering, max product limits, dynamic grid columns, and "View All Products" button when products exceed max
 - TypeScript compilation passes with zero errors
 
-## Customer profile shows order history items preferences and contact info
-- Enhanced storefront AccountPage (src/pages/shop/AccountPage.tsx) Profile tab with customer preferences
-- The page already had: Orders tab (order history with expandable items, reorder, tracking), Wishlist tab, Profile tab (contact info with edit), Track Order tab
-- Added preferences section to Profile tab showing: flavor preferences, preferred strains, preferred products, consumption methods, THC/CBD preferences
-- Expanded customer profile query to fetch preference fields from customers table (flavor_preferences, preferred_strains, preferred_products, preferred_consumption_method, thc_preference, cbd_preference, loyalty_points, loyalty_tier, total_spent, created_at)
-- Created PreferencesDisplay component showing read-only preference badges grouped by category
-- Created PreferencesEditFields component with comma-separated input fields for array preferences and text inputs for THC/CBD
-- Created PreferenceBadgeRow helper component for consistent badge rendering
-- Updated ProfileFormData interface, form initialization, mutation, and cancel handler to include all preference fields
+## Static menu page URL management with list view regenerate and delete
+- Created `src/hooks/useStaticMenuPages.ts` with:
+  - `useStaticMenuPages(tenantId)`: Fetches active disposable menus where security_settings.menu_type === 'static_page', returns id, name, encrypted_url_token, created_at, status, product_count
+  - `useDeleteStaticMenuPage()`: Mutation to soft-delete (burn) a static page by setting status to 'burned'
+  - Queries filter by tenant_id, uses queryKeys.menus.all base key
+- Created `src/components/admin/disposable-menus/StaticMenuPagesList.tsx`:
+  - List view showing each generated page: title, URL (truncated), product count badge, created date (relative)
+  - Copy URL button with clipboard API and visual feedback (check icon)
+  - Open page button (opens in new tab)
+  - Regenerate button (opens GenerateMenuPageDialog with pre-filled menu name)
+  - Delete button with ConfirmDeleteDialog confirmation
+  - Empty state with call-to-action to generate first page
+  - Loading state with skeletons
+  - Tooltips on all action buttons
+- Integrated into SmartDashboard as new "Pages" tab between Analytics and Setup
+- Wired regenerate action to open GenerateMenuPageDialog with preselectedMenuName prop
 - TypeScript compilation passes with zero errors

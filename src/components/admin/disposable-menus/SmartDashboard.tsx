@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MenuCreationWizard } from './MenuCreationWizard';
 import { GenerateMenuPageDialog } from './GenerateMenuPageDialog';
+import { StaticMenuPagesList } from './StaticMenuPagesList';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useDisposableMenus, useMenuOrders, useUpdateOrderStatus } from '@/hooks/useDisposableMenus';
 import { MenuCard } from './MenuCard';
@@ -641,6 +642,7 @@ export function SmartDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [wizardOpen, setWizardOpen] = useState(false);
   const [generatePageOpen, setGeneratePageOpen] = useState(false);
+  const [regenerateMenuName, setRegenerateMenuName] = useState<string | undefined>();
 
   // Auto-open wizard if query param present
   useEffect(() => {
@@ -859,6 +861,10 @@ export function SmartDashboard() {
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
+            <TabsTrigger value="pages" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Pages</span>
+            </TabsTrigger>
             <TabsTrigger value="setup" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Setup</span>
@@ -983,6 +989,16 @@ export function SmartDashboard() {
             </Suspense>
           </TabsContent>
 
+          {/* Pages Tab */}
+          <TabsContent value="pages" className="mt-0">
+            <StaticMenuPagesList
+              onRegenerate={(menuName) => {
+                setRegenerateMenuName(menuName);
+                setGeneratePageOpen(true);
+              }}
+            />
+          </TabsContent>
+
           {/* Setup Tab */}
           <TabsContent value="setup" className="mt-0">
             <SetupTab />
@@ -1004,7 +1020,14 @@ export function SmartDashboard() {
       <MenuCreationWizard open={wizardOpen} onOpenChange={setWizardOpen} />
 
       {/* Generate Menu Page Dialog */}
-      <GenerateMenuPageDialog open={generatePageOpen} onOpenChange={setGeneratePageOpen} />
+      <GenerateMenuPageDialog
+        open={generatePageOpen}
+        onOpenChange={(open) => {
+          setGeneratePageOpen(open);
+          if (!open) setRegenerateMenuName(undefined);
+        }}
+        preselectedMenuName={regenerateMenuName}
+      />
     </div>
   );
 }
