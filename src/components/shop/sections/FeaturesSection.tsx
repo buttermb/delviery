@@ -59,7 +59,7 @@ export function FeaturesSection({ content, styles }: FeaturesSectionProps) {
 
     return (
         <section className="py-24 md:py-32" style={{ backgroundColor: background_color }}>
-            <div className="container mx-auto px-6 max-w-7xl">
+            <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
 
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -71,12 +71,12 @@ export function FeaturesSection({ content, styles }: FeaturesSectionProps) {
                     <div className="text-sm font-light tracking-widest uppercase mb-4" style={{ color: icon_color }}>
                         {heading_small}
                     </div>
-                    <h2 className="text-4xl sm:text-6xl md:text-7xl font-light mb-6 tracking-tight" style={{ color: text_color }}>
+                    <h2 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-light mb-6 tracking-tight break-words" style={{ color: text_color }}>
                         {heading_large}
                     </h2>
                 </motion.div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
                     {features.map((feature, index) => {
                         const Icon = FEATURES_ICON_MAP[feature.icon] || Star;
                         return (

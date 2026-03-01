@@ -347,3 +347,20 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Preserved all existing mutation logic, sanitization, activity logging, and UI layouts
 - Already-converted forms verified: LoginForm, OrganizationForm, CreateOrderForm, PaymentSettingsForm
 - TypeScript compilation passes with zero errors
+
+## Storefront homepage mobile layout at 375px with no horizontal scroll
+- Fixed horizontal overflow across all storefront homepage sections at 375px viewport
+- 11 files modified to eliminate overflow sources:
+  - ProductGridSection: Heading scaled from text-4xl to text-2xl base, added break-words, tracking-wide on mobile, sort select width responsive (w-[140px] sm:w-[180px])
+  - FeaturesSection: Heading scaled from text-4xl to text-2xl base, added break-words, container px-4 sm:px-6, grid explicit single-col on mobile
+  - LuxuryHeroSection: Heading scaled from text-5xl to text-3xl base
+  - TestimonialsSection: Heading scaled from text-4xl to text-2xl base, added break-words, px-4 sm:px-6
+  - GallerySection: Heading scaled from text-4xl to text-2xl base, added break-words, px-4 sm:px-6
+  - FAQSection: Heading scaled from text-4xl to text-2xl base, added break-words, px-4 sm:px-6
+  - NewsletterSection: px-4 sm:px-6
+  - HeroSection: px-4 sm:px-6, trust badges gap-4 sm:gap-8
+  - LuxuryFeaturesSection: px-4 sm:px-6
+  - PromotionsBannerSection: Content container px-4 sm:px-6
+  - LuxuryFooter: Container px-4 sm:px-6
+- Two categories of fixes: (1) Typography overflow from large heading sizes, (2) Padding overflow from fixed px-6
+- TypeScript compilation passes with zero errors

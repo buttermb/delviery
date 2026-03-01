@@ -14,7 +14,7 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
 
   return (
     <footer className="bg-shop-primary text-white pt-20 pb-12 border-t border-shop-accent/20">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row justify-between gap-12 mb-16">
 
           {/* Brand Column */}

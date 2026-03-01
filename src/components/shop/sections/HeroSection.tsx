@@ -107,7 +107,7 @@ export function HeroSection({ content, styles }: HeroSectionProps) {
             </div>
 
             {/* Content */}
-            <div className="container mx-auto px-6 relative z-10">
+            <div className="container mx-auto px-4 sm:px-6 relative z-10">
                 <div className="max-w-4xl mx-auto text-center">
 
                     {/* Headline */}
@@ -179,7 +179,7 @@ export function HeroSection({ content, styles }: HeroSectionProps) {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, ease: 'easeOut', delay: 0.6 }}
-                            className="flex items-center justify-center gap-8 mt-12 text-xs font-light tracking-wider flex-wrap"
+                            className="flex items-center justify-center gap-4 sm:gap-8 mt-12 text-xs font-light tracking-wider flex-wrap"
                             style={{ color: `${text_color}80` }}
                         >
                             {['Licensed', 'Lab Verified', 'Same-Day'].map((badge) => (

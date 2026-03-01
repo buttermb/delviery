@@ -150,7 +150,7 @@ export function GallerySection({ content, styles }: GallerySectionProps) {
     );
 
     return (
-        <section className="py-24 px-6" style={{ backgroundColor: background_color }}>
+        <section className="py-24 px-4 sm:px-6" style={{ backgroundColor: background_color }}>
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <motion.div
@@ -162,7 +162,7 @@ export function GallerySection({ content, styles }: GallerySectionProps) {
                     <p className="text-sm uppercase tracking-widest mb-4" style={{ color: accent_color }}>
                         {subheading}
                     </p>
-                    <h2 className="text-4xl md:text-5xl font-light" style={{ color: text_color }}>
+                    <h2 className="text-2xl sm:text-4xl md:text-5xl font-light break-words" style={{ color: text_color }}>
                         {heading}
                     </h2>
                 </motion.div>

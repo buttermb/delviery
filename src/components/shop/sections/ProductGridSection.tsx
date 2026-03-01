@@ -364,8 +364,8 @@ export function ProductGridSection({ content, styles, storeId, tenantId }: Produ
         <section className="py-16 md:py-32 overflow-hidden" style={{ backgroundColor: background_color, color: text_color }}>
             <div className="container px-4 mx-auto max-w-full">
                 <div className="text-center space-y-4 md:space-y-6 mb-12 md:mb-20">
-                    <h2 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-wider">{heading}</h2>
-                    <p className="text-lg md:text-2xl max-w-3xl mx-auto font-medium opacity-70">
+                    <h2 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-wide md:tracking-wider break-words">{heading}</h2>
+                    <p className="text-base md:text-2xl max-w-3xl mx-auto font-medium opacity-70">
                         {subheading}
                     </p>
                 </div>
@@ -404,14 +404,14 @@ export function ProductGridSection({ content, styles, storeId, tenantId }: Produ
 
                 {/* Sort & View Toggle Toolbar */}
                 {allProducts.length > 0 && (
-                    <div className="flex items-center justify-between gap-4 mb-8">
+                    <div className="flex items-center justify-between gap-2 sm:gap-4 mb-8">
                         <p className="text-sm font-medium opacity-60 hidden sm:block">
                             {limitedProducts.length} product{limitedProducts.length !== 1 ? 's' : ''}
                         </p>
                         <div className="flex items-center gap-2 ml-auto">
                             <ArrowUpDown className="w-4 h-4 opacity-50 hidden sm:block" />
                             <Select value={userSort} onValueChange={(val) => setUserSort(val as SortOption)}>
-                                <SelectTrigger className="w-[180px] h-9 text-sm" style={{ borderColor: `${text_color}20` }}>
+                                <SelectTrigger className="w-[140px] sm:w-[180px] h-9 text-sm" style={{ borderColor: `${text_color}20` }}>
                                     <SelectValue placeholder="Sort by" />
                                 </SelectTrigger>
                                 <SelectContent>

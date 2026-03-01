@@ -52,7 +52,7 @@ export function NewsletterSection({ content, styles }: NewsletterSectionProps) {
 
     return (
         <section 
-            className="py-24 px-6 relative overflow-hidden"
+            className="py-24 px-4 sm:px-6 relative overflow-hidden"
             style={{ 
                 backgroundImage: `linear-gradient(135deg, ${background_gradient_start}, ${background_gradient_end})`
             }}
