@@ -5,7 +5,7 @@
  */
 
 import { logger } from '@/lib/logger';
-import { untypedClient as sb } from '@/lib/supabaseUntyped';
+import { db as sb } from '@/lib/supabaseUntyped';
 
 // ============================================================================
 // Types
