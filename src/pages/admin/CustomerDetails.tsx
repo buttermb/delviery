@@ -63,6 +63,9 @@ interface Customer {
   created_at: string;
   preferred_contact?: string;
   referral_source?: string;
+  source?: string;
+  type?: string;
+  admin_notes?: string;
 }
 
 export default function CustomerDetails() {
@@ -372,7 +375,7 @@ export default function CustomerDetails() {
                     >
                       {customer.customer_type === 'medical' ? 'Medical' : 'Recreational'}
                     </Badge>
-                    {customer.referral_source === 'storefront' && (
+                    {(customer.source === 'storefront' || customer.referral_source === 'storefront') && (
                       <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-300 dark:hover:bg-violet-900/30">
                         <Store className="w-3 h-3 mr-1" />
                         Storefront
@@ -588,7 +591,7 @@ export default function CustomerDetails() {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Source</label>
-                      <p>{customer.referral_source === 'storefront' ? 'Storefront' : customer.referral_source || 'Direct'}</p>
+                      <p>{customer.source === 'storefront' ? 'Storefront' : customer.source || customer.referral_source || 'Direct'}</p>
                     </div>
                   </CardContent>
                 </Card>
