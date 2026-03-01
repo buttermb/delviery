@@ -219,7 +219,7 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 250,
     cssCodeSplit: true,
   },
   test: {
