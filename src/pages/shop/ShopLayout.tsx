@@ -458,6 +458,11 @@ export default function ShopLayout() {
     return (
       <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
         <div className="min-h-dvh bg-shop-bg text-neutral-900" style={themeStyles} data-testid="storefront-wrapper" data-theme="luxury">
+          {/* Skip to content link for keyboard navigation */}
+          <a href="#main-content" className="skip-to-content">
+            Skip to main content
+          </a>
+
           {/* Admin Preview Banner */}
           {isPreviewMode && (
             <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">
@@ -545,6 +550,11 @@ export default function ShopLayout() {
         data-testid="storefront-wrapper"
         data-theme={store.theme_config?.theme_id || (isLuxuryTheme ? 'luxury' : 'default')}
       >
+        {/* Skip to content link for keyboard navigation */}
+        <a href="#main-content" className="skip-to-content">
+          Skip to main content
+        </a>
+
         {/* Admin Preview Banner */}
         {isPreviewMode && (
           <div className="bg-amber-500 text-amber-950 px-4 py-2 text-center font-medium flex items-center justify-center gap-2">

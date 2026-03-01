@@ -687,55 +687,79 @@ export function ProductCatalogPage() {
           {searchQuery && (
             <Badge variant="secondary" className="gap-1">
               Search: {searchQuery}
-              <X
-                className="w-3 h-3 cursor-pointer"
+              <button
+                type="button"
                 onClick={() => setSearchQuery('')}
-              />
+                className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Remove search filter"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           )}
           {selectedCategories.map((cat) => (
             <Badge key={cat} variant="secondary" className="gap-1">
               {cat}
-              <X
-                className="w-3 h-3 cursor-pointer"
+              <button
+                type="button"
                 onClick={() => toggleCategory(cat)}
-              />
+                className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={`Remove ${cat} filter`}
+              >
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           ))}
           {selectedStrainTypes.length > 0 && (
             <Badge variant="secondary" className="gap-1">
               {selectedStrainTypes.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')}
-              <X
-                className="w-3 h-3 cursor-pointer"
+              <button
+                type="button"
                 onClick={() => setSelectedStrainTypes([])}
-              />
+                className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Remove strain type filter"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           )}
           {inStockOnly && (
             <Badge variant="secondary" className="gap-1">
               In Stock
-              <X
-                className="w-3 h-3 cursor-pointer"
+              <button
+                type="button"
                 onClick={() => setInStockOnly(false)}
-              />
+                className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Remove in stock filter"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           )}
           {(thcRange[0] > 0 || thcRange[1] < 100) && (
             <Badge variant="secondary" className="gap-1">
               THC: {thcRange[0]}%-{thcRange[1]}%
-              <X
-                className="w-3 h-3 cursor-pointer"
+              <button
+                type="button"
                 onClick={() => setThcRange([0, 100])}
-              />
+                className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Remove THC range filter"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           )}
           {(cbdRange[0] > 0 || cbdRange[1] < 100) && (
             <Badge variant="secondary" className="gap-1">
               CBD: {cbdRange[0]}%-{cbdRange[1]}%
-              <X
-                className="w-3 h-3 cursor-pointer"
+              <button
+                type="button"
                 onClick={() => setCbdRange([0, 100])}
-              />
+                className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Remove CBD range filter"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           )}
           <Button variant="ghost" size="sm" onClick={clearFilters}>

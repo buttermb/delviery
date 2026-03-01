@@ -87,7 +87,8 @@ export function CartDrawer({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 transition-colors"
+            className="p-2 rounded-full hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            aria-label="Close cart"
           >
             <X className="w-5 h-5 text-white/60" />
           </button>
@@ -146,7 +147,8 @@ export function CartDrawer({
                     <div className="flex flex-col items-end justify-between">
                       <button
                         onClick={() => onRemoveItem(item.productId, item.variant)}
-                        className="p-1 rounded hover:bg-white/10 transition-colors"
+                        className="p-1 rounded hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        aria-label={`Remove ${item.name} from cart`}
                       >
                         <Trash2 className="w-4 h-4 text-white/40 hover:text-red-400 transition-colors" />
                       </button>
@@ -156,6 +158,8 @@ export function CartDrawer({
                           onClick={() => onUpdateQuantity(item.productId, item.quantity - 1, item.variant)}
                           disabled={item.quantity <= 1}
                           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          aria-label={`Decrease ${item.name} quantity`}
                         >
                           <Minus className="w-3.5 h-3.5 text-white" />
                         </button>
@@ -165,6 +169,8 @@ export function CartDrawer({
                         <button
                           onClick={() => onUpdateQuantity(item.productId, item.quantity + 1, item.variant)}
                           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+                          className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          aria-label={`Increase ${item.name} quantity`}
                         >
                           <Plus className="w-3.5 h-3.5 text-white" />
                         </button>
