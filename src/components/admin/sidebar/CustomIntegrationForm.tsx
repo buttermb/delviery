@@ -1,22 +1,43 @@
 /**
  * Custom Integration Form
- * 
+ *
  * Allows users to add custom webhooks and API integrations
  */
 
 import { useState } from 'react';
-import { logger } from '@/lib/logger';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { sanitizeUrlInput } from '@/lib/utils/sanitize';
 import { SafeModal, useFormDirtyState } from '@/components/ui/safe-modal';
 import { DialogFooterActions } from '@/components/ui/dialog-footer-actions';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { logger } from '@/lib/logger';
+
+const integrationSchema = z.object({
+  name: z.string().min(1, 'Integration name is required').max(200),
+  type: z.enum(['webhook', 'api', 'graphql']),
+  endpoint_url: z.string().min(1, 'Endpoint URL is required').url('Invalid URL format'),
+  description: z.string().max(500).optional().or(z.literal('')),
+  auth_type: z.enum(['none', 'api_key', 'bearer', 'basic']),
+  auth_value: z.string().optional().or(z.literal('')),
+});
+
+type IntegrationFormValues = z.infer<typeof integrationSchema>;
 
 interface CustomIntegrationFormProps {
   open: boolean;
@@ -30,23 +51,28 @@ export function CustomIntegrationForm({
   onIntegrationAdded: _onIntegrationAdded,
 }: CustomIntegrationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const INITIAL_FORM = {
-    name: '',
-    type: 'webhook',
-    endpoint_url: '',
-    description: '',
-    auth_type: 'none',
-    auth_config: {} as Record<string, string>,
-  };
-  
-  const [formData, setFormData] = useState(INITIAL_FORM);
   const [customHeaders, setCustomHeaders] = useState<Array<{ key: string; value: string }>>([
     { key: '', value: '' },
   ]);
-  
-  const [submitted, setSubmitted] = useState(false);
-  const isDirty = useFormDirtyState(INITIAL_FORM, formData);
+
+  const form = useForm<IntegrationFormValues>({
+    resolver: zodResolver(integrationSchema),
+    defaultValues: {
+      name: '',
+      type: 'webhook',
+      endpoint_url: '',
+      description: '',
+      auth_type: 'none',
+      auth_value: '',
+    },
+  });
+
+  const watchAuthType = form.watch('auth_type');
+  const formValues = form.watch();
+  const isDirty = useFormDirtyState(
+    { name: '', type: 'webhook', endpoint_url: '', description: '', auth_type: 'none', auth_value: '' },
+    formValues
+  );
 
   const handleAddHeader = () => {
     setCustomHeaders([...customHeaders, { key: '', value: '' }]);
@@ -62,14 +88,10 @@ export function CustomIntegrationForm({
     setCustomHeaders(updated);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
+  const onSubmit = async (values: IntegrationFormValues) => {
     setIsSubmitting(true);
 
-    // Sanitize form inputs before processing
-    const sanitizedUrl = sanitizeUrlInput(formData.endpoint_url);
-
+    const sanitizedUrl = sanitizeUrlInput(values.endpoint_url);
     if (!sanitizedUrl) {
       toast.error('Invalid endpoint URL');
       setIsSubmitting(false);
@@ -78,7 +100,6 @@ export function CustomIntegrationForm({
 
     try {
       // Mock implementation until custom_integrations table is created
-      // For now, just show success message
       toast.success('Custom integration feature coming soon!', {
         description: 'This feature will be available in a future update',
       });
@@ -86,14 +107,7 @@ export function CustomIntegrationForm({
       onOpenChange(false);
 
       // Reset form
-      setFormData({
-        name: '',
-        type: 'webhook',
-        endpoint_url: '',
-        description: '',
-        auth_type: 'none',
-        auth_config: {},
-      });
+      form.reset();
       setCustomHeaders([{ key: '', value: '' }]);
     } catch (error) {
       logger.error('Failed to add custom integration:', error instanceof Error ? error : new Error(String(error)), { component: 'CustomIntegrationForm' });
@@ -112,102 +126,124 @@ export function CustomIntegrationForm({
       description="Connect your own APIs, webhooks, or custom endpoints"
       className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto"
     >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Integration Name <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-            <Input
-              id="name"
-              placeholder="My Custom API"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-            />
-            {submitted && !formData.name.trim() && (
-              <p className="text-sm text-destructive">Integration name is required</p>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel required>Integration Name</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="My Custom API" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
-            <Select
-              value={formData.type}
-              onValueChange={(value) => setFormData({ ...formData, type: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="webhook">Webhook</SelectItem>
-                <SelectItem value="api">REST API</SelectItem>
-                <SelectItem value="graphql">GraphQL</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="endpoint_url">Endpoint URL <span className="text-destructive ml-0.5" aria-hidden="true">*</span></Label>
-            <Input
-              id="endpoint_url"
-              type="url"
-              placeholder="https://api.example.com/webhook"
-              value={formData.endpoint_url}
-              onChange={(e) => setFormData({ ...formData, endpoint_url: e.target.value })}
-              required
-            />
-            {submitted && !formData.endpoint_url.trim() && (
-              <p className="text-sm text-destructive">Endpoint URL is required</p>
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Type</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="webhook">Webhook</SelectItem>
+                    <SelectItem value="api">REST API</SelectItem>
+                    <SelectItem value="graphql">GraphQL</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (Optional)</Label>
-            <Textarea
-              id="description"
-              placeholder="What does this integration do?"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={2}
+          <FormField
+            control={form.control}
+            name="endpoint_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel required>Endpoint URL</FormLabel>
+                <FormControl>
+                  <Input {...field} type="url" placeholder="https://api.example.com/webhook" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description (Optional)</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder="What does this integration do?"
+                    rows={2}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="auth_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Authentication</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select auth type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="api_key">API Key</SelectItem>
+                    <SelectItem value="bearer">Bearer Token</SelectItem>
+                    <SelectItem value="basic">Basic Auth</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {watchAuthType !== 'none' && (
+            <FormField
+              control={form.control}
+              name="auth_value"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Authentication Value</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="password"
+                      placeholder="Enter your token/key"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="auth_type">Authentication</Label>
-            <Select
-              value={formData.auth_type}
-              onValueChange={(value) => setFormData({ ...formData, auth_type: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select auth type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="api_key">API Key</SelectItem>
-                <SelectItem value="bearer">Bearer Token</SelectItem>
-                <SelectItem value="basic">Basic Auth</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {formData.auth_type !== 'none' && (
-            <div className="space-y-2">
-              <Label htmlFor="auth_value">Authentication Value</Label>
-              <Input
-                id="auth_value"
-                type="password"
-                placeholder="Enter your token/key"
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    auth_config: { value: e.target.value },
-                  })
-                }
-              />
-            </div>
           )}
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Custom Headers (Optional)</Label>
+              <FormLabel>Custom Headers (Optional)</FormLabel>
               <Button type="button" variant="outline" size="sm" onClick={handleAddHeader}>
                 <Plus className="h-4 w-4 mr-1" />
                 Add Header
@@ -226,7 +262,7 @@ export function CustomIntegrationForm({
                   placeholder="Header value"
                   aria-label="Custom header value"
                   value={header.value}
-                  onChange={(e) => handleHeaderChange(index, 'key', e.target.value)}
+                  onChange={(e) => handleHeaderChange(index, 'value', e.target.value)}
                 />
                 {customHeaders.length > 1 && (
                   <Button
@@ -251,6 +287,7 @@ export function CustomIntegrationForm({
             onSecondary={() => onOpenChange(false)}
           />
         </form>
+      </Form>
     </SafeModal>
   );
 }

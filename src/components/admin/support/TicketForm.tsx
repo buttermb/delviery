@@ -1,19 +1,28 @@
-import { logger } from '@/lib/logger';
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 import { sanitizeFormInput, sanitizeTextareaInput } from "@/lib/utils/sanitize";
-import { humanizeError } from '@/lib/humanizeError';
+import { humanizeError } from "@/lib/humanizeError";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -25,6 +34,16 @@ import {
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { queryKeys } from "@/lib/queryKeys";
+import { logger } from "@/lib/logger";
+
+const ticketSchema = z.object({
+  subject: z.string().min(1, "Subject is required").max(200),
+  description: z.string().min(1, "Description is required").max(2000),
+  priority: z.enum(["low", "medium", "high", "urgent"]),
+  status: z.enum(["open", "in_progress", "resolved", "closed"]),
+});
+
+type TicketFormValues = z.infer<typeof ticketSchema>;
 
 interface Ticket {
   id: string;
@@ -49,33 +68,34 @@ export function TicketForm({
 }: TicketFormProps) {
   const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
-    customer_id: "",
-    subject: "",
-    description: "",
-    priority: "medium",
-    status: "open",
+
+  const form = useForm<TicketFormValues>({
+    resolver: zodResolver(ticketSchema),
+    defaultValues: {
+      subject: "",
+      description: "",
+      priority: "medium",
+      status: "open",
+    },
   });
 
   useEffect(() => {
     if (ticket) {
-      setFormData({
-        customer_id: "",
+      form.reset({
         subject: ticket.subject,
         description: ticket.description,
-        priority: ticket.priority,
-        status: ticket.status,
+        priority: ticket.priority as TicketFormValues["priority"],
+        status: ticket.status as TicketFormValues["status"],
       });
     } else {
-      setFormData({
-        customer_id: "",
+      form.reset({
         subject: "",
         description: "",
         priority: "medium",
         status: "open",
       });
     }
-  }, [ticket, open]);
+  }, [ticket, open, form]);
 
   const createMutation = useMutation({
     mutationFn: async (data: { subject: string; description: string; priority?: string; category?: string }) => {
@@ -118,19 +138,12 @@ export function TicketForm({
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.subject || !formData.description) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
+  const onSubmit = async (values: TicketFormValues) => {
     await createMutation.mutateAsync({
-      subject: sanitizeFormInput(formData.subject, 200),
-      description: sanitizeTextareaInput(formData.description, 2000),
-      priority: formData.priority,
-      category: formData.status,
+      subject: sanitizeFormInput(values.subject, 200),
+      description: sanitizeTextareaInput(values.description, 2000),
+      priority: values.priority,
+      category: values.status,
     });
   };
 
@@ -141,106 +154,119 @@ export function TicketForm({
           <DialogTitle>{ticket ? "Edit Ticket" : "Create New Ticket"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="subject">
-              Subject <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="subject"
-              value={formData.subject}
-              onChange={(e) =>
-                setFormData({ ...formData, subject: e.target.value })
-              }
-              placeholder="Brief description of the issue"
-              required
-              className="min-h-[44px] touch-manipulation"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">
-              Description <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              placeholder="Detailed description of the issue"
-              rows={6}
-              required
-              className="min-h-[44px] touch-manipulation"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
-              <Select
-                value={formData.priority}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, priority: value })
-                }
-              >
-                <SelectTrigger className="min-h-[44px] touch-manipulation">
-                  <SelectValue placeholder="Select priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, status: value })
-                }
-              >
-                <SelectTrigger className="min-h-[44px] touch-manipulation">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="resolved">Resolved</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={createMutation.isPending}
-              className="min-h-[44px] touch-manipulation"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={createMutation.isPending}
-              className="min-h-[44px] touch-manipulation"
-            >
-              {createMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="subject"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel required>Subject</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Brief description of the issue"
+                      className="min-h-[44px] touch-manipulation"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-              {ticket ? "Update Ticket" : "Create Ticket"}
-            </Button>
-          </div>
-        </form>
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel required>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Detailed description of the issue"
+                      rows={6}
+                      className="min-h-[44px] touch-manipulation"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="min-h-[44px] touch-manipulation">
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="min-h-[44px] touch-manipulation">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="open">Open</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="resolved">Resolved</SelectItem>
+                        <SelectItem value="closed">Closed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={createMutation.isPending}
+                className="min-h-[44px] touch-manipulation"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createMutation.isPending}
+                className="min-h-[44px] touch-manipulation"
+              >
+                {createMutation.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {ticket ? "Update Ticket" : "Create Ticket"}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
 }
-

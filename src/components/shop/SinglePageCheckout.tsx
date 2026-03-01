@@ -4,6 +4,9 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,16 +16,22 @@ import { useLuxuryTheme } from '@/components/shop/luxury';
 import { useShopCart } from '@/hooks/useShopCart';
 import { useInventoryCheck } from '@/hooks/useInventoryCheck';
 import ProductImage from '@/components/ProductImage';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { logger } from '@/lib/logger';
 import {
   ArrowLeft,
   Package,
@@ -40,22 +49,23 @@ import { STORAGE_KEYS } from '@/constants/storageKeys';
 import { safeStorage } from '@/utils/safeStorage';
 import { PostCheckoutConfirmationDialog } from '@/components/shop/PostCheckoutConfirmationDialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { logger } from '@/lib/logger';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const checkoutSchema = z.object({
+  firstName: z.string().min(1, 'First name is required').max(100),
+  lastName: z.string().min(1, 'Last name is required').max(100),
+  email: z.string().min(1, 'Email is required').email('Invalid email address').max(255),
+  phone: z.string().max(20).optional().or(z.literal('')),
+  street: z.string().min(1, 'Street address is required').max(200),
+  apartment: z.string().max(100).optional().or(z.literal('')),
+  city: z.string().min(1, 'City is required').max(100),
+  state: z.string().max(50).optional().or(z.literal('')),
+  zip: z.string().min(1, 'ZIP code is required').max(20),
+  deliveryNotes: z.string().max(500).optional().or(z.literal('')),
+  paymentMethod: z.string().min(1),
+});
 
-interface CheckoutFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  street: string;
-  apartment: string;
-  city: string;
-  state: string;
-  zip: string;
-  deliveryNotes: string;
-  paymentMethod: string;
-}
+type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
 export function SinglePageCheckout() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -64,19 +74,6 @@ export function SinglePageCheckout() {
   const { isLuxuryTheme, accentColor } = useLuxuryTheme();
   const { checkCartStock } = useInventoryCheck();
 
-  const [formData, setFormData] = useState<CheckoutFormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    street: '',
-    apartment: '',
-    city: '',
-    state: '',
-    zip: '',
-    deliveryNotes: '',
-    paymentMethod: 'cash',
-  });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [stockIssues, setStockIssues] = useState<Array<{ productName: string; available: number; requested: number }>>([]);
   const [isCheckingStock, setIsCheckingStock] = useState(false);
@@ -87,6 +84,23 @@ export function SinglePageCheckout() {
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
   const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
 
+  const form = useForm<CheckoutFormValues>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      street: '',
+      apartment: '',
+      city: '',
+      state: '',
+      zip: '',
+      deliveryNotes: '',
+      paymentMethod: 'cash',
+    },
+  });
+
   // Cart hook
   const { cartItems, subtotal, clearCart, isInitialized } = useShopCart({
     storeId: store?.id,
@@ -95,26 +109,29 @@ export function SinglePageCheckout() {
 
   // Load saved form data
   const formStorageKey = store?.id ? `${STORAGE_KEYS.SHOP_CHECKOUT_FORM_PREFIX}${store.id}` : null;
-  
+
   useEffect(() => {
     if (formStorageKey) {
       try {
         const saved = safeStorage.getItem(formStorageKey);
         if (saved) {
-          setFormData((prev) => ({ ...prev, ...JSON.parse(saved) }));
+          const parsed = JSON.parse(saved) as Partial<CheckoutFormValues>;
+          form.reset({ ...form.getValues(), ...parsed });
         }
       } catch (e) { logger.warn('[Checkout] Failed to load saved form data', { error: e }); }
     }
   }, [formStorageKey]);
 
   // Save form data on change
+  const watchedValues = form.watch();
   useEffect(() => {
-    if (formStorageKey && formData.email) {
+    if (formStorageKey && watchedValues.email) {
       try {
         safeStorage.setItem(formStorageKey, JSON.stringify(formData));
+        localStorage.setItem(formStorageKey, JSON.stringify(watchedValues));
       } catch (e) { logger.warn('[Checkout] Failed to save form data', { error: e }); }
     }
-  }, [formData, formStorageKey]);
+  }, [watchedValues, formStorageKey]);
 
   // Check stock on mount
   useEffect(() => {
@@ -140,7 +157,7 @@ export function SinglePageCheckout() {
         name: item.name,
       }))
     );
-    
+
     if (!result.isValid) {
       setStockIssues(
         result.outOfStock.map((s) => ({
@@ -198,8 +215,9 @@ export function SinglePageCheckout() {
   };
 
   // Place order mutation with retry logic
+  // Place order mutation
   const placeOrderMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (values: CheckoutFormValues) => {
       if (!store?.id) throw new Error('No store');
 
       // Final stock check
@@ -224,13 +242,13 @@ export function SinglePageCheckout() {
         image_url: item.imageUrl,
       }));
 
-      const sanitizedFirstName = sanitizeFormInput(formData.firstName, 100);
-      const sanitizedLastName = sanitizeFormInput(formData.lastName, 100);
-      const sanitizedStreet = sanitizeFormInput(formData.street, 200);
-      const sanitizedApt = formData.apartment ? sanitizeFormInput(formData.apartment, 100) : '';
-      const sanitizedCity = sanitizeFormInput(formData.city, 100);
-      const sanitizedState = sanitizeFormInput(formData.state, 50);
-      const sanitizedZip = sanitizeFormInput(formData.zip, 20);
+      const sanitizedFirstName = sanitizeFormInput(values.firstName, 100);
+      const sanitizedLastName = sanitizeFormInput(values.lastName, 100);
+      const sanitizedStreet = sanitizeFormInput(values.street, 200);
+      const sanitizedApt = values.apartment ? sanitizeFormInput(values.apartment, 100) : '';
+      const sanitizedCity = sanitizeFormInput(values.city, 100);
+      const sanitizedState = sanitizeFormInput(values.state || '', 50);
+      const sanitizedZip = sanitizeFormInput(values.zip, 20);
 
       // Submit with retry on network errors
       const MAX_RETRIES = 3;
@@ -250,6 +268,20 @@ export function SinglePageCheckout() {
             p_total: total,
             p_payment_method: formData.paymentMethod,
           });
+      const { data: orderId, error } = await supabase.rpc('create_marketplace_order', {
+        p_store_id: store.id,
+        p_items: orderItems,
+        p_customer_name: `${sanitizedFirstName} ${sanitizedLastName}`,
+        p_customer_email: sanitizeEmail(values.email),
+        p_customer_phone: values.phone ? sanitizePhoneInput(values.phone) : null,
+        p_delivery_address: `${sanitizedStreet}${sanitizedApt ? ', ' + sanitizedApt : ''}, ${sanitizedCity}, ${sanitizedState} ${sanitizedZip}`,
+        p_delivery_notes: values.deliveryNotes ? sanitizeTextareaInput(values.deliveryNotes, 500) : null,
+        p_subtotal: subtotal,
+        p_tax: 0,
+        p_delivery_fee: deliveryFee,
+        p_total: total,
+        p_payment_method: values.paymentMethod,
+      });
 
           if (error) throw error;
           if (!orderId) throw new Error('Failed to create order');
@@ -270,6 +302,7 @@ export function SinglePageCheckout() {
       };
 
       return submitWithRetry(1);
+      return { order_id: orderId, formValues: values };
     },
     onSuccess: async (data) => {
       // Clear cart and form
@@ -284,13 +317,15 @@ export function SinglePageCheckout() {
         setCartItemCount(0);
       }
 
-      // Send order confirmation email (fire and forget) — only if email was provided
-      if (formData.email) {
+      const values = data.formValues;
+
+      // Send order confirmation email (fire and forget)
+      if (values.email) {
         supabase.functions.invoke('send-order-confirmation', {
           body: {
             order_id: data.order_id,
-            customer_email: formData.email,
-            customer_name: `${formData.firstName} ${formData.lastName}`.trim(),
+            customer_email: values.email,
+            customer_name: `${values.firstName} ${values.lastName}`.trim(),
             order_number: data.order_id,
             items: cartItems.map((item) => ({
               name: item.name,
@@ -336,12 +371,7 @@ export function SinglePageCheckout() {
     },
   });
 
-  const handleSubmit = async () => {
-    if (!validateForm()) {
-      toast.error('Please fix the errors');
-      return;
-    }
-
+  const handleSubmit = (values: CheckoutFormValues) => {
     if (!agreeToTerms) {
       toast.error('Please agree to the terms');
       return;
@@ -352,7 +382,7 @@ export function SinglePageCheckout() {
       return;
     }
 
-    placeOrderMutation.mutate();
+    placeOrderMutation.mutate(values);
   };
 
   if (!store) return null;
@@ -615,31 +645,322 @@ export function SinglePageCheckout() {
                       <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                     </div>
                     <p className="text-sm font-medium">{formatCurrency(item.price * item.quantity)}</p>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)}>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+            {/* Main Form */}
+            <div className="lg:col-span-3 space-y-6">
+              {/* Contact Info */}
+              <Card>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Package className="w-5 h-5" />
+                    Contact Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>First Name</FormLabel>
+                          <FormControl>
+                            <Input {...field} autoComplete="given-name" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>Last Name</FormLabel>
+                          <FormControl>
+                            <Input {...field} autoComplete="family-name" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                ))}
-              </div>
-
-              <Separator />
-
-              {/* Totals */}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatCurrency(subtotal)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Delivery</span>
-                  <span>
-                    {deliveryFee === 0 ? (
-                      <span className="text-green-600">FREE</span>
-                    ) : (
-                      formatCurrency(deliveryFee)
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel required>Email</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="email" autoComplete="email" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                  </span>
-                </div>
-                {deliveryFee > 0 && store?.free_delivery_threshold && (
-                  <p className="text-xs text-muted-foreground">
-                    Add {formatCurrency(store.free_delivery_threshold - subtotal)} more for free delivery
+                  />
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone (optional)</FormLabel>
+                        <FormControl>
+                          <Input {...field} type="tel" autoComplete="tel" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Delivery Address */}
+              <Card>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Truck className="w-5 h-5" />
+                    Delivery Address
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="street"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel required>Street Address</FormLabel>
+                        <FormControl>
+                          <Input {...field} autoComplete="street-address" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="apartment"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Apt, Suite, etc. (optional)</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="city"
+                      render={({ field }) => (
+                        <FormItem className="col-span-2 sm:col-span-1">
+                          <FormLabel required>City</FormLabel>
+                          <FormControl>
+                            <Input {...field} autoComplete="address-level2" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="state"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>State</FormLabel>
+                          <FormControl>
+                            <Input {...field} autoComplete="address-level1" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="zip"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>ZIP</FormLabel>
+                          <FormControl>
+                            <Input {...field} autoComplete="postal-code" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="deliveryNotes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Delivery Notes (optional)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            placeholder="Gate code, building instructions..."
+                            rows={2}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Payment */}
+              <Card>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <CreditCard className="w-5 h-5" />
+                    Payment Method
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <FormField
+                    control={form.control}
+                    name="paymentMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <RadioGroup
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            className="space-y-3"
+                          >
+                            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+                              <RadioGroupItem value="cash" />
+                              <div>
+                                <p className="font-medium">Cash on Delivery</p>
+                                <p className="text-sm text-muted-foreground">Pay when order arrives</p>
+                              </div>
+                            </label>
+                            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+                              <RadioGroupItem value="card" />
+                              <div>
+                                <p className="font-medium">Credit/Debit Card</p>
+                                <p className="text-sm text-muted-foreground">Secure payment via Stripe</p>
+                              </div>
+                            </label>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Order Summary Sidebar */}
+            <div className="lg:col-span-2">
+              <Card className="sticky top-4">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <ShoppingCart className="w-5 h-5" />
+                    Order Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Items */}
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {cartItems.map((item) => (
+                      <div key={`${item.productId}-${item.variant ?? ''}`} className="flex gap-3">
+                        <div className="w-14 h-14 bg-muted rounded flex-shrink-0">
+                          {item.imageUrl ? (
+                            <img
+                              src={item.imageUrl}
+                              alt={item.name}
+                              className="w-full h-full object-cover rounded"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <Package className="w-full h-full p-3 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                        </div>
+                        <p className="text-sm font-medium">{formatCurrency(item.price * item.quantity)}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Separator />
+
+                  {/* Totals */}
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span>{formatCurrency(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Delivery</span>
+                      <span>
+                        {deliveryFee === 0 ? (
+                          <span className="text-green-600">FREE</span>
+                        ) : (
+                          formatCurrency(deliveryFee)
+                        )}
+                      </span>
+                    </div>
+                    {deliveryFee > 0 && store?.free_delivery_threshold && (
+                      <p className="text-xs text-muted-foreground">
+                        Add {formatCurrency(store.free_delivery_threshold - subtotal)} more for free delivery
+                      </p>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total</span>
+                    <span style={{ color: themeColor }}>{formatCurrency(total)}</span>
+                  </div>
+
+                  {/* Terms */}
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={agreeToTerms}
+                      onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
+                      className="mt-0.5"
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      I agree to the terms of service and privacy policy
+                    </span>
+                  </label>
+
+                  {/* Submit */}
+                  <Button
+                    type="submit"
+                    className="w-full h-12 text-base"
+                    style={{ backgroundColor: themeColor }}
+                    disabled={
+                      placeOrderMutation.isPending ||
+                      stockIssues.length > 0 ||
+                      isCheckingStock
+                    }
+                  >
+                    {placeOrderMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-5 h-5 mr-2" />
+                        Place Order • {formatCurrency(total)}
+                      </>
+                    )}
+                  </Button>
+
+                  <p className="text-xs text-center text-muted-foreground">
+                    Your payment information is secure
                   </p>
                 )}
               </div>
@@ -712,6 +1033,12 @@ export function SinglePageCheckout() {
           </Card>
         </div>
       </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </form>
+      </Form>
 
       {/* Sticky Mobile Checkout Bar */}
       <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background/95 backdrop-blur-md border-t p-4 z-50">
@@ -730,7 +1057,7 @@ export function SinglePageCheckout() {
               stockIssues.length > 0 ||
               isCheckingStock
             }
-            onClick={handleSubmit}
+            onClick={form.handleSubmit(handleSubmit)}
           >
             {placeOrderMutation.isPending ? (
               <>

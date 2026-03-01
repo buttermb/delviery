@@ -326,3 +326,24 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Passed `tenantId={tenant?.id}` through StorefrontBuilder inline preview and BuilderPreview component to section components
 - Updated component type casts in both StorefrontBuilder.tsx and BuilderPreview.tsx to include `tenantId` prop
 - TypeScript compilation passes with zero errors
+
+## All forms use React Hook Form and Zod with inline error display
+- Converted 12 forms from manual useState to React Hook Form + Zod with inline error display:
+  1. TicketForm (admin/support) - Zod schema for subject, description, priority, status
+  2. SupplierForm (admin/suppliers) - Zod schema with email/phone validation, kept activity logging
+  3. RecallForm (admin/recall) - Zod schema for batch_number, reason, severity, status
+  4. AppointmentForm (admin/appointments) - Zod schema for customer_id, scheduled_at, duration, type
+  5. CouponCreateForm (admin/coupons) - Complex form with Switch toggles, CurrencyInput, auto-generated codes
+  6. ReviewForm (shop) - Star rating as controlled RHF field with inline error display
+  7. ReviewSubmissionForm (reviews) - StarRating component integrated with RHF FormField
+  8. SinglePageCheckout (shop) - Full checkout form with address/contact/payment validation
+  9. SignupForm (auth) - Password strength, phone formatting, terms checkbox with z.literal(true)
+  10. CreateMenuForm (admin/disposable-menus) - Product selection array validated with z.array().min(1)
+  11. CustomIntegrationForm (admin/sidebar) - URL validation, dynamic auth fields
+  12. DeliveryRatingForm (shop) - Star rating with optional comment
+- All forms use shadcn Form/FormField/FormItem/FormLabel/FormControl/FormMessage
+- All required fields show red asterisk via FormLabel required prop
+- Validation errors display inline below each field via FormMessage
+- Preserved all existing mutation logic, sanitization, activity logging, and UI layouts
+- Already-converted forms verified: LoginForm, OrganizationForm, CreateOrderForm, PaymentSettingsForm
+- TypeScript compilation passes with zero errors

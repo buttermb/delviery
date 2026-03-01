@@ -8,6 +8,18 @@
 import { useState } from 'react';
 import { Star, Loader2 } from 'lucide-react';
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Star } from 'lucide-react';
+import { useState } from 'react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +28,13 @@ import { logger } from '@/lib/logger';
 import type { CreateDeliveryRatingInput } from '@/types/deliveryRating';
 
 const UNSELECTED_STAR_COLOR = 'hsl(var(--border))';
+
+const ratingSchema = z.object({
+  rating: z.number().min(1, 'Please select a rating').max(5),
+  comment: z.string().max(500).optional().or(z.literal('')),
+});
+
+type RatingFormValues = z.infer<typeof ratingSchema>;
 
 interface DeliveryRatingFormProps {
   tenantId: string;
@@ -36,17 +55,23 @@ export function DeliveryRatingForm({
   customerId,
   primaryColor = '#16a34a',
 }: DeliveryRatingFormProps) {
-  const [selectedRating, setSelectedRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [comment, setComment] = useState('');
 
   const { data: existingRating, isLoading: checkingExisting } =
     useExistingRating(trackingToken);
   const submitMutation = useSubmitDeliveryRating();
 
-  const handleSubmit = () => {
-    if (selectedRating === 0) return;
+  const form = useForm<RatingFormValues>({
+    resolver: zodResolver(ratingSchema),
+    defaultValues: {
+      rating: 0,
+      comment: '',
+    },
+  });
 
+  const watchRating = form.watch('rating');
+
+  const onSubmit = (values: RatingFormValues) => {
     const input: CreateDeliveryRatingInput = {
       tenant_id: tenantId,
       order_id: orderId,
@@ -54,15 +79,15 @@ export function DeliveryRatingForm({
       runner_id: runnerId,
       customer_id: customerId,
       tracking_token: trackingToken,
-      rating: selectedRating,
-      comment: comment.trim() || undefined,
+      rating: values.rating,
+      comment: values.comment?.trim() || undefined,
     };
 
     submitMutation.mutate(input, {
       onSuccess: () => {
         logger.info('[DeliveryRatingForm] Rating submitted', {
           orderId,
-          rating: selectedRating,
+          rating: values.rating,
         });
       },
     });
@@ -111,8 +136,8 @@ export function DeliveryRatingForm({
               <Star
                 key={star}
                 className="w-6 h-6"
-                fill={star <= selectedRating ? primaryColor : 'none'}
-                stroke={star <= selectedRating ? primaryColor : UNSELECTED_STAR_COLOR}
+                fill={star <= watchRating ? primaryColor : 'none'}
+                stroke={star <= watchRating ? primaryColor : UNSELECTED_STAR_COLOR}
               />
             ))}
           </div>
@@ -125,39 +150,79 @@ export function DeliveryRatingForm({
     );
   }
 
-  const displayRating = hoveredRating || selectedRating;
+  const displayRating = hoveredRating || watchRating;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">Rate Your Delivery</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Star Rating */}
-        <div className="flex items-center gap-2">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              type="button"
-              onClick={() => setSelectedRating(star)}
-              onMouseEnter={() => setHoveredRating(star)}
-              onMouseLeave={() => setHoveredRating(0)}
-              className="transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-              aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="rating"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => field.onChange(star)}
+                          onMouseEnter={() => setHoveredRating(star)}
+                          onMouseLeave={() => setHoveredRating(0)}
+                          className="transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                          aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                        >
+                          <Star
+                            className="w-8 h-8 transition-colors"
+                            fill={star <= displayRating ? primaryColor : 'none'}
+                            stroke={star <= displayRating ? primaryColor : UNSELECTED_STAR_COLOR}
+                          />
+                        </button>
+                      ))}
+                      {watchRating > 0 && (
+                        <span className="text-sm text-muted-foreground ml-2">
+                          {watchRating}/5
+                        </span>
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="comment"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Tell us about your delivery experience (optional)"
+                      rows={3}
+                      maxLength={500}
+                      aria-label="Delivery experience comment"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button
+              type="submit"
+              disabled={watchRating === 0 || submitMutation.isPending}
+              className="w-full"
+              style={{ backgroundColor: primaryColor }}
             >
-              <Star
-                className="w-8 h-8 transition-colors"
-                fill={star <= displayRating ? primaryColor : 'none'}
-                stroke={star <= displayRating ? primaryColor : UNSELECTED_STAR_COLOR}
-              />
-            </button>
-          ))}
-          {selectedRating > 0 && (
-            <span className="text-sm text-muted-foreground ml-2">
-              {selectedRating}/5
-            </span>
-          )}
-        </div>
+              {submitMutation.isPending ? 'Submitting...' : 'Submit Rating'}
+            </Button>
 
         {/* Comment */}
         <Textarea
@@ -191,6 +256,13 @@ export function DeliveryRatingForm({
             Failed to submit rating. Please try again.
           </p>
         )}
+            {submitMutation.isError && (
+              <p className="text-sm text-destructive">
+                Failed to submit rating. Please try again.
+              </p>
+            )}
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
