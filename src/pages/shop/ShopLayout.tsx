@@ -19,7 +19,6 @@ import {
   Search,
   Clock,
   AlertTriangle,
-  Leaf,
   Store,
   Share2,
 } from 'lucide-react';
@@ -491,11 +490,6 @@ export default function ShopLayout() {
   // Get accent color for theme elements
   const accentColor = store.theme_config?.colors?.accent || store.accent_color || '#10b981';
 
-  // Handler for floating cart checkout
-  const handleCartCheckout = () => {
-    navigate(`/shop/${storeSlug}/checkout`);
-  };
-
   // Luxury theme layout
   if (isLuxuryTheme) {
     return (
@@ -604,8 +598,8 @@ export default function ShopLayout() {
           </div>
         )}
 
-        {/* Header - Luxury vs Standard */}
-        <header className={`sticky top-0 z-50 ${isLuxuryTheme ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : 'bg-white dark:bg-zinc-950 border-b shadow-sm'}`}>
+        {/* Sticky Header */}
+        <header className="sticky top-0 z-50 bg-white dark:bg-zinc-950 border-b shadow-sm">
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               {/* Logo / Store Name */}
@@ -616,13 +610,6 @@ export default function ShopLayout() {
                     alt={store.store_name}
                     className="h-10 object-contain"
                   />
-                ) : isLuxuryTheme ? (
-                  <div className="flex items-center gap-2">
-                    <Leaf className="w-6 h-6" style={{ color: accentColor }} />
-                    <span className="text-xl font-light text-white">
-                      {store.store_name}
-                    </span>
-                  </div>
                 ) : (
                   <span
                     className="text-xl font-bold"
@@ -636,19 +623,25 @@ export default function ShopLayout() {
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-6">
                 <Link
+                  to={`/shop/${storeSlug}${isPreviewMode ? '?preview=true' : ''}`}
+                  className="text-sm font-medium transition-colors hover:text-primary"
+                >
+                  Home
+                </Link>
+                <Link
                   to={`/shop/${storeSlug}/products${isPreviewMode ? '?preview=true' : ''}`}
-                  className={`text-sm font-medium transition-colors ${isLuxuryTheme ? 'text-white/70 hover:text-white' : 'hover:text-primary'}`}
+                  className="text-sm font-medium transition-colors hover:text-primary"
                 >
                   Products
                 </Link>
                 <Link
                   to={`/shop/${storeSlug}/deals${isPreviewMode ? '?preview=true' : ''}`}
-                  className={`text-sm font-medium transition-colors ${isLuxuryTheme ? 'text-white/70 hover:text-white' : 'hover:text-primary'}`}
+                  className="text-sm font-medium transition-colors hover:text-primary"
                 >
                   Deals
                 </Link>
                 {!isStoreOpen() && !isPreviewMode && (
-                  <Badge variant="secondary" className={isLuxuryTheme ? 'bg-white/10 text-white/70' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}>
+                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
                     <Clock className="w-3 h-3 mr-1" />
                     Currently Closed
                   </Badge>
@@ -657,7 +650,7 @@ export default function ShopLayout() {
 
               {/* Actions */}
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className={`hidden md:flex ${isLuxuryTheme ? 'text-white/70 hover:text-white hover:bg-white/10' : ''}`} aria-label="Search products">
+                <Button variant="ghost" size="icon" className="hidden md:flex" aria-label="Search products">
                   <Search className="w-5 h-5" />
                 </Button>
                 <Button
@@ -716,6 +709,13 @@ export default function ShopLayout() {
               <nav className="md:hidden py-4 border-t mt-3" role="navigation" aria-label="Mobile menu">
                 <div className="flex flex-col gap-2">
                   <Link
+                    to={`/shop/${storeSlug}${isPreviewMode ? '?preview=true' : ''}`}
+                    className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98]"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Home
+                  </Link>
+                  <Link
                     to={`/shop/${storeSlug}/products${isPreviewMode ? '?preview=true' : ''}`}
                     className="py-3 px-4 rounded-lg hover:bg-muted min-h-[44px] flex items-center touch-manipulation active:scale-[0.98]"
                     onClick={() => setMobileMenuOpen(false)}
@@ -770,40 +770,36 @@ export default function ShopLayout() {
           <Outlet />
         </main>
 
-        {/* Footer - Luxury vs Standard */}
-        {isLuxuryTheme ? (
-          <LuxuryFooter accentColor={accentColor} />
-        ) : (
-          <footer className="border-t mt-16 bg-muted/50 pb-24 md:pb-0">
-            <div className="container mx-auto px-4 py-8">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="text-center md:text-left">
-                  <p className="font-semibold">{store.store_name}</p>
-                  {store.tagline && (
-                    <p className="text-sm text-muted-foreground">{store.tagline}</p>
-                  )}
-                </div>
-                {!isPreviewMode && (
-                  <div className="flex gap-4 text-sm text-muted-foreground">
-                    <Link to={`/shop/${storeSlug}/orders`} className="hover:underline">
-                      Track Order
-                    </Link>
-                    <span>•</span>
-                    <Link to={`/shop/${storeSlug}/account`} className="hover:underline">
-                      Account
-                    </Link>
-                  </div>
+        {/* Footer */}
+        <footer className="border-t mt-16 bg-muted/50 pb-24 md:pb-0">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="text-center md:text-left">
+                <p className="font-semibold">{store.store_name}</p>
+                {store.tagline && (
+                  <p className="text-sm text-muted-foreground">{store.tagline}</p>
                 )}
               </div>
-              <div className="mt-6 pt-6 border-t text-center text-xs text-muted-foreground">
-                © {new Date().getFullYear()} {store.store_name}. All rights reserved.
-              </div>
+              {!isPreviewMode && (
+                <div className="flex gap-4 text-sm text-muted-foreground">
+                  <Link to={`/shop/${storeSlug}/orders`} className="hover:underline">
+                    Track Order
+                  </Link>
+                  <span>•</span>
+                  <Link to={`/shop/${storeSlug}/account`} className="hover:underline">
+                    Account
+                  </Link>
+                </div>
+              )}
             </div>
-          </footer>
-        )}
+            <div className="mt-6 pt-6 border-t text-center text-xs text-muted-foreground">
+              © {new Date().getFullYear()} {store.store_name}. All rights reserved.
+            </div>
+          </div>
+        </footer>
 
-        {/* Mobile Bottom Navigation - hide in preview mode and luxury theme */}
-        {!isPreviewMode && !isLuxuryTheme && (
+        {/* Mobile Bottom Navigation - hide in preview mode */}
+        {!isPreviewMode && (
           <MobileBottomNav
             cartItemCount={cartItemCount}
             primaryColor={store.primary_color}
