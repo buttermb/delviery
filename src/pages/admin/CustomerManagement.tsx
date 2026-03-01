@@ -29,7 +29,7 @@ import {
 import {
   Users, Plus, Search, DollarSign, Award, TrendingUp, UserCircle,
   MoreHorizontal, Edit, Trash, Eye, Filter, Download, Upload, Mail, Lock, Phone,
-  ArrowUpDown, Store, Monitor
+  ArrowUpDown, Store, Monitor, Globe
 } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
@@ -451,6 +451,7 @@ export function CustomerManagement() {
                       </div>
                     </TableCell>
                     <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-12" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-20" /></TableCell>
@@ -768,7 +769,7 @@ export function CustomerManagement() {
                     <TableCell>
                       {customer.referral_source === 'storefront' ? (
                         <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-300">
-                          <Store className="w-3 h-3 mr-1" />
+                          <Globe className="w-3 h-3 mr-1" />
                           Storefront
                         </Badge>
                       ) : customer.referral_source === 'pos' ? (
@@ -939,6 +940,7 @@ export function CustomerManagement() {
                           </Badge>
                           {customer.referral_source === 'storefront' ? (
                             <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-300 text-[10px] h-5 px-1.5">
+                              <Globe className="w-2.5 h-2.5 mr-0.5" />
                               Storefront
                             </Badge>
                           ) : customer.referral_source === 'pos' ? (
