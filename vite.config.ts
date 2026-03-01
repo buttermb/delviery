@@ -189,7 +189,7 @@ export default defineConfig(({ mode }) => ({
     cssMinify: true,
     // Reduce memory pressure during builds
     reportCompressedSize: false,
-    sourcemap: 'hidden', // Generate hidden source maps for production debugging
+    sourcemap: false,
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true,
