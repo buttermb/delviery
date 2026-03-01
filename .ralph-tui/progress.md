@@ -1493,3 +1493,19 @@ after each iteration and it's included in prompts for context.
   - Auto-fill only populates empty fields (`prev.firstName || returningCustomer.firstName`) to avoid overwriting user edits
   - Used `lastRecognizedIdRef` to prevent duplicate toast notifications when the same customer stays recognized across re-renders
 ---
+
+## Cart persistence across page nav browser restart and scoped to store
+
+- **Status:** Completed
+- **What was done:**
+  - **`useMenuCartStore` (Zustand)**: Replaced hardcoded `'menu-cart-storage'` key with a custom storage adapter that scopes cart data by menu token. Each menu token now gets its own localStorage entry (`cart_items_menu_{token}`), so different menus maintain separate carts. The `setMenuToken` method now loads the saved cart for the target token.
+  - **`useGuestCart` (hook)**: Scoped the guest cart storage key by store/tenant slug extracted from the URL. Key format: `guest_cart_{slug}`. Added automatic migration from the old unscoped `guest_cart` key to the new scoped key. Added cross-tab sync via `storage` event listener. Made all functions stable with `useCallback`/`useMemo`.
+  - **`useShopCart` (hook)**: Already correctly scoped to store via `SHOP_CART_PREFIX + storeId` — no changes needed.
+- **Files changed:**
+  - `src/stores/menuCartStore.ts` — Custom `createJSONStorage` adapter for menu-token-scoped persistence
+  - `src/hooks/useGuestCart.ts` — URL-based slug extraction for store-scoped keys, migration logic, cross-tab sync
+- **Verification:**
+  - `npx tsc --noEmit` — zero errors
+  - All 138 `useShopCart` tests pass
+  - No regressions in storefront tests
+---
