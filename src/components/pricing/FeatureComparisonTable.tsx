@@ -7,13 +7,13 @@ const tiers: SubscriptionTier[] = ['starter', 'professional', 'enterprise'];
 
 export function FeatureComparisonTable() {
   // Group features by category
-  const featuresByCategory = Object.values(FEATURES).reduce((acc, feature) => {
+  const featuresByCategory = (Object.values(FEATURES) as (typeof FEATURES[keyof typeof FEATURES])[]).reduce((acc, feature) => {
     if (!acc[feature.category]) {
       acc[feature.category] = [];
     }
     acc[feature.category].push(feature);
     return acc;
-  }, {} as Record<string, typeof FEATURES[string][]>);
+  }, {} as Record<string, (typeof FEATURES[keyof typeof FEATURES])[]>);
 
   // Sort categories for logical presentation
   const categoryOrder = [

@@ -30,7 +30,7 @@ const runDeferred = (task: () => void, timeout = 1500) => {
     }).requestIdleCallback(task, { timeout });
     return;
   }
-  window.setTimeout(task, 0);
+  (window ?? globalThis).setTimeout(task, 0);
 };
 
 // Setup global error handlers

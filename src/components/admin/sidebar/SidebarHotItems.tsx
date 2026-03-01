@@ -57,7 +57,7 @@ export function SidebarHotItems() {
       <SidebarGroupContent className="mt-1">
         <SidebarMenu>
           {filteredHotItems.map((hot) => {
-            const hasAccess = hot.featureId ? canAccess(hot.featureId) : true;
+            const hasAccess = hot.featureId ? canAccess(hot.featureId as FeatureId) : true;
             return (
               <SidebarMenuItem
                 key={hot.id}
