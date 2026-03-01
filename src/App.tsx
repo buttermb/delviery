@@ -165,7 +165,7 @@ const scheduleNonCritical = (task: () => void, timeout = 1500) => {
     }).requestIdleCallback(task, { timeout });
     return;
   }
-  window.setTimeout(task, 0);
+  (window ?? globalThis).setTimeout(task, 0);
 };
 
 // Use the singleton QueryClient from centralized config
@@ -247,8 +247,8 @@ const App = () => {
       ]);
 
       setDeferredUpdateBanner(() => updateMod.UpdateBanner);
-      setDeferredInstallPWA(() => (pwaMod.default ?? pwaMod.InstallPWA));
-      setDeferredDeviceTracker(() => (deviceTrackerMod.default ?? deviceTrackerMod.DeviceTracker));
+      setDeferredInstallPWA(() => ((pwaMod as Record<string, unknown>).default ?? (pwaMod as Record<string, unknown>).InstallPWA) as ComponentType);
+      setDeferredDeviceTracker(() => ((deviceTrackerMod as Record<string, unknown>).default ?? (deviceTrackerMod as Record<string, unknown>).DeviceTracker) as ComponentType);
     }, 2500);
   }, []);
 

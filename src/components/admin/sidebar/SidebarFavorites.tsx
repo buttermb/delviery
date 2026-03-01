@@ -94,7 +94,7 @@ export function SidebarFavorites() {
       <SidebarGroupContent className="mt-1">
         <SidebarMenu>
           {favoriteItems.map((item) => {
-            const hasAccess = item.featureId ? canAccess(item.featureId) : true;
+            const hasAccess = item.featureId ? canAccess(item.featureId as FeatureId) : true;
             return (
               <SidebarMenuItem
                 key={item.id}

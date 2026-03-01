@@ -71,7 +71,7 @@ export function FeatureProtectedRoute({ featureId, feature, children }: FeatureP
 
   // Wrap with subscription tier gate if featureId prop is provided
   if (featureId) {
-    return <FeatureGate feature={featureId as unknown as FeatureToggleKey}>{content}</FeatureGate>;
+    return <FeatureGate featureId={featureId}>{content}</FeatureGate>;
   }
 
   return <>{content}</>;

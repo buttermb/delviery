@@ -82,7 +82,7 @@ const VirtualizedRow = memo(function VirtualizedRow<T>({
             )}
             style={{ width: column.width || 'auto', minWidth: column.width || 150 }}
           >
-            {renderCellValue(cellContent)}
+            {renderCellValue(cellContent as React.ReactNode)}
           </div>
         );
       })}
