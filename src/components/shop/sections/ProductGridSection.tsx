@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, Package, Grid3X3, List, ArrowUpDown } from "lucide-react";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
+import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, Package } from "lucide-react";
 import { useShopCart } from "@/hooks/useShopCart";
 import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
@@ -30,6 +32,7 @@ interface LocalProduct {
     strain_type?: string;
     quantity_available?: number;
 }
+import { StorefrontProductCard, type MarketplaceProduct } from "@/components/shop/StorefrontProductCard";
 
 type SortOption = 'default' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc' | 'newest';
 type ViewMode = 'grid' | 'list';
@@ -56,7 +59,6 @@ export interface ProductGridSectionProps {
         show_categories: boolean;
         initial_categories_shown: number;
         show_premium_filter: boolean;
-        // Feature toggles from Easy Mode
         show_sale_badges?: boolean;
         show_new_badges?: boolean;
         show_strain_badges?: boolean;
@@ -68,10 +70,15 @@ export interface ProductGridSectionProps {
         accent_color: string;
     };
     storeId?: string;
+    storeSlug?: string;
 }
 
 export function ProductGridSection({ content, styles, storeId }: ProductGridSectionProps) {
     const { storeSlug } = useParams<{ storeSlug: string }>();
+export function ProductGridSection({ content, styles, storeId, storeSlug: storeSlugProp }: ProductGridSectionProps) {
+    const { storeSlug: routeStoreSlug } = useParams<{ storeSlug: string }>();
+    const storeSlug = storeSlugProp || routeStoreSlug || '';
+
     const {
         heading = "Shop Premium Flower",
         subheading = "Premium indoor-grown flower from licensed NYC cultivators",
@@ -84,7 +91,6 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         show_categories: _show_categories = true,
         initial_categories_shown = 2,
         show_premium_filter = true,
-        // Feature toggles - default to true if not specified
         show_sale_badges = true,
         show_new_badges = true,
         show_strain_badges = true,
@@ -92,9 +98,9 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
     } = content || {};
 
     const {
-        background_color = "#f4f4f5", // zinc-100/muted
+        background_color = "#f4f4f5",
         text_color = "#000000",
-        accent_color = "#10b981" // emerald-500
+        accent_color = "#10b981"
     } = styles || {};
 
     const [showAllCategories, setShowAllCategories] = useState(false);
@@ -102,105 +108,113 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
     const [premiumFilter, setPremiumFilter] = useState(false);
     const [userSort, setUserSort] = useState<SortOption>('default');
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
+    const [addedProducts, setAddedProducts] = useState<Set<string>>(new Set());
 
-    // Cart integration
     const { addItem } = useShopCart({
         storeId: storeId,
         onCartChange: () => { },
     });
 
-    const handleQuickAdd = (e: React.MouseEvent, product: LocalProduct & { id: string }) => {
+    const handleQuickAdd = (e: React.MouseEvent, product: MarketplaceProduct) => {
         e.preventDefault();
+        e.stopPropagation();
 
         addItem({
-            productId: product.id,
-            name: product.name ?? '',
-            price: product.price ?? 0,
+            productId: product.product_id,
+            name: product.product_name,
+            price: product.price,
             quantity: 1,
-            imageUrl: product.images?.[0],
+            imageUrl: product.image_url,
         });
         toast.success('Added to cart', {
-            description: `${product.name} has been added to your cart.`
+            description: `${product.product_name} has been added to your cart.`
         });
+
+        setAddedProducts(prev => new Set(prev).add(product.product_id));
+        setTimeout(() => {
+            setAddedProducts(prev => {
+                const next = new Set(prev);
+                next.delete(product.product_id);
+                return next;
+            });
+        }, 2000);
     };
 
-    // Fetch products - normalized to LocalProduct[]
-    const { data: allProducts = [], isLoading, error } = useQuery<LocalProduct[]>({
+    const { data: allProducts = [], isLoading, error } = useQuery<MarketplaceProduct[]>({
         queryKey: queryKeys.shopProducts.list(storeId),
         queryFn: async () => {
-            if (storeId) {
-                // Public Storefront View - try RPC first, fallback to direct query
-                try {
-                    const { data, error } = await supabase
-                        .rpc('get_marketplace_products', { p_store_id: storeId });
+            if (!storeId) return [];
 
-                    if (error) {
-                        // RPC might not exist, fallback to direct query
-                        logger.warn('RPC get_marketplace_products failed, using fallback', { message: error.message });
-                        const { data: fallbackData, error: fallbackError } = await supabase
-                            .from('marketplace_product_settings')
-                            .select(`
-                                product_id,
-                                is_visible,
-                                custom_price,
-                                products:product_id (
-                                    id, name, description, price, category, images, in_stock
-                                )
-                            `)
-                            .eq('store_id', storeId)
-                            .eq('is_visible', true);
+            try {
+                const { data, error } = await supabase
+                    .rpc('get_marketplace_products', { p_store_id: storeId });
 
-                        if (fallbackError) throw fallbackError;
+                if (error) {
+                    logger.warn('RPC get_marketplace_products failed, using fallback', { message: error.message });
+                    const { data: fallbackData, error: fallbackError } = await supabase
+                        .from('marketplace_product_settings')
+                        .select(`
+                            product_id,
+                            is_visible,
+                            custom_price,
+                            products:product_id (
+                                id, name, description, price, category, images, in_stock, strain_type
+                            )
+                        `)
+                        .eq('store_id', storeId)
+                        .eq('is_visible', true);
 
-                        return ((fallbackData as unknown[]) ?? []).map((item: unknown) => {
-                            const row = item as Record<string, unknown>;
-                            const products = row.products as Record<string, unknown> | null;
-                            return {
-                                id: row.product_id as string,
-                                name: products?.name as string | undefined,
-                                price: (row.custom_price as number) || (products?.price as number) || 0,
-                                images: (products?.images as string[]) ?? [],
-                                category: products?.category as string | undefined,
-                                description: products?.description as string | undefined,
-                                in_stock: products?.in_stock as boolean | undefined,
-                            };
-                        }) as LocalProduct[];
-                    }
+                    if (fallbackError) throw fallbackError;
 
-                    // Normalize RPC data to LocalProduct interface
-                    return ((data as unknown[]) ?? []).map((item: unknown) => {
-                        const p = item as Record<string, unknown>;
+                    return ((fallbackData as unknown[]) ?? []).map((item: unknown) => {
+                        const row = item as Record<string, unknown>;
+                        const prod = row.products as Record<string, unknown> | null;
                         return {
-                            id: (p.product_id || p.id) as string,
-                            name: (p.product_name || p.name) as string,
-                            price: (p.base_price || p.price || 0) as number,
-                            description: p.description as string | undefined,
-                            images: (p.images as string[]) ?? [],
-                            category: p.category as string | undefined,
-                            in_stock: ((p.quantity_available as number) ?? 0) > 0,
-                            strain_type: (p.strain_type as string) ?? '',
-                        };
-                    }) as LocalProduct[];
-                } catch (err) {
-                    logger.error('Error fetching marketplace products', err);
-                    return [];
+                            product_id: row.product_id as string,
+                            product_name: (prod?.name as string) ?? 'Untitled',
+                            category: (prod?.category as string) ?? '',
+                            strain_type: (prod?.strain_type as string) ?? '',
+                            price: (row.custom_price as number) || (prod?.price as number) || 0,
+                            description: (prod?.description as string) ?? '',
+                            image_url: ((prod?.images as string[]) ?? [])[0] ?? null,
+                            images: (prod?.images as string[]) ?? [],
+                            thc_content: null,
+                            cbd_content: null,
+                            is_visible: true,
+                            display_order: 0,
+                            stock_quantity: (prod?.in_stock as boolean) ? 100 : 0,
+                        } satisfies MarketplaceProduct;
+                    });
                 }
-            } else {
-                // Admin Builder Preview — return empty so the preview shows the
-                // "Coming soon" empty state instead of hitting RLS errors.
+
+                return ((data as unknown[]) ?? []).map((item: unknown) => {
+                    const p = item as Record<string, unknown>;
+                    return {
+                        product_id: ((p.product_id || p.id) as string) ?? '',
+                        product_name: ((p.product_name || p.name) as string) ?? 'Untitled',
+                        category: (p.category as string) ?? '',
+                        strain_type: (p.strain_type as string) ?? '',
+                        price: ((p.base_price || p.price) as number) ?? 0,
+                        description: (p.description as string) ?? '',
+                        image_url: ((p.images as string[]) ?? [])[0] ?? (p.image_url as string | null) ?? null,
+                        images: (p.images as string[]) ?? [],
+                        thc_content: (p.thc_content as number | null) ?? null,
+                        cbd_content: (p.cbd_content as number | null) ?? null,
+                        is_visible: true,
+                        display_order: (p.display_order as number) ?? 0,
+                        stock_quantity: ((p.quantity_available as number) ?? (p.stock_quantity as number) ?? 0),
+                    } satisfies MarketplaceProduct;
+                });
+            } catch (err) {
+                logger.error('Error fetching marketplace products', err);
                 return [];
             }
         },
+        enabled: !!storeId,
         retry: 1,
     });
 
-    const productIds = allProducts.map(p => p.id).filter((id): id is string => !!id);
-    const { data: _inventoryMap = {} } = useInventoryBatch(productIds);
-
     // Dynamic Categories
-    const uniqueCategories = Array.from(new Set(allProducts.map((p) => p.category))).filter((c): c is string => !!c);
-
-    // Icon Mapping Helper
     const getCategoryIcon = (category: string) => {
         const lower = category.toLowerCase();
         if (lower.includes('flower')) return Leaf;
@@ -208,35 +222,37 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         if (lower.includes('pre-roll')) return Cigarette;
         if (lower.includes('concentrate') || lower.includes('extract')) return Droplets;
         if (lower.includes('vape') || lower.includes('cart')) return Wind;
-        return Leaf; // Default
+        return Leaf;
     };
+
+    const uniqueCategories = Array.from(
+        new Set(allProducts.map((p) => p.category).filter(Boolean))
+    );
 
     const categories = uniqueCategories.map(cat => ({
         key: cat,
         label: cat.charAt(0).toUpperCase() + cat.slice(1),
         icon: getCategoryIcon(cat),
-        desc: "" // Could map descriptions if needed
     }));
 
     // Apply category filter from section config
-    let filteredProducts: LocalProduct[] = category_filter && category_filter !== 'all'
-        ? allProducts.filter((p) => (p.category ?? '').toLowerCase() === category_filter.toLowerCase())
+    let filteredProducts: MarketplaceProduct[] = category_filter && category_filter !== 'all'
+        ? allProducts.filter((p) => p.category.toLowerCase() === category_filter.toLowerCase())
         : allProducts;
 
     // Apply search filter
     if (searchQuery) {
         const query = searchQuery.toLowerCase();
         filteredProducts = filteredProducts.filter((p) =>
-            (p.name ?? '').toLowerCase().includes(query) ||
-            (p.description ?? '').toLowerCase().includes(query)
+            p.product_name.toLowerCase().includes(query) ||
+            p.description.toLowerCase().includes(query)
         );
     }
 
     if (premiumFilter) {
-        filteredProducts = filteredProducts.filter((p) => {
-            const price = p.price ?? 0;
-            return price >= 40 || p.description?.toLowerCase().includes('premium');
-        });
+        filteredProducts = filteredProducts.filter((p) =>
+            p.price >= 40 || p.description.toLowerCase().includes('premium')
+        );
     }
 
     // Apply sort order: user selection overrides admin default
@@ -247,15 +263,22 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
             case 'price_desc': return (b.price ?? 0) - (a.price ?? 0);
             case 'name_asc': return (a.name ?? '').localeCompare(b.name ?? '');
             case 'name_desc': return (b.name ?? '').localeCompare(a.name ?? '');
+        switch (sort_order) {
+            case 'price_asc': return a.price - b.price;
+            case 'price_desc': return b.price - a.price;
+            case 'name_asc': return a.product_name.localeCompare(b.product_name);
+            case 'name_desc': return b.product_name.localeCompare(a.product_name);
             case 'newest':
-            default: return 0; // Keep original order (newest from DB)
+            default: return 0;
         }
     });
 
     // Apply max products limit
     const limitedProducts = filteredProducts.slice(0, max_products);
 
-    // Grid column class mapping
+    // Products without a category get shown in an "Other" group
+    const uncategorizedProducts = limitedProducts.filter(p => !p.category);
+
     const gridColsClass = columns === 2
         ? 'grid-cols-1 md:grid-cols-2'
         : columns === 3
@@ -441,6 +464,7 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                 <h3 className="text-2xl md:text-3xl font-bold">{category.label}</h3>
                                                 {category.desc && <p className="text-sm opacity-70">{category.desc}</p>}
                                             </div>
+                                            <h3 className="text-2xl md:text-3xl font-bold">{category.label}</h3>
                                         </div>
 
                                         <div className={`grid ${gridColsClass} gap-3 md:gap-6`}>
@@ -512,24 +536,69 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                                                         />
                                                     </div>
                                                 ))}
+                                                <StorefrontProductCard
+                                                    key={product.product_id}
+                                                    product={product}
+                                                    storeSlug={storeSlug}
+                                                    isPreviewMode={!storeSlug}
+                                                    onQuickAdd={(e) => handleQuickAdd(e, product)}
+                                                    isAdded={addedProducts.has(product.product_id)}
+                                                    onToggleWishlist={() => { }}
+                                                    isInWishlist={false}
+                                                    onQuickView={() => { }}
+                                                    index={index}
+                                                    accentColor={accent_color}
+                                                    showSaleBadge={show_sale_badges}
+                                                    showNewBadge={show_new_badges}
+                                                    showStrainBadge={show_strain_badges}
+                                                    showStockWarning={show_stock_warnings}
+                                                />
+                                            ))}
                                         </div>
                                     </div>
                                 );
                             })}
+                        {uncategorizedProducts.length > 0 && (
+                            <div className="space-y-4 md:space-y-6">
+                                <div className={`grid ${gridColsClass} gap-3 md:gap-6`}>
+                                    {uncategorizedProducts.map((product, index) => (
+                                        <StorefrontProductCard
+                                            key={product.product_id}
+                                            product={product}
+                                            storeSlug={storeSlug}
+                                            isPreviewMode={!storeSlug}
+                                            onQuickAdd={(e) => handleQuickAdd(e, product)}
+                                            isAdded={addedProducts.has(product.product_id)}
+                                            onToggleWishlist={() => { }}
+                                            isInWishlist={false}
+                                            onQuickView={() => { }}
+                                            index={index}
+                                            accentColor={accent_color}
+                                            showSaleBadge={show_sale_badges}
+                                            showNewBadge={show_new_badges}
+                                            showStrainBadge={show_strain_badges}
+                                            showStockWarning={show_stock_warnings}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         {!showAllCategories && categories.length > (initial_categories_shown || 2) && (
                             <div className="flex justify-center pt-8">
                                 <Button size="lg" onClick={() => setShowAllCategories(true)}>Show More Categories</Button>
                             </div>
                         )}
-                        {show_view_all_link && filteredProducts.length > max_products && (
+                        {show_view_all_link && filteredProducts.length > max_products && storeSlug && (
                             <div className="flex justify-center pt-8">
-                                <Button
-                                    variant="outline"
-                                    size="lg"
-                                    style={{ borderColor: accent_color, color: accent_color }}
-                                >
-                                    View All Products
-                                </Button>
+                                <Link to={`/shop/${storeSlug}/products`}>
+                                    <Button
+                                        variant="outline"
+                                        size="lg"
+                                        style={{ borderColor: accent_color, color: accent_color }}
+                                    >
+                                        View All Products
+                                    </Button>
+                                </Link>
                             </div>
                         )}
                     </div>
