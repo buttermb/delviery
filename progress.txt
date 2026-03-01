@@ -205,3 +205,17 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Follows existing E2E test patterns (helpers, age verification, flexible selectors)
 - Handles stores without Venmo enabled via test.skip
 - TypeScript compilation passes with zero errors
+
+## E2E test product price change reflects on storefront and checkout
+- Rewrote tests/e2e/price-change.spec.ts with comprehensive E2E coverage
+- 6 test suites, 14 tests covering the full price change flow:
+  1. Storefront Catalog — Price Display: products show prices, detail page prices, refresh consistency
+  2. Cart — Price Validation: cart item prices, price change warning capability, subtotal recalculation
+  3. Checkout — Server-Side Price Validation: checkout loads with prices, validates on navigation
+  4. Price Change — Admin to Storefront E2E: price consistency across catalog→detail→cart→checkout, after reload
+  5. Admin Price Edit — Storefront Verification: two-context test where admin edits wholesale_price and customer sees updated price on catalog, cart (via syncCartPrices), and checkout; restores original price after test
+  6. Real-time Price Sync Infrastructure: inventory sync hook active, warning banner rendering, navigation consistency
+- Key test: 'admin edits product price and storefront shows updated price on reload' uses browser.newContext() for admin/customer isolation, edits wholesale_price via admin ProductForm, verifies storefront catalog shows new price, cart syncs to new price, checkout reflects new price, then restores original price
+- Uses parseDollarAmount helper to extract and compare numeric prices
+- Follows existing E2E patterns: handleAgeVerification, clearBrowserStorage, loginAsAdmin
+- TypeScript compilation passes with zero errors
