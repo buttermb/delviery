@@ -92,18 +92,20 @@ export function BuilderLeftPanel({
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label>Add Section</Label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {Object.entries(SECTION_TYPES).map(([key, { label, icon: Icon }]) => (
-                                        <Button
+                                <div className="grid gap-1.5">
+                                    {Object.entries(SECTION_TYPES).map(([key, { label, description, icon: Icon }]) => (
+                                        <button
                                             key={key}
-                                            variant="outline"
-                                            size="sm"
+                                            type="button"
                                             onClick={() => onAddSection(key)}
-                                            className="justify-start text-xs gap-1.5"
+                                            className="flex items-start gap-2 rounded-md border border-border px-2.5 py-2 text-left hover:bg-accent/50 transition-colors"
                                         >
-                                            <Icon className="w-3.5 h-3.5 shrink-0" />
-                                            <span className="truncate">{label}</span>
-                                        </Button>
+                                            <Icon className="w-4 h-4 shrink-0 mt-0.5 text-muted-foreground" />
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-medium leading-tight">{label}</p>
+                                                <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{description}</p>
+                                            </div>
+                                        </button>
                                     ))}
                                 </div>
                             </div>

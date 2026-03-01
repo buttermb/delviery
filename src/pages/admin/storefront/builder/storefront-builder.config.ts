@@ -29,6 +29,7 @@ export interface ThemeConfig {
 
 export interface SectionTypeDefinition {
     label: string;
+    description: string;
     icon: LucideIcon;
     component: React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }>;
 }
@@ -40,14 +41,14 @@ export const DEFAULT_THEME: ThemeConfig = {
 
 // Define available section types (8 total)
 export const SECTION_TYPES: Record<string, SectionTypeDefinition> = {
-    hero: { label: 'Hero Section', icon: Layout, component: HeroSection },
-    features: { label: 'Features Grid', icon: Sparkles, component: FeaturesSection },
-    product_grid: { label: 'Product Grid', icon: LayoutGrid, component: ProductGridSection },
-    testimonials: { label: 'Testimonials', icon: MessageSquare, component: TestimonialsSection },
-    newsletter: { label: 'Newsletter', icon: Mail, component: NewsletterSection },
-    gallery: { label: 'Gallery', icon: Image, component: GallerySection },
-    faq: { label: 'FAQ', icon: HelpCircle, component: FAQSection },
-    custom_html: { label: 'Custom HTML', icon: Code, component: CustomHTMLSection },
+    hero: { label: 'Hero Section', description: 'Full-width image banner with headline and call-to-action', icon: Layout, component: HeroSection },
+    features: { label: 'Features Grid', description: 'Highlight key benefits with icons and descriptions', icon: Sparkles, component: FeaturesSection },
+    product_grid: { label: 'Product Grid', description: 'Showcase your products in a filterable grid', icon: LayoutGrid, component: ProductGridSection },
+    testimonials: { label: 'Testimonials', description: 'Customer reviews with star ratings', icon: MessageSquare, component: TestimonialsSection },
+    newsletter: { label: 'Newsletter', description: 'Email signup form to grow your audience', icon: Mail, component: NewsletterSection },
+    gallery: { label: 'Gallery', description: 'Visual image gallery to showcase your brand', icon: Image, component: GallerySection },
+    faq: { label: 'FAQ', description: 'Frequently asked questions in an accordion layout', icon: HelpCircle, component: FAQSection },
+    custom_html: { label: 'Custom HTML', description: 'Add your own HTML content and embeds', icon: Code, component: CustomHTMLSection },
 };
 
 export type SectionTypeKey = keyof typeof SECTION_TYPES;
