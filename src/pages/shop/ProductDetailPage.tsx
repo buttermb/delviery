@@ -62,6 +62,7 @@ import { MobileFixedAddToCart } from '@/components/shop/MobileFixedAddToCart';
 import { ScrollProgress } from '@/components/shop/ScrollProgress';
 import { CartPreviewPopup } from '@/components/shop/CartPreviewPopup';
 import ProductImage from '@/components/ProductImage';
+import { useStorefrontProductVariants, StorefrontVariant } from '@/hooks/useStorefrontProductVariants';
 
 interface RpcProduct {
   product_id: string;
@@ -177,7 +178,7 @@ export function ProductDetailPage() {
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<StorefrontVariant | null>(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [showZoom, setShowZoom] = useState(false);
@@ -307,6 +308,43 @@ export function ProductDetailPage() {
       return data as ProductReview[];
     },
     enabled: !!store?.id && !!product?.product_id,
+  });
+
+  // Fetch product variants from the database
+  const { data: productVariants = [] } = useStorefrontProductVariants(product?.product_id);
+
+  // Auto-select the first variant when variants load
+  useEffect(() => {
+    if (productVariants.length > 0 && !selectedVariant) {
+      setSelectedVariant(productVariants[0]);
+    }
+  }, [productVariants, selectedVariant]);
+
+  // Compute the displayed price based on selected variant
+  const displayPrice = useMemo(() => {
+    if (selectedVariant) {
+      const variantPrice = selectedVariant.retail_price ?? selectedVariant.price;
+      if (variantPrice !== null) return variantPrice;
+    }
+    return product?.display_price ?? 0;
+  }, [selectedVariant, product?.display_price]);
+
+  // Fetch related products
+  const { data: relatedProducts = [] } = useQuery({
+    queryKey: queryKeys.shopProducts.related(store?.id, product?.category || undefined),
+    queryFn: async () => {
+      if (!store?.id || !product?.category) return [];
+
+      const { data, error } = await supabase
+        .rpc('get_marketplace_products', { p_store_id: store.id });
+
+      if (error) throw error;
+      return (data ?? [])
+        .map((item: RpcProduct) => transformProduct(item))
+        .filter((p: ProductDetails) => p.product_id !== product?.product_id && p.category === product.category)
+        .slice(0, 4);
+    },
+    enabled: !!store?.id && !!product?.category,
   });
 
   // Check wishlist status
@@ -458,14 +496,14 @@ export function ProductDetailPage() {
 
     setIsAddingToCart(true);
 
-    // Use unified cart hook
+    // Use unified cart hook with variant-aware price
     addItem({
       productId: product.product_id,
       quantity,
-      price: product.display_price,
+      price: displayPrice,
       name: product.name,
       imageUrl: product.image_url,
-      variant: selectedVariant || undefined,
+      variant: selectedVariant?.name || undefined,
       metrcRetailId: product.metrc_retail_id,
       excludeFromDiscounts: product.exclude_from_discounts,
       minimumPrice: product.minimum_price ?? undefined,
@@ -480,7 +518,7 @@ export function ProductDetailPage() {
     // Show premium cart popup
     setLastAddedItem({
       name: product.name,
-      price: product.display_price,
+      price: displayPrice,
       imageUrl: product.image_url,
       quantity
     });
@@ -546,9 +584,9 @@ export function ProductDetailPage() {
     );
   }
 
-  const hasDiscount = product.compare_at_price && product.compare_at_price > product.display_price;
+  const hasDiscount = product.compare_at_price && product.compare_at_price > displayPrice;
   const discountPercent = hasDiscount
-    ? Math.round((1 - product.display_price / product.compare_at_price!) * 100)
+    ? Math.round((1 - displayPrice / product.compare_at_price!) * 100)
     : 0;
 
   return (
@@ -799,12 +837,12 @@ export function ProductDetailPage() {
                     </p>
                   )}
 
-                  {/* Price */}
+                  {/* Price — updates when a variant is selected */}
                   <div className="flex items-baseline gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <span className="text-2xl sm:text-3xl font-medium text-emerald-400">
-                      {formatCurrency(product.display_price)}
+                      {formatCurrency(displayPrice)}
                     </span>
-                    {product.compare_at_price && (
+                    {product.compare_at_price && product.compare_at_price > displayPrice && (
                       <span className={`text-base sm:text-lg line-through ${isLuxuryTheme ? 'text-white/30 decoration-white/30' : 'text-muted-foreground'}`}>
                         {formatCurrency(product.compare_at_price)}
                       </span>
@@ -846,23 +884,31 @@ export function ProductDetailPage() {
 
                   <Separator className={isLuxuryTheme ? "bg-white/10 mb-8" : "mb-8"} />
 
-                  {/* Variants */}
-                  {product.variants && product.variants.length > 0 && (
+                  {/* Variant Selector */}
+                  {productVariants.length > 0 && (
                     <div className="mb-8 space-y-4">
-                      <span className={`text-sm uppercase tracking-widest font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>Select Option</span>
+                      <span className={`text-sm uppercase tracking-widest font-medium ${isLuxuryTheme ? 'text-white/50' : 'text-muted-foreground'}`}>
+                        Select Option
+                      </span>
                       <div className="flex flex-wrap gap-3">
-                        {product.variants.map((variant) => {
-                          const variantName = variant;
+                        {productVariants.map((variant) => {
+                          const isSelected = selectedVariant?.id === variant.id;
+                          const variantPrice = variant.retail_price ?? variant.price;
                           return (
                             <button
-                              key={variantName}
-                              onClick={() => setSelectedVariant(variantName)}
-                              className={`px-6 py-3 rounded-xl border transition-all duration-300 text-sm font-medium ${selectedVariant === variantName
+                              key={variant.id}
+                              onClick={() => setSelectedVariant(variant)}
+                              className={`px-6 py-3 rounded-xl border transition-all duration-300 text-sm font-medium ${isSelected
                                 ? 'bg-white text-black border-white scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]'
                                 : 'bg-transparent text-white/70 border-white/10 hover:border-white/30 hover:bg-white/5'
                                 }`}
                             >
-                              {variantName}
+                              <span>{variant.name}</span>
+                              {variantPrice !== null && (
+                                <span className={`ml-2 text-xs ${isSelected ? 'text-black/60' : 'text-white/40'}`}>
+                                  {formatCurrency(variantPrice)}
+                                </span>
+                              )}
                             </button>
                           );
                         })}
@@ -1123,6 +1169,8 @@ export function ProductDetailPage() {
             product={{
               name: product.name,
               display_price: product.display_price,
+              display_price: displayPrice,
+              compare_at_price: product.compare_at_price,
               in_stock: product.in_stock,
               image_url: product.image_url,
             }}
