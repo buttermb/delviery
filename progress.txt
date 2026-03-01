@@ -187,3 +187,10 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Uses `.maybeSingle()` for optional data fetching
 - Follows all FloraIQ coding standards: logger, @/ imports, sonner toast, shadcn/ui components
 - TypeScript compilation passes with zero errors
+
+## Final console audit — all storefront pages clean
+- Audited entire src/ directory for console.log, console.warn, console.error, console.info, console.debug usage
+- Result: ZERO violations found — only console.* calls are inside src/lib/logger.ts (the approved logging utility)
+- All storefront pages, components, hooks, and utilities correctly use `logger` from `@/lib/logger`
+- Edge functions (supabase/functions/) use console.* which is appropriate for Deno runtime
+- TypeScript compilation passes with zero errors
