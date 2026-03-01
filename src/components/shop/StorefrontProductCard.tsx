@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,10 @@ import { cn } from '@/lib/utils';
 import ProductImage from '@/components/ProductImage';
 import { cleanProductName } from '@/utils/productName';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { usePrefetch } from '@/hooks/usePrefetch';
+import { useShop } from '@/pages/shop/ShopLayout';
+import { queryKeys } from '@/lib/queryKeys';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface MarketplaceProduct {
     product_id: string;
@@ -85,6 +89,28 @@ export function StorefrontProductCard({
     // Get first 2 effects for display
     const displayEffects = product.effects?.slice(0, 2) ?? [];
 
+    // Prefetch product detail data on hover
+    const { store } = useShop();
+    const { prefetchQuery } = usePrefetch();
+
+    const handlePrefetch = useCallback(() => {
+        setIsHovered(true);
+        if (!store?.id) return;
+
+        prefetchQuery(
+            queryKeys.shopProducts.detail(store.id, product.product_id),
+            async () => {
+                const { data, error } = await supabase
+                    .rpc('get_marketplace_products', { p_store_id: store.id });
+                if (error) throw error;
+                const products = data ?? [];
+                return products.find(
+                    (p: { product_id: string }) => p.product_id === product.product_id
+                ) ?? null;
+            }
+        );
+    }, [store?.id, product.product_id, prefetchQuery]);
+
     return (
         <motion.div
             layout
@@ -93,7 +119,7 @@ export function StorefrontProductCard({
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.4, delay: index * 0.05 }}
             className="group h-full"
-            onMouseEnter={() => setIsHovered(true)}
+            onMouseEnter={handlePrefetch}
             onMouseLeave={() => setIsHovered(false)}
         >
             <div className="rounded-3xl border overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 h-full flex flex-col relative transform hover:-translate-y-2 backface-hidden" style={{ backgroundColor: 'var(--storefront-card-bg, white)', borderColor: 'var(--storefront-border, #f5f5f5)' }}>
