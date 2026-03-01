@@ -32,7 +32,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
-import { CartItemStockWarning, CartStockSummary } from '@/components/shop/CartStockWarning';
+import { CartItemStockWarning, CartStockSummary, useCartStockCheck } from '@/components/shop/CartStockWarning';
 import ExpressPaymentButtons from '@/components/shop/ExpressPaymentButtons';
 import { CartUpsellsSection } from '@/components/shop/CartUpsellsSection';
 import { SwipeableCartItem } from '@/components/SwipeableCartItem';
@@ -74,6 +74,10 @@ export default function CartPage() {
 
   // Fetch and calculate active deals
   const { appliedDeals, totalDiscount: dealsDiscount } = useDeals(store?.id, cartItems);
+
+  // Real-time stock validation — disables checkout when stock issues exist
+  const { data: stockCheck } = useCartStockCheck(cartItems);
+  const hasStockIssues = stockCheck?.hasInsufficientStock ?? false;
 
   const [couponCode, setCouponCode] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
@@ -118,6 +122,14 @@ export default function CartPage() {
   }, [cartItems, syncCartPrices]);
 
   const handleCheckout = async () => {
+    // Block immediately if we already know stock is insufficient
+    if (hasStockIssues) {
+      toast.error('Stock issues in your cart', {
+        description: 'Please adjust quantities for items with insufficient stock before proceeding.',
+      });
+      return;
+    }
+
     setIsCheckingStock(true);
     try {
       // Sync prices before checkout
@@ -130,20 +142,29 @@ export default function CartPage() {
         return;
       }
 
-      const { valid, outOfStock } = await checkInventoryAvailability();
+      // Fresh server-side stock check at checkout time
+      const { valid, outOfStock, lowStock } = await checkInventoryAvailability();
 
       if (!valid && outOfStock.length > 0) {
-        toast.error("Some items are out of stock", {
-          description: `Please remove ${outOfStock.length} out of stock item(s) before proceeding.`,
+        const itemNames = outOfStock.map(i => i.name).join(', ');
+        toast.error('Insufficient stock', {
+          description: `Please adjust quantities for: ${itemNames}`,
         });
         return;
       }
 
+      // Warn about low stock but don't block
+      if (lowStock.length > 0) {
+        toast.info('Some items are running low', {
+          description: 'Stock is limited — your order will be confirmed at checkout.',
+        });
+      }
+
       navigate(`/shop/${storeSlug}/checkout`);
     } catch (error) {
-      logger.error('Checkout check failed', error);
-      toast.error("Error checking stock", {
-        description: "Please try again.",
+      logger.error('Checkout stock validation failed', error);
+      toast.error('Unable to verify stock', {
+        description: 'Please try again.',
       });
     } finally {
       setIsCheckingStock(false);
@@ -605,7 +626,7 @@ export default function CartPage() {
 
                 {/* Express Checkout */}
                 <ExpressPaymentButtons
-                  disabled={cartItems.length === 0}
+                  disabled={cartItems.length === 0 || hasStockIssues}
                   showDivider={true}
                   size="lg"
                 />
@@ -614,12 +635,18 @@ export default function CartPage() {
                 <Button
                   className="w-full"
                   size="lg"
-                  style={{ backgroundColor: themeColor }}
+                  data-testid="checkout-button"
+                  style={{ backgroundColor: hasStockIssues ? undefined : themeColor }}
                   onClick={handleCheckout}
-                  disabled={isCheckingStock}
+                  disabled={isCheckingStock || hasStockIssues}
                 >
                   {isCheckingStock ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : hasStockIssues ? (
+                    <>
+                      <AlertTriangle className="w-4 h-4 mr-2" />
+                      Fix Stock Issues to Checkout
+                    </>
                   ) : (
                     <>
                       Proceed to Checkout
@@ -665,12 +692,18 @@ export default function CartPage() {
             </div>
             <Button
               className="w-full h-12 text-base"
-              style={{ backgroundColor: themeColor }}
+              data-testid="mobile-checkout-button"
+              style={{ backgroundColor: hasStockIssues ? undefined : themeColor }}
               onClick={handleCheckout}
-              disabled={isCheckingStock}
+              disabled={isCheckingStock || hasStockIssues}
             >
               {isCheckingStock ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : hasStockIssues ? (
+                <>
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Fix Stock Issues
+                </>
               ) : (
                 <>
                   Checkout
