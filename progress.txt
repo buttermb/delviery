@@ -152,3 +152,16 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
   - If inventory deduction fails (race condition), the entire transaction rolls back (including order items)
   - This ensures marketplace_order_items has relational integrity and queryable server-validated prices
 - TypeScript compilation passes with zero errors
+
+## Handle out-of-stock during checkout with per-item error
+- Modified CheckoutPage.tsx to show per-item stock warnings when checkout fails due to out-of-stock
+- Added `outOfStockItems` state to track unavailable products returned from edge function/pre-check
+- Review step (step 4) now shows a destructive Alert with per-item badges:
+  - "Out of stock" (red) for items with 0 available
+  - "Only N left (requested M)" (amber) for insufficient quantity
+- Two action buttons: "Remove unavailable items" (removes from cart, clears warning) and "Back to cart"
+- Place Order button is disabled while out-of-stock warnings are visible
+- Per-item stock indicators also appear in the order summary sidebar next to affected items
+- Warnings clear automatically on retry (handlePlaceOrder clears state before re-attempting)
+- Backend already returned structured `unavailableProducts` array — no edge function changes needed
+- TypeScript compilation passes with zero errors
