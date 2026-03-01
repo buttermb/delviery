@@ -990,7 +990,7 @@ tasks:
     description: "For each theme: set, save, visit storefront, navigate all pages.
       Correct colors, no visual bugs, readable text."
   - title: Final TypeScript check zero errors after all changes
-    completed: false
+    completed: true
     parallel_group: 19
     description: npx tsc --noEmit. Zero errors. Fix any new type issues from this sprint.
   - title: Final Vite build zero errors production ready
@@ -998,7 +998,7 @@ tasks:
     parallel_group: 19
     description: npx vite build. Zero errors. Check for critical warnings.
   - title: Final console audit all storefront pages clean
-    completed: false
+    completed: true
     parallel_group: 19
     description: "Navigate every page admin and customer. Console clean: no red
       errors, no unhandled rejections."
@@ -1008,7 +1008,7 @@ tasks:
     description: Simulate brand new tenant. No store, no products, no orders. Every
       page shows appropriate empty state.
   - title: Test with lots of data 100 products 50 orders pagination works
-    completed: false
+    completed: true
     parallel_group: 19
     description: Catalog pagination works. Orders scrollable and filterable.
       Analytics charts render. No slowness.
