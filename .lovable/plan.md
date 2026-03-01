@@ -1,48 +1,48 @@
 
 
-# Fix: "Upgrade Required" Showing Despite Enterprise Plan
+# Priority Work Items
 
-## Root Cause
+## 1. Fix Edge Function Build Errors (Blocking Deployment)
 
-In `src/components/tenant-admin/FeatureProtectedRoute.tsx` line 74, the prop name is wrong:
+Two edge functions have TypeScript errors preventing deployment:
 
+### a. `add-courier/index.ts` (lines 72, 76)
+Zod's `safeParse` returns a discriminated union. After checking `!validationResult.success`, TypeScript should narrow the type -- but it's not narrowing correctly. Fix: access `.error` only after a `success === false` check, or cast appropriately.
+
+### b. `admin-dashboard/index.ts` (lines 19, 139, 247, 413, 731+)
+The `logAdminAction` helper types `supabase` as `ReturnType<typeof createClient>` but the actual client passed in is typed differently (with generic parameters). Fix: widen the `supabase` parameter type to `any` or use a compatible generic signature. The `admin_audit_logs` table insert is also typed as `never`, likely because the table isn't in the generated types -- need to cast the table name.
+
+## 2. Fix Auth Token Refresh Errors (Runtime)
+
+Console shows repeated failures on `tenant-admin-auth?action=refresh` with "Failed to fetch" followed by `RangeError: status 0`. The `tenant-admin-auth` edge function is likely failing to deploy (due to build errors above) or has a network issue. Once edge function build errors are fixed and redeployed, this should resolve. If not, the retry logic that constructs a `new Response(body, { status: 0 })` on network failure needs a guard to clamp status to at least 500.
+
+## 3. Realtime Subscription Errors
+
+Warning about `channel_error` on `[products, inventory_batches, marketplace_product_settings]` -- these tables may not have realtime enabled or RLS is blocking the subscription. Low priority but worth checking after the above are fixed.
+
+---
+
+## Technical Details
+
+### Fix 1a: `supabase/functions/add-courier/index.ts`
+Change lines 71-80 to properly narrow the type:
 ```typescript
-// CURRENT (broken) - "feature" is not a valid prop on FeatureGate
-return <FeatureGate feature={featureId as unknown as FeatureToggleKey}>{content}</FeatureGate>;
-
-// CORRECT - FeatureGate expects "featureId"
-return <FeatureGate featureId={featureId}>{content}</FeatureGate>;
+if (!validationResult.success) {
+  const errors = validationResult.error.flatten();
+  logger.warn('Validation failed', { errors });
+  return new Response(
+    JSON.stringify({ error: 'Validation failed', details: errors.fieldErrors }),
+    { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
 ```
+The key fix is assigning `validationResult.error` to a const inside the narrowed block so TypeScript can infer the type correctly, or explicitly typing the `safeParse` call.
 
-The `FeatureGate` component from `@/components/tenant-admin/FeatureGate` accepts `featureId: FeatureId`, not `feature`. Because the prop doesn't match, TypeScript errors out, the build partially fails, and the component renders the "Upgrade Required" fallback.
+### Fix 1b: `supabase/functions/admin-dashboard/index.ts`
+- Change `logAdminAction` parameter from `supabase: ReturnType<typeof createClient>` to use a looser type (e.g., `supabase: any`)
+- Or use `// deno-lint-ignore no-explicit-any` with proper typing
 
-Your tenant (`big-mike`) has `subscription_plan: enterprise` and `subscription_status: active`, so `canAccess()` should return `true` for every feature once the correct prop is passed.
+### Fix 2: Auth token refresh
+- Investigate `tenant-admin-auth` edge function for deployment status
+- Add a status code guard in the retry utility to prevent `new Response(body, { status: 0 })`
 
-## Fix
-
-**File: `src/components/tenant-admin/FeatureProtectedRoute.tsx`** -- Line 74
-
-Change:
-```typescript
-return <FeatureGate feature={featureId as unknown as FeatureToggleKey}>{content}</FeatureGate>;
-```
-To:
-```typescript
-return <FeatureGate featureId={featureId}>{content}</FeatureGate>;
-```
-
-This removes the broken `as unknown as FeatureToggleKey` cast and passes the `featureId` prop correctly. Since `featureId` is already typed as `FeatureId`, no cast is needed.
-
-## Other Build Errors (batch fix)
-
-Several other TypeScript errors need fixing in the same pass:
-
-1. **`src/App.tsx` lines 168, 250-251** -- `window` possibly undefined + missing `.default` exports. Wrap `window` access in a typeof guard; fix lazy import syntax.
-2. **Sidebar files** (SidebarFavorites, SidebarHotItems, SidebarMenuItem, SidebarSection) -- `string` not assignable to `FeatureId`. Cast sidebar item IDs through `as FeatureId`.
-3. **`FeatureComparisonTable.tsx`** -- No index signature on FEATURES. Use `FEATURES[key as FeatureId]`.
-4. **`VirtualizedTable.tsx` / `VirtualizedTableTanstack.tsx`** -- `unknown` not assignable to `ReactNode`. Cast cell render results.
-5. **`src/main.tsx` line 33** -- Same `window` guard needed.
-
-## Impact
-
-All admin panels (Dashboard, Hotbox, Orders, Inventory, Customers, Finance) will load correctly once the prop name is fixed, since the enterprise tier grants access to every feature.
