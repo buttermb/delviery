@@ -53,7 +53,7 @@ const formSchema = z.object({
     issue_date: z.date(),
     due_date: z.date(),
     status: z.enum(["draft", "sent", "paid"]),
-    tax_rate: z.coerce.number().min(0, "Tax rate cannot be negative").max(100, "Tax rate cannot exceed 100%"),
+    tax_rate: z.coerce.number().min(0, "Sales tax cannot be negative").max(100, "Sales tax cannot exceed 100%"),
     notes: z.string().max(1000, "Notes must be 1000 characters or less").optional(),
 });
 
@@ -318,7 +318,7 @@ export default function CreateInvoicePage() {
                                     name="tax_rate"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Tax Rate (%)</FormLabel>
+                                            <FormLabel>Sales Tax (%)</FormLabel>
                                             <FormControl>
                                                 <Input type="number" min="0" max="100" step="0.1" {...field} />
                                             </FormControl>

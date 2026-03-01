@@ -131,10 +131,13 @@ export default function CRMSettingsPage() {
                                     name="default_payment_terms"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Default Payment Terms (Days)</FormLabel>
+                                            <FormLabel>Days Until Payment Due</FormLabel>
                                             <FormControl>
                                                 <Input type="number" {...field} />
                                             </FormControl>
+                                            <FormDescription>
+                                                How many days clients have to pay their invoice
+                                            </FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -144,10 +147,13 @@ export default function CRMSettingsPage() {
                                     name="default_tax_rate"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Default Tax Rate (%)</FormLabel>
+                                            <FormLabel>Default Sales Tax (%)</FormLabel>
                                             <FormControl>
                                                 <Input type="number" step="0.01" {...field} />
                                             </FormControl>
+                                            <FormDescription>
+                                                Applied automatically to new invoices
+                                            </FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}

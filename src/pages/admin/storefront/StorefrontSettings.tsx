@@ -157,10 +157,10 @@ const DEFAULT_TIME_SLOTS: TimeSlot[] = [
 ];
 
 const PAYMENT_METHOD_OPTIONS = [
-  { id: 'cash', label: 'Cash', description: 'Accept cash on delivery' },
-  { id: 'venmo', label: 'Venmo', description: 'Accept Venmo payments' },
-  { id: 'zelle', label: 'Zelle', description: 'Accept Zelle transfers' },
-  { id: 'stripe', label: 'Stripe', description: 'Accept credit cards via Stripe' },
+  { id: 'cash', label: 'Cash', description: 'Customers pay cash when they receive their order' },
+  { id: 'venmo', label: 'Venmo', description: 'Customers send payment through Venmo before delivery' },
+  { id: 'zelle', label: 'Zelle', description: 'Customers send a bank transfer through Zelle' },
+  { id: 'stripe', label: 'Credit/Debit Card', description: 'Customers pay with a card at checkout (powered by Stripe)' },
 ];
 
 export default function StorefrontSettings() {
@@ -594,7 +594,7 @@ export default function StorefrontSettings() {
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="checkout">Checkout</TabsTrigger>
             <TabsTrigger value="hours">Hours</TabsTrigger>
-            <TabsTrigger value="seo">SEO</TabsTrigger>
+            <TabsTrigger value="seo">Search & Sharing</TabsTrigger>
           </TabsList>
 
           {/* General Tab */}
@@ -605,7 +605,7 @@ export default function StorefrontSettings() {
                   <Store className="w-5 h-5" />
                   General Settings
                 </CardTitle>
-                <CardDescription>Basic store information</CardDescription>
+                <CardDescription>Your store name, URL, and who can access it</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -617,10 +617,13 @@ export default function StorefrontSettings() {
                       onChange={(e) => updateField('store_name', e.target.value)}
                       placeholder="My Store"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      This is shown in your header, browser tab, and receipts
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="slug" className="flex items-center gap-1.5">
-                      Store URL Slug
+                      Store Web Address
                       <FieldHelp tooltip={fieldHelpTexts.tenantSlug.tooltip} example={fieldHelpTexts.tenantSlug.example} />
                     </Label>
                     <div className="flex items-center gap-2">
@@ -632,6 +635,9 @@ export default function StorefrontSettings() {
                         placeholder="my-store"
                       />
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      The URL customers use to visit your store — letters, numbers, and dashes only
+                    </p>
                   </div>
                 </div>
 
@@ -643,10 +649,13 @@ export default function StorefrontSettings() {
                     onChange={(e) => updateField('tagline', e.target.value)}
                     placeholder="Welcome to our store"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    A short phrase shown below your store name
+                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">About Your Store</Label>
                   <Textarea
                     id="description"
                     value={formData.description ?? ''}
@@ -654,18 +663,21 @@ export default function StorefrontSettings() {
                     placeholder="Tell customers about your store..."
                     rows={4}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Describe what you sell, your story, or anything you want customers to know
+                  </p>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-4">
-                  <h3 className="font-medium">Store Visibility</h3>
+                  <h3 className="font-medium">Who Can See Your Store</h3>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Public Store</Label>
+                      <Label>Open to Everyone</Label>
                       <p className="text-sm text-muted-foreground">
-                        Allow anyone to view your store
+                        Anyone with the link can browse your store
                       </p>
                     </div>
                     <Switch
@@ -676,9 +688,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Require Account</Label>
+                      <Label>Account Required to Order</Label>
                       <p className="text-sm text-muted-foreground">
-                        Customers must create an account to order
+                        Customers must sign up before placing an order
                       </p>
                     </div>
                     <Switch
@@ -689,9 +701,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Age Verification</Label>
+                      <Label>Age Check on Entry</Label>
                       <p className="text-sm text-muted-foreground">
-                        Require age verification before viewing
+                        Visitors must confirm their age before seeing your store
                       </p>
                     </div>
                     <Switch
@@ -702,7 +714,7 @@ export default function StorefrontSettings() {
 
                   {formData.require_age_verification && (
                     <div className="space-y-2 pl-4 border-l-2 border-muted">
-                      <Label htmlFor="minimum_age">Minimum Age</Label>
+                      <Label htmlFor="minimum_age">Minimum Age (years)</Label>
                       <Input
                         id="minimum_age"
                         type="number"
@@ -710,6 +722,9 @@ export default function StorefrontSettings() {
                         onChange={(e) => updateField('minimum_age', parseInt(e.target.value))}
                         className="w-full sm:w-24"
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Customers below this age will be turned away
+                      </p>
                     </div>
                   )}
                 </div>
@@ -725,12 +740,12 @@ export default function StorefrontSettings() {
                   <Palette className="w-5 h-5" />
                   Branding
                 </CardTitle>
-                <CardDescription>Customize your store's appearance</CardDescription>
+                <CardDescription>Colors, logo, and visual style for your storefront</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="primary_color">Primary Color</Label>
+                    <Label htmlFor="primary_color">Main Color</Label>
                     <div className="flex gap-2">
                       <Input
                         id="primary_color"
@@ -748,7 +763,7 @@ export default function StorefrontSettings() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="secondary_color">Secondary Color</Label>
+                    <Label htmlFor="secondary_color">Background Color</Label>
                     <div className="flex gap-2">
                       <Input
                         id="secondary_color"
@@ -766,7 +781,7 @@ export default function StorefrontSettings() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="accent_color">Accent Color</Label>
+                    <Label htmlFor="accent_color">Highlight Color</Label>
                     <div className="flex gap-2">
                       <Input
                         id="accent_color"
@@ -791,7 +806,7 @@ export default function StorefrontSettings() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="logo_url">Logo URL</Label>
+                      <Label htmlFor="logo_url">Logo Image Link</Label>
                       <Input
                         id="logo_url"
                         value={formData.logo_url ?? ''}
@@ -811,7 +826,7 @@ export default function StorefrontSettings() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="banner_url">Banner URL</Label>
+                      <Label htmlFor="banner_url">Banner Image Link</Label>
                       <Input
                         id="banner_url"
                         value={formData.banner_url ?? ''}
@@ -832,12 +847,12 @@ export default function StorefrontSettings() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="favicon_url">Favicon URL</Label>
+                    <Label htmlFor="favicon_url">Browser Tab Icon</Label>
                     <Input
                       id="favicon_url"
                       value={formData.favicon_url ?? ''}
                       onChange={(e) => updateField('favicon_url', e.target.value)}
-                      placeholder="https://... (32x32 recommended)"
+                      placeholder="https://..."
                     />
                     {formData.favicon_url && (
                       <div className="mt-2 flex items-center gap-2">
@@ -849,7 +864,7 @@ export default function StorefrontSettings() {
                             loading="lazy"
                           />
                         </div>
-                        <span className="text-xs text-muted-foreground">32x32px preview</span>
+                        <span className="text-xs text-muted-foreground">Small icon shown in browser tabs (32x32px)</span>
                       </div>
                     )}
                   </div>
@@ -933,28 +948,31 @@ export default function StorefrontSettings() {
                   <Truck className="w-5 h-5" />
                   Delivery Settings
                 </CardTitle>
-                <CardDescription>Configure delivery fees and zones</CardDescription>
+                <CardDescription>How much you charge for delivery and when it's free</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="default_delivery_fee">Default Delivery Fee ($)</Label>
+                    <Label htmlFor="default_delivery_fee">Delivery Fee ($)</Label>
                     <CurrencyInput
                       id="default_delivery_fee"
                       value={formData.default_delivery_fee || 5}
                       onChange={(e) => updateField('default_delivery_fee', parseFloat(e.target.value))}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      The standard fee charged for each delivery order
+                    </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="free_delivery_threshold">Free Delivery Threshold ($)</Label>
+                    <Label htmlFor="free_delivery_threshold">Free Delivery Over ($)</Label>
                     <CurrencyInput
                       id="free_delivery_threshold"
                       value={formData.free_delivery_threshold || 100}
                       onChange={(e) => updateField('free_delivery_threshold', parseFloat(e.target.value))}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Orders above this amount get free delivery
+                      Orders over this amount qualify for free delivery
                     </p>
                   </div>
                 </div>
@@ -970,7 +988,7 @@ export default function StorefrontSettings() {
                   <MapPin className="w-5 h-5" />
                   Delivery Zones
                 </CardTitle>
-                <CardDescription>Set custom delivery fees by zip code</CardDescription>
+                <CardDescription>Charge different delivery fees based on the customer's zip code</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
@@ -988,7 +1006,7 @@ export default function StorefrontSettings() {
                         className="w-full sm:w-32"
                       />
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Fee:</span>
+                        <span className="text-sm text-muted-foreground">Delivery fee:</span>
                         <CurrencyInput
                           value={zone.fee ?? 0}
                           onChange={(e) => {
@@ -1000,7 +1018,7 @@ export default function StorefrontSettings() {
                         />
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Min:</span>
+                        <span className="text-sm text-muted-foreground">Minimum order:</span>
                         <CurrencyInput
                           value={zone.min_order ?? 0}
                           onChange={(e) => {
@@ -1050,14 +1068,14 @@ export default function StorefrontSettings() {
                   <Clock className="w-5 h-5" />
                   Delivery Time Slots
                 </CardTitle>
-                <CardDescription>Let customers choose their delivery window</CardDescription>
+                <CardDescription>Let customers pick a delivery window that works for them</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>Enable Scheduled Delivery</Label>
+                    <Label>Offer Delivery Time Choices</Label>
                     <p className="text-sm text-muted-foreground">
-                      Allow customers to select a delivery time slot
+                      Customers can choose when they want their delivery
                     </p>
                   </div>
                   <Switch
@@ -1152,7 +1170,7 @@ export default function StorefrontSettings() {
                   <Banknote className="w-5 h-5" />
                   Payment Methods
                 </CardTitle>
-                <CardDescription>Choose which payment methods your customers can use at checkout</CardDescription>
+                <CardDescription>Pick how customers can pay you</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {PAYMENT_METHOD_OPTIONS.map((method) => {
@@ -1180,7 +1198,7 @@ export default function StorefrontSettings() {
                       {method.id === 'venmo' && isEnabled && (
                         <div className="pl-4 border-l-2 border-muted">
                           <Label htmlFor="venmo_handle" className="text-sm text-muted-foreground">
-                            Venmo Handle
+                            Your Venmo Username
                           </Label>
                           <Input
                             id="venmo_handle"
@@ -1190,7 +1208,7 @@ export default function StorefrontSettings() {
                             onChange={(e) => updateCheckoutSetting('venmo_handle', e.target.value)}
                           />
                           <p className="text-xs text-muted-foreground mt-1">
-                            Shown to customers so they can send payment
+                            Customers will see this so they know where to send payment
                           </p>
                         </div>
                       )}
@@ -1199,7 +1217,7 @@ export default function StorefrontSettings() {
                       {method.id === 'zelle' && isEnabled && (
                         <div className="pl-4 border-l-2 border-muted">
                           <Label htmlFor="zelle_email" className="text-sm text-muted-foreground">
-                            Zelle Email or Phone
+                            Your Zelle Email or Phone Number
                           </Label>
                           <Input
                             id="zelle_email"
@@ -1209,7 +1227,7 @@ export default function StorefrontSettings() {
                             onChange={(e) => updateCheckoutSetting('zelle_email', e.target.value)}
                           />
                           <p className="text-xs text-muted-foreground mt-1">
-                            Shown to customers so they can send payment
+                            Customers will see this so they know where to send payment
                           </p>
                         </div>
                       )}
@@ -1416,15 +1434,15 @@ export default function StorefrontSettings() {
                   <CreditCard className="w-5 h-5" />
                   Checkout Settings
                 </CardTitle>
-                <CardDescription>Configure checkout options</CardDescription>
+                <CardDescription>Control what customers see and do during checkout</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Allow Guest Checkout</Label>
+                      <Label>Guest Checkout</Label>
                       <p className="text-sm text-muted-foreground">
-                        Let customers checkout without creating an account
+                        Customers can order without creating an account
                       </p>
                     </div>
                     <Switch
@@ -1435,9 +1453,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Require Phone Number</Label>
+                      <Label>Phone Number Required</Label>
                       <p className="text-sm text-muted-foreground">
-                        Require phone for delivery updates
+                        Ask for a phone number so you can send delivery updates
                       </p>
                     </div>
                     <Switch
@@ -1448,9 +1466,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Enable Coupons</Label>
+                      <Label>Coupon Codes</Label>
                       <p className="text-sm text-muted-foreground">
-                        Allow coupon codes at checkout
+                        Show a field where customers can enter discount codes
                       </p>
                     </div>
                     <Switch
@@ -1461,9 +1479,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Show Delivery Notes</Label>
+                      <Label>Delivery Instructions</Label>
                       <p className="text-sm text-muted-foreground">
-                        Allow customers to add delivery instructions
+                        Let customers add special notes like &quot;Leave at door&quot; or &quot;Ring bell&quot;
                       </p>
                     </div>
                     <Switch
@@ -1474,9 +1492,9 @@ export default function StorefrontSettings() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Enable Tips</Label>
+                      <Label>Tips</Label>
                       <p className="text-sm text-muted-foreground">
-                        Allow customers to add tips at checkout
+                        Let customers add a tip during checkout
                       </p>
                     </div>
                     <Switch
@@ -1495,14 +1513,14 @@ export default function StorefrontSettings() {
                   <Shield className="w-5 h-5" />
                   Purchase Limits
                 </CardTitle>
-                <CardDescription>Set limits for regulatory compliance</CardDescription>
+                <CardDescription>Cap how much a customer can buy to stay compliant with regulations</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>Enable Purchase Limits</Label>
+                    <Label>Limit Purchase Amounts</Label>
                     <p className="text-sm text-muted-foreground">
-                      Enforce limits on order quantities
+                      Restrict how much each customer can order
                     </p>
                   </div>
                   <Switch
@@ -1523,7 +1541,7 @@ export default function StorefrontSettings() {
                   <div className="space-y-4 pl-4 border-l-2 border-muted">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="max_per_order">Max Per Order ($)</Label>
+                        <Label htmlFor="max_per_order">Per Order Limit ($)</Label>
                         <Input
                           id="max_per_order"
                           type="number"
@@ -1539,12 +1557,12 @@ export default function StorefrontSettings() {
                           }
                         />
                         <p className="text-xs text-muted-foreground">
-                          Maximum total value per transaction
+                          The most a customer can spend in a single order
                         </p>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="max_daily">Max Daily ($)</Label>
+                        <Label htmlFor="max_daily">Daily Limit ($)</Label>
                         <Input
                           id="max_daily"
                           type="number"
@@ -1560,12 +1578,12 @@ export default function StorefrontSettings() {
                           }
                         />
                         <p className="text-xs text-muted-foreground">
-                          Maximum per customer per day
+                          The most a customer can spend in one day
                         </p>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="max_weekly">Max Weekly ($)</Label>
+                        <Label htmlFor="max_weekly">Weekly Limit ($)</Label>
                         <Input
                           id="max_weekly"
                           type="number"
@@ -1581,13 +1599,12 @@ export default function StorefrontSettings() {
                           }
                         />
                         <p className="text-xs text-muted-foreground">
-                          Maximum per customer per week
+                          The most a customer can spend in one week
                         </p>
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
-                      Daily and weekly limits are tracked by customer email address.
-                      Customers must provide an email to enforce these limits.
+                      Limits are tracked by customer email. Customers need to provide an email for daily and weekly limits to work.
                     </p>
                   </div>
                 )}
@@ -1603,7 +1620,7 @@ export default function StorefrontSettings() {
                   <Clock className="w-5 h-5" />
                   Operating Hours
                 </CardTitle>
-                <CardDescription>Set your store's hours of operation</CardDescription>
+                <CardDescription>When your store is open for orders</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -1649,23 +1666,26 @@ export default function StorefrontSettings() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Globe className="w-5 h-5" />
-                  SEO & Domain
+                  Search & Sharing
                 </CardTitle>
-                <CardDescription>Search engine and sharing settings</CardDescription>
+                <CardDescription>How your store looks on Google and when shared on social media</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="meta_title">Meta Title</Label>
+                  <Label htmlFor="meta_title">Page Title</Label>
                   <Input
                     id="meta_title"
                     value={formData.meta_title ?? ''}
                     onChange={(e) => updateField('meta_title', e.target.value)}
                     placeholder="Your Store Name - Tagline"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Appears in browser tabs and Google search results
+                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="meta_description">Meta Description</Label>
+                  <Label htmlFor="meta_description">Search Description</Label>
                   <Textarea
                     id="meta_description"
                     value={formData.meta_description ?? ''}
@@ -1673,10 +1693,13 @@ export default function StorefrontSettings() {
                     placeholder="A brief description of your store for search engines..."
                     rows={3}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    The short blurb shown under your store name in Google results
+                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="og_image_url">Social Sharing Image URL</Label>
+                  <Label htmlFor="og_image_url">Social Preview Image</Label>
                   <Input
                     id="og_image_url"
                     value={formData.og_image_url ?? ''}
@@ -1684,14 +1707,14 @@ export default function StorefrontSettings() {
                     placeholder="https://..."
                   />
                   <p className="text-xs text-muted-foreground">
-                    Recommended size: 1200x630 pixels
+                    The image shown when someone shares your store link on social media (1200x630px recommended)
                   </p>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label htmlFor="custom_domain">Custom Domain</Label>
+                  <Label htmlFor="custom_domain">Your Own Domain</Label>
                   <Input
                     id="custom_domain"
                     value={formData.custom_domain ?? ''}
@@ -1699,14 +1722,14 @@ export default function StorefrontSettings() {
                     placeholder="shop.yourdomain.com"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Point a CNAME record to our servers to use a custom domain
+                    Use your own web address instead of ours — requires a CNAME DNS record pointing to our servers
                   </p>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-2">
-                  <Label htmlFor="ga4_measurement_id">Google Analytics 4 Measurement ID</Label>
+                  <Label htmlFor="ga4_measurement_id">Google Analytics Tracking ID</Label>
                   <Input
                     id="ga4_measurement_id"
                     value={formData.ga4_measurement_id ?? ''}
@@ -1714,8 +1737,7 @@ export default function StorefrontSettings() {
                     placeholder="G-XXXXXXXXXX"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Enter your GA4 Measurement ID to track page views, add-to-cart events, and purchases.
-                    Find it in your Google Analytics admin under Data Streams.
+                    Track visits, add-to-cart clicks, and purchases. Find your ID in Google Analytics under Admin &gt; Data Streams.
                   </p>
                 </div>
               </CardContent>

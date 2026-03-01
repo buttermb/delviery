@@ -566,7 +566,7 @@ export default function CustomerInvoices() {
                     <span className="font-semibold">${calculateTotals().subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm gap-4">
-                    <span>Tax Rate:</span>
+                    <span>Sales Tax:</span>
                     <div className="flex items-center gap-2">
                       <Input
                         type="number"
@@ -574,7 +574,7 @@ export default function CustomerInvoices() {
                         min={0}
                         value={formData.tax_rate}
                         onChange={(e) => setFormData({ ...formData, tax_rate: String(Math.max(0, parseFloat(e.target.value) || 0)) })}
-                        aria-label="Tax rate percentage"
+                        aria-label="Sales tax percentage"
                         className="w-20 h-8 text-right"
                       />
                       <span>%</span>
