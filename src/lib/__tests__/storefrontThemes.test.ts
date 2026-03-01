@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import {
     THEME_PRESETS,
     getThemeById,
     themeToCSS,
     applyThemeToConfig,
     applyCSSVariables,
+    loadGoogleFonts,
     type ThemePreset,
     type StorefrontCSSVariables,
 } from '../storefrontThemes';
@@ -254,6 +255,48 @@ describe('storefrontThemes', () => {
             expect(element.style.getPropertyValue('--storefront-primary')).toBe('#d4af37');
             expect(element.style.getPropertyValue('--storefront-font-heading')).toBe('Playfair Display');
             expect(element.style.getPropertyValue('--storefront-font-body')).toBe('Cormorant Garamond');
+        });
+    });
+
+    describe('loadGoogleFonts', () => {
+        afterEach(() => {
+            const link = document.getElementById('storefront-theme-fonts');
+            if (link) link.remove();
+        });
+
+        it('should create a link element with display=swap', () => {
+            loadGoogleFonts(['Playfair Display', 'Inter']);
+
+            const link = document.getElementById('storefront-theme-fonts') as HTMLLinkElement;
+            expect(link).toBeTruthy();
+            expect(link.rel).toBe('stylesheet');
+            expect(link.href).toContain('display=swap');
+            expect(link.href).toContain('Playfair+Display');
+            expect(link.href).toContain('Inter');
+        });
+
+        it('should reuse existing link element', () => {
+            loadGoogleFonts(['Inter']);
+            loadGoogleFonts(['Outfit']);
+
+            const links = document.querySelectorAll('#storefront-theme-fonts');
+            expect(links).toHaveLength(1);
+            expect((links[0] as HTMLLinkElement).href).toContain('Outfit');
+        });
+
+        it('should skip system fonts', () => {
+            loadGoogleFonts(['system-ui', 'sans-serif']);
+
+            const link = document.getElementById('storefront-theme-fonts');
+            expect(link).toBeNull();
+        });
+
+        it('should deduplicate font names', () => {
+            loadGoogleFonts(['Inter', 'Inter', 'Outfit']);
+
+            const link = document.getElementById('storefront-theme-fonts') as HTMLLinkElement;
+            const interMatches = link.href.match(/family=Inter/g);
+            expect(interMatches).toHaveLength(1);
         });
     });
 });

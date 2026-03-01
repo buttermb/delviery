@@ -382,6 +382,9 @@ export function applyCSSVariables(
     element.style.setProperty('--storefront-font-heading', theme.typography.fonts.heading);
     element.style.setProperty('--storefront-font-body', theme.typography.fonts.body);
 
+    // Load Google Fonts with display=swap
+    loadGoogleFonts([theme.typography.fonts.heading, theme.typography.fonts.body]);
+
     logger.debug('Applied CSS variables to element', { themeId: theme.id });
 }
 
@@ -538,8 +541,44 @@ export function applyPreviewCSSVariables(
     if (fontFamily) {
         element.style.setProperty('--storefront-font-heading', fontFamily);
         element.style.setProperty('--storefront-font-body', fontFamily);
+        loadGoogleFonts([fontFamily]);
     }
     logger.debug('Applied preview CSS variables', { primary: colors.primary });
+}
+
+/** System fonts that don't need Google Fonts loading */
+const SYSTEM_FONTS = new Set(['system-ui', 'sans-serif', 'serif', 'monospace']);
+
+/**
+ * Load Google Fonts dynamically for storefront theme fonts.
+ * Creates or updates a <link> element with id="storefront-theme-fonts".
+ * Always includes display=swap to ensure font-display: swap on all @font-face declarations.
+ */
+export function loadGoogleFonts(fonts: string[]): void {
+    const uniqueFonts = [...new Set(fonts)]
+        .map(f => f.split(',')[0].trim())
+        .filter(f => f && !SYSTEM_FONTS.has(f.toLowerCase()));
+
+    if (uniqueFonts.length === 0) return;
+
+    const families = uniqueFonts
+        .map(f => `family=${f.replace(/ /g, '+')}:wght@400;500;600;700`)
+        .join('&');
+    const href = `https://fonts.googleapis.com/css2?${families}&display=swap`;
+
+    let link = document.getElementById('storefront-theme-fonts') as HTMLLinkElement | null;
+    if (link) {
+        if (link.href === href) return;
+        link.href = href;
+    } else {
+        link = document.createElement('link');
+        link.id = 'storefront-theme-fonts';
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+    }
+
+    logger.debug('Loaded Google Fonts with display=swap', { fonts: uniqueFonts });
 }
 
 /**
