@@ -6,7 +6,7 @@
 
 import { useEffect, useState, createContext, useContext } from 'react';
 import { Outlet, Link, useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -149,6 +149,47 @@ export default function ShopLayout() {
     enabled: !!storeSlug,
     retry: false,
   });
+
+  // Prefetch products and categories in parallel once store is available
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (!store?.id) return;
+
+    Promise.all([
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.shopProducts.list(store.id),
+        queryFn: async () => {
+          const { data, error } = await supabase
+            .rpc('get_marketplace_products', { p_store_id: store.id });
+          if (error) {
+            logger.warn('Prefetch products failed', error, { storeId: store.id });
+            return [];
+          }
+          return data ?? [];
+        },
+        staleTime: 30_000,
+      }),
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.shopProducts.categories(store.id),
+        queryFn: async () => {
+          const { data, error } = await supabase
+            .from('marketplace_categories')
+            .select('*')
+            .eq('store_id', store.id)
+            .eq('is_active', true)
+            .order('display_order');
+          if (error) {
+            logger.warn('Prefetch categories failed', error, { storeId: store.id });
+            return [];
+          }
+          return data ?? [];
+        },
+        staleTime: 30_000,
+      }),
+    ]).catch((err) => {
+      logger.warn('Prefetch failed', err, { component: 'ShopLayout' });
+    });
+  }, [store?.id, queryClient]);
 
   // Cart management via useShopCart for drawer integration
   const shopCart = useShopCart({
