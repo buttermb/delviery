@@ -4,7 +4,7 @@
  * or continue in compact mode
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
@@ -13,16 +13,27 @@ import { humanizeError } from '@/lib/humanizeError';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 
+import type { MarketplaceStore } from '@/types/marketplace-extended';
+
 import { EditorEntryCard } from '@/components/admin/storefront/EditorEntryCard';
 import { FullScreenEditorPortal } from '@/components/admin/storefront/FullScreenEditorPortal';
 import { UnsavedChangesDialog } from '@/components/admin/storefront/UnsavedChangesDialog';
 import { UnsavedChangesDialog as RouteUnsavedChangesDialog } from '@/components/unsaved-changes';
-import { StorefrontBuilder } from '@/pages/admin/storefront/StorefrontBuilder';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useFullScreenEditor } from '@/hooks/useFullScreenEditor';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-
-import type { MarketplaceStore } from '@/types/marketplace-extended';
 import { queryKeys } from '@/lib/queryKeys';
+
+const StorefrontBuilder = lazy(() =>
+    import('@/pages/admin/storefront/StorefrontBuilder').then(m => ({ default: m.StorefrontBuilder }))
+);
+
+const BuilderSkeleton = () => (
+    <div className="p-6 space-y-4">
+        <Skeleton className="h-10 w-1/4" />
+        <Skeleton className="h-[calc(100vh-12rem)] w-full" />
+    </div>
+);
 
 export function StorefrontDesignPage() {
     const { tenant } = useTenantAdminAuth();
@@ -105,11 +116,13 @@ export function StorefrontDesignPage() {
     // If compact mode is shown directly
     if (showCompactMode && !isFullScreen) {
         return (
-            <StorefrontBuilder
-                isFullScreen={false}
-                onRequestClose={() => setShowCompactMode(false)}
-                onDirtyChange={handleDirtyChange}
-            />
+            <Suspense fallback={<BuilderSkeleton />}>
+                <StorefrontBuilder
+                    isFullScreen={false}
+                    onRequestClose={() => setShowCompactMode(false)}
+                    onDirtyChange={handleDirtyChange}
+                />
+            </Suspense>
         );
     }
 
@@ -134,11 +147,13 @@ export function StorefrontDesignPage() {
 
             {/* Full-Screen Editor Portal */}
             <FullScreenEditorPortal isOpen={isFullScreen} onRequestClose={requestClose}>
-                <StorefrontBuilder
-                    isFullScreen={true}
-                    onRequestClose={requestClose}
-                    onDirtyChange={handleDirtyChange}
-                />
+                <Suspense fallback={<BuilderSkeleton />}>
+                    <StorefrontBuilder
+                        isFullScreen={true}
+                        onRequestClose={requestClose}
+                        onDirtyChange={handleDirtyChange}
+                    />
+                </Suspense>
             </FullScreenEditorPortal>
 
             {/* Unsaved Changes Dialog — full-screen editor exit */}
