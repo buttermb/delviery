@@ -293,8 +293,8 @@ export function CheckoutPage() {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [, setOrderRetryCount] = useState(0);
 
-  // Fast double-click guard — ref updates synchronously, before React re-renders with isPending
-  const isSubmittingRef = useRef(false);
+  // Double-submit guard — state disables button immediately on click
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Idempotency key persisted to sessionStorage to survive page refresh during submission
   const [idempotencyKey] = useState(() => {
@@ -1121,15 +1121,15 @@ export function CheckoutPage() {
       });
     },
     onSettled: () => {
-      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     },
   });
 
-  // Handle place order — ref guard prevents fast double-click
+  // Handle place order — state guard prevents double submission
   const handlePlaceOrder = () => {
-    if (isSubmittingRef.current || placeOrderMutation.isPending) return;
+    if (isSubmitting || placeOrderMutation.isPending) return;
     if (validateStep()) {
-      isSubmittingRef.current = true;
+      setIsSubmitting(true);
       placeOrderMutation.mutate();
     }
   };
@@ -1967,10 +1967,10 @@ export function CheckoutPage() {
                 ) : (
                   <Button
                     onClick={handlePlaceOrder}
-                    disabled={placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
+                    disabled={isSubmitting || placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
                     style={{ backgroundColor: store.primary_color }}
                   >
-                    {placeOrderMutation.isPending ? (
+                    {isSubmitting || placeOrderMutation.isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Processing...
@@ -2269,11 +2269,11 @@ export function CheckoutPage() {
             </div>
             <Button
               onClick={handlePlaceOrder}
-              disabled={placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
+              disabled={isSubmitting || placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
               style={{ backgroundColor: themeColor }}
               className="w-full h-12 text-white text-base font-semibold"
             >
-              {placeOrderMutation.isPending ? (
+              {isSubmitting || placeOrderMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Processing...
