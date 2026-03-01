@@ -17,7 +17,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { ResponsiveTable, ResponsiveColumn } from '@/components/shared/ResponsiveTable';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
+import { sanitizeSearchInput } from '@/lib/utils/searchSanitize';
 
 interface Client {
     id: string;

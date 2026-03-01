@@ -8,6 +8,7 @@
  */
 
 import { createClient, corsHeaders, z } from '../../_shared/deps.ts';
+import { sanitizeSearchInput } from '../../_shared/searchSanitize.ts';
 
 type RequestHandler = (req: Request, params: Record<string, string>) => Promise<Response>;
 
@@ -119,7 +120,8 @@ async function listContacts(req: Request, params: Record<string, string>): Promi
       query = query.eq('status', status);
     }
     if (search) {
-      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,business_name.ilike.%${search}%,phone.ilike.%${search}%`);
+      const escaped = sanitizeSearchInput(search);
+      query = query.or(`name.ilike.%${escaped}%,email.ilike.%${escaped}%,business_name.ilike.%${escaped}%,phone.ilike.%${escaped}%`);
     }
 
     const { data, error, count } = await query;

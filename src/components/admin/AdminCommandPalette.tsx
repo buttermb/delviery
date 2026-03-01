@@ -20,7 +20,7 @@ import {
 import { useTenantNavigate } from '@/hooks/useTenantNavigate';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useDataSearch, SearchResult } from '@/hooks/useDataSearch';
-import { sanitizeSearchInput } from '@/lib/sanitizeSearch';
+import { sanitizeSearchInput } from '@/lib/utils/searchSanitize';
 import { Loader2, X, History } from 'lucide-react';
 import {
     LayoutDashboard,
