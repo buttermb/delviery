@@ -152,3 +152,15 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
   - If inventory deduction fails (race condition), the entire transaction rolls back (including order items)
   - This ensures marketplace_order_items has relational integrity and queryable server-validated prices
 - TypeScript compilation passes with zero errors
+
+## Create next_order_number RPC function
+- Migration already exists at supabase/migrations/20260228000007_create_next_order_number_rpc.sql
+- Function: public.next_order_number(p_tenant_id UUID) RETURNS INTEGER
+- Uses pg_advisory_xact_lock(hashtext('orders_' || p_tenant_id::text)) for race condition safety
+- Queries SELECT COALESCE(MAX(order_number::INTEGER), 1000) + 1 FROM orders WHERE tenant_id = p_tenant_id
+- Only considers numeric order_number values (WHERE order_number ~ '^\d+$')
+- SECURITY DEFINER with SET search_path = public
+- GRANT EXECUTE to authenticated role
+- Complements the existing next_tenant_order_number() which handles marketplace_orders via tenant_order_sequences table
+- TypeScript compilation passes with zero errors
+- No additional changes needed - migration was already committed (ffbf972f)
