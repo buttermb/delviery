@@ -18,6 +18,7 @@ interface BuilderPreviewProps {
     onSelectSection: (id: string) => void;
     onApplyTemplate: (templateKey: TemplateKey) => void;
     setActiveTab: (tab: string) => void;
+    tenantId?: string;
 }
 
 export function BuilderPreview({
@@ -30,6 +31,7 @@ export function BuilderPreview({
     onSelectSection,
     onApplyTemplate,
     setActiveTab,
+    tenantId,
 }: BuilderPreviewProps) {
     const getPreviewStyle = () => {
         switch (devicePreview) {
@@ -62,7 +64,7 @@ export function BuilderPreview({
                 <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: themeConfig.colors?.background }}>
                     {layoutConfig.filter(s => s.visible !== false).map((section) => {
                         const sectionType = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES];
-                        const Component = sectionType?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }> | undefined;
+                        const Component = sectionType?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string; tenantId?: string }> | undefined;
                         if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
 
                         return (
@@ -71,7 +73,7 @@ export function BuilderPreview({
                                 className={`relative group ${selectedSectionId === section.id ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
                                 onClick={() => onSelectSection(section.id)}
                             >
-                                <Component content={section.content} styles={section.styles} storeId={store?.id} />
+                                <Component content={section.content} styles={section.styles} storeId={store?.id} tenantId={tenantId} />
 
                                 {/* Hover overlay for selection */}
                                 {selectedSectionId !== section.id && (

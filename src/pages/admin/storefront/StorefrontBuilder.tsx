@@ -1207,7 +1207,7 @@ export function StorefrontBuilder({
                         {/* Sections Render */}
                         <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: themeConfig.colors?.background }}>
                             {layoutConfig.filter(s => s.visible !== false).map((section) => {
-                                const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string }>;
+                                const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string; tenantId?: string }>;
                                 if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
 
                                 return (
@@ -1216,7 +1216,7 @@ export function StorefrontBuilder({
                                         className={`relative group ${selectedSectionId === section.id ? 'ring-2 ring-primary ring-inset z-10' : ''}`}
                                         onClick={() => handleSelectSection(section.id)}
                                     >
-                                        <Component content={section.content} styles={section.styles} storeId={store?.id} />
+                                        <Component content={section.content} styles={section.styles} storeId={store?.id} tenantId={tenant?.id} />
 
                                         {/* Hover overlay for selection */}
                                         {selectedSectionId !== section.id && (

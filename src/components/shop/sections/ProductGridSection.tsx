@@ -67,9 +67,10 @@ export interface ProductGridSectionProps {
         accent_color: string;
     };
     storeId?: string;
+    tenantId?: string;
 }
 
-export function ProductGridSection({ content, styles, storeId }: ProductGridSectionProps) {
+export function ProductGridSection({ content, styles, storeId, tenantId }: ProductGridSectionProps) {
     const {
         heading = "Shop Premium Flower",
         subheading = "Premium indoor-grown flower from licensed NYC cultivators",
@@ -122,9 +123,13 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
         });
     };
 
+    const isBuilderPreview = !storeId && !!tenantId;
+
     // Fetch products - normalized to LocalProduct[]
     const { data: allProducts = [], isLoading, error } = useQuery<LocalProduct[]>({
-        queryKey: queryKeys.shopProducts.list(storeId),
+        queryKey: storeId
+            ? queryKeys.shopProducts.list(storeId)
+            : ['builder-preview-products', tenantId],
         queryFn: async () => {
             if (storeId) {
                 // Public Storefront View - try RPC first, fallback to direct query
@@ -183,12 +188,44 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                     logger.error('Error fetching marketplace products', err);
                     return [];
                 }
+            } else if (tenantId) {
+                // Admin Builder Preview — fetch tenant's products directly
+                try {
+                    const { data, error } = await supabase
+                        .from('products')
+                        .select('product_id, product_name, category, strain_type, price, image_url, description, is_visible')
+                        .eq('tenant_id', tenantId)
+                        .eq('is_visible', true)
+                        .order('display_order', { ascending: true })
+                        .limit(max_products);
+
+                    if (error) {
+                        logger.warn('Builder preview product fetch failed', { message: error.message });
+                        return [];
+                    }
+
+                    return ((data as unknown[]) ?? []).map((item: unknown) => {
+                        const p = item as Record<string, unknown>;
+                        return {
+                            id: p.product_id as string,
+                            name: p.product_name as string,
+                            price: (p.price as number) ?? 0,
+                            description: p.description as string | undefined,
+                            images: (p.image_url as string) ? [p.image_url as string] : [],
+                            category: p.category as string | undefined,
+                            in_stock: true,
+                            strain_type: (p.strain_type as string) ?? '',
+                        };
+                    }) as LocalProduct[];
+                } catch (err) {
+                    logger.error('Error fetching builder preview products', err);
+                    return [];
+                }
             } else {
-                // Admin Builder Preview — return empty so the preview shows the
-                // "Coming soon" empty state instead of hitting RLS errors.
                 return [];
             }
         },
+        enabled: !!storeId || !!tenantId,
         retry: 1,
     });
 
@@ -358,8 +395,14 @@ export function ProductGridSection({ content, styles, storeId }: ProductGridSect
                 ) : allProducts.length === 0 ? (
                     <div className="text-center py-20" data-testid="empty-product-grid">
                         <Package className="w-16 h-16 mx-auto mb-4 opacity-40" style={{ color: text_color }} />
-                        <h3 className="text-xl font-semibold mb-2 opacity-70">Coming soon</h3>
-                        <p className="opacity-50">Check back soon for new arrivals</p>
+                        <h3 className="text-xl font-semibold mb-2 opacity-70">
+                            {isBuilderPreview ? 'No products yet' : 'Coming soon'}
+                        </h3>
+                        <p className="opacity-50">
+                            {isBuilderPreview
+                                ? 'Add products to see them here'
+                                : 'Check back soon for new arrivals'}
+                        </p>
                     </div>
                 ) : limitedProducts.length === 0 ? (
                     <div className="text-center py-20 opacity-50">
