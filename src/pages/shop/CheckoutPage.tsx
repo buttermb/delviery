@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import {
@@ -318,6 +319,9 @@ export function CheckoutPage() {
     total?: number;
     telegramLink?: string | null;
   } | null>(null);
+
+  // Out-of-stock items surfaced by the last checkout attempt
+  const [outOfStockItems, setOutOfStockItems] = useState<UnavailableProduct[]>([]);
 
   // Fast double-click guard — ref updates synchronously, before React re-renders with isPending
   const isSubmittingRef = useRef(false);
@@ -1312,7 +1316,7 @@ export function CheckoutPage() {
       setOrderRetryCount(0);
       logger.error('Failed to place order', error, { component: 'CheckoutPage' });
 
-      // Handle out-of-stock errors — remove unavailable items and let user continue
+      // Handle out-of-stock errors — show per-item warnings and let user decide
       if (error instanceof OutOfStockError) {
         const { unavailableProducts } = error;
         for (const product of unavailableProducts) {
@@ -1337,6 +1341,11 @@ export function CheckoutPage() {
           setCurrentStep(4); // Stay on review step
         }
         // If cart is now empty, the existing redirect effect will handle navigation
+        setOutOfStockItems(error.unavailableProducts);
+        setCurrentStep(4); // Ensure we're on the review step so the alert is visible
+        toast.error('Some items are no longer available', {
+          description: 'Please review the stock warnings below.',
+        });
         return;
       }
 
@@ -1376,6 +1385,20 @@ export function CheckoutPage() {
   // Handle place order — state guard prevents double submission
   const handlePlaceOrder = () => {
     if (isSubmitting || placeOrderMutation.isPending) return;
+  // Remove out-of-stock items from cart so the user can retry checkout
+  const handleRemoveOutOfStockItems = () => {
+    for (const product of outOfStockItems) {
+      removeItem(product.productId);
+    }
+    setOutOfStockItems([]);
+    toast.success('Unavailable items removed. You can place your order now.');
+  };
+
+  // Handle place order — ref guard prevents fast double-click
+  const handlePlaceOrder = () => {
+    if (isSubmittingRef.current || placeOrderMutation.isPending) return;
+    // Clear any previous out-of-stock warnings before re-attempting
+    setOutOfStockItems([]);
     if (validateStep()) {
       setIsSubmitting(true);
   // Handle place order — ref guard prevents fast double-click
@@ -2159,6 +2182,44 @@ export function CheckoutPage() {
                   >
                     <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Review Your Order</h2>
 
+                    {/* Out-of-stock per-item alert */}
+                    {outOfStockItems.length > 0 && (
+                      <Alert variant="destructive" className="border-destructive/50 bg-destructive/5">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Some items are unavailable</AlertTitle>
+                        <AlertDescription className="mt-2 space-y-3">
+                          <ul className="space-y-1.5 text-sm">
+                            {outOfStockItems.map((item) => (
+                              <li key={item.productId} className="flex items-center gap-2">
+                                <span className="font-medium">{item.productName}</span>
+                                {item.available <= 0 ? (
+                                  <Badge variant="destructive" className="text-xs">Out of stock</Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">
+                                    Only {item.available} left (requested {item.requested})
+                                  </Badge>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={handleRemoveOutOfStockItems}
+                            >
+                              Remove unavailable items
+                            </Button>
+                            <Link to={`/shop/${storeSlug}/cart`}>
+                              <Button size="sm" variant="outline">
+                                Back to cart
+                              </Button>
+                            </Link>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
                     {/* Contact Summary */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
@@ -2320,6 +2381,7 @@ export function CheckoutPage() {
                   <Button
                     onClick={handlePlaceOrder}
                     disabled={isSubmitting || placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
+                    disabled={placeOrderMutation.isPending || !agreeToTerms || !ageVerified || outOfStockItems.length > 0}
                     style={{ backgroundColor: store.primary_color }}
                   >
                     {isSubmitting || placeOrderMutation.isPending ? (
@@ -2399,6 +2461,16 @@ export function CheckoutPage() {
                       <p className="text-xs text-muted-foreground">
                         Qty: {item.quantity} × {formatCurrency(item.price)}
                       </p>
+                      {(() => {
+                        const oos = outOfStockItems.find(o => o.productId === item.productId);
+                        if (!oos) return null;
+                        return (
+                          <p className="text-xs text-destructive flex items-center gap-1 mt-0.5">
+                            <AlertCircle className="w-3 h-3" />
+                            {oos.available <= 0 ? 'Out of stock' : `Only ${oos.available} available`}
+                          </p>
+                        );
+                      })()}
                     </div>
                     <p className="text-sm font-medium">
                       {formatCurrency(item.price * item.quantity)}
@@ -2618,6 +2690,7 @@ export function CheckoutPage() {
             <Button
               onClick={handlePlaceOrder}
               disabled={isSubmitting || placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
+              disabled={placeOrderMutation.isPending || !agreeToTerms || !ageVerified || outOfStockItems.length > 0}
               style={{ backgroundColor: themeColor }}
               className="w-full h-12 text-white text-base font-semibold"
             >
