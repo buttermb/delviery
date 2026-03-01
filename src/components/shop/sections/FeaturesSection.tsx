@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion';
-import { Clock, Shield, Lock, Star, LucideIcon } from 'lucide-react';
+import { Star } from 'lucide-react';
+import { FEATURES_ICON_MAP } from '@/components/shop/sections/featuresIconMap';
 
 export interface FeaturesSectionProps {
     content: {
         heading_small: string;
         heading_large: string;
         features: Array<{
-            icon: string; // 'clock', 'shield', 'lock', 'star'
+            icon: string;
             title: string;
             description: string;
         }>;
@@ -17,13 +18,6 @@ export interface FeaturesSectionProps {
         icon_color: string;
     };
 }
-
-const ICON_MAP: Record<string, LucideIcon> = {
-    clock: Clock,
-    shield: Shield,
-    lock: Lock,
-    star: Star,
-};
 
 const defaultFeatures = [
     {
@@ -84,7 +78,7 @@ export function FeaturesSection({ content, styles }: FeaturesSectionProps) {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
                     {features.map((feature, index) => {
-                        const Icon = ICON_MAP[feature.icon] || Star;
+                        const Icon = FEATURES_ICON_MAP[feature.icon] || Star;
                         return (
                             <motion.div
                                 key={`${feature.icon}-${feature.title}`}

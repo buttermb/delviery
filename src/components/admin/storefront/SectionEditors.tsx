@@ -10,6 +10,8 @@ import { Separator } from '@/components/ui/separator';
 import { Plus, Trash2, Star, Monitor, Tablet, Smartphone, Pencil } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/utils/sanitize';
 import { TestimonialsSectionEditDialog } from '@/components/admin/storefront/TestimonialsSectionEditDialog';
+import { FeaturesEditDialog } from '@/components/admin/storefront/FeaturesEditDialog';
+import { FEATURES_ICON_MAP } from '@/components/shop/sections/featuresIconMap';
 
 interface SectionConfig {
     id: string;
@@ -196,6 +198,7 @@ interface FeatureItem {
 }
 
 function FeaturesEditor({ section, onUpdateContent, onUpdateStyles }: SectionEditorProps) {
+    const [dialogOpen, setDialogOpen] = useState(false);
     const content = section.content as Record<string, unknown>;
     const styles = section.styles as Record<string, unknown>;
     const features = (content.features as FeatureItem[]) ?? [];
@@ -242,49 +245,49 @@ function FeaturesEditor({ section, onUpdateContent, onUpdateStyles }: SectionEdi
                 <AccordionItem value="features">
                     <AccordionTrigger className="text-sm font-medium">Features ({features.length})</AccordionTrigger>
                     <AccordionContent className="space-y-3 pt-2">
-                        {features.map((feature, index) => (
-                            <div key={index} className="p-3 border rounded-lg space-y-2 relative">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-medium text-muted-foreground">Feature {index + 1}</span>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-5 w-5 text-muted-foreground hover:text-destructive"
-                                        onClick={() => removeFeature(index)}
-                                        aria-label="Remove feature"
-                                    >
-                                        <Trash2 className="w-3 h-3" />
-                                    </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full gap-1.5"
+                            onClick={() => setDialogOpen(true)}
+                        >
+                            <Pencil className="w-3 h-3" /> Edit Features in Dialog
+                        </Button>
+                        {features.map((feature, index) => {
+                            const Icon = FEATURES_ICON_MAP[feature.icon];
+                            return (
+                                <div key={index} className="p-3 border rounded-lg space-y-2 relative">
+                                    <div className="flex items-center justify-between">
+                                        <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                                            {Icon ? <Icon className="w-3 h-3" /> : null}
+                                            {feature.title || `Feature ${index + 1}`}
+                                        </span>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-5 w-5 text-muted-foreground hover:text-destructive"
+                                            onClick={() => removeFeature(index)}
+                                            aria-label="Remove feature"
+                                        >
+                                            <Trash2 className="w-3 h-3" />
+                                        </Button>
+                                    </div>
+                                    <Input
+                                        value={feature.title}
+                                        onChange={(e) => updateFeature(index, 'title', e.target.value)}
+                                        placeholder="Feature title"
+                                        className="h-8 text-xs"
+                                    />
+                                    <Textarea
+                                        value={feature.description}
+                                        onChange={(e) => updateFeature(index, 'description', e.target.value)}
+                                        placeholder="Description"
+                                        rows={2}
+                                        className="text-xs"
+                                    />
                                 </div>
-                                <Select
-                                    value={feature.icon}
-                                    onValueChange={(v) => updateFeature(index, 'icon', v)}
-                                >
-                                    <SelectTrigger className="h-8 text-xs">
-                                        <SelectValue placeholder="Select icon" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="clock">Clock</SelectItem>
-                                        <SelectItem value="shield">Shield</SelectItem>
-                                        <SelectItem value="lock">Lock</SelectItem>
-                                        <SelectItem value="star">Star</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Input
-                                    value={feature.title}
-                                    onChange={(e) => updateFeature(index, 'title', e.target.value)}
-                                    placeholder="Feature title"
-                                    className="h-8 text-xs"
-                                />
-                                <Textarea
-                                    value={feature.description}
-                                    onChange={(e) => updateFeature(index, 'description', e.target.value)}
-                                    placeholder="Description"
-                                    rows={2}
-                                    className="text-xs"
-                                />
-                            </div>
-                        ))}
+                            );
+                        })}
                         <Button variant="outline" size="sm" className="w-full" onClick={addFeature}>
                             <Plus className="w-3 h-3 mr-1" /> Add Feature
                         </Button>
@@ -312,6 +315,13 @@ function FeaturesEditor({ section, onUpdateContent, onUpdateStyles }: SectionEdi
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>
+
+            <FeaturesEditDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                features={features}
+                onSave={(updated) => onUpdateContent('features', updated)}
+            />
         </div>
     );
 }
