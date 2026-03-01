@@ -6,7 +6,6 @@
 import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -35,6 +34,7 @@ import {
 } from 'lucide-react';
 import type { LiveOrder } from '@/components/admin/live-orders/LiveOrdersKanban';
 import { LiveOrderStatusBadge } from '@/components/admin/live-orders/LiveOrderStatusBadge';
+import { OrdersTableSkeleton } from '@/components/admin/live-orders/OrdersTableSkeleton';
 
 interface LiveOrdersTableProps {
   orders: LiveOrder[];
@@ -77,35 +77,6 @@ function getFulfillmentType(order: LiveOrder): 'delivery' | 'pickup' {
   return 'delivery';
 }
 
-function LoadingSkeleton() {
-  return (
-    <div className="rounded-lg border bg-white dark:bg-zinc-900">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {Array.from({ length: 10 }).map((_, i) => (
-              <TableHead key={i}>
-                <Skeleton className="h-4 w-16" />
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <TableRow key={i}>
-              {Array.from({ length: 10 }).map((_, j) => (
-                <TableCell key={j}>
-                  <Skeleton className="h-4 w-full" />
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
 export function LiveOrdersTable({ orders, onStatusChange, isLoading }: LiveOrdersTableProps) {
   const sortedOrders = useMemo(
     () =>
@@ -116,7 +87,7 @@ export function LiveOrdersTable({ orders, onStatusChange, isLoading }: LiveOrder
   );
 
   if (isLoading) {
-    return <LoadingSkeleton />;
+    return <OrdersTableSkeleton />;
   }
 
   return (
