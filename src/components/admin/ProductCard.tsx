@@ -8,6 +8,8 @@ import {
   Trash2,
   Package,
   TrendingUp,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
 import { InlineEditableCell } from "@/components/admin/products/InlineEditableCell";
@@ -239,7 +241,7 @@ export function ProductCard({
         </div>
 
         {/* Stock Status */}
-        <div className="flex items-center justify-between p-3 bg-[hsl(var(--tenant-surface))] rounded-lg mb-4 transition-colors duration-200 group-hover:bg-[hsl(var(--tenant-surface))]/80">
+        <div className="flex items-center justify-between p-3 bg-[hsl(var(--tenant-surface))] rounded-lg mb-2 transition-colors duration-200 group-hover:bg-[hsl(var(--tenant-surface))]/80">
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-[hsl(var(--tenant-text-light))]" />
             {onStockUpdate ? (
@@ -295,6 +297,28 @@ export function ProductCard({
             />
           </div>
         )}
+        {/* Storefront Visibility */}
+        <div className="flex items-center justify-between p-3 bg-[hsl(var(--tenant-surface))] rounded-lg mb-4 transition-colors duration-200 group-hover:bg-[hsl(var(--tenant-surface))]/80">
+          <div className="flex items-center gap-2">
+            {product.menu_visibility ? (
+              <Eye className="h-4 w-4 text-green-500" />
+            ) : (
+              <EyeOff className="h-4 w-4 text-[hsl(var(--tenant-text-light))]" />
+            )}
+            <span className="text-sm font-medium text-[hsl(var(--tenant-text))]">
+              Storefront
+            </span>
+          </div>
+          <Badge
+            variant="outline"
+            className={product.menu_visibility
+              ? "text-green-700 border-green-300 bg-green-50 dark:text-green-400 dark:border-green-700 dark:bg-green-950"
+              : "text-muted-foreground border-muted bg-muted/30"
+            }
+          >
+            {product.menu_visibility ? 'Listed' : 'Unlisted'}
+          </Badge>
+        </div>
 
         {/* Quick Actions */}
         <div className="flex gap-2">

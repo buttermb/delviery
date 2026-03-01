@@ -38,6 +38,8 @@ import {
   AlertTriangle,
   RefreshCw,
   Zap,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { TooltipGuide } from '@/components/shared/TooltipGuide';
 import {
@@ -179,9 +181,10 @@ export default function ProductManagement() {
     { id: "price", label: "Price" },
     { id: "margin", label: "Margin" },
     { id: "stock", label: "Stock" },
+    { id: "visibility", label: "Storefront" },
   ];
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
-    () => preferences.customFilters?.visibleColumns || ["image", "name", "category", "price", "stock"]
+    () => preferences.customFilters?.visibleColumns || ["image", "name", "category", "price", "stock", "visibility"]
   );
 
   // Margin threshold for alerts (default 20%)
@@ -1094,6 +1097,26 @@ export default function ProductManagement() {
         );
       }
     },
+    // Storefront visibility column - visible by default
+    ...(visibleColumns.includes("visibility") ? [{
+      header: "Storefront",
+      accessorKey: "menu_visibility" as keyof Product,
+      className: "text-center",
+      cell: (product: Product) => (
+        <Badge
+          variant="outline"
+          className={product.menu_visibility
+            ? "text-green-700 border-green-300 bg-green-50 dark:text-green-400 dark:border-green-700 dark:bg-green-950 gap-1"
+            : "text-muted-foreground border-muted bg-muted/30 gap-1"
+          }
+        >
+          {product.menu_visibility
+            ? <><Eye className="h-3 w-3" /> Listed</>
+            : <><EyeOff className="h-3 w-3" /> Unlisted</>
+          }
+        </Badge>
+      )
+    }] : []),
     {
       header: "Actions",
       className: "text-right",
