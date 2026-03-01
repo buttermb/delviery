@@ -54,6 +54,7 @@ interface Product {
   image_url: string | null;
   in_stock: boolean;
   status: string;
+  menu_visibility: boolean;
 }
 
 interface ProductSetting {
@@ -100,7 +101,7 @@ export default function StorefrontProducts() {
       if (!tenantId) return [];
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, category, price, image_url, in_stock')
+        .select('id, name, category, price, image_url, in_stock, menu_visibility')
         .eq('tenant_id', tenantId)
         .order('name');
 
@@ -278,8 +279,9 @@ export default function StorefrontProducts() {
       queryClient.invalidateQueries({ queryKey: queryKeys.marketplaceProductSettings.all });
       // Invalidate storefront product caches for instant sync
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
+      const count = selectedProducts.size;
       setSelectedProducts(new Set());
-      toast.success("${selectedProducts.size} ${selectedProducts.size === 1 ? ");
+      toast.success(`${count} ${count === 1 ? 'product' : 'products'} ${isVisible ? 'shown' : 'hidden'}`);
     },
     onError: (error: Error) => {
       logger.error('Failed to update product visibility', { error });
@@ -610,15 +612,22 @@ export default function StorefrontProducts() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {product.in_stock ? (
-                          <Badge variant="outline" className="bg-green-500/10 text-green-700">
-                            In Stock
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-red-500/10 text-red-700">
-                            Out of Stock
-                          </Badge>
-                        )}
+                        <div className="flex flex-col gap-1">
+                          {product.in_stock ? (
+                            <Badge variant="outline" className="bg-green-500/10 text-green-700">
+                              In Stock
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-red-500/10 text-red-700">
+                              Out of Stock
+                            </Badge>
+                          )}
+                          {!product.menu_visibility && (
+                            <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700">
+                              Hidden in Catalog
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-center">
                         <Switch

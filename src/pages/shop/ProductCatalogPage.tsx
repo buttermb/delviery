@@ -277,7 +277,12 @@ export function ProductCatalogPage() {
         logger.error('Products fetch failed', error, { storeId: store.id });
         throw error;
       }
-      return (data ?? []).map((item: unknown) => transformProduct(item as RpcProduct));
+      return (data ?? [])
+        .filter((item: unknown) => {
+          const rpc = item as RpcProduct;
+          return rpc.is_visible !== false;
+        })
+        .map((item: unknown) => transformProduct(item as RpcProduct));
     },
     enabled: !!store?.id,
     retry: 1,

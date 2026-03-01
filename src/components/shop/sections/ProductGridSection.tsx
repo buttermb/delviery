@@ -33,6 +33,7 @@ interface LocalProduct {
     in_stock?: boolean;
     strain_type?: string;
     quantity_available?: number;
+    is_visible?: boolean;
 }
 import { StorefrontProductCard, type MarketplaceProduct } from "@/components/shop/StorefrontProductCard";
 
@@ -187,6 +188,28 @@ export function ProductGridSection({ content, styles, storeId, storeSlug: storeS
                             stock_quantity: (prod?.in_stock as boolean) ? 100 : 0,
                         } satisfies MarketplaceProduct;
                     });
+                    // Normalize RPC data to LocalProduct interface
+                    return ((data as unknown[]) ?? []).filter((item: unknown) => {
+                        const p = item as Record<string, unknown>;
+                        return p.is_visible !== false;
+                    }).map((item: unknown) => {
+                        const p = item as Record<string, unknown>;
+                        const qty = (p.stock_quantity as number) ?? 0;
+                        return {
+                            id: (p.product_id || p.id) as string,
+                            name: (p.product_name || p.name) as string,
+                            price: (p.base_price || p.price || 0) as number,
+                            description: p.description as string | undefined,
+                            images: (p.images as string[]) ?? [],
+                            category: p.category as string | undefined,
+                            in_stock: qty > 0,
+                            strain_type: (p.strain_type as string) ?? '',
+                            quantity_available: qty,
+                        };
+                    }) as LocalProduct[];
+                } catch (err) {
+                    logger.error('Error fetching marketplace products', err);
+                    return [];
                 }
 
                 return ((data as unknown[]) ?? []).map((item: unknown) => {
@@ -439,6 +462,42 @@ export function ProductGridSection({ content, styles, storeId, storeSlug: storeS
                                                     onQuickAdd={(e) => handleQuickAdd(e, { ...product, id: product.id || '' })}
                                                 />
                                             ))}
+                                        {/* Responsive Product Grid */}
+                                        <div className={`grid ${gridColsClass} gap-3 md:gap-6`}>
+                                                {products.map((product, index) => (
+                                                    <div key={product.id || index}>
+                                                        <StorefrontProductCard
+                                                            product={{
+                                                                product_id: product.id ?? '',
+                                                                product_name: product.name ?? '',
+                                                                category: product.category ?? '',
+                                                                strain_type: product.strain_type ?? '',
+                                                                price: Number(product.price) || 0,
+                                                                description: product.description ?? '',
+                                                                image_url: product.images?.[0] || null,
+                                                                images: product.images ?? [],
+                                                                thc_content: null,
+                                                                cbd_content: null,
+                                                                is_visible: true,
+                                                                display_order: 0,
+                                                                stock_quantity: product.quantity_available ?? (product.in_stock ? 100 : 0)
+                                                            }}
+                                                            storeSlug=""
+                                                            isPreviewMode={false}
+                                                            onQuickAdd={(e) => handleQuickAdd(e, { ...product, id: product.id || '' })}
+                                                            isAdded={false}
+                                                            onToggleWishlist={() => { }}
+                                                            isInWishlist={false}
+                                                            onQuickView={() => { }}
+                                                            index={index}
+                                                            accentColor={accent_color}
+                                                            showSaleBadge={show_sale_badges}
+                                                            showNewBadge={show_new_badges}
+                                                            showStrainBadge={show_strain_badges}
+                                                            showStockWarning={show_stock_warnings}
+                                                        />
+                                                    </div>
+                                                ))}
                                         </div>
                                     </div>
                                 );
