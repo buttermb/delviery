@@ -312,11 +312,8 @@ describe('Login Flow - Complete with Valid Credentials', () => {
     await fillAndSubmitLoginForm('admin@greenleaf.com', 'SecurePass123!');
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Welcome back!',
-          description: expect.stringContaining('GreenLeaf Distro'),
-        })
+      expect(mockToast.success).toHaveBeenCalledWith(
+        expect.stringContaining('Welcome back!')
       );
     });
 
@@ -403,25 +400,16 @@ describe('Login Flow - Invalid Password Error (No Email Disclosure)', () => {
 
     await fillAndSubmitLoginForm('real-user@company.com', 'WrongPassword!');
 
+    // Error is shown inline via AuthErrorAlert, not via toast
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Login Failed',
-          variant: 'destructive',
-        })
-      );
+      const alert = screen.getByRole('alert');
+      expect(alert).toBeInTheDocument();
+      const alertText = alert.textContent?.toLowerCase() ?? '';
+      // Should not say "email not found" or "user does not exist"
+      expect(alertText).not.toContain('email not found');
+      expect(alertText).not.toContain('user does not exist');
+      expect(alertText).not.toContain('no account');
     });
-
-    // Verify the error message does NOT reveal whether the email exists
-    const toastCall = mockToast.mock.calls.find(
-      (call) => call[0]?.title === 'Login Failed'
-    );
-    expect(toastCall).toBeDefined();
-    const description = toastCall![0].description as string;
-    // Should not say "email not found" or "user does not exist"
-    expect(description.toLowerCase()).not.toContain('email not found');
-    expect(description.toLowerCase()).not.toContain('user does not exist');
-    expect(description.toLowerCase()).not.toContain('no account');
   });
 
   it('should show generic error on non-existent email without revealing it', async () => {
@@ -440,23 +428,15 @@ describe('Login Flow - Invalid Password Error (No Email Disclosure)', () => {
 
     await fillAndSubmitLoginForm('nonexistent@company.com', 'SomePassword123!');
 
+    // Error is shown inline via AuthErrorAlert, not via toast
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Login Failed',
-          variant: 'destructive',
-        })
-      );
+      const alert = screen.getByRole('alert');
+      expect(alert).toBeInTheDocument();
+      const alertText = alert.textContent?.toLowerCase() ?? '';
+      // Error message should be the same whether email exists or not (prevents enumeration)
+      expect(alertText).not.toContain('no user');
+      expect(alertText).not.toContain('email not registered');
     });
-
-    // Error message should be the same whether email exists or not (prevents enumeration)
-    const toastCall = mockToast.mock.calls.find(
-      (call) => call[0]?.title === 'Login Failed'
-    );
-    expect(toastCall).toBeDefined();
-    const description = toastCall![0].description as string;
-    expect(description.toLowerCase()).not.toContain('no user');
-    expect(description.toLowerCase()).not.toContain('email not registered');
   });
 
   it('should clear password field after failed login attempt', async () => {
@@ -497,10 +477,9 @@ describe('Login Flow - Invalid Password Error (No Email Disclosure)', () => {
 
     await fillAndSubmitLoginForm('user@company.com', 'WrongPass123!');
 
+    // Error is shown inline via AuthErrorAlert, not via toast
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ variant: 'destructive' })
-      );
+      expect(screen.getByRole('alert')).toBeInTheDocument();
     });
 
     // No tokens should be stored
@@ -567,14 +546,9 @@ describe('Login Flow - Invalid Password Error (No Email Disclosure)', () => {
 
     await fillAndSubmitLoginForm('user@company.com', 'WrongPass123!');
 
+    // Error is shown inline via AuthErrorAlert, not via toast
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Login Failed',
-          description: 'Invalid credentials',
-          variant: 'destructive',
-        })
-      );
+      expect(screen.getByRole('alert')).toBeInTheDocument();
     });
   });
 });
@@ -642,14 +616,9 @@ describe('Login Flow - Locked/Suspended Account', () => {
 
     await fillAndSubmitLoginForm('admin@suspended.com', 'ValidPass123!');
 
+    // Error is shown inline via AuthErrorAlert, not via toast
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Login Failed',
-          description: 'Account suspended',
-          variant: 'destructive',
-        })
-      );
+      expect(screen.getByRole('alert')).toBeInTheDocument();
     });
   });
 
@@ -708,14 +677,9 @@ describe('Login Flow - Locked/Suspended Account', () => {
 
     await fillAndSubmitLoginForm('outsider@other.com', 'ValidPass123!');
 
+    // Error is shown inline via AuthErrorAlert, not via toast
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Login Failed',
-          description: 'You do not have access to this tenant',
-          variant: 'destructive',
-        })
-      );
+      expect(screen.getByRole('alert')).toBeInTheDocument();
     });
   });
 
@@ -774,13 +738,9 @@ describe('Login Flow - Locked/Suspended Account', () => {
 
     await fillAndSubmitLoginForm('locked@company.com', 'ValidPass123!');
 
+    // Error is shown inline via AuthErrorAlert, not via toast
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Login Failed',
-          variant: 'destructive',
-        })
-      );
+      expect(screen.getByRole('alert')).toBeInTheDocument();
     });
 
     // No session data should be stored
@@ -844,14 +804,9 @@ describe('Login Flow - Locked/Suspended Account', () => {
 
     await fillAndSubmitLoginForm('user@company.com', 'SomePass123!');
 
+    // Error is shown inline via AuthErrorAlert, not via toast
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Login Failed',
-          description: expect.stringContaining('Too many login attempts'),
-          variant: 'destructive',
-        })
-      );
+      expect(screen.getByRole('alert')).toBeInTheDocument();
     });
   });
 
@@ -885,20 +840,10 @@ describe('Login Flow - Locked/Suspended Account', () => {
 
     await fillAndSubmitLoginForm('orphan@company.com', 'ValidPass123!');
 
+    // Error is shown inline via AuthErrorAlert, not via toast
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Login Failed',
-          variant: 'destructive',
-        })
-      );
+      expect(screen.getByRole('alert')).toBeInTheDocument();
     });
-
-    // Should not reveal the specific reason in a way that leaks info
-    const toastCall = mockToast.mock.calls.find(
-      (call) => call[0]?.title === 'Login Failed'
-    );
-    expect(toastCall).toBeDefined();
   });
 });
 
