@@ -69,7 +69,7 @@ export default function Webhooks() {
       try {
         const { data, error } = await supabase
           .from(TABLE_WEBHOOKS)
-          .select('*')
+          .select('id, name, url, events, secret, status, is_active, last_triggered_at, integration_id, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 

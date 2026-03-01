@@ -158,7 +158,7 @@ async function fetchActiveFlags(
 
     const { data: simpleData, error: simpleError } = await supabase
       .from('customer_flags')
-      .select('*')
+      .select('id, tenant_id, customer_id, flag_type, flag_reason, reason_details, is_active, created_by, created_at, updated_at, resolved_at, resolved_by, resolution_notes')
       .eq('tenant_id', tenantId)
       .eq('customer_id', customerId)
       .eq('is_active', true)
@@ -186,7 +186,7 @@ async function fetchFlagHistory(
 ): Promise<CustomerFlagWithCreator[]> {
   const { data, error } = await supabase
     .from('customer_flags')
-    .select('*')
+    .select('id, tenant_id, customer_id, flag_type, flag_reason, reason_details, is_active, created_by, created_at, updated_at, resolved_at, resolved_by, resolution_notes')
     .eq('tenant_id', tenantId)
     .eq('customer_id', customerId)
     .order('created_at', { ascending: false })
@@ -449,7 +449,7 @@ export async function getActiveCustomerFlags(
   try {
     const { data, error } = await supabase
       .from('customer_flags')
-      .select('*')
+      .select('id, tenant_id, customer_id, flag_type, flag_reason, reason_details, is_active, created_by, created_at, updated_at, resolved_at, resolved_by, resolution_notes')
       .eq('tenant_id', tenantId)
       .eq('customer_id', customerId)
       .eq('is_active', true);

@@ -195,7 +195,7 @@ export default function ProductManagement() {
       // Find the marketplace profile for this tenant
       const { data: profile } = await supabase
         .from('marketplace_profiles')
-        .select('*')
+        .select('id, tenant_id')
         .eq('tenant_id', tenant?.id)
         .maybeSingle();
 
@@ -266,7 +266,7 @@ export default function ProductManagement() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('marketplace_stores')
-        .select('*')
+        .select('id, tenant_id')
         .eq('tenant_id', tenant?.id)
         .maybeSingle();
       if (error) {
@@ -285,7 +285,7 @@ export default function ProductManagement() {
       if (!tenant?.id) return [];
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('id, name, sku, category, vendor_name, strain_name, strain_type, thc_percent, cbd_percent, batch_number, cost_per_unit, wholesale_price, retail_price, available_quantity, description, image_url, low_stock_alert, metrc_retail_id, exclude_from_discounts, minimum_price, version, price, thca_percentage, fronted_quantity, barcode, barcode_image_url, tenant_id, created_at, coa_url, lab_results_url, menu_visibility')
         .eq('tenant_id', tenant.id)
         .order('name');
       if (error) {

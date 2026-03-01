@@ -65,7 +65,7 @@ export function useRecentClients() {
       // Fetch clients with their last order info
       const { data: clients, error } = await supabase
         .from('wholesale_clients')
-        .select('*')
+        .select('id, business_name, contact_name, credit_limit, outstanding_balance, status, address, phone, email')
         .eq('tenant_id', tenant.id)
         .in('id', clientIds);
 

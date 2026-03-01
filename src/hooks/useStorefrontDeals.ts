@@ -35,7 +35,7 @@ export function useStorefrontDeals(storeId: string | undefined) {
             try {
                 const { data, error } = await supabase
                     .from('marketplace_deals')
-                    .select('*')
+                    .select('id, name, description, discount_type, discount_value, applies_to, target_value, active_days, is_active, start_date, end_date, min_order_amount, first_time_only, image_url')
                     .eq('store_id', storeId)
                     .eq('is_active', true)
                     .order('created_at', { ascending: false });

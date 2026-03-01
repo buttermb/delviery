@@ -56,7 +56,7 @@ export function ChatDrawer({
             if (conversationId) {
                 const { data, error } = await supabase
                     .from('conversations')
-                    .select('*')
+                    .select('id, order_id, store_id, tenant_id, customer_id, customer_name, order_number, status, last_message_at, created_at')
                     .eq('id', conversationId)
                     .maybeSingle();
 
@@ -68,7 +68,7 @@ export function ChatDrawer({
             if (orderId) {
                 const { data: existingConv } = await supabase
                     .from('conversations')
-                    .select('*')
+                    .select('id, order_id, store_id, tenant_id, customer_id, customer_name, order_number, status, last_message_at, created_at')
                     .eq('order_id', orderId)
                     .maybeSingle();
 
@@ -80,7 +80,7 @@ export function ChatDrawer({
                 // Get order details
                 const { data: order } = await supabase
                     .from('marketplace_orders')
-                    .select('*')
+                    .select('id, store_id, buyer_tenant_id, buyer_user_id, customer_name')
                     .eq('id', orderId)
                     .maybeSingle();
 
@@ -118,7 +118,7 @@ export function ChatDrawer({
 
             const { data, error } = await supabase
                 .from('messages')
-                .select('*')
+                .select('id, conversation_id, sender_id, sender_type, sender_name, content, message_type, read_at, delivered_at, created_at')
                 .eq('conversation_id', activeConversationId)
                 .order('created_at', { ascending: true });
 

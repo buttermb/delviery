@@ -103,7 +103,7 @@ export default function ReturnsManagementPage() {
     queryFn: async () => {
       let query = supabase
         .from("return_authorizations" as 'tenants') // Supabase type limitation
-        .select("*")
+        .select('id, ra_number, order_id, order_number, customer_id, customer_name, status, reason, return_method, total_amount, refund_amount, restocking_fee, notes, created_at, updated_at, received_at, processed_at')
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {

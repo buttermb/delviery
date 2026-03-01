@@ -97,7 +97,7 @@ export function WorkflowCanvas() {
     try {
       const { data, error } = await supabase
         .from('workflow_definitions')
-        .select('*')
+        .select('id, name, description, trigger_type, trigger_config, actions, is_active, tenant_id, created_at, updated_at')
         .eq('tenant_id', tenant?.id)
         .order('created_at', { ascending: false });
 
@@ -114,7 +114,7 @@ export function WorkflowCanvas() {
     try {
       const { data, error } = await supabase
         .from('workflow_definitions')
-        .select('*')
+        .select('id, name, description, trigger_type, trigger_config, actions, is_active, tenant_id, created_at, updated_at')
         .eq('tenant_id', tenant?.id)
         .eq('is_active', false)
         .in('name', [
@@ -140,7 +140,7 @@ export function WorkflowCanvas() {
     try {
       const { data, error } = await supabase
         .from('workflow_action_templates')
-        .select('*')
+        .select('id, name, category, icon, description, default_config')
         .order('category', { ascending: true });
 
       if (error) throw error;

@@ -44,7 +44,7 @@ export function CreditUsageChart({ className, days = 30 }: CreditUsageChartProps
       // Get transactions for the period
       const { data: transactions, error } = await supabase
         .from('credit_transactions')
-        .select('*')
+        .select('id, amount, metadata, created_at')
         .eq('tenant_id', tenant.id)
         .eq('transaction_type', 'usage')
         .gte('created_at', startDate.toISOString())

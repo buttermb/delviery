@@ -112,7 +112,7 @@ export function CommunicationHistory({
       const { data, error } = await supabase
         .from('customer_communications')
         .select(`
-          *,
+          id, communication_type, subject, body, status, sent_at, created_at,
           profiles:created_by(full_name)
         `)
         .eq('customer_id', customerId)
@@ -158,7 +158,7 @@ export function CommunicationHistory({
       // Get status history for these orders
       const { data: statusHistory, error: statusError } = await supabase
         .from('order_status_history')
-        .select('*')
+        .select('id, order_id, new_status, notes, created_at')
         .in('order_id', orderIds)
         .order('created_at', { ascending: false });
 
@@ -192,7 +192,7 @@ export function CommunicationHistory({
       const { data, error } = await supabase
         .from('recall_notifications')
         .select(`
-          *,
+          id, notification_type, status, sent_at, created_at, recall_id,
           batch_recalls(recall_reason, product_name)
         `)
         .eq('customer_id', customerId)

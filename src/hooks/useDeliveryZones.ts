@@ -34,7 +34,7 @@ export function useDeliveryZones() {
 
       const { data, error } = await supabase
         .from('delivery_zones')
-        .select('*')
+        .select('id, tenant_id, name, description, color, polygon, zip_codes, delivery_fee, minimum_order, delivery_hours, estimated_time_min, estimated_time_max, is_active, priority, created_at, updated_at, created_by')
         .eq('tenant_id', tenantId)
         .order('priority', { ascending: false })
         .order('created_at', { ascending: false });
@@ -55,7 +55,7 @@ export function useDeliveryZones() {
 
     const { data, error } = await supabase
       .from('delivery_zones')
-      .select('*')
+      .select('id, tenant_id, name, description, color, polygon, zip_codes, delivery_fee, minimum_order, delivery_hours, estimated_time_min, estimated_time_max, is_active, priority, created_at, updated_at, created_by')
       .eq('id', zoneId)
       .eq('tenant_id', tenantId)
       .maybeSingle();

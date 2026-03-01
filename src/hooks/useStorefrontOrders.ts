@@ -80,7 +80,7 @@ export function useStorefrontOrders({
 
       let query = supabase
         .from('marketplace_orders')
-        .select('*')
+        .select('id, order_number, status, payment_status, total, total_amount, subtotal, delivery_fee, tax_amount, items, customer_name, customer_email, customer_phone, delivery_address, delivery_notes, tracking_token, created_at, updated_at, paid_at, cancellation_reason')
         .eq('store_id', storeId)
         .eq('customer_id', customerId)
         .order('created_at', { ascending: false });

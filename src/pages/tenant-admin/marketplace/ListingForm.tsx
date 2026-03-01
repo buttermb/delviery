@@ -128,7 +128,7 @@ export function ListingForm({ listingId, onSuccess }: ListingFormProps) {
 
       const { data, error } = await supabase
         .from('marketplace_listings')
-        .select('*')
+        .select('id, product_name, product_type, strain_type, description, base_price, bulk_pricing, min_order_quantity, max_order_quantity, quantity_available, unit_type, images, visibility, tags, lab_results, slug, status')
         .eq('id', listingId)
         .maybeSingle();
 

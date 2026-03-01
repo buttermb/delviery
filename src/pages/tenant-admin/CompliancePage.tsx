@@ -20,7 +20,7 @@ export default function CompliancePage() {
       try {
         const { data, error } = await supabase
           .from('compliance_settings' as 'tenants')
-          .select('*')
+          .select('id, tenant_id, data_encryption, gdpr_compliant, pci_compliant, access_controls_enabled, audit_logging_enabled')
           .eq('tenant_id', tenantId)
           .maybeSingle();
 

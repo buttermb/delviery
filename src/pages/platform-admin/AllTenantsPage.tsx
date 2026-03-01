@@ -28,7 +28,7 @@ export default function AllTenantsPage() {
         queryFn: async () => {
             const { data, error } = await supabase
                 .from('tenants')
-                .select('*')
+                .select('id, business_name, slug, subscription_plan, subscription_status, created_at')
                 .order('created_at', { ascending: false })
                 .limit(200);
 

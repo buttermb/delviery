@@ -48,7 +48,7 @@ export default function MarketplaceCategoryManager() {
             if (!tenant?.id) return [];
             const { data, error } = await supabase
                 .from('marketplace_categories')
-                .select('*')
+                .select('id, tenant_id, name, slug, description, parent_id, display_order, is_active, image_url, created_at')
                 .eq('tenant_id', tenant.id)
                 .order('display_order', { ascending: true });
             if (error) throw error;

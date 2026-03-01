@@ -83,7 +83,7 @@ export async function getOrCreateReferralCode(tenantId: string): Promise<Referra
     // Check for existing code
     const { data: existing } = await sb
       .from('referral_codes')
-      .select('*')
+      .select('id, tenant_id, code, referrer_bonus, referee_bonus, paid_conversion_bonus, max_uses, uses_count, is_active, expires_at, created_at')
       .eq('tenant_id', tenantId)
       .eq('is_active', true)
       .maybeSingle();
@@ -103,7 +103,7 @@ export async function getOrCreateReferralCode(tenantId: string): Promise<Referra
     // Fetch the created code
     const { data: created, error: refetchError } = await sb
       .from('referral_codes')
-      .select('*')
+      .select('id, tenant_id, code, referrer_bonus, referee_bonus, paid_conversion_bonus, max_uses, uses_count, is_active, expires_at, created_at')
       .eq('code', newCode)
       .maybeSingle();
 
@@ -126,7 +126,7 @@ export async function getReferralCode(tenantId: string): Promise<ReferralCode | 
   try {
     const { data, error } = await sb
       .from('referral_codes')
-      .select('*')
+      .select('id, tenant_id, code, referrer_bonus, referee_bonus, paid_conversion_bonus, max_uses, uses_count, is_active, expires_at, created_at')
       .eq('tenant_id', tenantId)
       .eq('is_active', true)
       .maybeSingle();
@@ -153,7 +153,7 @@ export async function validateReferralCode(code: string): Promise<{
   try {
     const { data, error } = await sb
       .from('referral_codes')
-      .select('*')
+      .select('id, tenant_id, code, referrer_bonus, referee_bonus, paid_conversion_bonus, max_uses, uses_count, is_active, expires_at, created_at')
       .eq('code', code.toUpperCase())
       .eq('is_active', true)
       .maybeSingle();

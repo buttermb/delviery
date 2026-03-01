@@ -55,7 +55,7 @@ export function useWorkflowVersions(workflowId: string | null) {
 
       const { data, error } = await supabase
         .from('workflow_versions')
-        .select('*')
+        .select('id, workflow_id, tenant_id, version_number, name, description, trigger_type, trigger_config, actions, conditions, is_active, created_by, created_at, change_summary, change_details, restored_from_version')
         .eq('workflow_id', workflowId)
         .eq('tenant_id', tenant.id)
         .order('version_number', { ascending: false });
@@ -149,7 +149,7 @@ export function useWorkflowVersionStats(workflowId: string | null) {
 
       const { data, error } = await supabase
         .from('workflow_versions')
-        .select('*')
+        .select('id, workflow_id, tenant_id, version_number, name, description, trigger_type, trigger_config, actions, conditions, is_active, created_by, created_at, change_summary, change_details, restored_from_version')
         .eq('workflow_id', workflowId)
         .eq('tenant_id', tenant.id)
         .order('version_number', { ascending: false });

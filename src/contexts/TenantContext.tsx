@@ -43,7 +43,7 @@ export function TenantProvider({ children, tenantId }: { children: React.ReactNo
 
       const { data, error } = await supabase
         .from('tenant_users')
-        .select('*')
+        .select('id, tenant_id, email, name, role, permissions, status, email_verified, invited_by, invited_at, accepted_at, last_login_at, created_at, updated_at')
         .eq('email', session.user.email ?? '')
         .maybeSingle();
 

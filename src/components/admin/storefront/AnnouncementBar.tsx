@@ -111,7 +111,7 @@ export function AnnouncementBar({ storeId }: AnnouncementBarProps) {
 
       let query = supabase
         .from('storefront_announcements')
-        .select('*')
+        .select('id, tenant_id, text, link_url, link_text, background_color, text_color, display_order, is_active, start_date, end_date, created_at, updated_at')
         .eq('tenant_id', tenantId)
         .order('display_order', { ascending: true });
 

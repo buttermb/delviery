@@ -294,7 +294,7 @@ export function ProductCatalogPage() {
 
       const { data, error } = await supabase
         .from('marketplace_categories')
-        .select('*')
+        .select('id, name, slug, display_order, is_active, store_id')
         .eq('store_id', store.id)
         .eq('is_active', true)
         .order('display_order');

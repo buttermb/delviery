@@ -66,7 +66,7 @@ export default function TenantDetailPage() {
 
       const { data, error } = await supabase
         .from("tenants")
-        .select("*")
+        .select("id, business_name, slug, owner_email, owner_name, phone, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id, payment_method_added, mrr, limits, usage, features, white_label, status, cancelled_at, last_activity_at, onboarded, created_at, updated_at, monthly_orders")
         .eq("id", tenantId)
         .maybeSingle();
 
@@ -88,7 +88,7 @@ export default function TenantDetailPage() {
 
       const { data } = await supabase
         .from("subscription_plans")
-        .select("*")
+        .select("id, name, display_name, description, features, price_monthly")
         .eq("name", tenant.subscription_plan)
         .maybeSingle();
 
@@ -105,7 +105,7 @@ export default function TenantDetailPage() {
 
       const { data } = await supabase
         .from("invoices")
-        .select("*")
+        .select("id, invoice_number, issue_date, due_date, total, subtotal, tax, status, billing_period_start, billing_period_end, stripe_invoice_id, line_items, amount_paid, amount_due")
         .eq("tenant_id", tenantId)
         .order("issue_date", { ascending: false })
         .limit(10);
@@ -123,7 +123,7 @@ export default function TenantDetailPage() {
 
       const { data } = await supabase
         .from("tenant_users")
-        .select("*")
+        .select("id, email, full_name, role, created_at")
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false });
 
@@ -140,7 +140,7 @@ export default function TenantDetailPage() {
 
       const { data } = await supabase
         .from("super_admin_audit_logs")
-        .select("*")
+        .select("id, action, details, created_at")
         .eq("entity_id", tenantId)
         .order("created_at", { ascending: false })
         .limit(50);

@@ -73,7 +73,7 @@ const CartDrawer = ({ open, onOpenChange }: CartDrawerProps) => {
       const productIds = guestCart.map(item => item.product_id);
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select('id, name, price, image_url, category, in_stock, prices, description')
         .in("id", productIds);
       if (error) throw error;
       return data as Product[];

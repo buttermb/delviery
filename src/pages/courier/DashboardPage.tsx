@@ -104,7 +104,7 @@ export default function CourierDashboardPage() {
       // RLS policies will automatically filter orders by courier's tenant_id
       const { data, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('id, order_number, customer_name, delivery_address, total_amount, created_at, status, delivery_borough')
         .eq('status', 'pending')
         .is('courier_id', null)
         .order('created_at', { ascending: false })

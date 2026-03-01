@@ -105,7 +105,7 @@ export function OrderDetailPage() {
 
       const { data, error: fetchError } = await supabase
         .from('marketplace_orders')
-        .select('*')
+        .select('id, order_number, status, payment_status, total_amount, subtotal, delivery_fee, tax_amount, items, customer_name, customer_email, customer_phone, delivery_address, delivery_notes, tracking_token, created_at, updated_at, paid_at, store_id, customer_id')
         .eq('id', orderId)
         .eq('store_id', store.id)
         .eq('customer_id', customerId)

@@ -57,7 +57,7 @@ export default function CustomIntegrations() {
       try {
         const { data, error } = await supabase
           .from('custom_integrations')
-          .select('*')
+          .select('id, name, type, config, status, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 

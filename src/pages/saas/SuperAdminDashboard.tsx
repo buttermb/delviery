@@ -56,7 +56,7 @@ export default function SuperAdminDashboard() {
     queryKey: queryKeys.superAdminTools.platformStatsSimple(),
     queryFn: async () => {
       // Get all tenants (super admin bypasses RLS)
-      const { data: tenants } = await supabase.from('tenants').select('*');
+      const { data: tenants } = await supabase.from('tenants').select('id, subscription_status, subscription_plan, created_at, cancelled_at');
 
       const totalTenants = tenants?.length ?? 0;
       const activeTrials = tenants?.filter((t) => isTrial(t.subscription_status)).length ?? 0;
@@ -108,7 +108,7 @@ export default function SuperAdminDashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tenants')
-        .select('*')
+        .select('id, business_name, slug, owner_email, owner_name, phone, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id, payment_method_added, mrr, limits, usage, features, white_label, status, cancelled_at, last_activity_at, onboarded, created_at, updated_at')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -124,7 +124,7 @@ export default function SuperAdminDashboard() {
   const { data: featureFlags } = useQuery({
     queryKey: queryKeys.saasAdmin.featureFlags(),
     queryFn: async () => {
-      const { data, error } = await supabase.from('feature_flags').select('*');
+      const { data, error } = await supabase.from('feature_flags').select('id, name, description, enabled_for_plans, rollout_percentage, enabled');
       if (error) throw error;
       return data;
     },

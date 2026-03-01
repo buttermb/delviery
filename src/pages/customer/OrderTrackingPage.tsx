@@ -110,7 +110,7 @@ export default function OrderTrackingPage() {
       if (customerEmail) {
         const { data: sfData, error: sfError } = await supabase
           .from("marketplace_orders")
-          .select("*")
+          .select('id, status, tracking_token, shipping_address, total_amount, shipping_cost, delivered_at, created_at, items, delivery_notes')
           .eq("id", orderId)
           .eq("seller_tenant_id", tenantId)
           .eq("customer_email", customerEmail.toLowerCase())

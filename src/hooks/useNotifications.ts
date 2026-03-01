@@ -99,7 +99,7 @@ export function useNotifications(): UseNotificationsResult {
         // Either targeted at current user or broadcast (user_id is null)
         let query = supabase
           .from('notifications')
-          .select('*')
+          .select('id, tenant_id, user_id, title, message, type, entity_type, entity_id, read, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 
@@ -348,7 +348,7 @@ export const useSendNotification = () => {
       // Get order details
       const { data: order, error: orderError } = await supabase
         .from('menu_orders')
-        .select('*')
+        .select('id, total_amount, contact_phone, status')
         .eq('id', orderId)
         .eq('tenant_id', tenant.id)
         .maybeSingle();

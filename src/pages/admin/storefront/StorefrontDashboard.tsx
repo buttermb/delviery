@@ -105,7 +105,7 @@ export default function StorefrontDashboard() {
 
       const { data, error } = await supabase
         .from('marketplace_stores')
-        .select('*')
+        .select('id, tenant_id, store_name, slug, tagline, description, logo_url, banner_url, primary_color, is_active, is_public, created_at, updated_at')
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
 

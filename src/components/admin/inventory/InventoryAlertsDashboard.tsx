@@ -33,7 +33,7 @@ export function InventoryAlertsDashboard() {
       
       const { data, error } = await supabase
         .from('inventory_alerts')
-        .select('*')
+        .select('id, product_name, alert_type, severity, current_quantity, reorder_point, message, is_resolved, created_at')
         .eq('tenant_id', tenant.id)
         .eq('is_resolved', false)
         .order('severity', { ascending: false })

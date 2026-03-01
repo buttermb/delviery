@@ -32,7 +32,7 @@ export const CustomerActivityTimeline = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_access_logs')
-        .select('*')
+        .select('id, accessed_at, access_code_correct, ip_address, location')
         .eq('access_whitelist_id', whitelistId)
         .order('accessed_at', { ascending: false })
         .limit(50);
@@ -48,7 +48,7 @@ export const CustomerActivityTimeline = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_orders')
-        .select('*')
+        .select('id, created_at, total_amount, access_whitelist_id')
         .eq('access_whitelist_id', whitelistId)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -64,7 +64,7 @@ export const CustomerActivityTimeline = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_security_events')
-        .select('*')
+        .select('id, created_at, event_type')
         .eq('access_whitelist_id', whitelistId)
         .order('created_at', { ascending: false })
         .limit(20);

@@ -48,7 +48,7 @@ export function useStorefrontSettings() {
       try {
         const { data, error } = await supabase
           .from('storefront_settings')
-          .select('*')
+          .select('id, tenant_id, store_name, store_description, logo_url, banner_url, primary_color, secondary_color, accent_color, font_family, custom_css, custom_domain, is_published, seo_title, seo_description, social_links, business_hours, contact_email, contact_phone, address, created_at, updated_at')
           .eq('tenant_id', tenant.id)
           .maybeSingle();
 

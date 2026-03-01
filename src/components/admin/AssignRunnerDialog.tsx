@@ -32,7 +32,7 @@ export function AssignRunnerDialog({ orderId, orderNumber, open, onOpenChange }:
       if (!tenant?.id) throw new Error('No tenant context');
       const { data, error } = await supabase
         .from("wholesale_runners")
-        .select("*")
+        .select('id, full_name, rating, phone, total_deliveries, vehicle_type')
         .eq("tenant_id", tenant.id)
         .eq("status", "available")
         .order("rating", { ascending: false });

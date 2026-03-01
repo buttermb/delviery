@@ -83,7 +83,7 @@ export function useEventNotifications({
 
       const { data, error } = await supabase
         .from('notification_preferences')
-        .select('*')
+        .select('email_enabled, sms_enabled, push_enabled, email_all_updates, sms_all_updates, push_all_updates')
         .eq('user_id', admin.id)
         .maybeSingle();
 

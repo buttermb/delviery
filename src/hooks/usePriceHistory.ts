@@ -102,7 +102,7 @@ export function usePriceHistory(productId: string | undefined, timeRange: '30d' 
 
       let query = supabase
         .from('pricing_history')
-        .select('*')
+        .select('id, product_id, tenant_id, changed_by, wholesale_price_old, wholesale_price_new, retail_price_old, retail_price_new, cost_per_unit_old, cost_per_unit_new, change_reason, change_source, created_at')
         .eq('product_id', productId)
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: true });

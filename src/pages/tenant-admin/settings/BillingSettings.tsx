@@ -207,7 +207,7 @@ export default function BillingSettings() {
 
       const { data } = await supabase
         .from('invoices')
-        .select('*')
+        .select('id, invoice_number, issue_date, due_date, total, subtotal, tax, status, line_items')
         .eq('tenant_id', tenantId)
         .order('issue_date', { ascending: false })
         .limit(10);
@@ -223,7 +223,7 @@ export default function BillingSettings() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('subscription_plans')
-        .select('*')
+        .select('id, name, display_name, description, price_monthly, is_active, limits, features')
         .eq('is_active', true)
         .order('price_monthly');
 

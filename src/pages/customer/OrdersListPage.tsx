@@ -88,7 +88,7 @@ export default function OrdersListPage() {
 
       const { data, error } = await supabase
         .from("orders")
-        .select("*")
+        .select('id, order_number, status, created_at, total_amount, delivery_address')
         .eq("tenant_id", tenantId)
         .eq("customer_id", customerId)
         .order("created_at", { ascending: false });

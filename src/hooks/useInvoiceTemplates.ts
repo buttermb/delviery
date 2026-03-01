@@ -82,7 +82,7 @@ export function useInvoiceTemplates() {
 
       const { data, error } = await supabase
         .from("invoice_templates")
-        .select("*")
+        .select('id, tenant_id, name, description, template_data, is_default, is_system, created_at, updated_at')
         .eq("tenant_id", tenant.id)
         .order("is_default", { ascending: false })
         .order("name");

@@ -84,7 +84,7 @@ export function useProductTags() {
 
       const { data, error } = await supabase
         .from('product_tags')
-        .select('*')
+        .select('id, tenant_id, name, color, created_at')
         .eq('tenant_id', tenant.id)
         .order('name', { ascending: true });
 
@@ -120,7 +120,7 @@ export function usePopularProductTags(limit = 10) {
       // First get all tags
       const { data: tags, error: tagsError } = await supabase
         .from('product_tags')
-        .select('*')
+        .select('id, tenant_id, name, color, created_at')
         .eq('tenant_id', tenant.id);
 
       if (tagsError && (tagsError as { code?: string }).code === '42P01') {
@@ -180,7 +180,7 @@ export function useProductTagAssignments(productId: string | undefined) {
       // First get assignments
       const { data: assignments, error: assignError } = await supabase
         .from('product_tag_assignments')
-        .select('*')
+        .select('id, product_id, tag_id')
         .eq('product_id', productId);
 
       if (assignError && (assignError as { code?: string }).code === '42P01') {
@@ -198,7 +198,7 @@ export function useProductTagAssignments(productId: string | undefined) {
       const tagIds = assignments.map(a => a.tag_id);
       const { data: tags, error: tagsError } = await supabase
         .from('product_tags')
-        .select('*')
+        .select('id, tenant_id, name, color, created_at')
         .in('id', tagIds)
         .eq('tenant_id', tenant.id);
 
@@ -455,7 +455,7 @@ export function useSearchProductTags(searchTerm: string) {
 
       const { data, error } = await supabase
         .from('product_tags')
-        .select('*')
+        .select('id, tenant_id, name, color, created_at')
         .eq('tenant_id', tenant.id)
         .ilike('name', `%${escapePostgresLike(searchTerm)}%`)
         .order('name', { ascending: true })
@@ -490,7 +490,7 @@ export function useProductTagsByIds(tagIds: string[]) {
 
       const { data, error } = await supabase
         .from('product_tags')
-        .select('*')
+        .select('id, tenant_id, name, color, created_at')
         .eq('tenant_id', tenant.id)
         .in('id', tagIds);
 

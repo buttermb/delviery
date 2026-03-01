@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { ShoppingBag, Loader2, Sparkles, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
-import { Database } from "@/integrations/supabase/types";
+
 import { Link } from "react-router-dom";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
@@ -35,7 +35,7 @@ export default function CustomerLoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [tenant, setTenant] = useState<Database['public']['Tables']['tenants']['Row'] | null>(null);
+  const [tenant, setTenant] = useState<{ id: string; slug: string; business_name: string | null } | null>(null);
   const [tenantLoading, setTenantLoading] = useState(true);
 
   const { isOnline, hasQueuedAttempt, queueLoginAttempt } = useAuthOffline(
@@ -85,7 +85,7 @@ export default function CustomerLoginPage() {
       if (tenantSlug) {
         const { data, error } = await supabase
           .from("tenants")
-          .select("*")
+          .select('id, slug, business_name')
           .eq("slug", tenantSlug)
           .maybeSingle();
 

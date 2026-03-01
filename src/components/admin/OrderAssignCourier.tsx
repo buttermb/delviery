@@ -78,7 +78,7 @@ export function OrderAssignCourier({
 
       const { data, error } = await supabase
         .from('couriers')
-        .select('*')
+        .select('id, full_name, phone, email, vehicle_type, vehicle_plate, is_online, is_active, rating, total_deliveries, current_lat, current_lng')
         .eq('tenant_id', tenant.id)
         .eq('is_active', true)
         .order('is_online', { ascending: false })

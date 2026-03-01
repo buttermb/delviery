@@ -49,7 +49,7 @@ export default function PrioritySupport() {
       try {
         const { data, error } = await supabase
           .from('support_tickets')
-          .select('*')
+          .select('id, subject, description, priority, status, created_at, tenant_id')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(50);

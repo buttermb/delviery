@@ -55,7 +55,7 @@ export function useVendorsWithStats() {
       // Fetch vendors
       const { data: vendors, error: vendorsError } = await supabase
         .from('vendors')
-        .select('*')
+        .select('id, name, contact_name, contact_email, contact_phone, address, city, state, zip_code, license_number, payment_terms, lead_time_days, status, notes')
         .eq('account_id', tenantId)
         .order('name');
 
@@ -178,7 +178,7 @@ export function useVendorDetails(vendorName: string | null | undefined) {
 
       const { data: vendor, error } = await supabase
         .from('vendors')
-        .select('*')
+        .select('id, name, contact_name, contact_email, contact_phone, address, city, state, zip_code, license_number, payment_terms, lead_time_days, status, notes')
         .eq('account_id', tenantId)
         .eq('name', vendorName)
         .maybeSingle();
@@ -198,7 +198,7 @@ export function useVendorDetails(vendorName: string | null | undefined) {
       // Fetch product count
       const { count: productCount } = await supabase
         .from('products')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
         .eq('vendor_name', vendorName);
 

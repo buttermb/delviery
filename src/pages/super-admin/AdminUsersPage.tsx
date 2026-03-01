@@ -46,7 +46,7 @@ export default function AdminUsersPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('admin_users')
-        .select('*')
+        .select('id, user_id, email, full_name, role, is_active, created_at, last_login_at')
         .order('created_at', { ascending: false })
         .limit(200);
 

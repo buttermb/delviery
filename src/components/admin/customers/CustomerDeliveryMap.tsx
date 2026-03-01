@@ -148,7 +148,7 @@ export function CustomerDeliveryMap({ customerId, customerName }: CustomerDelive
 
       const { data, error } = await supabase
         .from('customer_delivery_addresses')
-        .select('*')
+        .select('id, label, street_address, apartment, city, state, zip_code, latitude, longitude, is_primary, delivery_instructions')
         .eq('customer_id', customerId)
         .eq('tenant_id', tenant.id)
         .order('is_primary', { ascending: false });

@@ -64,7 +64,7 @@ export default function MarketingAutomationPage() {
       try {
         const { data, error } = await supabase
           .from('marketing_campaigns')
-          .select('*')
+          .select('id, name, type, status, subject, content, audience_config, scheduled_at, sent_at, created_at')
           .eq('tenant_id', tenant?.id)
           .order('created_at', { ascending: false });
 

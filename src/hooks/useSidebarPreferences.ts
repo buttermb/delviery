@@ -99,7 +99,7 @@ export function useSidebarPreferences() {
 
       const { data, error } = await supabase
         .from('sidebar_preferences')
-        .select('*')
+        .select('collapsed_sections, operation_size, custom_layout, favorites, pinned_items, last_accessed_features, hidden_features, section_order, custom_sections, enabled_integrations, custom_menu_items, layout_preset, sidebar_behavior, custom_presets')
         .eq('tenant_id', tenant.id)
         .eq('user_id', userId)
         .maybeSingle();

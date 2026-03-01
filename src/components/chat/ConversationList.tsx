@@ -53,7 +53,7 @@ export function ConversationList({
         queryFn: async () => {
             let query = supabase
                 .from('conversations')
-                .select('*')
+                .select('id, order_id, order_number, customer_name, status, last_message_at, created_at')
                 .eq('status', 'active')
                 .order('last_message_at', { ascending: false, nullsFirst: false });
 

@@ -200,7 +200,7 @@ function useComplianceDocuments() {
             try {
                 const { data, error } = await supabase
                     .from('compliance_documents')
-                    .select('*')
+                    .select('id, name, document_type, file_url, expiration_date, status, created_at')
                     .eq('tenant_id', tenant.id)
                     .order('expiration_date', { ascending: true });
 

@@ -101,7 +101,7 @@ export default function CustomerForm() {
       setPageLoading(true);
       const { data, error } = await supabase
         .from('customers')
-        .select('*')
+        .select('id, first_name, last_name, email, phone, date_of_birth, address, customer_type, medical_card_number, medical_card_expiration, status, is_encrypted')
         .eq('id', id)
         .maybeSingle();
 

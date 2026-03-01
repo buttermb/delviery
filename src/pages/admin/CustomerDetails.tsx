@@ -118,7 +118,7 @@ export default function CustomerDetails() {
       // Load customer
       const { data: customerData, error: customerError } = await supabase
         .from('customers')
-        .select('*')
+        .select('id, account_id, tenant_id, first_name, last_name, email, phone, customer_type, date_of_birth, address, city, state, medical_card_number, medical_card_expiration, total_spent, total_orders, loyalty_points, last_purchase_at, created_at, preferred_contact, referral_source, source, type, admin_notes, is_encrypted')
         .eq('id', id)
         .eq('tenant_id', tenantId) // Ensure customer belongs to current tenant
         .maybeSingle();
@@ -182,7 +182,7 @@ export default function CustomerDetails() {
       // Load payments
       const { data: paymentsData, error: paymentsError } = await supabase
         .from('customer_payments')
-        .select('*')
+        .select('id, customer_id, amount, created_at, payment_method, payment_status')
         .eq('customer_id', id)
         .order('created_at', { ascending: false });
 

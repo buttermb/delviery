@@ -44,7 +44,7 @@ export default function BatchRecallPage() {
       try {
         const { data, error } = await supabase
           .from("batch_recalls")
-          .select("*")
+          .select('id, batch_number, batch_id, recall_reason, reason, severity, status, affected_customers, initiated_at, created_at')
           .eq("tenant_id", tenant.id)
           .order("initiated_at", { ascending: false });
 

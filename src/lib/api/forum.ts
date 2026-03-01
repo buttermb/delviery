@@ -32,10 +32,10 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<ForumPost
     let query = supabase
       .from('forum_posts')
       .select(`
-        *,
-        category:forum_categories(*),
+        id, category_id, author_id, tenant_id, title, content, content_type, link_url, linked_listing_id, images, upvote_count, downvote_count, comment_count, view_count, is_pinned, is_removed, created_at, updated_at,
+        category:forum_categories(id, name, slug, description, icon, color, member_count, post_count, display_order, created_at),
         author:forum_user_profiles(
-          *,
+          id, customer_user_id, tenant_id, username, display_name, bio, avatar_url, status, created_at, updated_at,
           customer_user:customer_users(id, email, first_name, last_name)
         ),
         linked_listing:marketplace_listings(
@@ -94,10 +94,10 @@ export async function getPostById(postId: string): Promise<ForumPost | null> {
     const { data, error } = await supabase
       .from('forum_posts')
       .select(`
-        *,
-        category:forum_categories(*),
+        id, category_id, author_id, tenant_id, title, content, content_type, link_url, linked_listing_id, images, upvote_count, downvote_count, comment_count, view_count, is_pinned, is_removed, created_at, updated_at,
+        category:forum_categories(id, name, slug, description, icon, color, member_count, post_count, display_order, created_at),
         author:forum_user_profiles(
-          *,
+          id, customer_user_id, tenant_id, username, display_name, bio, avatar_url, status, created_at, updated_at,
           customer_user:customer_users(id, email, first_name, last_name)
         ),
         linked_listing:marketplace_listings(
@@ -161,10 +161,10 @@ export async function createPost(post: CreatePostRequest): Promise<ForumPost> {
         tenant_id: profile.tenant_id,
       })
       .select(`
-        *,
-        category:forum_categories(*),
+        id, category_id, author_id, tenant_id, title, content, content_type, link_url, linked_listing_id, images, upvote_count, downvote_count, comment_count, view_count, is_pinned, is_removed, created_at, updated_at,
+        category:forum_categories(id, name, slug, description, icon, color, member_count, post_count, display_order, created_at),
         author:forum_user_profiles(
-          *,
+          id, customer_user_id, tenant_id, username, display_name, bio, avatar_url, status, created_at, updated_at,
           customer_user:customer_users(id, email, first_name, last_name)
         )
       `)
@@ -232,9 +232,9 @@ export async function getComments(postId: string): Promise<ForumComment[]> {
     const { data, error } = await supabase
       .from('forum_comments')
       .select(`
-        *,
+        id, post_id, parent_comment_id, author_id, content, upvote_count, downvote_count, depth, is_removed, created_at, updated_at,
         author:forum_user_profiles(
-          *,
+          id, customer_user_id, tenant_id, username, display_name, bio, avatar_url, status, created_at, updated_at,
           customer_user:customer_users(id, email, first_name, last_name)
         )
       `)
@@ -297,9 +297,9 @@ export async function createComment(comment: CreateCommentRequest): Promise<Foru
         depth,
       })
       .select(`
-        *,
+        id, post_id, parent_comment_id, author_id, content, upvote_count, downvote_count, depth, is_removed, created_at, updated_at,
         author:forum_user_profiles(
-          *,
+          id, customer_user_id, tenant_id, username, display_name, bio, avatar_url, status, created_at, updated_at,
           customer_user:customer_users(id, email, first_name, last_name)
         )
       `)
@@ -470,7 +470,7 @@ export async function getCategories(): Promise<ForumCategory[]> {
   try {
     const { data, error } = await supabase
       .from('forum_categories')
-      .select('*')
+      .select('id, name, slug, description, icon, color, member_count, post_count, display_order, created_at')
       .order('display_order');
 
     if (error) {
@@ -494,10 +494,10 @@ export async function searchPosts(query: string): Promise<ForumPost[]> {
     const { data, error } = await supabase
       .from('forum_posts')
       .select(`
-        *,
-        category:forum_categories(*),
+        id, category_id, author_id, tenant_id, title, content, content_type, link_url, linked_listing_id, images, upvote_count, downvote_count, comment_count, view_count, is_pinned, is_removed, created_at, updated_at,
+        category:forum_categories(id, name, slug, description, icon, color, member_count, post_count, display_order, created_at),
         author:forum_user_profiles(
-          *,
+          id, customer_user_id, tenant_id, username, display_name, bio, avatar_url, status, created_at, updated_at,
           customer_user:customer_users(id, email, first_name, last_name)
         )
       `)
@@ -525,7 +525,7 @@ export async function getUserReputation(userId: string): Promise<UserReputation 
   try {
     const { data, error } = await supabase
       .from('user_reputation')
-      .select('*')
+      .select('user_id, post_karma, comment_karma, total_karma, posts_created, comments_created, updated_at')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -554,7 +554,7 @@ export async function getForumProfile(customerUserId?: string): Promise<ForumUse
 
     const { data, error } = await supabase
       .from('forum_user_profiles')
-      .select('*')
+      .select('id, customer_user_id, tenant_id, username, display_name, bio, avatar_url, status, created_at, updated_at')
       .eq('customer_user_id', userId)
       .maybeSingle();
 
@@ -650,7 +650,7 @@ export async function getForumProfileByUsername(username: string): Promise<Forum
     const { data, error } = await supabase
       .from('forum_user_profiles')
       .select(`
-        *,
+        id, customer_user_id, tenant_id, username, display_name, bio, avatar_url, status, created_at, updated_at,
         customer_user:customer_users(id, email, first_name, last_name)
       `)
       .eq('username', username)
@@ -680,7 +680,7 @@ export async function getForumApproval(): Promise<ForumUserApproval | null> {
 
     const { data, error } = await supabase
       .from('forum_user_approvals')
-      .select('*')
+      .select('id, customer_user_id, tenant_id, status, auto_approved, approved_by, approved_at, rejection_reason, request_message, requested_at, created_at, updated_at')
       .eq('customer_user_id', user.id)
       .maybeSingle();
 
@@ -751,7 +751,7 @@ export async function getNotifications(limit = 20): Promise<ForumNotification[]>
 
     const { data, error } = await supabase
       .from('forum_notifications')
-      .select('*')
+      .select('id, user_id, type, post_id, comment_id, actor_id, title, message, action_url, read, created_at')
       .eq('user_id', profile.id)
       .order('created_at', { ascending: false })
       .limit(limit);

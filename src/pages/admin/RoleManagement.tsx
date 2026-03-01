@@ -95,7 +95,7 @@ export function RoleManagement() {
         // Fetch roles
         const { data: rolesData, error: rolesError } = await supabase
           .from('roles')
-          .select('*')
+          .select('id, name, description, is_system, created_at, updated_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 

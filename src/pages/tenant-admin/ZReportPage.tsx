@@ -28,7 +28,7 @@ export default function ZReportPage() {
 
       const { data, error } = await supabase
         .from('pos_shifts')
-        .select('*')
+        .select('id, shift_number, cashier_name, ended_at, total_sales, status')
         .eq('tenant_id', tenantId)
         .eq('status', 'closed')
         .order('ended_at', { ascending: false })

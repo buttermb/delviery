@@ -86,7 +86,7 @@ export default function CouponManagementPage() {
 
       let query = supabase
         .from("coupon_codes")
-        .select("*")
+        .select('id, code, description, discount_type, discount_value, status, used_count, total_usage_limit, never_expires, start_date, end_date, min_purchase, per_user_limit, created_at, updated_at')
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false });
 

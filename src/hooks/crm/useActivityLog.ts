@@ -23,7 +23,7 @@ export function useClientActivity(clientId: string | undefined) {
 
             const { data, error } = await supabase
                 .from('crm_activity_log')
-                .select('*')
+                .select('id, account_id, client_id, contact_id, activity_type, description, reference_id, reference_type, metadata, performed_by_user_id, performed_by_name, created_at')
                 .eq('client_id', clientId)
                 .eq('account_id', accountId)
                 .order('created_at', { ascending: false })
@@ -51,7 +51,7 @@ export function useRecentActivity(limit: number = 10) {
 
             const { data, error } = await supabase
                 .from('crm_activity_log')
-                .select('*, client:crm_clients(name)')
+                .select('id, account_id, client_id, contact_id, activity_type, description, reference_id, reference_type, metadata, performed_by_user_id, performed_by_name, created_at, client:crm_clients(name)')
                 .eq('account_id', accountId)
                 .order('created_at', { ascending: false })
                 .limit(limit);

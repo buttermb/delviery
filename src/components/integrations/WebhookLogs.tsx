@@ -46,7 +46,7 @@ export function WebhookLogs({ webhookId, limit = 10, showTitle = true }: Webhook
       try {
         let query = supabase
           .from('webhook_logs')
-          .select('*')
+          .select('id, webhook_id, event_type, payload, response_status, response_body, error_message, duration_ms, status, created_at, completed_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(limit);

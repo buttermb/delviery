@@ -147,7 +147,7 @@ export async function searchCustomerByEmail(email: string, tenantId: string): Pr
   
   const { data, error } = await supabase
     .from('customers')
-    .select('*')
+    .select('id, tenant_id, account_id, customer_type, status, total_spent, loyalty_points, loyalty_tier, is_encrypted, encryption_metadata, created_at, updated_at, first_name_encrypted, last_name_encrypted, email_encrypted, phone_encrypted, date_of_birth_encrypted, medical_card_number_encrypted, medical_card_state_encrypted, medical_card_expiration_encrypted, physician_name_encrypted, qualifying_conditions_encrypted, medical_card_photo_url_encrypted, allergies_encrypted, preferred_products_encrypted, preferred_strains_encrypted, email_search_index, phone_search_index, medical_card_number_search_index')
     .eq('tenant_id', tenantId)
     .eq('email_search_index', emailHash);
 
@@ -174,7 +174,7 @@ export async function searchCustomerByPhone(phone: string, tenantId: string): Pr
   
   const { data, error } = await supabase
     .from('customers')
-    .select('*')
+    .select('id, tenant_id, account_id, customer_type, status, total_spent, loyalty_points, loyalty_tier, is_encrypted, encryption_metadata, created_at, updated_at, first_name_encrypted, last_name_encrypted, email_encrypted, phone_encrypted, date_of_birth_encrypted, medical_card_number_encrypted, medical_card_state_encrypted, medical_card_expiration_encrypted, physician_name_encrypted, qualifying_conditions_encrypted, medical_card_photo_url_encrypted, allergies_encrypted, preferred_products_encrypted, preferred_strains_encrypted, email_search_index, phone_search_index, medical_card_number_search_index')
     .eq('tenant_id', tenantId)
     .eq('phone_search_index', phoneHash);
 
@@ -201,7 +201,7 @@ export async function searchCustomerByMedicalCard(cardNumber: string, tenantId: 
   
   const { data, error } = await supabase
     .from('customers')
-    .select('*')
+    .select('id, tenant_id, account_id, customer_type, status, total_spent, loyalty_points, loyalty_tier, is_encrypted, encryption_metadata, created_at, updated_at, first_name_encrypted, last_name_encrypted, email_encrypted, phone_encrypted, date_of_birth_encrypted, medical_card_number_encrypted, medical_card_state_encrypted, medical_card_expiration_encrypted, physician_name_encrypted, qualifying_conditions_encrypted, medical_card_photo_url_encrypted, allergies_encrypted, preferred_products_encrypted, preferred_strains_encrypted, email_search_index, phone_search_index, medical_card_number_search_index')
     .eq('tenant_id', tenantId)
     .eq('medical_card_number_search_index', cardHash);
 

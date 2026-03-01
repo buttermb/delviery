@@ -67,7 +67,7 @@ export function VendorProductCatalog({ vendorId, vendorName }: VendorProductCata
 
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('id, name, sku, category, price, stock_quantity, low_stock_alert, image_url, vendor_name')
         .eq('tenant_id', tenant.id)
         .eq('vendor_name', vendorName)
         .order('name');

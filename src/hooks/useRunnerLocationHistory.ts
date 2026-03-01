@@ -52,7 +52,7 @@ export function useRunnerLocationHistory({
 
       let query = supabase
         .from('runner_location_history')
-        .select('*')
+        .select('id, runner_id, delivery_id, latitude, longitude, accuracy, speed, heading, altitude, recorded_at, battery_level, is_moving')
         .eq('runner_id', runnerId)
         .order('recorded_at', { ascending: true });
 

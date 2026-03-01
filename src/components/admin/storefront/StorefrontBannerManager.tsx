@@ -76,7 +76,7 @@ export function StorefrontBannerManager({ storeId }: BannerManagerProps) {
         queryFn: async () => {
             const { data, error } = await supabase
                 .from('marketplace_banners')
-                .select('*')
+                .select('id, store_id, heading, subheading, button_text, button_link, image_url, display_order, is_active')
                 .eq('store_id', storeId)
                 .order('display_order', { ascending: true });
 

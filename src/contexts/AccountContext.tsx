@@ -66,7 +66,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
       // Get user profile first
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, user_id, account_id, full_name')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -96,7 +96,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
           // Get account separately
           const { data: accountData } = await supabase
             .from('accounts')
-            .select('*')
+            .select('id, company_name, slug, plan_id, status, trial_ends_at, billing_email, created_at')
             .eq('id', accountId)
             .maybeSingle();
 
@@ -106,7 +106,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
             // Get account settings
             const { data: settings } = await supabase
               .from('account_settings')
-              .select('*')
+              .select('id, account_id, business_license, tax_rate, state, operating_states, branding, compliance_settings, notification_settings, integration_settings')
               .eq('account_id', accountId)
               .maybeSingle();
 
@@ -141,7 +141,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
 
       const { data: targetAccount } = await supabase
         .from('accounts')
-        .select('*')
+        .select('id, company_name, slug, plan_id, status, trial_ends_at, billing_email, created_at')
         .eq('id', accountId)
         .maybeSingle();
 
@@ -150,7 +150,7 @@ export const AccountProvider = ({ children }: { children: ReactNode }) => {
 
         const { data: settings } = await supabase
           .from('account_settings')
-          .select('*')
+          .select('id, account_id, business_license, tax_rate, state, operating_states, branding, compliance_settings, notification_settings, integration_settings')
           .eq('account_id', accountId)
           .maybeSingle();
 

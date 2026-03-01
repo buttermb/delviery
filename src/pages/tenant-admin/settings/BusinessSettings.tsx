@@ -237,7 +237,7 @@ export default function BusinessSettings() {
       if (!tenant?.id) return;
       const { data } = await supabase
         .from('tenants')
-        .select('*')
+        .select('id, business_name, operating_settings, metadata')
         .eq('id', tenant.id)
         .maybeSingle();
 
@@ -259,7 +259,7 @@ export default function BusinessSettings() {
       // Get current settings first to merge (shallow merge for now)
       const { data: current } = await supabase
         .from('tenants')
-        .select('*')
+        .select('id, operating_settings, metadata')
         .eq('id', tenant.id)
         .maybeSingle();
 

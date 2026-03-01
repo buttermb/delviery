@@ -228,7 +228,7 @@ export function StorefrontLiveOrders() {
 
       let query = supabase
         .from('marketplace_orders')
-        .select('*')
+        .select('id, order_number, customer_name, customer_email, customer_phone, delivery_address, delivery_notes, subtotal, delivery_fee, total, total_amount, status, shipping_method, created_at, items, payment_status, payment_terms, stripe_payment_intent_id')
         .eq('store_id', store.id)
         .eq('seller_tenant_id', tenantId)
         .order('created_at', { ascending: false });

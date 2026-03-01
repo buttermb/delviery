@@ -150,7 +150,7 @@ function useSessionDetails(sessionId: string | null | undefined, tenantId: strin
       // Fallback to direct query
       const { data, error } = await supabase
         .from('storefront_sessions')
-        .select('*')
+        .select('id, session_token, source_type, started_at, ended_at, browsing_duration_seconds, page_views, items_viewed, items_added_to_cart, viewed_products, cart_history, converted_at, order_id, referrer, utm_source, utm_medium, utm_campaign, menu_id')
         .eq('id', sessionId)
         .eq('tenant_id', tenantId)
         .maybeSingle();

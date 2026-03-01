@@ -79,7 +79,7 @@ export function useTenantPaymentSettings() {
 
       const { data, error } = await supabase
         .from('tenant_payment_settings')
-        .select('*')
+        .select('accept_cash, accept_zelle, accept_cashapp, accept_bitcoin, accept_lightning, accept_ethereum, accept_usdt, zelle_username, zelle_phone, cashapp_username, bitcoin_address, lightning_address, ethereum_address, usdt_address, cash_instructions, zelle_instructions, cashapp_instructions, crypto_instructions')
         .eq('tenant_id', tenant.id)
         .maybeSingle();
 
@@ -120,7 +120,7 @@ export function useMenuPaymentSettings(menuId: string | undefined) {
       // Get tenant-level payment settings
       const { data: tenantSettings, error: settingsError } = await supabase
         .from('tenant_payment_settings')
-        .select('*')
+        .select('accept_cash, accept_zelle, accept_cashapp, accept_bitcoin, accept_lightning, accept_ethereum, accept_usdt, zelle_username, zelle_phone, cashapp_username, bitcoin_address, lightning_address, ethereum_address, usdt_address, cash_instructions, zelle_instructions, cashapp_instructions, crypto_instructions')
         .eq('tenant_id', menu.tenant_id)
         .maybeSingle();
 

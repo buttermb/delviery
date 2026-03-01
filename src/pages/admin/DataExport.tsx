@@ -33,7 +33,7 @@ export default function DataExport() {
       try {
         const { data, error } = await supabase
           .from('data_exports')
-          .select('*')
+          .select('id, data_type, format, created_at, status')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(20);

@@ -28,7 +28,7 @@ export function BigPlugRunnerPortal() {
       if (!runnerId) return null;
       const { data } = await supabase
         .from('wholesale_runners')
-        .select('*')
+        .select('id, full_name')
         .eq('id', runnerId)
         .maybeSingle();
       return data;

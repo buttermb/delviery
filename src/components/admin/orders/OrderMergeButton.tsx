@@ -151,7 +151,7 @@ export function OrderMergeDialog({
       const sourceOrderIds = sourceOrders.map(o => o.id);
       const { data: sourceItems, error: itemsError } = await supabase
         .from('order_items')
-        .select('*')
+        .select('id, order_id')
         .in('order_id', sourceOrderIds);
 
       if (itemsError) {

@@ -91,7 +91,7 @@ export default function FrontedInventoryDetails() {
       const { data: frontData, error: frontError } = await supabase
         .from("fronted_inventory")
         .select(`
-          *,
+          id, account_id, status, quantity_fronted, quantity_sold, quantity_returned, quantity_damaged, expected_revenue, expected_profit, cost_per_unit, payment_due_date, payment_status, fronted_to_customer_name, deal_type, dispatched_at, notes,
           products (name, sku, barcode, category),
           inventory_locations (location_name, location_type, address)
         `)
@@ -108,7 +108,7 @@ export default function FrontedInventoryDetails() {
       // Load scans
       const { data: scansData } = await supabase
         .from("fronted_inventory_scans")
-        .select("*")
+        .select("id, scan_type, quantity, scanned_at, notes, fronted_inventory_id, account_id")
         .eq("fronted_inventory_id", id)
         .eq("account_id", tenant.id)
         .order("scanned_at", { ascending: false });
@@ -118,7 +118,7 @@ export default function FrontedInventoryDetails() {
       // Load payments
       const { data: paymentsData } = await supabase
         .from("fronted_payments")
-        .select("*")
+        .select("id, amount, payment_method, received_at, notes, fronted_inventory_id")
         .eq("fronted_inventory_id", id)
         // Assuming fronted_payments also has account_id, if not we rely on fronted_inventory_id linkage which is now secured
         .order("received_at", { ascending: false });

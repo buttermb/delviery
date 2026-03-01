@@ -80,7 +80,7 @@ export function VendorManagement() {
     try {
       const { data, error } = await supabase
         .from('vendors')
-        .select('*')
+        .select('id, name, contact_name, contact_email, contact_phone, address, website, license_number, notes, status, account_id, created_at, updated_at')
         .eq('account_id', tenant.id)
         .order('name');
 

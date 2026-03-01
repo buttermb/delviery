@@ -42,7 +42,7 @@ export function ClientNotesPanel({ clientId }: ClientNotesPanelProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wholesale_client_notes")
-        .select("*")
+        .select('id, note, note_type, created_at, created_by, is_internal')
         .eq("client_id", clientId)
         .order("created_at", { ascending: false });
 

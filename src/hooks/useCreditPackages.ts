@@ -115,7 +115,7 @@ export function useCreditPackages(
     queryFn: async (): Promise<CreditPackageRow[]> => {
       let query = supabase
         .from('credit_packages')
-        .select('*');
+        .select('id, name, description, credits, bonus_credits, price_cents, stripe_price_id, is_active, sort_order, slug, badge, created_at, updated_at');
 
       if (!options.includeInactive) {
         query = query.eq('is_active', true);

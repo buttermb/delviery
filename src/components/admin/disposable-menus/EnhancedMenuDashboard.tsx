@@ -52,7 +52,7 @@ export function EnhancedMenuDashboard() {
       for (const menu of allMenus) {
         const { count } = await supabase
           .from('menu_access_logs')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('menu_id', menu.id);
         totalViews += count ?? 0;
       }
@@ -65,7 +65,7 @@ export function EnhancedMenuDashboard() {
       for (const menu of allMenus) {
         const { count } = await supabase
           .from('menu_orders')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('menu_id', menu.id)
           .gte('created_at', today.toISOString());
         todayOrders += count ?? 0;
@@ -87,7 +87,7 @@ export function EnhancedMenuDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from('menu_security_events')
-        .select('*')
+        .select('id, event_type, created_at')
         .order('created_at', { ascending: false })
         .limit(5);
 

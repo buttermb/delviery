@@ -98,7 +98,7 @@ export interface TenantUser {
 export async function getTenantFromSlug(slug: string): Promise<Tenant | null> {
   const { data, error } = await supabase
     .from('tenants')
-    .select('*')
+    .select('id, business_name, slug, owner_email, owner_name, phone, address, city, state, zip_code, tax_id, website, subscription_plan, subscription_status, trial_ends_at, subscription_started_at, subscription_current_period_start, subscription_current_period_end, stripe_customer_id, stripe_subscription_id, payment_method_added, next_billing_date, mrr, limits, usage, features, white_label, status, suspended_reason, cancelled_at, state_licenses, compliance_verified, onboarded, onboarded_at, last_activity_at, created_at, updated_at')
     .eq('slug', slug)
     .maybeSingle();
 
@@ -112,7 +112,7 @@ export async function getTenantFromSlug(slug: string): Promise<Tenant | null> {
 export async function getTenantById(tenantId: string): Promise<Tenant | null> {
   const { data, error } = await supabase
     .from('tenants')
-    .select('*')
+    .select('id, business_name, slug, owner_email, owner_name, phone, address, city, state, zip_code, tax_id, website, subscription_plan, subscription_status, trial_ends_at, subscription_started_at, subscription_current_period_start, subscription_current_period_end, stripe_customer_id, stripe_subscription_id, payment_method_added, next_billing_date, mrr, limits, usage, features, white_label, status, suspended_reason, cancelled_at, state_licenses, compliance_verified, onboarded, onboarded_at, last_activity_at, created_at, updated_at')
     .eq('id', tenantId)
     .maybeSingle();
 

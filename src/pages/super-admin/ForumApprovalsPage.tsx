@@ -48,7 +48,7 @@ export default function ForumApprovalsPage() {
       
       let query = supabase
         .from('forum_user_approvals')
-        .select('*')
+        .select('id, customer_user_id, request_message, status, requested_at, approved_at, approved_by, rejected_at, rejected_by, rejection_reason')
         .order('requested_at', { ascending: false });
 
       if (activeTab !== 'all') {

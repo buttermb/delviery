@@ -55,7 +55,7 @@ export default function AdvancedAnalytics() {
       try {
         const { data, error } = await supabase
           .from('customers')
-          .select('*')
+          .select('id, customer_type, tenant_id')
           .eq('tenant_id', tenantId);
 
         if (error && error.code === '42P01') return [];

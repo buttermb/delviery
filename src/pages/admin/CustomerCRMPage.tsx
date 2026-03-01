@@ -74,7 +74,7 @@ export default function CustomerCRMPage() {
       try {
         const { data, error } = await supabase
           .from("customers")
-          .select("*")
+          .select('id, first_name, last_name, email, phone, total_spent, loyalty_points, last_purchase_at, created_at, status, is_encrypted')
           .eq("tenant_id", tenant.id)
           .order("created_at", { ascending: false });
 

@@ -25,7 +25,7 @@ export function useCRMSettings() {
             // First try to get settings
             const { data, error } = await supabase
                 .from('crm_settings')
-                .select('*')
+                .select('id, account_id, invoice_prefix, default_payment_terms, default_tax_rate, company_name, company_address, company_email, company_phone, logo_url, telegram_video_link, menu_last_updated_at, returns_refunds_count, faqs, subscription_info, created_at, updated_at')
                 .eq('account_id', accountId)
                 .maybeSingle();
 

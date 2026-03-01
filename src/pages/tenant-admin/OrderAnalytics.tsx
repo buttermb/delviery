@@ -17,7 +17,7 @@ export default function OrderAnalytics() {
 
       const { data, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('id, created_at, total_amount')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
 

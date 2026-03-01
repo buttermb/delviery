@@ -59,7 +59,7 @@ export default function PosAnalytics() {
 
       const { data, error } = await supabase
         .from('pos_transactions')
-        .select('*')
+        .select('id, created_at, total_amount, payment_method, payment_status, tenant_id')
         .eq('tenant_id', tenantId)
         .eq('payment_status', 'completed')
         .order('created_at', { ascending: false })
@@ -80,7 +80,7 @@ export default function PosAnalytics() {
 
       const { data, error } = await supabase
         .from('pos_shifts')
-        .select('*')
+        .select('id, tenant_id, status, started_at, ended_at')
         .eq('tenant_id', tenantId)
         .order('started_at', { ascending: false })
         .limit(30);

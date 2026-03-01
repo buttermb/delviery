@@ -870,7 +870,7 @@ export function useOrderInvoiceSave() {
         due_date: dueDate || null,
         notes: combinedNotes || null,
         line_items: lineItems,
-      }).select('*').maybeSingle();
+      }).select('id, tenant_id, customer_id, invoice_number, order_id, subtotal, tax, discount, total, status, due_date, paid_at, payment_method, notes, created_at').maybeSingle();
 
       if (result.error) {
         throw result.error;

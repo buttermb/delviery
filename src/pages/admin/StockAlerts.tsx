@@ -52,7 +52,7 @@ export function StockAlerts() {
       // Query the stock_alerts table for active alerts
       const { data, error } = await supabase
         .from('stock_alerts')
-        .select('*')
+        .select('id, product_id, product_name, current_quantity, threshold, severity, status, created_at, updated_at')
         .eq('tenant_id', tenantId)
         .eq('status', 'active')
         .order('created_at', { ascending: false });

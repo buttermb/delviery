@@ -38,7 +38,7 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
                 // Query marketplace_deals table directly instead of RPC
                 const { data, error } = await supabase
                     .from('marketplace_deals')
-                    .select('*')
+                    .select('id, name, description, discount_type, discount_value, applies_to, target_value, active_days, is_active, start_date, end_date, min_order_amount, first_time_only, max_uses_per_customer')
                     .eq('store_id', storeId)
                     .eq('is_active', true);
 
@@ -67,7 +67,7 @@ export function useDeals(storeId: string | undefined, cartItems: ShopCartItem[],
                 // Get order count from storefront_orders
                 const { count } = await supabase
                     .from('storefront_orders')
-                    .select('*', { count: 'exact', head: true })
+                    .select('id', { count: 'exact', head: true })
                     .eq('store_id', storeId)
                     .eq('customer_email', customerEmail);
 

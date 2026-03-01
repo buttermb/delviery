@@ -129,7 +129,7 @@ export default function StorefrontCoupons() {
 
       const { data, error } = await supabase
         .from('marketplace_coupons')
-        .select('*')
+        .select('id, code, discount_type, discount_value, minimum_order, max_uses, uses_count, is_active, expires_at, created_at, max_discount_amount')
         .eq('store_id', store.id)
         .order('created_at', { ascending: false });
 

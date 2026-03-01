@@ -196,7 +196,7 @@ export function CustomerDeliveryAddressesTab({ customerId }: CustomerDeliveryAdd
 
       const { data, error } = await supabase
         .from('customer_delivery_addresses')
-        .select('*')
+        .select('id, tenant_id, customer_id, label, street_address, apartment, city, state, zip_code, country, latitude, longitude, is_primary, delivery_instructions, created_at, updated_at')
         .eq('customer_id', customerId)
         .eq('tenant_id', tenant.id)
         .order('is_primary', { ascending: false })

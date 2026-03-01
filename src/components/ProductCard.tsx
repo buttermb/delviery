@@ -56,7 +56,7 @@ const ProductCard = memo(function ProductCard({ product, onAuthRequired, stockLe
       async () => {
         const { data, error } = await supabase
           .from("reviews")
-          .select("*")
+          .select('id, product_id, user_id, rating, comment, photo_urls, created_at')
           .eq("product_id", product.id)
           .order("created_at", { ascending: false })
           .limit(10);

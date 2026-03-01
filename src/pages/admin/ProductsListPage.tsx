@@ -224,7 +224,7 @@ export function ProductsListPage() {
 
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('id, name, sku, category, vendor_name, description, image_url, wholesale_price, retail_price, cost_per_unit, available_quantity, low_stock_alert, menu_visibility, coa_url, lab_results_url, archived_at, created_at, tenant_id')
         .eq('tenant_id', tenant.id)
         .order('name');
 

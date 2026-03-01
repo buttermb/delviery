@@ -41,7 +41,7 @@ export function useLoyaltyConfig(storeId: string | undefined) {
 
       const { data, error } = await supabase
         .from('marketplace_loyalty_config')
-        .select('*')
+        .select('is_active, points_per_dollar, points_to_dollar_ratio, signup_bonus_points')
         .eq('store_id', storeId)
         .maybeSingle();
 

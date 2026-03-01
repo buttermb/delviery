@@ -316,7 +316,7 @@ export async function getTenantsWithCredits(
     // Get total count
     const { count } = await sb
       .from('tenants')
-      .select('*', { count: 'exact', head: true });
+      .select('id', { count: 'exact', head: true });
 
     return { tenants, total: count || tenants.length };
   } catch (err) {
@@ -347,14 +347,14 @@ export async function getTenantCreditDetail(
     // Get credit info
     const { data: credits } = await sb
       .from('tenant_credits')
-      .select('*')
+      .select('balance, lifetime_earned, lifetime_spent, credits_used_today, credits_used_this_week, credits_used_this_month, tier_status, last_free_grant_at, next_free_grant_at')
       .eq('tenant_id', tenantId)
       .maybeSingle();
 
     // Get recent transactions
     const { data: transactions } = await sb
       .from('credit_transactions')
-      .select('*')
+      .select('id, tenant_id, amount, balance_after, transaction_type, action_type, reference_id, reference_type, description, metadata, created_at')
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
       .limit(50);
@@ -362,7 +362,7 @@ export async function getTenantCreditDetail(
     // Get grants
     const { data: grants } = await sb
       .from('credit_grants')
-      .select('*')
+      .select('id, tenant_id, amount, grant_type, promo_code, expires_at, granted_at, granted_by, is_used, notes')
       .eq('tenant_id', tenantId)
       .order('granted_at', { ascending: false });
 
@@ -534,7 +534,7 @@ export async function refundTransaction(
     // Get original transaction
     const { data: originalTx, error: txError } = await sb
       .from('credit_transactions')
-      .select('*')
+      .select('id, tenant_id, amount, balance_after, transaction_type, action_type, reference_id, reference_type, description, metadata, created_at')
       .eq('id', transactionId)
       .maybeSingle();
 
@@ -609,7 +609,7 @@ export async function getAllTransactions(options: {
   try {
     let query = sb
       .from('credit_transactions')
-      .select('*, tenants!inner(business_name, slug)', { count: 'exact' })
+      .select('id, tenant_id, amount, balance_after, transaction_type, action_type, reference_id, reference_type, description, metadata, created_at, tenants!inner(business_name, slug)', { count: 'exact' })
       .order('created_at', { ascending: false });
 
     if (options.tenantId) {
@@ -823,7 +823,7 @@ export async function getAllPromoCodes(): Promise<PromoCodeAdmin[]> {
   try {
     const { data, error } = await sb
       .from('promo_codes')
-      .select('*')
+      .select('id, code, credits_amount, max_uses, uses_count, is_active, valid_from, valid_until, description, created_by, created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -946,7 +946,7 @@ export async function getPromoCodeRedemptions(codeId: string): Promise<Array<{
   try {
     const { data, error } = await sb
       .from('promo_redemptions')
-      .select('*, tenants!inner(business_name)')
+      .select('tenant_id, credits_granted, redeemed_at, tenants!inner(business_name)')
       .eq('promo_code_id', codeId)
       .order('redeemed_at', { ascending: false });
 
@@ -992,7 +992,7 @@ export async function getAllCreditPackages(): Promise<CreditPackageDB[]> {
   try {
     const { data, error } = await sb
       .from('credit_packages')
-      .select('*')
+      .select('id, name, slug, credits, price_cents, stripe_price_id, stripe_product_id, is_active, sort_order, badge, description')
       .order('sort_order', { ascending: true });
 
     if (error) {
@@ -1098,7 +1098,7 @@ export async function getReferralStats(): Promise<ReferralStats> {
     // Get total referrals
     const { count: totalReferrals } = await sb
       .from('referral_redemptions')
-      .select('*', { count: 'exact', head: true });
+      .select('id', { count: 'exact', head: true });
 
     // Get total credits awarded
     const { data: creditsData } = await sb
@@ -1113,12 +1113,12 @@ export async function getReferralStats(): Promise<ReferralStats> {
     // Get conversions
     const { count: totalConversions } = await sb
       .from('referral_redemptions')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('conversion_bonus_granted', true);
 
     const { count: pendingConversions } = await sb
       .from('referral_redemptions')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('conversion_bonus_granted', false);
 
     // Get top referrers

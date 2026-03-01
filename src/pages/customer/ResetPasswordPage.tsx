@@ -46,7 +46,7 @@ export default function CustomerResetPasswordPage() {
       if (tenantSlug) {
         const { data: _data, error } = await supabase
           .from('tenants')
-          .select('*')
+          .select('id, slug')
           .eq('slug', tenantSlug)
           .maybeSingle();
 

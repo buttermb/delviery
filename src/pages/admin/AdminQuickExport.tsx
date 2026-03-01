@@ -91,7 +91,7 @@ export default function AdminQuickExport({ onExportComplete }: QuickExportProps)
       // Dynamic table - 'users' may refer to profiles table; cast needed for dynamic name
       let baseQuery = supabase
         .from(exportType as 'products')
-        .select('*')
+        .select('id, name, category, price, in_stock, created_at, updated_at')
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
 

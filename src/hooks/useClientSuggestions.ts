@@ -48,7 +48,7 @@ export function useClientSuggestions() {
       // Fetch clients
       const { data: clients, error: clientsError } = await supabase
         .from('wholesale_clients')
-        .select('*')
+        .select('id, business_name, contact_name, credit_limit, outstanding_balance, status, address, phone, email, is_favorite')
         .eq('tenant_id', tenant.id)
         .eq('status', 'active');
 

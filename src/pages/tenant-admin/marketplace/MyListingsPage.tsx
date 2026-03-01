@@ -98,7 +98,7 @@ export default function MyListingsPage() {
 
       const result = await supabase
         .from('marketplace_listings' as 'tenants')
-        .select('*')
+        .select('id, product_name, description, product_type, base_price, quantity_available, status, images, created_at, strain_type, unit_type, views')
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false});
 

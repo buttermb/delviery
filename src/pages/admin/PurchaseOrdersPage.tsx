@@ -87,7 +87,7 @@ export default function PurchaseOrdersPage() {
 
       let query = supabase
         .from("purchase_orders")
-        .select("*")
+        .select("id, po_number, vendor_id, status, total, notes, expected_delivery_date, created_at, tenant_id")
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false });
 

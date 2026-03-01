@@ -147,7 +147,7 @@ export function StoreOrdersTab({
 
       let query = supabase
         .from('storefront_orders')
-        .select('*')
+        .select('id, order_number, status, payment_status, customer_id, customer_name, customer_email, customer_phone, items, subtotal, delivery_fee, discount_amount, tip_amount, total, delivery_address, delivery_notes, payment_method, tracking_token, created_at, updated_at')
         .eq('store_id', effectiveStoreId)
         .order('created_at', { ascending: false });
 

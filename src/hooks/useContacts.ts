@@ -152,7 +152,7 @@ export function useContacts(options: UseContactsOptions = {}) {
 
       let query = supabase
         .from('contacts')
-        .select('*')
+        .select('id, tenant_id, contact_type, name, first_name, last_name, email, phone, address, city, state, zip_code, country, auth_user_id, business_name, business_license, tax_id, credit_limit, outstanding_balance, payment_terms, client_type, account_manager_id, lead_status, lead_source, assigned_to, company_name, job_title, loyalty_points, loyalty_tier, lifetime_value, total_orders, is_verified, verified_at, age_verified, status, email_opt_in, sms_opt_in, preferred_contact_method, notes, tags, metadata, created_at, updated_at, last_contacted_at, last_order_at')
         .eq('tenant_id', tenant.id)
         .eq('status', status)
         .order('created_at', { ascending: false })
@@ -243,7 +243,7 @@ export function useContact(contactId: string | undefined) {
 
       const { data, error } = await supabase
         .from('contacts')
-        .select('*')
+        .select('id, tenant_id, contact_type, name, first_name, last_name, email, phone, address, city, state, zip_code, country, auth_user_id, business_name, business_license, tax_id, credit_limit, outstanding_balance, payment_terms, client_type, account_manager_id, lead_status, lead_source, assigned_to, company_name, job_title, loyalty_points, loyalty_tier, lifetime_value, total_orders, is_verified, verified_at, age_verified, status, email_opt_in, sms_opt_in, preferred_contact_method, notes, tags, metadata, created_at, updated_at, last_contacted_at, last_order_at')
         .eq('id', contactId)
         .eq('tenant_id', tenant.id)
         .maybeSingle();

@@ -54,7 +54,7 @@ export function useReportDataSources() {
         // Try to fetch from database first
         const { data, error } = await supabase
           .from('report_data_sources')
-          .select('*')
+          .select('id, name, display_name, description, source_type, source_table, source_rpc, available_fields, available_metrics, available_dimensions, requires_tenant_filter, is_active')
           .eq('is_active', true)
           .order('display_name');
 

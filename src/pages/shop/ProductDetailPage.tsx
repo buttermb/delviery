@@ -281,7 +281,7 @@ export function ProductDetailPage() {
 
       const { data, error } = await supabase
         .from('marketplace_reviews')
-        .select('*')
+        .select('id, customer_name, rating, title, comment, is_verified_purchase, created_at')
         .eq('store_id', store.id)
         .eq('product_id', product.product_id)
         .eq('is_approved', true)

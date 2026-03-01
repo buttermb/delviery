@@ -64,7 +64,7 @@ export default function TenantAdminLoginPage() {
       if (tenantSlug) {
         const { data, error } = await supabase
           .from("tenants")
-          .select("*")
+          .select("id, business_name, slug, owner_email, subscription_plan, subscription_status, status")
           .eq("slug", tenantSlug)
           .maybeSingle();
 

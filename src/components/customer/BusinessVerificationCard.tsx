@@ -79,7 +79,7 @@ export function BusinessVerificationCard() {
 
       const { data, error } = await supabase
         .from('marketplace_profiles')
-        .select('*')
+        .select('id, business_name, license_number, license_type, license_state, license_expiry_date, business_description, license_document_url, marketplace_status, license_verified, license_verified_at, license_verified_by, license_verification_notes')
         .eq('tenant_id', tenantId)
         .maybeSingle();
 

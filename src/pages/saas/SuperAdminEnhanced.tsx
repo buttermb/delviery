@@ -193,7 +193,7 @@ export default function SuperAdminEnhanced() {
         (data ?? []).map(async (tenant) => {
           const { data: fullTenant } = await supabase
             .from('tenants')
-            .select('*')
+            .select('id, business_name, slug, owner_email, owner_name, phone, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id, payment_method_added, mrr, limits, usage, features, white_label, status, cancelled_at, last_activity_at, onboarded, created_at, updated_at')
             .eq('id', tenant.id)
             .maybeSingle();
 
@@ -253,7 +253,7 @@ export default function SuperAdminEnhanced() {
     queryFn: async () => {
       const { data: allTenants } = await supabase
         .from('tenants')
-        .select('*');
+        .select('id, business_name, slug, owner_email, owner_name, phone, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id, payment_method_added, mrr, limits, usage, features, white_label, status, cancelled_at, last_activity_at, onboarded, created_at, updated_at');
 
       if (!allTenants) return [];
 
@@ -792,7 +792,7 @@ function TenantDetailView({ tenantId }: { tenantId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tenants')
-        .select('*')
+        .select('id, business_name, slug, owner_email, owner_name, phone, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id, payment_method_added, mrr, limits, usage, features, white_label, status, cancelled_at, last_activity_at, onboarded, created_at, updated_at')
         .eq('id', tenantId)
         .maybeSingle();
 
@@ -1162,7 +1162,7 @@ function ActivityTimeline({ tenantId }: { tenantId: string }) {
     queryFn: async () => {
       const { data: subscriptionEvents } = await supabase
         .from('subscription_events')
-        .select('*')
+        .select('id, event_type, created_at')
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false })
         .limit(20);

@@ -62,7 +62,7 @@ export default function CouponManager() {
             if (!tenant?.id) return [];
             const { data, error } = await supabase
                 .from('marketplace_coupons')
-                .select('*')
+                .select('id, tenant_id, code, discount_type, discount_value, usage_limit, used_count, start_date, end_date, is_active, created_at')
                 .eq('tenant_id', tenant.id)
                 .order('created_at', { ascending: false });
 

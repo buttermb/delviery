@@ -50,7 +50,7 @@ export default function CommissionTracking() {
         // Try to get from commission_transactions table first
         const { data, error } = await supabase
           .from('commission_transactions')
-          .select('*')
+          .select('id, amount, order_id, created_at, status, tenant_id')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 
@@ -58,7 +58,7 @@ export default function CommissionTracking() {
           // Table doesn't exist, calculate from orders
           const { data: orders, error: orderError } = await supabase
             .from('orders')
-            .select('*')
+            .select('id, total, created_at, tenant_id')
             .eq('tenant_id', tenantId);
 
           if (orderError && orderError.code === '42P01') return [];

@@ -67,7 +67,7 @@ export function IntegrationWebhooks({ integrationId, integrationName }: Integrat
       try {
         const { data, error } = await supabase
           .from('webhooks')
-          .select('*')
+          .select('id, name, url, events, secret, status, integration_id, created_at')
           .eq('tenant_id', tenantId)
           .eq('integration_id', integrationId)
           .order('created_at', { ascending: false });

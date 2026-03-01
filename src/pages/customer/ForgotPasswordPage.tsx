@@ -110,7 +110,7 @@ export function CustomerForgotPasswordPage() {
       if (tenantSlug) {
         const { data, error } = await supabase
           .from('tenants')
-          .select('*')
+          .select('id, slug, business_name')
           .eq('slug', tenantSlug)
           .maybeSingle();
 

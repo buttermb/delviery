@@ -89,7 +89,7 @@ export const useMenuScheduleHistory = (menuId?: string) => {
 
       const { data, error } = await supabase
         .from('menu_schedule_history')
-        .select('*')
+        .select('id, menu_id, tenant_id, action, scheduled_activation_time, scheduled_deactivation_time, previous_status, new_status, recurrence_pattern, executed_by, executed_at, metadata')
         .eq('menu_id', menuId)
         .order('executed_at', { ascending: false })
         .limit(50);

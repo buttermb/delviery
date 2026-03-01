@@ -80,7 +80,7 @@ export const LiveChatWidget = ({ onClose }: LiveChatWidgetProps = {}) => {
     const loadMessages = async () => {
       const { data } = await supabase
         .from('chat_messages')
-        .select('*')
+        .select('id, sender_type, message, created_at')
         .eq('session_id', sessionId)
         .order('created_at', { ascending: true });
 

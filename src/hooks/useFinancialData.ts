@@ -335,7 +335,7 @@ export const useExpenseSummary = () => {
       // Fetch all expenses for the tenant (using any to avoid type issues with optional table)
       const expensesQuery = supabase
         .from("expenses")
-        .select("*")
+        .select('id, description, amount, category, created_at')
         .eq("tenant_id", tenant.id)
         .order("created_at", { ascending: false })
         .limit(100);

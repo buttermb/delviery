@@ -177,7 +177,7 @@ export function useVendorPriceAlertSettings(vendorId: string) {
 
       const { data, error } = await supabase
         .from('vendor_price_alert_settings')
-        .select('*')
+        .select('id, tenant_id, vendor_id, product_id, alert_threshold_percent, is_enabled, created_at, updated_at')
         .eq('tenant_id', tenant.id)
         .eq('vendor_id', vendorId)
         .order('created_at', { ascending: false });

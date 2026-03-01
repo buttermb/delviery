@@ -72,7 +72,7 @@ export function CouponRedemptionTable({ className, maxRows }: CouponRedemptionTa
         // Fetch all coupons for this tenant
         const couponsResult = await supabase
           .from('coupon_codes')
-          .select('*')
+          .select('id, code, discount_type, discount_value')
           .eq('tenant_id', tenant.id);
         
         const { data: coupons, error: couponsError } = couponsResult;
@@ -93,7 +93,7 @@ export function CouponRedemptionTable({ className, maxRows }: CouponRedemptionTa
         // Build usage query with date filter
         let usageQuery = supabase
           .from('coupon_usage')
-          .select('*', { count: 'exact' })
+          .select('id, coupon_id, discount_amount, used_at, order_id', { count: 'exact' })
           .in('coupon_id', couponIds)
           .order('used_at', { ascending: false });
 

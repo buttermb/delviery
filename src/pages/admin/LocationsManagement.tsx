@@ -72,7 +72,7 @@ export default function LocationsManagement() {
     try {
       const { data, error } = await supabase
         .from('locations')
-        .select('*')
+        .select('id, name, address, city, state, zip_code, phone, email, license_number, status, created_at')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
 

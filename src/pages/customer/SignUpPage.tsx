@@ -109,7 +109,7 @@ export default function CustomerSignUpPage() {
       if (tenantSlug) {
         const { data, error } = await supabase
           .from("tenants")
-          .select("*")
+          .select('id, slug, business_name, white_label')
           .eq("slug", tenantSlug)
           .maybeSingle();
 

@@ -39,7 +39,7 @@ export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQue
         queryFn: async () => {
             let query = supabase
                 .from('product_reviews')
-                .select('*')
+                .select('id, tenant_id, store_id, product_id, customer_id, customer_name, rating, title, content, is_verified_purchase, status, helpful_count, created_at, updated_at')
                 .eq('tenant_id', tenantId)
                 .order('created_at', { ascending: false });
 
@@ -67,7 +67,7 @@ export function ReviewModerationQueue({ tenantId, storeId }: ReviewModerationQue
                 (data ?? []).map(async (review) => {
                     const { data: responseData } = await supabase
                         .from('review_responses')
-                        .select('*')
+                        .select('id, responder_name, content, created_at')
                         .eq('review_id', review.id)
                         .maybeSingle();
 

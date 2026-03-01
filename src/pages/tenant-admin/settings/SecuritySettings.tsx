@@ -119,7 +119,7 @@ export default function SecuritySettings() {
 
       const { data, error } = await supabase
         .from('admin_sessions')
-        .select('*')
+        .select('id, admin_id, token_hash, user_agent, ip_address, created_at, expires_at')
         .eq('admin_id', admin.id)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });

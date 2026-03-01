@@ -141,7 +141,7 @@ export default function IntegrationsSettings() {
 
       const { data, error } = await supabase
         .from('custom_integrations')
-        .select('*')
+        .select('id, config, status, updated_at')
         .eq('tenant_id', tenant.id)
         .eq('type', 'webhook')
         .order('created_at', { ascending: false });

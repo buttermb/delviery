@@ -83,28 +83,28 @@ const GlobalSearch = () => {
 
       const usersPromise = supabase
         .from("profiles")
-        .select("*, user_roles(role)")
+        .select("id, user_id, full_name, email, phone, trust_level, total_orders, risk_score, user_roles(role)")
         .eq("account_id", tenant.id)
         .or(`full_name.ilike.%${escapedSearch}%,email.ilike.%${escapedSearch}%,phone.ilike.%${escapedSearch}%`)
         .limit(10);
 
       const ordersPromise = supabase
         .from("orders")
-        .select("*, profiles(full_name)")
+        .select("id, order_number, tracking_code, customer_name, status, total_amount, created_at, profiles(full_name)")
         .eq("tenant_id", tenant.id)
         .or(`order_number.ilike.%${escapedSearch}%,tracking_code.ilike.%${escapedSearch}%,customer_name.ilike.%${escapedSearch}%`)
         .limit(10);
 
       const productsPromise = supabase
         .from("products")
-        .select("*")
+        .select("id, name, description, category, price, stock_quantity, average_rating, image_url")
         .eq("tenant_id", tenant.id)
         .or(`name.ilike.%${escapedSearch}%,description.ilike.%${escapedSearch}%,category.ilike.%${escapedSearch}%`)
         .limit(10);
 
       const addressesPromise = supabase
         .from("addresses")
-        .select("*, profiles(full_name)")
+        .select("id, user_id, street, neighborhood, borough, zip_code, is_default, risk_zone, profiles(full_name)")
         .eq("tenant_id", tenant.id)
         .or(`street.ilike.%${escapedSearch}%,neighborhood.ilike.%${escapedSearch}%,borough.ilike.%${escapedSearch}%`)
         .limit(10);

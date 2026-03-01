@@ -41,7 +41,7 @@ export default function AdvancedReportingPage() {
       try {
         const { data, error } = await supabase
           .from("custom_reports")
-          .select("*")
+          .select('id, name, description, report_type, filters, created_at')
           .eq("tenant_id", tenant.id)
           .order("created_at", { ascending: false });
 

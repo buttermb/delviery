@@ -48,7 +48,7 @@ export function StorefrontDesignPage() {
             try {
                 const { data, error } = await supabase
                     .from('marketplace_stores')
-                    .select('*')
+                    .select('id, store_name, slug, is_public, updated_at, theme_config, layout_config')
                     .eq('tenant_id', tenant?.id ?? '')
                     .maybeSingle();
 

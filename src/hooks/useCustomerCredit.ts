@@ -105,7 +105,7 @@ async function fetchCustomerCreditBalance(
 ): Promise<CustomerCreditBalance> {
   const { data, error } = await supabase
     .from('customer_credits')
-    .select('*')
+    .select('id, tenant_id, customer_id, amount, transaction_type, reason, order_id, created_by, created_at')
     .eq('tenant_id', tenantId)
     .eq('customer_id', customerId)
     .order('created_at', { ascending: false });
@@ -164,7 +164,7 @@ async function fetchCustomerCreditTransactions(
 ): Promise<CustomerCreditTransaction[]> {
   const { data, error } = await supabase
     .from('customer_credits')
-    .select('*')
+    .select('id, tenant_id, customer_id, amount, transaction_type, reason, order_id, created_by, created_at')
     .eq('tenant_id', tenantId)
     .eq('customer_id', customerId)
     .order('created_at', { ascending: false })

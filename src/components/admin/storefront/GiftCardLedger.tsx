@@ -60,7 +60,7 @@ export function GiftCardLedger({ storeId, card, onBack }: GiftCardLedgerProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('marketplace_gift_card_ledger')
-        .select('*')
+        .select('id, amount, balance_after, transaction_type, order_id, note, created_at')
         .eq('gift_card_id', card.id)
         .eq('store_id', storeId)
         .order('created_at', { ascending: false });

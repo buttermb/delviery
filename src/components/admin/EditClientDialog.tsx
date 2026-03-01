@@ -65,7 +65,7 @@ export function EditClientDialog({ clientId, open, onOpenChange, onSuccess }: Ed
       setFormErrors({});
       const { data, error } = await supabase
         .from("wholesale_clients")
-        .select("*")
+        .select('business_name, contact_name, email, phone, address, client_type, credit_limit, payment_terms, notes')
         .eq("id", clientId)
         .maybeSingle();
 

@@ -46,7 +46,7 @@ export default function ProductVisibilityManager() {
 
             const { data, error } = await supabase
                 .from('marketplace_listings')
-                .select('*')
+                .select('id, tenant_id, product_name, product_type, strain_type, base_price, unit_type, quantity_available, images, status, visibility, created_at')
                 .eq('tenant_id', tenant.id)
                 .order('created_at', { ascending: false });
 

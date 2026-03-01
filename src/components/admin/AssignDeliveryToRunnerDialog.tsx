@@ -43,7 +43,7 @@ export const AssignDeliveryToRunnerDialog = ({
       if (!tenant?.id) throw new Error('No tenant context');
       const { data, error } = await supabase
         .from("wholesale_orders")
-        .select("*")
+        .select('id, order_number, total_amount, created_at, delivery_address, delivery_notes')
         .eq("tenant_id", tenant.id)
         .eq("status", "pending")
         .is("assigned_runner_id", null)

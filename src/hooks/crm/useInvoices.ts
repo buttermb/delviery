@@ -107,7 +107,7 @@ export function useInvoices() {
         return useMutation({
             mutationFn: async (invoiceId: string) => {
                 if (!accountId) throw new Error('Account ID required');
-                const { data, error } = await supabase.from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).eq('account_id', accountId).select('*, client:crm_clients(*)').maybeSingle();
+                const { data, error } = await supabase.from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).eq('account_id', accountId).select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)').maybeSingle();
                 if (error) throw error;
                 return normalizeInvoice(data);
             },
@@ -149,7 +149,7 @@ export function useInvoices() {
                     .update({ status: 'sent' })
                     .eq('id', invoiceId)
                     .eq('account_id', accountId)
-                    .select('*, client:crm_clients(*)')
+                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                     .maybeSingle();
                 if (error) throw error;
                 return normalizeInvoice(data);
@@ -170,7 +170,7 @@ export function useInvoices() {
                     .update({ status: 'cancelled' })
                     .eq('id', invoiceId)
                     .eq('account_id', accountId)
-                    .select('*, client:crm_clients(*)')
+                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                     .maybeSingle();
                 if (error) throw error;
                 return normalizeInvoice(data);
@@ -189,7 +189,7 @@ export function useInvoices() {
                 // First fetch the original invoice
                 const { data: original, error: fetchError } = await supabase
                     .from('crm_invoices')
-                    .select('*')
+                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at')
                     .eq('id', invoiceId)
                     .eq('account_id', accountId)
                     .maybeSingle();
@@ -216,7 +216,7 @@ export function useInvoices() {
                         total: original.total,
                         status: 'draft',
                     })
-                    .select('*, client:crm_clients(*)')
+                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                     .maybeSingle();
 
                 if (error) throw error;
@@ -267,7 +267,7 @@ export function useCreateInvoice() {
         mutationFn: async (values: InvoiceFormValues & { account_id?: string }) => {
             const finalAccountId = values.account_id || accountId;
             if (!finalAccountId) throw new Error('Account ID required');
-            const { data, error } = await crmClient.from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items as unknown as Json[] }).select('*, client:crm_clients(*)').maybeSingle();
+            const { data, error } = await crmClient.from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items as unknown as Json[] }).select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)').maybeSingle();
             if (error) throw error;
             return normalizeInvoice(data as unknown as Record<string, unknown>);
         },

@@ -43,7 +43,7 @@ export default function ListingDetailPage() {
 
       const { data, error } = await supabase
         .from('marketplace_listings')
-        .select('*')
+        .select('id, tenant_id, product_name, description, product_type, strain_type, base_price, unit_type, quantity_available, min_order_quantity, max_order_quantity, bulk_pricing, images, tags, lab_results, lab_results_encrypted, status, visibility, views, orders_count, favorites_count, created_at, published_at, updated_at, slug')
         .eq('id', listingId)
         .maybeSingle();
 

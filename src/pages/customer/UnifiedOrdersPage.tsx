@@ -85,7 +85,7 @@ export default function UnifiedOrdersPage() {
 
       let query = supabase
         .from('orders')
-        .select('*')
+        .select('id, created_at, order_number, total_amount, status')
         .eq('tenant_id', tenantId)
         .eq('customer_id', customerId)
         .order('created_at', { ascending: false });
@@ -165,7 +165,7 @@ export default function UnifiedOrdersPage() {
 
       let query = supabase
         .from('marketplace_orders')
-        .select('*')
+        .select('id, created_at, order_number, total_amount, status, tracking_number')
         .eq('seller_tenant_id', tenantId)
         .eq('customer_email', customerEmail.toLowerCase())
         .order('created_at', { ascending: false });

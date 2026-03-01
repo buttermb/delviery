@@ -105,7 +105,7 @@ export default function StorefrontBundles() {
       if (!tenant?.id) return null;
       const { data, error } = await supabase
         .from('marketplace_stores')
-        .select('*')
+        .select('id, tenant_id, store_name, slug, is_active, is_public, created_at, updated_at')
         .eq('tenant_id', tenant.id)
         .maybeSingle();
       if (error) throw error;
@@ -121,7 +121,7 @@ export default function StorefrontBundles() {
       if (!store?.id) return [];
       const { data, error } = await supabase
         .from('marketplace_bundles' as 'tenants')
-        .select('*')
+        .select('id, name, description, image_url, discount_type, discount_value, products, is_active, start_date, end_date, created_at')
         .eq('store_id', store.id)
         .order('created_at', { ascending: false });
       if (error) throw error;

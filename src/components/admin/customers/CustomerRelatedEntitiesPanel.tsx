@@ -308,7 +308,7 @@ function useRelatedLoyalty(customerId: string | undefined, tenantId: string | un
       // Get loyalty config for tier thresholds
       const { data: config, error: configError } = await supabase
         .from('loyalty_config')
-        .select('*')
+        .select('silver_threshold, gold_threshold, platinum_threshold')
         .eq('tenant_id', tenantId!)
         .maybeSingle();
 

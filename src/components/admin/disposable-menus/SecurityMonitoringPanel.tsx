@@ -99,7 +99,7 @@ export const SecurityMonitoringPanel = () => {
   const loadBlockedIPs = async () => {
     const { data } = await supabase
       .from('blocked_ips')
-      .select('*')
+      .select('id, ip_address, reason, created_at')
       .order('created_at', { ascending: false });
     
     if (data) setBlockedIPs(data);

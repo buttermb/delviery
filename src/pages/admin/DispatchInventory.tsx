@@ -80,7 +80,7 @@ export default function DispatchInventory() {
       if (!preselectedClientId || !tenant?.id) return null;
       const { data, error } = await supabase
         .from('wholesale_clients')
-        .select('*')
+        .select('id, business_name, contact_name, credit_limit, outstanding_balance, status, phone, email')
         .eq('id', preselectedClientId)
         .eq('tenant_id', tenant.id)
         .maybeSingle();

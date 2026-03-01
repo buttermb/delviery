@@ -115,7 +115,7 @@ function useProductVendors(productId: string | undefined, vendorName: string | n
             // Get all vendors for this tenant
             const { data: vendors, error: vendorsError } = await supabase
                 .from('vendors')
-                .select('*')
+                .select('id, name, email, phone, account_id, created_at, updated_at')
                 .eq('account_id', tenant.id);
 
             if (vendorsError) {
@@ -136,7 +136,7 @@ function useProductVendors(productId: string | undefined, vendorName: string | n
                 // Get purchase orders for this vendor
                 const { data: purchaseOrders, error: poError } = await supabase
                     .from('purchase_orders')
-                    .select('*')
+                    .select('id, status, received_date, expected_delivery_date, created_at')
                     .eq('vendor_id', vendor.id)
                     .eq('account_id', tenant.id)
                     .order('created_at', { ascending: false });

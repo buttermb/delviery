@@ -57,7 +57,7 @@ export default function VendorDetailPage() {
 
       const { data, error } = await supabase
         .from('vendors')
-        .select('*')
+        .select('id, name, status, contact_email, contact_phone, contact_name, address, city, state, zip_code, license_number, tax_id, payment_terms, notes, account_id, created_at, updated_at')
         .eq('id', vendorId)
         .eq('account_id', tenant.id)
         .maybeSingle();

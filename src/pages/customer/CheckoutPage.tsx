@@ -98,7 +98,7 @@ export default function CheckoutPage() {
       const productIds = guestCart.map(item => item.product_id);
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select('id, name, price, prices, image_url')
         .in("id", productIds);
       if (error) throw error;
       return data;
@@ -114,7 +114,7 @@ export default function CheckoutPage() {
       if (!user) return [];
       const { data, error } = await supabase
         .from("addresses")
-        .select("*")
+        .select('id, street, apartment, city, state, zip_code, borough, is_default')
         .eq("user_id", user.id)
         .order("is_default", { ascending: false });
       if (error) throw error;

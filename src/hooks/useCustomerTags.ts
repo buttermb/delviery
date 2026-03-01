@@ -62,7 +62,7 @@ export function useTags() {
 
       const { data, error } = await supabase
         .from('tags')
-        .select('*')
+        .select('id, tenant_id, name, color, description, created_at, updated_at')
         .eq('tenant_id', tenant.id)
         .order('name', { ascending: true });
 

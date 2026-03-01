@@ -124,7 +124,7 @@ export default function StorefrontOrders() {
 
       let query = supabase
         .from('storefront_orders')
-        .select('*')
+        .select('id, order_number, status, payment_status, customer_id, customer_name, customer_email, customer_phone, items, subtotal, delivery_fee, total, delivery_address, delivery_notes, tracking_token, store_id, created_at, updated_at, fulfillment_method, discount_amount, tip_amount, payment_method')
         .eq('store_id', store.id)
         .order('created_at', { ascending: false });
 

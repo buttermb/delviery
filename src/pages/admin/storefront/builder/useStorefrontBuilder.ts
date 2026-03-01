@@ -130,7 +130,7 @@ export function useStorefrontBuilder() {
             try {
                 const { data, error } = await supabase
                     .from('marketplace_stores')
-                    .select('*')
+                    .select('id, tenant_id, store_name, slug, tagline, description, logo_url, banner_url, primary_color, secondary_color, accent_color, font_family, is_active, is_public, layout_config, theme_config, operating_hours, checkout_settings, created_at, updated_at')
                     .eq('tenant_id', tenant!.id)
                     .maybeSingle();
 

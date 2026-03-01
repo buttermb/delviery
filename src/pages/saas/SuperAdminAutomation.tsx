@@ -150,7 +150,7 @@ export default function SuperAdminAutomation() {
     queryFn: async () => {
       const { data } = await supabase
         .from('subscription_events')
-        .select('*')
+        .select('id, event_type, tenant_id, created_at')
         .in('event_type', [
           'usage_warning',
           'usage_limit_exceeded',

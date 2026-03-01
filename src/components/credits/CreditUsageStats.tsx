@@ -103,7 +103,7 @@ export function CreditUsageStats({
         // Get all transactions for the last 30 days
         const { data: transactions, error } = await supabase
           .from('credit_transactions')
-          .select('*')
+          .select('amount, action_type, created_at, transaction_type')
           .eq('tenant_id', tenantId)
           .eq('transaction_type', 'usage')
           .gte('created_at', thirtyDaysAgo.toISOString())

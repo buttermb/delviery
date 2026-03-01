@@ -20,7 +20,7 @@ export default function DeliveryAnalytics() {
       try {
         const { data, error } = await supabase
           .from('deliveries')
-          .select('*')
+          .select('id, created_at, status')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(1000);

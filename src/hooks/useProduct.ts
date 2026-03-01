@@ -34,7 +34,7 @@ export function useProduct({ productId, enabled = true }: UseProductOptions) {
 
             const { data, error } = await supabase
                 .from('products')
-                .select('*')
+                .select('id, tenant_id, name, description, category, subcategory, brand, vendor_name, sku, barcode, price, wholesale_price, retail_price, cost_per_unit, stock_quantity, available_quantity, low_stock_alert, unit, weight, thc_percent, cbd_percent, strain_type, image_url, images, is_active, is_featured, tags, metrc_id, metrc_retail_id, exclude_from_discounts, minimum_price, created_at, updated_at')
                 .eq('id', productId)
                 .eq('tenant_id', tenant.id)
                 .maybeSingle();
@@ -65,7 +65,7 @@ export function useProductInventoryHistory(productId: string | undefined) {
 
             const { data, error } = await supabase
                 .from('inventory_history')
-                .select('*')
+                .select('id, product_id, tenant_id, quantity_change, movement_type, notes, created_at, created_by, reference_id, reference_type')
                 .eq('product_id', productId)
                 .eq('tenant_id', tenant.id)
                 .order('created_at', { ascending: false })

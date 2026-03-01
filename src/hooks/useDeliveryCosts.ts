@@ -27,7 +27,7 @@ export function useDeliveryCostByOrder(orderId: string | undefined) {
       try {
         const { data, error } = await supabase
           .from('delivery_costs')
-          .select('*')
+          .select('id, tenant_id, order_id, courier_id, runner_pay, fuel_estimate, time_cost, other_costs, total_cost, delivery_fee_collected, tip_amount, total_revenue, profit, distance_miles, delivery_time_minutes, delivery_zone, delivery_borough, notes, created_at, updated_at')
           .eq('tenant_id', tenantId)
           .eq('order_id', orderId)
           .maybeSingle();
@@ -64,7 +64,7 @@ export function useDeliveryCostAnalytics(dateFrom?: string, dateTo?: string) {
       try {
         let query = supabase
           .from('delivery_costs')
-          .select('*')
+          .select('id, tenant_id, order_id, courier_id, runner_pay, fuel_estimate, time_cost, other_costs, total_cost, delivery_fee_collected, tip_amount, total_revenue, profit, distance_miles, delivery_time_minutes, delivery_zone, delivery_borough, notes, created_at, updated_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 

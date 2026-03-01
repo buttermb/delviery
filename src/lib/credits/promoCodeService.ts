@@ -80,7 +80,7 @@ export async function validatePromoCode(code: string): Promise<{
   try {
     const { data, error } = await sb
       .from('promo_codes')
-      .select('*')
+      .select('id, code, credits_amount, max_uses, uses_count, is_active, valid_from, valid_until, description, created_by, created_at')
       .eq('code', code.toUpperCase())
       .eq('is_active', true)
       .maybeSingle();
@@ -281,7 +281,7 @@ export async function getAllPromoCodes(): Promise<PromoCode[]> {
   try {
     const { data, error } = await sb
       .from('promo_codes')
-      .select('*')
+      .select('id, code, credits_amount, max_uses, uses_count, is_active, valid_from, valid_until, description, created_by, created_at')
       .order('created_at', { ascending: false });
 
     if (error || !data) {
@@ -306,7 +306,7 @@ export async function getPromoCodeStats(promoCodeId: string): Promise<{
   try {
     const { data, error } = await sb
       .from('promo_redemptions')
-      .select('*')
+      .select('id, promo_code_id, tenant_id, credits_granted, redeemed_at')
       .eq('promo_code_id', promoCodeId)
       .order('redeemed_at', { ascending: false })
       .limit(10);

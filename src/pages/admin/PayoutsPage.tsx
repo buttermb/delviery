@@ -75,7 +75,7 @@ export default function PayoutsPage() {
       try {
         const { data, error } = await supabase
           .from('marketplace_payouts')
-          .select('*')
+          .select('id, amount, status, method, reference_id, notes, created_at, processed_at')
           .eq('seller_tenant_id', tenantId)
           .order('created_at', { ascending: false });
 

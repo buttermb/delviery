@@ -40,7 +40,7 @@ export default function VendorDashboardPage() {
       try {
         const { data, error } = await supabase
           .from("marketplace_orders")
-          .select("*")
+          .select('id, order_number, total_amount, created_at, status, payment_status, buyer_business_name')
           .eq("seller_tenant_id", vendor.tenant_id)
           .order("created_at", { ascending: false })
           .limit(20);

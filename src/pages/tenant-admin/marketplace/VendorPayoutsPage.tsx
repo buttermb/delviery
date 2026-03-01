@@ -37,7 +37,7 @@ export default function VendorPayoutsPage() {
             if (!tenant?.id) return [];
             const { data, error } = await supabase
                 .from('marketplace_payouts')
-                .select('*')
+                .select('id, status, amount, created_at, reference_id, method')
                 .eq('seller_tenant_id', tenant.id)
                 .order('created_at', { ascending: false });
 

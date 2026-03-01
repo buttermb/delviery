@@ -83,7 +83,7 @@ export function useCashDrawer(shiftId: string | undefined) {
 
       const { data, error } = await supabase
         .from('pos_cash_drawer_events')
-        .select('*')
+        .select('id, tenant_id, shift_id, event_type, amount, reason, performed_by, performed_by_name, created_at')
         .eq('shift_id', shiftId)
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });

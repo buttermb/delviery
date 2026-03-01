@@ -35,13 +35,13 @@ export default function RealtimeDashboard() {
         const [ordersResult, customersResult] = await Promise.all([
           supabase
             .from('orders')
-            .select('*')
+            .select('id, total, status, created_at')
             .eq('tenant_id', tenantId)
             .in('status', ['pending', 'confirmed', 'preparing', 'in_transit'])
             .limit(50),
           supabase
             .from('customers')
-            .select('*')
+            .select('id')
             .eq('tenant_id', tenantId)
             .limit(1),
         ]);

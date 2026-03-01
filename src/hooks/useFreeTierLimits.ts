@@ -133,7 +133,7 @@ export function useFreeTierLimits() {
       // Get or create usage record
       const { data, error } = await supabase
         .from('tenant_free_tier_usage')
-        .select('*')
+        .select('menus_created_today, orders_created_today, sms_sent_today, emails_sent_today, pos_sales_today, bulk_operations_today, exports_this_month, invoices_this_month, custom_reports_this_month, ai_features_this_month, total_products, total_customers, total_team_members, total_locations, last_daily_reset, last_monthly_reset')
         .eq('tenant_id', tenantId)
         .maybeSingle();
 

@@ -92,7 +92,7 @@ export function OrderSplitButton({
       if (!providedOrder) {
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
-          .select('*')
+          .select('id, order_number, customer_id, customer_name, customer_phone, delivery_address, delivery_borough, delivery_notes, payment_method, payment_status, tenant_id, subtotal, delivery_fee, discount_amount, tip_amount, total_amount, status')
           .eq('id', targetOrderId)
           .eq('tenant_id', tenant.id)
           .maybeSingle();
@@ -109,7 +109,7 @@ export function OrderSplitButton({
       // Fetch order items
       const { data: items, error: itemsError } = await supabase
         .from('order_items')
-        .select('*')
+        .select('id, order_id, product_id, product_name, quantity, price')
         .eq('order_id', targetOrderId);
 
       if (itemsError) throw itemsError;

@@ -50,7 +50,7 @@ export default function CourierHistoryPage() {
       if (role === 'courier') {
         let query = supabase
           .from('orders')
-          .select('*')
+          .select('id, order_number, customer_name, delivery_address, total_amount, status, created_at, delivered_at, tip_amount')
           .eq('courier_id', courier?.id)
           .order('created_at', { ascending: false });
 

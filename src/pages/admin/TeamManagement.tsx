@@ -103,7 +103,7 @@ export default function TeamManagement() {
 
       const { data: tenantUsers, error } = await supabase
         .from('tenant_users')
-        .select('*')
+        .select('id, user_id, email, first_name, name, role, status, avatar_url, created_at, last_login_at')
         .eq('tenant_id', tenant.id)
         .neq('status', 'deleted')
         .order('created_at', { ascending: false });

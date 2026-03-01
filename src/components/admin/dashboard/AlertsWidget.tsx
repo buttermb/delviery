@@ -59,7 +59,7 @@ export function AlertsWidget() {
 
       const { data, error } = await supabase
         .from('inventory_alerts')
-        .select('*')
+        .select('id, alert_type, severity, message, product_name, current_quantity, created_at, is_resolved, dismissed_at')
         .eq('tenant_id', tenant.id)
         .is('dismissed_at', null)
         .or('is_resolved.is.null,is_resolved.eq.false')

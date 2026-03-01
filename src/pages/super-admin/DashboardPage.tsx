@@ -172,7 +172,7 @@ export default function SuperAdminDashboardPage() {
     queryFn: async () => {
       const { data: tenants } = await supabase
         .from('tenants')
-        .select('*')
+        .select('id, business_name, slug, owner_email, owner_name, phone, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id, payment_method_added, mrr, limits, usage, features, white_label, status, cancelled_at, last_activity_at, onboarded, created_at, updated_at')
         .in('subscription_status', ['active', 'trial', 'trialing']);
 
       if (!tenants) return [];
@@ -199,7 +199,7 @@ export default function SuperAdminDashboardPage() {
     queryFn: async () => {
       const { data: tenants } = await supabase
         .from('tenants')
-        .select('*')
+        .select('id, business_name, slug, owner_email, subscription_plan, subscription_status, trial_ends_at, created_at')
         .in('subscription_status', ['trial', 'trialing']);
 
       return tenants ?? [];

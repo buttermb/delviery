@@ -184,7 +184,7 @@ function useClientActivities(clientId: string | null) {
 
       const { data, error } = await supabase
         .from('collection_activities')
-        .select('*')
+        .select('id, client_id, activity_type, notes, amount, created_at, performed_by')
         .eq('client_id', clientId)
         .order('created_at', { ascending: false })
         .limit(20);

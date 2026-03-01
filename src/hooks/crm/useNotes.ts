@@ -22,7 +22,7 @@ export function useClientNotes(clientId: string | undefined) {
 
             const { data, error } = await supabase
                 .from('crm_notes')
-                .select('*')
+                .select('id, account_id, client_id, note_text, created_by_user_id, created_by_name, created_at')
                 .eq('client_id', clientId)
                 .eq('account_id', accountId)
                 .order('created_at', { ascending: false })

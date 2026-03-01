@@ -31,7 +31,7 @@ export default function SellerProfilePage() {
 
       const { data, error } = await supabase
         .from('marketplace_profiles')
-        .select('*')
+        .select('id, tenant_id, business_name, business_description, license_number, license_type, license_state, license_verified, license_verified_at, license_verification_notes, marketplace_status, can_sell, shipping_states, logo_url')
         .eq('tenant_id', tenantId)
         .maybeSingle();
 

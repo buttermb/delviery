@@ -92,7 +92,7 @@ export function GiftCardTable({ storeId, onViewLedger }: GiftCardTableProps) {
     queryFn: async () => {
       const { data, error } = await untypedClient
         .from('marketplace_gift_cards')
-        .select('*')
+        .select('id, code, initial_balance, current_balance, status, recipient_email, recipient_name, created_at, expires_at, last_used_at')
         .eq('store_id', storeId)
         .order('created_at', { ascending: false });
 

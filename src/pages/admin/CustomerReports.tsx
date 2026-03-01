@@ -47,7 +47,7 @@ export default function CustomerReports() {
       // Load all customers
       const { data: customers, error } = await supabase
         .from('customers')
-        .select('*')
+        .select('id, first_name, last_name, email, created_at, status, last_purchase_at, customer_type, total_spent, loyalty_tier')
         .eq('tenant_id', tenant.id);
 
       if (error) throw error;

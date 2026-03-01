@@ -396,7 +396,7 @@ class PaymentService {
       // Get fronted inventory record
       const { data: frontedItem, error: fetchError } = await supabase
         .from('fronted_inventory')
-        .select('*, client:wholesale_clients(id, business_name, outstanding_balance)')
+        .select('id, client_id, expected_revenue, payment_received, payment_status, status, completed_at, created_at, client:wholesale_clients(id, business_name, outstanding_balance)')
         .eq('id', frontedId)
         .maybeSingle();
 
@@ -583,7 +583,7 @@ class PaymentService {
     try {
       const { data, error } = await supabase
         .from('wholesale_payments')
-        .select('*')
+        .select('id, tenant_id, client_id, amount, payment_method, reference_number, notes, status, fronted_inventory_id, delivery_id, order_id, created_at')
         .eq('client_id', clientId)
         .order('created_at', { ascending: false })
         .limit(limit);

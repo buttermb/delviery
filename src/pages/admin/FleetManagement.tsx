@@ -70,7 +70,7 @@ export default function FleetManagement() {
       const { data, error } = await supabase
         .from("wholesale_deliveries")
         .select(`
-          *,
+          id, status, created_at, runner_id, notes, scheduled_pickup_time, tenant_id,
           runners:wholesale_runners(full_name, phone, vehicle_type, rating),
           orders:wholesale_orders(order_number, total_amount, delivery_address, delivery_notes)
         `)
@@ -116,7 +116,7 @@ export default function FleetManagement() {
 
       const { data, error } = await supabase
         .from("wholesale_runners")
-        .select("*")
+        .select("id, full_name, phone, vehicle_type, rating, total_deliveries, status, created_at, tenant_id")
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false });
 

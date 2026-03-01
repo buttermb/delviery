@@ -57,7 +57,7 @@ export default function SupplierManagementPage() {
       // Build query
       let query = supabase
         .from("wholesale_suppliers")
-        .select("*")
+        .select('id, supplier_name, contact_person, email, phone, payment_terms, status, created_at')
         .eq("tenant_id", tenant.id);
 
       // Apply status filter

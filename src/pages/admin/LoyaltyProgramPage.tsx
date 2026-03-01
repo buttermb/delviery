@@ -243,7 +243,7 @@ export default function LoyaltyProgramPage() {
     queryFn: async (): Promise<LoyaltyConfig | null> => {
       const { data, error } = await supabase
         .from("loyalty_program_config")
-        .select("*")
+        .select("program_name, points_per_dollar, points_to_dollar_ratio, signup_bonus_points, birthday_bonus_points, is_active, tier_enabled, tenant_id")
         .eq("tenant_id", tenant?.id)
         .maybeSingle();
 
@@ -262,7 +262,7 @@ export default function LoyaltyProgramPage() {
     queryFn: async (): Promise<LoyaltyTier[]> => {
       const { data, error } = await supabase
         .from("loyalty_tiers")
-        .select("*")
+        .select("id, name, color, icon, multiplier, min_points, max_points, benefits, tenant_id")
         .eq("tenant_id", tenant?.id)
         .order("order_index");
 
@@ -281,7 +281,7 @@ export default function LoyaltyProgramPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("loyalty_rewards")
-        .select("*")
+        .select("id, reward_name, reward_description, points_required, reward_type, is_active, redemption_count, tenant_id")
         .eq("tenant_id", tenant?.id)
         .order("points_required");
 

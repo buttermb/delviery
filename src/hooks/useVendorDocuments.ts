@@ -121,7 +121,7 @@ export function useVendorDocuments(vendorId: string) {
 
       const { data, error } = await supabase
         .from('vendor_documents')
-        .select('*')
+        .select('id, tenant_id, vendor_id, category, name, file_url, file_type, file_size, expiration_date, notes, uploaded_by, uploaded_by_name, created_at, updated_at')
         .eq('tenant_id', tenantId)
         .eq('vendor_id', vendorId)
         .order('created_at', { ascending: false });
@@ -289,7 +289,7 @@ export function useVendorDocuments(vendorId: string) {
           uploaded_by: user?.id ?? null,
           uploaded_by_name: uploadedByName,
         })
-        .select('*')
+        .select('id, tenant_id, vendor_id, category, name, file_url, file_type, file_size, expiration_date, notes, uploaded_by, uploaded_by_name, created_at, updated_at')
         .maybeSingle();
 
       if (error) {
@@ -332,7 +332,7 @@ export function useVendorDocuments(vendorId: string) {
         .update(updateData)
         .eq('id', input.id)
         .eq('tenant_id', tenantId)
-        .select('*')
+        .select('id, tenant_id, vendor_id, category, name, file_url, file_type, file_size, expiration_date, notes, uploaded_by, uploaded_by_name, created_at, updated_at')
         .maybeSingle();
 
       if (error) {

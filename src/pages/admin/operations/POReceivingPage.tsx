@@ -72,7 +72,7 @@ export default function POReceivingPage() {
       // Break type inference for complex query (same pattern as PurchaseOrdersPage)
       let baseQuery = supabase
         .from('purchase_orders')
-        .select('*')
+        .select('id, po_number, vendor_id, status, total, expected_delivery_date, notes, tenant_id, created_at, updated_at')
         .eq('tenant_id', tenant.id)
         .order('expected_delivery_date', { ascending: true });
 
@@ -103,7 +103,7 @@ export default function POReceivingPage() {
 
       const { data, error } = await supabase
         .from('purchase_order_items')
-        .select('*')
+        .select('id, purchase_order_id, product_id, product_name, quantity_ordered, quantity_received, unit_price, total_price, created_at')
         .eq('purchase_order_id', selectedPO.id)
         .order('created_at', { ascending: true });
 

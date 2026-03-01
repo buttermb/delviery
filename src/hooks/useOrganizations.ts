@@ -116,7 +116,7 @@ async function fetchOrganizations(
 ): Promise<OrganizationWithStats[]> {
   let query = supabase
     .from('customer_organizations')
-    .select('*')
+    .select('id, tenant_id, name, legal_name, organization_type, status, email, phone, website, address_line1, address_line2, city, state, postal_code, country, billing_email, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country, tax_id, payment_terms, license_number, license_type, license_expiration, pricing_tier_id, discount_percentage, notes, created_at, updated_at, created_by')
     .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false });
 
@@ -151,7 +151,7 @@ async function fetchOrganizations(
     // Get member count
     const { count: memberCount } = await supabase
       .from('organization_members')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('organization_id', org.id);
 
@@ -196,7 +196,7 @@ async function fetchOrganizationDetail(
 ): Promise<OrganizationWithStats | null> {
   const { data: org, error } = await supabase
     .from('customer_organizations')
-    .select('*')
+    .select('id, tenant_id, name, legal_name, organization_type, status, email, phone, website, address_line1, address_line2, city, state, postal_code, country, billing_email, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country, tax_id, payment_terms, license_number, license_type, license_expiration, pricing_tier_id, discount_percentage, notes, created_at, updated_at, created_by')
     .eq('tenant_id', tenantId)
     .eq('id', orgId)
     .maybeSingle();
@@ -215,7 +215,7 @@ async function fetchOrganizationDetail(
   // Get member count
   const { count: memberCount } = await supabase
     .from('organization_members')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
     .eq('organization_id', (org as Record<string, unknown>).id);
 
@@ -257,7 +257,7 @@ async function fetchOrganizationMembers(
   const { data, error } = await supabase
     .from('organization_members')
     .select(`
-      *,
+      id, tenant_id, organization_id, customer_id, role, is_primary_contact, can_place_orders, can_view_invoices, can_manage_members, joined_at, created_at, updated_at,
       customer:customers!organization_members_customer_id_fkey(
         id,
         first_name,
@@ -279,7 +279,7 @@ async function fetchOrganizationMembers(
 
     const { data: simpleData, error: simpleError } = await supabase
       .from('organization_members')
-      .select('*')
+      .select('id, tenant_id, organization_id, customer_id, role, is_primary_contact, can_place_orders, can_view_invoices, can_manage_members, joined_at, created_at, updated_at')
       .eq('tenant_id', tenantId)
       .eq('organization_id', orgId)
       .order('is_primary_contact', { ascending: false });
@@ -889,7 +889,7 @@ export function useCustomerOrganizations(customerId: string | undefined) {
       const { data, error } = await supabase
         .from('organization_members')
         .select(`
-          *,
+          id, tenant_id, organization_id, customer_id, role, is_primary_contact, can_place_orders, can_view_invoices, can_manage_members, joined_at, created_at, updated_at,
           organization:customer_organizations!organization_members_organization_id_fkey(
             id,
             name,

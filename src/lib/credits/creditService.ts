@@ -362,7 +362,7 @@ export async function getCreditTransactions(
   try {
     let query = supabase
       .from('credit_transactions')
-      .select('*')
+      .select('id, tenant_id, amount, balance_after, transaction_type, action_type, reference_id, reference_type, description, metadata, created_at')
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false });
 

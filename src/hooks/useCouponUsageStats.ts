@@ -55,7 +55,7 @@ export function useCouponUsageStats() {
         // Fetch all coupons for this tenant
         const couponsResult = await supabase
           .from('coupon_codes')
-          .select('*')
+          .select('id, code, status, total_usage_limit')
           .eq('tenant_id', tenant.id);
         
         const { data: coupons, error: couponsError } = couponsResult;
@@ -73,7 +73,7 @@ export function useCouponUsageStats() {
         if (couponIds.length > 0) {
           const { data: usage, error: usageError } = await supabase
             .from('coupon_usage')
-            .select('*')
+            .select('id, coupon_id, discount_amount, used_at, order_id')
             .in('coupon_id', couponIds)
             .order('used_at', { ascending: false });
 

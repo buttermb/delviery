@@ -48,7 +48,7 @@ export default function DealsPage() {
             // Query marketplace_deals table directly
             const { data, error } = await supabase
                 .from('marketplace_deals')
-                .select('*')
+                .select('id, name, description, discount_type, discount_value, applies_to, target_value, active_days, end_date, is_active, store_id')
                 .eq('store_id', store.id)
                 .eq('is_active', true);
 

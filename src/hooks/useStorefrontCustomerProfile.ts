@@ -151,7 +151,7 @@ export function useStorefrontCustomerProfile(options: UseStorefrontCustomerProfi
       // Get customer preferences (stored in customer_preferences table if exists)
       const { data: preferencesData } = await supabase
         .from('customer_preferences')
-        .select('*')
+        .select('email_notifications, sms_notifications, marketing_emails, preferred_delivery_time, dietary_preferences, favorite_categories')
         .eq('customer_id', customerData.id)
         .eq('tenant_id', tenantId)
         .maybeSingle();

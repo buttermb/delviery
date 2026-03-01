@@ -160,7 +160,7 @@ export default function StorefrontSettings() {
 
       const { data, error } = await supabase
         .from('marketplace_stores')
-        .select('*')
+        .select('id, store_name, slug, encrypted_url_token, tagline, description, logo_url, banner_url, favicon_url, primary_color, secondary_color, accent_color, font_family, custom_domain, meta_title, meta_description, og_image_url, ga4_measurement_id, is_active, is_public, require_account, require_age_verification, minimum_age, delivery_zones, payment_methods, time_slots, theme_config, free_delivery_threshold, default_delivery_fee, checkout_settings, operating_hours, purchase_limits, featured_product_ids')
         .eq('tenant_id', tenantId)
         .maybeSingle();
 

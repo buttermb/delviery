@@ -27,7 +27,7 @@ export function ZReport({ shiftId }: ZReportProps) {
       if (!tenantId) return null;
       const { data, error } = await supabase
         .from('pos_shifts')
-        .select('*')
+        .select('id, shift_number, terminal_id, cashier_name, started_at, ended_at, opening_cash, closing_cash, expected_cash, cash_difference, total_sales, total_transactions, cash_sales, card_sales, other_sales, refunds_amount, status')
         .eq('id', shiftId)
         .eq('tenant_id', tenantId)
         .maybeSingle();
@@ -45,7 +45,7 @@ export function ZReport({ shiftId }: ZReportProps) {
       if (!tenantId) return [];
       const { data, error } = await supabase
         .from('pos_transactions')
-        .select('*')
+        .select('id, transaction_number, total_amount, subtotal, tax_amount, discount_amount, payment_method, payment_status, customer_name, created_at, items')
         .eq('tenant_id', tenantId)
         .eq('shift_id', shiftId)
         .order('created_at', { ascending: true });

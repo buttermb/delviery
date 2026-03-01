@@ -22,7 +22,7 @@ export function useClientMessages(clientId: string | undefined) {
 
             const { data, error } = await supabase
                 .from('crm_messages')
-                .select('*')
+                .select('id, account_id, client_id, message_text, sender_type, sender_user_id, sender_name, created_at')
                 .eq('client_id', clientId)
                 .eq('account_id', accountId)
                 .order('created_at', { ascending: true })

@@ -29,7 +29,7 @@ export default function CustomDomain() {
       try {
         const { data, error } = await supabase
           .from('custom_domains' as 'tenants') // Supabase type limitation
-          .select('*')
+          .select('id, domain, status, ssl_status, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 

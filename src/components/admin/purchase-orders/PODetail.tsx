@@ -61,7 +61,7 @@ export function PODetail({ open, onOpenChange, purchaseOrder, onEdit, onStatusCh
     queryFn: async () => {
       const { data, error } = await supabase
         .from("purchase_order_items")
-        .select("*")
+        .select('id, product_name, quantity, unit_cost, total_cost, received_quantity, created_at')
         .eq("purchase_order_id", purchaseOrder.id)
         .order("created_at", { ascending: true });
 

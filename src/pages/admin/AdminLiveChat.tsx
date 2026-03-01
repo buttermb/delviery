@@ -193,7 +193,7 @@ const AdminLiveChat = function AdminLiveChat() {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('chat_sessions')
-        .select('*')
+        .select('id, mode, status, created_at, updated_at, user_id, guest_id, assigned_admin_id, customer_name, customer_email, unread_count, last_message, last_message_at')
         .eq('status', 'active')
         .eq('tenant_id', tenant.id)
         .order('updated_at', { ascending: false });
@@ -289,7 +289,7 @@ const AdminLiveChat = function AdminLiveChat() {
       try {
         const { data, error } = await supabase
           .from('chat_messages')
-          .select('*')
+          .select('id, sender_type, sender_id, message, created_at, read_at, attachment_url, attachment_type, attachment_name')
           .eq('session_id', selectedSession)
           .order('created_at', { ascending: true });
 

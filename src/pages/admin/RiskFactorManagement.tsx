@@ -33,7 +33,7 @@ export default function RiskFactorManagement() {
     try {
       const { data, error } = await supabase
         .from("risk_factors")
-        .select("*")
+        .select('id, neighborhood, borough, risk_level, scam_reports, delivery_issues')
         .order("risk_level", { ascending: false });
 
       if (error) throw error;

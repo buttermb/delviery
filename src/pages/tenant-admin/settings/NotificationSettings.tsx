@@ -86,7 +86,7 @@ export default function NotificationSettings() {
 
       const { data, error } = await supabase
         .from('notification_preferences')
-        .select('*')
+        .select('id, user_id, email_enabled, email_all_updates, sms_enabled, sms_all_updates, push_enabled, push_all_updates')
         .eq('user_id', admin.id)
         .maybeSingle();
 

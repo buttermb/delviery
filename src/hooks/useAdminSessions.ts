@@ -203,7 +203,7 @@ export function useAdminSessions(): UseAdminSessionsReturn {
       // Query user_sessions table for the current user
       const { data, error: queryError } = await supabase
         .from('user_sessions')
-        .select('*')
+        .select('id, session_token, ip_address, device_info, location, is_active, expires_at, last_activity_at, created_at')
         .eq('user_id', admin.userId)
         .eq('is_active', true)
         .gt('expires_at', new Date().toISOString())

@@ -74,7 +74,7 @@ export const useLocations = (filters?: { status?: string }) => {
 
       let query = supabase
         .from('locations')
-        .select('*')
+        .select('id, tenant_id, account_id, name, address, city, state, zip_code, phone, email, license_number, operating_hours, delivery_radius_miles, coordinates, status, created_at, updated_at')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
 
@@ -128,13 +128,13 @@ export const useLocations = (filters?: { status?: string }) => {
         // Get receiving records count for this location
         const { count: totalReceiving } = await supabase
           .from('receiving_records')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .eq('location_id', location.id);
 
         const { count: pendingReceiving } = await supabase
           .from('receiving_records')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .eq('location_id', location.id)
           .eq('status', 'in_progress');
@@ -142,13 +142,13 @@ export const useLocations = (filters?: { status?: string }) => {
         // Get runners count for this location
         const { count: totalRunners } = await supabase
           .from('wholesale_runners')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .eq('home_location_id', location.id);
 
         const { count: activeRunners } = await supabase
           .from('wholesale_runners')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id)
           .eq('home_location_id', location.id)
           .eq('status', 'active');

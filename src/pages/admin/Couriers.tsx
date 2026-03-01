@@ -61,7 +61,7 @@ export default function Couriers() {
       if (!tenant?.id) return [];
       const { data, error } = await supabase
         .from('couriers')
-        .select('*')
+        .select('id, full_name, email, phone, vehicle_type, is_online, is_active, age_verified, current_lat, current_lng, rating, total_deliveries, commission_rate, created_at')
         .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false });
 

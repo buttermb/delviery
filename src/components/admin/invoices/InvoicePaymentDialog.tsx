@@ -163,7 +163,7 @@ export function InvoicePaymentDialog({
         .update(updateData)
         .eq('id', invoiceId)
         .eq('account_id', accountId)
-        .select('*')
+        .select('id, client_id, amount_paid, status, paid_at, payment_history')
         .maybeSingle();
 
       if (error) throw error;

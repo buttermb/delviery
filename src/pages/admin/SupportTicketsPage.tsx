@@ -45,7 +45,7 @@ export default function SupportTicketsPage() {
       try {
         const { data, error } = await supabase
           .from("support_tickets")
-          .select("*")
+          .select('id, customer_id, subject, description, status, priority, created_at, updated_at')
           .eq("tenant_id", tenant.id)
           .order("created_at", { ascending: false });
 

@@ -131,7 +131,7 @@ export default function CategoriesPage() {
       try {
         const { data, error } = await supabase
           .from('categories')
-          .select('*')
+          .select('id, tenant_id, name, description, parent_id, created_at, updated_at')
           .eq('tenant_id', tenantId)
           .order('name', { ascending: true });
 

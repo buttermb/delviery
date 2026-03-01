@@ -42,7 +42,7 @@ export const ImportCustomersDialog = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('wholesale_clients')
-        .select('*')
+        .select('id, business_name, contact_name, phone, email, client_type')
         .eq('status', 'active')
         .order('company_name');
       

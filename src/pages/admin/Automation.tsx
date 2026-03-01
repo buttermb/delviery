@@ -55,7 +55,7 @@ export default function Automation() {
       try {
         const { data, error } = await supabase
           .from('automation_rules')
-          .select('*')
+          .select('id, name, description, trigger_type, trigger_config, action_type, action_config, enabled, last_run_at, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 

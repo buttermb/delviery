@@ -61,7 +61,7 @@ export const AssignRouteDialog = ({
             try {
                 const { data, error } = await supabase
                     .from("couriers")
-                    .select("*")
+                    .select('id, full_name, vehicle_type, vehicle_plate, is_online, current_lat, current_lng')
                     .eq("is_active", true)
                     .order("is_online", { ascending: false });
 

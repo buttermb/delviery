@@ -105,7 +105,7 @@ export default function BusinessMenuPage() {
 
       let query = supabase
         .from('products')
-        .select('*')
+        .select('id, name, description, price, unit, image_url, category, quantity_available, is_active, tenant_id')
         .eq('tenant_id', businessId)
         .eq('is_active', true)
         .order('name');

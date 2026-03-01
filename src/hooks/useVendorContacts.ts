@@ -96,7 +96,7 @@ export function useVendorContacts(vendorId: string) {
 
       const { data, error } = await supabase
         .from('vendor_contacts')
-        .select('*')
+        .select('id, tenant_id, vendor_id, name, role, department, phone, email, is_primary, notes, created_at, updated_at')
         .eq('tenant_id', tenantId)
         .eq('vendor_id', vendorId)
         .order('is_primary', { ascending: false })
@@ -361,7 +361,7 @@ export function useVendorContactHistory(contactId: string) {
 
       const { data, error } = await supabase
         .from('vendor_contact_history')
-        .select('*')
+        .select('id, tenant_id, vendor_contact_id, action, summary, created_by, created_at')
         .eq('tenant_id', tenantId)
         .eq('vendor_contact_id', contactId)
         .order('created_at', { ascending: false })

@@ -189,7 +189,7 @@ export function useVendorCompliance(vendorId: string) {
 
       const { data, error } = await supabase
         .from('vendor_compliance')
-        .select('*')
+        .select('id, tenant_id, vendor_id, license_number, license_type, license_expiration, jurisdiction, approved_categories, is_active, notes, created_at, updated_at')
         .eq('tenant_id', tenantId)
         .eq('vendor_id', vendorId)
         .order('is_active', { ascending: false })
@@ -274,7 +274,7 @@ export function useVendorCompliance(vendorId: string) {
       // Fetch current state for audit
       const { data: currentData } = await supabase
         .from('vendor_compliance')
-        .select('*')
+        .select('license_number, license_type, license_expiration, jurisdiction, approved_categories, is_active')
         .eq('id', input.id)
         .eq('tenant_id', tenantId)
         .maybeSingle();
@@ -478,7 +478,7 @@ export function useVendorComplianceDocuments(complianceId: string) {
 
       const { data, error } = await supabase
         .from('vendor_compliance_documents')
-        .select('*')
+        .select('id, tenant_id, vendor_compliance_id, document_name, document_type, file_url, uploaded_by, uploaded_at')
         .eq('tenant_id', tenantId)
         .eq('vendor_compliance_id', complianceId)
         .order('uploaded_at', { ascending: false });
@@ -606,7 +606,7 @@ export function useVendorComplianceAudit(complianceId: string) {
 
       const { data, error } = await supabase
         .from('vendor_compliance_audit')
-        .select('*')
+        .select('id, tenant_id, vendor_compliance_id, action, changes, performed_by, performed_at')
         .eq('tenant_id', tenantId)
         .eq('vendor_compliance_id', complianceId)
         .order('performed_at', { ascending: false })

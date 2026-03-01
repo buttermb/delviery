@@ -169,7 +169,7 @@ async function fetchCustomerComplianceData(
   // Fetch age verification data if customer has auth user
   const { data: ageVerification } = await supabase
     .from('age_verifications')
-    .select('*')
+    .select('id, verified, id_type, id_front_url, date_of_birth, created_at')
     .eq('user_id', customerId)
     .maybeSingle();
 

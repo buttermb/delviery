@@ -39,7 +39,7 @@ export function SupplierDetail({ open, onOpenChange, supplier, onEdit }: Supplie
     queryFn: async () => {
       const { data, error } = await supabase
         .from("supplier_transactions")
-        .select("*")
+        .select('id, transaction_type, description, reference_number, amount, created_at')
         .eq("supplier_id", supplier.id)
         .order("created_at", { ascending: false })
         .limit(20);

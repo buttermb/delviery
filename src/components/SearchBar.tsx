@@ -56,7 +56,7 @@ export function SearchBar({ variant = 'full' }: SearchBarProps) {
       try {
         const { data } = await supabase
           .from('products')
-          .select('*')
+          .select('id, name, image_url, category, price, description, in_stock')
           .or(`name.ilike.%${escapePostgresLike(debouncedSearch)}%,description.ilike.%${escapePostgresLike(debouncedSearch)}%,category.ilike.%${escapePostgresLike(debouncedSearch)}%`)
           .eq('in_stock', true)
           .limit(10);

@@ -54,7 +54,7 @@ export default function CustomReports() {
       try {
         const { data, error } = await supabase
           .from('custom_reports' as 'tenants')
-          .select('*')
+          .select('id, name, description, sql_query, query, format, schedule, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 

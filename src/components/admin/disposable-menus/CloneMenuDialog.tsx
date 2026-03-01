@@ -77,7 +77,7 @@ export function CloneMenuDialog({ open, onClose, menu, onComplete }: CloneMenuDi
       if (cloneSettings.whitelist) {
         const { data: whitelist } = await supabase
           .from('menu_access_whitelist')
-          .select('*')
+          .select('customer_name, customer_phone, customer_email')
           .eq('menu_id', menu.id);
 
         interface WhitelistRow {

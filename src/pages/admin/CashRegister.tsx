@@ -135,7 +135,7 @@ function CashRegisterContent() {
       if (!tenantId) return null;
       const { data, error } = await supabase
         .from('pos_shifts')
-        .select('*')
+        .select('id, tenant_id, status, started_at, opening_cash, cash_sales')
         .eq('tenant_id', tenantId)
         .eq('status', 'open')
         .order('started_at', { ascending: false })
@@ -278,7 +278,7 @@ function CashRegisterContent() {
       try {
         const { data, error } = await supabase
           .from('pos_transactions')
-          .select('*')
+          .select('id, created_at, total_amount, payment_status, payment_method, items, tenant_id')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(50);

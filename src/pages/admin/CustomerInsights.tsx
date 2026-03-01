@@ -24,7 +24,7 @@ export default function CustomerInsights() {
       try {
         const { data, error } = await supabase
           .from('customers')
-          .select('*')
+          .select('id, first_name, last_name, email, phone, customer_type, loyalty_points, tenant_id')
           .eq('id', id)
           .eq('tenant_id', tenantId)
           .maybeSingle();

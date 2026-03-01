@@ -62,7 +62,7 @@ export default function RunnerLocationTracking() {
 
       const { data, error } = await supabase
         .from('wholesale_runners')
-        .select('*')
+        .select('id, full_name, vehicle_type, vehicle_plate, status, phone')
         .eq('tenant_id', tenant.id)
         .order('full_name');
 

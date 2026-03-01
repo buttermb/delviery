@@ -32,7 +32,7 @@ export function useExistingRating(trackingToken: string | undefined) {
 
       const result = await supabase
         .from('delivery_ratings')
-        .select('*')
+        .select('id, tenant_id, order_id, delivery_id, runner_id, customer_id, tracking_token, rating, comment, created_at, updated_at')
         .eq('tracking_token', trackingToken)
         .maybeSingle();
 
@@ -61,7 +61,7 @@ export function useSubmitDeliveryRating() {
       const { data, error } = await supabase
         .from('delivery_ratings')
         .insert(input)
-        .select('*')
+        .select('id, tenant_id, order_id, delivery_id, runner_id, customer_id, tracking_token, rating, comment, created_at, updated_at')
         .maybeSingle();
 
       if (error) {
@@ -104,7 +104,7 @@ export function useRecentDeliveryRatings(
 
       const { data, error } = await supabase
         .from('delivery_ratings')
-        .select('*')
+        .select('id, tenant_id, order_id, delivery_id, runner_id, customer_id, tracking_token, rating, comment, created_at, updated_at')
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false })
         .limit(limit);

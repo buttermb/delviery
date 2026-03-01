@@ -104,7 +104,7 @@ export default function ExpenseTracking() {
       try {
         const { data, error } = await supabase
           .from('expenses')
-          .select('*')
+          .select('id, description, amount, category, notes, created_at, tenant_id')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(100);

@@ -112,7 +112,7 @@ export const useMenuProductAvailabilityRules = (menuId?: string, tenantId?: stri
 
       const { data, error } = await supabase
         .from('menu_product_availability_rules')
-        .select('*')
+        .select('id, menu_id, product_id, tenant_id, rule_type, is_active, start_hour, end_hour, allowed_days, max_quantity, current_quantity_used, bundle_product_ids, hide_when_unavailable, unavailable_message, created_at, updated_at')
         .eq('menu_id', menuId)
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: true });
@@ -144,7 +144,7 @@ export const useProductAvailabilityRules = (
 
       const { data, error } = await supabase
         .from('menu_product_availability_rules')
-        .select('*')
+        .select('id, menu_id, product_id, tenant_id, rule_type, is_active, start_hour, end_hour, allowed_days, max_quantity, current_quantity_used, bundle_product_ids, hide_when_unavailable, unavailable_message, created_at, updated_at')
         .eq('menu_id', menuId)
         .eq('product_id', productId)
         .eq('tenant_id', tenantId)

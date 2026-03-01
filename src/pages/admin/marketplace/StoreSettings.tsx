@@ -31,7 +31,7 @@ export default function StoreSettings() {
 
             const { data, error } = await supabase
                 .from('marketplace_profiles')
-                .select('*')
+                .select('id, tenant_id, business_name, business_description, logo_url, cover_image_url, marketplace_status, verified_badge, shipping_states, shipping_policy, return_policy, slug, created_at, updated_at')
                 .eq('tenant_id', tenant.id)
                 .maybeSingle();
 

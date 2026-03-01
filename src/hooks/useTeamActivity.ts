@@ -68,7 +68,7 @@ export function useTeamActivity(options: UseTeamActivityOptions = {}) {
         // First get activity logs
         let activityQuery = supabase
           .from('activity_logs')
-          .select('*')
+          .select('id, user_id, tenant_id, action, category, severity, resource, resource_id, description, user_email, metadata, created_at')
           .eq('tenant_id', tenantId)
           .not('user_id', 'is', null) // Only get activities with user_id (team member actions)
           .order('created_at', { ascending: false })

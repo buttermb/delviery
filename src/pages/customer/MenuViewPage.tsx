@@ -50,7 +50,7 @@ export default function CustomerMenuViewPage() {
       // Verify customer has access
       const { data: access } = await supabase
         .from("menu_access")
-        .select("*")
+        .select('id, expires_at, access_code, menu_id, customer_id, tenant_id')
         .eq("menu_id", menuId as string)
         .eq("customer_id", customerId)
         .eq("tenant_id", tenantId)
@@ -68,7 +68,7 @@ export default function CustomerMenuViewPage() {
       // Fetch menu
       const { data, error } = await supabase
         .from("menus")
-        .select("*")
+        .select('id, name, description, image_url, is_active, tenant_id')
         .eq("id", menuId as string)
         .eq("tenant_id", tenantId)
         .eq("is_active", true)

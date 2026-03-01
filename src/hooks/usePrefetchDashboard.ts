@@ -44,7 +44,7 @@ export function usePrefetchDashboard() {
 
             const { count: orderCount } = await supabase
               .from('wholesale_orders')
-              .select('*', { count: 'exact', head: true })
+              .select('id', { count: 'exact', head: true })
               .eq('tenant_id', tenantId)
               .gte('created_at', new Date().toISOString().split('T')[0]);
 
@@ -82,7 +82,7 @@ export function usePrefetchDashboard() {
           queryFn: async () => {
             const { data } = await supabase
               .from('wholesale_orders')
-              .select('*')
+              .select('id, order_number, status, total_amount, contact_name, customer_id, created_at, updated_at')
               .eq('tenant_id', tenantId)
               .order('created_at', { ascending: false })
               .limit(5);

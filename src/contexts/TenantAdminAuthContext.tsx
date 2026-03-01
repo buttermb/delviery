@@ -338,7 +338,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             // Fetch admin and tenant data using user ID from session
             const { data: adminData } = await supabase
               .from('tenant_users')
-              .select('*')
+              .select('id, email, role, tenant_id, status')
               .eq('user_id', session.user.id)
               .eq('status', 'active')
               .maybeSingle();
@@ -353,7 +353,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             if (adminData) {
               const { data: tenantData } = await supabase
                 .from('tenants')
-                .select('*')
+                .select('id, business_name, slug, subscription_plan, subscription_status, trial_ends_at, next_billing_date, grace_period_ends_at, payment_method_added, mrr, onboarding_completed, business_tier, created_at, is_free_tier, credits_enabled, limits, usage, features')
                 .eq('id', adminData.tenant_id)
                 .maybeSingle();
 
@@ -1412,7 +1412,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
       logger.info('[AUTH] Refreshing tenant data from database', { tenantId: tenant.id });
       const { data: freshTenant, error } = await supabase
         .from('tenants')
-        .select('*')
+        .select('id, business_name, slug, subscription_plan, subscription_status, trial_ends_at, next_billing_date, grace_period_ends_at, payment_method_added, mrr, onboarding_completed, business_tier, created_at, is_free_tier, credits_enabled, limits, usage, features')
         .eq('id', tenant.id)
         .maybeSingle();
 

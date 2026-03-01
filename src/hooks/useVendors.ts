@@ -25,7 +25,7 @@ export function useVendors() {
             if (!tenant?.id) return [];
             const { data, error } = await supabase
                 .from('vendors')
-                .select('*')
+                .select('id, name, contact_name, contact_email, contact_phone, address, created_at')
                 .eq('account_id', tenant.id)
                 .order('name');
 

@@ -65,7 +65,7 @@ export async function getAutoTopUpConfig(tenantId: string): Promise<AutoTopUpCon
   try {
     const { data, error } = await supabase
       .from('credit_auto_topup')
-      .select('*')
+      .select('id, tenant_id, enabled, trigger_threshold, topup_amount, max_per_month, topups_this_month, month_reset_at, payment_method_id, stripe_customer_id, last_topup_at, created_at, updated_at')
       .eq('tenant_id', tenantId)
       .maybeSingle();
 

@@ -82,7 +82,7 @@ export function useProductVariants(productId: string | undefined) {
 
       const { data, error } = await supabase
         .from('product_variants')
-        .select('*')
+        .select('id, tenant_id, product_id, name, variant_type, sku, price, cost_per_unit, wholesale_price, retail_price, available_quantity, low_stock_alert, display_order, is_active, thc_percent, cbd_percent, strain_type, weight_grams, created_at, updated_at')
         .eq('tenant_id', tenant.id)
         .eq('product_id', productId)
         .order('display_order', { ascending: true });

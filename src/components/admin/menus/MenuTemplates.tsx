@@ -267,7 +267,7 @@ const useMenuTemplates = (tenantId?: string) => {
 
       const { data, error } = await supabase
         .from('menu_templates')
-        .select('*')
+        .select('id, tenant_id, name, description, category, config, is_default, is_shared, version, usage_count, created_at, updated_at, created_by')
         .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
 
@@ -305,7 +305,7 @@ const useTemplateVersions = (templateId?: string, tenantId?: string) => {
 
       const { data, error } = await supabase
         .from('menu_template_versions')
-        .select('*')
+        .select('id, template_id, version, config, changelog, created_at, created_by')
         .eq('template_id', templateId)
         .eq('tenant_id', tenantId)
         .order('version', { ascending: false });

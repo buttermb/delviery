@@ -243,7 +243,7 @@ export function LiveOrderDetailPanel({
         const { data, error } = await supabase
           .from('menu_orders')
           .select(`
-            *,
+            id, status, created_at, total_amount, contact_phone, delivery_address, payment_method, customer_notes, delivery_method, order_data, items,
             disposable_menus (name, title)
           `)
           .eq('id', order.id)
@@ -295,13 +295,13 @@ export function LiveOrderDetailPanel({
       const [orderRes, itemsRes] = await Promise.all([
         supabase
           .from('orders')
-          .select('*')
+          .select('id, order_number, status, created_at, total_amount, customer_name, customer_phone, delivery_address, delivery_borough, delivery_notes, delivery_fee, subtotal, discount_amount, tip_amount, payment_method, payment_status, accepted_at, delivered_at, courier_id, special_instructions, order_type')
           .eq('id', order.id)
           .eq('tenant_id', tenant.id)
           .maybeSingle(),
         supabase
           .from('order_items')
-          .select('*')
+          .select('id, product_name, quantity, price')
           .eq('order_id', order.id),
       ]);
 

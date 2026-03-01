@@ -52,7 +52,7 @@ export function useKnownDevices(userId?: string) {
       if (!userId) return [];
       const { data, error } = await supabase
         .from('user_known_devices')
-        .select('*')
+        .select('id, user_id, device_fingerprint, device_name, device_type, browser, os, ip_address, geo_country, geo_city, is_trusted, first_seen_at, last_seen_at, trust_confirmed_at')
         .eq('user_id', userId)
         .order('last_seen_at', { ascending: false });
 
@@ -68,7 +68,7 @@ export function useKnownDevices(userId?: string) {
       if (!userId) return [];
       const { data, error } = await supabase
         .from('suspicious_login_alerts')
-        .select('*')
+        .select('id, user_id, device_fingerprint, ip_address, geo_country, geo_city, browser, os, device_type, alert_type, severity, email_sent, user_response, responded_at, account_secured, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(20);

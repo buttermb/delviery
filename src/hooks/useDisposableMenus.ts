@@ -359,7 +359,7 @@ export const useMenuAccessLogs = (menuId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('menu_access_logs')
-        .select('*')
+        .select('id, menu_id, access_whitelist_id, accessed_at, ip_address, user_agent, device_fingerprint, location, access_code_correct, geofence_pass, time_restriction_pass, suspicious_flags, actions_taken, session_duration_seconds')
         .eq('menu_id', menuId)
         .order('accessed_at', { ascending: false })
         .limit(100);

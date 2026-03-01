@@ -97,7 +97,7 @@ export function useOrderAuditLog(options: UseOrderAuditLogOptions = {}) {
       try {
         let query = supabase
           .from('order_audit_log')
-          .select('*')
+          .select('id, tenant_id, order_id, order_table, order_number, action, field_name, old_value, new_value, changes, actor_id, actor_email, actor_name, actor_type, ip_address, user_agent, source, reason, notes, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(limit);

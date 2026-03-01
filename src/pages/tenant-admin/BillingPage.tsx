@@ -125,7 +125,7 @@ export default function TenantAdminBillingPage() {
       // Fallback to direct query
       const { data } = await supabase
         .from("invoices")
-        .select("*")
+        .select("id, invoice_number, issue_date, due_date, total, status")
         .eq("tenant_id", tenantId)
         .order("issue_date", { ascending: false })
         .limit(10);
@@ -143,7 +143,7 @@ export default function TenantAdminBillingPage() {
 
       const { data, error } = await supabase
         .from('subscription_plans')
-        .select('*')
+        .select('id, name, display_name, description, price_monthly, is_active, limits, features')
         .eq('is_active', true)
         .order('price_monthly') as unknown as { data: Database['public']['Tables']['subscription_plans']['Row'][] | null; error: { message: string; code: string } | null };
 
@@ -170,7 +170,7 @@ export default function TenantAdminBillingPage() {
 
       const { data } = await supabase
         .from("subscription_plans")
-        .select("*")
+        .select("id, name, display_name, description, features, price_monthly, limits")
         .eq("name", tenant.subscription_plan)
         .maybeSingle();
 

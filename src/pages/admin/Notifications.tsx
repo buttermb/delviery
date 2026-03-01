@@ -54,7 +54,7 @@ export default function Notifications() {
       try {
         const { data, error } = await supabase
           .from('notification_templates')
-          .select('*')
+          .select('id, name, type, subject, body, trigger_event, enabled, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 

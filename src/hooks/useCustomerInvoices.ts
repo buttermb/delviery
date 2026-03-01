@@ -262,7 +262,7 @@ export function useCustomerInvoices() {
         if (!tenant?.id) throw new Error('Tenant ID required');
 
         // Get current invoice
-        const fetchResult = await db.from('customer_invoices').select('*').eq('id', invoiceId).eq('tenant_id', tenant.id).maybeSingle();
+        const fetchResult = await db.from('customer_invoices').select('amount_paid, total, status, paid_at, notes').eq('id', invoiceId).eq('tenant_id', tenant.id).maybeSingle();
 
         if (fetchResult.error) throw fetchResult.error;
         if (!fetchResult.data) throw new Error('Invoice not found');

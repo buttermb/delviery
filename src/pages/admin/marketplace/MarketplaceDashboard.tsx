@@ -57,7 +57,7 @@ export default function MarketplaceDashboard() {
             if (!tenant?.id) return null;
             const { data, error } = await supabase
                 .from('marketplace_profiles')
-                .select('*')
+                .select('id, tenant_id, business_name, slug, marketplace_status, verified_badge, created_at')
                 .eq('tenant_id', tenant.id)
                 .maybeSingle();
 

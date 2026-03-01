@@ -66,7 +66,7 @@ export const VendorAuthProvider = ({ children }: { children: ReactNode }) => {
             // 2. Find marketplace_profile
             const { data: profile, error: profileError } = await supabase
                 .from('marketplace_profiles')
-                .select('*')
+                .select('id, tenant_id, business_name, marketplace_status, can_sell')
                 .eq('tenant_id', tenantUser.tenant_id)
                 .maybeSingle();
 

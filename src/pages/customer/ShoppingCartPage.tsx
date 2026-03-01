@@ -69,7 +69,7 @@ export default function ShoppingCartPage() {
       const productIds = guestCart.map(item => item.product_id);
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select('id, name, price, prices, image_url, category')
         .in("id", productIds);
       if (error) throw error;
       return data;

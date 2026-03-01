@@ -122,7 +122,7 @@ export function useCategories() {
 
       const { data, error } = await supabase
         .from('categories')
-        .select('*')
+        .select('id, tenant_id, name, description, parent_id, created_at, updated_at')
         .eq('tenant_id', tenant.id)
         .order('name', { ascending: true });
 

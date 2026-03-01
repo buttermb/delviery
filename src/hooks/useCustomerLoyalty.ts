@@ -241,7 +241,7 @@ export const TIER_DISPLAY_INFO: Record<LoyaltyTier, { label: string; color: stri
 async function fetchLoyaltyConfig(tenantId: string): Promise<LoyaltyConfig | null> {
   const { data, error } = await supabase
     .from('loyalty_config')
-    .select('*')
+    .select('id, tenant_id, is_active, points_per_dollar, points_to_dollar_ratio, signup_bonus_points, referral_bonus_points, birthday_bonus_points, bronze_threshold, silver_threshold, gold_threshold, platinum_threshold, bronze_multiplier, silver_multiplier, gold_multiplier, platinum_multiplier, points_expiration_months, created_at, updated_at')
     .eq('tenant_id', tenantId)
     .maybeSingle();
 
@@ -351,7 +351,7 @@ async function fetchPointsHistory(
 ): Promise<LoyaltyPointTransaction[]> {
   const { data, error } = await supabase
     .from('loyalty_points')
-    .select('*')
+    .select('id, tenant_id, customer_id, points, type, reference_type, reference_id, balance_after, description, created_at, created_by')
     .eq('tenant_id', tenantId)
     .eq('customer_id', customerId)
     .order('created_at', { ascending: false })

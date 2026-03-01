@@ -77,7 +77,7 @@ async function fetchActivityLogs(
 ): Promise<ActivityLogEntry[]> {
   let query = supabase
     .from('activity_log')
-    .select('*')
+    .select('id, tenant_id, user_id, action, entity_type, entity_id, metadata, created_at')
     .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false });
 
