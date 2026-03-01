@@ -377,3 +377,27 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Warnings clear automatically on retry (handlePlaceOrder clears state before re-attempting)
 - Backend already returned structured `unavailableProducts` array — no edge function changes needed
 - TypeScript compilation passes with zero errors
+
+## storefront-checkout has client-side fallback if edge function fails
+- Audited existing fallback implementation in CheckoutPage.tsx
+- The edge function primary path (tryEdgeFunction) was already implemented with:
+  - Proper error detection for FunctionsFetchError, FunctionsRelayError, and 500s
+  - Returning null to trigger fallback
+  - Structured OutOfStockError parsing
+- The RPC fallback path (attemptOrder) was already implemented with:
+  - Direct create_marketplace_order RPC call
+  - Network error retry with exponential backoff (3 attempts)
+  - Function-not-found detection
+  - Coupon redemption
+  - Order details fetch
+- Identified and fixed gaps between edge function and fallback to ensure identical results:
+  1. Added customer upsert via upsert_customer_on_checkout RPC (mirrors edge function step 6)
+     - Syncs customer to CRM with name, phone, email, preferred contact, address, order total
+     - Links CRM customer ID to the order via marketplace_orders update
+     - Wrapped in try-catch: non-blocking since order is already placed
+  2. Added Telegram link retrieval from account_settings (mirrors edge function step 7b)
+     - Fetches telegram_customer_link for the confirmation page
+     - Returns it in the fallback result so confirmation page shows Telegram contact
+  3. Telegram notification was already handled (fire-and-forget call after fallback)
+- Note: Stripe checkout session creation intentionally NOT in fallback (requires server-side secret key)
+- TypeScript compilation passes with zero errors

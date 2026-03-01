@@ -1101,6 +1101,79 @@ export function CheckoutPage() {
           }
 
           return fallbackResult;
+          // 4. Fetch order details (tracking token, order number, total)
+          const { data: orderRow } = await supabase
+            .from('storefront_orders')
+            .select('order_number, tracking_token, total')
+            .eq('id', orderId as string)
+            .maybeSingle();
+
+          // 5. Customer upsert — sync to CRM (mirrors edge function step 6)
+          if (store?.tenant_id) {
+            try {
+              const deliveryAddr = formData.fulfillmentMethod === 'pickup'
+                ? null
+                : `${formData.street}${formData.apartment ? ', ' + formData.apartment : ''}, ${formData.city}, ${formData.state} ${formData.zip}`;
+
+              const { data: customerId } = await (supabase.rpc as unknown as SupabaseRpc)(
+                'upsert_customer_on_checkout',
+                {
+                  p_tenant_id: store.tenant_id,
+                  p_name: `${formData.firstName} ${formData.lastName}`,
+                  p_phone: formData.phone || '',
+                  p_email: formData.email,
+                  p_preferred_contact: formData.preferredContact || null,
+                  p_address: deliveryAddr,
+                  p_order_total: total,
+                },
+              );
+
+              // Link CRM customer to the order
+              if (customerId) {
+                await supabase
+                  .from('marketplace_orders')
+                  .update({ crm_customer_id: customerId as string })
+                  .eq('id', orderId as string);
+              }
+            } catch (upsertErr) {
+              // Non-blocking — order already placed, CRM sync is best-effort
+              logger.warn('Customer upsert failed in fallback path', upsertErr, { component: 'CheckoutPage' });
+            }
+          }
+
+          // 6. Fetch Telegram link for confirmation page (mirrors edge function step 7b)
+          let telegramLink: string | undefined;
+          if (store?.tenant_id) {
+            try {
+              const { data: acctRow } = await supabase
+                .from('accounts')
+                .select('id')
+                .eq('tenant_id', store.tenant_id)
+                .maybeSingle();
+
+              if (acctRow) {
+                const { data: settingsRow } = await supabase
+                  .from('account_settings')
+                  .select('notification_settings')
+                  .eq('account_id', acctRow.id)
+                  .maybeSingle();
+
+                const notif = settingsRow?.notification_settings as Record<string, unknown> | null;
+                telegramLink = (notif?.telegram_customer_link as string) || undefined;
+              }
+            } catch {
+              // Non-blocking — Telegram link is optional
+            }
+          }
+
+          return {
+            order_id: orderId as string,
+            order_number: (orderRow?.order_number as string) || (orderId as string),
+            tracking_token: (orderRow?.tracking_token as string) || undefined,
+            total: (orderRow?.total as number) ?? undefined,
+            telegramLink,
+          };
+
         } catch (err: unknown) {
           // Don't retry business errors (out of stock, blocked, limits, etc.)
           if (err instanceof OutOfStockError) throw err;
