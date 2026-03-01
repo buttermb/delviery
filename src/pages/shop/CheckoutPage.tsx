@@ -115,6 +115,9 @@ interface OrderResult {
   total?: number;
   checkoutUrl?: string;
   telegramLink?: string;
+  accountToken?: string;
+  accountCustomer?: Record<string, unknown>;
+  accountTenant?: Record<string, unknown>;
 }
 
 interface UnavailableProduct {
@@ -848,6 +851,8 @@ export function CheckoutPage() {
                 : undefined,
               idempotencyKey,
               clientTotal: total,
+              createAccount: createAccount || undefined,
+              password: createAccount ? accountPassword : undefined,
             },
           });
 
@@ -889,6 +894,9 @@ export function CheckoutPage() {
             total: responseData.serverTotal as number,
             checkoutUrl: responseData.checkoutUrl as string | undefined,
             telegramLink: (responseData.telegramLink as string) || undefined,
+            accountToken: (responseData.accountToken as string) || undefined,
+            accountCustomer: (responseData.accountCustomer as Record<string, unknown>) || undefined,
+            accountTenant: (responseData.accountTenant as Record<string, unknown>) || undefined,
           };
         } catch (err: unknown) {
           // Re-throw known Error instances (business errors from edge function)
@@ -1026,6 +1034,31 @@ export function CheckoutPage() {
         });
       }
 
+      // Account creation fallback: edge function path handles it server-side,
+      // but the RPC fallback path skips it. Fire-and-forget client call.
+      if (createAccount && accountPassword && store?.tenant_id && formData.email) {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        fetch(`${supabaseUrl}/functions/v1/customer-auth?action=signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'apikey': supabaseAnonKey,
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: accountPassword,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone || null,
+            tenantId: store.tenant_id,
+          }),
+        }).catch((err) => {
+          logger.warn('Fallback account creation failed — completing as guest', err, { component: 'CheckoutPage' });
+        });
+      }
+
       return fallbackResult;
     },
     onSuccess: async (data) => {
@@ -1126,6 +1159,21 @@ export function CheckoutPage() {
         }).catch((err) => {
           logger.warn('Account creation failed', err, { component: 'CheckoutPage' });
         });
+      // Auto-login if account was created during checkout (edge function handles creation)
+      if (data.accountToken && data.accountCustomer && data.accountTenant) {
+        try {
+          safeStorage.setItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN, data.accountToken);
+          safeStorage.setItem(STORAGE_KEYS.CUSTOMER_USER, JSON.stringify(data.accountCustomer));
+          safeStorage.setItem(STORAGE_KEYS.CUSTOMER_TENANT_DATA, JSON.stringify(data.accountTenant));
+          toast.success('Account created! You are now logged in.');
+        } catch (err) {
+          logger.warn('Auto-login after account creation failed', err, { component: 'CheckoutPage' });
+          toast.success('Account created! You can log in to view your order history.');
+        }
+      } else if (createAccount) {
+        // Edge function path didn't create the account (e.g., email already exists or fallback path)
+        // Gracefully complete as guest
+        logger.info('Account creation was requested but not completed by checkout handler', null, { component: 'CheckoutPage' });
       }
 
       // Navigate to confirmation

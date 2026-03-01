@@ -29,6 +29,8 @@ import { serve, createClient, corsHeaders, z } from "../_shared/deps.ts";
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { createLogger } from '../_shared/logger.ts';
 import { checkRateLimit } from '../_shared/rateLimiting.ts';
+import { hashPassword } from '../_shared/password.ts';
+import { signJWT } from '../_shared/jwt.ts';
 import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const logger = createLogger('storefront-checkout');
@@ -73,6 +75,9 @@ const CheckoutRequestSchema = z.object({
   idempotencyKey: z.string().max(200).optional(),
   // Client-side total for discrepancy detection (always overridden by server)
   clientTotal: z.number().optional(),
+  // Account creation — when customer opts in at checkout
+  createAccount: z.boolean().optional(),
+  password: z.string().min(8).optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -578,6 +583,119 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     // ------------------------------------------------------------------
+    // 6b. Create registered customer account if requested
+    //     Creates a customer_users record linked to the CRM customer,
+    //     issues a JWT for auto-login. Failures are non-fatal.
+    // ------------------------------------------------------------------
+    let accountToken: string | null = null;
+    let accountCustomer: Record<string, unknown> | null = null;
+    let accountTenant: Record<string, unknown> | null = null;
+
+    if (body.createAccount && body.password && body.customerInfo.email) {
+      try {
+        // Resolve tenant for the account
+        const { data: tenant } = await supabase
+          .from("tenants")
+          .select("id, business_name, slug")
+          .eq("id", store.tenant_id)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (tenant) {
+          // Check if customer_user already exists for this email + tenant
+          const { data: existingUser } = await supabase
+            .from("customer_users")
+            .select("id")
+            .eq("email", body.customerInfo.email.toLowerCase())
+            .eq("tenant_id", tenant.id)
+            .maybeSingle();
+
+          if (!existingUser) {
+            const passwordHash = await hashPassword(body.password);
+
+            const { data: newUser, error: createErr } = await supabase
+              .from("customer_users")
+              .insert({
+                email: body.customerInfo.email.toLowerCase(),
+                password_hash: passwordHash,
+                first_name: body.customerInfo.firstName || null,
+                last_name: body.customerInfo.lastName || null,
+                phone: body.customerInfo.phone ?? null,
+                tenant_id: tenant.id,
+                customer_id: upsertedCustomerId,
+                email_verified: false,
+              })
+              .select("id, email, first_name, last_name, customer_id, tenant_id")
+              .single();
+
+            if (!createErr && newUser) {
+              // Issue JWT for auto-login (30-day expiry)
+              accountToken = await signJWT(
+                {
+                  customer_user_id: newUser.id,
+                  customer_id: upsertedCustomerId || newUser.id,
+                  tenant_id: tenant.id,
+                  type: "customer",
+                },
+                30 * 24 * 60 * 60,
+              );
+
+              // Create session record
+              const expiresAt = new Date();
+              expiresAt.setDate(expiresAt.getDate() + 30);
+              const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+              const userAgent = req.headers.get("user-agent") || "unknown";
+
+              await supabase.from("customer_sessions").insert({
+                customer_user_id: newUser.id,
+                tenant_id: tenant.id,
+                token: accountToken,
+                ip_address: clientIp,
+                user_agent: userAgent,
+                expires_at: expiresAt.toISOString(),
+              });
+
+              accountCustomer = {
+                id: newUser.id,
+                email: newUser.email,
+                first_name: newUser.first_name,
+                last_name: newUser.last_name,
+                customer_id: newUser.customer_id,
+                tenant_id: tenant.id,
+              };
+              accountTenant = {
+                id: tenant.id,
+                business_name: tenant.business_name,
+                slug: tenant.slug,
+              };
+
+              // Fire-and-forget verification email
+              const supabaseUrlForEmail = Deno.env.get("SUPABASE_URL") ?? "";
+              const supabaseKeyForEmail = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+              fetch(`${supabaseUrlForEmail}/functions/v1/send-verification-email`, {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${supabaseKeyForEmail}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  customer_user_id: newUser.id,
+                  tenant_id: tenant.id,
+                  email: body.customerInfo.email.toLowerCase(),
+                  tenant_name: tenant.business_name,
+                }),
+              }).catch(() => {
+                // Verification email failure is non-fatal
+              });
+            }
+          }
+        }
+      } catch {
+        // Account creation failure is non-fatal — order already succeeded
+      }
+    }
+
+    // ------------------------------------------------------------------
     // 7. Fire-and-forget Telegram notification (non-blocking)
     // ------------------------------------------------------------------
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
@@ -642,6 +760,13 @@ serve(secureHeadersMiddleware(async (req) => {
 
     if (telegramLink) {
       result.telegramLink = telegramLink;
+    }
+
+    // Include account creation data for auto-login
+    if (accountToken) {
+      result.accountToken = accountToken;
+      result.accountCustomer = accountCustomer;
+      result.accountTenant = accountTenant;
     }
 
     // Include discrepancy info so clients can reconcile
