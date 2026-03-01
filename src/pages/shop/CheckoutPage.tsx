@@ -394,13 +394,13 @@ export function CheckoutPage() {
     appliedCoupon,
     removeCoupon,
     getCouponDiscount,
-    validateCart,
     syncCartPrices,
     removeItem,
     appliedGiftCards,
     applyGiftCard,
     removeGiftCard,
     getGiftCardTotal,
+    checkInventoryAvailability,
   } = useShopCart({
     storeId: store?.id,
     onCartChange: setCartItemCount,
@@ -411,6 +411,11 @@ export function CheckoutPage() {
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
 
+  // Cart validation state
+  const [isValidatingCart, setIsValidatingCart] = useState(false);
+  const [cartValidationIssues, setCartValidationIssues] = useState<string[]>([]);
+  const cartValidationRanRef = useRef(false);
+
   // Redirect to cart if empty
   useEffect(() => {
     if (isInitialized && cartItems.length === 0) {
@@ -419,18 +424,82 @@ export function CheckoutPage() {
     }
   }, [isInitialized, cartItems.length, navigate, storeSlug]);
 
-  // Validate cart and sync prices on mount
+  // Validate cart items on checkout page load: check existence, stock, and prices
   useEffect(() => {
-    if (isInitialized && cartItems.length > 0 && store?.id) {
-      validateCart();
-      syncCartPrices().then(result => {
-        if (result.changed) {
-          toast.warning('Some prices have been updated', {
-            description: 'Your cart has been refreshed with the latest prices.',
+    if (!isInitialized || cartItems.length === 0 || !store?.id || cartValidationRanRef.current) return;
+    cartValidationRanRef.current = true;
+
+    const validateOnMount = async () => {
+      setIsValidatingCart(true);
+      const issues: string[] = [];
+
+      try {
+        // 1. Check which products still exist and get current prices/stock
+        const productIds = cartItems.map(item => item.productId);
+        const { data: products, error } = await supabase
+          .from('products')
+          .select('id, name, price, in_stock')
+          .in('id', productIds);
+
+        if (error) {
+          logger.warn('Cart validation query failed', error, { component: 'CheckoutPage' });
+          // Don't block checkout on validation failure
+          setIsValidatingCart(false);
+          return;
+        }
+
+        const productMap = new Map(products?.map(p => [p.id, p]) ?? []);
+        const itemsToRemove: string[] = [];
+
+        // 2. Find deleted products (no longer in DB)
+        for (const item of cartItems) {
+          const product = productMap.get(item.productId);
+          if (!product) {
+            itemsToRemove.push(item.productId);
+            issues.push(`"${item.name}" is no longer available and was removed from your cart.`);
+          }
+        }
+
+        // 3. Remove deleted items
+        for (const productId of itemsToRemove) {
+          removeItem(productId);
+        }
+
+        // 4. Sync prices (updates cart in-place for changed prices)
+        const priceResult = await syncCartPrices();
+        if (priceResult.changed) {
+          for (const change of priceResult.priceChanges) {
+            issues.push(`"${change.name}" price updated from ${formatCurrency(change.oldPrice)} to ${formatCurrency(change.newPrice)}.`);
+          }
+        }
+
+        // 5. Check inventory availability
+        const stockResult = await checkInventoryAvailability();
+        if (!stockResult.valid) {
+          for (const item of stockResult.outOfStock) {
+            if (item.available <= 0) {
+              issues.push(`"${item.name}" is out of stock.`);
+            } else {
+              issues.push(`"${item.name}" — only ${item.available} available (you requested ${item.requested}).`);
+            }
+          }
+        }
+
+        // Show toast summary if there were any issues
+        if (issues.length > 0) {
+          toast.warning('Cart updated', {
+            description: 'Some items in your cart were updated. Please review before placing your order.',
           });
         }
-      });
-    }
+      } catch (e) {
+        logger.error('Cart validation failed on checkout mount', e, { component: 'CheckoutPage' });
+      } finally {
+        setCartValidationIssues(issues);
+        setIsValidatingCart(false);
+      }
+    };
+
+    validateOnMount();
   }, [isInitialized, cartItems.length, store?.id]);
 
   // Fetch and calculate active deals
@@ -1248,6 +1317,32 @@ export function CheckoutPage() {
                 {storeStatus?.reason || 'We are currently closed for new orders.'}
                 {storeStatus?.nextOpen && ` We open again at ${storeStatus.nextOpen}.`}
                 {' '}You can still place a pre-order for delivery/pickup when we open.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Cart Validation Loading */}
+          {isValidatingCart && (
+            <Alert className="border-blue-500/50 bg-blue-500/10 mb-6">
+              <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />
+              <AlertTitle className="text-blue-500">Verifying your cart</AlertTitle>
+              <AlertDescription className="text-blue-500/90">
+                Checking item availability and prices...
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Cart Validation Issues */}
+          {!isValidatingCart && cartValidationIssues.length > 0 && (
+            <Alert className="border-yellow-500/50 bg-yellow-500/10 mb-6">
+              <AlertCircle className="h-4 w-4 text-yellow-500" />
+              <AlertTitle className="text-yellow-500">Cart updated</AlertTitle>
+              <AlertDescription className="text-yellow-500/90">
+                <ul className="list-disc list-inside mt-1 space-y-1">
+                  {cartValidationIssues.map((issue, i) => (
+                    <li key={i}>{issue}</li>
+                  ))}
+                </ul>
               </AlertDescription>
             </Alert>
           )}
