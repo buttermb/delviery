@@ -3,7 +3,7 @@
 -- only deducts when stock_quantity >= p_quantity, providing a safe
 -- check-and-deduct in a single atomic UPDATE.
 
-CREATE OR REPLACE FUNCTION deduct_stock(
+CREATE OR REPLACE FUNCTION public.deduct_stock(
   p_product_id UUID,
   p_quantity INTEGER
 ) RETURNS BOOLEAN
@@ -12,17 +12,27 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  affected INTEGER;
+  v_affected INTEGER;
 BEGIN
-  UPDATE products
-  SET stock_quantity = stock_quantity - p_quantity
-  WHERE id = p_product_id
-  AND stock_quantity >= p_quantity;
+  -- Guard against negative or zero quantities
+  IF p_quantity <= 0 THEN
+    RETURN FALSE;
+  END IF;
 
-  GET DIAGNOSTICS affected = ROW_COUNT;
-  RETURN affected > 0;
+  UPDATE public.products
+  SET
+    stock_quantity = stock_quantity - p_quantity,
+    updated_at = NOW()
+  WHERE id = p_product_id
+    AND stock_quantity >= p_quantity;
+
+  GET DIAGNOSTICS v_affected = ROW_COUNT;
+  RETURN v_affected > 0;
 END;
 $$;
 
-COMMENT ON FUNCTION deduct_stock(UUID, INTEGER) IS
+-- Allow storefront (anon) and admin (authenticated) callers
+GRANT EXECUTE ON FUNCTION public.deduct_stock(UUID, INTEGER) TO anon, authenticated, service_role;
+
+COMMENT ON FUNCTION public.deduct_stock(UUID, INTEGER) IS
   'Atomically deducts stock for a product. Returns true if successful, false if insufficient stock.';
