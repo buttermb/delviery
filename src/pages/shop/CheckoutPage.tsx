@@ -1459,12 +1459,12 @@ export function CheckoutPage() {
 
                 {/* Summary */}
                 <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between" data-testid="checkout-sidebar-subtotal">
                     <span className={isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}>Subtotal</span>
                     <span className={isLuxuryTheme ? 'text-white' : ''}>{formatCurrency(subtotal)}</span>
                   </div>
                   {effectiveDeliveryFee > 0 && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between" data-testid="checkout-sidebar-delivery-fee">
                       <span className={isLuxuryTheme ? 'text-white/60' : 'text-muted-foreground'}>Delivery</span>
                       <span className={isLuxuryTheme ? 'text-white' : ''}>{formatCurrency(effectiveDeliveryFee)}</span>
                     </div>
@@ -1479,7 +1479,7 @@ export function CheckoutPage() {
 
                 <Separator className={isLuxuryTheme ? 'bg-white/10' : ''} />
 
-                <div className="flex justify-between font-bold">
+                <div className="flex justify-between font-bold" data-testid="checkout-sidebar-total">
                   <span className={isLuxuryTheme ? 'text-white' : ''}>Total</span>
                   <span style={{ color: themeColor }}>{formatCurrency(total)}</span>
                 </div>
@@ -2531,12 +2531,13 @@ export function CheckoutPage() {
               <Separator className={isLuxuryTheme ? 'bg-white/5' : ''} />
 
               <div className="space-y-2">
-                <div className="flex justify-between">
+                <div className="flex justify-between" data-testid="checkout-subtotal">
                   <span className={textMuted}>Subtotal</span>
                   <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(subtotal)}</span>
                 </div>
                 {formData.fulfillmentMethod === 'delivery' && effectiveDeliveryFee > 0 && (
                   <div className="flex justify-between" data-testid="order-summary-delivery-fee">
+                  <div className="flex justify-between" data-testid="checkout-delivery-fee">
                     <span className={textMuted}>Delivery</span>
                     <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(effectiveDeliveryFee)}</span>
                   </div>
@@ -2579,6 +2580,7 @@ export function CheckoutPage() {
                 )}
                 <Separator className={isLuxuryTheme ? 'bg-white/5' : ''} />
                 <div className="flex justify-between text-lg font-bold" data-testid="order-summary-total">
+                <div className="flex justify-between text-lg font-bold" data-testid="checkout-total">
                   <span className={isLuxuryTheme ? textPrimary : ''}>Total</span>
                   <span style={{ color: themeColor }}>{formatCurrency(total)}</span>
                 </div>

@@ -588,17 +588,17 @@ export default function CartPage() {
 
                 {/* Totals */}
                 <div className="space-y-2">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between" data-testid="cart-subtotal">
                     <span className={textMuted}>Subtotal</span>
                     <span className={isLuxuryTheme ? textPrimary : ''}>{formatCurrency(subtotal)}</span>
                   </div>
                   {totalDiscount > 0 && (
-                    <div className={`flex justify-between ${isLuxuryTheme ? 'text-green-400' : 'text-green-600'}`}>
+                    <div className={`flex justify-between ${isLuxuryTheme ? 'text-green-400' : 'text-green-600'}`} data-testid="cart-discount">
                       <span>Discount</span>
                       <span>-{formatCurrency(totalDiscount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between">
+                  <div className="flex justify-between" data-testid="cart-delivery-fee">
                     <span className={textMuted}>Delivery</span>
                     <span className={isLuxuryTheme ? textPrimary : ''}>
                       {deliveryFee === 0 ? (
@@ -611,7 +611,7 @@ export default function CartPage() {
                     </span>
                   </div>
                   <Separator className={isLuxuryTheme ? 'bg-white/10' : ''} />
-                  <div className="flex justify-between text-lg font-bold">
+                  <div className="flex justify-between text-lg font-bold" data-testid="cart-total">
                     <span className={isLuxuryTheme ? textPrimary : ''}>Total</span>
                     <span style={{ color: themeColor }}>{formatCurrency(total)}</span>
                   </div>

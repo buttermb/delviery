@@ -616,25 +616,25 @@ export function OrderConfirmationPage() {
               ))}
               <Separator />
               {orderDetails?.subtotal != null && (
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm" data-testid="confirmation-subtotal">
                   <span className="text-muted-foreground">Subtotal</span>
                   <span>{formatCurrency(orderDetails.subtotal)}</span>
                 </div>
               )}
               {orderDetails?.delivery_fee != null && orderDetails.delivery_fee > 0 && (
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm" data-testid="confirmation-delivery-fee">
                   <span className="text-muted-foreground">Delivery</span>
                   <span>{formatCurrency(orderDetails.delivery_fee)}</span>
                 </div>
               )}
               {orderDetails?.delivery_fee === 0 && (
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm" data-testid="confirmation-delivery-fee">
                   <span className="text-muted-foreground">Delivery</span>
                   <span className="text-green-600">FREE</span>
                 </div>
               )}
               <Separator />
-              <div className="flex justify-between font-bold">
+              <div className="flex justify-between font-bold" data-testid="confirmation-total">
                 <span>Total</span>
                 <span style={{ color: store.primary_color }}>
                   {formatCurrency(displayTotal ?? 0)}
