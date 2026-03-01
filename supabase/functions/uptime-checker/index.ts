@@ -4,8 +4,8 @@
  * Stores results in uptime_checks table
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 
 interface UptimeCheck {
   service_name: string;
@@ -16,7 +16,11 @@ interface UptimeCheck {
   error_message?: string;
 }
 
-serve(async (req) => {
+serve(secureHeadersMiddleware(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -43,7 +47,7 @@ serve(async (req) => {
     // Check each service
     for (const service of servicesToCheck) {
       const startTime = Date.now();
-      
+
       try {
         const response = await fetch(service.endpoint, {
           method: 'GET',
@@ -51,18 +55,18 @@ serve(async (req) => {
             'apikey': supabaseKey,
             'Authorization': `Bearer ${supabaseKey}`,
           },
-          signal: AbortSignal.timeout(5000), // 5 second timeout
+          signal: AbortSignal.timeout(5000),
         });
 
         const responseTime = Date.now() - startTime;
         const statusCode = response.status;
 
         let status: 'up' | 'down' | 'degraded' = 'up';
-        
+
         if (!response.ok) {
           status = statusCode >= 500 ? 'down' : 'degraded';
         } else if (responseTime > 1000) {
-          status = 'degraded'; // Slow response
+          status = 'degraded';
         }
 
         checks.push({
@@ -75,7 +79,7 @@ serve(async (req) => {
 
       } catch (error) {
         const responseTime = Date.now() - startTime;
-        
+
         checks.push({
           service_name: service.name,
           endpoint: service.endpoint,
@@ -114,7 +118,7 @@ serve(async (req) => {
         timestamp: new Date().toISOString(),
       }),
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     );
@@ -122,12 +126,11 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error checking uptime:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: 'Uptime check failed' }),
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       }
     );
   }
-});
-
+}));

@@ -296,7 +296,10 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
   };
 
   // --- Telegram Test ---
+  // Saves notification settings first, then tests via edge function (bot_token never sent from client)
   const onTestTelegram = async () => {
+    if (!account) return;
+
     const botToken = notificationForm.getValues("telegram_bot_token");
     const chatId = notificationForm.getValues("telegram_chat_id");
 
@@ -307,8 +310,11 @@ export default function SettingsPage({ embedded = false }: SettingsPageProps) {
 
     setTestingSending(true);
     try {
+      // Save current notification settings so the edge function can read them
+      await notificationForm.handleSubmit(onSaveNotifications)();
+
       const { data, error } = await supabase.functions.invoke("test-telegram", {
-        body: { bot_token: botToken, chat_id: chatId },
+        body: { accountId: account.id },
       });
 
       if (error) throw error;

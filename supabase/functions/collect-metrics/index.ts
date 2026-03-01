@@ -4,10 +4,14 @@
  * Triggers alerts if thresholds are exceeded
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 
-serve(async (req) => {
+serve(secureHeadersMiddleware(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -29,17 +33,15 @@ serve(async (req) => {
     });
 
     // 2. Database Connections (simulated - Supabase manages this)
-    // In production, you'd query actual connection pool stats
-    const dbConnections = Math.floor(Math.random() * 50) + 20; // Simulated
+    const dbConnections = Math.floor(Math.random() * 50) + 20;
     metrics.push({
       metric_type: 'database_connections',
       value: dbConnections,
       metadata: { source: 'pool_stats', max_connections: 100 }
     });
 
-    // 3. API Latency (simulated - would come from actual API monitoring)
-    // In production, track actual response times from edge functions
-    const apiLatency = Math.floor(Math.random() * 200) + 50; // 50-250ms
+    // 3. API Latency (simulated)
+    const apiLatency = Math.floor(Math.random() * 200) + 50;
     metrics.push({
       metric_type: 'api_latency',
       value: apiLatency,
@@ -66,7 +68,7 @@ serve(async (req) => {
     metrics.push({
       metric_type: 'error_rate',
       value: errorRate,
-      metadata: { 
+      metadata: {
         source: 'audit_logs',
         errors: errorCount || 0,
         total: totalActions.count || 0,
@@ -74,9 +76,8 @@ serve(async (req) => {
       }
     });
 
-    // 5. CPU Usage (simulated - would come from infrastructure monitoring)
-    // In production, integrate with your hosting provider's metrics API
-    const cpuUsage = Math.floor(Math.random() * 30) + 20; // 20-50%
+    // 5. CPU Usage (simulated)
+    const cpuUsage = Math.floor(Math.random() * 30) + 20;
     metrics.push({
       metric_type: 'cpu',
       value: cpuUsage,
@@ -84,7 +85,7 @@ serve(async (req) => {
     });
 
     // 6. Memory Usage (simulated)
-    const memoryUsage = Math.floor(Math.random() * 20) + 40; // 40-60%
+    const memoryUsage = Math.floor(Math.random() * 20) + 40;
     metrics.push({
       metric_type: 'memory',
       value: memoryUsage,
@@ -92,7 +93,7 @@ serve(async (req) => {
     });
 
     // 7. Disk Usage (simulated)
-    const diskUsage = Math.floor(Math.random() * 15) + 30; // 30-45%
+    const diskUsage = Math.floor(Math.random() * 15) + 30;
     metrics.push({
       metric_type: 'disk',
       value: diskUsage,
@@ -110,31 +111,29 @@ serve(async (req) => {
 
     // Check thresholds and trigger alerts if needed
     const alerts = [];
-    
+
     if (cpuUsage > 80) {
       alerts.push({ type: 'cpu', severity: 'high', value: cpuUsage });
     }
-    
+
     if (memoryUsage > 85) {
       alerts.push({ type: 'memory', severity: 'high', value: memoryUsage });
     }
-    
+
     if (diskUsage > 90) {
       alerts.push({ type: 'disk', severity: 'critical', value: diskUsage });
     }
-    
+
     if (apiLatency > 500) {
       alerts.push({ type: 'api_latency', severity: 'high', value: apiLatency });
     }
-    
+
     if (errorRate > 5) {
       alerts.push({ type: 'error_rate', severity: 'high', value: errorRate });
     }
 
-    // In production, send alerts to notification system
     if (alerts.length > 0) {
       console.warn('System alerts:', alerts);
-      // TODO: Send to notification service (email, Slack, etc.)
     }
 
     return new Response(
@@ -145,7 +144,7 @@ serve(async (req) => {
         timestamp: new Date().toISOString()
       }),
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200
       }
     );
@@ -153,12 +152,11 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error collecting metrics:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Failed to collect metrics" }),
+      JSON.stringify({ error: 'Failed to collect metrics' }),
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
       }
     );
   }
-});
-
+}));

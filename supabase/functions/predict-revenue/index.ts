@@ -3,8 +3,8 @@
  * Predicts next 7 days of revenue using linear regression
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
+import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 
 interface DailyRevenue {
   date: string;
@@ -27,14 +27,18 @@ interface PredictionResult {
   };
 }
 
-serve(async (req) => {
+serve(secureHeadersMiddleware(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
     const { tenantId, days = 7 } = await req.json();
 
     if (!tenantId) {
       return new Response(
         JSON.stringify({ error: 'tenantId is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -63,7 +67,7 @@ serve(async (req) => {
           error: 'Not enough historical data',
           message: 'Need at least 7 days of order data for predictions',
         }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -74,9 +78,9 @@ serve(async (req) => {
       customers: Set<string>;
     }>();
 
-    orders.forEach((order: any) => {
-      const date = new Date(order.created_at).toISOString().split('T')[0];
-      
+    orders.forEach((order: Record<string, unknown>) => {
+      const date = new Date(order.created_at as string).toISOString().split('T')[0];
+
       if (!dailyMap.has(date)) {
         dailyMap.set(date, {
           revenue: 0,
@@ -88,7 +92,7 @@ serve(async (req) => {
       const day = dailyMap.get(date)!;
       day.revenue += Number(order.total_amount) || 0;
       day.orders += 1;
-      day.customers.add(order.customer_id);
+      day.customers.add(order.customer_id as string);
     });
 
     // Convert to array and calculate averages
@@ -105,11 +109,11 @@ serve(async (req) => {
     // Calculate averages for last 30 days
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const recentData = dailyData.filter(d => d.date >= thirtyDaysAgo);
-    
+
     const avgOrders = recentData.length > 0
       ? recentData.reduce((sum, d) => sum + d.orders, 0) / recentData.length
       : dailyData.reduce((sum, d) => sum + d.orders, 0) / Math.max(dailyData.length, 1);
-    
+
     const avgOrderValue = recentData.length > 0
       ? recentData.reduce((sum, d) => sum + d.avgOrderValue, 0) / recentData.length
       : dailyData.reduce((sum, d) => sum + d.avgOrderValue, 0) / Math.max(dailyData.length, 1);
@@ -150,10 +154,10 @@ serve(async (req) => {
     for (let i = 1; i <= days; i++) {
       const futureDate = new Date(today);
       futureDate.setDate(today.getDate() + i);
-      
+
       const dayOfWeek = futureDate.getDay();
       const weekendMultiplier = dayOfWeek === 0 || dayOfWeek === 6 ? 0.7 : 1.0;
-      
+
       // Predict using linear regression
       const x = dailyData.length + i - 1;
       const predictedRevenue = (slope * x + intercept) * weekendMultiplier;
@@ -180,15 +184,14 @@ serve(async (req) => {
         historicalDays: dailyData.length,
         totalPredicted: predictions.reduce((sum, p) => sum + p.predictedRevenue, 0),
       }),
-      { headers: { 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Revenue prediction error:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'Failed to generate predictions' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'Failed to generate predictions' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
-});
-
+}));
