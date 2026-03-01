@@ -230,3 +230,20 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - This differs from existing tab-close tests which reuse the same context — these tests destroy/recreate contexts
 - Tests verify: cart count badge, cart item count, checkout progression
 - TypeScript compilation passes with zero errors
+
+## No sensitive keys in client bundle and proper CORS on edge functions
+- **Edge functions CORS fixes**: Added proper CORS headers and OPTIONS preflight handling to 3 edge functions that were missing them:
+  - `collect-metrics/index.ts`: Switched from inline imports to shared `_shared/deps.ts`, wrapped in `secureHeadersMiddleware`, added `corsHeaders` to all responses, sanitized error messages
+  - `predict-revenue/index.ts`: Same treatment — shared deps, CORS headers, secure headers middleware, sanitized error responses, replaced `any` types with `Record<string, unknown>`
+  - `uptime-checker/index.ts`: Same treatment — shared deps, CORS, secure headers, sanitized errors
+- **Sensitive key removal from client→server flow**: Updated `test-telegram` edge function to fetch `bot_token` and `chat_id` from the database server-side instead of receiving them from the client
+  - Edge function now accepts `{ accountId }` instead of `{ bot_token, chat_id }`
+  - Reads credentials from `account_settings.notification_settings` using service role key
+  - If settings not saved yet, returns helpful "Save your Telegram settings first" message
+- **Client-side update**: Updated `SettingsPage.tsx` `onTestTelegram` to save notification settings before testing, then send only `accountId` to the edge function (no sensitive tokens in the request body)
+- **Bundle verification**: Built production bundle and verified:
+  - No `service_role` or `SERVICE_ROLE` patterns in dist/
+  - `sk_test_`/`sk_live_` only appear as placeholder text and format validation (not actual keys)
+  - `bot_token` only appears as property names in form schema (not actual values)
+  - Supabase anon key in vite.config.ts is the public/publishable key (designed to be client-facing)
+- TypeScript compilation passes with zero errors
