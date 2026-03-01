@@ -1,5 +1,4 @@
 import { logger } from '@/lib/logger';
-import QRCode from 'qrcode';
 
 export interface QRCodeOptions {
   size?: number;
@@ -8,6 +7,19 @@ export interface QRCodeOptions {
     dark?: string;
     light?: string;
   };
+}
+
+/**
+ * Lazy-load the qrcode library on first use.
+ * Cached after initial import so subsequent calls are instant.
+ */
+let qrCodeModule: typeof import('qrcode') | null = null;
+
+async function getQRCode(): Promise<typeof import('qrcode')> {
+  if (!qrCodeModule) {
+    qrCodeModule = await import('qrcode');
+  }
+  return qrCodeModule;
 }
 
 /**
@@ -27,6 +39,7 @@ export async function generateQRCodeDataURL(
   } = options;
 
   try {
+    const QRCode = await getQRCode();
     const dataURL = await QRCode.toDataURL(text, {
       width: size,
       margin,
@@ -57,6 +70,7 @@ export async function generateQRCodeSVG(
   } = options;
 
   try {
+    const QRCode = await getQRCode();
     const svg = await QRCode.toString(text, {
       type: 'svg',
       width: size,
@@ -105,4 +119,3 @@ export async function generateQRCodeWithLogo(
   // For now, return basic QR code
   return generateQRCodeDataURL(text, options);
 }
-
