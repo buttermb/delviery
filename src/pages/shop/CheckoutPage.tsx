@@ -1393,7 +1393,7 @@ export function CheckoutPage() {
   const themeColor = isLuxuryTheme ? accentColor : store.primary_color;
 
   return (
-    <div className={`container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-5xl ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
+    <div className={`container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-5xl overflow-x-hidden ${isLuxuryTheme ? 'min-h-dvh' : ''}`}>
       {/* Visual Progress Indicator */}
       <CheckoutProgressIndicator
         steps={STEPS}
@@ -1677,7 +1677,7 @@ export function CheckoutPage() {
                       <RadioGroup
                         value={formData.preferredContact}
                         onValueChange={(value) => updateField('preferredContact', value)}
-                        className="flex gap-4"
+                        className="flex flex-wrap gap-3 sm:gap-4"
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="text" id="contact-text" />
@@ -2598,23 +2598,17 @@ export function CheckoutPage() {
       </div>
 
       {/* Sticky Mobile Checkout Bar */}
-      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background/95 backdrop-blur-md border-t px-3 sm:px-4 py-3 sm:py-4 z-50" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background/95 backdrop-blur-md border-t px-3 sm:px-4 py-3 z-50" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
         {currentStep < 4 ? (
-          <div className="flex items-center gap-3">
-            <div className="min-w-0">
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Total</p>
-              <p className="text-base sm:text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
-            </div>
-            <Button
-              onClick={nextStep}
-              disabled={placeOrderMutation.isPending}
-              style={{ backgroundColor: themeColor }}
-              className="flex-1 h-12 text-white text-base"
-            >
-              Continue
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
+          <Button
+            onClick={nextStep}
+            disabled={placeOrderMutation.isPending}
+            style={{ backgroundColor: themeColor }}
+            className="w-full h-12 text-white text-base font-semibold rounded-lg"
+          >
+            Continue
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
         ) : (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
@@ -2656,10 +2650,33 @@ export function CheckoutPage() {
               )}
             </Button>
           </div>
+          <Button
+            onClick={handlePlaceOrder}
+            disabled={placeOrderMutation.isPending || !agreeToTerms || !ageVerified}
+            style={{ backgroundColor: themeColor }}
+            className="w-full h-12 text-white text-base font-semibold rounded-lg"
+          >
+            {placeOrderMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : isStoreClosed ? (
+              <>
+                <Clock className="w-4 h-4 mr-2" />
+                Place Pre-Order — {formatCurrency(total)}
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                Place Order — {formatCurrency(total)}
+              </>
+            )}
+          </Button>
         )}
       </div>
       {/* Spacer for mobile sticky bar */}
-      <div className="h-28 lg:hidden" />
+      <div className="h-20 lg:hidden" />
 
       {/* Sign In Dialog */}
       {store?.tenant_id && (

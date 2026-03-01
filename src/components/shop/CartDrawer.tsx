@@ -119,16 +119,17 @@ export function CartDrawer({
                     layout
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex gap-4 p-4 bg-white/[0.02] rounded-xl border border-white/5"
+                    className="p-3 sm:p-4 bg-white/[0.02] rounded-xl border border-white/5"
                   >
-                    {/* Image */}
-                    <div className="w-20 h-20 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
-                      <ProductImage
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+                    {/* Top row: Image + Details + Remove */}
+                    <div className="flex gap-3 sm:gap-4">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
+                        <ProductImage
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
 
                     {/* Details */}
                     <div className="flex-1 min-w-0">
@@ -142,16 +143,28 @@ export function CartDrawer({
                         {formatCurrency(item.price)}
                       </p>
                     </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white text-sm font-medium truncate mb-1">
+                          {item.name}
+                        </h3>
+                        {item.variant && (
+                          <p className="text-white/40 text-xs mb-1">{item.variant}</p>
+                        )}
+                        <p className="text-white/80 text-sm font-light">
+                          {formatCurrency(item.price)}
+                        </p>
+                      </div>
 
-                    {/* Quantity & Remove */}
-                    <div className="flex flex-col items-end justify-between">
                       <button
                         onClick={() => onRemoveItem(item.productId, item.variant)}
                         className="p-1 rounded hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label={`Remove ${item.name} from cart`}
+                        className="p-2 -mr-1 -mt-1 rounded-full hover:bg-white/10 transition-colors self-start"
+                        aria-label="Remove item"
                       >
                         <Trash2 className="w-4 h-4 text-white/40 hover:text-red-400 transition-colors" />
                       </button>
+                    </div>
 
                       <div className="flex items-center gap-1 bg-white/5 rounded-full p-0.5">
                         <button
@@ -160,10 +173,18 @@ export function CartDrawer({
                           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                           className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           aria-label={`Decrease ${item.name} quantity`}
+                    {/* Bottom row: Quantity controls + line total */}
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center gap-1 bg-white/5 rounded-full p-1">
+                        <button
+                          onClick={() => onUpdateQuantity(item.productId, item.quantity - 1, item.variant)}
+                          disabled={item.quantity <= 1}
+                          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          aria-label="Decrease quantity"
                         >
                           <Minus className="w-3.5 h-3.5 text-white" />
                         </button>
-                        <span className="text-white text-sm w-6 text-center">
+                        <span className="text-white text-sm w-8 text-center font-medium">
                           {item.quantity}
                         </span>
                         <button
@@ -171,10 +192,15 @@ export function CartDrawer({
                           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
                           className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           aria-label={`Increase ${item.name} quantity`}
+                          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+                          aria-label="Increase quantity"
                         >
                           <Plus className="w-3.5 h-3.5 text-white" />
                         </button>
                       </div>
+                      <span className="text-white text-sm font-medium">
+                        {formatCurrency(item.price * item.quantity)}
+                      </span>
                     </div>
                   </motion.div>
                 ))}
