@@ -1069,20 +1069,30 @@ export default function ProductManagement() {
     {
       header: "Stock",
       accessorKey: "available_quantity",
-      cell: (product) => (
-        <div className="flex items-center gap-2">
-          <InlineEditableCell
-            value={product.available_quantity}
-            onSave={(v) => handleInlineUpdate(product.id, 'available_quantity', v)}
-            type="number"
-            className="w-12"
-          />
-          <InventoryStatusBadge
-            quantity={product.available_quantity ?? 0}
-            lowStockThreshold={product.low_stock_alert || 10}
-          />
-        </div>
-      )
+      cell: (product) => {
+        const qty = product.available_quantity ?? 0;
+        const threshold = product.low_stock_alert || 10;
+        const stockColorClass = qty <= 0
+          ? "text-destructive font-bold"
+          : qty <= threshold
+            ? "text-warning font-semibold"
+            : "text-success font-semibold";
+        return (
+          <div className="flex items-center gap-2">
+            <InlineEditableCell
+              value={product.available_quantity}
+              onSave={(v) => handleInlineUpdate(product.id, 'available_quantity', v)}
+              type="number"
+              className="w-16"
+              valueClassName={stockColorClass}
+            />
+            <InventoryStatusBadge
+              quantity={qty}
+              lowStockThreshold={threshold}
+            />
+          </div>
+        );
+      }
     },
     {
       header: "Actions",
@@ -1136,6 +1146,7 @@ export default function ProductManagement() {
       onDuplicate={() => duplicateProduct(product)}
       onPrintLabel={() => { setLabelProduct(product); setLabelDialogOpen(true); }}
       onPublish={() => handlePublish(product.id)}
+      onStockUpdate={(v) => handleInlineUpdate(product.id, 'available_quantity', v)}
     />
   );
 
@@ -1538,6 +1549,7 @@ export default function ProductManagement() {
                         setLabelDialogOpen(true);
                       }}
                       onPublish={() => handlePublish(product.id)}
+                      onStockUpdate={(v) => handleInlineUpdate(product.id, 'available_quantity', v)}
                     />
                   </div>
                 ))}

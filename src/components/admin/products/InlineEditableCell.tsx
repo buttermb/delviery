@@ -11,6 +11,7 @@ interface InlineEditableCellProps {
     placeholder?: string;
     className?: string;
     displayValue?: string; // Custom display format
+    valueClassName?: string; // Additional class for the display value text
 }
 
 export function InlineEditableCell({
@@ -20,6 +21,7 @@ export function InlineEditableCell({
     placeholder = "—",
     className,
     displayValue,
+    valueClassName,
 }: InlineEditableCellProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState(String(value ?? ""));
@@ -124,7 +126,7 @@ export function InlineEditableCell({
             )}
             onClick={() => setIsEditing(true)}
         >
-            <span className={cn(!value && "text-muted-foreground")}>{display}</span>
+            <span className={cn(!value && "text-muted-foreground", valueClassName)}>{display}</span>
             <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
     );

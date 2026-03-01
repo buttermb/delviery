@@ -10,6 +10,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { InventoryStatusBadge } from "@/components/admin/InventoryStatusBadge";
+import { InlineEditableCell } from "@/components/admin/products/InlineEditableCell";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import {
   DropdownMenu,
@@ -49,6 +50,7 @@ interface ProductCardProps {
   onDuplicate?: (productId: string) => void;
   onToggleStorefrontVisibility?: (productId: string) => void;
   isTogglingVisibility?: boolean;
+  onStockUpdate?: (newValue: string) => Promise<void>;
 }
 
 export function ProductCard({
@@ -61,6 +63,7 @@ export function ProductCard({
   onDuplicate,
   onToggleStorefrontVisibility,
   isTogglingVisibility,
+  onStockUpdate,
 }: ProductCardProps) {
   const availableQty = Number(product.available_quantity || 0);
   const isInStock = availableQty > 0;
@@ -239,9 +242,34 @@ export function ProductCard({
         <div className="flex items-center justify-between p-3 bg-[hsl(var(--tenant-surface))] rounded-lg mb-4 transition-colors duration-200 group-hover:bg-[hsl(var(--tenant-surface))]/80">
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-[hsl(var(--tenant-text-light))]" />
-            <span className="text-sm font-medium text-[hsl(var(--tenant-text))]">
-              Stock: {String(stockQuantity)} units
-            </span>
+            {onStockUpdate ? (
+              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                <span className="text-sm text-[hsl(var(--tenant-text-light))]">Stock:</span>
+                <InlineEditableCell
+                  value={stockQuantity}
+                  onSave={onStockUpdate}
+                  type="number"
+                  className="w-14"
+                  valueClassName={
+                    stockQuantity <= 0
+                      ? "text-destructive font-bold"
+                      : stockQuantity <= reorderPoint
+                        ? "text-warning font-semibold"
+                        : "text-success font-semibold"
+                  }
+                />
+              </div>
+            ) : (
+              <span className={`text-sm font-semibold ${
+                stockQuantity <= 0
+                  ? "text-destructive"
+                  : stockQuantity <= reorderPoint
+                    ? "text-warning"
+                    : "text-success"
+              }`}>
+                Stock: {String(stockQuantity)} units
+              </span>
+            )}
           </div>
           <InventoryStatusBadge
             quantity={stockQuantity}
