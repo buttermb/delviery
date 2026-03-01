@@ -42,7 +42,7 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
 import { queryKeys } from '@/lib/queryKeys';
-import { FilterDrawer, FilterTriggerButton, type FilterState } from '@/components/shop/FilterDrawer';
+import { FilterDrawer, FilterTriggerButton, getActiveFilterCount, type FilterState } from '@/components/shop/FilterDrawer';
 import { useWishlist } from '@/hooks/useWishlist';
 import { ProductQuickViewModal } from '@/components/shop/ProductQuickViewModal';
 import { useShopCart } from '@/hooks/useShopCart';
@@ -449,13 +449,21 @@ export function ProductCatalogPage() {
     strainTypes: selectedStrainTypes,
     priceRange,
     sortBy,
+    inStockOnly,
+    thcRange,
+    cbdRange,
   };
+
+  const activeFilterCount = getActiveFilterCount(filterState, maxPrice);
 
   const handleFiltersChange = (newFilters: FilterState) => {
     setSelectedCategories(newFilters.categories);
     setSelectedStrainTypes(newFilters.strainTypes);
     setPriceRange(newFilters.priceRange);
     setSortBy(newFilters.sortBy);
+    if (newFilters.inStockOnly !== undefined) setInStockOnly(newFilters.inStockOnly);
+    if (newFilters.thcRange) setThcRange(newFilters.thcRange);
+    if (newFilters.cbdRange) setCbdRange(newFilters.cbdRange);
   };
 
   const toggleCategory = (category: string) => {
@@ -467,7 +475,7 @@ export function ProductCatalogPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
       {/* FilterDrawer */}
       <FilterDrawer
         isOpen={filterDrawerOpen}
@@ -478,37 +486,56 @@ export function ProductCatalogPage() {
         availableStrainTypes={strainTypes}
         maxPrice={maxPrice}
         accentColor={store.primary_color}
+        resultCount={filteredProducts.length}
       />
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">All Products</h1>
-        <p className="text-muted-foreground">
+      <div className="mb-4 sm:mb-8">
+        <h1 className="text-xl sm:text-3xl font-bold mb-1">All Products</h1>
+        <p className="text-sm text-muted-foreground">
           {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
         </p>
       </div>
 
       {/* Filters Bar */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-            aria-label="Search products"
-          />
+      <div className="flex flex-col gap-3 mb-6">
+        {/* Row 1: Search + Filter trigger (mobile) */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+              aria-label="Search products"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                aria-label="Clear search"
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+          {/* Mobile filter trigger */}
+          <div className="md:hidden">
+            <FilterTriggerButton
+              onClick={() => setFilterDrawerOpen(true)}
+              activeCount={activeFilterCount}
+            />
+          </div>
         </div>
 
-        {/* Mobile: Category + Sort in a 2-col row */}
-        <div className="grid grid-cols-2 gap-2 md:contents">
+        {/* Row 2: Desktop inline filters (hidden on mobile - use drawer instead) */}
+        <div className="hidden md:flex items-center gap-3">
           {/* Category Filter (Checkbox Popover) */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full md:w-[180px] justify-between font-normal"
+                className="w-[180px] justify-between font-normal"
               >
                 <span className="truncate">
                   {selectedCategories.length === 0
@@ -543,7 +570,7 @@ export function ProductCatalogPage() {
 
           {/* Sort */}
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full md:w-[180px]">
+            <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -555,16 +582,13 @@ export function ProductCatalogPage() {
               <SelectItem value="thc_asc">THC%: Low to High</SelectItem>
             </SelectContent>
           </Select>
-        </div>
 
-        {/* Mobile: Strain + Filter button in a 2-col row */}
-        <div className="grid grid-cols-2 gap-2 md:contents">
           {/* Strain Type Filter */}
           <Select
             value={selectedStrainTypes[0] || "all"}
             onValueChange={(val) => setSelectedStrainTypes(val === "all" ? [] : [val])}
           >
-            <SelectTrigger className="w-full md:w-[160px]">
+            <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Strain Type" />
             </SelectTrigger>
             <SelectContent>
@@ -575,36 +599,31 @@ export function ProductCatalogPage() {
             </SelectContent>
           </Select>
 
-          {/* Advanced Filter Button */}
-          <FilterTriggerButton
-            onClick={() => setFilterDrawerOpen(true)}
-            activeCount={selectedCategories.length + (inStockOnly ? 1 : 0)}
-            className="md:hidden"
-          />
-        </div>
-
-        {/* View Toggle */}
-        <div className="hidden md:flex items-center gap-1 border rounded-lg p-1">
-          <Button
-            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('grid')}
-          >
-            <Grid3X3 className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('list')}
-          >
-            <List className="w-4 h-4" />
-          </Button>
+          {/* View Toggle */}
+          <div className="flex items-center gap-1 border rounded-lg p-1 ml-auto">
+            <Button
+              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              aria-label="Grid view"
+            >
+              <Grid3X3 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              aria-label="List view"
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Active Filters */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4 sm:mb-6">
           {searchQuery && (
             <Badge variant="secondary" className="gap-1">
               Search: {searchQuery}
@@ -667,7 +686,7 @@ export function ProductCatalogPage() {
 
       {/* Products Grid/List */}
       {productsLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4" data-testid="product-catalog-loading">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4" data-testid="product-catalog-loading">
           {Array.from({ length: 8 }, (_, i) => (
             <div key={i} className="bg-white dark:bg-zinc-950 rounded-3xl border border-neutral-100 dark:border-neutral-800 overflow-hidden shadow-sm h-full flex flex-col">
               {/* Image placeholder */}
@@ -721,7 +740,7 @@ export function ProductCatalogPage() {
           </Button>
         </div>
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4" data-testid="product-catalog-grid">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4" data-testid="product-catalog-grid">
           {paginatedProducts.map((product) => (
             <StorefrontProductCard
               key={product.product_id}
