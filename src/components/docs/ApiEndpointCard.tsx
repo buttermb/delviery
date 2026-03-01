@@ -136,6 +136,7 @@ data = response.json()`
                   size="icon"
                   className="absolute top-2 right-2"
                   onClick={() => copyToClipboard(endpoint.curlExample!)}
+                  aria-label="Copy curl example"
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -150,6 +151,7 @@ data = response.json()`
                   size="icon"
                   className="absolute top-2 right-2"
                   onClick={() => copyToClipboard(jsExample)}
+                  aria-label="Copy JavaScript example"
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
@@ -164,6 +166,7 @@ data = response.json()`
                   size="icon"
                   className="absolute top-2 right-2"
                   onClick={() => copyToClipboard(pythonExample)}
+                  aria-label="Copy Python example"
                 >
                   <Copy className="h-4 w-4" />
                 </Button>

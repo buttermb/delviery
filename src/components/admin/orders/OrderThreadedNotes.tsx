@@ -550,7 +550,7 @@ export function OrderThreadedNotes({
                   )}
                 >
                   <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarImage src={note.user?.avatar_url || undefined} />
+                    <AvatarImage src={note.user?.avatar_url || undefined} alt={note.user?.full_name || note.user?.email || "User"} />
                     <AvatarFallback className="text-xs">
                       {getInitials(
                         note.user?.full_name || null,
@@ -676,7 +676,7 @@ export function OrderThreadedNotes({
                           className="cursor-pointer"
                         >
                           <Avatar className="h-6 w-6 mr-2">
-                            <AvatarImage src={member.avatar_url || undefined} />
+                            <AvatarImage src={member.avatar_url || undefined} alt={member.full_name || member.email} />
                             <AvatarFallback className="text-xs">
                               {getInitials(member.full_name, member.email)}
                             </AvatarFallback>

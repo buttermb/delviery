@@ -50,6 +50,7 @@ export function ModernPage({
             size="icon"
             onClick={() => navigate(-1)}
             className="shrink-0"
+            aria-label="Go back"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

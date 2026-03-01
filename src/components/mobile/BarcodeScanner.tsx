@@ -82,6 +82,7 @@ export function BarcodeScanner({ onScan, onClose, open }: BarcodeScannerProps) {
                         // This is a best-effort implementation
                         setTorchOn(!torchOn);
                     }}
+                    aria-label={torchOn ? "Turn off flashlight" : "Turn on flashlight"}
                 >
                     <Flashlight className={`w-5 h-5 ${torchOn ? 'text-yellow-400' : ''}`} />
                 </Button>
