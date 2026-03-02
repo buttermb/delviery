@@ -20,7 +20,6 @@ import {
   Settings,
   TrendingDown,
   RefreshCw,
-  Loader2,
   Receipt,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -51,6 +50,7 @@ import {
   type TransactionTypeFilter,
 } from '@/hooks/useCreditTransactions';
 import { formatSmartDate } from '@/lib/formatters';
+import { InfiniteScrollTrigger } from '@/components/shared/InfiniteScrollTrigger';
 
 // ============================================================================
 // Types
@@ -433,27 +433,14 @@ export function TransactionHistoryPage() {
           </CardContent>
         </Card>
 
-        {/* Load More Button */}
-        {hasMore && !isLoading && (
-          <div className="flex justify-center">
-            <Button
-              variant="outline"
-              onClick={loadMore}
-              disabled={isFetchingMore}
-              className="min-w-[200px]"
-            >
-              {isFetchingMore ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                <>
-                  Load More ({totalCount - transactions.length} remaining)
-                </>
-              )}
-            </Button>
-          </div>
+        {/* Infinite Scroll Trigger */}
+        {!isLoading && (
+          <InfiniteScrollTrigger
+            onLoadMore={loadMore}
+            hasMore={hasMore}
+            isFetching={isFetchingMore}
+            loadingLabel={`Loading more... (${totalCount - transactions.length} remaining)`}
+          />
         )}
       </div>
     </div>

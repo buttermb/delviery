@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FileText, Plus, Mail, DollarSign, Calendar, User, Trash2, Loader2 } from 'lucide-react';
+import { InfiniteScrollTrigger } from '@/components/shared/InfiniteScrollTrigger';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/SEOHead';
 import { format } from 'date-fns';
@@ -687,20 +688,11 @@ export default function CustomerInvoices() {
         ))}
       </div>
 
-      {hasMore && (
-        <div className="flex justify-center my-6">
-          <Button onClick={loadMoreInvoices} disabled={isLoadingMore} aria-busy={isLoadingMore}>
-            {isLoadingMore ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              'Load more'
-            )}
-          </Button>
-        </div>
-      )}
+      <InfiniteScrollTrigger
+        onLoadMore={loadMoreInvoices}
+        hasMore={hasMore}
+        isFetching={isLoadingMore}
+      />
 
       {invoices.length === 0 && (
         <EnhancedEmptyState
