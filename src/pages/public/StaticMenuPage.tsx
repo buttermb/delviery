@@ -322,12 +322,10 @@ async function loadMenuDirect(token: string): Promise<{ menu: MenuData; products
         custom_price,
         prices,
         display_order,
-        is_visible,
-        vendor_name,
-        badge,
-        products (
-          name,
-          price,
+        display_availability,
+        wholesale_inventory!product_id (
+          product_name,
+          base_price,
           description,
           image_url,
           category,
@@ -336,7 +334,7 @@ async function loadMenuDirect(token: string): Promise<{ menu: MenuData; products
         )
       `)
       .eq('menu_id', menu.id)
-      .eq('is_visible', true)
+      .eq('display_availability', true)
       .order('display_order', { ascending: true });
 
     if (productsError) {
@@ -347,10 +345,10 @@ async function loadMenuDirect(token: string): Promise<{ menu: MenuData; products
     const now = new Date();
     const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-    const products: MenuProduct[] = (menuProducts ?? []).map((mp) => {
-      const inv = mp.products as {
-        name: string;
-        price: number;
+    const products: MenuProduct[] = (menuProducts ?? []).map((mp: Record<string, unknown>) => {
+      const inv = (mp as Record<string, unknown>).wholesale_inventory as {
+        product_name: string;
+        base_price: number;
         description: string;
         image_url: string;
         category: string;
@@ -360,27 +358,26 @@ async function loadMenuDirect(token: string): Promise<{ menu: MenuData; products
 
       if (!inv) return null;
 
-      const basePrice = mp.custom_price != null ? Number(mp.custom_price) : Number(inv.price ?? 0);
+      const basePrice = mp.custom_price != null ? Number(mp.custom_price) : Number(inv.base_price ?? 0);
       const createdAt = new Date(inv.created_at);
       const isNew = createdAt > twoWeeksAgo;
-      const isOnSale = mp.custom_price != null && Number(mp.custom_price) < Number(inv.price);
+      const isOnSale = mp.custom_price != null && Number(mp.custom_price) < Number(inv.base_price);
 
-      let vendor = (mp as { vendor_name?: string }).vendor_name ?? '';
-      if (!vendor && inv.description) {
+      let vendor = '';
+      if (inv.description) {
         const vendorMatch = inv.description.match(/^By\s+(.+?)(?:\n|$)/i);
         if (vendorMatch) vendor = vendorMatch[1].trim();
       }
 
       let tieredPrices: TieredPrice[] | null = null;
-      if (mp.prices && Array.isArray(mp.prices) && mp.prices.length > 0) {
-        tieredPrices = mp.prices as TieredPrice[];
+      const prices = mp.prices;
+      if (prices && Array.isArray(prices) && prices.length > 0) {
+        tieredPrices = prices as TieredPrice[];
       }
 
-      const badge = (mp as { badge?: string }).badge ?? null;
-
       return {
-        id: mp.product_id,
-        name: inv.name,
+        id: mp.product_id as string,
+        name: inv.product_name,
         base_price: basePrice,
         prices: tieredPrices,
         description: inv.description ?? '',
@@ -388,10 +385,10 @@ async function loadMenuDirect(token: string): Promise<{ menu: MenuData; products
         category: inv.category ?? 'Uncategorized',
         strain_type: inv.strain_type ?? '',
         vendor,
-        is_new: badge === 'new' || isNew,
-        is_on_sale: badge === 'sale' || isOnSale,
-        badge,
-        display_order: mp.display_order ?? 0,
+        is_new: isNew,
+        is_on_sale: isOnSale,
+        badge: null,
+        display_order: (mp.display_order as number) ?? 0,
         created_at: inv.created_at,
       };
     }).filter(Boolean) as MenuProduct[];
