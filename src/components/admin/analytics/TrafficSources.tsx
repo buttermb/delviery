@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -111,7 +112,7 @@ export function TrafficSources({ storeId, dateRange, className }: TrafficSources
     );
   }
 
-  const totalVisits = sources.reduce((sum, s) => sum + s.value, 0);
+  const totalVisits = useMemo(() => sources.reduce((sum, s) => sum + s.value, 0), [sources]);
 
   return (
     <Card className={className}>

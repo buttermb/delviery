@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -42,27 +43,36 @@ export default function AdvancedAnalyticsPage() {
   });
 
   // Revenue trends
-  const revenueByMonth = orders.reduce((acc: Record<string, { month: string; revenue: number; orders: number }>, order) => {
-    const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    if (!acc[month]) acc[month] = { month, revenue: 0, orders: 0 };
-    acc[month].revenue += order.total_amount ?? 0;
-    acc[month].orders += 1;
-    return acc;
-  }, {});
-
-  const revenueData = Object.values(revenueByMonth).slice(-12);
-
-  // Product performance
-  const productPerformance = orders.flatMap((order) => order.order_items ?? [])
-    .reduce((acc: Record<string, { name: string; quantity: number; revenue: number }>, item) => {
-      const name = item.product_name || 'Unknown';
-      if (!acc[name]) acc[name] = { name, quantity: 0, revenue: 0 };
-      acc[name].quantity += item.quantity ?? 0;
-      acc[name].revenue += ((item.price ?? 0) * (item.quantity ?? 0));
+  const revenueData = useMemo(() => {
+    const byMonth = orders.reduce((acc: Record<string, { month: string; revenue: number; orders: number }>, order) => {
+      const month = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      if (!acc[month]) acc[month] = { month, revenue: 0, orders: 0 };
+      acc[month].revenue += order.total_amount ?? 0;
+      acc[month].orders += 1;
       return acc;
     }, {});
+    return Object.values(byMonth).slice(-12);
+  }, [orders]);
 
-  const productData = Object.values(productPerformance).slice(0, 10);
+  // Product performance
+  const productData = useMemo(() => {
+    const performance = orders.flatMap((order) => order.order_items ?? [])
+      .reduce((acc: Record<string, { name: string; quantity: number; revenue: number }>, item) => {
+        const name = item.product_name || 'Unknown';
+        if (!acc[name]) acc[name] = { name, quantity: 0, revenue: 0 };
+        acc[name].quantity += item.quantity ?? 0;
+        acc[name].revenue += ((item.price ?? 0) * (item.quantity ?? 0));
+        return acc;
+      }, {});
+    return Object.values(performance).slice(0, 10);
+  }, [orders]);
+
+  // Customer metrics
+  const customerMetrics = useMemo(() => {
+    const totalRevenue = orders.reduce((sum: number, o) => sum + (o.total_amount ?? 0), 0);
+    const avgOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
+    return { totalRevenue, avgOrderValue };
+  }, [orders]);
 
   if (isLoading) {
     return <EnhancedLoadingState variant="dashboard" message="Loading..." />;
@@ -143,13 +153,13 @@ export default function AdvancedAnalyticsPage() {
               <div className="p-4 border rounded-lg">
                 <p className="text-sm text-muted-foreground">Avg Order Value</p>
                 <p className="text-2xl font-bold">
-                  ${orders.length > 0 ? (orders.reduce((sum: number, o) => sum + (o.total_amount ?? 0), 0) / orders.length).toFixed(2) : '0.00'}
+                  ${customerMetrics.avgOrderValue.toFixed(2)}
                 </p>
               </div>
               <div className="p-4 border rounded-lg">
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
                 <p className="text-2xl font-bold">
-                  ${orders.reduce((sum: number, o) => sum + (o.total_amount ?? 0), 0).toFixed(2)}
+                  ${customerMetrics.totalRevenue.toFixed(2)}
                 </p>
               </div>
             </div>
