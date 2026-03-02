@@ -196,7 +196,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
     }
 
     // Check cache
-    const cacheKey = `${tenantSlug}-${location.pathname}`;
+    const cacheKey = `${tenantSlug}`;
     const cached = verificationCache.current[cacheKey];
     if (cached && Date.now() - cached.timestamp < VERIFICATION_CACHE_DURATION) {
       logger.debug('[PROTECTED ROUTE] 💾 Using cached verification result');
@@ -323,7 +323,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
       clearTimeout(verificationTimeout);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- verified, skipVerification, and verifying are intentionally omitted to prevent infinite verification loops
-  }, [tenantSlug, location.pathname, effectiveAdmin, effectiveTenant, effectiveLoading]);
+  }, [tenantSlug, effectiveAdmin, effectiveTenant, effectiveLoading]);
 
   // Show spinner while auth is initializing — prevents flash of login page
   if (!initialized) {
