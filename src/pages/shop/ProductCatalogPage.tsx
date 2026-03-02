@@ -52,6 +52,7 @@ import { StandardPagination } from '@/components/shared/StandardPagination';
 import { usePagination } from '@/hooks/usePagination';
 import { toast } from 'sonner';
 import { useStorefrontInventorySync } from '@/hooks/useStorefrontInventorySync';
+import { VirtualizedProductGrid, VIRTUALIZATION_THRESHOLD } from '@/components/shop/VirtualizedProductGrid';
 
 /**
  * RPC Product Response from get_marketplace_products
@@ -829,6 +830,30 @@ export function ProductCatalogPage() {
           }}
           data-testid="empty-filtered"
         />
+      ) : viewMode === 'grid' && filteredProducts.length > VIRTUALIZATION_THRESHOLD ? (
+        <VirtualizedProductGrid
+          products={filteredProducts.map(mapToMarketplaceProduct)}
+          storeSlug={storeSlug!}
+          accentColor={store.primary_color}
+          onQuickAdd={(e, mp) => {
+            const product = filteredProducts.find(p => p.product_id === mp.product_id);
+            if (product) handleQuickAdd(e, product);
+          }}
+          addedProducts={addedProducts}
+          onToggleWishlist={(mp) => {
+            const product = filteredProducts.find(p => p.product_id === mp.product_id);
+            if (product) {
+              toggleWishlist({
+                productId: product.product_id,
+                name: product.name,
+                price: product.display_price,
+                imageUrl: product.image_url,
+              });
+            }
+          }}
+          isInWishlist={isInWishlist}
+          onQuickView={(productId) => setQuickViewProductId(productId)}
+        />
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4" data-testid="product-catalog-grid">
           {paginatedProducts.map((product) => (
@@ -865,8 +890,8 @@ export function ProductCatalogPage() {
         </div>
       )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
+      {/* Pagination - hidden when virtualized grid is active */}
+      {totalPages > 1 && !(viewMode === 'grid' && filteredProducts.length > VIRTUALIZATION_THRESHOLD) && (
         <div className="mt-8">
           <StandardPagination
             currentPage={currentPage}
