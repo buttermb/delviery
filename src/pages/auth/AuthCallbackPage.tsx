@@ -161,7 +161,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
         timers.push(setTimeout(() => {
           switch (portal) {
             case "tenant-admin":
-              navigate(`/${tenantSlug}/admin/login`, { replace: true });
+              navigate('/saas/login', { replace: true });
               break;
             case "super-admin":
               navigate("/super-admin/login", { replace: true });
@@ -185,7 +185,7 @@ export function AuthCallbackPage({ portal }: AuthCallbackPageProps) {
     localStorage.removeItem(STORAGE_KEYS.SUPABASE_AUTH_TOKEN); // Attempt to clear persisted token
 
     const loginUrl = portal === "tenant-admin"
-      ? `/${tenantSlug}/admin/login`
+      ? '/saas/login'
       : portal === "super-admin"
         ? "/super-admin/login"
         : `/${tenantSlug}/customer/login`;

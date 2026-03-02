@@ -62,11 +62,8 @@ export function ForgotPasswordPage() {
 
   // Build the back to login URL based on tenant context
   const getLoginUrl = useCallback(() => {
-    if (tenantSlug) {
-      return `/${tenantSlug}/admin/login`;
-    }
-    return "/login";
-  }, [tenantSlug]);
+    return "/saas/login";
+  }, []);
 
   const startCooldown = useCallback(() => {
     setRateLimited(true);

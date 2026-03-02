@@ -48,7 +48,7 @@ export default function MFAChallengePage({ portal }: MFAChallengePageProps) {
     // Redirect back to login
     switch (portal) {
       case "tenant-admin":
-        navigate(`/${tenantSlug}/admin/login`, { replace: true });
+        navigate('/saas/login', { replace: true });
         break;
       case "super-admin":
         navigate("/super-admin/login", { replace: true });

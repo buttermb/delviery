@@ -79,7 +79,7 @@ export default function TrialExpiredPage() {
 
   const handleLogout = async () => {
     await logout();
-    navigate(`/${tenantSlug}/admin/login`);
+    navigate('/saas/login');
   };
 
   return (
