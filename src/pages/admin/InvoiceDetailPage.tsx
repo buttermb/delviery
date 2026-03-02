@@ -319,11 +319,9 @@ export default function InvoiceDetailPage() {
                                     <div>
                                         <h1 className="text-xl font-bold">{tenant?.business_name}</h1>
                                         <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
-                                            {tenant?.address && <p>{tenant.address}</p>}
-                                            {tenant?.city && <p>{tenant.city}, {tenant.state} {tenant.zip_code}</p>}
+                                            {tenant?.state && <p>{tenant.state}</p>}
                                             {tenant?.phone && <p>{formatPhoneNumber(tenant.phone)}</p>}
                                             {tenant?.owner_email && <p>{tenant.owner_email}</p>}
-                                            {tenant?.tax_id && <p>Tax ID: {tenant.tax_id}</p>}
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -481,8 +479,7 @@ export default function InvoiceDetailPage() {
                                     </p>
                                     <div className="border-t pt-4 mt-4 text-center text-xs text-gray-500">
                                         <p className="font-medium">{tenant?.business_name}</p>
-                                        {tenant?.address && <p>{tenant.address}</p>}
-                                        {tenant?.city && <p>{tenant.city}, {tenant.state} {tenant.zip_code}</p>}
+                                        {tenant?.state && <p>{tenant.state}</p>}
                                         {tenant?.phone && <p>Phone: {formatPhoneNumber(tenant.phone)}</p>}
                                         {tenant?.owner_email && <p>Email: {tenant.owner_email}</p>}
                                         <p className="mt-2">Thank you for your business!</p>
