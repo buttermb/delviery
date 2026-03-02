@@ -807,7 +807,7 @@ const SecureMenuView = () => {
 
       {/* Floating Cart Summary */}
       {totalItems > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 safe-area-inset-bottom">
+        <div className="fixed bottom-0 left-0 right-0 z-30 pb-safe">
           <div className="bg-slate-50  border-t shadow-2xl">
             <div className="container mx-auto px-4 py-3">
               <div className="flex items-center justify-between gap-4">

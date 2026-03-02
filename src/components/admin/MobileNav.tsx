@@ -83,8 +83,8 @@ export function MobileNav() {
   return (
     <>
       {/* Fixed Bottom Navigation - Mobile Only */}
-      <nav className="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border lg:hidden z-50 safe-area-inset-bottom">
-        <div className="grid grid-cols-4 gap-1 p-2 safe-area-inset-bottom">
+      <nav className="fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur border-t border-border lg:hidden z-50 pb-safe">
+        <div className="grid grid-cols-4 gap-1 p-2">
           {mainNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
