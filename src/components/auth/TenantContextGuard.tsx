@@ -38,7 +38,7 @@ export function TenantContextGuard({ children }: TenantContextGuardProps) {
     });
 
     if (tenantSlug) {
-      return <Navigate to={`/${tenantSlug}/admin/login`} replace />;
+      return <Navigate to={`/saas/login?tenant=${tenantSlug}`} replace />;
     }
     return <Navigate to="/saas/login" replace />;
   }
