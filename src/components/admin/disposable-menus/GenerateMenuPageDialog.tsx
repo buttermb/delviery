@@ -211,9 +211,8 @@ export function GenerateMenuPageDialog({
       const urlToken = data?.url_token ?? data?.menu?.encrypted_url_token;
       if (!urlToken) throw new Error('No URL token returned');
 
-      // Build the static page URL using the edge function endpoint
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? '';
-      const staticPageUrl = `${supabaseUrl}/functions/v1/serve-menu-page?token=${urlToken}`;
+      // Build the static page URL using the React route
+      const staticPageUrl = `${window.location.origin}/page/${urlToken}`;
       setGeneratedUrl(staticPageUrl);
 
       queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
