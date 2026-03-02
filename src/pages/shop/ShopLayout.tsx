@@ -552,7 +552,7 @@ export default function ShopLayout() {
           <OfflineIndicator position="top" showSyncStatus />
 
           {/* Global Age Gate */}
-          <StorefrontAgeGate storeId={store?.id} />
+          <StorefrontAgeGate storeName={store.store_name} minimumAge={store.minimum_age ?? 21} onVerify={(verified) => handleAgeVerification(verified)} />
         </div>
       </ShopContext.Provider>
     );
@@ -795,7 +795,7 @@ export default function ShopLayout() {
         <OfflineIndicator position="top" showSyncStatus />
 
         {/* Global Age Gate */}
-        <StorefrontAgeGate storeId={store?.id} />
+        <StorefrontAgeGate storeName={store.store_name} minimumAge={store.minimum_age ?? 21} onVerify={(verified) => handleAgeVerification(verified)} />
       </div>
     </ShopContext.Provider>
   );

@@ -532,9 +532,6 @@ export function StorefrontBuilder({
 
         if (slugError || isSlugChecking || !slugAvailable) return;
 
-        const isValid = await validateSlug(newStoreSlug);
-        if (!isValid) return;
-
         await executeCreditAction({
             actionKey: 'storefront_create',
             action: async () => {
@@ -1266,7 +1263,6 @@ export function StorefrontBuilder({
                         <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: themeConfig.colors?.background }}>
                             {layoutConfig.filter(s => s.visible !== false).map((section) => {
                                 const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string; storeSlug?: string }>;
-                                const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string; tenantId?: string }>;
                                 if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
 
                                 return (
@@ -1276,7 +1272,6 @@ export function StorefrontBuilder({
                                         onClick={() => handleSelectSection(section.id)}
                                     >
                                         <Component content={section.content} styles={section.styles} storeId={store?.id} storeSlug={store?.slug} />
-                                        <Component content={section.content} styles={section.styles} storeId={store?.id} tenantId={tenant?.id} />
 
                                         {/* Hover overlay for selection */}
                                         {selectedSectionId !== section.id && (

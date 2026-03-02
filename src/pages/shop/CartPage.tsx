@@ -705,11 +705,9 @@ export default function CartPage() {
               <p className="text-lg font-bold" style={{ color: themeColor }}>{formatCurrency(total)}</p>
             </div>
             <Button
-              className="w-full h-12 text-base"
+              className="w-full h-12 text-base font-semibold rounded-lg"
               data-testid="mobile-checkout-button"
               style={{ backgroundColor: hasStockIssues ? undefined : themeColor }}
-              className="w-full h-12 text-base font-semibold rounded-lg"
-              style={{ backgroundColor: themeColor }}
               onClick={handleCheckout}
               disabled={isCheckingStock || hasStockIssues}
             >
