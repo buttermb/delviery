@@ -184,7 +184,7 @@ async function createOrder(req: Request, params: Record<string, string>): Promis
     // Validate input
     const validation = CreateOrderSchema.safeParse(body);
     if (!validation.success) {
-      return errorResponse(`Validation error: ${validation.error.message}`);
+      return errorResponse(`Validation error: ${(validation as { success: false; error: { message: string } }).error.message}`);
     }
 
     const input = validation.data;
@@ -247,7 +247,7 @@ async function updateOrderStatus(req: Request, params: Record<string, string>): 
     // Validate input
     const validation = UpdateOrderStatusSchema.safeParse(body);
     if (!validation.success) {
-      return errorResponse(`Validation error: ${validation.error.message}`);
+      return errorResponse(`Validation error: ${(validation as { success: false; error: { message: string } }).error.message}`);
     }
 
     const { status, notes } = validation.data;

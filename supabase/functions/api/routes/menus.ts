@@ -179,7 +179,7 @@ async function createMenu(req: Request, params: Record<string, string>): Promise
     // Validate input
     const validation = CreateMenuSchema.safeParse(body);
     if (!validation.success) {
-      return errorResponse(`Validation error: ${validation.error.message}`);
+      return errorResponse(`Validation error: ${(validation as { success: false; error: { message: string } }).error.message}`);
     }
 
     const input = validation.data;
@@ -342,7 +342,7 @@ async function addToWhitelist(req: Request, params: Record<string, string>): Pro
     // Validate input
     const validation = AddWhitelistSchema.safeParse(body);
     if (!validation.success) {
-      return errorResponse(`Validation error: ${validation.error.message}`);
+      return errorResponse(`Validation error: ${(validation as { success: false; error: { message: string } }).error.message}`);
     }
 
     const input = validation.data;

@@ -265,7 +265,7 @@ serve(async (req) => {
 
     if (!parsed.success) {
       return new Response(
-        JSON.stringify({ error: 'Invalid request', details: parsed.error.errors }),
+        JSON.stringify({ error: 'Invalid request', details: (parsed as { success: false; error: { errors: unknown[] } }).error.errors }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

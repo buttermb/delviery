@@ -7,8 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// deno-lint-ignore no-explicit-any
 async function logAdminAction(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   adminId: string,
   action: string,
   entityType?: string,

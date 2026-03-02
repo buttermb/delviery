@@ -72,7 +72,7 @@ serve(async (req) => {
         JSON.stringify({
           error: 'Validation failed',
           code: 'INVALID_REQUEST',
-          details: parseResult.error.errors,
+          details: (parseResult as { success: false; error: { errors: unknown[] } }).error.errors,
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

@@ -105,7 +105,7 @@ async function createTransaction(req: Request, params: Record<string, string>): 
     // Validate input
     const validation = CreatePOSTransactionSchema.safeParse(body);
     if (!validation.success) {
-      return errorResponse(`Validation error: ${validation.error.message}`);
+      return errorResponse(`Validation error: ${(validation as { success: false; error: { message: string } }).error.message}`);
     }
 
     const input = validation.data;

@@ -38,7 +38,7 @@ serve(withZenProtection(async (req) => {
       return new Response(
         JSON.stringify({
           error: 'Invalid input',
-          details: validationResult.error.errors
+          details: (validationResult as { success: false; error: { errors: unknown[] } }).error.errors
         }),
         {
           status: 400,

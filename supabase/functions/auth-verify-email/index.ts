@@ -53,7 +53,7 @@ serve(async (req: Request) => {
 
     if (!parseResult.success) {
       return new Response(
-        JSON.stringify({ error: 'Invalid request', details: parseResult.error.issues }),
+        JSON.stringify({ error: 'Invalid request', details: (parseResult as { success: false; error: { issues: unknown[] } }).error.issues }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

@@ -102,7 +102,7 @@ serve(async (req: Request) => {
       return new Response(
         JSON.stringify({
           error: 'Validation failed',
-          details: parseResult.error.issues.map(i => i.message),
+          details: (parseResult as { success: false; error: { issues: { message: string }[] } }).error.issues.map(i => i.message),
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
