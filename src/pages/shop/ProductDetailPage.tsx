@@ -20,7 +20,7 @@ import { logger } from '@/lib/logger';
 import { sanitizeHtml, safeJsonParse } from '@/lib/utils/sanitize';
 import { queryKeys } from '@/lib/queryKeys';
 import { safeStorage } from '@/utils/safeStorage';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ShoppingCart,
   Heart,
@@ -186,28 +186,13 @@ export function ProductDetailPage() {
     quantity: number;
   } | null>(null);
 
-  // Touch swipe state for mobile image carousel
-  const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
+  // Scroll-snap carousel ref and sync
+  const imageScrollRef = useRef<HTMLDivElement>(null);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.targetTouches[0].clientX;
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    const delta = touchStartX.current - touchEndX.current;
-    const threshold = 50;
-    if (Math.abs(delta) > threshold) {
-      setSelectedImage((prev) => {
-        const max = (allImages?.length ?? 1) - 1;
-        if (delta > 0) return Math.min(prev + 1, max); // swipe left = next
-        return Math.max(prev - 1, 0); // swipe right = prev
-      });
-    }
+  const scrollToImage = useCallback((index: number) => {
+    const container = imageScrollRef.current;
+    if (!container) return;
+    container.scrollTo({ left: index * container.offsetWidth, behavior: 'smooth' });
   }, []);
 
   // Track recently viewed products
@@ -350,6 +335,29 @@ export function ProductDetailPage() {
     }
     return images.length ? images : [product.image_url].filter(Boolean);
   }, [product]);
+
+  // Sync selectedImage from scroll-snap position
+  useEffect(() => {
+    const container = imageScrollRef.current;
+    if (!container) return;
+
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(() => {
+          const scrollLeft = container.scrollLeft;
+          const width = container.offsetWidth;
+          const index = Math.round(scrollLeft / width);
+          setSelectedImage(Math.max(0, Math.min(index, allImages.length - 1)));
+          ticking = false;
+        });
+      }
+    };
+
+    container.addEventListener('scroll', onScroll, { passive: true });
+    return () => container.removeEventListener('scroll', onScroll);
+  }, [allImages.length]);
 
   // SEO: Update page title, meta tags, and structured data
   useEffect(() => {
@@ -585,26 +593,31 @@ export function ProductDetailPage() {
                 className="relative aspect-square md:aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-white/5 group border border-white/5 cursor-zoom-in"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
-                onClick={() => setShowZoom(true)}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
               >
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={selectedImage}
-                    src={allImages[selectedImage] || '/placeholder.png'}
-                    alt={product.name}
-                    className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isHovering ? 'scale-110' : 'scale-100'}`}
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: isHovering ? 1.1 : 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                  />
-                </AnimatePresence>
+                {/* CSS scroll-snap image carousel */}
+                <div
+                  ref={imageScrollRef}
+                  className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+                >
+                  {allImages.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className="w-full h-full flex-shrink-0 snap-start"
+                      onClick={() => setShowZoom(true)}
+                    >
+                      <img
+                        src={img || '/placeholder.png'}
+                        alt={`${product.name} ${idx + 1}`}
+                        className={`w-full h-full object-cover transition-transform duration-700 ease-out ${isHovering ? 'scale-110' : 'scale-100'}`}
+                        loading={idx === 0 ? 'eager' : 'lazy'}
+                      />
+                    </div>
+                  ))}
+                </div>
 
                 {/* Luxury overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 pointer-events-none" />
 
                 <div className="absolute top-4 right-4 z-20 flex flex-col gap-3">
                   <Button
@@ -627,7 +640,7 @@ export function ProductDetailPage() {
                 </div>
 
                 {/* Badges */}
-                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none">
                   {discountPercent > 0 && (
                     <Badge className="bg-red-500/90 hover:bg-red-500 backdrop-blur border-none text-white px-3 py-1 text-xs uppercase tracking-widest">
                       Sale
@@ -652,7 +665,7 @@ export function ProductDetailPage() {
                   {allImages.map((_, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setSelectedImage(idx)}
+                      onClick={() => scrollToImage(idx)}
                       aria-label={`View image ${idx + 1}`}
                       className={cn(
                         'rounded-full transition-all duration-300',
@@ -671,7 +684,7 @@ export function ProductDetailPage() {
                   {allImages.map((img, idx) => (
                     <button
                       key={img}
-                      onClick={() => setSelectedImage(idx)}
+                      onClick={() => scrollToImage(idx)}
                       className={`relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden transition-all duration-300 ${selectedImage === idx
                         ? 'ring-2 ring-primary ring-offset-2 ring-offset-black scale-105 opacity-100'
                         : 'opacity-50 hover:opacity-80 hover:scale-105'
@@ -1136,7 +1149,7 @@ export function ProductDetailPage() {
                       'w-2.5 h-2.5 rounded-full transition-all duration-300',
                       selectedImage === index ? 'bg-white w-8' : 'bg-white/30 hover:bg-white/50'
                     )}
-                    onClick={() => setSelectedImage(index)}
+                    onClick={() => scrollToImage(index)}
                   />
                 ))}
               </div>

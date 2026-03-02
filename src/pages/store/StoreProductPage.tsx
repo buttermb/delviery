@@ -5,7 +5,7 @@
  * lab test results, related products carousel, breadcrumb navigation
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -114,6 +114,7 @@ export default function StoreProductPage() {
   const { slug, id } = useParams<{ slug: string; id: string }>();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const imageScrollRef = useRef<HTMLDivElement>(null);
 
   // ── Fetch Store ──────────────────────────────────────────────────────────
 
@@ -220,6 +221,36 @@ export default function StoreProductPage() {
     return imgs;
   }, [product]);
 
+  // ── Image scroll-snap sync ─────────────────────────────────────────────────
+
+  const scrollToImage = useCallback((index: number) => {
+    const container = imageScrollRef.current;
+    if (!container) return;
+    container.scrollTo({ left: index * container.offsetWidth, behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
+    const container = imageScrollRef.current;
+    if (!container) return;
+
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(() => {
+          const scrollLeft = container.scrollLeft;
+          const width = container.offsetWidth;
+          const index = Math.round(scrollLeft / width);
+          setSelectedImageIndex(Math.max(0, Math.min(index, allImages.length - 1)));
+          ticking = false;
+        });
+      }
+    };
+
+    container.addEventListener('scroll', onScroll, { passive: true });
+    return () => container.removeEventListener('scroll', onScroll);
+  }, [allImages.length]);
+
   // ── Pricing ───────────────────────────────────────────────────────────────
 
   const hasSalePrice = product?.sale_price != null && product.sale_price < product.price;
@@ -323,14 +354,24 @@ export default function StoreProductPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* ── Left: Image Gallery ──────────────────────────────────────── */}
           <div className="space-y-4">
-            {/* Main Image */}
+            {/* Main Image — CSS scroll-snap carousel */}
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border border-neutral-100 shadow-sm">
               {allImages.length > 0 ? (
-                <ProductImage
-                  src={allImages[selectedImageIndex]}
-                  alt={product.product_name}
-                  className="h-full w-full object-cover"
-                />
+                <div
+                  ref={imageScrollRef}
+                  className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+                >
+                  {allImages.map((img, idx) => (
+                    <div key={idx} className="w-full h-full flex-shrink-0 snap-start">
+                      <ProductImage
+                        src={img}
+                        alt={`${product.product_name} ${idx + 1}`}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <ProductImage
                   src={null}
@@ -341,7 +382,7 @@ export default function StoreProductPage() {
 
               {/* Sale badge */}
               {hasSalePrice && (
-                <span className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 text-xs font-bold uppercase rounded-lg shadow">
+                <span className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 text-xs font-bold uppercase rounded-lg shadow pointer-events-none">
                   Sale
                 </span>
               )}
@@ -350,7 +391,7 @@ export default function StoreProductPage() {
               {product.strain_type && (
                 <span
                   className={cn(
-                    'absolute top-4 right-4 px-3 py-1 text-xs font-bold uppercase rounded-lg border  shadow-sm',
+                    'absolute top-4 right-4 px-3 py-1 text-xs font-bold uppercase rounded-lg border shadow-sm pointer-events-none',
                     product.strain_type === 'Indica'
                       ? 'bg-purple-100/90 text-purple-700 border-purple-200'
                       : product.strain_type === 'Sativa'
@@ -366,23 +407,19 @@ export default function StoreProductPage() {
               {allImages.length > 1 && (
                 <>
                   <button
-                    onClick={() =>
-                      setSelectedImageIndex((prev) =>
-                        prev > 0 ? prev - 1 : allImages.length - 1
-                      )
-                    }
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80  shadow-md flex items-center justify-center hover:bg-white transition-colors"
+                    onClick={() => scrollToImage(
+                      selectedImageIndex > 0 ? selectedImageIndex - 1 : allImages.length - 1
+                    )}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 shadow-md flex items-center justify-center hover:bg-white transition-colors"
                     aria-label="Previous image"
                   >
                     <ChevronLeft className="w-5 h-5 text-neutral-700" />
                   </button>
                   <button
-                    onClick={() =>
-                      setSelectedImageIndex((prev) =>
-                        prev < allImages.length - 1 ? prev + 1 : 0
-                      )
-                    }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80  shadow-md flex items-center justify-center hover:bg-white transition-colors"
+                    onClick={() => scrollToImage(
+                      selectedImageIndex < allImages.length - 1 ? selectedImageIndex + 1 : 0
+                    )}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 shadow-md flex items-center justify-center hover:bg-white transition-colors"
                     aria-label="Next image"
                   >
                     <ChevronRight className="w-5 h-5 text-neutral-700" />
@@ -397,7 +434,7 @@ export default function StoreProductPage() {
                 {allImages.map((img, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setSelectedImageIndex(idx)}
+                    onClick={() => scrollToImage(idx)}
                     className={cn(
                       'w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 shrink-0 transition-all',
                       idx === selectedImageIndex

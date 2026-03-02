@@ -1,9 +1,10 @@
 /**
- * Complete Product Image Gallery Component
- * Supports multiple images with thumbnails, zoom, and swipe
+ * Product Image Gallery Component
+ * Uses CSS scroll-snap for native swipe/scroll behavior
+ * Supports multiple images with thumbnails and zoom
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
@@ -30,7 +31,7 @@ interface ProductImageGalleryProps {
 export function ProductImageGallery({ images, productName, onZoom }: ProductImageGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showZoom, setShowZoom] = useState(false);
-  const touchStartXRef = useRef<number | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Filter and process images
   const processedImages = images
@@ -42,6 +43,47 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
       large: img.sizes?.large || img.url,
       full: img.sizes?.full || img.url,
     }));
+
+  // Sync selectedIndex when scroll snaps to a new image
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const scrollLeft = container.scrollLeft;
+    const width = container.offsetWidth;
+    const index = Math.round(scrollLeft / width);
+    setSelectedIndex(Math.max(0, Math.min(index, processedImages.length - 1)));
+  }, [processedImages.length]);
+
+  // Debounce scroll handler for performance
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+      }
+    };
+
+    container.addEventListener('scroll', onScroll, { passive: true });
+    return () => container.removeEventListener('scroll', onScroll);
+  }, [handleScroll]);
+
+  const scrollToIndex = useCallback((index: number) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    container.scrollTo({
+      left: index * container.offsetWidth,
+      behavior: 'smooth',
+    });
+  }, []);
 
   if (processedImages.length === 0) {
     return (
@@ -56,12 +98,14 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
 
   const handlePrevious = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setSelectedIndex((prev) => (prev === 0 ? processedImages.length - 1 : prev - 1));
+    const newIndex = selectedIndex === 0 ? processedImages.length - 1 : selectedIndex - 1;
+    scrollToIndex(newIndex);
   };
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setSelectedIndex((prev) => (prev === processedImages.length - 1 ? 0 : prev + 1));
+    const newIndex = selectedIndex === processedImages.length - 1 ? 0 : selectedIndex + 1;
+    scrollToIndex(newIndex);
   };
 
   const handleImageClick = () => {
@@ -72,56 +116,37 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
   };
 
   const handleThumbnailClick = (index: number) => {
-    setSelectedIndex(index);
-  };
-
-  // Swipe support for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    touchStartXRef.current = touch.clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const touch = e.changedTouches[0];
-    const touchStartX = touchStartXRef.current;
-    if (touchStartX === null) return;
-
-    const diff = touchStartX - touch.clientX;
-    const threshold = 50;
-
-    if (Math.abs(diff) > threshold) {
-      if (diff > 0) {
-        // Swipe left - next image
-        setSelectedIndex((prev) => (prev === processedImages.length - 1 ? 0 : prev + 1));
-      } else {
-        // Swipe right - previous image
-        setSelectedIndex((prev) => (prev === 0 ? processedImages.length - 1 : prev - 1));
-      }
-    }
-    touchStartXRef.current = null;
+    scrollToIndex(index);
   };
 
   return (
     <>
       {/* Main Image Display */}
       <div className="relative w-full aspect-square bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden group">
-        {/* Main Image */}
+        {/* Scroll-snap carousel */}
         <div
-          className="w-full h-full cursor-pointer"
-          onClick={handleImageClick}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
+          ref={scrollContainerRef}
+          className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
         >
-          <OptimizedProductImage
-            src={currentImage.medium || currentImage.url}
-            alt={`${productName} - Image ${selectedIndex + 1}`}
-            className="w-full h-full object-cover"
-            priority={selectedIndex === 0}
-          />
+          {processedImages.map((img, index) => (
+            <div
+              key={img.id || index}
+              className="w-full h-full flex-shrink-0 snap-start cursor-pointer"
+              onClick={handleImageClick}
+            >
+              <OptimizedProductImage
+                src={img.medium || img.url}
+                alt={`${productName} - Image ${index + 1}`}
+                className="w-full h-full object-cover"
+                priority={index === 0}
+              />
+            </div>
+          ))}
         </div>
 
         {/* Zoom Indicator */}
-        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
           <div className="bg-black/50 text-white px-3 py-1.5 rounded-full flex items-center gap-2 text-sm">
             <ZoomIn className="h-4 w-4" />
             <span>Tap to zoom</span>
@@ -130,7 +155,7 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
 
         {/* Image Counter */}
         {hasMultiple && (
-          <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1.5 rounded-full text-sm">
+          <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1.5 rounded-full text-sm pointer-events-none">
             {selectedIndex + 1} / {processedImages.length}
           </div>
         )}
@@ -161,7 +186,7 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
 
         {/* Primary Badge */}
         {currentImage.is_primary && (
-          <div className="absolute bottom-4 left-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+          <div className="absolute bottom-4 left-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold pointer-events-none">
             Primary
           </div>
         )}
@@ -249,4 +274,3 @@ export function ProductImageGallery({ images, productName, onZoom }: ProductImag
     </>
   );
 }
-
