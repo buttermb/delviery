@@ -27,7 +27,7 @@ import { TenantAdminAuthProvider } from "./contexts/TenantAdminAuthContext";
 import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
 import { EncryptionProvider } from "./contexts/EncryptionContext";
 import { CreditProvider } from "./contexts/CreditContext";
-import { Suspense, useEffect, useState, type ComponentType } from "react";
+import { Suspense, lazy, useEffect, useState, type ComponentType } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { SkipToContent } from "./components/SkipToContent";
 import { LoadingFallback } from "./components/LoadingFallback";

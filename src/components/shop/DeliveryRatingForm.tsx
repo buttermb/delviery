@@ -7,12 +7,9 @@
 
 import { useState } from 'react';
 import { Star, Loader2 } from 'lucide-react';
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Star } from 'lucide-react';
-import { useState } from 'react';
 import {
   Form,
   FormControl,
@@ -224,38 +221,11 @@ export function DeliveryRatingForm({
               {submitMutation.isPending ? 'Submitting...' : 'Submit Rating'}
             </Button>
 
-        {/* Comment */}
-        <Textarea
-          placeholder="Tell us about your delivery experience (optional)"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          rows={3}
-          maxLength={500}
-          aria-label="Delivery experience comment"
-        />
-
-        {/* Submit */}
-        <Button
-          onClick={handleSubmit}
-          disabled={selectedRating === 0 || submitMutation.isPending}
-          className="w-full"
-          style={{ backgroundColor: primaryColor }}
-        >
-          {submitMutation.isPending ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Submitting...
-            </>
-          ) : (
-            'Submit Rating'
-          )}
-        </Button>
-
-        {submitMutation.isError && (
-          <p className="text-sm text-destructive">
-            Failed to submit rating. Please try again.
-          </p>
-        )}
+            {submitMutation.isError && (
+              <p className="text-sm text-destructive">
+                Failed to submit rating. Please try again.
+              </p>
+            )}
             {submitMutation.isError && (
               <p className="text-sm text-destructive">
                 Failed to submit rating. Please try again.

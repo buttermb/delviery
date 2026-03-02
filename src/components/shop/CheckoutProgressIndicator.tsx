@@ -150,8 +150,7 @@ export function CheckoutProgressIndicator({
                   backgroundColor: isComplete || isActive ? themeColor : undefined,
                   color: isComplete || isActive ? '#fff' : undefined,
                   boxShadow: isActive && isLuxuryTheme ? `0 0 20px ${themeColor}60` : undefined,
-                  borderColor: isLuxuryTheme ? '#000' : undefined,
-                  ringColor: isActive ? themeColor : undefined,
+                  borderColor: isLuxuryTheme ? 'hsl(var(--border))' : undefined,
                 }}
               >
                 {isComplete ? (

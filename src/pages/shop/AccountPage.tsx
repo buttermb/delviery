@@ -626,14 +626,6 @@ export default function AccountPage() {
                   ))}
                 </div>
               ) : orders.length === 0 ? (
-                <div className="text-center py-16 bg-neutral-50 rounded-2xl border border-dashed border-neutral-200">
-                  <Package className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
-                  <h2 className="text-xl font-bold mb-2 text-neutral-900">
-                    {orderFilters.status !== 'all' || orderFilters.search || orderFilters.dateRange !== 'all'
-                      ? 'No matching orders'
-                      : 'No orders yet'}
-                  </h2>
-                  <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
                 <div className="text-center py-16 bg-muted rounded-2xl border border-dashed border-border">
                   <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
                   <h3 className="text-xl font-bold mb-2 text-foreground">
@@ -875,10 +867,6 @@ function WishlistSection({
       </CardHeader>
       <CardContent>
         {products.length === 0 ? (
-          <div className="text-center py-16 bg-neutral-50 rounded-2xl border border-dashed border-neutral-200">
-            <Heart className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
-            <h2 className="text-xl font-bold mb-2 text-neutral-900">Your wishlist is empty</h2>
-            <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
           <div className="text-center py-16 bg-muted rounded-2xl border border-dashed border-border">
             <Heart className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
             <h3 className="text-xl font-bold mb-2 text-foreground">Your wishlist is empty</h3>
@@ -919,7 +907,6 @@ function WishlistSection({
                 </Link>
                 <div className="flex-1 min-w-0 space-y-1">
                   <Link to={`/shop/${storeSlug}/products/${product.product_id as string}`}>
-                    <h3 className="font-bold text-lg text-neutral-900 hover:text-neutral-700 transition-colors">{product.name as string}</h3>
                     <h4 className="font-bold text-lg text-foreground hover:text-foreground/80 transition-colors">{product.name as string}</h4>
                   </Link>
                   <p className="text-xl font-bold" style={{ color: primaryColor }}>

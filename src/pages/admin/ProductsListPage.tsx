@@ -648,6 +648,7 @@ export function ProductsListPage() {
     },
     {
       header: 'Storefront',
+      accessorKey: 'menu_visibility',
       className: 'hidden md:table-cell',
       cell: (product) => (
         <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -666,21 +667,6 @@ export function ProductsListPage() {
             {product.menu_visibility ? 'Visible' : 'Hidden'}
           </span>
         </div>
-      accessorKey: 'menu_visibility',
-      className: 'text-center hidden lg:table-cell',
-      cell: (product) => (
-        <Badge
-          variant="outline"
-          className={product.menu_visibility
-            ? "text-green-700 border-green-300 bg-green-50 dark:text-green-400 dark:border-green-700 dark:bg-green-950 gap-1"
-            : "text-muted-foreground border-muted bg-muted/30 gap-1"
-          }
-        >
-          {product.menu_visibility
-            ? <><Eye className="h-3 w-3" /> Listed</>
-            : <><EyeOff className="h-3 w-3" /> Unlisted</>
-          }
-        </Badge>
       ),
     },
     {

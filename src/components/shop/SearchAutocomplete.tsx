@@ -269,7 +269,6 @@ export function SearchAutocomplete({ storeId, primaryColor, onSearch }: SearchAu
                     </p>
                     <button
                       onClick={clearRecentSearches}
-                      className="text-sm text-muted-foreground hover:text-foreground"
                       className="text-xs text-muted-foreground hover:text-foreground rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="Clear recent searches"
                     >

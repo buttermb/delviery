@@ -422,7 +422,6 @@ export default function ShopLayout() {
           storeName={store.store_name}
           logoUrl={store.logo_url}
           minimumAge={store.minimum_age}
-          storeId={store.id}
           onVerify={(verified) => handleAgeVerification(verified)}
         />
       );
