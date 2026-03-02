@@ -70,7 +70,7 @@ export function useDeleteStaticMenuPage() {
       const { error } = await supabase
         .from('disposable_menus')
         .update({
-          status: 'burned' as never,
+          status: 'soft_burned' as never,
           burned_at: new Date().toISOString(),
         })
         .eq('id', menuId);
