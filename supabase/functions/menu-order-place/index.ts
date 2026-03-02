@@ -41,11 +41,7 @@ serve(async (req) => {
       paymentMethod: payment_method
     });
 
-    // 1. IDEMPOTENCY CHECK (Basic implementation)
-    // In a real production system, we'd check a dedicated idempotency table.
-    // For now, we'll skip this check to keep it simple, but the architecture supports it.
-
-    // 2. RESERVE INVENTORY (Atomic RPC)
+    // 1. RESERVE INVENTORY (Atomic RPC)
     const { data: reservation, error: reserveError } = await supabaseClient
       .rpc('reserve_inventory', {
         p_menu_id: menu_id,
@@ -68,20 +64,19 @@ serve(async (req) => {
     const { reservation_id, lock_token } = reservation;
     console.log(`[ORDER_CREATE] Inventory reserved`, { traceId, reservationId: reservation_id });
 
-    // 3. PROCESS PAYMENT
+    // 2. PROCESS PAYMENT
     // SECURITY: Calculate total from DATABASE prices - NEVER trust client-provided total
     const productIds = order_items.map((item: { product_id: string }) => item.product_id);
 
-    // Fetch actual prices from disposable_menu_items
+    // FIX: Query disposable_menu_products (was disposable_menu_items) with products join
     const { data: menuItems, error: menuItemsError } = await supabaseClient
-      .from('disposable_menu_items')
-      .select('product_id, price')
+      .from('disposable_menu_products')
+      .select('product_id, custom_price, prices, products(price)')
       .eq('menu_id', menu_id)
       .in('product_id', productIds);
 
     if (menuItemsError || !menuItems || menuItems.length === 0) {
       console.error(`[ORDER_CREATE] Failed to fetch menu item prices`, { traceId, error: menuItemsError });
-      // ROLLBACK: Cancel Reservation
       await supabaseClient.rpc('cancel_reservation', {
         p_reservation_id: reservation_id,
         p_reason: 'price_lookup_failed'
@@ -92,14 +87,22 @@ serve(async (req) => {
       );
     }
 
-    // Create price lookup map
-    const priceMap = new Map(menuItems.map((item: { product_id: string; price: number }) => [item.product_id, Number(item.price)]));
+    // Build price lookup: supports both flat pricing and tiered pricing
+    type TieredPrice = { label: string; price: number; weight_grams?: number; max_qty?: number; note?: string };
+    const priceMap = new Map<string, { flat_price: number; tiers: TieredPrice[] | null }>();
 
-    // Calculate total from SERVER prices
+    for (const item of menuItems) {
+      const productData = item.products as { price: number } | null;
+      const flatPrice = item.custom_price != null ? Number(item.custom_price) : (productData?.price != null ? Number(productData.price) : 0);
+      const tiers = (Array.isArray(item.prices) ? item.prices : null) as TieredPrice[] | null;
+      priceMap.set(item.product_id, { flat_price: flatPrice, tiers });
+    }
+
+    // Calculate total from SERVER prices, supporting tiered pricing
     let totalAmount = 0;
     for (const item of order_items) {
-      const serverPrice = priceMap.get(item.product_id);
-      if (serverPrice === undefined) {
+      const priceInfo = priceMap.get(item.product_id);
+      if (!priceInfo) {
         console.error(`[ORDER_CREATE] Product not found in menu`, { traceId, productId: item.product_id });
         await supabaseClient.rpc('cancel_reservation', {
           p_reservation_id: reservation_id,
@@ -110,7 +113,29 @@ serve(async (req) => {
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      totalAmount += serverPrice * item.quantity;
+
+      let unitPrice = priceInfo.flat_price;
+
+      // If order item specifies a tier, look up the tier price
+      if (item.tier_label && priceInfo.tiers) {
+        const tier = priceInfo.tiers.find((t: TieredPrice) => t.label === item.tier_label);
+        if (tier) {
+          unitPrice = tier.price;
+          // Enforce max_qty if set
+          if (tier.max_qty && item.quantity > tier.max_qty) {
+            await supabaseClient.rpc('cancel_reservation', {
+              p_reservation_id: reservation_id,
+              p_reason: 'exceeds_tier_max_qty'
+            });
+            return new Response(
+              JSON.stringify({ error: `Maximum quantity for ${item.tier_label} is ${tier.max_qty}` }),
+              { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+      }
+
+      totalAmount += unitPrice * item.quantity;
     }
 
     console.log(`[ORDER_CREATE] Server-calculated total: ${totalAmount}`, { traceId });
@@ -126,7 +151,6 @@ serve(async (req) => {
         reservationId: reservation_id,
         error: paymentResult.error
       });
-      // ROLLBACK: Cancel Reservation
       await supabaseClient.rpc('cancel_reservation', {
         p_reservation_id: reservation_id,
         p_reason: 'payment_failed'
@@ -143,34 +167,12 @@ serve(async (req) => {
       transactionId: paymentResult.transaction_id
     });
 
-    // 3.5 CREATE OR UPDATE CUSTOMER RECORD
-    const { data: menu } = await supabaseClient
+    // 3. GET MENU TENANT INFO
+    const { data: menuData } = await supabaseClient
       .from('disposable_menus')
-      .select('tenant_id, account_id')
+      .select('tenant_id')
       .eq('id', menu_id)
-      .single();
-
-    if (menu && body.contact_email) {
-      // Check if customer exists
-      const { data: existingCustomer } = await supabaseClient
-        .from('customers')
-        .select('id')
-        .eq('email', body.contact_email)
-        .eq('tenant_id', menu.tenant_id)
-        .maybeSingle();
-
-      if (!existingCustomer) {
-        // Create new customer
-        await supabaseClient.from('customers').insert({
-          tenant_id: menu.tenant_id,
-          account_id: menu.account_id,
-          email: body.contact_email,
-          phone: contact_phone,
-          first_name: body.customer_name || 'Menu Customer',
-          customer_type: 'recreational'
-        });
-      }
-    }
+      .maybeSingle();
 
     // 4. CONFIRM ORDER (Atomic RPC)
     const { data: order, error: confirmError } = await supabaseClient
@@ -187,10 +189,9 @@ serve(async (req) => {
         reservationId: reservation_id,
         error: confirmError.message
       });
-      // ZOMBIE ORDER RECOVERY (Nuclear Option Scenario A)
       if (paymentResult.transaction_id) {
         try {
-          const refund = await refundPayment(
+          await refundPayment(
             paymentResult.transaction_id,
             'system_error_order_creation_failed'
           );
@@ -201,11 +202,9 @@ serve(async (req) => {
             transactionId: paymentResult.transaction_id,
             error: refundError
           });
-          // In a real system, we would insert into a 'critical_alerts' table here
         }
       }
 
-      // Also cancel the reservation to free up inventory
       await supabaseClient.rpc('cancel_reservation', {
         p_reservation_id: reservation_id,
         p_reason: 'system_error'
@@ -220,9 +219,6 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    // 5. REALTIME BROADCAST
-    // (Handled by DB triggers we created earlier, but we can add explicit broadcast if needed)
 
     console.log(`[ORDER_CREATE] Order confirmed successfully`, {
       traceId,
