@@ -402,7 +402,7 @@ export default function CustomerLoginPage() {
 
             <div className="pt-4 border-t border-slate-700/50 text-center">
               <Link
-                to={`/${tenantSlug}/admin/login`}
+                to="/saas/login"
                 className="text-sm text-slate-400 hover:text-slate-300 transition-colors inline-flex items-center gap-1"
               >
                 Business owner? Admin Login →

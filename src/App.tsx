@@ -13,7 +13,7 @@ import { logger } from "@/lib/logger";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { appQueryClient } from "@/lib/react-query-config";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AccountProvider } from "./contexts/AccountContext";
@@ -159,6 +159,13 @@ import {
   FeatureCompliancePage, FeatureLogisticsPage, FeatureEcommercePage,
 } from "@/routes/lazyImports";
 import { UrlEncodingFixer } from "./components/UrlEncodingFixer";
+
+/** Redirect /:tenantSlug/admin/login → /saas/login?tenant=slug */
+function TenantAdminLoginRedirect() {
+  const { tenantSlug } = useParams<{ tenantSlug: string }>();
+  return <Navigate to={`/saas/login${tenantSlug ? `?tenant=${tenantSlug}` : ''}`} replace />;
+}
+
 
 const scheduleNonCritical = (task: () => void, timeout = 1500) => {
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
@@ -481,7 +488,7 @@ const App = () => {
                                       </Route>
 
                                       {/* ==================== LEVEL 2: TENANT ADMIN (Business Owner) ==================== */}
-                                      <Route path="/:tenantSlug/admin/login" element={<PublicOnlyRoute portal="tenant-admin"><TenantAdminLoginPage /></PublicOnlyRoute>} />
+                                      <Route path="/:tenantSlug/admin/login" element={<TenantAdminLoginRedirect />} />
                                       <Route path="/:tenantSlug/admin/reset/:token" element={<PasswordResetPage />} />
                                       <Route path="/:tenantSlug/admin/auth/callback" element={<TenantAdminAuthCallback />} />
                                       <Route path="/:tenantSlug/admin/auth/mfa-challenge" element={<MFAChallengePage portal="tenant-admin" />} />

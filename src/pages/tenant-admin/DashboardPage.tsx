@@ -163,7 +163,7 @@ export default function TenantAdminDashboardPage() {
 
   const handleLogout = useCallback(async () => {
     await logout();
-    navigate(`/${tenant?.slug}/admin/login`);
+    navigate('/saas/login');
   }, [logout, navigate, tenant?.slug]);
 
   // Fetch today's metrics (MOVED BEFORE EARLY RETURN)

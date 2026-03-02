@@ -169,7 +169,7 @@ export default function LoginDirectory() {
                                   navigate('/saas/login');
                                   return;
                                 }
-                                navigate(`/${lastTenant}/admin/login`);
+                                navigate('/saas/login');
                               } catch {
                                 navigate('/saas/login');
                               }
