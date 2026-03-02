@@ -15,22 +15,12 @@ export interface Tenant {
   owner_email: string;
   owner_name?: string;
   phone?: string;
-  address?: string;
-  city?: string;
   state?: string;
-  zip_code?: string;
-  tax_id?: string;
-  website?: string;
   subscription_plan: 'starter' | 'professional' | 'enterprise';
   subscription_status: 'trial' | 'active' | 'past_due' | 'cancelled' | 'suspended';
   trial_ends_at?: string;
-  subscription_started_at?: string;
-  subscription_current_period_start?: string;
-  subscription_current_period_end?: string;
   stripe_customer_id?: string;
-  stripe_subscription_id?: string;
   payment_method_added: boolean;
-  next_billing_date?: string;
   mrr?: number;
   limits: {
     customers: number;
@@ -69,7 +59,6 @@ export interface Tenant {
   }>;
   compliance_verified: boolean;
   onboarded: boolean;
-  onboarded_at?: string;
   last_activity_at?: string;
   created_at: string;
   updated_at: string;
@@ -81,10 +70,8 @@ export interface TenantUser {
   email: string;
   name?: string;
   role: 'owner' | 'admin' | 'manager' | 'runner' | 'viewer';
-  permissions?: Record<string, unknown>;
   status: 'pending' | 'active' | 'suspended';
   email_verified: boolean;
-  invited_by?: string;
   invited_at?: string;
   accepted_at?: string;
   last_login_at?: string;
@@ -98,7 +85,7 @@ export interface TenantUser {
 export async function getTenantFromSlug(slug: string): Promise<Tenant | null> {
   const { data, error } = await supabase
     .from('tenants')
-    .select('id, business_name, slug, owner_email, owner_name, phone, address, city, state, zip_code, tax_id, website, subscription_plan, subscription_status, trial_ends_at, subscription_started_at, subscription_current_period_start, subscription_current_period_end, stripe_customer_id, stripe_subscription_id, payment_method_added, next_billing_date, mrr, limits, usage, features, white_label, status, suspended_reason, cancelled_at, state_licenses, compliance_verified, onboarded, onboarded_at, last_activity_at, created_at, updated_at')
+    .select('id, business_name, slug, owner_email, owner_name, phone, state, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id, payment_method_added, mrr, limits, usage, features, white_label, status, suspended_reason, cancelled_at, state_licenses, compliance_verified, onboarded, last_activity_at, created_at, updated_at')
     .eq('slug', slug)
     .maybeSingle();
 
@@ -112,7 +99,7 @@ export async function getTenantFromSlug(slug: string): Promise<Tenant | null> {
 export async function getTenantById(tenantId: string): Promise<Tenant | null> {
   const { data, error } = await supabase
     .from('tenants')
-    .select('id, business_name, slug, owner_email, owner_name, phone, address, city, state, zip_code, tax_id, website, subscription_plan, subscription_status, trial_ends_at, subscription_started_at, subscription_current_period_start, subscription_current_period_end, stripe_customer_id, stripe_subscription_id, payment_method_added, next_billing_date, mrr, limits, usage, features, white_label, status, suspended_reason, cancelled_at, state_licenses, compliance_verified, onboarded, onboarded_at, last_activity_at, created_at, updated_at')
+    .select('id, business_name, slug, owner_email, owner_name, phone, state, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id, payment_method_added, mrr, limits, usage, features, white_label, status, suspended_reason, cancelled_at, state_licenses, compliance_verified, onboarded, last_activity_at, created_at, updated_at')
     .eq('id', tenantId)
     .maybeSingle();
 
