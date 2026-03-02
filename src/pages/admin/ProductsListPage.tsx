@@ -4,7 +4,7 @@
  * Part of the Products Hub functionality.
  */
 
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect, useTransition } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { triggerHaptic } from '@/lib/utils/mobile';
@@ -20,6 +20,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
+import { cn } from '@/lib/utils';
 
 // UI Components
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -196,9 +197,14 @@ export function ProductsListPage() {
     }
   }, [advancedFilters, sortBy, savePreferences]);
 
+  // Use transition for filter changes to keep UI responsive during heavy filtering
+  const [isFilterPending, startFilterTransition] = useTransition();
+
   // Handle advanced filter changes
   const handleAdvancedFiltersChange = useCallback((newFilters: ProductFilters) => {
-    setAdvancedFilters(newFilters);
+    startFilterTransition(() => {
+      setAdvancedFilters(newFilters);
+    });
   }, []);
 
   // Virtual scrolling ref for grid view
@@ -1024,7 +1030,7 @@ export function ProductsListPage() {
             )}
           </div>
         </CardHeader>
-        <CardContent className="p-0 sm:p-6">
+        <CardContent className={cn("p-0 sm:p-6 transition-opacity", isFilterPending && "opacity-60")}>
           {paginatedItems.length > 0 ? (
             viewMode === 'grid' ? (
               <div

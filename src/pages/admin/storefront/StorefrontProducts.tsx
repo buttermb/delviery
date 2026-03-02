@@ -3,7 +3,7 @@
  * Manage product visibility and pricing for the online store
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +29,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
 import {
   Table,
@@ -75,6 +76,7 @@ export default function StorefrontProducts() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [isFilterPending, startFilterTransition] = useTransition();
   const [visibilityFilter, setVisibilityFilter] = useState<string>('all');
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [editingPrices, setEditingPrices] = useState<Record<string, string>>({});
@@ -432,7 +434,7 @@ export default function StorefrontProducts() {
               />
             </div>
 
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <Select value={categoryFilter} onValueChange={(v) => startFilterTransition(() => setCategoryFilter(v))}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
@@ -493,7 +495,7 @@ export default function StorefrontProducts() {
 
       {/* Products Table */}
       <Card>
-        <CardContent className="p-0">
+        <CardContent className={cn("p-0 transition-opacity", isFilterPending && "opacity-60")}>
           {isLoading ? (
             <div className="p-6 space-y-4">
               {[1, 2, 3, 4, 5].map((i) => (
