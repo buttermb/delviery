@@ -757,10 +757,88 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Periodic token validation - acts as a safety net alongside the visibility-aware timer.
-  // The primary refresh mechanism is the createRefreshTimer (handles visibility + sleep detection).
-  // This interval provides a fallback in case the timer misses (e.g., long-running tabs).
+  // RE-INITIALIZE AUTH when navigating to admin routes after login
+  // This fixes the case where initializeAuth ran on /saas/login (non-admin route),
+  // set authInitializedRef=true, and never re-runs when navigating to /{slug}/admin/dashboard
   useEffect(() => {
+    const isTenantAdminRoute = /^\/[^/]+\/admin/.test(location.pathname);
+    
+    // If we're on an admin route, initialized is done, but no admin/tenant loaded => re-init
+    if (isTenantAdminRoute && initialized && !admin && !tenant && !loading) {
+      logger.info('[AUTH] On admin route with no auth data - re-initializing');
+      authInitializedRef.current = false;
+      
+      const reinitialize = async () => {
+        setLoading(true);
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.user) {
+            setLoading(false);
+            return;
+          }
+
+          const { data: adminData } = await supabase
+            .from('tenant_users')
+            .select('id, email, role, tenant_id, status')
+            .eq('user_id', session.user.id)
+            .eq('status', 'active')
+            .maybeSingle();
+
+          if (!adminData) {
+            setLoading(false);
+            return;
+          }
+
+          const { data: tenantData } = await supabase
+            .from('tenants')
+            .select('id, business_name, slug, subscription_plan, subscription_status, trial_ends_at, grace_period_ends_at, payment_method_added, mrr, onboarding_completed, business_tier, created_at, is_free_tier, credits_enabled, limits, usage, features')
+            .eq('id', adminData.tenant_id)
+            .maybeSingle();
+
+          if (!tenantData) {
+            setLoading(false);
+            return;
+          }
+
+          const newAdmin: TenantAdmin = {
+            id: adminData.id,
+            email: adminData.email ?? session.user.email ?? '',
+            name: adminData.email,
+            role: adminData.role,
+            tenant_id: adminData.tenant_id,
+            userId: session.user.id,
+          };
+
+          setAdmin(newAdmin);
+          setTenant(tenantData as unknown as Tenant);
+          setAccessToken(session.access_token);
+          setToken(session.access_token);
+          setRefreshToken(session.refresh_token || null);
+          setIsAuthenticated(true);
+
+          safeStorage.setItem(ADMIN_KEY, JSON.stringify(newAdmin));
+          safeStorage.setItem(TENANT_KEY, JSON.stringify(tenantData));
+          safeStorage.setItem(ACCESS_TOKEN_KEY, session.access_token);
+          if (session.refresh_token) {
+            safeStorage.setItem(REFRESH_TOKEN_KEY, session.refresh_token);
+          }
+          safeStorage.setItem('lastTenantSlug', tenantData.slug);
+        } catch (err) {
+          logger.error('[AUTH] Re-initialization failed', err instanceof Error ? err : new Error(String(err)));
+        } finally {
+          setLoading(false);
+          authInitializedRef.current = true;
+        }
+      };
+
+      reinitialize();
+    }
+  }, [location.pathname, initialized, admin, tenant, loading]);
+
+  // Periodic token validation - acts as a safety net alongside the visibility-aware timer.
+   // The primary refresh mechanism is the createRefreshTimer (handles visibility + sleep detection).
+   // This interval provides a fallback in case the timer misses (e.g., long-running tabs).
+   useEffect(() => {
     if (!isAuthenticated || !token) return;
 
     const validateToken = async () => {
