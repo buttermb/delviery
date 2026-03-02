@@ -181,7 +181,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
     const pathMatch = location.pathname.match(/^\/([^/]+)\/admin/);
     const slug = tenant?.slug || pathMatch?.[1];
     if (slug) {
-      navigate(`/${slug}/admin/login?expired=1`, { replace: true });
+      navigate(`/saas/login?expired=1`, { replace: true });
     } else {
       navigate('/', { replace: true });
     }
@@ -353,7 +353,7 @@ export const TenantAdminAuthProvider = ({ children }: { children: ReactNode }) =
             if (adminData) {
               const { data: tenantData } = await supabase
                 .from('tenants')
-                .select('id, business_name, slug, subscription_plan, subscription_status, trial_ends_at, next_billing_date, grace_period_ends_at, payment_method_added, mrr, onboarding_completed, business_tier, created_at, is_free_tier, credits_enabled, limits, usage, features')
+                .select('id, business_name, slug, subscription_plan, subscription_status, trial_ends_at, grace_period_ends_at, payment_method_added, mrr, onboarding_completed, business_tier, created_at, is_free_tier, credits_enabled, limits, usage, features')
                 .eq('id', adminData.tenant_id)
                 .maybeSingle();
 

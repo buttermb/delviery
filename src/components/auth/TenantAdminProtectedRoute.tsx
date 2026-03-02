@@ -368,7 +368,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
 
     if (redirectSlug) {
       logger.debug('[PROTECTED ROUTE] Redirecting to tenant login', { redirectSlug, intendedDestination: currentPath });
-      return <Navigate to={`/${redirectSlug}/admin/login`} replace />;
+      return <Navigate to={`/saas/login?tenant=${redirectSlug}`} replace />;
     }
 
     logger.debug('[PROTECTED ROUTE] No valid slug found, redirecting to saas login');
@@ -418,7 +418,7 @@ export function TenantAdminProtectedRoute({ children }: TenantAdminProtectedRout
             </Button>
             <Button
               variant="outline"
-              onClick={() => navigate(`/${tenantSlug}/admin/login`)}
+              onClick={() => navigate('/saas/login')}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Return to Login
