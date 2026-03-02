@@ -88,7 +88,6 @@ export function CartDrawer({
               Your Cart
             </h2>
             {itemCount > 0 && (
-              <span className="px-2 py-0.5 bg-white/10 rounded-full text-white/60 text-sm">
               <span className="px-2 py-0.5 bg-muted rounded-full text-muted-foreground text-xs">
                 {itemCount} {itemCount === 1 ? 'item' : 'items'}
               </span>
@@ -96,9 +95,8 @@ export function CartDrawer({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="p-2 rounded-full hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             aria-label="Close cart"
-            className="p-2 rounded-full hover:bg-muted transition-colors"
           >
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -110,7 +108,6 @@ export function CartDrawer({
             <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
               <ShoppingBag className="w-8 h-8 text-muted-foreground/50" />
             </div>
-            <p className="text-white/70 text-center mb-6">Your cart is empty</p>
             <p className="text-muted-foreground text-center mb-6">Your cart is empty</p>
             <Button
               onClick={onClose}
@@ -130,17 +127,6 @@ export function CartDrawer({
                     layout
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-3 sm:p-4 bg-white/[0.02] rounded-xl border border-white/5"
-                  >
-                    {/* Top row: Image + Details + Remove */}
-                    <div className="flex gap-3 sm:gap-4">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-white/5 flex-shrink-0">
-                        <ProductImage
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
                     className="flex gap-4 p-4 bg-muted/30 rounded-xl border border-border"
                   >
                     {/* Image */}
@@ -154,91 +140,53 @@ export function CartDrawer({
 
                     {/* Details */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-foreground text-sm font-medium truncate mb-1">
-                        {item.name}
-                      </h3>
-                      {item.variant && (
-                        <p className="text-white/40 text-sm mb-2">{item.variant}</p>
-                        <p className="text-white/70 text-xs mb-2">{item.variant}</p>
-                        <p className="text-muted-foreground text-xs mb-2">{item.variant}</p>
-                      )}
-                      <p className="text-foreground/80 text-sm font-light">
-                        {formatCurrency(item.price)}
-                      </p>
-                    </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-white text-sm font-medium truncate mb-1">
-                          {item.name}
-                        </h3>
-                        {item.variant && (
-                          <p className="text-white/40 text-xs mb-1">{item.variant}</p>
-                        )}
-                        <p className="text-white/80 text-sm font-light">
-                          {formatCurrency(item.price)}
-                        </p>
+                      <div className="flex justify-between items-start">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-foreground text-sm font-medium truncate mb-1">
+                            {item.name}
+                          </h3>
+                          {item.variant && (
+                            <p className="text-muted-foreground text-xs mb-2">{item.variant}</p>
+                          )}
+                          <p className="text-foreground/80 text-sm font-light">
+                            {formatCurrency(item.price)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => onRemoveItem(item.productId, item.variant)}
+                          className="p-1 rounded hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          aria-label={`Remove ${item.name} from cart`}
+                        >
+                          <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
+                        </button>
                       </div>
 
-                      <button
-                        onClick={() => onRemoveItem(item.productId, item.variant)}
-                        className="p-1 rounded hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        aria-label={`Remove ${item.name} from cart`}
-                        className="p-2 -mr-1 -mt-1 rounded-full hover:bg-white/10 transition-colors self-start"
-                        aria-label="Remove item"
-                      >
-                        <Trash2 className="w-4 h-4 text-white/70 hover:text-red-400 transition-colors" />
-                        className="p-1 rounded hover:bg-muted transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive transition-colors" />
-                      </button>
-                    </div>
-
-                      <div className="flex items-center gap-1 bg-white/5 rounded-full p-0.5">
-                        <button
-                          onClick={() => onUpdateQuantity(item.productId, item.quantity - 1, item.variant)}
-                          disabled={item.quantity <= 1}
-                          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                          className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          aria-label={`Decrease ${item.name} quantity`}
-                    {/* Bottom row: Quantity controls + line total */}
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center gap-1 bg-white/5 rounded-full p-1">
-                        <button
-                          onClick={() => onUpdateQuantity(item.productId, item.quantity - 1, item.variant)}
-                          disabled={item.quantity <= 1}
-                          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                          aria-label="Decrease quantity"
-                        >
-                          <Minus className="w-3.5 h-3.5 text-white" />
-                        </button>
-                        <span className="text-white text-sm w-8 text-center font-medium">
-                      <div className="flex items-center gap-2 bg-muted rounded-full p-1">
-                        <button
-                          onClick={() => onUpdateQuantity(item.productId, item.quantity - 1, item.variant)}
-                          disabled={item.quantity <= 1}
-                          className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-muted/80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        >
-                          <Minus className="w-3 h-3 text-foreground" />
-                        </button>
-                        <span className="text-foreground text-sm w-6 text-center">
-                          {item.quantity}
+                      {/* Quantity controls + line total */}
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center gap-2 bg-muted rounded-full p-1">
+                          <button
+                            onClick={() => onUpdateQuantity(item.productId, item.quantity - 1, item.variant)}
+                            disabled={item.quantity <= 1}
+                            className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-muted/80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            aria-label={`Decrease ${item.name} quantity`}
+                          >
+                            <Minus className="w-3 h-3 text-foreground" />
+                          </button>
+                          <span className="text-foreground text-sm w-6 text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => onUpdateQuantity(item.productId, item.quantity + 1, item.variant)}
+                            className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-muted/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            aria-label={`Increase ${item.name} quantity`}
+                          >
+                            <Plus className="w-3 h-3 text-foreground" />
+                          </button>
+                        </div>
+                        <span className="text-foreground text-sm font-medium">
+                          {formatCurrency(item.price * item.quantity)}
                         </span>
-                        <button
-                          onClick={() => onUpdateQuantity(item.productId, item.quantity + 1, item.variant)}
-                          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
-                          className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          aria-label={`Increase ${item.name} quantity`}
-                          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
-                          aria-label="Increase quantity"
-                        >
-                          <Plus className="w-3.5 h-3.5 text-white" />
-                          className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-muted/80 transition-colors"
-                        >
-                          <Plus className="w-3 h-3 text-foreground" />
-                        </button>
                       </div>
-                      <span className="text-white text-sm font-medium">
-                        {formatCurrency(item.price * item.quantity)}
-                      </span>
                     </div>
                   </motion.div>
                 ))}
@@ -249,9 +197,6 @@ export function CartDrawer({
             <div className="p-4 sm:p-6 border-t border-border space-y-3">
               {/* Minimum Order Notice */}
               {belowMinimum && (
-                <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                  <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-amber-300 text-sm">
                 <div className="flex items-start gap-2 p-3 bg-warning/10 border border-warning/20 rounded-lg">
                   <AlertCircle className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
                   <p className="text-warning text-xs">
@@ -264,7 +209,6 @@ export function CartDrawer({
               {/* Free delivery progress */}
               {freeDeliveryThreshold != null && !qualifiesForFreeDelivery && subtotal > 0 && (
                 <div className="text-center">
-                  <p className="text-emerald-400/80 text-sm">
                   <p className="text-success text-xs">
                     Add {formatCurrency(freeDeliveryThreshold - subtotal)} more for free delivery
                   </p>
@@ -299,7 +243,6 @@ export function CartDrawer({
                 ) : effectiveDeliveryFee > 0 ? (
                   <span className="text-foreground text-sm">{formatCurrency(effectiveDeliveryFee)}</span>
                 ) : (
-                  <span className="text-white/70 text-sm">Free</span>
                   <span className="text-muted-foreground text-sm">Free</span>
                 )}
               </div>
@@ -312,8 +255,6 @@ export function CartDrawer({
                 </span>
               </div>
 
-              <p className="text-white/40 text-sm text-center">
-              <p className="text-white/70 text-xs text-center">
               <p className="text-muted-foreground text-xs text-center">
                 Taxes calculated at checkout
               </p>
@@ -334,7 +275,6 @@ export function CartDrawer({
               {/* Continue Shopping */}
               <button
                 onClick={onClose}
-                className="w-full text-center text-white/70 text-sm hover:text-white/60 transition-colors"
                 className="w-full text-center text-muted-foreground text-sm hover:text-foreground transition-colors"
               >
                 Continue Shopping
