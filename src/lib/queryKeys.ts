@@ -2379,6 +2379,8 @@ export const queryKeys = {
       ['store-active-deals', storeId] as const,
     storeProducts: (tenantId?: string) =>
       ['store-products', tenantId] as const,
+    pageData: (slug?: string, pageType?: string, productId?: string) =>
+      ['storefront-page-data', slug, pageType, productId] as const,
   },
 
   // Shop Pages

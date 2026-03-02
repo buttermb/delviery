@@ -430,6 +430,31 @@ Created src/components/admin/delivery/DeliveryScheduler.tsx
 - Out-of-stock buttons changed from bg-neutral-100 text-neutral-300 to opacity-based approach
 - TypeScript compilation passes with zero errors
 
+## Create RPC function for single-query storefront data load
+- Created `get_storefront_page_data(p_slug, p_page_type, p_product_id)` RPC function
+  - Migration: `supabase/migrations/20260301000001_create_storefront_page_data_rpc.sql`
+  - Returns JSONB with store config + page-specific data in a single round trip
+  - Replaces 2-3 waterfall queries (store → products → categories) with 1 query
+  - Supports 3 page types: 'landing' (store + 8 featured products + category counts),
+    'menu' (store + all visible products), 'product_detail' (store + product + 8 related)
+  - SECURITY DEFINER with SET search_path = public
+  - All queries filter by tenant_id from store lookup
+  - Server-side category aggregation (was client-side before)
+  - GRANT EXECUTE to anon + authenticated
+- Created `src/hooks/useStorefrontPageData.ts` hook
+  - Generic hook with conditional types per page type
+  - Exports shared types: StorefrontStoreData, StorefrontProduct, StorefrontMenuProduct,
+    StorefrontProductDetail, StorefrontCategory, StorefrontRelatedProduct
+  - Uses queryKeys.storePages.pageData() for cache key
+- Updated all 3 store pages to use the new hook:
+  - StoreLandingPage.tsx: replaced 3 queries (store + products + categories) with 1
+  - StoreMenuPage.tsx: replaced 2 queries (store + products) with 1
+  - StoreProductPage.tsx: replaced 3 queries (store + product + related) with 1
+  - Removed unused imports (useQuery, supabase client, logger, queryKeys)
+  - Removed dead ProductGridSkeleton component from StoreMenuPage
+- Added `pageData` key to `queryKeys.storePages` factory
+- TypeScript compilation passes with zero errors
+
 ## Theme consistency: Replace hardcoded colors with semantic theme tokens
 - Added `warning`, `success`, `info` color mappings to `tailwind.config.ts` (CSS vars existed in index.css but weren't exposed as Tailwind utilities)
 - Replaced hardcoded Tailwind color classes across 18 storefront files with semantic theme tokens:

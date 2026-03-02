@@ -6,7 +6,6 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import {
   Search,
   Grid3X3,
@@ -20,7 +19,6 @@ import {
   Plus,
   ArrowUpDown,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -32,49 +30,11 @@ import ProductImage from '@/components/ProductImage';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
-import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryKeys';
 import StoreNotFound from '@/components/shop/StoreNotFound';
-
-// ── Types ───────────────────────────────────────────────────────────────────
-
-interface StoreData {
-  id: string;
-  tenant_id: string;
-  store_name: string;
-  slug: string;
-  tagline: string | null;
-  logo_url: string | null;
-  primary_color: string;
-  secondary_color: string;
-  accent_color: string;
-  is_active: boolean;
-  is_public: boolean;
-  theme_config?: {
-    theme?: string;
-    colors?: {
-      primary?: string;
-      secondary?: string;
-      accent?: string;
-      background?: string;
-    };
-  } | null;
-}
-
-interface MenuProduct {
-  product_id: string;
-  product_name: string;
-  category: string;
-  strain_type: string;
-  price: number;
-  sale_price: number | null;
-  image_url: string | null;
-  thc_content: number | null;
-  cbd_content: number | null;
-  description: string | null;
-  display_order: number;
-  created_at: string;
-}
+import {
+  useStorefrontPageData,
+  type StorefrontMenuProduct,
+} from '@/hooks/useStorefrontPageData';
 
 type SortOption = 'name' | 'name-desc' | 'price' | 'price-desc' | 'popularity' | 'newest';
 type ViewMode = 'grid' | 'list';
@@ -115,61 +75,12 @@ export default function StoreMenuPage() {
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 
-  // ── Fetch Store ──────────────────────────────────────────────────────────
+  // ── Single-query data load ───────────────────────────────────────────────
 
-  const {
-    data: store,
-    isLoading: storeLoading,
-    error: storeError,
-  } = useQuery({
-    queryKey: queryKeys.storePages.menu(slug),
-    queryFn: async (): Promise<StoreData | null> => {
-      if (!slug) return null;
+  const { data: pageData, isLoading: pageLoading, error: pageError } = useStorefrontPageData(slug, 'menu');
 
-      const { data, error } = await supabase.rpc(
-        'get_marketplace_store_by_slug',
-        { p_slug: slug }
-      );
-
-      if (error) {
-        logger.error('Failed to fetch store', error, { component: 'StoreMenuPage' });
-        throw error;
-      }
-
-      if (!data || !Array.isArray(data) || data.length === 0) return null;
-      return data[0] as unknown as StoreData;
-    },
-    enabled: !!slug,
-    retry: false,
-    staleTime: 60_000,
-  });
-
-  // ── Fetch All Products ──────────────────────────────────────────────────
-
-  const { data: allProducts = [], isLoading: productsLoading } = useQuery({
-    queryKey: queryKeys.storePages.menuProducts(store?.tenant_id),
-    queryFn: async (): Promise<MenuProduct[]> => {
-      if (!store?.tenant_id) return [];
-
-      const { data, error } = await supabase
-        .from('products')
-        .select(
-          'product_id, product_name, category, strain_type, price, sale_price, image_url, thc_content, cbd_content, description, display_order, created_at'
-        )
-        .eq('tenant_id', store.tenant_id)
-        .eq('is_visible', true)
-        .order('display_order', { ascending: true });
-
-      if (error) {
-        logger.error('Failed to fetch products', error, { component: 'StoreMenuPage' });
-        return [];
-      }
-
-      return (data ?? []) as unknown as MenuProduct[];
-    },
-    enabled: !!store?.tenant_id,
-    staleTime: 60_000,
-  });
+  const store = pageData?.store ?? null;
+  const allProducts: StorefrontMenuProduct[] = pageData?.products ?? [];
 
   // ── Derived Data ─────────────────────────────────────────────────────────
 
@@ -330,13 +241,13 @@ export default function StoreMenuPage() {
 
   // ── Loading ──────────────────────────────────────────────────────────────
 
-  if (storeLoading) {
+  if (pageLoading) {
     return <MenuPageSkeleton />;
   }
 
   // ── Error / Not Found ────────────────────────────────────────────────────
 
-  if (storeError || !store || !store.is_active) {
+  if (pageError || !store || !store.is_active) {
     return <StoreNotFound />;
   }
 
@@ -616,9 +527,7 @@ export default function StoreMenuPage() {
             )}
 
             {/* Product Grid / List */}
-            {productsLoading ? (
-              <ProductGridSkeleton viewMode={viewMode} />
-            ) : paginatedProducts.length > 0 ? (
+            {paginatedProducts.length > 0 ? (
               <div
                 className={cn(
                   viewMode === 'grid'
@@ -773,7 +682,7 @@ function MenuProductCard({
   storeSlug,
   accentColor,
 }: {
-  product: MenuProduct;
+  product: StorefrontMenuProduct;
   storeSlug: string;
   accentColor: string;
 }) {
@@ -884,7 +793,7 @@ function MenuProductListItem({
   storeSlug,
   accentColor,
 }: {
-  product: MenuProduct;
+  product: StorefrontMenuProduct;
   storeSlug: string;
   accentColor: string;
 }) {
@@ -1270,23 +1179,3 @@ function MenuPageSkeleton() {
   );
 }
 
-/** Product grid skeleton */
-function ProductGridSkeleton({ viewMode }: { viewMode: ViewMode }) {
-  if (viewMode === 'list') {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 sm:h-32 rounded-xl" />
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-      {Array.from({ length: 12 }).map((_, i) => (
-        <Skeleton key={i} className="aspect-[3/4] rounded-2xl" />
-      ))}
-    </div>
-  );
-}

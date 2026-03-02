@@ -7,7 +7,6 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import {
   Leaf,
   ChevronLeft,
@@ -20,7 +19,6 @@ import {
   Beaker,
   Info,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -44,70 +42,13 @@ import {
 import ProductImage from '@/components/ProductImage';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { cn } from '@/lib/utils';
-import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryKeys';
 import StoreNotFound from '@/components/shop/StoreNotFound';
 import ProductNotFound from '@/components/shop/ProductNotFound';
-
-// ── Types ───────────────────────────────────────────────────────────────────
-
-interface StoreData {
-  id: string;
-  tenant_id: string;
-  store_name: string;
-  slug: string;
-  logo_url: string | null;
-  primary_color: string;
-  accent_color: string;
-  is_active: boolean;
-  theme_config?: {
-    colors?: {
-      primary?: string;
-      accent?: string;
-    };
-  } | null;
-}
-
-interface ProductDetail {
-  product_id: string;
-  product_name: string;
-  category: string;
-  strain_type: string | null;
-  price: number;
-  sale_price: number | null;
-  image_url: string | null;
-  images: string[] | null;
-  thc_content: number | null;
-  cbd_content: number | null;
-  thca_percentage: number | null;
-  description: string | null;
-  effects: string[] | null;
-  terpenes: unknown;
-  consumption_methods: string[] | null;
-  medical_benefits: string[] | null;
-  strain_name: string | null;
-  strain_lineage: string | null;
-  usage_tips: string | null;
-  lab_results_url: string | null;
-  lab_name: string | null;
-  test_date: string | null;
-  coa_url: string | null;
-  coa_pdf_url: string | null;
-  in_stock: boolean | null;
-  display_order: number;
-}
-
-interface RelatedProduct {
-  product_id: string;
-  product_name: string;
-  category: string;
-  strain_type: string | null;
-  price: number;
-  sale_price: number | null;
-  image_url: string | null;
-  thc_content: number | null;
-  cbd_content: number | null;
-}
+import {
+  useStorefrontPageData,
+  type StorefrontStoreData,
+  type StorefrontRelatedProduct,
+} from '@/hooks/useStorefrontPageData';
 
 // ── Main Component ──────────────────────────────────────────────────────────
 
@@ -117,96 +58,13 @@ export default function StoreProductPage() {
   const [quantity, setQuantity] = useState(1);
   const imageScrollRef = useRef<HTMLDivElement>(null);
 
-  // ── Fetch Store ──────────────────────────────────────────────────────────
+  // ── Single-query data load ───────────────────────────────────────────────
 
-  const {
-    data: store,
-    isLoading: storeLoading,
-    error: storeError,
-  } = useQuery({
-    queryKey: queryKeys.storePages.product(slug),
-    queryFn: async (): Promise<StoreData | null> => {
-      if (!slug) return null;
+  const { data: pageData, isLoading, error: pageError } = useStorefrontPageData(slug, 'product_detail', id);
 
-      const { data, error } = await supabase.rpc(
-        'get_marketplace_store_by_slug',
-        { p_slug: slug }
-      );
-
-      if (error) {
-        logger.error('Failed to fetch store', error, { component: 'StoreProductPage' });
-        throw error;
-      }
-
-      if (!data || !Array.isArray(data) || data.length === 0) return null;
-      return data[0] as unknown as StoreData;
-    },
-    enabled: !!slug,
-    retry: false,
-    staleTime: 60_000,
-  });
-
-  // ── Fetch Product Detail ─────────────────────────────────────────────────
-
-  const {
-    data: product,
-    isLoading: productLoading,
-    error: productError,
-  } = useQuery({
-    queryKey: queryKeys.storePages.productDetail(store?.tenant_id, id),
-    queryFn: async (): Promise<ProductDetail | null> => {
-      if (!store?.tenant_id || !id) return null;
-
-      const { data, error } = await supabase
-        .from('products')
-        .select(
-          'product_id, product_name, category, strain_type, price, sale_price, image_url, images, thc_content, cbd_content, thca_percentage, description, effects, terpenes, consumption_methods, medical_benefits, strain_name, strain_lineage, usage_tips, lab_results_url, lab_name, test_date, coa_url, coa_pdf_url, in_stock, display_order'
-        )
-        .eq('tenant_id', store.tenant_id)
-        .eq('product_id', id)
-        .eq('is_visible', true)
-        .maybeSingle();
-
-      if (error) {
-        logger.error('Failed to fetch product detail', error, { component: 'StoreProductPage' });
-        throw error;
-      }
-
-      return data as unknown as ProductDetail | null;
-    },
-    enabled: !!store?.tenant_id && !!id,
-    staleTime: 60_000,
-  });
-
-  // ── Fetch Related Products (same category, excluding current) ────────────
-
-  const { data: relatedProducts = [] } = useQuery({
-    queryKey: queryKeys.storePages.relatedProducts(store?.tenant_id, product?.category, id),
-    queryFn: async (): Promise<RelatedProduct[]> => {
-      if (!store?.tenant_id || !product?.category) return [];
-
-      const { data, error } = await supabase
-        .from('products')
-        .select(
-          'product_id, product_name, category, strain_type, price, sale_price, image_url, thc_content, cbd_content'
-        )
-        .eq('tenant_id', store.tenant_id)
-        .eq('is_visible', true)
-        .eq('category', product.category)
-        .neq('product_id', id ?? '')
-        .order('display_order', { ascending: true })
-        .limit(8);
-
-      if (error) {
-        logger.error('Failed to fetch related products', error, { component: 'StoreProductPage' });
-        return [];
-      }
-
-      return (data ?? []) as unknown as RelatedProduct[];
-    },
-    enabled: !!store?.tenant_id && !!product?.category,
-    staleTime: 60_000,
-  });
+  const store = pageData?.store ?? null;
+  const product = pageData?.product ?? null;
+  const relatedProducts: StorefrontRelatedProduct[] = pageData?.related_products ?? [];
 
   // ── Image gallery ─────────────────────────────────────────────────────────
 
@@ -299,17 +157,17 @@ export default function StoreProductPage() {
 
   // ── Loading ───────────────────────────────────────────────────────────────
 
-  if (storeLoading || productLoading) {
+  if (isLoading) {
     return <ProductPageSkeleton />;
   }
 
   // ── Error / Not Found ─────────────────────────────────────────────────────
 
-  if (storeError || !store || !store.is_active) {
+  if (pageError || !store || !store.is_active) {
     return <StoreNotFound />;
   }
 
-  if (productError || !product) {
+  if (!product) {
     return (
       <div className="min-h-dvh bg-neutral-50">
         <StoreHeader store={store} primaryColor={primaryColor} />
@@ -865,7 +723,7 @@ function StoreHeader({
   store,
   primaryColor,
 }: {
-  store: StoreData;
+  store: StorefrontStoreData;
   primaryColor: string;
 }) {
   return (
@@ -947,7 +805,7 @@ function RelatedProductCard({
   storeSlug,
   accentColor,
 }: {
-  product: RelatedProduct;
+  product: StorefrontRelatedProduct;
   storeSlug: string;
   accentColor: string;
 }) {

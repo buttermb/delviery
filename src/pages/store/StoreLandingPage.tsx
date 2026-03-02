@@ -7,62 +7,23 @@
 
 import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { Leaf, ArrowRight, MapPin, Clock, ChevronRight } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { Badge } from '@/components/ui/badge';
 import ProductImage from '@/components/ProductImage';
-import { logger } from '@/lib/logger';
-import { queryKeys } from '@/lib/queryKeys';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import StoreNotFound from '@/components/shop/StoreNotFound';
+import {
+  useStorefrontPageData,
+  type StorefrontStoreData,
+  type StorefrontProduct,
+  type StorefrontCategory,
+} from '@/hooks/useStorefrontPageData';
 
-interface StoreData {
-  id: string;
-  tenant_id: string;
-  store_name: string;
-  slug: string;
-  tagline: string | null;
-  logo_url: string | null;
-  primary_color: string;
-  secondary_color: string;
-  accent_color: string;
-  is_active: boolean;
-  is_public: boolean;
-  operating_hours: Record<string, { open: string; close: string; closed: boolean }>;
-  theme_config?: {
-    theme?: string;
-    colors?: {
-      primary?: string;
-      secondary?: string;
-      accent?: string;
-      background?: string;
-    };
-  } | null;
-}
-
-interface FeaturedProduct {
-  product_id: string;
-  product_name: string;
-  category: string;
-  strain_type: string;
-  price: number;
-  sale_price?: number | null;
-  image_url: string | null;
-  thc_content: number | null;
-  cbd_content: number | null;
-}
-
-interface CategoryInfo {
-  category: string;
-  count: number;
-}
-
-function isStoreOpen(hours: StoreData['operating_hours'] | undefined): boolean {
+function isStoreOpen(hours: StorefrontStoreData['operating_hours'] | undefined): boolean {
   if (!hours) return true;
   const now = new Date();
   const dayName = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
@@ -75,95 +36,12 @@ function isStoreOpen(hours: StoreData['operating_hours'] | undefined): boolean {
 export default function StoreLandingPage() {
   const { slug } = useParams<{ slug: string }>();
 
-  // Fetch store by slug (public, no auth)
-  const {
-    data: store,
-    isLoading: storeLoading,
-    error: storeError,
-  } = useQuery({
-    queryKey: queryKeys.storePages.landing(slug),
-    queryFn: async (): Promise<StoreData | null> => {
-      if (!slug) return null;
+  // Single query: store + featured products + categories
+  const { data: pageData, isLoading, error } = useStorefrontPageData(slug, 'landing');
 
-      const { data, error } = await supabase.rpc(
-        'get_marketplace_store_by_slug',
-        { p_slug: slug }
-      );
-
-      if (error) {
-        logger.error('Failed to fetch store', error, { component: 'StoreLandingPage' });
-        throw error;
-      }
-
-      if (!data || !Array.isArray(data) || data.length === 0) {
-        return null;
-      }
-
-      return data[0] as unknown as StoreData;
-    },
-    enabled: !!slug,
-    retry: false,
-    staleTime: 60_000,
-  });
-
-  // Fetch featured products (top 8 visible products, ordered by display_order as sales proxy)
-  const { data: featuredProducts, isLoading: productsLoading } = useQuery({
-    queryKey: queryKeys.storePages.landingProducts(store?.tenant_id),
-    queryFn: async (): Promise<FeaturedProduct[]> => {
-      if (!store?.tenant_id) return [];
-
-      const { data, error } = await supabase
-        .from('products')
-        .select('product_id, product_name, category, strain_type, price, sale_price, image_url, thc_content, cbd_content')
-        .eq('tenant_id', store.tenant_id)
-        .eq('is_visible', true)
-        .order('display_order', { ascending: true })
-        .limit(8);
-
-      if (error) {
-        logger.error('Failed to fetch featured products', error, { component: 'StoreLandingPage' });
-        return [];
-      }
-
-      return (data ?? []) as unknown as FeaturedProduct[];
-    },
-    enabled: !!store?.tenant_id,
-    staleTime: 60_000,
-  });
-
-  // Fetch categories with product counts
-  const { data: categories, isLoading: categoriesLoading } = useQuery({
-    queryKey: queryKeys.storePages.landingCategories(store?.tenant_id),
-    queryFn: async (): Promise<CategoryInfo[]> => {
-      if (!store?.tenant_id) return [];
-
-      const { data, error } = await supabase
-        .from('products')
-        .select('category')
-        .eq('tenant_id', store.tenant_id)
-        .eq('is_visible', true);
-
-      if (error) {
-        logger.error('Failed to fetch categories', error, { component: 'StoreLandingPage' });
-        return [];
-      }
-
-      // Aggregate categories client-side
-      const counts: Record<string, number> = {};
-      for (const row of data ?? []) {
-        const cat = (row as { category: string }).category;
-        if (cat) {
-          counts[cat] = (counts[cat] ?? 0) + 1;
-        }
-      }
-
-      return Object.entries(counts)
-        .map(([category, count]) => ({ category, count }))
-        .sort((a, b) => b.count - a.count);
-    },
-    enabled: !!store?.tenant_id,
-    staleTime: 60_000,
-  });
+  const store = pageData?.store ?? null;
+  const featuredProducts = pageData?.products ?? [];
+  const categories = pageData?.categories ?? [];
 
   // SEO: Update page title
   useEffect(() => {
@@ -181,12 +59,12 @@ export default function StoreLandingPage() {
   const accentColor = store?.theme_config?.colors?.accent || store?.accent_color || '#10b981';
 
   // Loading state
-  if (storeLoading) {
+  if (isLoading) {
     return <StoreLandingSkeleton />;
   }
 
   // Store not found
-  if (storeError || !store) {
+  if (error || !store) {
     return <StoreNotFound />;
   }
 
@@ -299,7 +177,7 @@ export default function StoreLandingPage() {
       </section>
 
       {/* Category Cards */}
-      {!categoriesLoading && categories && categories.length > 0 && (
+      {categories.length > 0 && (
         <section className="container mx-auto px-4 py-12 sm:py-16">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -377,13 +255,7 @@ export default function StoreLandingPage() {
           </Link>
         </div>
 
-        {productsLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-[3/4] rounded-2xl" />
-            ))}
-          </div>
-        ) : featuredProducts && featuredProducts.length > 0 ? (
+        {featuredProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {featuredProducts.map((product) => (
               <FeaturedProductCard
@@ -402,7 +274,7 @@ export default function StoreLandingPage() {
         )}
 
         {/* Mobile "Shop All" link */}
-        {featuredProducts && featuredProducts.length > 0 && (
+        {featuredProducts.length > 0 && (
           <div className="sm:hidden mt-6 text-center">
             <Link to={`/shop/${store.slug}/products`}>
               <Button
@@ -477,7 +349,7 @@ function FeaturedProductCard({
   storeSlug,
   accentColor,
 }: {
-  product: FeaturedProduct;
+  product: StorefrontProduct;
   storeSlug: string;
   accentColor: string;
 }) {
