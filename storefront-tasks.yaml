@@ -647,345 +647,345 @@ tasks:
     description: "Share Store dialog: URL + copy button, QR code (qrcode library),
       social share (WhatsApp, SMS, email), download QR as PNG."
   - title: Prevent double order submission with button disable and loading
-    completed: false
+    completed: true
     parallel_group: 12
     description: Disable Place Order on click. Loading spinner. Second click no-op.
       Don't re-enable until response.
   - title: Handle checkout network errors with retry and cart preservation
-    completed: false
+    completed: true
     parallel_group: 12
     description: "API failure: clear error message, re-enable button, don't
       navigate, don't clear cart. User can retry."
   - title: Handle out-of-stock during checkout with per-item error
-    completed: false
+    completed: true
     parallel_group: 12
     description: "Server validates stock. If out: return specific products. Show
       per-item warning. Let user continue with remaining."
   - title: Styled 404 pages for nonexistent store and product
-    completed: false
+    completed: true
     parallel_group: 12
     description: /shop/fake → Store Not Found with illustration. /products/fake →
       Product Not Found with Browse Products button.
   - title: Cart validates items on checkout page load for stock and price changes
-    completed: false
+    completed: true
     parallel_group: 12
     description: "CheckoutPage mount: verify items exist, in stock, prices current.
       Update prices if changed. Remove deleted items."
   - title: Delivery zone ZIP validation at checkout
-    completed: false
+    completed: true
     parallel_group: 12
     description: "Customer ZIP → check against delivery_zones. Match: show fee +
       time. No match: Sorry, we don't deliver here."
   - title: Phone number validation and normalization on checkout
-    completed: false
+    completed: true
     parallel_group: 12
     description: Accept common formats. Normalize to standard. Validate 10 digits
       US. Formatted display.
   - title: Consistent price formatting as dollar amount throughout app
-    completed: false
+    completed: true
     parallel_group: 12
     description: "formatPrice utility: $XX.XX format everywhere. Cart, checkout,
       confirmation, admin orders, analytics. No float weirdness."
   - title: Image lazy loading with skeleton placeholders and error fallbacks
-    completed: false
+    completed: true
     parallel_group: 12
     description: "All product images: loading=lazy. Skeleton during load. onError
       shows styled placeholder, not broken icon."
   - title: Search input sanitization preventing XSS and SQL injection
-    completed: false
+    completed: true
     parallel_group: 12
     description: "Product search: sanitize input. Supabase parameterized queries.
       Sanitize before displaying in No results for."
   - title: Cart persistence across page nav browser restart and scoped to store
-    completed: false
+    completed: true
     parallel_group: 12
     description: "Cart survives: refresh, navigation, tab close/reopen. localStorage
       with STORAGE_KEYS. Different stores have separate carts."
   - title: Cart clears after successful order but not on failure
-    completed: false
+    completed: true
     parallel_group: 12
     description: "Success: clearCart(), badge goes to 0. Failure: cart preserved for retry."
   - title: All forms use React Hook Form and Zod with inline error display
-    completed: false
+    completed: true
     parallel_group: 12
     description: "Every form: React Hook Form + Zod. Red inline errors below fields.
       Red border. Asterisk on required. Clear on fix."
   - title: Every page has loading skeleton empty state and error state
-    completed: false
+    completed: true
     parallel_group: 12
     description: "Audit all pages: skeletons for loading, illustrated empty states
       with actions, error cards with retry buttons."
   - title: RLS policies on marketplace_stores orders customers products
-    completed: false
+    completed: true
     parallel_group: 13
     description: "marketplace_stores: public read published, admin CRUD own. orders:
       service role insert, admin see own. customers: admin own. products: public
       read active."
   - title: Server-side price validation in storefront-checkout edge function
-    completed: false
+    completed: true
     parallel_group: 13
     description: "Don't trust client prices. Fetch from DB. Calculate totals
       server-side. If client differs: use server."
   - title: Rate limiting checkout endpoint and input sanitization
-    completed: false
+    completed: true
     parallel_group: 13
     description: Max 5 orders per IP per hour. Max 3 per phone per hour. 429 if
       limited. All inputs trimmed, sanitized for XSS, Zod validated.
   - title: No sensitive keys in client bundle and proper CORS on edge functions
-    completed: false
+    completed: true
     parallel_group: 13
     description: No sk_test_, sk_live_, bot_token in src/. Only VITE_* in client.
       Edge functions return proper CORS headers.
   - title: Cross-tenant data isolation test
-    completed: false
+    completed: true
     parallel_group: 13
     description: /shop/store-a shows only store-a products. Orders from store-a only
       in tenant-a admin. Full isolation.
   - title: CustomHTML section sanitizes with DOMPurify preventing XSS
-    completed: false
+    completed: true
     parallel_group: 13
     description: Test script injection. DOMPurify strips scripts, onerror handlers.
       Sanitized before dangerouslySetInnerHTML.
   - title: Storefront homepage mobile layout at 375px with no horizontal scroll
-    completed: false
+    completed: true
     parallel_group: 14
     description: Hero text scales, CTA full-width. Product grid 2 col. Features
       stack. No horizontal overflow on any section.
   - title: Product catalog mobile layout with filter drawer
-    completed: false
+    completed: true
     parallel_group: 14
     description: "375px: filters hidden, Filters button → drawer. Grid 2 col. Search
       full-width. Cards readable."
   - title: Product detail mobile layout with swipe gallery and fixed Add to Cart
-    completed: false
+    completed: true
     parallel_group: 14
     description: "375px: image carousel swipeable. Info stacks below. Add to Cart as
       fixed bottom bar. All readable."
   - title: Cart and checkout mobile layout with stacked items and full-width buttons
-    completed: false
+    completed: true
     parallel_group: 14
     description: "Cart: items vertical, 44px touch targets. Checkout: compact steps,
       stacked form, full-width Place Order."
   - title: All touch targets minimum 44px and font sizes minimum 14px body
-    completed: false
+    completed: true
     parallel_group: 14
     description: Audit buttons, links, quantity controls, checkboxes, remove
       buttons. Min 44x44px. Min 14px body, 12px labels.
   - title: Admin live orders mobile layout with card list instead of table
-    completed: false
+    completed: true
     parallel_group: 14
     description: "Mobile: orders as cards (order #, customer, total, status, time).
       Tap → full-screen detail."
   - title: Consistent Sonner toast usage for all success error and info messages
-    completed: false
+    completed: true
     parallel_group: 15
     description: All toasts via Sonner. Success green, Error red, Info blue, Warning
       yellow. Bottom-right desktop, top-center mobile.
   - title: Button loading states with spinners on all async actions
-    completed: false
+    completed: true
     parallel_group: 15
     description: Save Draft → Saving..., Publish → Publishing..., Place Order →
       Processing..., Add to Cart → Added ✓. Loader2 spinner.
   - title: Theme consistency with no hardcoded colors breaking themes
-    completed: false
+    completed: true
     parallel_group: 15
     description: "For each theme: verify all pages use CSS variables for bg, text,
       primary, card, border, link colors. No rogue hex values."
   - title: Dark theme all elements readable and Luxury theme gold accents applied
-    completed: false
+    completed: true
     parallel_group: 15
     description: "Dark: all text readable, inputs visible. Luxury: gold
       buttons/links/badges, serif headings, dark bg."
   - title: Product cards uniform height with consistent image aspect ratio
-    completed: false
+    completed: true
     parallel_group: 15
     description: Grid cards same height per row. Image fixed aspect ratio. Name max
       2 lines clamp. Price and button aligned bottom.
   - title: Confirmation page prominent tenant link with store branding
-    completed: false
+    completed: true
     parallel_group: 15
     description: Large branded button for Telegram/WhatsApp link. Store name + logo.
       Themed colors. Not a text link.
   - title: Admin dashboard storefront widget with today stats and links
-    completed: false
+    completed: true
     parallel_group: 15
     description: "Dashboard card: store status, today orders, today revenue. Links
       to Manage Store and Live Orders."
   - title: Getting started checklist for new tenants
-    completed: false
+    completed: true
     parallel_group: 15
     description: "For new tenants: checklist (create store, add products, customize,
       configure delivery, set payments, publish, share). Items check off as
       done."
   - title: Settings use plain English labels with helpful descriptions
-    completed: false
+    completed: true
     parallel_group: 15
     description: Sales Tax (%) not Tax Rate. Help text below complex fields. Simple
       language throughout.
   - title: Builder section type descriptions in Add Section dropdown
-    completed: false
+    completed: true
     parallel_group: 15
     description: "Each option: brief description. Hero: full-width image banner.
       Product Grid: showcase products. etc."
   - title: Builder preview shows real products not placeholders
-    completed: false
+    completed: true
     parallel_group: 15
     description: "ProductGridSection in preview fetches actual tenant products. No
       products: Add products to see them here."
   - title: Order cancel with reason and stock restoration
-    completed: false
+    completed: true
     parallel_group: 15
     description: Cancel prompts for reason dropdown. Saves reason. Sets cancelled.
       Restores stock quantities. Optional cancellation email.
   - title: storefront-checkout edge function exists and handles all cases
-    completed: false
+    completed: true
     parallel_group: 16
     description: Verify/create. POST with CORS. Validates store, products, stock.
       Server-side price calc. Creates order + items. Returns orderId. Error
       handling for all cases.
   - title: storefront-checkout has client-side fallback if edge function fails
-    completed: false
+    completed: true
     parallel_group: 16
     description: "If edge function 500s: client inserts directly into Supabase. TRY
       edge function first, THEN fallback. Both produce identical results."
   - title: Create deduct_stock RPC function for atomic stock deduction
-    completed: false
+    completed: true
     parallel_group: 16
     description: "PostgreSQL function: UPDATE products SET stock_quantity =
       stock_quantity - qty WHERE id = id AND stock_quantity >= qty. Returns
       boolean. SECURITY DEFINER."
   - title: Create customer upsert RPC function for checkout
-    completed: false
+    completed: true
     parallel_group: 16
     description: "Find by phone+tenant_id. Exists: update. New: insert with all
       fields. Returns customer_id. SECURITY DEFINER."
   - title: Create next_order_number RPC function
-    completed: false
+    completed: true
     parallel_group: 16
     description: SELECT COALESCE(MAX(order_number), 1000) + 1 FROM orders WHERE
       tenant_id. Handle race condition.
   - title: Verify customers table has all columns including preferred_contact and
       source
-    completed: false
+    completed: true
     parallel_group: 16
     description: "Columns: id, tenant_id, name, phone, email,
       preferred_contact_method, source, type, total_orders, total_spent,
       admin_notes. Index on (tenant_id, phone)."
   - title: Add payment method and Telegram config columns to settings
-    completed: false
+    completed: true
     parallel_group: 16
     description: "marketplace_stores or tenant_settings: cash/venmo/zelle/stripe
       enabled + handles. Telegram bot_token, chat_id, auto_forward,
       customer_link."
   - title: Add database indexes for orders products customers performance
-    completed: false
+    completed: true
     parallel_group: 16
     description: "Indexes: orders(tenant_id, created_at DESC), orders(tenant_id,
       status), products(tenant_id, visible_on_storefront), customers(tenant_id,
       phone), marketplace_stores(slug) UNIQUE."
   - title: Keyboard navigation for all interactive elements with visible focus rings
-    completed: false
+    completed: true
     parallel_group: 16
     description: Tab reaches all buttons/links/inputs. Visible focus ring.
       Enter/Space activates. Tab order follows visual order.
   - title: ARIA labels on all icon-only buttons and alt text on all images
-    completed: false
+    completed: true
     parallel_group: 16
     description: "Cart icon, delete, edit, close, search: all have aria-label.
       Product images: alt=product name. Decorative: aria-hidden."
   - title: Color contrast meets WCAG AA and semantic HTML heading hierarchy
-    completed: false
+    completed: true
     parallel_group: 16
     description: Text contrast 4.5:1 on all themes. One h1 per page. h1>h2>h3 no
       skipping. Proper section/nav/main/footer elements.
   - title: E2E test admin creates store adds sections publishes customer shops and
       orders
-    completed: false
+    completed: true
     parallel_group: 17
     description: "Full flow: create store, add Hero+ProductGrid, publish, visit
       /shop/slug, see sections, click product, add to cart, checkout as guest
       with cash, see confirmation, admin sees order + customer."
   - title: E2E test guest checkout with cash creates customer profile in admin
-    completed: false
+    completed: true
     parallel_group: 17
     description: "Browse, add 3 items, adjust qty, checkout: name+phone, delivery,
       cash. Confirmation popup. Profile in admin with name, phone, items."
   - title: E2E test guest checkout with Venmo payment flow
-    completed: false
+    completed: true
     parallel_group: 17
     description: "Same flow: Venmo selected, shows handle, I've sent payment
       checked, order created with payment_method=venmo."
   - title: E2E test guest checkout with Zelle payment flow
-    completed: false
+    completed: true
     parallel_group: 17
     description: "Zelle: shows info, confirmation checkbox, order saved with
       payment_method=zelle."
   - title: E2E test pickup order without delivery fee
-    completed: false
+    completed: true
     parallel_group: 17
     description: Select Pickup. No address form. Store address shown. No delivery
       fee. Order has fulfillment_method=pickup.
   - title: E2E test Telegram auto-forward fires on new order
-    completed: false
+    completed: true
     parallel_group: 17
     description: "Configure Telegram. Place order. Verify edge function called with
       order details. If fails: order still saves."
   - title: E2E test admin processes order through all status transitions
-    completed: false
+    completed: true
     parallel_group: 17
     description: Pending → Confirm → Preparing → Ready → Delivering → Delivered.
       Customer confirmation page updates at each step.
   - title: E2E test admin cancels order and stock restores
-    completed: false
+    completed: true
     parallel_group: 18
     description: Cancel with reason. Status cancelled. Stock quantities restored.
       Customer sees cancelled.
   - title: E2E test multiple stores have complete data isolation
-    completed: false
+    completed: true
     parallel_group: 18
     description: Store A shows only Store A products. Orders from Store A only in
       Tenant A admin. Full isolation.
   - title: E2E test product price change reflects on storefront and checkout
-    completed: false
+    completed: true
     parallel_group: 18
     description: "Admin changes price $10→$15. Customer refreshes: $15. Cart at
       checkout: $15. Server validates $15."
   - title: E2E test out of stock during shopping prevents checkout
-    completed: false
+    completed: true
     parallel_group: 18
     description: "Product stock goes to 0 after cart add. Checkout catches it: item
       unavailable. Customer can remove and continue."
   - title: E2E test theme change reflects on public storefront
-    completed: false
+    completed: true
     parallel_group: 18
     description: "Admin changes Minimalist → Dark. Save/publish. Customer refresh:
       dark bg green accents. All sections correct in new theme."
   - title: E2E test section reorder reflects on storefront
-    completed: false
+    completed: true
     parallel_group: 18
     description: "Admin reorders FAQ above Hero. Save. Customer: FAQ first, then Hero."
   - title: E2E test returning customer recognized by phone
-    completed: false
+    completed: true
     parallel_group: 18
     description: "Same phone at checkout: system finds existing customer. Links new
       order. Admin sees updated totals."
   - title: E2E test cart persists across browser restart
-    completed: false
+    completed: true
     parallel_group: 18
     description: Add items, close tab, reopen. Cart still has items. Complete
       checkout normally.
   - title: E2E test settings round-trip for payment delivery and Telegram config
-    completed: false
+    completed: true
     parallel_group: 18
     description: Set Cash+Venmo on, delivery zone LES ZIPs $3 fee, Telegram
       configured. Save. Refresh. All persists. Checkout shows correct options.
   - title: E2E test order totals match everywhere cart to DB
-    completed: false
+    completed: true
     parallel_group: 18
     description: Cart subtotal = checkout total = confirmation total = admin total =
       DB total. Tax and delivery calculated correctly.
   - title: E2E test all 4 themes render correctly end to end
-    completed: false
+    completed: true
     parallel_group: 18
     description: "For each theme: set, save, visit storefront, navigate all pages.
       Correct colors, no visual bugs, readable text."
