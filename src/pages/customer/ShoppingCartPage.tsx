@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,29 +95,35 @@ export default function ShoppingCartPage() {
   const isLoading = (user && dbLoading) || (!user && guestLoading);
 
   // Calculate item price
-  const getItemPrice = (item: RenderCartItem) => {
+  const getItemPrice = useCallback((item: RenderCartItem) => {
     const product = item?.products;
     if (!product) return 0;
-    
+
     const selectedWeight = item?.selected_weight || "unit";
-    
+
     if (product?.prices && typeof product.prices === 'object') {
       const price = product.prices[selectedWeight];
       return price ? Number(price) : Number(product.price) || 0;
     }
     return Number(product.price) || 0;
-  };
+  }, []);
 
-  // Calculate totals
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + getItemPrice(item) * item.quantity,
-    0
-  );
-
-  const taxRate = 0.085; // 8.5% tax
-  const tax = subtotal * taxRate;
-  const deliveryFee = subtotal >= 1000 ? 0 : 0; // Free delivery
-  const total = subtotal + tax + deliveryFee;
+  // Memoized cart totals
+  const { subtotal, tax, deliveryFee, total } = useMemo(() => {
+    const sub = cartItems.reduce(
+      (sum, item) => sum + getItemPrice(item) * item.quantity,
+      0
+    );
+    const taxRate = 0.085; // 8.5% tax
+    const t = sub * taxRate;
+    const delivery = sub >= 1000 ? 0 : 0; // Free delivery
+    return {
+      subtotal: sub,
+      tax: t,
+      deliveryFee: delivery,
+      total: sub + t + delivery,
+    };
+  }, [cartItems, getItemPrice]);
 
   // Update quantity
   const handleUpdateQuantity = (itemId: string, productId: string, selectedWeight: string, quantity: number) => {

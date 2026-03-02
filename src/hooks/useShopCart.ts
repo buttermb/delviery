@@ -5,7 +5,7 @@
  * Includes inventory validation for real-time stock checking
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { logger } from '@/lib/logger';
 import { safeStorage } from '@/utils/safeStorage';
 import { supabase } from '@/integrations/supabase/client';
@@ -326,15 +326,17 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
         return [];
     }, [saveCart, persistCoupon]);
 
-    // Get cart count
-    const getCartCount = useCallback(() => {
-        return cartItems.reduce((sum, item) => sum + item.quantity, 0);
-    }, [cartItems]);
+    // Memoized cart count
+    const cartCount = useMemo(
+        () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
+        [cartItems]
+    );
 
-    // Get cart subtotal
-    const getSubtotal = useCallback(() => {
-        return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    }, [cartItems]);
+    // Memoized cart subtotal
+    const subtotal = useMemo(
+        () => cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+        [cartItems]
+    );
 
     // Apply Gift Card
     const applyGiftCard = useCallback((card: AppliedGiftCard) => {
@@ -575,8 +577,8 @@ export function useShopCart({ storeId, onCartChange }: UseShopCartOptions) {
 
     return {
         cartItems,
-        cartCount: getCartCount(),
-        subtotal: getSubtotal(),
+        cartCount,
+        subtotal,
         addItem,
         updateQuantity,
         setQuantity,

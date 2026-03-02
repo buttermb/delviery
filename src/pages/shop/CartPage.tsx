@@ -3,7 +3,7 @@
  * Shopping cart with quantity controls and checkout button
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useLuxuryTheme } from '@/components/shop/luxury';
@@ -218,15 +218,22 @@ export default function CartPage() {
     toast.success('Coupon removed');
   };
 
-  // Calculate totals
-  const freeDeliveryThreshold = store?.free_delivery_threshold || 100;
-  const deliveryFee = subtotal >= freeDeliveryThreshold ? 0 : (store?.default_delivery_fee || 5);
-  const couponDiscount = getCouponDiscount(subtotal);
-  const totalDiscount = dealsDiscount + couponDiscount;
-  const total = Math.max(0, subtotal + deliveryFee - totalDiscount);
-
-  const progressToFreeDelivery = Math.min(100, (subtotal / freeDeliveryThreshold) * 100);
-  const amountToFreeDelivery = Math.max(0, freeDeliveryThreshold - subtotal);
+  // Calculate totals (memoized to avoid recalculating on unrelated re-renders)
+  const { freeDeliveryThreshold, deliveryFee, couponDiscount, totalDiscount, total, progressToFreeDelivery, amountToFreeDelivery } = useMemo(() => {
+    const threshold = store?.free_delivery_threshold || 100;
+    const delivery = subtotal >= threshold ? 0 : (store?.default_delivery_fee || 5);
+    const coupon = getCouponDiscount(subtotal);
+    const discount = dealsDiscount + coupon;
+    return {
+      freeDeliveryThreshold: threshold,
+      deliveryFee: delivery,
+      couponDiscount: coupon,
+      totalDiscount: discount,
+      total: Math.max(0, subtotal + delivery - discount),
+      progressToFreeDelivery: Math.min(100, (subtotal / threshold) * 100),
+      amountToFreeDelivery: Math.max(0, threshold - subtotal),
+    };
+  }, [subtotal, store?.free_delivery_threshold, store?.default_delivery_fee, dealsDiscount, getCouponDiscount]);
 
   if (!store) return null;
 

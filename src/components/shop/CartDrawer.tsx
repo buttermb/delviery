@@ -3,6 +3,7 @@
  * Shows cart items, quantities, delivery fee, minimum order notice, and checkout CTA
  */
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, Truck, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -47,13 +48,20 @@ export function CartDrawer({
   const navigate = useNavigate();
   const { storeSlug } = useParams<{ storeSlug: string }>();
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-
-  const qualifiesForFreeDelivery = freeDeliveryThreshold != null && subtotal >= freeDeliveryThreshold;
-  const effectiveDeliveryFee = qualifiesForFreeDelivery ? 0 : deliveryFee;
-  const total = subtotal + effectiveDeliveryFee;
-  const belowMinimum = minimumOrderAmount != null && minimumOrderAmount > 0 && subtotal < minimumOrderAmount;
+  const { subtotal, itemCount, qualifiesForFreeDelivery, effectiveDeliveryFee, total, belowMinimum } = useMemo(() => {
+    const sub = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const count = items.reduce((sum, item) => sum + item.quantity, 0);
+    const qualifies = freeDeliveryThreshold != null && sub >= freeDeliveryThreshold;
+    const effectiveFee = qualifies ? 0 : deliveryFee;
+    return {
+      subtotal: sub,
+      itemCount: count,
+      qualifiesForFreeDelivery: qualifies,
+      effectiveDeliveryFee: effectiveFee,
+      total: sub + effectiveFee,
+      belowMinimum: minimumOrderAmount != null && minimumOrderAmount > 0 && sub < minimumOrderAmount,
+    };
+  }, [items, freeDeliveryThreshold, deliveryFee, minimumOrderAmount]);
 
   const handleCheckout = () => {
     if (belowMinimum) return;

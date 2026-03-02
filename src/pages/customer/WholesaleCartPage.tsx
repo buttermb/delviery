@@ -25,7 +25,7 @@ import {
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { Table as _Table, TableBody as _TableBody, TableCell as _TableCell, TableHead as _TableHead, TableHeader as _TableHeader, TableRow as _TableRow } from '@/components/ui/table';
 import { ModeBanner } from '@/components/customer/ModeSwitcher';
-import { useState as useReactState, useEffect } from 'react';
+import { useState as useReactState, useEffect, useMemo } from 'react';
 import { STORAGE_KEYS, safeStorage } from '@/constants/storageKeys';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -144,15 +144,16 @@ export default function WholesaleCartPage() {
     },
   });
 
-  // Calculate totals
-  const subtotal = cartItems.reduce((sum, item) => {
-    const price = item.unit_price as number ?? 0;
-    const qty = item.quantity as number ?? 0;
-    return sum + (price * qty);
-  }, 0);
-
-  const platformFee = Math.round((subtotal * 0.02) * 100) / 100; // 2% platform fee
-  const total = subtotal + platformFee;
+  // Memoized cart totals
+  const { subtotal, platformFee, total } = useMemo(() => {
+    const sub = cartItems.reduce((sum, item) => {
+      const price = item.unit_price as number ?? 0;
+      const qty = item.quantity as number ?? 0;
+      return sum + (price * qty);
+    }, 0);
+    const fee = Math.round((sub * 0.02) * 100) / 100; // 2% platform fee
+    return { subtotal: sub, platformFee: fee, total: sub + fee };
+  }, [cartItems]);
 
   const handleQuantityChange = (cartId: string, currentQuantity: number, delta: number) => {
     const newQuantity = currentQuantity + delta;
