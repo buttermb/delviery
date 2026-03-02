@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ChevronRight, MoreHorizontal, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,12 @@ const getNextStatus = (current: string): string | null => {
   }
 };
 
-function OrderRow({ order, onStatusChange }: { order: LiveOrder; onStatusChange: LiveOrdersListViewProps['onStatusChange'] }) {
+interface OrderRowProps {
+  order: LiveOrder;
+  onStatusChange: LiveOrdersListViewProps['onStatusChange'];
+}
+
+const OrderRow = memo(function OrderRow({ order, onStatusChange }: OrderRowProps) {
   const [fleetDialogOpen, setFleetDialogOpen] = useState(false);
   const { isEnabled } = useTenantFeatureToggles();
   const deliveryEnabled = isEnabled('delivery_tracking');
@@ -136,7 +141,7 @@ function OrderRow({ order, onStatusChange }: { order: LiveOrder; onStatusChange:
       />
     </>
   );
-}
+});
 
 export function LiveOrdersListView({ orders, onStatusChange, isLoading }: LiveOrdersListViewProps) {
   if (isLoading) {
