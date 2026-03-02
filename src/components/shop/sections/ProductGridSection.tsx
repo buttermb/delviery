@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, Package, Grid3X3, List, ArrowUpDown } from "lucide-react";
+import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind, Package, Grid3X3, List, ArrowUpDown, ChevronDown } from "lucide-react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { Loader2, Leaf, Cookie, Cigarette, Droplets, Wind } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useInventoryBatch } from "@/hooks/useInventoryBatch";
@@ -85,7 +86,10 @@ export function ProductGridSection({ content, styles, storeId, storeSlug: storeS
     tenantId?: string;
 }
 
+const MOBILE_INITIAL_COUNT = 8;
+
 export function ProductGridSection({ content, styles, storeId, tenantId }: ProductGridSectionProps) {
+    const isMobile = useIsMobile();
     const {
         heading = "Shop Premium Flower",
         subheading = "Premium indoor-grown flower from licensed NYC cultivators",
@@ -111,6 +115,7 @@ export function ProductGridSection({ content, styles, storeId, tenantId }: Produ
     } = styles || {};
 
     const [showAllCategories, setShowAllCategories] = useState(false);
+    const [showAllProducts, setShowAllProducts] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [premiumFilter, setPremiumFilter] = useState(false);
     const [userSort, setUserSort] = useState<SortOption>('default');
@@ -350,8 +355,15 @@ export function ProductGridSection({ content, styles, storeId, tenantId }: Produ
     // Apply max products limit
     const limitedProducts = filteredProducts.slice(0, max_products);
 
+    // On mobile, show only 8 items initially
+    const shouldLimitOnMobile = isMobile && !showAllProducts && limitedProducts.length > MOBILE_INITIAL_COUNT;
+    const displayProducts = shouldLimitOnMobile
+        ? limitedProducts.slice(0, MOBILE_INITIAL_COUNT)
+        : limitedProducts;
+    const mobileHiddenCount = limitedProducts.length - MOBILE_INITIAL_COUNT;
+
     // Products without a category get shown in an "Other" group
-    const uncategorizedProducts = limitedProducts.filter(p => !p.category);
+    const uncategorizedProducts = displayProducts.filter(p => !p.category);
 
     const gridColsClass = columns === 2
         ? 'grid-cols-1 md:grid-cols-2'
@@ -496,7 +508,7 @@ export function ProductGridSection({ content, styles, storeId, tenantId }: Produ
                         {categories
                             .slice(0, showAllCategories ? categories.length : (initial_categories_shown || 2))
                             .map((category) => {
-                                const products = limitedProducts.filter(p => p.category === category.key);
+                                const products = displayProducts.filter(p => p.category === category.key);
                                 if (products.length === 0) return null;
 
                                 const Icon = category.icon;
@@ -585,7 +597,7 @@ export function ProductGridSection({ content, styles, storeId, tenantId }: Produ
                         {categories
                             .slice(0, showAllCategories ? categories.length : (initial_categories_shown || 2))
                             .map((category) => {
-                                const products = limitedProducts.filter(p => p.category === category.key);
+                                const products = displayProducts.filter(p => p.category === category.key);
                                 if (products.length === 0) return null;
 
                                 const Icon = category.icon;
@@ -722,6 +734,20 @@ export function ProductGridSection({ content, styles, storeId, tenantId }: Produ
                         {!showAllCategories && categories.length > (initial_categories_shown || 2) && (
                             <div className="flex justify-center pt-8">
                                 <Button size="lg" onClick={() => setShowAllCategories(true)}>Show More Categories</Button>
+                            </div>
+                        )}
+                        {shouldLimitOnMobile && (
+                            <div className="flex justify-center pt-8">
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    onClick={() => setShowAllProducts(true)}
+                                    className="rounded-full px-8 gap-2 font-bold shadow-sm"
+                                    style={{ borderColor: `${accent_color}40`, color: accent_color }}
+                                >
+                                    Show {mobileHiddenCount} More
+                                    <ChevronDown className="w-4 h-4" />
+                                </Button>
                             </div>
                         )}
                         {show_view_all_link && filteredProducts.length > max_products && storeSlug && (

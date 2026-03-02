@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Search, Package } from 'lucide-react';
+import { Search, Package, ChevronDown } from 'lucide-react';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useShop } from '@/pages/shop/ShopLayout';
 import { useShopCart } from '@/hooks/useShopCart';
@@ -33,9 +34,13 @@ export interface LuxuryProductGridSectionProps {
 
 // MarketplaceProduct imported from ../StorefrontProductCard
 
+const MOBILE_INITIAL_COUNT = 8;
+
 export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryProductGridSectionProps) {
   const { storeSlug } = useParams<{ storeSlug: string }>();
   const { isPreviewMode } = useShop();
+  const isMobile = useIsMobile();
+  const [showAllProducts, setShowAllProducts] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -118,6 +123,12 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
 
     return filtered.slice(0, max_products);
   }, [products, debouncedSearch, selectedCategory, max_products]);
+
+  const shouldLimitOnMobile = isMobile && !showAllProducts && filteredProducts.length > MOBILE_INITIAL_COUNT;
+  const displayProducts = shouldLimitOnMobile
+    ? filteredProducts.slice(0, MOBILE_INITIAL_COUNT)
+    : filteredProducts;
+  const hiddenCount = filteredProducts.length - MOBILE_INITIAL_COUNT;
 
   const handleQuickAdd = (e: React.MouseEvent, product: MarketplaceProduct) => {
     e.preventDefault();
@@ -273,34 +284,52 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
             </Button>
           </div>
         ) : (
-          /* Premium Product Grid */
-          <motion.div
-            layout
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8 pb-20"
-          >
-            <AnimatePresence>
-              {filteredProducts.map((product, index) => (
-                <StorefrontProductCard
-                  key={product.product_id}
-                  product={product}
-                  storeSlug={storeSlug}
-                  isPreviewMode={isPreviewMode}
-                  onQuickAdd={(e) => handleQuickAdd(e, product)}
-                  isAdded={addedProducts.has(product.product_id)}
-                  onToggleWishlist={() => toggleWishlist({
-                    productId: product.product_id,
-                    name: product.product_name,
-                    price: product.price,
-                    imageUrl: product.image_url,
-                  })}
-                  isInWishlist={isInWishlist(product.product_id)}
-                  onQuickView={() => setQuickViewProduct(product)}
-                  index={index}
-                  accentColor={customAccent}
-                />
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <>
+            {/* Premium Product Grid */}
+            <motion.div
+              layout
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8 pb-20"
+            >
+              <AnimatePresence>
+                {displayProducts.map((product, index) => (
+                  <StorefrontProductCard
+                    key={product.product_id}
+                    product={product}
+                    storeSlug={storeSlug}
+                    isPreviewMode={isPreviewMode}
+                    onQuickAdd={(e) => handleQuickAdd(e, product)}
+                    isAdded={addedProducts.has(product.product_id)}
+                    onToggleWishlist={() => toggleWishlist({
+                      productId: product.product_id,
+                      name: product.product_name,
+                      price: product.price,
+                      imageUrl: product.image_url,
+                    })}
+                    isInWishlist={isInWishlist(product.product_id)}
+                    onQuickView={() => setQuickViewProduct(product)}
+                    index={index}
+                    accentColor={customAccent}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Show More button on mobile */}
+            {shouldLimitOnMobile && (
+              <div className="flex justify-center -mt-12 pb-8">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setShowAllProducts(true)}
+                  className="rounded-full px-8 gap-2 font-bold shadow-sm"
+                  style={{ borderColor: `${customAccent}40`, color: customAccent }}
+                >
+                  Show {hiddenCount} More
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
