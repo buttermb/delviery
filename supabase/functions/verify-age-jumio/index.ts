@@ -56,11 +56,12 @@ serve(async (req) => {
     const validationResult = verifyAgeSchema.safeParse(rawBody);
 
     if (!validationResult.success) {
-      logger.warn('Validation failed', { errors: validationResult.error.flatten(), userId: user.id });
+      const zodError = validationResult as { success: false; error: { flatten: () => { fieldErrors: Record<string, string[]> } } };
+      logger.warn('Validation failed', { errors: zodError.error.flatten(), userId: user.id });
       return new Response(
         JSON.stringify({
           error: 'Validation failed',
-          details: validationResult.error.flatten().fieldErrors,
+          details: zodError.error.flatten().fieldErrors,
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

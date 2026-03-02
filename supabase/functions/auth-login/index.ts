@@ -32,7 +32,7 @@ serve(withZenProtection(async (req: Request): Promise<Response> => {
 
     if (!parsed.success) {
       return new Response(
-        JSON.stringify({ error: 'Invalid input', details: parsed.error.flatten().fieldErrors }),
+        JSON.stringify({ error: 'Invalid input', details: (parsed as { success: false; error: { flatten: () => { fieldErrors: Record<string, string[]> } } }).error.flatten().fieldErrors }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

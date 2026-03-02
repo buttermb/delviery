@@ -59,7 +59,7 @@ serve(withZenProtection(async (req: Request) => {
 
     if (!validationResult.success) {
       // Still return success to prevent email enumeration
-      logger.warn('Invalid request body', { details: JSON.stringify(validationResult.error.errors) });
+      logger.warn('Invalid request body', { details: JSON.stringify((validationResult as { success: false; error: { errors: unknown[] } }).error.errors) });
       return new Response(
         JSON.stringify({
           success: true,

@@ -47,7 +47,8 @@ export type TenantInviteInput = z.infer<typeof tenantInviteSchema>;
 export function validateTenantInvite(data: unknown): TenantInviteInput {
   const result = tenantInviteSchema.safeParse(data);
   if (!result.success) {
-    const errors = result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+    const zodError = result as { success: false; error: { errors: { path: (string | number)[]; message: string }[] } };
+    const errors = zodError.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
     throw new Error(`Validation failed: ${errors}`);
   }
   return result.data;

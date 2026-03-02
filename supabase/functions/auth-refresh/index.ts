@@ -45,7 +45,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: 'VALIDATION_ERROR',
-          message: validation.error.errors[0]?.message || 'Invalid input',
+          message: (validation as { success: false; error: { errors: { message: string }[] } }).error.errors[0]?.message || 'Invalid input',
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

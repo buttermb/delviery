@@ -212,7 +212,7 @@ serve(withZenProtection(async (req: Request) => {
       return new Response(
         JSON.stringify({ 
           error: "Invalid request body", 
-          details: parseResult.error.issues 
+          details: (parseResult as { success: false; error: { issues: unknown[] } }).error.issues 
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

@@ -30,7 +30,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: validationResult.error.errors[0].message 
+          error: (validationResult as { success: false; error: { errors: { message: string }[] } }).error.errors[0].message 
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       );

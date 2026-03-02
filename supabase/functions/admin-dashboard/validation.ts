@@ -1,4 +1,4 @@
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { z } from '../_shared/deps.ts';
 
 // Valid endpoints for the admin dashboard
 const validEndpoints = [
@@ -46,7 +46,8 @@ export type AdminDashboardInput = z.infer<typeof adminDashboardSchema>;
 export function validateAdminDashboard(data: unknown): AdminDashboardInput {
   const result = adminDashboardSchema.safeParse(data);
   if (!result.success) {
-    const errors = result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+    const zodError = result as z.SafeParseError<typeof adminDashboardSchema>;
+    const errors = zodError.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
     throw new Error(`Validation failed: ${errors}`);
   }
   return result.data;

@@ -40,7 +40,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
     if (!parseResult.success) {
       return jsonResponse(
-        { sent: false, reason: "Validation failed", details: parseResult.error.flatten().fieldErrors },
+        { sent: false, reason: "Validation failed", details: (parseResult as { success: false; error: { flatten: () => { fieldErrors: Record<string, string[]> } } }).error.flatten().fieldErrors },
         400,
       );
     }

@@ -176,7 +176,7 @@ async function createContact(req: Request, params: Record<string, string>): Prom
     // Validate input
     const validation = CreateContactSchema.safeParse(body);
     if (!validation.success) {
-      return errorResponse(`Validation error: ${validation.error.message}`);
+      return errorResponse(`Validation error: ${(validation as { success: false; error: { message: string } }).error.message}`);
     }
 
     const input = validation.data;
@@ -237,7 +237,7 @@ async function updateContact(req: Request, params: Record<string, string>): Prom
     // Validate input
     const validation = UpdateContactSchema.safeParse(body);
     if (!validation.success) {
-      return errorResponse(`Validation error: ${validation.error.message}`);
+      return errorResponse(`Validation error: ${(validation as { success: false; error: { message: string } }).error.message}`);
     }
 
     const input = validation.data;

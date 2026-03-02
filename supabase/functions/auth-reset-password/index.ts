@@ -71,7 +71,7 @@ serve(async (req) => {
     const parseResult = resetPasswordSchema.safeParse(body);
 
     if (!parseResult.success) {
-      const errors = parseResult.error.errors.map((e) => e.message);
+      const errors = (parseResult as { success: false; error: { errors: { message: string }[] } }).error.errors.map((e) => e.message);
       logger.warn('Validation failed', { errors: errors.join(', ') });
       return new Response(
         JSON.stringify({ error: errors[0] }),

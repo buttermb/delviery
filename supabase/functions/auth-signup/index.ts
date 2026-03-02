@@ -259,7 +259,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: 'Validation failed',
-          details: validation.error.errors.map((e) => ({
+          details: (validation as { success: false; error: { errors: { path: (string | number)[]; message: string }[] } }).error.errors.map((e) => ({
             field: e.path.join('.'),
             message: e.message,
           })),
