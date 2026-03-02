@@ -156,7 +156,7 @@ export function CheckoutPage() {
       if (error) return false;
       return Boolean(data);
     },
-    enabled: !!store?.id && currentStep >= 3,
+    enabled: !!store?.id,
     staleTime: 5 * 60 * 1000, // cache for 5 minutes
   });
 
