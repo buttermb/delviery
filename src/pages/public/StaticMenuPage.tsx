@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -38,18 +38,13 @@ interface MenuData {
 const DEFAULT_COLORS: ColorConfig = {
   bg: '#f8f9fa',
   text: '#1a1a2e',
-  accent: '#059669',
+  accent: '#2563eb',
   cardBg: '#ffffff',
   border: '#e5e7eb',
 };
 
 type PageState = 'loading' | 'ready' | 'error' | 'not_found';
 
-/**
- * StaticMenuPage — a minimal, public-facing page that renders a disposable
- * menu as a clean HTML list.  No admin chrome, no cart, no auth required.
- * Designed to load fast and be mobile-responsive.
- */
 export default function StaticMenuPage() {
   const { token } = useParams<{ token: string }>();
   const [state, setState] = useState<PageState>('loading');
@@ -83,20 +78,32 @@ export default function StaticMenuPage() {
     return () => { cancelled = true; };
   }, [token]);
 
+  // Group products by category
+  const groupedProducts = useMemo(() => {
+    if (!menu) return {};
+    const groups: Record<string, MenuProduct[]> = {};
+    for (const product of menu.products) {
+      const cat = product.category || 'Other';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(product);
+    }
+    return groups;
+  }, [menu]);
+
   if (state === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-pulse text-gray-400">Loading menu...</div>
+      <div style={{ minHeight: '100vh', background: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: '#9ca3af', fontSize: 16 }}>Loading menu...</div>
       </div>
     );
   }
 
   if (state === 'not_found') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center px-4">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Menu Not Found</h1>
-          <p className="text-gray-500 text-sm">This menu page is no longer available or has expired.</p>
+      <div style={{ minHeight: '100vh', background: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', padding: '0 16px' }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', marginBottom: 8 }}>Menu Not Found</h1>
+          <p style={{ color: '#6b7280', fontSize: 14 }}>This menu page is no longer available or has expired.</p>
         </div>
       </div>
     );
@@ -104,10 +111,10 @@ export default function StaticMenuPage() {
 
   if (state === 'error' || !menu) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center px-4">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Error</h1>
-          <p className="text-gray-500 text-sm">Something went wrong loading this page.</p>
+      <div style={{ minHeight: '100vh', background: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', padding: '0 16px' }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', marginBottom: 8 }}>Error</h1>
+          <p style={{ color: '#6b7280', fontSize: 14 }}>Something went wrong loading this page.</p>
         </div>
       </div>
     );
@@ -118,94 +125,189 @@ export default function StaticMenuPage() {
   const showDescriptions = menu.appearance?.show_descriptions !== false;
   const contactInfo = menu.appearance?.contact_info ?? '';
   const colors: ColorConfig = { ...DEFAULT_COLORS, ...(menu.appearance?.colors ?? {}) };
+  const categories = Object.keys(groupedProducts);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: colors.bg, color: colors.text }}>
-      <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: colors.bg,
+      color: colors.text,
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+      WebkitFontSmoothing: 'antialiased',
+    }}>
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 0 48px' }}>
         {/* Header */}
-        <div className="text-center pb-6 mb-6" style={{ borderBottom: `1px solid ${colors.border}` }}>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: colors.text }}>
-            {menu.name}
-          </h1>
-          {menu.description && (
-            <p className="mt-2 text-sm sm:text-base" style={{ color: `${colors.text}99` }}>{menu.description}</p>
-          )}
-          <div className="mt-3 text-xs uppercase tracking-wider font-medium" style={{ color: `${colors.text}66` }}>
+        <div style={{
+          padding: '24px 16px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: `1px solid ${colors.border}`,
+        }}>
+          <div>
+            <h1 style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: colors.text,
+              margin: 0,
+              letterSpacing: '-0.02em',
+            }}>
+              {menu.name}
+            </h1>
+            {menu.description && (
+              <p style={{ fontSize: 14, color: '#6b7280', margin: '4px 0 0' }}>{menu.description}</p>
+            )}
+          </div>
+          <div style={{
+            fontSize: 12,
+            color: '#6b7280',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
+          }}>
             {menu.products.length} {menu.products.length === 1 ? 'item' : 'items'}
           </div>
         </div>
 
         {/* Custom message */}
         {menu.custom_message && (
-          <div className="mb-6 px-4 py-3 rounded-r-lg text-sm"
-            style={{
-              backgroundColor: `${colors.accent}15`,
-              borderLeft: `3px solid ${colors.accent}`,
-              color: colors.text,
-            }}
-          >
+          <div style={{
+            margin: '16px 16px 0',
+            padding: '12px 16px',
+            background: `${colors.accent}10`,
+            borderLeft: `3px solid ${colors.accent}`,
+            borderRadius: '0 8px 8px 0',
+            fontSize: 14,
+            color: colors.text,
+          }}>
             {menu.custom_message}
           </div>
         )}
 
-        {/* Products */}
-        <div className="space-y-3">
-          {menu.products.map((product, idx) => (
-            <div
-              key={idx}
-              className="rounded-xl overflow-hidden flex hover:shadow-sm transition-shadow"
-              style={{ backgroundColor: colors.cardBg, border: `1px solid ${colors.border}` }}
-            >
-              {showImages && product.image_url && (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-20 h-20 sm:w-24 sm:h-24 object-cover flex-shrink-0"
-                  style={{ backgroundColor: `${colors.border}` }}
-                  loading="lazy"
-                />
-              )}
-              <div className="p-3 sm:p-4 flex-1 min-w-0 flex flex-col gap-1">
-                <div className="flex justify-between items-start gap-3">
-                  <h3 className="font-semibold text-sm sm:text-base leading-tight" style={{ color: colors.text }}>
-                    {product.name}
-                  </h3>
-                  {showPrices && product.price > 0 && (
-                    <span className="text-sm sm:text-base font-bold shrink-0" style={{ color: colors.accent }}>
-                      ${product.price.toFixed(2)}
-                    </span>
-                  )}
-                </div>
-                {product.category && (
-                  <span
-                    className="inline-block w-fit text-[11px] px-2 py-0.5 rounded-full uppercase tracking-wide font-medium"
-                    style={{ backgroundColor: `${colors.border}`, color: `${colors.text}99` }}
-                  >
-                    {product.category}
-                  </span>
-                )}
-                {showDescriptions && product.description && (
-                  <p className="text-xs sm:text-sm line-clamp-2" style={{ color: `${colors.text}99` }}>
-                    {product.description}
-                  </p>
-                )}
+        {/* Products grouped by category */}
+        {categories.map((category) => (
+          <div key={category} style={{ marginTop: 24 }}>
+            {/* Category header */}
+            {categories.length > 1 && (
+              <div style={{
+                padding: '0 16px 8px',
+                fontSize: 13,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                color: '#6b7280',
+              }}>
+                {category}
               </div>
+            )}
+
+            {/* Product cards */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '0 16px' }}>
+              {groupedProducts[category].map((product, idx) => (
+                <div
+                  key={`${category}-${idx}`}
+                  style={{
+                    background: colors.cardBg,
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    border: `1px solid ${colors.border}`,
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                  }}
+                >
+                  {/* Full-width product image */}
+                  {showImages && product.image_url && (
+                    <div style={{ position: 'relative', width: '100%', aspectRatio: '16/10', overflow: 'hidden', background: '#f3f4f6' }}>
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        loading="lazy"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          display: 'block',
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Product info */}
+                  <div style={{ padding: '14px 16px 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                      <h3 style={{
+                        fontSize: 17,
+                        fontWeight: 700,
+                        color: colors.text,
+                        margin: 0,
+                        lineHeight: 1.3,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.01em',
+                      }}>
+                        {product.name}
+                      </h3>
+                    </div>
+
+                    {/* Price */}
+                    {showPrices && product.price > 0 && (
+                      <div style={{
+                        marginTop: 6,
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: colors.accent,
+                      }}>
+                        ${product.price.toFixed(2)}
+                      </div>
+                    )}
+
+                    {/* Description */}
+                    {showDescriptions && product.description && (
+                      <p style={{
+                        marginTop: 8,
+                        fontSize: 13,
+                        lineHeight: 1.5,
+                        color: '#6b7280',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}>
+                        {product.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
 
         {/* Contact info */}
         {contactInfo && (
-          <div
-            className="text-center mt-6 p-4 rounded-xl text-sm font-medium"
-            style={{ backgroundColor: colors.cardBg, border: `1px solid ${colors.border}`, color: colors.text }}
-          >
+          <div style={{
+            margin: '24px 16px 0',
+            padding: 16,
+            background: colors.cardBg,
+            border: `1px solid ${colors.border}`,
+            borderRadius: 12,
+            textAlign: 'center',
+            fontSize: 14,
+            fontWeight: 500,
+            color: colors.text,
+          }}>
             {contactInfo}
           </div>
         )}
 
         {/* Footer */}
-        <div className="text-center mt-8 pt-6 text-xs" style={{ borderTop: `1px solid ${colors.border}`, color: `${colors.text}66` }}>
+        <div style={{
+          textAlign: 'center',
+          marginTop: 32,
+          padding: '24px 16px 0',
+          borderTop: `1px solid ${colors.border}`,
+          color: '#9ca3af',
+          fontSize: 12,
+        }}>
           Generated by FloraIQ
         </div>
       </div>
