@@ -78,6 +78,60 @@ export function LoginPage() {
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
+  // Session-aware redirect: if already authenticated, redirect to admin dashboard
+  useEffect(() => {
+    const isExpired = searchParams.get('expired') === '1';
+    if (isExpired) return; // Let them re-login if session expired
+
+    // Check localStorage first for quick redirect
+    const storedToken = safeStorage.getItem(STORAGE_KEYS.TENANT_ADMIN_ACCESS_TOKEN);
+    const storedTenant = safeStorage.getItem(STORAGE_KEYS.TENANT_DATA);
+    if (storedToken && storedTenant) {
+      try {
+        const tenantData = JSON.parse(storedTenant);
+        if (tenantData?.slug) {
+          logger.debug('[LoginPage] Found stored session, redirecting to admin dashboard');
+          navigate(`/${tenantData.slug}/admin/dashboard`, { replace: true });
+          return;
+        }
+      } catch {
+        // Invalid stored data, continue to login
+      }
+    }
+
+    // Check Supabase session
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
+        const { data: tenantUser } = await supabase
+          .from('tenant_users')
+          .select('tenant_id')
+          .eq('user_id', session.user.id)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (!tenantUser) return;
+
+        const { data: tenant } = await supabase
+          .from('tenants')
+          .select('slug')
+          .eq('id', tenantUser.tenant_id)
+          .maybeSingle();
+
+        if (tenant?.slug) {
+          logger.debug('[LoginPage] Active session found, redirecting to admin dashboard');
+          navigate(`/${tenant.slug}/admin/dashboard`, { replace: true });
+        }
+      } catch (err) {
+        logger.debug('[LoginPage] Session check failed', err);
+      }
+    };
+
+    checkSession();
+  }, [navigate, searchParams]);
+
   // Monitor connection status
   useEffect(() => {
     const unsubscribe = onConnectionStatusChange((status) => {
