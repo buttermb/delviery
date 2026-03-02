@@ -294,13 +294,14 @@ export default function LiveMap() {
 
     // Set up realtime subscription for couriers
     const couriersChannel = supabase
-      .channel('couriers-changes')
+      .channel(`couriers-changes-${tenant?.id}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'couriers'
+          table: 'couriers',
+          filter: `tenant_id=eq.${tenant?.id}`,
         },
         () => {
           loadCourierLocations();
@@ -320,13 +321,14 @@ export default function LiveMap() {
 
     // Set up realtime subscription for orders
     const ordersChannel = supabase
-      .channel('orders-map-changes')
+      .channel(`orders-map-changes-${tenant?.id}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'orders'
+          table: 'orders',
+          filter: `tenant_id=eq.${tenant?.id}`,
         },
         () => {
           loadActiveOrders();

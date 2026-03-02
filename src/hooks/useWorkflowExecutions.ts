@@ -120,7 +120,7 @@ export function useWorkflowExecutions(limit = 50, autoRefresh = false) {
     if (!tenant?.id) return;
 
     const channel = supabase
-      .channel('workflow-executions')
+      .channel(`workflow-executions-${tenant.id}`)
       .on(
         'postgres_changes',
         {

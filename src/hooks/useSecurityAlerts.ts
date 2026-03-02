@@ -68,7 +68,7 @@ export const useSecurityAlerts = () => {
 
     // Subscribe to real-time security events
     const channel = supabase
-      .channel('security-alerts')
+      .channel(`security-alerts-${tenant.id}`)
       .on(
         'postgres_changes',
         {

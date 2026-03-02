@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { playNotificationSound } from '@/utils/notificationSound';
 import { formatCurrency } from '@/lib/formatters';
 
-export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void) {
+export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void, tenantId?: string) {
   const hasShownNotificationRef = useRef(false);
 
   useEffect(() => {
@@ -17,13 +17,14 @@ export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void)
     }
 
     const channel = supabase
-      .channel('new-orders-notification')
+      .channel(`new-orders-notification-${tenantId ?? 'global'}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'orders',
+          filter: tenantId ? `tenant_id=eq.${tenantId}` : undefined,
         },
         (payload: { new: { status?: string; courier_id?: string | null; order_number?: string; total_amount?: number | string; id?: string } }) => {
           // Only show notification for pending orders without courier
@@ -75,5 +76,5 @@ export function useOrderNotifications(enabled: boolean, onNewOrder?: () => void)
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [enabled, onNewOrder]);
+  }, [enabled, onNewOrder, tenantId]);
 }

@@ -201,7 +201,7 @@ export default function SmartTVDashboard() {
         if (!tenant?.id) return;
 
         const channel = supabase
-            .channel('tv-dashboard-orders')
+            .channel(`tv-dashboard-orders-${tenant.id}`)
             .on(
                 'postgres_changes',
                 {

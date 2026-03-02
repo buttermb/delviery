@@ -70,7 +70,7 @@ export default function RealtimeDashboard() {
     if (!tenantId) return;
 
     const channel = supabase
-      .channel('realtime-dashboard')
+      .channel(`realtime-dashboard-${tenantId}`)
       .on(
         'postgres_changes',
         {

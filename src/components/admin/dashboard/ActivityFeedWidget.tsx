@@ -125,7 +125,7 @@ export function ActivityFeedWidget() {
     if (!tenant?.id) return;
 
     const channel = supabase
-      .channel('activity-feed')
+      .channel(`activity-feed-${tenant.id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `tenant_id=eq.${tenant.id}` }, () => refetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'disposable_menus', filter: `tenant_id=eq.${tenant.id}` }, () => refetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products', filter: `tenant_id=eq.${tenant.id}` }, () => refetch())

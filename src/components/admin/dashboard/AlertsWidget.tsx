@@ -82,7 +82,7 @@ export function AlertsWidget() {
     if (!tenant?.id) return;
 
     const channel = supabase
-      .channel('alerts-widget-channel')
+      .channel(`alerts-widget-${tenant.id}`)
       .on(
         'postgres_changes',
         {

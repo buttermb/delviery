@@ -28,7 +28,7 @@ export function useRealtimeShifts(tenantId: string | undefined) {
     logger.debug('Authentication verified, establishing realtime subscription', { component: 'useRealtimeShifts' });
 
     const channel = supabase
-      .channel('pos-shifts-changes')
+      .channel(`pos-shifts-changes-${tenantId}`)
       .on(
         'postgres_changes',
         {
@@ -95,7 +95,7 @@ export function useRealtimeTransactions(tenantId: string | undefined, shiftId?: 
     }
 
     const channel = supabase
-      .channel('pos-transactions-changes')
+      .channel(`pos-transactions-changes-${tenantId}`)
       .on(
         'postgres_changes',
         {
@@ -160,7 +160,7 @@ export function useRealtimeCashDrawer(shiftId: string | undefined) {
     logger.debug('Authentication verified, establishing realtime subscription', { component: 'useRealtimeCashDrawer' });
 
     const channel = supabase
-      .channel('cash-drawer-changes')
+      .channel(`cash-drawer-changes-${shiftId}`)
       .on(
         'postgres_changes',
         {

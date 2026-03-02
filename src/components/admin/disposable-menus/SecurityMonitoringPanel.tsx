@@ -24,8 +24,11 @@ import { toast } from 'sonner';
 import { jsonToString, jsonToStringOrNumber } from '@/utils/menuTypeHelpers';
 import type { Json } from '@/integrations/supabase/types';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 export const SecurityMonitoringPanel = () => {
+  const { tenant } = useTenantAdminAuth();
+
   interface BlockedIP {
     id: string;
     ip_address: string;
@@ -41,8 +44,10 @@ export const SecurityMonitoringPanel = () => {
 
   // Real-time monitoring
   useEffect(() => {
+    if (!tenant?.id) return;
+
     const channel = supabase
-      .channel('security-monitoring')
+      .channel(`security-monitoring-${tenant.id}`)
       .on(
         'postgres_changes',
         {
@@ -84,7 +89,7 @@ export const SecurityMonitoringPanel = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [refetch]);
+  }, [tenant?.id, refetch]);
 
   // Load blocked IPs
   useEffect(() => {

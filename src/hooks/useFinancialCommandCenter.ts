@@ -779,7 +779,7 @@ export const useOrderStatusSubscription = () => {
     if (!tenant?.id) return;
 
     const channel = supabase
-      .channel('financial-order-status-updates')
+      .channel(`financial-order-status-updates-${tenant.id}`)
       .on(
         'postgres_changes',
         {

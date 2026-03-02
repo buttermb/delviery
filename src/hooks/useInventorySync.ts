@@ -21,7 +21,7 @@ export function useInventorySync({ tenantId, enabled = true }: UseInventorySyncP
         if (!enabled || !tenantId) return;
 
         const channel = supabase
-            .channel('inventory-sync')
+            .channel(`inventory-sync-${tenantId}`)
             .on(
                 'postgres_changes',
                 {

@@ -27,7 +27,7 @@ export function usePendingOrders(tenantId?: string) {
         loadPendingOrders();
 
         const channel = supabase
-            .channel('pending-orders')
+            .channel(`pending-orders-${tenantId}`)
             .on(
                 'postgres_changes',
                 {

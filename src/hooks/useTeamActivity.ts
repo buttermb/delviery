@@ -137,7 +137,7 @@ export function useTeamActivity(options: UseTeamActivityOptions = {}) {
     if (!tenantId || !enableRealtime) return;
 
     const channel = supabase
-      .channel('team-activity-feed')
+      .channel(`team-activity-feed-${tenantId}`)
       .on(
         'postgres_changes',
         {

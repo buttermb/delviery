@@ -18,6 +18,7 @@ import { useMapboxToken } from "@/hooks/useMapboxToken";
 import { showErrorToast } from "@/utils/toastHelpers";
 import { cn } from "@/lib/utils";
 import { escapeHtml } from '@/lib/utils/sanitize';
+import { useTenantAdminAuth } from "@/contexts/TenantAdminAuthContext";
 
 interface LiveDeliveryMapProps {
   deliveryId?: string;
@@ -32,6 +33,7 @@ declare global {
 }
 
 export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMapProps) {
+  const { tenant } = useTenantAdminAuth();
   const { token: MAPBOX_TOKEN } = useMapboxToken();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -141,14 +143,17 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
 
   // Setup real-time updates for deliveries
   useEffect(() => {
+    if (!tenant?.id) return;
+
     const channel = supabase
-      .channel('delivery-updates')
+      .channel(`delivery-updates-${tenant.id}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'wholesale_deliveries'
+          table: 'wholesale_deliveries',
+          filter: `tenant_id=eq.${tenant.id}`,
         },
         (payload) => {
           logger.debug('Delivery updated', { payload, component: 'LiveDeliveryMap' });
@@ -168,7 +173,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [refetch]);
+  }, [tenant?.id, refetch]);
 
   // Focus on delivery
   const focusOnDelivery = (deliveryId: string) => {

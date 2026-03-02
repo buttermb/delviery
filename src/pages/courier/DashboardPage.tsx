@@ -59,15 +59,16 @@ export default function CourierDashboardPage() {
       loadAvailableOrders();
       loadStats();
 
-      // Subscribe to new orders - RLS will automatically filter by tenant
+      // Subscribe to new orders
       const channel = supabase
-        .channel('available-orders')
+        .channel(`available-orders-${courier.tenant_id ?? courier.id}`)
         .on(
           'postgres_changes',
           {
             event: 'INSERT',
             schema: 'public',
             table: 'orders',
+            filter: courier.tenant_id ? `tenant_id=eq.${courier.tenant_id}` : undefined,
           },
           (payload) => {
             // Validate payload before using
@@ -173,7 +174,7 @@ export default function CourierDashboardPage() {
   };
 
   // Enable order notifications when online (after function definitions)
-  useOrderNotifications(isOnline, loadAvailableOrders);
+  useOrderNotifications(isOnline, loadAvailableOrders, courier?.tenant_id);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
