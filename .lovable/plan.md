@@ -1,36 +1,43 @@
 
+# Fix: Login Not Redirecting to Admin Page
 
-# Unify Login Pages — Single Tenant Admin Login
+## Root Cause
 
-## Problem
-There are two separate login pages for tenant admins:
-- `/saas/login` — modern split-screen design, auto-finds your business by email
-- `/:tenantSlug/admin/login` — requires knowing the business slug in the URL
+After logging in at `/saas/login`, the app navigates to `/{slug}/admin/dashboard`. But the `TenantAdminAuthContext` fails to initialize because it queries a **non-existent column** (`next_billing_date`) from the `tenants` table (line 356). This 400 error means auth never loads, so `TenantAdminProtectedRoute` sees "not authenticated" and redirects back to login -- creating a loop.
 
-This is confusing. We'll keep **one login page** and redirect the other.
+## Fixes
 
-## Plan
+### 1. Fix the tenant query in `TenantAdminAuthContext.tsx` (line 356)
 
-### 1. Redirect tenant-slug login to the unified login
-Update `App.tsx` so `/:tenantSlug/admin/login` redirects to `/saas/login` instead of rendering a separate page. The slug will be passed as a query parameter so the login page can pre-fill context if needed.
+Remove `next_billing_date` from the `.select()` call since it doesn't exist in the database. The correct columns are:
 
-### 2. Update the SaaS Login page
-- If a `?tenant=slug` query param is present, show the business name at the top so users know they're logging into the right place
-- Keep the existing auto-lookup flow (enter email, it finds your tenant)
+```
+id, business_name, slug, subscription_plan, subscription_status, trial_ends_at,
+grace_period_ends_at, payment_method_added, mrr, onboarding_completed,
+business_tier, created_at, is_free_tier, credits_enabled, limits, usage, features
+```
 
-### 3. Update all redirect references
-Update files that navigate to `/:tenantSlug/admin/login` to instead navigate to `/saas/login`:
-- `src/pages/tenant-admin/DashboardPage.tsx` (logout redirect)
-- `src/pages/tenant-admin/TrialExpiredPage.tsx` (logout redirect)
-- `src/pages/auth/AuthCallbackPage.tsx`
-- `src/pages/auth/MFAChallengePage.tsx`
-- `src/pages/auth/ForgotPasswordPage.tsx`
-- `src/pages/auth/PasswordResetPage.tsx`
-- `src/pages/customer/LoginPage.tsx` (link to admin login)
-- `src/pages/LoginDirectory.tsx`
+### 2. Fix redirect in `TenantAdminProtectedRoute.tsx` (line 371)
 
-### 4. Clean up
-The `TenantAdminLoginPage` component stays in the codebase but is no longer routed to directly — all paths go through the unified `/saas/login`.
+Change the unauthenticated redirect from:
+```
+Navigate to={\`/${redirectSlug}/admin/login\`}
+```
+to:
+```
+Navigate to={\`/saas/login?tenant=${redirectSlug}\`}
+```
+
+This aligns with the unified login we set up earlier.
+
+### 3. Fix redirect in `TenantAdminProtectedRoute.tsx` (line 421)
+
+The "Return to Login" button in the error UI also points to the old route. Update it to `/saas/login`.
+
+### 4. Fix redirect in `TenantAdminAuthContext.tsx` (line 184)
+
+The `redirectToLoginExpired` function still navigates to `/${slug}/admin/login?expired=1`. Update to `/saas/login?expired=1`.
 
 ## Result
-One login page at `/saas/login`. Users just enter email and password — the system finds their business automatically. No need to remember a slug URL.
+
+After login, the tenant query succeeds, auth context initializes properly, and the user lands on their admin dashboard.
