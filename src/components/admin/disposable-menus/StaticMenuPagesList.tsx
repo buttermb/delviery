@@ -23,8 +23,7 @@ interface StaticMenuPagesListProps {
 }
 
 function buildPageUrl(token: string): string {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? '';
-  return `${supabaseUrl}/functions/v1/serve-menu-page?token=${token}`;
+  return `${window.location.origin}/page/${token}`;
 }
 
 export function StaticMenuPagesList({ onRegenerate }: StaticMenuPagesListProps) {
