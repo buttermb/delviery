@@ -65,40 +65,17 @@ export default function StaticMenuPage() {
 
     const fetchMenu = async () => {
       try {
-        // Try the edge function first for consistent server-side rendering
-        const { data, error } = await supabase.functions.invoke('serve-menu-page', {
-          method: 'GET',
-          headers: { Accept: 'application/json' },
-          body: undefined,
-        });
-
-        // If edge function fails, fall back to direct DB query
-        if (error || !data) {
-          const result = await loadMenuDirect(token);
-          if (cancelled) return;
-          if (result) {
-            setMenu(result);
-            setState('ready');
-          } else {
-            setState('not_found');
-          }
-          return;
-        }
-
-        if (cancelled) return;
-        setMenu(data);
-        setState('ready');
-      } catch {
-        if (cancelled) return;
-        // Fall back to direct query
         const result = await loadMenuDirect(token);
         if (cancelled) return;
         if (result) {
           setMenu(result);
           setState('ready');
         } else {
-          setState('error');
+          setState('not_found');
         }
+      } catch {
+        if (cancelled) return;
+        setState('error');
       }
     };
 
