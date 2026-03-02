@@ -1,54 +1,48 @@
 
-# Fix Edge Function Build Errors
 
-## Problem
-There are TypeScript type-narrowing errors across **36 edge function files**. The code logic is correct (checking `!result.success` before accessing `.error`), but TypeScript's type narrowing isn't working properly with Zod's `SafeParseReturnType` in the Deno environment.
+# Fix "Business Not Found" - Column Mismatch Errors
 
-The errors fall into two categories:
-1. **Zod `.error` access** — accessing `.error` on `SafeParseReturnType` without proper narrowing (36 files)
-2. **Supabase client type mismatch** — `logAdminAction` function has overly strict typing for the Supabase client parameter
+## Root Cause
 
-## Fix Strategy
+The app shows "Business Not Found" because two database queries are failing with **400 errors** due to selecting columns that don't exist:
 
-For each affected file, apply one of these minimal fixes:
+1. **`src/lib/tenant.ts`** (lines 101, 115) -- The `getTenantFromSlug` and `getTenantById` functions select non-existent columns from the `tenants` table: `address`, `city`, `zip_code`, `tax_id`, `website`, `subscription_started_at`, `subscription_current_period_start`, `subscription_current_period_end`, `stripe_subscription_id`, `next_billing_date`, `onboarded_at`
 
-### Zod Errors (most files)
-Change from direct `.error` access to explicit type assertion after the `!success` check:
+2. **`src/contexts/TenantContext.tsx`** (line 46) -- The tenant user query selects `permissions` and `invited_by` from `tenant_users`, but neither column exists.
 
-```typescript
-// Before (TypeScript can't narrow):
-if (!result.success) {
-  return result.error.message;
-}
+Since both queries fail, the app thinks the tenant doesn't exist and shows "Business Not Found."
 
-// After (explicit cast):
-if (!result.success) {
-  const zodError = result as z.SafeParseError<typeof schema>;
-  return zodError.error.message;
-}
-```
+## Fix
 
-Some files already use this pattern correctly (e.g., `storefront-checkout`).
+### 1. Update `src/lib/tenant.ts` - Remove non-existent columns from select
 
-### Admin Dashboard Type Error
-Update the `logAdminAction` function to accept `any` for the Supabase client type instead of the overly strict inferred type.
+Replace the select strings in both `getTenantFromSlug` and `getTenantById` to only include columns that actually exist in the `tenants` table. Also update the `Tenant` interface to remove the non-existent fields.
 
-## Files to Update (~36 files)
-Key files include:
-- `supabase/functions/add-courier/index.ts`
-- `supabase/functions/admin-dashboard/validation.ts`
-- `supabase/functions/admin-dashboard/index.ts`
-- `supabase/functions/api/routes/contacts.ts`
-- `supabase/functions/api/routes/menus.ts`
-- `supabase/functions/api/routes/pos.ts`
-- And ~30 more edge function files
+**Columns to remove from select:** `address`, `city`, `zip_code`, `tax_id`, `website`, `subscription_started_at`, `subscription_current_period_start`, `subscription_current_period_end`, `stripe_subscription_id`, `next_billing_date`, `onboarded_at`
 
-## Performance Assessment
+**Correct select string:**
+`id, business_name, slug, owner_email, owner_name, phone, state, subscription_plan, subscription_status, trial_ends_at, stripe_customer_id, payment_method_added, mrr, limits, usage, features, white_label, status, suspended_reason, cancelled_at, state_licenses, compliance_verified, onboarded, last_activity_at, created_at, updated_at`
 
-Your performance optimizations **are working well**:
-- Memoized components (ProductCatalog, Navigation, CartDrawer) reduce re-renders
-- TanStack Query with 60s stale time reduces API calls significantly
-- Throttled event handlers (ParticleBackground, scroll) reduce CPU usage
-- Tutorial MutationObserver fix prevents lag/crashes
+### 2. Update `src/contexts/TenantContext.tsx` - Remove non-existent columns from select
 
-These build errors are **not related to performance** — they're TypeScript strictness issues that prevent edge functions from deploying. Fixing them will ensure your backend functions work correctly alongside your frontend performance gains.
+Replace the `tenant_users` select to remove `permissions` and `invited_by`:
+
+**Correct select string:**
+`id, tenant_id, email, name, role, status, email_verified, invited_at, accepted_at, last_login_at, created_at, updated_at`
+
+### 3. Update `Tenant` interface in `src/lib/tenant.ts`
+
+Remove the non-existent properties from the interface: `address`, `city`, `zip_code`, `tax_id`, `website`, `subscription_started_at`, `subscription_current_period_start`, `subscription_current_period_end`, `stripe_subscription_id`, `next_billing_date`, `onboarded_at`.
+
+### 4. Update `TenantUser` interface in `src/lib/tenant.ts`
+
+Remove `permissions` and `invited_by` from the interface.
+
+## Technical Details
+
+These are the actual columns in each table:
+
+**`tenants` table:** id, business_name, slug, owner_email, owner_name, phone, state, subscription_plan, subscription_status, trial_ends_at, mrr, limits, features, usage, compliance_verified, onboarded, last_activity_at, created_at, updated_at, payment_method_added, suspended_reason, state_licenses, cancelled_at, white_label, status, stripe_customer_id, plus several onboarding/trial/billing-related columns.
+
+**`tenant_users` table:** id, tenant_id, user_id, email, name, role, status, email_verified, invited_at, accepted_at, created_at, updated_at, plus verification and avatar columns.
+
