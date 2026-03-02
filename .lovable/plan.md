@@ -1,48 +1,54 @@
 
+# Fix Edge Function Build Errors
 
-# Priority Work Items
+## Problem
+There are TypeScript type-narrowing errors across **36 edge function files**. The code logic is correct (checking `!result.success` before accessing `.error`), but TypeScript's type narrowing isn't working properly with Zod's `SafeParseReturnType` in the Deno environment.
 
-## 1. Fix Edge Function Build Errors (Blocking Deployment)
+The errors fall into two categories:
+1. **Zod `.error` access** — accessing `.error` on `SafeParseReturnType` without proper narrowing (36 files)
+2. **Supabase client type mismatch** — `logAdminAction` function has overly strict typing for the Supabase client parameter
 
-Two edge functions have TypeScript errors preventing deployment:
+## Fix Strategy
 
-### a. `add-courier/index.ts` (lines 72, 76)
-Zod's `safeParse` returns a discriminated union. After checking `!validationResult.success`, TypeScript should narrow the type -- but it's not narrowing correctly. Fix: access `.error` only after a `success === false` check, or cast appropriately.
+For each affected file, apply one of these minimal fixes:
 
-### b. `admin-dashboard/index.ts` (lines 19, 139, 247, 413, 731+)
-The `logAdminAction` helper types `supabase` as `ReturnType<typeof createClient>` but the actual client passed in is typed differently (with generic parameters). Fix: widen the `supabase` parameter type to `any` or use a compatible generic signature. The `admin_audit_logs` table insert is also typed as `never`, likely because the table isn't in the generated types -- need to cast the table name.
+### Zod Errors (most files)
+Change from direct `.error` access to explicit type assertion after the `!success` check:
 
-## 2. Fix Auth Token Refresh Errors (Runtime)
-
-Console shows repeated failures on `tenant-admin-auth?action=refresh` with "Failed to fetch" followed by `RangeError: status 0`. The `tenant-admin-auth` edge function is likely failing to deploy (due to build errors above) or has a network issue. Once edge function build errors are fixed and redeployed, this should resolve. If not, the retry logic that constructs a `new Response(body, { status: 0 })` on network failure needs a guard to clamp status to at least 500.
-
-## 3. Realtime Subscription Errors
-
-Warning about `channel_error` on `[products, inventory_batches, marketplace_product_settings]` -- these tables may not have realtime enabled or RLS is blocking the subscription. Low priority but worth checking after the above are fixed.
-
----
-
-## Technical Details
-
-### Fix 1a: `supabase/functions/add-courier/index.ts`
-Change lines 71-80 to properly narrow the type:
 ```typescript
-if (!validationResult.success) {
-  const errors = validationResult.error.flatten();
-  logger.warn('Validation failed', { errors });
-  return new Response(
-    JSON.stringify({ error: 'Validation failed', details: errors.fieldErrors }),
-    { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
+// Before (TypeScript can't narrow):
+if (!result.success) {
+  return result.error.message;
+}
+
+// After (explicit cast):
+if (!result.success) {
+  const zodError = result as z.SafeParseError<typeof schema>;
+  return zodError.error.message;
 }
 ```
-The key fix is assigning `validationResult.error` to a const inside the narrowed block so TypeScript can infer the type correctly, or explicitly typing the `safeParse` call.
 
-### Fix 1b: `supabase/functions/admin-dashboard/index.ts`
-- Change `logAdminAction` parameter from `supabase: ReturnType<typeof createClient>` to use a looser type (e.g., `supabase: any`)
-- Or use `// deno-lint-ignore no-explicit-any` with proper typing
+Some files already use this pattern correctly (e.g., `storefront-checkout`).
 
-### Fix 2: Auth token refresh
-- Investigate `tenant-admin-auth` edge function for deployment status
-- Add a status code guard in the retry utility to prevent `new Response(body, { status: 0 })`
+### Admin Dashboard Type Error
+Update the `logAdminAction` function to accept `any` for the Supabase client type instead of the overly strict inferred type.
 
+## Files to Update (~36 files)
+Key files include:
+- `supabase/functions/add-courier/index.ts`
+- `supabase/functions/admin-dashboard/validation.ts`
+- `supabase/functions/admin-dashboard/index.ts`
+- `supabase/functions/api/routes/contacts.ts`
+- `supabase/functions/api/routes/menus.ts`
+- `supabase/functions/api/routes/pos.ts`
+- And ~30 more edge function files
+
+## Performance Assessment
+
+Your performance optimizations **are working well**:
+- Memoized components (ProductCatalog, Navigation, CartDrawer) reduce re-renders
+- TanStack Query with 60s stale time reduces API calls significantly
+- Throttled event handlers (ParticleBackground, scroll) reduce CPU usage
+- Tutorial MutationObserver fix prevents lag/crashes
+
+These build errors are **not related to performance** — they're TypeScript strictness issues that prevent edge functions from deploying. Fixing them will ensure your backend functions work correctly alongside your frontend performance gains.
