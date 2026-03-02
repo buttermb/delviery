@@ -339,14 +339,7 @@ export function OrdersHubPage() {
             <Card className="border-none shadow-sm">
               <CardContent className="py-16">
                 <div className="text-center">
-                  <Package className="w-16 h-16 mx-auto mb-4 text-neutral-300" />
-                  <h2 className="text-xl font-bold mb-2 text-neutral-900">
-                    {orderFilters.status !== 'all' || orderFilters.search || orderFilters.dateRange !== 'all'
-                      ? 'No matching orders'
-                      : 'No orders yet'}
-                  </h2>
-                  <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
-                  <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
                   <h3 className="text-xl font-bold mb-2 text-foreground">
                     {orderFilters.status !== 'all' || orderFilters.search || orderFilters.dateRange !== 'all'
                       ? 'No matching orders'

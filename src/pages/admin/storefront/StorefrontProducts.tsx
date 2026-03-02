@@ -283,7 +283,7 @@ export default function StorefrontProducts() {
       queryClient.invalidateQueries({ queryKey: queryKeys.shopProducts.all });
       const count = selectedProducts.size;
       setSelectedProducts(new Set());
-      toast.success(`${count} ${count === 1 ? 'product' : 'products'} ${isVisible ? 'shown' : 'hidden'}`);
+      toast.success(`${count} ${count === 1 ? 'product' : 'products'} ${_isVisible ? 'shown' : 'hidden'}`);
     },
     onError: (error: Error) => {
       logger.error('Failed to update product visibility', { error });
