@@ -3,7 +3,7 @@
  * Complete tenant management with filters, table/cards view, and bulk actions
  */
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -206,6 +206,17 @@ export default function TenantsListPage() {
   const clearSelection = () => {
     setSelectedTenants([]);
   };
+
+  const handleViewTenant = useCallback((id: string) => {
+    navigate(`/super-admin/tenants/${id}`);
+  }, [navigate]);
+
+  const handleLoginAsTenant = useCallback((tenantId: string) => {
+    const t = paginatedTenants.find((tenant) => tenant.id === tenantId);
+    if (t) {
+      window.open(`/${t.slug}/admin/dashboard`, '_blank', 'noopener,noreferrer');
+    }
+  }, [paginatedTenants]);
 
   if (isLoading) {
     return <EnhancedLoadingState variant="table" message="Loading tenants..." />;
@@ -570,10 +581,8 @@ export default function TenantsListPage() {
             <TenantCard
               key={tenant.id}
               tenant={tenant}
-              onView={(id) => navigate(`/super-admin/tenants/${id}`)}
-              onLoginAs={(_id) => {
-                window.open(`/${tenant.slug}/admin/dashboard`, '_blank', 'noopener,noreferrer');
-              }}
+              onView={handleViewTenant}
+              onLoginAs={handleLoginAsTenant}
             />
           ))}
         </div>

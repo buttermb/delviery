@@ -4,7 +4,7 @@
  * Displays contextual quick actions based on business context
  */
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { useSidebar } from './SidebarContext';
@@ -31,23 +31,23 @@ export function SidebarHotItems() {
     return safeHotItems.filter((item) => matchesSearchQuery(item.name, searchQuery));
   }, [safeHotItems, searchQuery]);
 
+  const isActive = useCallback((url: string) => {
+    if (!tenantSlug) return false;
+    return isRouteActive(url, tenantSlug, location.pathname, location.search);
+  }, [tenantSlug, location.pathname, location.search]);
+
+  const handleItemClick = useCallback((_itemId: string, _featureId?: string) => {
+    // Tracking is handled by SidebarMenuItem
+  }, []);
+
+  const handleLockedItemClick = useCallback((_featureId: FeatureId) => {
+    // Upgrade modal is handled by parent AdaptiveSidebar
+  }, []);
+
   // Don't render if no items match
   if (filteredHotItems.length === 0) {
     return null;
   }
-
-  const isActive = (url: string) => {
-    if (!tenantSlug) return false;
-    return isRouteActive(url, tenantSlug, location.pathname, location.search);
-  };
-
-  const handleItemClick = (_itemId: string, _featureId?: string) => {
-    // Tracking is handled by SidebarMenuItem
-  };
-
-  const handleLockedItemClick = (_featureId: FeatureId) => {
-    // Upgrade modal is handled by parent AdaptiveSidebar
-  };
 
   return (
     <SidebarGroup>

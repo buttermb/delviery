@@ -5,7 +5,7 @@
  * Data is accessible from admin customer hub for unified CRM.
  */
 
-import { memo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -55,14 +55,13 @@ function CustomerPreferencesPanelComponent({
     isUpdatingPreferences,
   } = useStorefrontCustomerProfile();
 
-  const handleProductClick = (productId: string) => {
+  const handleProductClick = useCallback((productId: string) => {
     navigate(`/${tenant?.slug}/shop/products/${productId}`);
-  };
+  }, [navigate, tenant?.slug]);
 
-  const handleAddToCart = (productId: string) => {
-    // This would integrate with the cart system
+  const handleAddToCart = useCallback((productId: string) => {
     navigate(`/${tenant?.slug}/shop/products/${productId}`);
-  };
+  }, [navigate, tenant?.slug]);
 
   return (
     <Card className="bg-white border-[hsl(var(--customer-border))] shadow-sm">

@@ -15,7 +15,7 @@ import type { FeatureId } from '@/lib/featureConfig';
 import type { SidebarItem } from '@/types/sidebar';
 import { isRouteActive } from '@/lib/sidebar/isRouteActive';
 import { Clock } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 export function SidebarRecentlyUsed() {
     const { tenantSlug } = useParams<{ tenantSlug: string }>();
@@ -81,30 +81,20 @@ export function SidebarRecentlyUsed() {
         return recentItems.filter((item) => matchesSearchQuery(item.name, searchQuery));
     }, [recentItems, searchQuery]);
 
-    if (filteredRecentItems.length === 0) return null;
-
-    const isActive = (url: string) => {
+    const isActive = useCallback((url: string) => {
         if (!tenantSlug) return false;
         return isRouteActive(url, tenantSlug, location.pathname, location.search);
-    };
+    }, [tenantSlug, location.pathname, location.search]);
 
-    const handleItemClick = (_itemId: string, _featureId?: string) => {
+    const handleItemClick = useCallback((_itemId: string, _featureId?: string) => {
         // Tracking is handled by SidebarMenuItem context call
-        // But we can add extra logic here if needed
-    };
+    }, []);
 
-    const handleLockedItemClick = (_featureId: FeatureId) => {
-        // Handled by parent usually, but we can just emit event or ignore
-        // For now, we'll dispatch the upgrade modal event if we can, 
-        // or just let the user know. 
-        // Actually AdaptiveSidebar handles this via state. 
-        // We might need to accept a prop or context for this.
-        // But SidebarRecentlyUsed is inside AdaptiveSidebar, so we can't easily pass it up 
-        // unless we use context or props.
-        // Let's check if we can get setUpgradeFeatureId from context? 
-        // SidebarContext doesn't have it.
-        // We'll leave it empty for now, as recently used items are usually accessible.
-    };
+    const handleLockedItemClick = useCallback((_featureId: FeatureId) => {
+        // Upgrade modal is handled by parent AdaptiveSidebar
+    }, []);
+
+    if (filteredRecentItems.length === 0) return null;
 
     return (
         <SidebarGroup>

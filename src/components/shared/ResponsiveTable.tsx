@@ -148,9 +148,8 @@ export function ResponsiveTable<T>({
     }, [columns]);
 
     // Stable onRowClick adapter for VirtualizedTable
-    const handleVirtualRowClick = useMemo(() => {
-        if (!onRowClick) return undefined;
-        return (row: T) => onRowClick(row);
+    const handleVirtualRowClick = useCallback((row: T) => {
+        onRowClick?.(row);
     }, [onRowClick]);
 
     if (isLoading) {
@@ -218,7 +217,7 @@ export function ResponsiveTable<T>({
                         data={data}
                         height={virtualizeHeight}
                         rowHeight={virtualizeRowHeight}
-                        onRowClick={handleVirtualRowClick ? (row: T) => handleVirtualRowClick(row) : undefined}
+                        onRowClick={onRowClick ? handleVirtualRowClick : undefined}
                         getRowId={(row: T, _index: number) => keyExtractor(row)}
                     />
                 ) : (
