@@ -57,7 +57,7 @@ export function CreateStoreDialog({
   const [isValidatingSlug, setIsValidatingSlug] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState(false);
 
-  const debouncedSlug = useDebounce(slug, 400);
+  const debouncedSlug = useDebounce(slug, 500);
 
   // Validate slug uniqueness when debounced value changes
   useEffect(() => {
