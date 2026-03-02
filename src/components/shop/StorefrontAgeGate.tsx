@@ -48,42 +48,6 @@ export function StorefrontAgeGate({
                   className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-2"
                   style={{ backgroundColor: `${primaryColor}15` }}
                 >
-                    <Card className="w-full max-w-md bg-zinc-950 border-zinc-800 text-white shadow-2xl" data-dark-panel data-testid="age-verification-modal">
-                        <CardHeader className="text-center space-y-4 pt-8">
-                            <div className="mx-auto w-16 h-16 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center mb-2">
-                                <ShieldCheck className="w-8 h-8 text-emerald-500" />
-                            </div>
-                            <CardTitle className="text-2xl font-light tracking-wide">
-                                Age Verification
-                            </CardTitle>
-                            <CardDescription className="text-zinc-400 text-base">
-                                You must be at least <span className="text-white font-bold">{minAge}</span> years old to access this site.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4 pb-8">
-                            <Button
-                                className="w-full h-12 text-lg font-medium bg-white text-black hover:bg-zinc-200 transition-colors"
-                                onClick={handleVerify}
-                            >
-                                I am {minAge}+
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="w-full h-12 text-lg font-medium border-zinc-700 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
-                                onClick={handleReject}
-                            >
-                                Leave Site
-                            </Button>
-                            <p className="text-center text-xs text-zinc-600 mt-4">
-                                By entering, you agree to our Terms of Service and Privacy Policy.
-                                Access to this site is restricted to adults of legal age.
-                            </p>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            </motion.div>
-        </AnimatePresence>
-    );
                   <ShieldCheck className="w-8 h-8" style={{ color: primaryColor }} />
                 </div>
               )}

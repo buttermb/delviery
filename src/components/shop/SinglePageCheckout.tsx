@@ -77,7 +77,6 @@ export function SinglePageCheckout() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [stockIssues, setStockIssues] = useState<Array<{ productName: string; available: number; requested: number }>>([]);
   const [isCheckingStock, setIsCheckingStock] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormData, string>>>({});
   const [orderRetryCount, setOrderRetryCount] = useState(0);
 
   // Post-checkout confirmation popup state
@@ -127,7 +126,6 @@ export function SinglePageCheckout() {
   useEffect(() => {
     if (formStorageKey && watchedValues.email) {
       try {
-        safeStorage.setItem(formStorageKey, JSON.stringify(formData));
         localStorage.setItem(formStorageKey, JSON.stringify(watchedValues));
       } catch (e) { logger.warn('[Checkout] Failed to save form data', { error: e }); }
     }
@@ -138,7 +136,7 @@ export function SinglePageCheckout() {
     if (isInitialized && cartItems.length > 0) {
       checkStock();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- checkStock is defined below, only run when cart initialization changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInitialized, cartItems.length]);
 
   // Redirect if cart empty
@@ -177,32 +175,6 @@ export function SinglePageCheckout() {
   const deliveryFee = subtotal >= (store?.free_delivery_threshold || 100) ? 0 : (store?.default_delivery_fee || 5);
   const total = subtotal + deliveryFee;
 
-  const updateField = (field: keyof CheckoutFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error on change
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof CheckoutFormData, string>> = {};
-
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!EMAIL_REGEX.test(formData.email)) {
-      newErrors.email = 'Invalid email address';
-    }
-    if (!formData.street.trim()) newErrors.street = 'Street address is required';
-    if (!formData.city.trim()) newErrors.city = 'City is required';
-    if (!formData.zip.trim()) newErrors.zip = 'ZIP code is required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   // Helper: detect network errors worth retrying
   const isNetworkError = (err: unknown): boolean => {
     const msg = err instanceof Error ? err.message : String(err);
@@ -215,7 +187,6 @@ export function SinglePageCheckout() {
       msg === '';
   };
 
-  // Place order mutation with retry logic
   // Place order mutation
   const placeOrderMutation = useMutation({
     mutationFn: async (values: CheckoutFormValues) => {
@@ -253,41 +224,27 @@ export function SinglePageCheckout() {
 
       // Submit with retry on network errors
       const MAX_RETRIES = 3;
-      const submitWithRetry = async (attempt: number): Promise<{ order_id: string }> => {
+      const submitWithRetry = async (attempt: number): Promise<string> => {
         try {
           const { data: orderId, error } = await supabase.rpc('create_marketplace_order', {
             p_store_id: store.id,
             p_items: orderItems,
             p_customer_name: `${sanitizedFirstName} ${sanitizedLastName}`,
-            p_customer_email: sanitizeEmail(formData.email),
-            p_customer_phone: formData.phone ? sanitizePhoneInput(formData.phone) : null,
+            p_customer_email: sanitizeEmail(values.email),
+            p_customer_phone: values.phone ? sanitizePhoneInput(values.phone) : null,
             p_delivery_address: `${sanitizedStreet}${sanitizedApt ? ', ' + sanitizedApt : ''}, ${sanitizedCity}, ${sanitizedState} ${sanitizedZip}`,
-            p_delivery_notes: formData.deliveryNotes ? sanitizeTextareaInput(formData.deliveryNotes, 500) : null,
+            p_delivery_notes: values.deliveryNotes ? sanitizeTextareaInput(values.deliveryNotes, 500) : null,
             p_subtotal: subtotal,
             p_tax: 0,
             p_delivery_fee: deliveryFee,
             p_total: total,
-            p_payment_method: formData.paymentMethod,
+            p_payment_method: values.paymentMethod,
           });
-      const { data: orderId, error } = await supabase.rpc('create_marketplace_order', {
-        p_store_id: store.id,
-        p_items: orderItems,
-        p_customer_name: `${sanitizedFirstName} ${sanitizedLastName}`,
-        p_customer_email: sanitizeEmail(values.email),
-        p_customer_phone: values.phone ? sanitizePhoneInput(values.phone) : null,
-        p_delivery_address: `${sanitizedStreet}${sanitizedApt ? ', ' + sanitizedApt : ''}, ${sanitizedCity}, ${sanitizedState} ${sanitizedZip}`,
-        p_delivery_notes: values.deliveryNotes ? sanitizeTextareaInput(values.deliveryNotes, 500) : null,
-        p_subtotal: subtotal,
-        p_tax: 0,
-        p_delivery_fee: deliveryFee,
-        p_total: total,
-        p_payment_method: values.paymentMethod,
-      });
 
           if (error) throw error;
           if (!orderId) throw new Error('Failed to create order');
 
-          return { order_id: orderId as string };
+          return orderId as string;
         } catch (err: unknown) {
           if (isNetworkError(err) && attempt < MAX_RETRIES) {
             setOrderRetryCount(attempt);
@@ -302,20 +259,15 @@ export function SinglePageCheckout() {
         }
       };
 
-      return submitWithRetry(1);
+      const orderId = await submitWithRetry(1);
       return { order_id: orderId, formValues: values };
     },
     onSuccess: async (data) => {
+      setOrderRetryCount(0);
       // Clear cart and form
       clearCart();
       if (formStorageKey) {
         safeStorage.removeItem(formStorageKey);
-      setOrderRetryCount(0);
-      // Clear cart and form only on success — never on failure
-      if (store?.id) {
-        safeStorage.removeItem(`${STORAGE_KEYS.SHOP_CART_PREFIX}${store.id}`);
-        if (formStorageKey) safeStorage.removeItem(formStorageKey);
-        setCartItemCount(0);
       }
 
       const values = data.formValues;
@@ -355,7 +307,6 @@ export function SinglePageCheckout() {
         error.message.toLowerCase().includes('internal server error') ||
         error.message.toLowerCase().includes('500');
 
-      // Cart is preserved — user can retry without losing anything
       toast.error(
         isRetryable ? 'Connection error' : 'Order failed',
         {
@@ -363,10 +314,6 @@ export function SinglePageCheckout() {
             ? 'Could not reach the server. Your cart is saved — tap Retry when ready.'
             : humanizeError(error, 'Something went wrong'),
           duration: 10000,
-          action: {
-            label: 'Retry',
-            onClick: () => handleSubmit(),
-          },
         },
       );
     },
@@ -440,212 +387,6 @@ export function SinglePageCheckout() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
-        {/* Main Form */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Contact Info */}
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Contact Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name *</Label>
-                  <Input
-                    id="firstName"
-                    autoComplete="given-name"
-                    value={formData.firstName}
-                    onChange={(e) => updateField('firstName', e.target.value)}
-                    className={errors.firstName ? 'border-destructive' : ''}
-                  />
-                  {errors.firstName && (
-                    <p className="text-xs text-destructive">{errors.firstName}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name *</Label>
-                  <Input
-                    id="lastName"
-                    autoComplete="family-name"
-                    value={formData.lastName}
-                    onChange={(e) => updateField('lastName', e.target.value)}
-                    className={errors.lastName ? 'border-destructive' : ''}
-                  />
-                  {errors.lastName && (
-                    <p className="text-xs text-destructive">{errors.lastName}</p>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={(e) => updateField('email', e.target.value)}
-                  className={errors.email ? 'border-destructive' : ''}
-                />
-                {errors.email && (
-                  <p className="text-xs text-destructive">{errors.email}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone (optional)</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  value={formData.phone}
-                  onChange={(e) => updateField('phone', e.target.value)}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Delivery Address */}
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Truck className="w-5 h-5" />
-                Delivery Address
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="street">Street Address *</Label>
-                <Input
-                  id="street"
-                  autoComplete="street-address"
-                  value={formData.street}
-                  onChange={(e) => updateField('street', e.target.value)}
-                  className={errors.street ? 'border-destructive' : ''}
-                />
-                {errors.street && (
-                  <p className="text-xs text-destructive">{errors.street}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="apartment">Apt, Suite, etc. (optional)</Label>
-                <Input
-                  id="apartment"
-                  value={formData.apartment}
-                  onChange={(e) => updateField('apartment', e.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <div className="space-y-2 col-span-2 sm:col-span-1">
-                  <Label htmlFor="city">City *</Label>
-                  <Input
-                    id="city"
-                    autoComplete="address-level2"
-                    value={formData.city}
-                    onChange={(e) => updateField('city', e.target.value)}
-                    className={errors.city ? 'border-destructive' : ''}
-                  />
-                  {errors.city && (
-                    <p className="text-xs text-destructive">{errors.city}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state">State</Label>
-                  <Input
-                    id="state"
-                    autoComplete="address-level1"
-                    value={formData.state}
-                    onChange={(e) => updateField('state', e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="zip">ZIP *</Label>
-                  <Input
-                    id="zip"
-                    autoComplete="postal-code"
-                    value={formData.zip}
-                    onChange={(e) => updateField('zip', e.target.value)}
-                    className={errors.zip ? 'border-destructive' : ''}
-                  />
-                  {errors.zip && (
-                    <p className="text-xs text-destructive">{errors.zip}</p>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">Delivery Notes (optional)</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Gate code, building instructions..."
-                  value={formData.deliveryNotes}
-                  onChange={(e) => updateField('deliveryNotes', e.target.value)}
-                  rows={2}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Payment */}
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
-                Payment Method
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup
-                value={formData.paymentMethod}
-                onValueChange={(v) => updateField('paymentMethod', v)}
-                className="space-y-3"
-              >
-                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-                  <RadioGroupItem value="cash" />
-                  <div>
-                    <p className="font-medium">Cash on Delivery</p>
-                    <p className="text-sm text-muted-foreground">Pay when order arrives</p>
-                  </div>
-                </label>
-                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-                  <RadioGroupItem value="card" />
-                  <div>
-                    <p className="font-medium">Credit/Debit Card</p>
-                    <p className="text-sm text-muted-foreground">Secure payment via Stripe</p>
-                  </div>
-                </label>
-              </RadioGroup>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Order Summary Sidebar */}
-        <div className="lg:col-span-2">
-          <Card className="sticky top-4">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5" />
-                Order Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Items */}
-              <div className="space-y-3 max-h-60 overflow-y-auto">
-                {cartItems.map((item) => (
-                  <div key={`${item.productId}-${item.variant ?? ''}`} className="flex gap-3">
-                    <div className="w-14 h-14 bg-muted rounded flex-shrink-0 overflow-hidden">
-                      <ProductImage
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="w-full h-full"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
-                    </div>
-                    <p className="text-sm font-medium">{formatCurrency(item.price * item.quantity)}</p>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
@@ -666,7 +407,7 @@ export function SinglePageCheckout() {
                       name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel required>First Name</FormLabel>
+                          <FormLabel>First Name *</FormLabel>
                           <FormControl>
                             <Input {...field} autoComplete="given-name" />
                           </FormControl>
@@ -679,7 +420,7 @@ export function SinglePageCheckout() {
                       name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel required>Last Name</FormLabel>
+                          <FormLabel>Last Name *</FormLabel>
                           <FormControl>
                             <Input {...field} autoComplete="family-name" />
                           </FormControl>
@@ -693,30 +434,12 @@ export function SinglePageCheckout() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel required>Email</FormLabel>
+                        <FormLabel>Email *</FormLabel>
                         <FormControl>
                           <Input {...field} type="email" autoComplete="email" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
-                ))}
-              </div>
-
-              <Separator />
-
-              {/* Totals */}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatCurrency(subtotal)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Delivery</span>
-                  <span>
-                    {deliveryFee === 0 ? (
-                      <span className="text-success">FREE</span>
-                    ) : (
-                      formatCurrency(deliveryFee)
                     )}
                   />
                   <FormField
@@ -749,7 +472,7 @@ export function SinglePageCheckout() {
                     name="street"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel required>Street Address</FormLabel>
+                        <FormLabel>Street Address *</FormLabel>
                         <FormControl>
                           <Input {...field} autoComplete="street-address" />
                         </FormControl>
@@ -776,7 +499,7 @@ export function SinglePageCheckout() {
                       name="city"
                       render={({ field }) => (
                         <FormItem className="col-span-2 sm:col-span-1">
-                          <FormLabel required>City</FormLabel>
+                          <FormLabel>City *</FormLabel>
                           <FormControl>
                             <Input {...field} autoComplete="address-level2" />
                           </FormControl>
@@ -802,7 +525,7 @@ export function SinglePageCheckout() {
                       name="zip"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel required>ZIP</FormLabel>
+                          <FormLabel>ZIP *</FormLabel>
                           <FormControl>
                             <Input {...field} autoComplete="postal-code" />
                           </FormControl>
@@ -889,17 +612,12 @@ export function SinglePageCheckout() {
                   <div className="space-y-3 max-h-60 overflow-y-auto">
                     {cartItems.map((item) => (
                       <div key={`${item.productId}-${item.variant ?? ''}`} className="flex gap-3">
-                        <div className="w-14 h-14 bg-muted rounded flex-shrink-0">
-                          {item.imageUrl ? (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.name}
-                              className="w-full h-full object-cover rounded"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <Package className="w-full h-full p-3 text-muted-foreground" />
-                          )}
+                        <div className="w-14 h-14 bg-muted rounded flex-shrink-0 overflow-hidden">
+                          <ProductImage
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="w-full h-full"
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{item.name}</p>
@@ -922,7 +640,7 @@ export function SinglePageCheckout() {
                       <span className="text-muted-foreground">Delivery</span>
                       <span>
                         {deliveryFee === 0 ? (
-                          <span className="text-green-600">FREE</span>
+                          <span className="text-success">FREE</span>
                         ) : (
                           formatCurrency(deliveryFee)
                         )}
@@ -954,6 +672,19 @@ export function SinglePageCheckout() {
                     </span>
                   </label>
 
+                  {/* Error banner after failed attempt */}
+                  {placeOrderMutation.isError && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Order could not be placed</AlertTitle>
+                      <AlertDescription>
+                        {isNetworkError(placeOrderMutation.error)
+                          ? 'We had trouble connecting to the server. Your cart and information are saved — you can try again.'
+                          : humanizeError(placeOrderMutation.error)}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   {/* Submit */}
                   <Button
                     type="submit"
@@ -968,7 +699,12 @@ export function SinglePageCheckout() {
                     {placeOrderMutation.isPending ? (
                       <>
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Processing...
+                        {orderRetryCount > 0 ? `Retrying (${orderRetryCount}/3)...` : 'Processing...'}
+                      </>
+                    ) : placeOrderMutation.isError ? (
+                      <>
+                        <AlertCircle className="w-5 h-5 mr-2" />
+                        Retry Order • {formatCurrency(total)}
                       </>
                     ) : (
                       <>
@@ -981,77 +717,6 @@ export function SinglePageCheckout() {
                   <p className="text-xs text-center text-muted-foreground">
                     Your payment information is secure
                   </p>
-                )}
-              </div>
-
-              <Separator />
-
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total</span>
-                <span style={{ color: themeColor }}>{formatCurrency(total)}</span>
-              </div>
-
-              {/* Terms */}
-              <label className="flex items-start gap-2 cursor-pointer">
-                <Checkbox
-                  checked={agreeToTerms}
-                  onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
-                  className="mt-0.5"
-                />
-                <span className="text-xs text-muted-foreground">
-                  I agree to the terms of service and privacy policy
-                </span>
-              </label>
-
-              {/* Error banner after failed attempt */}
-              {placeOrderMutation.isError && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Order could not be placed</AlertTitle>
-                  <AlertDescription>
-                    {isNetworkError(placeOrderMutation.error)
-                      ? 'We had trouble connecting to the server. Your cart and information are saved — you can try again.'
-                      : humanizeError(placeOrderMutation.error)}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Submit */}
-              <Button
-                className="w-full h-12 text-base"
-                style={{ backgroundColor: themeColor }}
-                disabled={
-                  placeOrderMutation.isPending ||
-                  stockIssues.length > 0 ||
-                  isCheckingStock
-                }
-                onClick={handleSubmit}
-              >
-                {placeOrderMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    {orderRetryCount > 0 ? `Retrying (${orderRetryCount}/3)...` : 'Processing...'}
-                  </>
-                ) : placeOrderMutation.isError ? (
-                  <>
-                    <AlertCircle className="w-5 h-5 mr-2" />
-                    Retry Order • {formatCurrency(total)}
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-5 h-5 mr-2" />
-                    Place Order • {formatCurrency(total)}
-                  </>
-                )}
-              </Button>
-
-              <p className="text-xs text-center text-muted-foreground">
-                Your payment information is secure
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
                 </CardContent>
               </Card>
             </div>

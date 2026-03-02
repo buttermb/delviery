@@ -14,8 +14,6 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
   const goldAccent = 'var(--storefront-primary, #d4af37)';
 
   return (
-    <footer className="bg-shop-primary text-white pt-20 pb-12 border-t border-shop-accent/20">
-      <div className="container mx-auto px-4 sm:px-6">
     <footer className="text-white pt-20 pb-12 border-t" style={{ backgroundColor: 'var(--storefront-bg, #0c0a09)', borderColor: 'var(--storefront-border, rgba(212,175,55,0.2))' }}>
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between gap-12 mb-16">
@@ -46,7 +44,7 @@ export function LuxuryFooter({ accentColor: _accentColor }: LuxuryFooterProps) {
             </p>
             <div className="flex gap-4">
               {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
-                <button key={i} type="button" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center transition-all" style={{ '--hover-bg': goldAccent } as React.CSSProperties} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = goldAccent; (e.currentTarget as HTMLElement).style.color = 'var(--storefront-bg, #0c0a09)'; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.color = ''; }} aria-label={['Facebook', 'Twitter', 'Instagram', 'LinkedIn'][i]}>
+                <button key={i} type="button" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center transition-all" onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = goldAccent; (e.currentTarget as HTMLElement).style.color = 'var(--storefront-bg, #0c0a09)'; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.color = ''; }} aria-label={['Facebook', 'Twitter', 'Instagram', 'LinkedIn'][i]}>
                   <Icon className="w-5 h-5" />
                 </button>
               ))}

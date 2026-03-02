@@ -45,7 +45,6 @@ export function EnhancedStickyAddToCart({
   
   const { checkProductStock } = useInventoryCheck();
 
-  // Check stock on mount (use quantity=1 to get total availability)
   useEffect(() => {
     const checkStock = async () => {
       const status = await checkProductStock(product.product_id, 1);
@@ -57,51 +56,38 @@ export function EnhancedStickyAddToCart({
       }
     };
     checkStock();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- quantity is intentionally omitted; stock check only needed when product changes, not on every quantity change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.product_id, checkProductStock]);
 
-  // Show bar only after scrolling past the main add-to-cart button
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 400);
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Handle quantity change with haptic feedback simulation
   const handleQuantityChange = useCallback((delta: number) => {
     setQuantity((prev) => {
       const max = stockStatus ? Math.min(stockStatus.available, maxQuantity) : maxQuantity;
       return Math.max(1, Math.min(max, prev + delta));
     });
-    
-    // Trigger vibration if available (mobile)
     if (navigator.vibrate) {
       navigator.vibrate(10);
     }
   }, [stockStatus, maxQuantity]);
 
   const handleAddToCart = async () => {
-    // Check stock first
     const currentStock = await checkProductStock(product.product_id, quantity);
-    
-    if (!currentStock?.isAvailable) {
-      return; // Stock warning will be shown
-    }
+    if (!currentStock?.isAvailable) return;
 
     setIsAdding(true);
-    
     try {
       await onAddToCart(quantity);
       setShowAddedFeedback(true);
-      
-      // Haptic feedback
       if (navigator.vibrate) {
         navigator.vibrate([50, 30, 50]);
       }
-      
       setTimeout(() => {
         setShowAddedFeedback(false);
         setQuantity(1);
@@ -123,9 +109,6 @@ export function EnhancedStickyAddToCart({
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t shadow-lg z-50 safe-area-pb">
       {/* Low Stock Warning Bar */}
       {isLowStock && (
-        <div className="bg-amber-50 border-b border-amber-200 px-4 py-1.5 flex items-center justify-center gap-2">
-          <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-          <span className="text-sm text-amber-700 font-medium">
         <div className="bg-warning/10 border-b border-warning/20 px-4 py-1.5 flex items-center justify-center gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-warning" />
           <span className="text-xs text-warning font-medium">
@@ -157,7 +140,7 @@ export function EnhancedStickyAddToCart({
             size="icon"
             className="h-10 w-10 rounded-l-xl rounded-r-none active:scale-95 transition-transform"
             onClick={() => handleQuantityChange(-1)}
-            disabled={quantity <= 1 || isOutOfStock}
+            disabled={quantity <= 1 || !!isOutOfStock}
             aria-label="Decrease quantity"
           >
             <Minus className="w-4 h-4" />
@@ -168,7 +151,7 @@ export function EnhancedStickyAddToCart({
             size="icon"
             className="h-10 w-10 rounded-r-xl rounded-l-none active:scale-95 transition-transform"
             onClick={() => handleQuantityChange(1)}
-            disabled={quantity >= effectiveMax || isOutOfStock}
+            disabled={quantity >= effectiveMax || !!isOutOfStock}
             aria-label="Increase quantity"
           >
             <Plus className="w-4 h-4" />
@@ -193,7 +176,7 @@ export function EnhancedStickyAddToCart({
         <Button
           className="h-10 px-5 rounded-xl active:scale-95 transition-transform"
           style={{ backgroundColor: primaryColor }}
-          disabled={isOutOfStock || showAddedFeedback || isAdding || insufficientStock}
+          disabled={!!isOutOfStock || showAddedFeedback || isAdding || !!insufficientStock}
           onClick={handleAddToCart}
         >
           {isAdding ? (
