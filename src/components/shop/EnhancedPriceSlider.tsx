@@ -2,7 +2,7 @@
  * Enhanced Price Slider with dual handles and input fields
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,16 +29,34 @@ export function EnhancedPriceSlider({
 }: EnhancedPriceSliderProps) {
   const [localMin, setLocalMin] = useState(value[0].toString());
   const [localMax, setLocalMax] = useState(value[1].toString());
+  const [localSliderValue, setLocalSliderValue] = useState<[number, number]>(value);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync local state with props
   useEffect(() => {
     setLocalMin(value[0].toString());
     setLocalMax(value[1].toString());
+    setLocalSliderValue(value);
   }, [value]);
 
-  const handleSliderChange = (newValue: number[]) => {
-    onChange([newValue[0], newValue[1]]);
-  };
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  const handleSliderChange = useCallback((newValue: number[]) => {
+    const tuple: [number, number] = [newValue[0], newValue[1]];
+    setLocalSliderValue(tuple);
+    setLocalMin(tuple[0].toString());
+    setLocalMax(tuple[1].toString());
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      onChange(tuple);
+    }, 200);
+  }, [onChange]);
 
   const handleMinInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalMin(e.target.value);
@@ -73,7 +91,7 @@ export function EnhancedPriceSlider({
       {/* Slider */}
       <div className="relative pt-2">
         <Slider
-          value={value}
+          value={localSliderValue}
           onValueChange={handleSliderChange}
           min={min}
           max={max}
