@@ -660,7 +660,7 @@ export default function ProductDetailsPage() {
                                     <div>
                                         <p className="text-sm text-muted-foreground">METRC Retail ID</p>
                                         <p className="font-mono text-sm mt-1">
-                                            {product.metrc_retail_id || '-'}
+                                            {(product as Record<string, unknown>).metrc_retail_id as string || '-'}
                                         </p>
                                     </div>
                                 </CardContent>
