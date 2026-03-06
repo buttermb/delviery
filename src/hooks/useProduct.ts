@@ -12,7 +12,7 @@ import type { Database } from '@/integrations/supabase/types';
 type ProductRow = Database['public']['Tables']['products']['Row'];
 
 export interface Product extends ProductRow {
-    metrc_retail_id?: string | null;
+    
     exclude_from_discounts?: boolean;
     minimum_price?: number;
 }
@@ -34,7 +34,7 @@ export function useProduct({ productId, enabled = true }: UseProductOptions) {
 
             const { data, error } = await supabase
                 .from('products')
-                .select('id, tenant_id, name, description, category, subcategory, brand, vendor_name, sku, barcode, price, wholesale_price, retail_price, cost_per_unit, stock_quantity, available_quantity, low_stock_alert, unit, weight, thc_percent, cbd_percent, strain_type, image_url, images, is_active, is_featured, tags, metrc_id, metrc_retail_id, exclude_from_discounts, minimum_price, created_at, updated_at')
+                .select('id, tenant_id, name, description, category, subcategory, brand, vendor_name, sku, barcode, price, wholesale_price, retail_price, cost_per_unit, stock_quantity, available_quantity, low_stock_alert, unit, weight, thc_percent, cbd_percent, strain_type, image_url, images, is_active, is_featured, tags, metrc_id, exclude_from_discounts, minimum_price, created_at, updated_at')
                 .eq('id', productId)
                 .eq('tenant_id', tenant.id)
                 .maybeSingle();

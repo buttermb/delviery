@@ -76,7 +76,7 @@ import { AdminDataTable } from "@/components/admin/shared/AdminDataTable";
 
 type Product = Database['public']['Tables']['products']['Row'] & {
   // Add fields that might be missing from generated types or are dynamic
-  metrc_retail_id?: string | null;
+  
   exclude_from_discounts?: boolean;
   minimum_price?: number;
   version?: number;
@@ -100,7 +100,7 @@ const mapProductToForm = (product: Product): ProductFormData => ({
   image_url: product.image_url || "",
 
   low_stock_alert: product.low_stock_alert?.toString() || "10",
-  metrc_retail_id: product.metrc_retail_id || "",
+  
 
   exclude_from_discounts: product.exclude_from_discounts ?? false,
   minimum_price: product.minimum_price?.toString() || "",
@@ -285,7 +285,7 @@ export default function ProductManagement() {
       if (!tenant?.id) return [];
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, sku, category, vendor_name, strain_name, strain_type, thc_percent, cbd_percent, batch_number, cost_per_unit, wholesale_price, retail_price, available_quantity, description, image_url, low_stock_alert, metrc_retail_id, exclude_from_discounts, minimum_price, version, price, thca_percentage, fronted_quantity, barcode, barcode_image_url, tenant_id, created_at, coa_url, lab_results_url, menu_visibility')
+        .select('id, name, sku, category, vendor_name, strain_name, strain_type, thc_percent, cbd_percent, batch_number, cost_per_unit, wholesale_price, retail_price, available_quantity, description, image_url, low_stock_alert, exclude_from_discounts, minimum_price, version, price, thca_percentage, fronted_quantity, barcode, barcode_image_url, tenant_id, created_at, coa_url, lab_results_url, menu_visibility')
         .eq('tenant_id', tenant.id)
         .order('name');
       if (error) {
@@ -517,7 +517,7 @@ export default function ProductManagement() {
         // Add missing required fields with defaults
         price: data.wholesale_price ? parseFloat(data.wholesale_price) : 0, // Legacy field sync
         thca_percentage: null,
-        metrc_retail_id: data.metrc_retail_id || null,
+        
         exclude_from_discounts: data.exclude_from_discounts,
         minimum_price: data.minimum_price ? parseFloat(data.minimum_price) : 0,
       };

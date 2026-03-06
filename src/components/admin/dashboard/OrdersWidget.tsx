@@ -90,7 +90,7 @@ function getStatusBadge(status: string) {
   return (
     <Badge variant={config.variant} className={`capitalize gap-1 ${config.className}`}>
       <Icon className="h-3 w-3" />
-      {status.replaceAll('_', ' ')}
+      {status.replace(/_/g, ' ')}
     </Badge>
   );
 }
@@ -193,7 +193,7 @@ export function OrdersWidget() {
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`orders?order=${order.id}`); } }}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusDotColor(order.status)}`} aria-label={`Order status: ${order.status.replaceAll('_', ' ')}`} title={order.status.replaceAll('_', ' ')} />
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusDotColor(order.status)}`} aria-label={`Order status: ${order.status.replace(/_/g, ' ')}`} title={order.status.replace(/_/g, ' ')} />
                 <div className="min-w-0">
                   <div className="font-medium truncate">
                     #{order.order_number || order.id.slice(0, 8)}
