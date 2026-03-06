@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
 
     if (updateError) throw updateError;
 
-    console.log(`Campaign ${campaign.name} sent to ${sentCount} customers`);
+    console.error(`Campaign ${campaign.name} sent to ${sentCount} customers`);
 
     return new Response(
       JSON.stringify({

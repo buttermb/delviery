@@ -148,7 +148,7 @@ serve(async (req) => {
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         // Attempt to mark job as failed
         try {
             const { exportId } = await req.json().catch(() => ({ exportId: null }));
@@ -159,13 +159,13 @@ serve(async (req) => {
                 );
                 await supabaseAdmin.from('data_exports').update({
                     status: 'failed',
-                    error_message: error.message
+                    error_message: error instanceof Error ? error.message : 'Unknown error'
                 }).eq('id', exportId);
             }
-        } catch (e) { }
+        } catch (_e) { /* ignore */ }
 
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }

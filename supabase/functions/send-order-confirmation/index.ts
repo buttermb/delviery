@@ -170,16 +170,16 @@ serve(async (req) => {
         }
 
         // If no email provider configured, just log and return success
-        console.log("No email provider configured. Would send to:", customer_email);
+        console.error("No email provider configured. Would send to:", customer_email);
         return new Response(
             JSON.stringify({ success: true, message: "Email provider not configured" }),
             { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Send order confirmation error:", error);
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
             { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
     }

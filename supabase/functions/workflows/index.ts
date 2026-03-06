@@ -32,7 +32,7 @@ serve(async (req) => {
 
         for (const rule of rules) {
             // Execute rule action
-            console.log(`Executing rule ${rule.name} for trigger ${trigger_type}`);
+            console.error(`Executing rule ${rule.name} for trigger ${trigger_type}`);
 
             // Log execution
             await supabase.from("automation_rules").update({

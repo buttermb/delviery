@@ -163,7 +163,7 @@ serve(async (req) => {
       }
 
       // Get or create auth user
-      const { data: authUsers } = await serviceClient.auth.admin.listUsers();
+      const { data: authUsers } = await serviceClient.auth.admin.listUsers({ perPage: 1000 });
       const authUserId = authUsers?.users?.find(u => u.email === email.toLowerCase())?.id;
 
       if (!authUserId) {

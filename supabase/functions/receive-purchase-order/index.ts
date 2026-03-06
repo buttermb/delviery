@@ -1,10 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
 interface ReceiveItemRequest {
   item_id: string;
@@ -41,6 +35,17 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
+    // Resolve tenant
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!tenantUser?.tenant_id) {
+      throw new Error('Tenant not found');
+    }
+
     const body: ReceivePORequest = await req.json();
     const { purchase_order_id, items, received_date, notes } = body;
 
@@ -54,7 +59,8 @@ serve(async (req) => {
       .from('purchase_orders')
       .select('*, items:purchase_order_items(*)')
       .eq('id', purchase_order_id)
-      .single();
+      .eq('tenant_id', tenantUser.tenant_id)
+      .maybeSingle();
 
     if (poError || !po) {
       throw new Error('Purchase order not found');
@@ -70,8 +76,12 @@ serve(async (req) => {
 
     // Process each received item
     for (const receivedItem of items) {
+      if (receivedItem.quantity_received < 0) {
+        throw new Error(`Invalid quantity for item ${receivedItem.item_id}: must be non-negative`);
+      }
+
       // Find the corresponding PO item
-      const poItem = po.items?.find((i: any) => i.id === receivedItem.item_id);
+      const poItem = po.items?.find((i: Record<string, unknown>) => i.id === receivedItem.item_id);
       if (!poItem) {
         console.error(`PO item ${receivedItem.item_id} not found`);
         continue;
@@ -93,28 +103,29 @@ serve(async (req) => {
 
       // Update product inventory - add received quantity to stock
       if (poItem.product_id) {
-        const { data: product, error: productError } = await supabase
-          .from('products')
-          .select('stock_quantity')
-          .eq('id', poItem.product_id)
-          .single();
+        // Atomic stock update
+        const { error: stockError } = await supabase.rpc('increment_product_stock', {
+          p_product_id: poItem.product_id,
+          p_quantity: receivedItem.quantity_received,
+        });
 
-        if (product && !productError) {
-          const newStock = (product.stock_quantity || 0) + receivedItem.quantity_received;
-          
-          const { error: stockError } = await supabase
+        if (stockError && stockError.code === 'PGRST202') {
+          // Fallback: non-atomic update (legacy)
+          const { data: product } = await supabase
             .from('products')
-            .update({
-              stock_quantity: newStock,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', poItem.product_id);
+            .select('stock_quantity')
+            .eq('id', poItem.product_id)
+            .maybeSingle();
 
-          if (stockError) {
-            console.error('Failed to update product stock:', stockError);
-          } else {
-            console.log(`Updated product ${poItem.product_id} stock: +${receivedItem.quantity_received} = ${newStock}`);
+          if (product) {
+            const newStock = (product.stock_quantity || 0) + receivedItem.quantity_received;
+            await supabase
+              .from('products')
+              .update({ stock_quantity: newStock, updated_at: new Date().toISOString() })
+              .eq('id', poItem.product_id);
           }
+        } else if (stockError) {
+          console.error('Failed to update product stock:', stockError);
         }
       }
     }
@@ -146,10 +157,9 @@ serve(async (req) => {
         )
       `)
       .eq('id', purchase_order_id)
-      .single();
+      .maybeSingle();
 
-    if (fetchError) {
-      console.error('Fetch updated PO error:', fetchError);
+    if (fetchError || !updatedPO) {
       throw new Error('Purchase order received but failed to fetch details');
     }
 
@@ -169,7 +179,7 @@ serve(async (req) => {
     console.error('Receive PO error:', error);
     return new Response(
       JSON.stringify({
-        error: error.message || 'Internal server error',
+        error: error instanceof Error ? error.message : 'Internal server error',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

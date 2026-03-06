@@ -61,7 +61,7 @@ Deno.serve(withZenProtection(async (req) => {
         try {
           // Sign out all sessions for this user
           await supabase.auth.admin.signOut(result.user_id, 'global');
-          console.log('All sessions revoked for user:', result.user_id);
+          console.error('All sessions revoked for user:', result.user_id);
         } catch (signOutError) {
           console.error('Failed to revoke sessions:', signOutError);
           // Continue anyway - the alert is already marked

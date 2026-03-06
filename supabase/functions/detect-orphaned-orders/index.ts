@@ -15,10 +15,9 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase = createClient(supabaseUrl, supabaseServiceKey) as any;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log("Starting orphaned orders detection...");
+    console.error("Starting orphaned orders detection...");
 
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -80,7 +79,7 @@ serve(async (req) => {
           await releaseReservedInventory(supabase, order.id, "unified_order_items");
 
           results.unified_auto_cancelled++;
-          console.log(`Auto-cancelled unified order ${order.order_number} (${daysPending} days old)`);
+          console.error(`Auto-cancelled unified order ${order.order_number} (${daysPending} days old)`);
         } else {
           // Flag as orphaned (30-60 days)
           await supabase
@@ -89,7 +88,7 @@ serve(async (req) => {
             .eq("id", order.id);
 
           results.unified_flagged++;
-          console.log(`Flagged unified order ${order.order_number} as orphaned (${daysPending} days old)`);
+          console.error(`Flagged unified order ${order.order_number} as orphaned (${daysPending} days old)`);
         }
 
         await createNotification(supabase, order, daysPending);
@@ -118,7 +117,7 @@ serve(async (req) => {
           await releaseReservedInventory(supabase, order.id, "wholesale_order_items");
 
           results.wholesale_auto_cancelled++;
-          console.log(`Auto-cancelled wholesale order ${order.order_number} (${daysPending} days old)`);
+          console.error(`Auto-cancelled wholesale order ${order.order_number} (${daysPending} days old)`);
         } else {
           await supabase
             .from("wholesale_orders")
@@ -126,7 +125,7 @@ serve(async (req) => {
             .eq("id", order.id);
 
           results.wholesale_flagged++;
-          console.log(`Flagged wholesale order ${order.order_number} as orphaned (${daysPending} days old)`);
+          console.error(`Flagged wholesale order ${order.order_number} as orphaned (${daysPending} days old)`);
         }
 
         await createNotification(supabase, order, daysPending);
@@ -137,7 +136,7 @@ serve(async (req) => {
       }
     }
 
-    console.log("Orphaned orders detection completed:", results);
+    console.error("Orphaned orders detection completed:", results);
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -158,8 +157,7 @@ serve(async (req) => {
   }
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function releaseReservedInventory(supabase: any, orderId: string, itemsTable: string) {
+async function releaseReservedInventory(supabase: ReturnType<typeof createClient>, orderId: string, itemsTable: string) {
   try {
     const { data: items } = await supabase
       .from(itemsTable)
@@ -185,14 +183,13 @@ async function releaseReservedInventory(supabase: any, orderId: string, itemsTab
       }
     }
 
-    console.log(`Released reserved inventory for order ${orderId}`);
+    console.error(`Released reserved inventory for order ${orderId}`);
   } catch (err) {
     console.error(`Failed to release inventory for order ${orderId}:`, err);
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function createNotification(supabase: any, order: { id: string; order_number: string; tenant_id: string }, daysPending: number) {
+async function createNotification(supabase: ReturnType<typeof createClient>, order: { id: string; order_number: string; tenant_id: string }, daysPending: number) {
   try {
     await supabase
       .from("notifications")

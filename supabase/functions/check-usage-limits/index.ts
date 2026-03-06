@@ -28,7 +28,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    console.log('Checking usage limits across all tenants...');
+    console.error('Checking usage limits across all tenants...');
 
     // Get all active tenants
     const { data: tenants, error: selectError } = await supabaseClient
@@ -41,7 +41,7 @@ serve(async (req) => {
       throw selectError;
     }
 
-    console.log(`Checking ${tenants?.length || 0} active tenants`);
+    console.error(`Checking ${tenants?.length || 0} active tenants`);
 
     const alerts: UsageAlert[] = [];
     const resources = ['customers', 'menus', 'products', 'locations', 'users'];
@@ -88,7 +88,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Found ${alerts.length} usage alerts`);
+    console.error(`Found ${alerts.length} usage alerts`);
 
     // Group alerts by tenant and severity
     const tenantAlerts = alerts.reduce((acc, alert) => {
@@ -106,11 +106,11 @@ serve(async (req) => {
         acc[key].warning.push(alert);
       }
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, unknown>);
 
     // Send consolidated emails
-    const emailTasks = Object.values(tenantAlerts).map(async (data: any) => {
-      const { tenant, critical, warning } = data;
+    const emailTasks = Object.values(tenantAlerts).map(async (data: unknown) => {
+      const { tenant, critical, warning } = data as { tenant: Record<string, unknown>; critical: UsageAlert[]; warning: UsageAlert[] };
       const hasMultipleAlerts = (critical.length + warning.length) > 1;
 
       const resourceList = [...critical, ...warning]
@@ -185,7 +185,7 @@ serve(async (req) => {
         </html>
       `;
 
-      console.log(`Would send usage alert to ${tenant.owner_email} (${critical.length} critical, ${warning.length} warnings)`);
+      console.error(`Would send usage alert to ${tenant.owner_email} (${critical.length} critical, ${warning.length} warnings)`);
       
       // Email integration here
       return { email: tenant.owner_email, sent: true };

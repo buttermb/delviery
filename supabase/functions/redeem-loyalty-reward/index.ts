@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       .select('*')
       .eq('id', rewardId)
       .eq('tenant_id', userTenantId) // Enforce tenant isolation
-      .single();
+      .maybeSingle();
 
     if (rewardError || !reward) {
       return new Response(
@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
       .select('id')
       .eq('id', customerId)
       .eq('tenant_id', userTenantId) // Enforce tenant isolation
-      .single();
+      .maybeSingle();
 
     if (customerError || !customer) {
       return new Response(
@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
       .from('loyalty_points')
       .select('balance, lifetime_redeemed')
       .eq('client_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (pointsError || !points) {
       return new Response(

@@ -1,10 +1,9 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const AssignSchema = z.object({
+  order_id: z.string().uuid(),
+  runner_id: z.string().uuid(),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -18,24 +17,48 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    const { order_id, runner_id } = await req.json();
-
-    // Validate input
-    if (!order_id || !runner_id) {
+    // Auth check
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Check if order exists and is pending
+    // Tenant resolution
+    const { data: tenantUser } = await supabaseClient
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!tenantUser?.tenant_id) {
+      return new Response(
+        JSON.stringify({ error: 'Tenant not found' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate input with Zod
+    const parsed = AssignSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: parsed.error.flatten() }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const { order_id, runner_id } = parsed.data;
+
+    // Check if order exists and is assignable (confirmed or ready)
     const { data: order } = await supabaseClient
       .from('wholesale_orders')
       .select('status')
       .eq('id', order_id)
-      .single();
+      .eq('tenant_id', tenantUser.tenant_id)
+      .maybeSingle();
 
-    if (!order || order.status !== 'pending') {
+    if (!order || !['confirmed', 'ready'].includes(order.status)) {
       return new Response(
         JSON.stringify({ error: 'Order not available for assignment' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -47,7 +70,8 @@ serve(async (req) => {
       .from('wholesale_runners')
       .select('status')
       .eq('id', runner_id)
-      .single();
+      .eq('tenant_id', tenantUser.tenant_id)
+      .maybeSingle();
 
     if (!runner || runner.status !== 'available') {
       return new Response(
@@ -73,7 +97,7 @@ serve(async (req) => {
     // Update order status
     await supabaseClient
       .from('wholesale_orders')
-      .update({ status: 'assigned' })
+      .update({ status: 'shipped' })
       .eq('id', order_id);
 
     // Update runner status

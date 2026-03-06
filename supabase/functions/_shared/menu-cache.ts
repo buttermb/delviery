@@ -2,8 +2,8 @@
 import { connect, Redis } from 'https://deno.land/x/redis@v0.29.0/mod.ts';
 
 export interface MenuCacheItem {
-    decryptedData: any;
-    products: any[];
+    decryptedData: Record<string, unknown>;
+    products: Record<string, unknown>[];
     accessCount: number;
     lastAccessed: string;
 }
@@ -28,7 +28,7 @@ export class MenuCache {
                 password: this.password,
             });
             this.isConnected = true;
-            console.log('Connected to Redis');
+            console.error('Connected to Redis');
         } catch (error) {
             console.error('Failed to connect to Redis:', error);
             throw error;

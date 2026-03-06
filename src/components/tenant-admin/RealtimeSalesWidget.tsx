@@ -159,7 +159,25 @@ export function RealtimeSalesWidget() {
         );
     }
 
-    if (!salesMetrics) return null;
+    if (!salesMetrics) {
+        return (
+            <Card className="glass-card">
+                <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2">
+                        Today's Performance
+                        <Badge variant="outline" className="text-xs">Live</Badge>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center justify-center py-6 text-center">
+                        <DollarSign className="h-8 w-8 text-muted-foreground/40 mb-2" />
+                        <p className="text-sm text-muted-foreground">No sales data yet</p>
+                        <p className="text-xs text-muted-foreground mt-1">Sales metrics will appear once orders start coming in.</p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card className="glass-card">

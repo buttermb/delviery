@@ -33,7 +33,7 @@ serve(async (req) => {
         const { name, avatar_url } = await req.json();
 
         // 1. Update auth.users metadata
-        const authUpdates: any = {};
+        const authUpdates: Record<string, string> = {};
         if (name) {
             authUpdates.full_name = name;
             authUpdates.name = name;
@@ -56,7 +56,7 @@ serve(async (req) => {
             Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
         );
 
-        const dbUpdates: any = {};
+        const dbUpdates: Record<string, string> = {};
         if (name) dbUpdates.name = name;
         if (avatar_url) dbUpdates.avatar_url = avatar_url;
 

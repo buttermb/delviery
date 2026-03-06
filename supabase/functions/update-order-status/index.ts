@@ -64,7 +64,7 @@ serve(async (req) => {
       }
 
       // Build update object
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         status
       };
 
@@ -73,7 +73,7 @@ serve(async (req) => {
         updateData.courier_id = courierRecordId;
       }
 
-      console.log("Updating order with data:", updateData);
+      console.error("Updating order with data:", updateData);
 
       // SECURITY: Get user's tenant
       const { data: tenantUser } = await supabase
@@ -103,7 +103,7 @@ serve(async (req) => {
         );
       }
 
-      console.log("Order updated successfully");
+      console.error("Order updated successfully");
 
       // Add tracking entry
       await supabase.from("order_tracking").insert({
@@ -180,7 +180,7 @@ serve(async (req) => {
                 },
               },
             });
-            console.log(`Push notification sent for order ${orderId} status: ${status}`);
+            console.error(`Push notification sent for order ${orderId} status: ${status}`);
           }
         }
       } catch (pushError) {

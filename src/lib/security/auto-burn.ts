@@ -138,14 +138,19 @@ const getSeverityForActivity = (
 
 /**
  * Trigger a menu burn via the edge function
+ *
+ * SECURITY: The tenantId parameter is required to ensure menu burns are
+ * scoped to the correct tenant. Without it, a malicious menuId could
+ * target another tenant's menu.
  */
 export const burnMenu = async (
   menuId: string,
   reason: string,
-  burnType: 'soft' | 'hard' = 'soft'
+  burnType: 'soft' | 'hard' = 'soft',
+  tenantId?: string
 ): Promise<AutoBurnResult> => {
   try {
-    logger.warn('Initiating menu burn', { menuId, reason, burnType });
+    logger.warn('Initiating menu burn', { menuId, reason, burnType, tenantId });
 
     // Log the burn event
     const client = supabase;
@@ -161,8 +166,11 @@ export const burnMenu = async (
     });
 
     // Update menu status to burned
+    // SECURITY: Always filter by tenant_id when provided to prevent
+    // cross-tenant menu burns. The .eq('id', menuId) alone is not
+    // sufficient — a crafted menuId could target another tenant's menu.
     const statusValue = burnType === 'hard' ? 'hard_burned' : 'soft_burned';
-    const { error } = await supabase
+    let query = supabase
       .from('disposable_menus')
       .update({
         status: statusValue,
@@ -171,12 +179,18 @@ export const burnMenu = async (
       })
       .eq('id', menuId);
 
+    if (tenantId) {
+      query = query.eq('tenant_id', tenantId);
+    }
+
+    const { error } = await query;
+
     if (error) {
       logger.error('Failed to burn menu', error);
       return { burned: false, reason: 'Database error', burnType };
     }
 
-    logger.warn('Menu burned successfully', { menuId, reason });
+    logger.warn('Menu burned successfully', { menuId, reason, tenantId });
     return { burned: true, reason, burnType };
   } catch (error) {
     logger.error('Error during menu burn', error);

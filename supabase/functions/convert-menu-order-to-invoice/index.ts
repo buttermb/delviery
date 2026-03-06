@@ -49,6 +49,25 @@ serve(
         );
       }
 
+      // Resolve tenant from JWT via tenant_users
+      const { data: tenantUser, error: tenantError } = await supabase
+        .from('tenant_users')
+        .select('tenant_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (tenantError || !tenantUser) {
+        return new Response(
+          JSON.stringify({ error: 'Tenant not found for user' }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+
+      const tenantId = tenantUser.tenant_id;
+
       // Parse and validate request body
       const body = await req.json();
       const { menu_order_id, client_id: providedClientId } = convertSchema.parse(body);
@@ -58,6 +77,7 @@ serve(
         .from('menu_orders')
         .select('id, converted_to_invoice_id, tenant_id, order_data, total_amount, client_id, menu_id')
         .eq('id', menu_order_id)
+        .eq('tenant_id', tenantId)
         .single();
 
       if (orderError || !order) {
@@ -115,7 +135,7 @@ serve(
       const orderData = order.order_data || {};
       const items = orderData.items || [];
       
-      const lineItems = items.map((item: any) => ({
+      const lineItems = items.map((item: Record<string, unknown>) => ({
         product_name: item.name || item.product_name || 'Unknown Product',
         quantity: Number(item.quantity || 1),
         price: Number(item.price || item.unit_price || 0),
@@ -165,7 +185,8 @@ serve(
           converted_to_invoice_id: invoice.id,
           converted_at: new Date().toISOString(),
         })
-        .eq('id', menu_order_id);
+        .eq('id', menu_order_id)
+        .eq('tenant_id', tenantId);
 
       if (updateError) {
         // Invoice created but tracking update failed - log but don't fail

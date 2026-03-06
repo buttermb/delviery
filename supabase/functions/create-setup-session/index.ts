@@ -9,9 +9,9 @@ import Stripe from 'https://esm.sh/stripe@18.5.0';
 import { validateSetupSession } from './validation.ts';
 
 // Helper logging function
-const logStep = (step: string, details?: any) => {
+const logStep = (step: string, details?: unknown) => {
     const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-    console.log(`[CREATE-SETUP-SESSION] ${step}${detailsStr}`);
+    console.error(`[CREATE-SETUP-SESSION] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -184,13 +184,14 @@ serve(async (req) => {
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
 
-    } catch (error: any) {
-        logStep('CRITICAL ERROR', { message: error.message, stack: error.stack });
+    } catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : 'Unknown error';
+        const errStack = error instanceof Error ? error.stack : undefined;
+        console.error('[CREATE-SETUP-SESSION] CRITICAL ERROR', { message: errMsg, stack: errStack });
         console.error('[CREATE-SETUP-SESSION] Error:', error);
         return new Response(
             JSON.stringify({
-                error: error.message || 'Internal server error',
-                details: error.stack || 'No stack trace available'
+                error: 'Internal server error',
             }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

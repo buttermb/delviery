@@ -52,17 +52,18 @@ export function OnboardingChecklist({
   const [isDismissed, setIsDismissed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if checklist was dismissed
+  // Check if checklist was dismissed (tenant-scoped)
   useEffect(() => {
     try {
-      const dismissed = localStorage.getItem(STORAGE_KEYS.ONBOARDING_DISMISSED);
+      const dismissKey = `${STORAGE_KEYS.ONBOARDING_DISMISSED}_${tenant?.id ?? ''}`;
+      const dismissed = localStorage.getItem(dismissKey);
       if (dismissed === 'true') {
         setIsDismissed(true);
       }
     } catch {
       // Ignore localStorage errors
     }
-  }, []);
+  }, [tenant?.id]);
 
   const steps: OnboardingStep[] = useMemo(() => [
     {
@@ -150,7 +151,8 @@ export function OnboardingChecklist({
 
   const handleDismiss = () => {
     try {
-      localStorage.setItem(STORAGE_KEYS.ONBOARDING_DISMISSED, 'true');
+      const dismissKey = `${STORAGE_KEYS.ONBOARDING_DISMISSED}_${tenant?.id ?? ''}`;
+      localStorage.setItem(dismissKey, 'true');
     } catch {
       // Ignore localStorage errors
     }

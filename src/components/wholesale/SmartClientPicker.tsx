@@ -90,6 +90,9 @@ export function SmartClientPicker({
 
   // Get credit health color
   const getCreditHealth = useCallback((client: WholesaleClient) => {
+    if (!client.credit_limit || client.credit_limit <= 0) {
+      return { color: 'text-gray-500', bg: 'bg-gray-500', label: 'No Limit' };
+    }
     const usedPercent = (client.outstanding_balance / client.credit_limit) * 100;
     if (usedPercent >= 90) return { color: 'text-red-500', bg: 'bg-red-500', label: 'Critical' };
     if (usedPercent >= 70) return { color: 'text-yellow-500', bg: 'bg-yellow-500', label: 'Warning' };

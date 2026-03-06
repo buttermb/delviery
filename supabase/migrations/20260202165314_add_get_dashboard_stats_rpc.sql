@@ -110,7 +110,7 @@ BEGIN
         FROM public.products p
         WHERE p.tenant_id = p_tenant_id
           AND p.is_active = true
-          AND p.stock_quantity <= COALESCE(p.low_stock_threshold, 10)
+          AND p.stock_quantity <= COALESCE(p.low_stock_alert, 10)
           AND p.stock_quantity > 0
       ),
       'out_of_stock', (

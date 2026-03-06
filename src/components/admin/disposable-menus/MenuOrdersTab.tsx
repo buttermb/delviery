@@ -6,6 +6,7 @@ import { StatusDropdown, MENU_ORDER_STATUSES } from '@/components/admin/StatusDr
 import { QuickMessageButton } from '@/components/admin/QuickMessageButton';
 import { OrderRowContextMenu, useOrderContextActions } from '@/components/admin/OrderRowContextMenu';
 import { supabase } from '@/integrations/supabase/client';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { humanizeError } from '@/lib/humanizeError';
@@ -30,6 +31,7 @@ interface MenuOrdersTabProps {
 }
 
 export const MenuOrdersTab = ({ orders, isLoading, onOrderUpdate }: MenuOrdersTabProps) => {
+  const { tenant } = useTenantAdminAuth();
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     const updates: Record<string, unknown> = {
@@ -53,10 +55,17 @@ export const MenuOrdersTab = ({ orders, isLoading, onOrderUpdate }: MenuOrdersTa
       }
     }
 
+    const tenantId = tenant?.id;
+    if (!tenantId) {
+      toast.error('No tenant context available');
+      throw new Error('Missing tenant_id');
+    }
+
     const { error } = await supabase
       .from('menu_orders')
       .update(updates)
-      .eq('id', orderId);
+      .eq('id', orderId)
+      .eq('tenant_id', tenantId);
 
     if (error) {
       toast.error('Failed to update status', { description: humanizeError(error) });

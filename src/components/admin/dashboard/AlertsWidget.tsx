@@ -285,16 +285,18 @@ export function AlertsWidget() {
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <span className="truncate max-w-[200px] sm:max-w-none">{alert.message}</span>
-                    <span className="opacity-60 whitespace-nowrap">
-                      • {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true })}
-                    </span>
+                    {alert.created_at && (
+                      <span className="opacity-60 whitespace-nowrap">
+                        • {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true })}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-11 w-11 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                className="h-11 w-11 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 onClick={(e) => handleDismiss(e, alert.id)}
                 disabled={dismissMutation.isPending}
                 title="Dismiss alert"

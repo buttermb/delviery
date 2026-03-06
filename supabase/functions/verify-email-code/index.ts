@@ -34,7 +34,7 @@ serve(async (req) => {
         .from('tenants')
         .select('id')
         .eq('slug', tenant_slug.toLowerCase())
-        .single();
+        .maybeSingle();
       tenantId = tenant?.id || null;
     }
 
@@ -135,7 +135,7 @@ serve(async (req) => {
       .update({ verified_at: new Date().toISOString() })
       .eq('id', verificationCode.id);
 
-    console.log(`[VERIFY-EMAIL] Successfully verified email for customer: ${customerUser.id}`);
+    console.error(`[VERIFY-EMAIL] Successfully verified email for customer: ${customerUser.id}`);
 
     return new Response(
       JSON.stringify({

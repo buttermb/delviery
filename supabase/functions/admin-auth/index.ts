@@ -245,7 +245,7 @@ serve(secureHeadersMiddleware(async (req) => {
           .from("admin_users")
           .select("id")
           .eq("user_id", user.id)
-          .single();
+          .maybeSingle();
 
         if (adminUser) {
           // Log admin logout to both audit systems

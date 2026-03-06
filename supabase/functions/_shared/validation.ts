@@ -7,7 +7,13 @@ export function sanitizeString(input: string, maxLength: number = 255): string {
   return input
     .trim()
     .slice(0, maxLength)
-    .replace(/[<>]/g, ''); // Basic XSS prevention
+    .replace(/[<>]/g, '') // Strip angle brackets
+    .replace(/on(error|load|click|mouseover|mouseout|focus|blur|submit|change|input|keydown|keyup|keypress)\s*=/gi, '') // Strip event handlers
+    .replace(/javascript\s*:/gi, '') // Strip javascript: protocol
+    .replace(/data\s*:\s*text\/html/gi, '') // Strip data:text/html URIs
+    .replace(/&lt;/g, '') // Strip encoded less-than
+    .replace(/&gt;/g, '') // Strip encoded greater-than
+    .replace(/&#/g, ''); // Strip numeric HTML entities
 }
 
 export function validateEmail(email: string): boolean {
@@ -31,7 +37,7 @@ export function validateBorough(borough: string): boolean {
   return validBoroughs.includes(borough);
 }
 
-export function validateOrderItems(items: any[]): { valid: boolean; error?: string } {
+export function validateOrderItems(items: Record<string, unknown>[]): { valid: boolean; error?: string } {
   if (!Array.isArray(items) || items.length === 0) {
     return { valid: false, error: 'Items must be a non-empty array' };
   }
@@ -57,8 +63,8 @@ export function validatePaymentMethod(method: string): boolean {
   return ['cash', 'card', 'crypto'].includes(method);
 }
 
-export function sanitizeOrderInput(input: any): {
-  items: any[];
+export function sanitizeOrderInput(input: Record<string, unknown>): {
+  items: Record<string, unknown>[];
   addressId: string;
   paymentMethod: string;
   deliveryNotes?: string;

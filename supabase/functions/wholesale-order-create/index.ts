@@ -65,7 +65,7 @@ serve(async (req) => {
       if (rpcError) {
         // If RPC doesn't exist, fall back to legacy method
         if (rpcError.code === 'PGRST202' || rpcError.message?.includes('does not exist')) {
-          console.log('[WHOLESALE_ORDER] Atomic RPC not available, using legacy method');
+          console.error('[WHOLESALE_ORDER] Atomic RPC not available, using legacy method');
           return await handleLegacyOrderCreate(supabaseClient, client_id, items, delivery_address, delivery_notes);
         }
 
@@ -204,7 +204,7 @@ async function handleLegacyOrderCreate(
 
   if (orderError) throw orderError;
 
-  // Create order items
+  // Create order items — rollback order if this fails
   const orderItems = processedItems.map(item => ({
     ...item,
     order_id: order.id
@@ -214,14 +214,30 @@ async function handleLegacyOrderCreate(
     .from('wholesale_order_items')
     .insert(orderItems);
 
-  if (itemsError) throw itemsError;
+  if (itemsError) {
+    // Rollback: delete the orphaned order since items failed to insert
+    console.error('[WHOLESALE_ORDER] Order items insertion failed, rolling back order', order.id, itemsError);
+    await supabaseClient
+      .from('wholesale_orders')
+      .delete()
+      .eq('id', order.id);
+    throw itemsError;
+  }
 
-  // Update inventory quantities
+  // Update inventory quantities — log warnings but don't block the order
+  // since it's already committed. Inventory reconciliation can fix drift.
   for (const item of items) {
-    await supabaseClient.rpc('decrement_wholesale_inventory', {
+    const { error: inventoryError } = await supabaseClient.rpc('decrement_wholesale_inventory', {
       p_inventory_id: item.inventory_id,
       p_quantity: item.quantity_lbs
     });
+    if (inventoryError) {
+      console.warn(
+        '[WHOLESALE_ORDER] Inventory decrement failed for', item.inventory_id,
+        '- order', order.id, 'will need manual inventory reconciliation:',
+        inventoryError.message
+      );
+    }
   }
 
   // Update client outstanding balance using atomic RPC if available
@@ -233,6 +249,7 @@ async function handleLegacyOrderCreate(
 
   if (balanceError) {
     // Fallback to direct update
+    console.warn('[WHOLESALE_ORDER] adjust_client_balance RPC failed, using direct update:', balanceError.message);
     await supabaseClient
       .from('wholesale_clients')
       .update({ outstanding_balance: newBalance })

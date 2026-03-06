@@ -102,7 +102,7 @@ export default function WholesaleClients() {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
 
-  const { data: clients, isLoading } = useQuery({
+  const { data: clients, isLoading, isError, error, refetch } = useQuery({
     queryKey: queryKeys.wholesaleClients.list({ filter }),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -581,6 +581,18 @@ export default function WholesaleClients() {
       </div>
     </div>
   ), [tenant?.slug, navigate]);
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center">
+        <p className="text-destructive font-medium">Failed to load data</p>
+        <p className="text-sm text-muted-foreground mt-1">{error?.message || 'An unexpected error occurred'}</p>
+        <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
+          Try Again
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>

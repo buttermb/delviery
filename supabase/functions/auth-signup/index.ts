@@ -211,8 +211,8 @@ If you didn't create an account with ${params.businessName}, please ignore this 
   }
 
   // No email provider configured - log for development
-  console.log('No email provider configured. Verification token:', params.token);
-  console.log('Verification URL:', params.verificationUrl);
+  console.error('No email provider configured. Verification token:', params.token);
+  console.error('Verification URL:', params.verificationUrl);
   return false;
 }
 
@@ -311,7 +311,9 @@ serve(async (req) => {
     }
 
     // Check if email already exists in auth.users
-    const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers();
+    const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({
+      perPage: 1000,
+    });
 
     if (listError) {
       console.error('Error checking existing users:', listError);
@@ -326,13 +328,14 @@ serve(async (req) => {
     );
 
     if (emailExists) {
-      // Return generic message to prevent email enumeration
+      // Return generic success-like response to prevent email enumeration
+      console.error('Signup attempted with existing email:', normalizedEmail);
       return new Response(
         JSON.stringify({
-          error: 'An account with this email already exists',
-          code: 'EMAIL_EXISTS',
+          success: true,
+          message: 'If this email is valid, you will receive a verification email.',
         }),
-        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -353,12 +356,14 @@ serve(async (req) => {
       console.error('User creation error:', createError);
 
       if (createError.message?.includes('already been registered')) {
+        // Return generic success-like response to prevent email enumeration
+        console.error('createUser race condition - email already registered:', normalizedEmail);
         return new Response(
           JSON.stringify({
-            error: 'An account with this email already exists',
-            code: 'EMAIL_EXISTS',
+            success: true,
+            message: 'If this email is valid, you will receive a verification email.',
           }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 

@@ -98,6 +98,11 @@ export const wholesaleOrderFlowManager = {
         return { success: false, error: 'Order not found' };
       }
 
+      if (!order) {
+        logger.warn('Order not found for status transition', { orderId });
+        return { success: false, error: 'Order not found' };
+      }
+
       const currentStatus = order.status as WholesaleOrderStatus;
 
       // Check editability restrictions

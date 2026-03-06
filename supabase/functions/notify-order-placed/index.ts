@@ -44,14 +44,15 @@ serve(async (req) => {
     if (orderError) throw orderError;
 
     const menu = order.disposable_menus;
-    const orderData = order.order_data as any;
+    const orderData = order.order_data as Record<string, unknown>;
     const items = orderData?.items || [];
 
     // Get business name with fallback hierarchy
     const businessName = menu.business_name || menu.title || 'Our Business';
 
     // Use synced order number if available, otherwise fallback to short ID
-    const orderNumber = (order as any).synced_order?.order_number || `MENU-${order.id.slice(0, 8).toUpperCase()}`;
+    const syncedOrder = (order as Record<string, unknown>).synced_order as Record<string, unknown> | undefined;
+    const orderNumber = syncedOrder?.order_number || `MENU-${order.id.slice(0, 8).toUpperCase()}`;
 
     // Prepare customer notification
     const customerMessage = `
@@ -60,7 +61,7 @@ Order Confirmation #${orderNumber}
 Thank you for your order from ${businessName}!
 
 Order Details:
-${items.map((item: any) => `- ${item.product_name} x${item.quantity} - $${item.total_price.toFixed(2)}`).join('\n')}
+${items.map((item: Record<string, unknown>) => `- ${item.product_name} x${item.quantity} - $${Number(item.total_price).toFixed(2)}`).join('\n')}
 
 Total: $${order.total_amount.toFixed(2)}
 
@@ -85,7 +86,7 @@ Phone: ${order.contact_phone}
 Email: ${orderData.contact_email || 'N/A'}
 
 Order Items:
-${items.map((item: any) => `- ${item.product_name} x${item.quantity} - $${item.total_price.toFixed(2)}`).join('\n')}
+${items.map((item: Record<string, unknown>) => `- ${item.product_name} x${item.quantity} - $${Number(item.total_price).toFixed(2)}`).join('\n')}
 
 Total: $${order.total_amount.toFixed(2)}
 
@@ -97,13 +98,13 @@ ${order.customer_notes ? `Customer Notes: ${order.customer_notes}` : ''}
 Please review and process this order.
     `.trim();
 
-    console.log('Customer notification:', {
+    console.error('Customer notification:', {
       to: orderData.contact_email,
       phone: order.contact_phone,
       message: customerMessage,
     });
 
-    console.log('Admin notification:', {
+    console.error('Admin notification:', {
       message: adminMessage,
     });
 
@@ -153,10 +154,10 @@ Please review and process this order.
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error sending order notifications:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

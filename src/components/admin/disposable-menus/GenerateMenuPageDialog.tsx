@@ -84,6 +84,22 @@ const COLOR_SCHEMES: ColorScheme[] = [
   },
 ];
 
+// ---------- Standard cannabis tiers ----------
+
+const STANDARD_TIERS = [
+  { label: '8th', weight_grams: 3.5 },
+  { label: 'Q', weight_grams: 7 },
+  { label: 'Half', weight_grams: 14 },
+  { label: 'Zip', weight_grams: 28 },
+  { label: 'QP', weight_grams: 112 },
+] as const;
+
+interface TieredPrice {
+  label: string;
+  price: number;
+  weight_grams?: number;
+}
+
 // ---------- Types ----------
 
 interface GenerateMenuPageDialogProps {
@@ -122,6 +138,9 @@ export function GenerateMenuPageDialog({
     showDescriptions: true,
     showImages: true,
   });
+
+  // Tiered pricing: productId → { label → price string }
+  const [tieredPrices, setTieredPrices] = useState<Record<string, Record<string, string>>>({});
 
   // Color scheme
   const [colorSchemeId, setColorSchemeId] = useState('light');
@@ -166,6 +185,36 @@ export function GenerateMenuPageDialog({
     setDisplayOptions((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const setTierPrice = (productId: string, tierLabel: string, value: string) => {
+    setTieredPrices((prev) => ({
+      ...prev,
+      [productId]: { ...prev[productId], [tierLabel]: value },
+    }));
+  };
+
+  /** Convert tieredPrices state → per-product TieredPrice[] for the API */
+  const buildProductPrices = (): Record<string, TieredPrice[]> => {
+    const result: Record<string, TieredPrice[]> = {};
+    for (const productId of selectedProducts) {
+      const tiers = tieredPrices[productId];
+      if (!tiers) continue;
+      const arr: TieredPrice[] = [];
+      for (const tier of STANDARD_TIERS) {
+        const raw = tiers[tier.label];
+        if (raw && raw.trim() !== '') {
+          const price = parseFloat(raw);
+          if (!isNaN(price) && price > 0) {
+            arr.push({ label: tier.label, price, weight_grams: tier.weight_grams });
+          }
+        }
+      }
+      if (arr.length > 0) {
+        result[productId] = arr;
+      }
+    }
+    return result;
+  };
+
   const handleGenerate = async () => {
     if (!tenant?.id || selectedProducts.size === 0 || !title.trim()) return;
 
@@ -181,11 +230,15 @@ export function GenerateMenuPageDialog({
           description: `Static menu page: ${title.trim()}`,
           custom_message: customMessage.trim() || undefined,
           show_product_images: displayOptions.showImages,
-          products: Array.from(selectedProducts).map((pid, idx) => ({
-            product_id: pid,
-            display_availability: true,
-            display_order: idx,
-          })),
+          products: (() => {
+            const allPrices = buildProductPrices();
+            return Array.from(selectedProducts).map((pid, idx) => ({
+              product_id: pid,
+              display_availability: true,
+              display_order: idx,
+              prices: allPrices[pid],
+            }));
+          })(),
           security_settings: { menu_type: 'static_page' },
           appearance_settings: {
             color_scheme: selectedScheme.id,
@@ -255,6 +308,7 @@ export function GenerateMenuPageDialog({
       setSelectedProducts(new Set());
       setSearchQuery('');
       setDisplayOptions({ showPrices: true, showDescriptions: true, showImages: true });
+      setTieredPrices({});
       setColorSchemeId('light');
       setContactInfo('');
       setCustomMessage('');
@@ -385,6 +439,42 @@ export function GenerateMenuPageDialog({
                 </Badge>
               )}
             </div>
+
+            {/* Tiered pricing per product */}
+            {selectedProducts.size > 0 && displayOptions.showPrices && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Tiered Pricing (optional)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Set per-tier prices for each product. Leave empty to show only the base price.
+                </p>
+                <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+                  {products
+                    .filter((p) => selectedProducts.has(p.id))
+                    .map((product) => (
+                      <div key={product.id} className="space-y-1">
+                        <span className="text-xs font-medium truncate block">{product.name}</span>
+                        <div className="flex flex-wrap gap-2">
+                          {STANDARD_TIERS.map((tier) => (
+                            <div key={tier.label} className="flex items-center gap-1">
+                              <span className="text-[11px] text-muted-foreground w-7">{tier.label}</span>
+                              <span className="text-[11px] text-muted-foreground">$</span>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="1"
+                                placeholder="—"
+                                value={tieredPrices[product.id]?.[tier.label] ?? ''}
+                                onChange={(e) => setTierPrice(product.id, tier.label, e.target.value)}
+                                className="w-16 h-7 text-xs px-1.5"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
 
             <Separator />
 

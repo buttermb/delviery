@@ -51,7 +51,7 @@ Deno.serve(async (req: Request) => {
             : `Your order is ready for pickup! 🎉`;
 
         // Log the notification attempt (for debugging)
-        console.log(`Sending notification to ${phone}:`, message);
+        console.error(`Sending notification to ${phone}:`, message);
 
         // ========================================
         // SMS INTEGRATION (Choose one provider)
@@ -89,7 +89,7 @@ Deno.serve(async (req: Request) => {
         */
 
         // Option 2: Just log for demo (remove in production)
-        console.log(`[DEMO MODE] SMS to ${phone}: ${message}`);
+        console.error(`[DEMO MODE] SMS to ${phone}: ${message}`);
 
         // Mark order as notified in database
         const { error: updateError } = await supabase
@@ -106,7 +106,7 @@ Deno.serve(async (req: Request) => {
 
         // Optionally send email notification too
         if (email) {
-            console.log(`[DEMO MODE] Email to ${email}: ${message}`);
+            console.error(`[DEMO MODE] Email to ${email}: ${message}`);
             // Add email integration here (e.g., Resend, SendGrid, AWS SES)
         }
 

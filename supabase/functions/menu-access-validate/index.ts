@@ -57,9 +57,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== EDGE FUNCTION INVOKED ===');
-    console.log('Timestamp:', new Date().toISOString());
-    console.log('Request method:', req.method);
+    console.error('menu-access-validate invoked at', new Date().toISOString());
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -73,7 +71,6 @@ serve(async (req) => {
     const velocity = new VelocityChecker(redisHost, redisPort, redisPassword);
 
     const requestBody = await req.json();
-    console.log('Received request body:', JSON.stringify(requestBody));
 
     const {
       encrypted_url_token,
@@ -124,7 +121,7 @@ serve(async (req) => {
     }
 
     if (!velocityAllowed) {
-      console.log('Velocity limit exceeded for token:', encrypted_url_token, 'IP hash:', ipHash);
+      console.error('Velocity limit exceeded for IP hash:', ipHash);
 
       // Log security event
       await supabaseClient.from('menu_security_events').insert({
@@ -150,7 +147,6 @@ serve(async (req) => {
     }
 
     // Find menu by token with complete product data including cannabis info
-    console.log('Looking up menu with token:', encrypted_url_token);
     const { data: menu, error: menuError } = await supabaseClient
       .from('disposable_menus')
       .select(`
@@ -163,7 +159,6 @@ serve(async (req) => {
             description,
             category,
             quantity_lbs,
-            warehouse_location,
             image_url,
             images,
             base_price,
@@ -182,26 +177,19 @@ serve(async (req) => {
       .eq('encrypted_url_token', encrypted_url_token)
       .maybeSingle();
 
-    console.log('Query result:', JSON.stringify({
-      hasMenu: !!menu,
-      menuProductsCount: menu?.disposable_menu_products?.length || 0,
-      firstProduct: menu?.disposable_menu_products?.[0]
-    }));
-
     if (menuError) {
       console.error('Menu lookup error:', menuError);
       return new Response(
         JSON.stringify({
           access_granted: false,
           violations: ['Database error'],
-          error: menuError.message
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     if (!menu) {
-      console.log('Menu not found for token:', encrypted_url_token);
+      console.error('Menu not found for provided token');
       return new Response(
         JSON.stringify({
           access_granted: false,
@@ -210,8 +198,6 @@ serve(async (req) => {
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    console.log('Menu found:', menu.name);
 
     // Check menu status
     if (menu.status !== 'active') {
@@ -244,7 +230,6 @@ serve(async (req) => {
     if (menu.access_code_hash) {
       // Menu requires access code
       if (!access_code) {
-        console.error('Menu requires access code but none provided');
         return new Response(
           JSON.stringify({
             error: 'Access code required',
@@ -291,8 +276,6 @@ serve(async (req) => {
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-    } else {
-      console.log('No access code required for this menu');
     }
 
     const violations: string[] = [];
@@ -358,7 +341,7 @@ serve(async (req) => {
           .select('*')
           .eq('menu_id', menu.id)
           .eq('unique_access_token', unique_access_token)
-          .single();
+          .maybeSingle();
 
         if (!whitelist || whitelist.status === 'revoked' || whitelist.status === 'blocked') {
           violations.push('Access revoked or not invited');
@@ -442,8 +425,6 @@ serve(async (req) => {
         };
       });
 
-      console.log('Transformed products:', products.length, 'items');
-
       return new Response(
         JSON.stringify({
           access_granted: true,
@@ -463,7 +444,15 @@ serve(async (req) => {
               show_product_images: true,
               show_availability: true
             },
-            security_settings: security_settings // Include security_settings so frontend can check menu_type
+            // Only expose client-safe security fields, not full internal config
+            security_settings: {
+              access_type: security_settings.access_type || 'open',
+              menu_type: security_settings.menu_type,
+              forum_url: security_settings.forum_url,
+              screenshot_protection_enabled: security_settings.screenshot_protection_enabled,
+              watermark_enabled: security_settings.watermark_enabled,
+              watermark_text: security_settings.watermark_text,
+            }
           },
           remaining_views: whitelist_entry
             ? (security_settings.view_limits?.max_views_per_week || 999) - ((whitelist_entry.view_count as number) || 0)
@@ -485,8 +474,7 @@ serve(async (req) => {
     console.error('Unhandled error in menu-access-validate:', error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
+        error: 'Internal server error',
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

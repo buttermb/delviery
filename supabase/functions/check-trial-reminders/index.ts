@@ -11,7 +11,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    console.log("[CHECK TRIAL REMINDERS] Running daily check...");
+    console.error("[CHECK TRIAL REMINDERS] Running daily check...");
 
     // Get all active trials
     const { data: trials } = await supabaseClient
@@ -21,14 +21,14 @@ serve(async (req) => {
       .not("trial_ends_at", "is", null);
 
     if (!trials || trials.length === 0) {
-      console.log("[CHECK TRIAL REMINDERS] No active trials found");
+      console.error("[CHECK TRIAL REMINDERS] No active trials found");
       return new Response(
         JSON.stringify({ message: "No active trials" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`[CHECK TRIAL REMINDERS] Found ${trials.length} active trials`);
+    console.error(`[CHECK TRIAL REMINDERS] Found ${trials.length} active trials`);
 
     const now = new Date();
     const remindersToSend = [];
@@ -38,7 +38,7 @@ serve(async (req) => {
       const daysRemaining = Math.ceil((trialEnds.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       const hasPaymentMethod = tenant.payment_method_added === true;
 
-      console.log(`[CHECK TRIAL REMINDERS] Tenant ${tenant.business_name}: ${daysRemaining} days remaining, payment method: ${hasPaymentMethod}`);
+      console.error(`[CHECK TRIAL REMINDERS] Tenant ${tenant.business_name}: ${daysRemaining} days remaining, payment method: ${hasPaymentMethod}`);
 
       // Send reminder 7 days before trial ends
       if (daysRemaining === 7 && !tenant.trial_reminder_7_days_sent) {
@@ -74,7 +74,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`[CHECK TRIAL REMINDERS] Sending ${remindersToSend.length} reminders`);
+    console.error(`[CHECK TRIAL REMINDERS] Sending ${remindersToSend.length} reminders`);
 
     // Send reminders
     for (const reminder of remindersToSend) {
@@ -100,10 +100,10 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error checking trial reminders:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

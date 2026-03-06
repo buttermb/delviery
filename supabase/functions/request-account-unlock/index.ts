@@ -40,7 +40,7 @@ serve(async (req: Request) => {
 
     if (!tenant || tenantError) {
       // Return success to prevent enumeration
-      console.log('[UNLOCK] Tenant not found for slug:', tenantSlug);
+      console.error('[UNLOCK] Tenant not found for slug:', tenantSlug);
       return new Response(
         JSON.stringify({ success: true, message: 'Request received.' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -57,7 +57,7 @@ serve(async (req: Request) => {
 
     if (!adminUser) {
       // Return success to prevent enumeration
-      console.log('[UNLOCK] Admin user not found:', email);
+      console.error('[UNLOCK] Admin user not found:', email);
       return new Response(
         JSON.stringify({ success: true, message: 'Request received.' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -68,7 +68,7 @@ serve(async (req: Request) => {
     const ownerEmail = tenant.owner_email;
     if (ownerEmail) {
       // Log the unlock request for audit trail
-      console.log('[UNLOCK] Account unlock requested', {
+      console.error('[UNLOCK] Account unlock requested', {
         requestedBy: email,
         tenantId: tenant.id,
         tenantSlug: tenant.slug,

@@ -192,9 +192,6 @@ export function ActivityFeedWidget() {
         )}
       </div>
 
-      <button className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors">
-        View All Activity →
-      </button>
     </Card>
   );
 }

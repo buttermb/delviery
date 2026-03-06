@@ -37,7 +37,7 @@ Deno.serve(withZenProtection(async (req) => {
                       req.headers.get('x-real-ip') || 
                       'unknown';
 
-    console.log('Tracking access:', { userId, fingerprint: fingerprint.substring(0, 10) + '...' });
+    console.error('Tracking access:', { userId, fingerprint: fingerprint.substring(0, 10) + '...' });
 
     // Check if IP is blocked
     const { data: ipBlocked } = await supabase
@@ -99,10 +99,10 @@ Deno.serve(withZenProtection(async (req) => {
       }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in track-access function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500

@@ -26,7 +26,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    console.log('Checking for trial expiration notices...');
+    console.error('Checking for trial expiration notices...');
 
     const now = new Date();
     const threeDaysFromNow = new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000));
@@ -45,7 +45,7 @@ serve(async (req) => {
       throw selectError;
     }
 
-    console.log(`Found ${expiringTrials?.length || 0} expiring trials`);
+    console.error(`Found ${expiringTrials?.length || 0} expiring trials`);
 
     const notifications: EmailNotification[] = [];
     
@@ -66,7 +66,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Sending ${notifications.length} trial expiration notices`);
+    console.error(`Sending ${notifications.length} trial expiration notices`);
 
     // Send notifications via background tasks
     const emailTasks = notifications.map(async (notification) => {
@@ -129,7 +129,7 @@ serve(async (req) => {
 
       // Here you would integrate with your email service (SendGrid, etc.)
       // For now, we'll log it
-      console.log(`Would send email to ${notification.owner_email}: ${emailSubject}`);
+      console.error(`Would send email to ${notification.owner_email}: ${emailSubject}`);
       
       // Example SendGrid integration (if SENDGRID_API_KEY is set):
       // const sendGridKey = Deno.env.get('SENDGRID_API_KEY');

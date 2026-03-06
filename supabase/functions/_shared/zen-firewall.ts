@@ -29,14 +29,14 @@ export function initZenFirewall() {
     return null;
   }
   
-  console.log('Zen Firewall: Protection enabled');
+  console.error('Zen Firewall: Protection enabled');
   return config;
 }
 
 /**
  * Report security event to Aikido
  */
-async function reportToAikido(event: any) {
+async function reportToAikido(event: Record<string, unknown>) {
   if (!AIKIDO_TOKEN || !config.logMode) return;
 
   try {
@@ -119,7 +119,7 @@ export async function validateRequest(req: Request): Promise<{
     return { valid: true, action: 'allow' };
   } catch (error) {
     console.error('Zen Firewall: Validation error', error);
-    return { valid: true, action: 'allow' }; // Fail open
+    return { valid: false, action: 'block' }; // Fail closed — firewall must deny on error
   }
 }
 
@@ -138,7 +138,6 @@ export function withZenProtection(
       return new Response(
         JSON.stringify({
           error: 'Request blocked by security policy',
-          threat: validation.threat,
         }),
         {
           status: 403,

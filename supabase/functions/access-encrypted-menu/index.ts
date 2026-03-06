@@ -124,15 +124,14 @@ serve(withZenProtection(async (req) => {
       }
     }
 
-    // SECURITY: Timing-safe access code comparison
-    // Compare hash lengths first (constant time for equal lengths)
+    // SECURITY: Constant-time access code comparison to prevent timing attacks
     const storedHash = menu.access_code_hash || '';
-    let codeMatch = storedHash.length === providedHash.length;
-
-    // Constant-time comparison to prevent timing attacks
-    for (let i = 0; i < storedHash.length && i < providedHash.length; i++) {
-      codeMatch = codeMatch && (storedHash.charCodeAt(i) === providedHash.charCodeAt(i));
+    let mismatch = storedHash.length !== providedHash.length ? 1 : 0;
+    const len = Math.min(storedHash.length, providedHash.length);
+    for (let i = 0; i < len; i++) {
+      mismatch |= storedHash.charCodeAt(i) ^ providedHash.charCodeAt(i);
     }
+    const codeMatch = mismatch === 0;
 
     if (!codeMatch) {
       // Log failed access attempt

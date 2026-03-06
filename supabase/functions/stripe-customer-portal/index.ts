@@ -8,9 +8,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import Stripe from 'https://esm.sh/stripe@18.5.0';
 
 // Helper logging function
-const logStep = (step: string, details?: any) => {
+const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[STRIPE-PORTAL] ${step}${detailsStr}`);
+  console.error(`[STRIPE-PORTAL] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -185,13 +185,12 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
-    logStep('CRITICAL ERROR', { message: error.message, stack: error.stack });
+  } catch (error: unknown) {
+    console.error('[STRIPE-PORTAL] CRITICAL ERROR', { message: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined });
     console.error('[STRIPE-PORTAL] Error creating Customer Portal session:', error);
     return new Response(
       JSON.stringify({
-        error: error.message || 'Internal server error',
-        details: error.stack || 'No stack trace available'
+        error: 'Internal server error',
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { supabase } from '@/integrations/supabase/client';
-import { useTenantContext } from '@/hooks/useTenantContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 import { logger } from '@/lib/logger';
 
@@ -148,7 +148,8 @@ function createStatWithTrend(current: number, previous: number): StatWithTrend {
  * Used internally by useDashboardStats
  */
 function useRawDashboardStats(period: DashboardPeriod = '30d') {
-  const { tenantId } = useTenantContext();
+  const { tenant } = useTenantAdminAuth();
+  const tenantId = tenant?.id;
 
   return useQuery({
     queryKey: [...queryKeys.dashboard.stats(tenantId), period],
@@ -241,13 +242,14 @@ function useRawDashboardStats(period: DashboardPeriod = '30d') {
           .select('id, stock_quantity, low_stock_alert, price, in_stock')
           .eq('tenant_id', tenantId),
 
-        // Revenue in period (sum of completed/delivered orders)
+        // Revenue in period (sum of completed/delivered orders, capped to prevent unbounded fetch)
         supabase
           .from('orders')
           .select('total_amount')
           .eq('tenant_id', tenantId)
           .gte('created_at', periodStart.toISOString())
-          .in('status', ['completed', 'delivered']),
+          .in('status', ['completed', 'delivered'])
+          .limit(1000),
 
         // Revenue last month (for growth calculation)
         supabase
@@ -256,7 +258,8 @@ function useRawDashboardStats(period: DashboardPeriod = '30d') {
           .eq('tenant_id', tenantId)
           .gte('created_at', startOfLastMonth.toISOString())
           .lt('created_at', endOfLastMonth.toISOString())
-          .in('status', ['completed', 'delivered']),
+          .in('status', ['completed', 'delivered'])
+          .limit(1000),
 
         // Revenue yesterday (for trend)
         supabase
@@ -265,7 +268,8 @@ function useRawDashboardStats(period: DashboardPeriod = '30d') {
           .eq('tenant_id', tenantId)
           .gte('created_at', yesterday.toISOString())
           .lt('created_at', today.toISOString())
-          .in('status', ['completed', 'delivered']),
+          .in('status', ['completed', 'delivered'])
+          .limit(1000),
 
         // New customers today
         supabase

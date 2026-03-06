@@ -8,7 +8,7 @@ const corsHeaders = {
 interface SmsRequest {
   phone: string;
   message: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 serve(async (req) => {
@@ -31,7 +31,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Sending SMS via Klaviyo:', { phone, messageLength: message.length });
+    console.error('Sending SMS via Klaviyo:', { phone, messageLength: message.length });
 
     // Klaviyo Campaigns API - Create SMS Campaign
     const response = await fetch('https://a.klaviyo.com/api/campaigns/', {
@@ -69,17 +69,17 @@ serve(async (req) => {
     }
 
     const result = await response.json();
-    console.log('SMS sent successfully via Klaviyo:', result);
+    console.error('SMS sent successfully via Klaviyo:', result);
 
     return new Response(
       JSON.stringify({ success: true, messageId: result.data?.id }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in send-klaviyo-sms function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

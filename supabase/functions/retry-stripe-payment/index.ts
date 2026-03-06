@@ -135,7 +135,7 @@ serve(async (req) => {
       },
     });
 
-    console.log(`Payment retried: ${paidInvoice.id} for tenant ${tenant.name} by user ${user.email}`);
+    console.error(`Payment retried: ${paidInvoice.id} for tenant ${tenant.name} by user ${user.email}`);
 
     return new Response(
       JSON.stringify({

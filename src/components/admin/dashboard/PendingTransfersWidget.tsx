@@ -11,13 +11,13 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { queryKeys } from '@/lib/queryKeys';
 
 export function PendingTransfersWidget() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { account } = useAccount();
+  const { tenant } = useTenantAdminAuth();
 
   const getFullPath = (href: string) => {
     if (href.startsWith('/admin') && tenantSlug) {
@@ -27,9 +27,9 @@ export function PendingTransfersWidget() {
   };
 
   const { data: transfers, isLoading } = useQuery({
-    queryKey: queryKeys.dashboardWidgets.pendingTransfers(account?.id),
+    queryKey: queryKeys.dashboardWidgets.pendingTransfers(tenant?.id),
     queryFn: async () => {
-      if (!account?.id) return [];
+      if (!tenant?.id) return [];
 
       interface Transfer {
         id: string;
@@ -56,14 +56,14 @@ export function PendingTransfersWidget() {
             wholesale_clients(business_name)
           )
         `)
-        .eq('account_id', account.id)
+        .eq('account_id', tenant.id)
         .in('status', ['scheduled', 'assigned'])
         .order('scheduled_pickup_time', { ascending: true })
         .limit(5);
 
       return (data ?? []) as Transfer[];
     },
-    enabled: !!account?.id,
+    enabled: !!tenant?.id,
     refetchInterval: 30000,
   });
 

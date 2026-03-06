@@ -137,7 +137,7 @@ If you didn't expect this invitation, you can safely ignore this email.
           console.error('Failed to send invitation email via Klaviyo:', errorText);
           // Don't fail the request - email sending is best effort
         } else {
-          console.log('Invitation email sent successfully to:', to);
+          console.error('Invitation email sent successfully to:', to);
         }
       } catch (emailError) {
         console.error('Email sending error:', emailError);
@@ -145,7 +145,7 @@ If you didn't expect this invitation, you can safely ignore this email.
       }
     } else {
       // Log email for development
-      console.log('Invitation email (Klaviyo not configured):', {
+      console.error('Invitation email (Klaviyo not configured):', {
         to,
         subject,
         invite_link,

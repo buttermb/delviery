@@ -141,7 +141,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[CREDITS_USE] Used ${amount} credits for tenant ${tenantId} (${reference_type}/${reference_id})`);
+    console.error(`[CREDITS_USE] Used ${amount} credits for tenant ${tenantId} (${reference_type}/${reference_id})`);
 
     return new Response(
       JSON.stringify({

@@ -48,21 +48,21 @@ interface CreditsBalanceResponse {
 }
 
 serve(async (req: Request) => {
-  console.log('[credits-balance] === New request ===', req.method, req.url);
+  console.error('[credits-balance] === New request ===', req.method, req.url);
   
   if (req.method === 'OPTIONS') {
-    console.log('[credits-balance] Handling CORS preflight');
+    console.error('[credits-balance] Handling CORS preflight');
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    console.log('[credits-balance] Processing request...');
+    console.error('[credits-balance] Processing request...');
     
     const authHeader = req.headers.get('Authorization');
-    console.log('[credits-balance] Authorization header present:', !!authHeader);
+    console.error('[credits-balance] Authorization header present:', !!authHeader);
     
     if (!authHeader) {
-      console.log('[credits-balance] Missing authorization header');
+      console.error('[credits-balance] Missing authorization header');
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

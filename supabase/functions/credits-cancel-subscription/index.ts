@@ -110,7 +110,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[CREDITS_CANCEL_SUB] Cancelling subscription ${subscription_id} for user ${user.id}, immediately: ${cancel_immediately}`);
+    console.error(`[CREDITS_CANCEL_SUB] Cancelling subscription ${subscription_id} for user ${user.id}, immediately: ${cancel_immediately}`);
 
     // Update Stripe subscription
     if (cancel_immediately) {
@@ -302,7 +302,7 @@ serve(async (req) => {
         });
     }
 
-    console.log(`[CREDITS_CANCEL_SUB] Successfully cancelled subscription ${subscription_id}`);
+    console.error(`[CREDITS_CANCEL_SUB] Successfully cancelled subscription ${subscription_id}`);
 
     return new Response(
       JSON.stringify({

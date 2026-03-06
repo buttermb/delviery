@@ -41,13 +41,13 @@ serve(async (req) => {
     }
 
     // Log tenant_id for debugging
-    console.log("Courier tenant_id:", courier.tenant_id);
+    console.error("Courier tenant_id:", courier.tenant_id);
 
     // Parse request body to get endpoint
     const body = await req.json();
     const endpoint = body.endpoint;
     
-    console.log("Courier app request:", { endpoint, courier: courier.email });
+    console.error("Courier app request:", { endpoint, courier: courier.email });
 
     if (endpoint === "login") {
       await supabase
@@ -298,7 +298,7 @@ serve(async (req) => {
 
     if (endpoint === "accept-order") {
       const orderId = body.order_id;
-      console.log('Accept order request for:', orderId);
+      console.error('Accept order request for:', orderId);
 
       const { data: order } = await supabase
         .from("orders")
@@ -308,14 +308,14 @@ serve(async (req) => {
         .maybeSingle();
 
       if (!order) {
-        console.log('Order not available or already assigned');
+        console.error('Order not available or already assigned');
         return new Response(
           JSON.stringify({ error: "Order no longer available" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      console.log('Updating order and fetching full details...');
+      console.error('Updating order and fetching full details...');
       const { data: updatedOrder, error: updateError } = await supabase
         .from("orders")
         .update({
@@ -368,7 +368,7 @@ serve(async (req) => {
         );
       }
 
-      console.log('✅ Order updated successfully:', updatedOrder);
+      console.error('✅ Order updated successfully:', updatedOrder);
 
       // Fetch customer info from profiles
       let customerName = updatedOrder.customer_name;
@@ -409,7 +409,7 @@ serve(async (req) => {
           message: `Courier ${courier.full_name} accepted the order`
         });
 
-      console.log('Returning response with full order data');
+      console.error('Returning response with full order data');
       return new Response(
         JSON.stringify({ 
           success: true,

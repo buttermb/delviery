@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Package, TrendingUp, ArrowRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { DASHBOARD_QUERY_CONFIG } from '@/lib/react-query-config';
 import { formatWeight } from '@/lib/utils/formatWeight';
@@ -27,7 +27,7 @@ interface TopProduct {
 }
 
 export function TopProductsWidget() {
-  const { account } = useAccount();
+  const { tenant } = useTenantAdminAuth();
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
@@ -39,9 +39,9 @@ export function TopProductsWidget() {
   };
 
   const { data: topProducts, isLoading } = useQuery({
-    queryKey: queryKeys.dashboardWidgets.topProducts(account?.id),
+    queryKey: queryKeys.dashboardWidgets.topProducts(tenant?.id),
     queryFn: async () => {
-      if (!account?.id) return [];
+      if (!tenant?.id) return [];
 
       const last30Days = subDays(new Date(), 30);
 
@@ -49,7 +49,7 @@ export function TopProductsWidget() {
       const { data: orders, error: ordersError } = await supabase
         .from('wholesale_orders')
         .select('id, created_at, status')
-        .eq('account_id', account.id)
+        .eq('account_id', tenant.id)
         .eq('status', 'completed')
         .gte('created_at', last30Days.toISOString());
 
@@ -132,7 +132,7 @@ export function TopProductsWidget() {
         .sort((a, b) => b.total_value - a.total_value)
         .slice(0, 5);
     },
-    enabled: !!account?.id,
+    enabled: !!tenant?.id,
     ...DASHBOARD_QUERY_CONFIG,
   });
 

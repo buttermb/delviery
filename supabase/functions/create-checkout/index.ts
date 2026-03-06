@@ -47,7 +47,7 @@ serve(secureHeadersMiddleware(async (req) => {
     const rawBody = await req.json();
     const { tenant_id, plan_id, billing_cycle, skip_trial } = validateCreateCheckout(rawBody);
 
-    console.log('[CREATE-CHECKOUT] Request:', { tenant_id, plan_id, billing_cycle, skip_trial });
+    console.error('[CREATE-CHECKOUT] Request:', { tenant_id, plan_id, billing_cycle, skip_trial });
 
     // Get tenant
     const { data: tenant, error: tenantError } = await supabaseClient
@@ -92,7 +92,7 @@ serve(secureHeadersMiddleware(async (req) => {
       );
     }
 
-    console.log('[CREATE-CHECKOUT] Using price:', { 
+    console.error('[CREATE-CHECKOUT] Using price:', { 
       billing_cycle, 
       stripePriceId, 
       planName: plan.name,
@@ -109,7 +109,7 @@ serve(secureHeadersMiddleware(async (req) => {
     }
 
     const stripe = new Stripe(stripeKey, {
-      apiVersion: "2023-10-16",
+      apiVersion: "2025-08-27.basil",
     });
 
     // Get or create Stripe customer
@@ -128,7 +128,7 @@ serve(secureHeadersMiddleware(async (req) => {
         .update({ stripe_customer_id: customerId })
         .eq("id", tenant_id);
       
-      console.log('[CREATE-CHECKOUT] Created Stripe customer:', customerId);
+      console.error('[CREATE-CHECKOUT] Created Stripe customer:', customerId);
     }
 
     // Determine success URL based on trial vs immediate
@@ -181,7 +181,7 @@ serve(secureHeadersMiddleware(async (req) => {
     // Create checkout session
     const session = await stripe.checkout.sessions.create(sessionOptions);
 
-    console.log('[CREATE-CHECKOUT] Created session:', { 
+    console.error('[CREATE-CHECKOUT] Created session:', { 
       sessionId: session.id, 
       hasTrial: !skip_trial,
       billing_cycle 

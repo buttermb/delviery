@@ -30,9 +30,9 @@ export default function WholesaleInventory() {
   const [selectedWarehouse, setSelectedWarehouse] = useState<string>("all");
 
   // Fetch real data
-  const { data: inventory = [], isLoading: inventoryLoading } = useWholesaleInventory(tenant?.id);
-  const { data: deliveries = [], isLoading: deliveriesLoading } = useWholesaleDeliveries();
-  const { data: _orders = [], isLoading: ordersLoading } = useWholesaleOrders();
+  const { data: inventory = [], isLoading: inventoryLoading, isError: isInventoryError, error: inventoryError, refetch: refetchInventory } = useWholesaleInventory(tenant?.id);
+  const { data: deliveries = [], isLoading: deliveriesLoading, isError: isDeliveriesError, error: deliveriesError, refetch: refetchDeliveries } = useWholesaleDeliveries();
+  const { data: _orders = [], isLoading: ordersLoading, isError: isOrdersError, error: ordersError, refetch: refetchOrders } = useWholesaleOrders();
 
   const isLoading = inventoryLoading || deliveriesLoading || ordersLoading;
 
@@ -101,7 +101,7 @@ export default function WholesaleInventory() {
     }));
 
   // Fetch Top Movers from wholesale_order_items (last 30 days)
-  const { data: topMovers = [] } = useQuery({
+  const { data: topMovers = [], isError: isTopMoversError, error: topMoversError, refetch: refetchTopMovers } = useQuery({
     queryKey: queryKeys.wholesaleInventory.topMovers(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -228,6 +228,25 @@ export default function WholesaleInventory() {
 
   if (isLoading) {
     return <EnhancedLoadingState variant="dashboard" />;
+  }
+
+  const isError = isInventoryError || isDeliveriesError || isOrdersError || isTopMoversError;
+  if (isError) {
+    const errorMessage = inventoryError?.message || deliveriesError?.message || ordersError?.message || topMoversError?.message || 'An unexpected error occurred';
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center">
+        <p className="text-destructive font-medium">Failed to load data</p>
+        <p className="text-sm text-muted-foreground mt-1">{errorMessage}</p>
+        <Button variant="outline" size="sm" className="mt-4" onClick={() => {
+          if (isInventoryError) refetchInventory();
+          if (isDeliveriesError) refetchDeliveries();
+          if (isOrdersError) refetchOrders();
+          if (isTopMoversError) refetchTopMovers();
+        }}>
+          Try Again
+        </Button>
+      </div>
+    );
   }
 
   return (

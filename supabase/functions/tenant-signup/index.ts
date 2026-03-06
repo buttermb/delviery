@@ -64,7 +64,7 @@ serve(async (req) => {
     );
 
     if (!rateLimitResult.allowed) {
-      console.log('[SIGNUP] Rate limit exceeded', { clientIP, email: email.toLowerCase() });
+      console.error('[SIGNUP] Rate limit exceeded', { clientIP, email: email.toLowerCase() });
       return new Response(
         JSON.stringify({
           error: 'Too many signup attempts. Please try again later.',
@@ -126,13 +126,13 @@ serve(async (req) => {
         );
       }
       // In development (no TURNSTILE_SECRET_KEY), allow signup without CAPTCHA
-      console.log('[SIGNUP] No CAPTCHA token provided (development mode)', { email: email.toLowerCase() });
+      console.error('[SIGNUP] No CAPTCHA token provided (development mode)', { email: email.toLowerCase() });
     }
 
-    console.log('[SIGNUP] Security checks passed', { email: email.toLowerCase(), clientIP });
+    console.error('[SIGNUP] Security checks passed', { email: email.toLowerCase(), clientIP });
 
     // Check if email already exists in Supabase Auth
-    const { data: existingAuthUser } = await supabase.auth.admin.listUsers();
+    const { data: existingAuthUser } = await supabase.auth.admin.listUsers({ perPage: 1000 });
     const authUserExists = existingAuthUser?.users.some(
       (user) => user.email?.toLowerCase() === email.toLowerCase()
     );
@@ -232,7 +232,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('[SIGNUP] Auth user created', { userId: authData.user.id });
+    console.error('[SIGNUP] Auth user created', { userId: authData.user.id });
 
     // Generate Supabase session for immediate login
     // Use anon client to sign in (admin client can't generate sessions)
@@ -251,11 +251,11 @@ serve(async (req) => {
       // Continue with signup but warn about login requirement
       console.warn('[SIGNUP] Auto-login failed, user will need to log in manually');
     } else {
-      console.log('[SIGNUP] Supabase session generated successfully');
+      console.error('[SIGNUP] Supabase session generated successfully');
     }
 
     // Call atomic function to create all database records in single transaction
-    console.log('[SIGNUP] Creating tenant records atomically', { slug });
+    console.error('[SIGNUP] Creating tenant records atomically', { slug });
 
     const { data: atomicResult, error: atomicError } = await supabase
       .rpc('create_tenant_atomic', {
@@ -281,7 +281,7 @@ serve(async (req) => {
       // Rollback: Delete auth user since DB creation failed
       try {
         await supabase.auth.admin.deleteUser(authData.user.id);
-        console.log('[SIGNUP] Rolled back auth user creation', { userId: authData.user.id });
+        console.error('[SIGNUP] Rolled back auth user creation', { userId: authData.user.id });
       } catch (rollbackError) {
         console.error('[SIGNUP] Rollback failed', { error: rollbackError });
       }
@@ -295,7 +295,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('[SIGNUP] Tenant created atomically', {
+    console.error('[SIGNUP] Tenant created atomically', {
       tenantId: atomicResult.tenant_id,
       slug
     });
@@ -367,14 +367,10 @@ serve(async (req) => {
           role: tenantUser.role,
           tenant_id: tenantUser.tenant_id,
         },
-        // Include Supabase session tokens for immediate authentication
-        session: signInData?.session ? {
-          access_token: signInData.session.access_token,
-          refresh_token: signInData.session.refresh_token,
-        } : null,
-        // Explicitly signal if auto-login failed so frontend can redirect to login page
+        // Tokens are set via httpOnly cookies only — never exposed in response body
+        // Signal whether auto-login succeeded so frontend knows if redirect to login is needed
+        auto_login_ready: !!signInData?.session,
         auto_login_failed: !signInData?.session,
-        auto_login_error: signInError?.message,
       }),
       {
         status: 200,
@@ -450,7 +446,7 @@ serve(async (req) => {
           } else {
             // Fallback: Supabase will send verification email automatically
             // since email_confirm is false
-            console.log('[SIGNUP] Verification email will be sent by Supabase Auth');
+            console.error('[SIGNUP] Verification email will be sent by Supabase Auth');
           }
         } catch (error) {
           console.warn('[SIGNUP] Email verification error (non-blocking)', error);
@@ -500,7 +496,7 @@ serve(async (req) => {
         try {
           // This would integrate with your analytics service
           // Example: PostHog, Mixpanel, Amplitude, etc.
-          console.log('[SIGNUP] Analytics event: tenant_signup', {
+          console.error('[SIGNUP] Analytics event: tenant_signup', {
             tenant_id: tenant.id,
             tenant_slug: tenant.slug,
             email: email.toLowerCase(),

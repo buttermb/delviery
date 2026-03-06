@@ -63,7 +63,7 @@ serve(async (req) => {
       );
     }
 
-    const exportData: any = {
+    const exportData: Record<string, unknown> = {
       export_date: new Date().toISOString(),
       customer_id: customer_user_id,
       tenant_id: tenant_id,
@@ -171,7 +171,7 @@ serve(async (req) => {
 
     if (format === 'csv') {
       let csv = 'Section,Field,Value\n';
-      const flattenObject = (obj: any, prefix = '') => {
+      const flattenObject = (obj: Record<string, unknown>, prefix = '') => {
         for (const key in obj) {
           const value = obj[key];
           if (value && typeof value === 'object' && !Array.isArray(value)) {

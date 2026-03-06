@@ -4,6 +4,7 @@
  */
 
 import { serve, corsHeaders } from '../_shared/deps.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import Stripe from 'https://esm.sh/stripe@18.5.0';
 
 serve(async (req) => {
@@ -12,10 +13,31 @@ serve(async (req) => {
   }
 
   try {
+    // Auth check — this endpoint reveals Stripe configuration status
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    const authHeader = req.headers.get('Authorization');
+
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
-    
-    // Debug logging for key prefix
-    console.log('Stripe key prefix:', STRIPE_SECRET_KEY?.substring(0, 7) || 'NO_KEY');
 
     if (!STRIPE_SECRET_KEY) {
       return new Response(
@@ -62,26 +84,26 @@ serve(async (req) => {
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
-    } catch (stripeError: any) {
+    } catch (stripeError: unknown) {
       console.error('Stripe validation error:', stripeError);
       return new Response(
         JSON.stringify({
           configured: true,
           valid: false,
-          error: stripeError.message || 'Invalid Stripe key',
+          error: stripeError instanceof Error ? stripeError.message : 'Invalid Stripe key',
           testMode: isTestMode
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Check Stripe Config Error:', error);
     return new Response(
       JSON.stringify({
         configured: false,
         valid: false,
-        error: error.message || 'Internal server error'
+        error: error instanceof Error ? error.message : 'Internal server error'
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

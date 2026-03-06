@@ -4,7 +4,7 @@
  * Enhanced with URL-based filters, last updated indicator, and copy buttons
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -62,20 +62,24 @@ interface ColumnProps {
     icon: React.ElementType;
     color: string;
     onMove: (orderId: string, newStatus: OrderStatus) => void;
-    isMutating?: boolean;
+    mutatingOrderId: string | null;
 }
 
-function PipelineColumn({ title, status, orders, icon: Icon, color, onMove, isMutating }: ColumnProps) {
+function PipelineColumn({ title, status, orders, icon: Icon, color, onMove, mutatingOrderId }: ColumnProps) {
     const navigate = useTenantNavigate();
     const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
-    const handleCopyId = (e: React.MouseEvent, id: string) => {
+    const handleCopyId = async (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-        navigator.clipboard.writeText(id);
-        setCopiedId(id);
-        toast.success('Order ID copied');
-        setTimeout(() => setCopiedId(null), 1500);
+        try {
+            await navigator.clipboard.writeText(id);
+            setCopiedId(id);
+            toast.success('Order ID copied');
+            setTimeout(() => setCopiedId(null), 1500);
+        } catch {
+            toast.error('Unable to copy to clipboard. Try using HTTPS.');
+        }
     };
 
     return (
@@ -163,13 +167,13 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove, isMu
                                             size="sm"
                                             variant="ghost"
                                             className="h-6 px-2 text-[10px] hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/30"
-                                            disabled={isMutating}
+                                            disabled={mutatingOrderId === order.id}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onMove(order.id, 'confirmed');
                                             }}
                                         >
-                                            {isMutating ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
+                                            {mutatingOrderId === order.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
                                             Confirm <ArrowRight className="h-3 w-3 ml-1" />
                                         </Button>
                                     )}
@@ -178,13 +182,13 @@ function PipelineColumn({ title, status, orders, icon: Icon, color, onMove, isMu
                                             size="sm"
                                             variant="ghost"
                                             className="h-6 px-2 text-[10px] hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/30"
-                                            disabled={isMutating}
+                                            disabled={mutatingOrderId === order.id}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onMove(order.id, 'ready');
                                             }}
                                         >
-                                            {isMutating ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
+                                            {mutatingOrderId === order.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
                                             Ready <ArrowRight className="h-3 w-3 ml-1" />
                                         </Button>
                                     )}
@@ -208,6 +212,7 @@ export function OrderPipelineBoard() {
     const queryClient = useQueryClient();
     const tenantId = tenant?.id;
     const [lastFetched, setLastFetched] = useState<Date | null>(null);
+    const [mutatingOrderId, setMutatingOrderId] = useState<string | null>(null);
     const [searchParams, setSearchParams] = useSearchParams();
     
     // URL-based filter state
@@ -215,17 +220,72 @@ export function OrderPipelineBoard() {
     const minAmount = searchParams.get('minAmount') ?? '';
     const showFilters = searchParams.get('filters') === 'true';
 
-    const updateUrlFilter = (key: string, value: string) => {
-        const newParams = new URLSearchParams(searchParams);
-        if (value) {
-            newParams.set(key, value);
-        } else {
-            newParams.delete(key);
+    // Local input state for immediate UI feedback
+    const [localSearch, setLocalSearch] = useState(searchQuery);
+    const [localMinAmount, setLocalMinAmount] = useState(minAmount);
+
+    // Sync local state when URL params change externally (e.g., browser back)
+    useEffect(() => {
+        setLocalSearch(searchParams.get('search') ?? '');
+        setLocalMinAmount(searchParams.get('minAmount') ?? '');
+    }, [searchParams]);
+
+    // Debounced URL update to avoid pushing URL params on every keystroke
+    const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>();
+    const debouncedUpdateUrl = useCallback((key: string, value: string) => {
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
         }
-        setSearchParams(newParams, { replace: true });
-    };
+        debounceTimerRef.current = setTimeout(() => {
+            setSearchParams((prev) => {
+                const newParams = new URLSearchParams(prev);
+                if (value) {
+                    newParams.set(key, value);
+                } else {
+                    newParams.delete(key);
+                }
+                return newParams;
+            }, { replace: true });
+        }, 300);
+    }, [setSearchParams]);
+
+    // Clean up debounce timer on unmount
+    useEffect(() => {
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, []);
+
+    const updateUrlFilter = useCallback((key: string, value: string) => {
+        // Update local state immediately for responsive UI
+        if (key === 'search') setLocalSearch(value);
+        else if (key === 'minAmount') setLocalMinAmount(value);
+
+        // For text inputs, debounce the URL update
+        if (key === 'search' || key === 'minAmount') {
+            debouncedUpdateUrl(key, value);
+        } else {
+            // For toggles (filters button), update immediately
+            setSearchParams((prev) => {
+                const newParams = new URLSearchParams(prev);
+                if (value) {
+                    newParams.set(key, value);
+                } else {
+                    newParams.delete(key);
+                }
+                return newParams;
+            }, { replace: true });
+        }
+    }, [debouncedUpdateUrl, setSearchParams]);
 
     const clearFilters = () => {
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+        setLocalSearch('');
+        setLocalMinAmount('');
         const newParams = new URLSearchParams(searchParams);
         newParams.delete('search');
         newParams.delete('minAmount');
@@ -271,21 +331,22 @@ export function OrderPipelineBoard() {
         refetchInterval: 30000
     });
 
-    // Filter orders based on URL params
+    // Filter orders based on local state (responsive) rather than URL params (debounced)
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
-            if (searchQuery && !order.customer_name.toLowerCase().includes(searchQuery.toLowerCase())) {
+            if (localSearch && !order.customer_name.toLowerCase().includes(localSearch.toLowerCase())) {
                 return false;
             }
-            if (minAmount && order.total_amount < parseFloat(minAmount)) {
+            if (localMinAmount && order.total_amount < parseFloat(localMinAmount)) {
                 return false;
             }
             return true;
         });
-    }, [orders, searchQuery, minAmount]);
+    }, [orders, localSearch, localMinAmount]);
 
     const updateStatusMutation = useMutation({
         mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
+            setMutatingOrderId(id);
             // Use flow manager for proper inventory handling and validation
             const result = await wholesaleOrderFlowManager.transitionOrderStatus(
                 id,
@@ -297,6 +358,7 @@ export function OrderPipelineBoard() {
             }
         },
         onSuccess: () => {
+            setMutatingOrderId(null);
             // Invalidate all related queries
             queryClient.invalidateQueries({ queryKey: queryKeys.tenantWidgets.pipelineOrders() });
             queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
@@ -307,6 +369,7 @@ export function OrderPipelineBoard() {
             toast.success('Order status updated');
         },
         onError: (error: Error) => {
+            setMutatingOrderId(null);
             toast.error('Failed to update order status', {
                 description: humanizeError(error)
             });
@@ -372,7 +435,7 @@ export function OrderPipelineBoard() {
                     <div className="flex-1 min-w-[200px]">
                         <Input
                             placeholder="Search by customer name..."
-                            value={searchQuery}
+                            value={localSearch}
                             onChange={(e) => updateUrlFilter('search', e.target.value)}
                             className="h-9"
                             aria-label="Search by customer name"
@@ -382,7 +445,7 @@ export function OrderPipelineBoard() {
                         <Input
                             type="number"
                             placeholder="Min amount..."
-                            value={minAmount}
+                            value={localMinAmount}
                             onChange={(e) => updateUrlFilter('minAmount', e.target.value)}
                             className="h-9"
                             aria-label="Minimum order amount"
@@ -400,7 +463,7 @@ export function OrderPipelineBoard() {
                     icon={AlertCircle}
                     color="text-orange-600 bg-orange-50 dark:bg-orange-900/20"
                     onMove={handleMove}
-                    isMutating={updateStatusMutation.isPending}
+                    mutatingOrderId={mutatingOrderId}
                 />
                 <PipelineColumn
                     title="Confirmed"
@@ -409,7 +472,7 @@ export function OrderPipelineBoard() {
                     icon={Package}
                     color="text-blue-600 bg-blue-50 dark:bg-blue-900/20"
                     onMove={handleMove}
-                    isMutating={updateStatusMutation.isPending}
+                    mutatingOrderId={mutatingOrderId}
                 />
                 <PipelineColumn
                     title="Ready to Ship"
@@ -418,7 +481,7 @@ export function OrderPipelineBoard() {
                     icon={CheckCircle2}
                     color="text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20"
                     onMove={handleMove}
-                    isMutating={updateStatusMutation.isPending}
+                    mutatingOrderId={mutatingOrderId}
                 />
                 <PipelineColumn
                     title="Delivered"
@@ -427,7 +490,7 @@ export function OrderPipelineBoard() {
                     icon={Truck}
                     color="text-slate-600 bg-slate-50 dark:bg-slate-900/20"
                     onMove={handleMove}
-                    isMutating={updateStatusMutation.isPending}
+                    mutatingOrderId={mutatingOrderId}
                 />
             </div>
         </div>

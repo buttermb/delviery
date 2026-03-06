@@ -25,17 +25,27 @@ interface UseDashboardAlertsResult {
 }
 
 const STORAGE_KEY_PREFIX = STORAGE_KEYS.DASHBOARD_ALERTS_DISMISSED_PREFIX;
+const MAX_DISMISSED_IDS = 100;
+
+/** Prune a list to keep only the most recent entries */
+function pruneIds(ids: string[]): string[] {
+  if (ids.length <= MAX_DISMISSED_IDS) return ids;
+  return ids.slice(-MAX_DISMISSED_IDS);
+}
 
 export function useDashboardAlerts(): UseDashboardAlertsResult {
   const { tenant, tenantSlug } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
-  // Track dismissed alert IDs in localStorage
+  // Track dismissed alert IDs in localStorage (pruned to MAX_DISMISSED_IDS)
   const [dismissedIds, setDismissedIds] = useState<string[]>(() => {
     if (!tenantId) return [];
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${tenantId}`);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+      const parsed: unknown = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return [];
+      return pruneIds(parsed.filter((item): item is string => typeof item === 'string'));
     } catch {
       return [];
     }
@@ -191,7 +201,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
   }, [alerts]);
 
   const dismissAlert = useCallback((id: string) => {
-    const newDismissedIds = [...dismissedIds, id];
+    const newDismissedIds = pruneIds([...dismissedIds, id]);
     setDismissedIds(newDismissedIds);
     if (tenantId) {
       localStorage.setItem(`${STORAGE_KEY_PREFIX}${tenantId}`, JSON.stringify(newDismissedIds));
@@ -200,7 +210,7 @@ export function useDashboardAlerts(): UseDashboardAlertsResult {
 
   const dismissAll = useCallback(() => {
     const allIds = alerts.map(a => a.id);
-    const newDismissedIds = [...new Set([...dismissedIds, ...allIds])];
+    const newDismissedIds = pruneIds([...new Set([...dismissedIds, ...allIds])]);
     setDismissedIds(newDismissedIds);
     if (tenantId) {
       localStorage.setItem(`${STORAGE_KEY_PREFIX}${tenantId}`, JSON.stringify(newDismissedIds));

@@ -90,7 +90,7 @@ serve(async (req) => {
     }
 
     const mode = body.mode || 'cron';
-    console.log(`[CREDIT_ALERTS] Starting in ${mode} mode`);
+    console.error(`[CREDIT_ALERTS] Starting in ${mode} mode`);
 
     const results: AlertResult[] = [];
 
@@ -128,7 +128,7 @@ serve(async (req) => {
         throw queryError;
       }
 
-      console.log(`[CREDIT_ALERTS] Found ${tenants?.length || 0} tenants to check`);
+      console.error(`[CREDIT_ALERTS] Found ${tenants?.length || 0} tenants to check`);
 
       for (const record of tenants || []) {
         const result = await checkAndAlertTenant(
@@ -144,7 +144,7 @@ serve(async (req) => {
       }
     }
 
-    console.log('[CREDIT_ALERTS] Job completed:', {
+    console.error('[CREDIT_ALERTS] Job completed:', {
       mode,
       alerts_sent: results.filter(r => r.success).length,
       errors: results.filter(r => !r.success).length,
@@ -198,8 +198,8 @@ async function checkAndAlertTenant(
       .from('tenants')
       .select('owner_email, owner_phone, slug')
       .eq('id', tenantId)
-      .single();
-    
+      .maybeSingle();
+
     tenantData = tenant || {};
   }
 
@@ -209,8 +209,8 @@ async function checkAndAlertTenant(
       .from('tenant_credits')
       .select('alerts_sent')
       .eq('tenant_id', tenantId)
-      .single();
-    
+      .maybeSingle();
+
     alertsSent = (credits?.alerts_sent as Record<string, boolean>) || {};
   }
 

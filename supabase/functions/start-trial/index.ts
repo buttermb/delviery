@@ -22,9 +22,35 @@ serve(async (req) => {
     }
 
     const rawBody = await req.json();
-    const { tenant_id, plan_id, billing_cycle, skip_trial, idempotency_key } = validateStartTrial(rawBody);
+    const { tenant_id: clientTenantId, plan_id, billing_cycle, skip_trial, idempotency_key } = validateStartTrial(rawBody);
 
-    console.log('[START-TRIAL] Request:', { tenant_id, plan_id, billing_cycle, skip_trial, hasIdempotencyKey: !!idempotency_key });
+    // Resolve caller's tenant_id from tenant_users — never trust client-supplied value
+    const { data: tenantUser, error: tenantUserError } = await supabaseClient
+      .from("tenant_users")
+      .select("tenant_id, role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const resolvedTenantId = tenantUser?.tenant_id;
+
+    if (tenantUserError || !resolvedTenantId) {
+      return new Response(
+        JSON.stringify({ error: "No tenant associated with user" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (resolvedTenantId !== clientTenantId) {
+      console.error('[START-TRIAL] Tenant ID mismatch: caller does not own requested tenant');
+      return new Response(
+        JSON.stringify({ error: "Not authorized for this tenant" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const tenant_id = resolvedTenantId;
+
+    console.error('[START-TRIAL] Request:', { tenant_id, plan_id, billing_cycle, skip_trial, hasIdempotencyKey: !!idempotency_key });
 
     // Get tenant
     const { data: tenant, error: tenantError } = await supabaseClient
@@ -93,7 +119,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('[START-TRIAL] Using price:', { billing_cycle, stripePriceId, planName: plan.name });
+    console.error('[START-TRIAL] Using price:', { billing_cycle, stripePriceId, planName: plan.name });
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
 
@@ -106,7 +132,7 @@ serve(async (req) => {
     }
 
     const stripe = new Stripe(stripeKey, {
-      apiVersion: "2023-10-16",
+      apiVersion: "2025-08-27.basil",
     });
 
     // Get or create Stripe customer
@@ -132,7 +158,7 @@ serve(async (req) => {
     const successUrl = `${origin}/${tenant.slug}/admin/dashboard?${successParams}`;
     const cancelUrl = `${origin}/select-plan?tenant_id=${tenant.id}&canceled=true`;
 
-    const sessionOptions: any = {
+    const sessionOptions: Record<string, unknown> = {
       customer: customerId,
       line_items: [
         {
@@ -174,7 +200,7 @@ serve(async (req) => {
       idempotencyKey: idempotency_key
     } : undefined);
 
-    console.log('[START-TRIAL] Created session:', {
+    console.error('[START-TRIAL] Created session:', {
       sessionId: session.id,
       hasTrial: !skip_trial,
       billing_cycle
@@ -202,7 +228,7 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Start trial failed';
     console.error('[START-TRIAL] Error:', errorMessage, error);
     return new Response(

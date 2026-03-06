@@ -152,7 +152,7 @@ serve(async (req: Request) => {
       console.error('[AUTH-VERIFY-EMAIL] Failed to create audit log:', auditError);
     }
 
-    console.log(`[AUTH-VERIFY-EMAIL] Email verified for user: ${verificationToken.user_id}`);
+    console.error(`[AUTH-VERIFY-EMAIL] Email verified for user: ${verificationToken.user_id}`);
 
     return new Response(
       JSON.stringify({

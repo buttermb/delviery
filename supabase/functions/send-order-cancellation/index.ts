@@ -135,7 +135,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(
+    console.error(
       "No email provider configured. Would send cancellation to:",
       customer_email
     );

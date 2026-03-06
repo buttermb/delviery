@@ -183,10 +183,13 @@ export function useTopProducts() {
       const orderIds = orders.map((o) => o.id);
 
       // Get order items for those orders
+      // Tenant isolation: order_items has no tenant_id column, but orderIds
+      // above are already filtered by tenant_id, providing implicit tenant scoping.
       const { data: items, error: itemsError } = await supabase
         .from('order_items')
         .select('product_name, quantity')
-        .in('order_id', orderIds);
+        .in('order_id', orderIds)
+        .limit(1000);
 
       if (itemsError) {
         logger.warn('Failed to fetch order items for top products', itemsError, { component: 'useDashboardCharts' });

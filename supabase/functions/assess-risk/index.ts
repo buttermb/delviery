@@ -72,7 +72,7 @@ serve(async (req) => {
     // Calculate risk factors
     const factors: RiskFactors = {
       nameRisk: assessNameRisk(profile),
-      addressRisk: await assessAddressRisk(address, supabaseClient as any),
+      addressRisk: await assessAddressRisk(address, supabaseClient),
       behaviorRisk: assessBehaviorRisk(profile, orders || []),
       paymentRisk: assessPaymentRisk(profile),
       deviceRisk: assessDeviceRisk(devices || []),

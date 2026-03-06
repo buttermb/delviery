@@ -21,12 +21,17 @@ serve(async (req) => {
       .from('batch_recalls')
       .select('*')
       .eq('id', recall_id)
-      .single();
+      .maybeSingle();
 
-    if (recallError) throw recallError;
+    if (recallError || !recall) {
+      return new Response(
+        JSON.stringify({ error: 'Recall not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Get affected customers based on scope
-    let affectedCustomers: any[] = [];
+    let affectedCustomers: Record<string, unknown>[] = [];
     
     if (recall.scope === 'all') {
       const { data: customers } = await supabaseClient
@@ -88,7 +93,7 @@ serve(async (req) => {
       })
       .eq('id', recall_id);
 
-    console.log(`Recall notification sent to ${sentCount} customers`);
+    console.error(`Recall notification sent to ${sentCount} customers`);
 
     return new Response(
       JSON.stringify({

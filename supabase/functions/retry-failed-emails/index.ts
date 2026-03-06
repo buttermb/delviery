@@ -40,7 +40,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('[RETRY_EMAILS] Starting retry job...');
+    console.error('[RETRY_EMAILS] Starting retry job...');
 
     // Get failed emails ready for retry
     const { data: failedEmails, error: fetchError } = await supabase
@@ -55,14 +55,14 @@ serve(async (req) => {
     }
 
     if (!failedEmails || failedEmails.length === 0) {
-      console.log('[RETRY_EMAILS] No emails to retry');
+      console.error('[RETRY_EMAILS] No emails to retry');
       return new Response(
         JSON.stringify({ success: true, processed: 0 }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`[RETRY_EMAILS] Found ${failedEmails.length} emails to retry`);
+    console.error(`[RETRY_EMAILS] Found ${failedEmails.length} emails to retry`);
 
     let successCount = 0;
     let failCount = 0;
@@ -71,7 +71,7 @@ serve(async (req) => {
       try {
         // TODO: Integrate with actual email provider (Resend/SendGrid)
         // For now, simulate email send
-        console.log(`[RETRY_EMAILS] Retrying email to ${email.recipient}, template: ${email.template}`);
+        console.error(`[RETRY_EMAILS] Retrying email to ${email.recipient}, template: ${email.template}`);
 
         // Log success
         await supabase.from('email_logs').insert({
@@ -87,8 +87,9 @@ serve(async (req) => {
         await supabase.from('failed_emails').delete().eq('id', email.id);
         successCount++;
 
-      } catch (sendError: any) {
-        console.error(`[RETRY_EMAILS] Failed to send to ${email.recipient}:`, sendError.message);
+      } catch (sendError: unknown) {
+        const sendErrorMessage = sendError instanceof Error ? sendError.message : 'Unknown error';
+        console.error(`[RETRY_EMAILS] Failed to send to ${email.recipient}:`, sendErrorMessage);
 
         // Exponential backoff: 5min, 15min, 45min
         const backoffMinutes = 5 * Math.pow(3, email.retry_count);
@@ -99,7 +100,7 @@ serve(async (req) => {
           .update({
             retry_count: email.retry_count + 1,
             next_retry: nextRetry.toISOString(),
-            error_message: sendError.message,
+            error_message: sendErrorMessage,
             updated_at: new Date().toISOString(),
           })
           .eq('id', email.id);
@@ -108,17 +109,18 @@ serve(async (req) => {
       }
     }
 
-    console.log(`[RETRY_EMAILS] Completed. Success: ${successCount}, Failed: ${failCount}`);
+    console.error(`[RETRY_EMAILS] Completed. Success: ${successCount}, Failed: ${failCount}`);
 
     return new Response(
       JSON.stringify({ success: true, processed: failedEmails.length, successCount, failCount }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
-    console.error('[RETRY_EMAILS] Error:', error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[RETRY_EMAILS] Error:', errorMessage);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

@@ -50,7 +50,7 @@ serve(async (req) => {
 
     const { action, menu_id, whitelist_id, customer_name, customer_phone, customer_email } = validationResult.data;
 
-    console.log('Managing whitelist:', { action, menu_id, whitelist_id });
+    console.error('Managing whitelist:', { action, menu_id, whitelist_id });
 
     const authHeader = req.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
@@ -92,31 +92,54 @@ serve(async (req) => {
       );
     }
 
-    // Verify menu belongs to tenant (for all actions)
-    if (menu_id) {
+    // Resolve menu_id from whitelist entry when only whitelist_id is provided (revoke/regenerate)
+    let resolvedMenuId = menu_id;
+    if (!resolvedMenuId && whitelist_id) {
+      const { data: whitelistLookup, error: lookupError } = await supabase
+        .from('menu_whitelist')
+        .select('menu_id')
+        .eq('id', whitelist_id)
+        .maybeSingle();
+
+      if (lookupError || !whitelistLookup) {
+        return new Response(
+          JSON.stringify({ error: 'Whitelist entry not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      resolvedMenuId = whitelistLookup.menu_id;
+    }
+
+    // Verify menu belongs to tenant (for ALL actions)
+    if (resolvedMenuId) {
       const { data: menu, error: menuError } = await supabase
         .from('disposable_menus')
         .select('id, tenant_id')
-        .eq('id', menu_id)
+        .eq('id', resolvedMenuId)
         .eq('tenant_id', tenantId)
         .maybeSingle();
 
       if (menuError || !menu) {
         return new Response(
           JSON.stringify({ error: 'Menu not found or access denied' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+    } else {
+      return new Response(
+        JSON.stringify({ error: 'Unable to determine menu ownership' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const response: { success: boolean; whitelist_id?: string;[key: string]: unknown } = { success: true };
 
     switch (action) {
       case 'add':
-        const generateToken = () => {
-          return Array.from({ length: 32 }, () =>
-            Math.random().toString(36)[2] || '0'
-          ).join('');
+        const generateToken = (): string => {
+          const bytes = new Uint8Array(32);
+          crypto.getRandomValues(bytes);
+          return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
         };
 
         const accessToken = generateToken();
@@ -149,7 +172,7 @@ serve(async (req) => {
           event_data: { whitelist_id: whitelistEntry.id, customer_name }
         });
 
-        console.log('Whitelist entry created:', whitelistEntry.id);
+        console.error('Whitelist entry created:', whitelistEntry.id);
         break;
 
       case 'revoke':
@@ -173,13 +196,13 @@ serve(async (req) => {
           event_data: { whitelist_id }
         });
 
-        console.log('Whitelist entry revoked:', whitelist_id);
+        console.error('Whitelist entry revoked:', whitelist_id);
         break;
 
       case 'regenerate':
-        const newToken = Array.from({ length: 32 }, () =>
-          Math.random().toString(36)[2] || '0'
-        ).join('');
+        const regenBytes = new Uint8Array(32);
+        crypto.getRandomValues(regenBytes);
+        const newToken = Array.from(regenBytes, (b) => b.toString(16).padStart(2, '0')).join('');
 
         const { data: updatedEntry, error: regenError } = await supabase
           .from('menu_whitelist')
@@ -207,7 +230,7 @@ serve(async (req) => {
           event_data: { whitelist_id }
         });
 
-        console.log('Token regenerated for:', whitelist_id);
+        console.error('Token regenerated for:', whitelist_id);
         break;
 
       default:

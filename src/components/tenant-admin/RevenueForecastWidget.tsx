@@ -56,8 +56,8 @@ export function RevenueForecastWidget() {
             // Simple linear projection
             const growthRate = firstHalfRev > 0 ? (secondHalfRev - firstHalfRev) / firstHalfRev : 0;
 
-            // Project next 30 days
-            const projectedRevenue = totalRevenue * (1 + growthRate);
+            // Project next 30 days (clamp to zero to avoid displaying negative projections)
+            const projectedRevenue = Math.max(0, totalRevenue * (1 + growthRate));
 
             return {
                 currentMonthly: totalRevenue,
@@ -83,7 +83,25 @@ export function RevenueForecastWidget() {
         );
     }
 
-    if (!forecast) return null;
+    if (!forecast) {
+        return (
+            <Card className="glass-card">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5" />
+                        Revenue Forecast
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center justify-center py-6 text-center">
+                        <DollarSign className="h-8 w-8 text-muted-foreground/40 mb-2" />
+                        <p className="text-sm text-muted-foreground">No forecast data yet</p>
+                        <p className="text-xs text-muted-foreground mt-1">Revenue projections will appear after your first orders.</p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     const isPositive = forecast.growthRate >= 0;
 

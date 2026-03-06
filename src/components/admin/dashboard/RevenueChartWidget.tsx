@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, DollarSign, Calendar } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { DASHBOARD_QUERY_CONFIG } from '@/lib/react-query-config';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatPercentage } from '@/lib/utils/formatPercentage';
@@ -16,12 +16,12 @@ import { format, subDays, startOfDay } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
 
 export function RevenueChartWidget() {
-  const { account } = useAccount();
+  const { tenant } = useTenantAdminAuth();
 
   const { data: revenueData, isLoading } = useQuery({
-    queryKey: queryKeys.dashboardWidgets.revenueChart(account?.id),
+    queryKey: queryKeys.dashboardWidgets.revenueChart(tenant?.id),
     queryFn: async () => {
-      if (!account?.id) return null;
+      if (!tenant?.id) return null;
 
       const today = new Date();
       const last30Days = subDays(today, 30);
@@ -36,7 +36,7 @@ export function RevenueChartWidget() {
       const { data: orders } = await supabase
         .from('wholesale_orders')
         .select('total_amount, created_at, status')
-        .eq('account_id', account.id)
+        .eq('account_id', tenant.id)
         .gte('created_at', last30Days.toISOString())
         .order('created_at', { ascending: true});
 
@@ -96,7 +96,7 @@ export function RevenueChartWidget() {
           .sort((a, b) => a.date.localeCompare(b.date)),
       };
     },
-    enabled: !!account?.id,
+    enabled: !!tenant?.id,
     ...DASHBOARD_QUERY_CONFIG,
   });
 

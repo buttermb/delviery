@@ -23,7 +23,7 @@ serve(async (req) => {
 
         if (action === "send_email") {
             // Placeholder for email sending logic (e.g., Resend)
-            console.log("Sending email:", payload);
+            console.error("Sending email:", payload);
             // In a real app, you'd call Resend API here
             // await resend.emails.send({ ... })
 
@@ -40,7 +40,7 @@ serve(async (req) => {
 
         if (action === "send_sms") {
             // Placeholder for SMS sending logic (e.g., Twilio)
-            console.log("Sending SMS:", payload);
+            console.error("Sending SMS:", payload);
 
             await supabase.from("marketing_campaigns").update({
                 status: "sent",

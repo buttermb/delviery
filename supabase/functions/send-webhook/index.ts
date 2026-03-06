@@ -17,7 +17,7 @@ serve(async (req) => {
         const { webhook_id, payload } = validateSendWebhook(rawBody);
 
         // In a real implementation, fetch webhook URL from DB and POST payload
-        console.log(`Sending webhook ${webhook_id} with payload`, payload);
+        console.error(`Sending webhook ${webhook_id} with payload`, payload);
 
         return new Response(JSON.stringify({ success: true }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },

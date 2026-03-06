@@ -47,6 +47,14 @@ interface GeofenceConfig {
   radiusMiles: string;
 }
 
+const STANDARD_TIERS = [
+  { label: '8th', weight_grams: 3.5 },
+  { label: 'Q', weight_grams: 7 },
+  { label: 'Half', weight_grams: 14 },
+  { label: 'Zip', weight_grams: 28 },
+  { label: 'QP', weight_grams: 112 },
+] as const;
+
 const STEPS = [
   { id: 1, name: 'Template', icon: Sparkles },
   { id: 2, name: 'Details', icon: Eye },
@@ -84,6 +92,8 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
 
   // Advanced options state
   const [customPrices, setCustomPrices] = useState<Record<string, string>>({});
+  // Tiered pricing: productId → { tierLabel → price string }
+  const [tieredPrices, setTieredPrices] = useState<Record<string, Record<string, string>>>({});
   const [applyDiscount, setApplyDiscount] = useState(false);
   const [discountPercent, setDiscountPercent] = useState('10');
   const [geofencingEnabled, setGeofencingEnabled] = useState(false);
@@ -147,6 +157,36 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
     }
     return product.price;
   }, [customPrices, applyDiscount, discountPercent]);
+
+  const setTierPrice = (productId: string, tierLabel: string, value: string) => {
+    setTieredPrices((prev) => ({
+      ...prev,
+      [productId]: { ...prev[productId], [tierLabel]: value },
+    }));
+  };
+
+  /** Convert tieredPrices state → per-product prices for the API */
+  const buildProductPrices = (): Record<string, Array<{ label: string; price: number; weight_grams: number }>> => {
+    const result: Record<string, Array<{ label: string; price: number; weight_grams: number }>> = {};
+    for (const productId of selectedProducts) {
+      const tiers = tieredPrices[productId];
+      if (!tiers) continue;
+      const arr: Array<{ label: string; price: number; weight_grams: number }> = [];
+      for (const tier of STANDARD_TIERS) {
+        const raw = tiers[tier.label];
+        if (raw && raw.trim() !== '') {
+          const price = parseFloat(raw);
+          if (!isNaN(price) && price > 0) {
+            arr.push({ label: tier.label, price, weight_grams: tier.weight_grams });
+          }
+        }
+      }
+      if (arr.length > 0) {
+        result[productId] = arr;
+      }
+    }
+    return result;
+  };
 
   // Determine which steps to show
   const isForumMenu = selectedTemplate?.menuType === 'forum';
@@ -289,10 +329,15 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
         ? prev.filter(id => id !== productId)
         : [...prev, productId];
 
-      // Remove custom price for deselected products
+      // Remove custom price and tiered prices for deselected products
       if (!newSelection.includes(productId)) {
         setCustomPrices(prices => {
           const updated = { ...prices };
+          delete updated[productId];
+          return updated;
+        });
+        setTieredPrices(prev => {
+          const updated = { ...prev };
           delete updated[productId];
           return updated;
         });
@@ -356,6 +401,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
     setPassword('');
     setAccessCode(generateAccessCode());
     setCustomPrices({});
+    setTieredPrices({});
     setApplyDiscount(false);
     setDiscountPercent('10');
     setGeofencingEnabled(false);
@@ -425,6 +471,8 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
       }
     }
 
+    const productPrices = buildProductPrices();
+
     await executeWithCredits('menu_create', async () => {
       await createMenu.mutateAsync({
         tenant_id: tenant?.id ?? '',
@@ -436,6 +484,7 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
         min_order_quantity: isForumMenu ? undefined : parseFloat(minOrder),
         max_order_quantity: isForumMenu ? undefined : parseFloat(maxOrder),
         custom_prices: Object.keys(finalCustomPrices).length > 0 ? finalCustomPrices : undefined,
+        product_prices: Object.keys(productPrices).length > 0 ? productPrices : undefined,
         access_code: requireAccessCode ? accessCode : generateAccessCode(),
         expiration_date: expirationDate || undefined,
         never_expires: !expirationDate,
@@ -779,47 +828,67 @@ export const MenuCreationWizard = ({ open, onOpenChange }: MenuCreationWizardPro
                             const hasCustomPrice = customPrices[productId] && customPrices[productId].trim() !== '';
 
                             return (
-                              <div key={productId} className="flex items-center gap-3 p-2 border rounded">
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-sm font-medium truncate">{product.name}</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Base: ${product.price.toFixed(2)}
-                                    {!hasCustomPrice && applyDiscount && (
-                                      <span className="text-green-600 ml-1">
-                                        (-{discountPercent}%)
-                                      </span>
-                                    )}
+                              <div key={productId} className="space-y-2 p-2 border rounded">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-sm font-medium truncate">{product.name}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      Base: ${product.price.toFixed(2)}
+                                      {!hasCustomPrice && applyDiscount && (
+                                        <span className="text-green-600 ml-1">
+                                          (-{discountPercent}%)
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-muted-foreground">$</span>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      placeholder={effectivePrice.toFixed(2)}
+                                      value={customPrices[productId] ?? ''}
+                                      onChange={(e) => setCustomPrices(prev => ({
+                                        ...prev,
+                                        [productId]: e.target.value,
+                                      }))}
+                                      className="w-24 h-8 text-sm"
+                                    />
+                                  </div>
+                                  {hasCustomPrice && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => setCustomPrices(prev => {
+                                        const updated = { ...prev };
+                                        delete updated[productId];
+                                        return updated;
+                                      })}
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  )}
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-muted-foreground">$</span>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder={effectivePrice.toFixed(2)}
-                                    value={customPrices[productId] ?? ''}
-                                    onChange={(e) => setCustomPrices(prev => ({
-                                      ...prev,
-                                      [productId]: e.target.value,
-                                    }))}
-                                    className="w-24 h-8 text-sm"
-                                  />
+                                {/* Tiered pricing row */}
+                                <div className="flex flex-wrap gap-2 pl-1">
+                                  {STANDARD_TIERS.map((tier) => (
+                                    <div key={tier.label} className="flex items-center gap-1">
+                                      <span className="text-[11px] text-muted-foreground w-7">{tier.label}</span>
+                                      <span className="text-[11px] text-muted-foreground">$</span>
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        placeholder="—"
+                                        value={tieredPrices[productId]?.[tier.label] ?? ''}
+                                        onChange={(e) => setTierPrice(productId, tier.label, e.target.value)}
+                                        className="w-16 h-7 text-xs px-1.5"
+                                      />
+                                    </div>
+                                  ))}
                                 </div>
-                                {hasCustomPrice && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-11 w-11 p-0"
-                                    onClick={() => setCustomPrices(prev => {
-                                      const updated = { ...prev };
-                                      delete updated[productId];
-                                      return updated;
-                                    })}
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </Button>
-                                )}
                               </div>
                             );
                           })}

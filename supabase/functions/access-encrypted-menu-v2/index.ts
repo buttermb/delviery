@@ -99,6 +99,36 @@ serve(async (req: Request) => {
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      // Verify the access code against stored hash using constant-time comparison
+      const encoder = new TextEncoder();
+      const accessCodeData = encoder.encode(access_code);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', accessCodeData);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const computedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      // Constant-time comparison to prevent timing attacks
+      const storedHash = menu.access_code_hash;
+      let mismatch = computedHash.length !== storedHash.length ? 1 : 0;
+      const len = Math.min(computedHash.length, storedHash.length);
+      for (let i = 0; i < len; i++) {
+        mismatch |= computedHash.charCodeAt(i) ^ storedHash.charCodeAt(i);
+      }
+
+      if (mismatch !== 0) {
+        logger.warn('Invalid access code', { menuId: menu.id });
+        await events.process({
+          type: 'SECURITY_BREACH',
+          payload: { reason: 'Invalid access code', ip: clientIp },
+          timestamp: new Date(),
+          tenantId: menu.tenant_id,
+          menuId: menu.id,
+        });
+        return new Response(
+          JSON.stringify({ error: 'Invalid access code' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Get Data (Cached or Decrypted)

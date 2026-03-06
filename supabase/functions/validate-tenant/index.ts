@@ -37,7 +37,7 @@ serve(async (req) => {
       .single()
     
     if (error || !tenant) {
-      console.log(`[validate-tenant] Tenant not found: ${slug}`)
+      console.error(`[validate-tenant] Tenant not found: ${slug}`)
       return new Response(
         JSON.stringify({ valid: false, error: 'Tenant not found' }),
         { 
@@ -47,7 +47,7 @@ serve(async (req) => {
       )
     }
     
-    console.log(`[validate-tenant] Valid tenant: ${slug}`)
+    console.error(`[validate-tenant] Valid tenant: ${slug}`)
     return new Response(
       JSON.stringify({ valid: true, tenant }),
       { 

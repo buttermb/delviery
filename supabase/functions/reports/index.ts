@@ -41,7 +41,7 @@ serve(async (req) => {
             // Simple CSV conversion
             const headers = Object.keys(results[0] || {});
             let output = headers.join(",") + "\n";
-            output += results.map((row: any) => headers.map(h => JSON.stringify(row[h])).join(",")).join("\n");
+            output += results.map((row: Record<string, unknown>) => headers.map(h => JSON.stringify(row[h])).join(",")).join("\n");
 
             return new Response(output, {
                 headers: { ...corsHeaders, "Content-Type": "text/csv" },

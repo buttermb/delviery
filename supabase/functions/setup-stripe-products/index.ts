@@ -94,7 +94,7 @@ serve(async (req) => {
 
     // Initialize Stripe
     const stripe = new Stripe(stripeKey, {
-      apiVersion: "2023-10-16",
+      apiVersion: "2025-08-27.basil",
     });
 
     // Initialize Supabase
@@ -102,7 +102,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log("[SETUP-STRIPE] Starting product setup...");
+    console.error("[SETUP-STRIPE] Starting product setup...");
 
     const results: Array<{
       plan: string;
@@ -113,7 +113,7 @@ serve(async (req) => {
     }> = [];
 
     for (const plan of PLANS) {
-      console.log(`[SETUP-STRIPE] Processing plan: ${plan.name}`);
+      console.error(`[SETUP-STRIPE] Processing plan: ${plan.name}`);
 
       // Check if product already exists by searching for metadata
       const existingProducts = await stripe.products.search({
@@ -127,7 +127,7 @@ serve(async (req) => {
       if (existingProducts.data.length > 0) {
         // Product exists, get it and its prices
         product = existingProducts.data[0];
-        console.log(`[SETUP-STRIPE] Found existing product: ${product.id}`);
+        console.error(`[SETUP-STRIPE] Found existing product: ${product.id}`);
 
         // Get all active prices for this product
         const prices = await stripe.prices.list({
@@ -144,7 +144,7 @@ serve(async (req) => {
         // Create or use monthly price
         if (existingMonthly) {
           monthlyPrice = existingMonthly;
-          console.log(`[SETUP-STRIPE] Found existing monthly price: ${monthlyPrice.id}`);
+          console.error(`[SETUP-STRIPE] Found existing monthly price: ${monthlyPrice.id}`);
         } else {
           monthlyPrice = await stripe.prices.create({
             product: product.id,
@@ -153,13 +153,13 @@ serve(async (req) => {
             recurring: { interval: "month" },
             metadata: { plan_slug: plan.slug, billing_cycle: "monthly" },
           });
-          console.log(`[SETUP-STRIPE] Created monthly price: ${monthlyPrice.id}`);
+          console.error(`[SETUP-STRIPE] Created monthly price: ${monthlyPrice.id}`);
         }
 
         // Create or use yearly price
         if (existingYearly) {
           yearlyPrice = existingYearly;
-          console.log(`[SETUP-STRIPE] Found existing yearly price: ${yearlyPrice.id}`);
+          console.error(`[SETUP-STRIPE] Found existing yearly price: ${yearlyPrice.id}`);
         } else {
           yearlyPrice = await stripe.prices.create({
             product: product.id,
@@ -168,7 +168,7 @@ serve(async (req) => {
             recurring: { interval: "year" },
             metadata: { plan_slug: plan.slug, billing_cycle: "yearly" },
           });
-          console.log(`[SETUP-STRIPE] Created yearly price: ${yearlyPrice.id}`);
+          console.error(`[SETUP-STRIPE] Created yearly price: ${yearlyPrice.id}`);
         }
 
         results.push({
@@ -188,7 +188,7 @@ serve(async (req) => {
             features: plan.features.join(", "),
           },
         });
-        console.log(`[SETUP-STRIPE] Created product: ${product.id}`);
+        console.error(`[SETUP-STRIPE] Created product: ${product.id}`);
 
         // Create monthly price
         monthlyPrice = await stripe.prices.create({
@@ -198,7 +198,7 @@ serve(async (req) => {
           recurring: { interval: "month" },
           metadata: { plan_slug: plan.slug, billing_cycle: "monthly" },
         });
-        console.log(`[SETUP-STRIPE] Created monthly price: ${monthlyPrice.id}`);
+        console.error(`[SETUP-STRIPE] Created monthly price: ${monthlyPrice.id}`);
 
         // Create yearly price (17% discount)
         yearlyPrice = await stripe.prices.create({
@@ -208,7 +208,7 @@ serve(async (req) => {
           recurring: { interval: "year" },
           metadata: { plan_slug: plan.slug, billing_cycle: "yearly" },
         });
-        console.log(`[SETUP-STRIPE] Created yearly price: ${yearlyPrice.id}`);
+        console.error(`[SETUP-STRIPE] Created yearly price: ${yearlyPrice.id}`);
 
         results.push({
           plan: plan.name,
@@ -234,11 +234,11 @@ serve(async (req) => {
       if (updateError) {
         console.error(`[SETUP-STRIPE] Failed to update plan ${plan.slug}:`, updateError);
       } else {
-        console.log(`[SETUP-STRIPE] Updated subscription_plans for ${plan.slug} with monthly and yearly prices`);
+        console.error(`[SETUP-STRIPE] Updated subscription_plans for ${plan.slug} with monthly and yearly prices`);
       }
     }
 
-    console.log("[SETUP-STRIPE] Setup complete!");
+    console.error("[SETUP-STRIPE] Setup complete!");
 
     return new Response(
       JSON.stringify({

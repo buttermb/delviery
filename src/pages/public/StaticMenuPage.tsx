@@ -42,6 +42,7 @@ interface MenuData {
   appearance: AppearanceSettings;
   expiration_date: string | null;
   never_expires: boolean;
+  max_order_quantity: number | null;
 }
 
 interface AppearanceSettings {
@@ -302,7 +303,7 @@ async function loadMenuDirect(token: string): Promise<{ menu: MenuData; products
   try {
     const { data: menu, error: menuError } = await supabase
       .from('disposable_menus')
-      .select('id, name, description, custom_message, show_product_images, appearance_settings, tenant_id, expiration_date, never_expires')
+      .select('id, name, description, custom_message, show_product_images, appearance_settings, tenant_id, expiration_date, never_expires, max_order_quantity')
       .eq('encrypted_url_token', token)
       .eq('status', 'active')
       .maybeSingle();
@@ -412,6 +413,7 @@ function transformMenu(menu: Record<string, unknown>): MenuData {
     appearance,
     expiration_date: (menu.expiration_date as string) ?? null,
     never_expires: (menu.never_expires as boolean) ?? false,
+    max_order_quantity: typeof menu.max_order_quantity === 'number' ? menu.max_order_quantity : null,
   };
 }
 
@@ -602,6 +604,12 @@ export default function StaticMenuPage() {
 
   const addToCart = useCallback((product: MenuProduct, tier: TieredPrice, quantity = 1) => {
     setCart(prev => {
+      const menuMaxQty = menu?.max_order_quantity;
+      // Check menu-level max order quantity
+      if (menuMaxQty != null && menuMaxQty > 0 && prev.item_count >= menuMaxQty) {
+        return prev;
+      }
+
       const existingIndex = prev.items.findIndex(
         item => item.product.id === product.id && item.tier.label === tier.label
       );
@@ -609,19 +617,29 @@ export default function StaticMenuPage() {
       if (existingIndex >= 0) {
         newItems = prev.items.map((item, i) => {
           if (i !== existingIndex) return item;
-          const maxQty = tier.max_qty ?? 99;
-          const newQty = Math.min(item.quantity + quantity, maxQty);
+          const tierMaxQty = tier.max_qty ?? 99;
+          let newQty = Math.min(item.quantity + quantity, tierMaxQty);
+          // Also cap at menu-level max
+          if (menuMaxQty != null && menuMaxQty > 0) {
+            const otherItemsCount = prev.item_count - item.quantity;
+            newQty = Math.min(newQty, menuMaxQty - otherItemsCount);
+          }
           return { ...item, quantity: newQty, line_total: tier.price * newQty };
         });
       } else {
-        const maxQty = tier.max_qty ?? 99;
-        const clampedQty = Math.min(quantity, maxQty);
+        const tierMaxQty = tier.max_qty ?? 99;
+        let clampedQty = Math.min(quantity, tierMaxQty);
+        // Also cap at menu-level max
+        if (menuMaxQty != null && menuMaxQty > 0) {
+          clampedQty = Math.min(clampedQty, menuMaxQty - prev.item_count);
+        }
+        if (clampedQty <= 0) return prev;
         newItems = [...prev.items, { product, tier, quantity: clampedQty, line_total: tier.price * clampedQty }];
       }
       return recalculateCart(newItems);
     });
     if ('vibrate' in navigator) navigator.vibrate(10);
-  }, []);
+  }, [menu?.max_order_quantity]);
 
   const removeFromCart = useCallback((productId: string, tierLabel: string) => {
     setCart(prev => {
@@ -639,15 +657,22 @@ export default function StaticMenuPage() {
       return;
     }
     setCart(prev => {
+      const menuMaxQty = menu?.max_order_quantity;
       const newItems = prev.items.map(item => {
         if (item.product.id !== productId || item.tier.label !== tierLabel) return item;
-        const maxQty = item.tier.max_qty ?? 99;
-        const clamped = Math.min(newQuantity, maxQty);
+        const tierMaxQty = item.tier.max_qty ?? 99;
+        let clamped = Math.min(newQuantity, tierMaxQty);
+        // Also cap at menu-level max
+        if (menuMaxQty != null && menuMaxQty > 0) {
+          const otherItemsCount = prev.item_count - item.quantity;
+          clamped = Math.min(clamped, menuMaxQty - otherItemsCount);
+        }
+        if (clamped <= 0) return { ...item, quantity: 0, line_total: 0 };
         return { ...item, quantity: clamped, line_total: item.tier.price * clamped };
-      });
+      }).filter(item => item.quantity > 0);
       return recalculateCart(newItems);
     });
-  }, []);
+  }, [menu?.max_order_quantity]);
 
   const clearCart = useCallback(() => {
     setCart({ items: [], item_count: 0, subtotal: 0 });
@@ -659,6 +684,14 @@ export default function StaticMenuPage() {
 
   const placeOrder = useCallback(async () => {
     if (cart.items.length === 0 || !menu) return;
+
+    // Validate max order quantity before submission
+    const menuMaxQty = menu.max_order_quantity;
+    if (menuMaxQty != null && menuMaxQty > 0 && cart.item_count > menuMaxQty) {
+      setError(`Maximum ${menuMaxQty} items per order. You have ${cart.item_count}.`);
+      return;
+    }
+
     const phoneDigits = orderForm.contact_phone.replace(/\D/g, '');
     if (phoneDigits.length < 10) {
       setPhoneError('Please enter a valid 10-digit phone number');

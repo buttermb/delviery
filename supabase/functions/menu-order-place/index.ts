@@ -16,7 +16,7 @@ serve(async (req) => {
   const traceId = req.headers.get('x-trace-id') || crypto.randomUUID();
   const idempotencyKey = req.headers.get('x-idempotency-key');
 
-  console.log(`[ORDER_CREATE] Order placement started`, { traceId, idempotencyKey });
+  console.error(`[ORDER_CREATE] Order placement started`, { traceId, idempotencyKey });
 
   try {
     const supabaseClient = createClient(
@@ -33,7 +33,7 @@ serve(async (req) => {
       contact_phone,
     } = body;
 
-    console.log(`[ORDER_CREATE] Request validated`, {
+    console.error(`[ORDER_CREATE] Request validated`, {
       traceId,
       menuId: menu_id,
       itemCount: order_items?.length,
@@ -62,7 +62,7 @@ serve(async (req) => {
     }
 
     const { reservation_id, lock_token } = reservation;
-    console.log(`[ORDER_CREATE] Inventory reserved`, { traceId, reservationId: reservation_id });
+    console.error(`[ORDER_CREATE] Inventory reserved`, { traceId, reservationId: reservation_id });
 
     // 2. PROCESS PAYMENT
     // SECURITY: Calculate total from DATABASE prices - NEVER trust client-provided total
@@ -138,7 +138,7 @@ serve(async (req) => {
       totalAmount += unitPrice * item.quantity;
     }
 
-    console.log(`[ORDER_CREATE] Server-calculated total: ${totalAmount}`, { traceId });
+    console.error(`[ORDER_CREATE] Server-calculated total: ${totalAmount}`, { traceId });
 
     const paymentResult = await processPayment(totalAmount, payment_method, {
       reservation_id,
@@ -162,7 +162,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[ORDER_CREATE] Payment processed`, {
+    console.error(`[ORDER_CREATE] Payment processed`, {
       traceId,
       transactionId: paymentResult.transaction_id
     });
@@ -195,7 +195,7 @@ serve(async (req) => {
             paymentResult.transaction_id,
             'system_error_order_creation_failed'
           );
-          console.log(`[ORDER_CREATE] Refund processed`, { traceId, transactionId: paymentResult.transaction_id });
+          console.error(`[ORDER_CREATE] Refund processed`, { traceId, transactionId: paymentResult.transaction_id });
         } catch (refundError) {
           console.error(`[ORDER_CREATE] FATAL: Refund failed for Zombie Order! Manual intervention required.`, {
             traceId,
@@ -220,7 +220,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[ORDER_CREATE] Order confirmed successfully`, {
+    console.error(`[ORDER_CREATE] Order confirmed successfully`, {
       traceId,
       orderId: order.order_id,
       menuId: menu_id,

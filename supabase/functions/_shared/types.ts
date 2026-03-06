@@ -5,7 +5,7 @@
 export interface SystemMetric {
   metric_type: string;
   value: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UptimeCheck {

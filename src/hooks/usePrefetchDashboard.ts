@@ -28,6 +28,28 @@ export function usePrefetchDashboard() {
         tenantId = tenant.id;
       }
 
+      // Verify the caller is a member of this tenant before prefetching
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) {
+        logger.warn('[PREFETCH] No authenticated user, skipping prefetch');
+        return false;
+      }
+
+      const { data: membership } = await supabase
+        .from('tenant_users')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!membership) {
+        logger.warn('[PREFETCH] User is not a member of tenant, skipping prefetch', {
+          tenantSlug,
+          tenantId,
+        });
+        return false;
+      }
+
       // Prefetch key dashboard queries in parallel
       await Promise.allSettled([
         // Today's metrics

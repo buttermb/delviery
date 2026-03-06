@@ -38,7 +38,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('[CREDIT_WARNINGS] Starting credit warning job');
+    console.error('[CREDIT_WARNINGS] Starting credit warning job');
 
     const results = {
       checked: 0,
@@ -54,7 +54,7 @@ serve(async (req) => {
 
     // Process each warning threshold
     for (const threshold of WARNING_THRESHOLDS) {
-      console.log(`[CREDIT_WARNINGS] Checking ${threshold.percent}% threshold`);
+      console.error(`[CREDIT_WARNINGS] Checking ${threshold.percent}% threshold`);
 
       // Find tenants at this threshold who haven't been warned
       const { data: tenants, error: queryError } = await supabase
@@ -80,14 +80,14 @@ serve(async (req) => {
         continue;
       }
 
-      console.log(`[CREDIT_WARNINGS] Found ${tenants?.length || 0} tenants at ${threshold.percent}%`);
+      console.error(`[CREDIT_WARNINGS] Found ${tenants?.length || 0} tenants at ${threshold.percent}%`);
 
       for (const record of tenants || []) {
         results.checked++;
         const tenant = record.tenants as Record<string, unknown> | null;
 
         if (!tenant?.owner_email) {
-          console.log(`[CREDIT_WARNINGS] No email for tenant ${record.tenant_id}`);
+          console.error(`[CREDIT_WARNINGS] No email for tenant ${record.tenant_id}`);
           continue;
         }
 
@@ -123,7 +123,7 @@ serve(async (req) => {
 
           results.warnings_sent++;
           results.by_severity[threshold.severity]++;
-          console.log(`[CREDIT_WARNINGS] Sent ${threshold.severity} warning to ${tenant.slug}`);
+          console.error(`[CREDIT_WARNINGS] Sent ${threshold.severity} warning to ${tenant.slug}`);
 
         } catch (err) {
           console.error(`[CREDIT_WARNINGS] Error for ${record.tenant_id}:`, err);
@@ -132,7 +132,7 @@ serve(async (req) => {
       }
     }
 
-    console.log('[CREDIT_WARNINGS] Job completed:', results);
+    console.error('[CREDIT_WARNINGS] Job completed:', results);
 
     return new Response(
       JSON.stringify({
@@ -190,7 +190,7 @@ async function sendWarningNotification(
 
   // TODO: Send email notification
   // Integrate with your email service (Resend, SendGrid, etc.)
-  console.log(`[CREDIT_WARNINGS] Would send email to ${email}:`, {
+  console.error(`[CREDIT_WARNINGS] Would send email to ${email}:`, {
     subject: getEmailSubject(threshold.severity),
     balance,
     slug,

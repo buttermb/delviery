@@ -121,6 +121,7 @@ function useRealtimeViewerCount(tenantId: string | undefined): number {
           event: 'INSERT',
           schema: 'public',
           table: 'menu_access_logs',
+          filter: `tenant_id=eq.${tenantId}`,
         },
         () => {
           setViewerCount((prev) => prev + 1);
@@ -243,8 +244,9 @@ function OrderCard({ order, onStatusChange, isUpdating }: { order: OrderData; on
 
 // Enhanced Orders Tab with better Kanban
 function OrdersTab() {
-  const { data: orders = [], isLoading, refetch } = useMenuOrders();
-  const updateOrderStatus = useUpdateOrderStatus();
+  const { tenant } = useTenantAdminAuth();
+  const { data: orders = [], isLoading, refetch } = useMenuOrders(undefined, tenant?.id);
+  const updateOrderStatus = useUpdateOrderStatus(tenant?.id);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [listLimit, setListLimit] = useState(20);
 

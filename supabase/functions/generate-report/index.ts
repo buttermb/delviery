@@ -79,7 +79,7 @@ serve(async (req) => {
       );
     }
 
-    let reportData: any = null;
+    let reportData: Record<string, unknown> | null = null;
     const startDate = date_range?.start || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const endDate = date_range?.end || new Date().toISOString();
 
@@ -162,7 +162,7 @@ serve(async (req) => {
       console.warn("Could not log report execution:", error);
     }
 
-    console.log(`[GENERATE-REPORT] ${report_type} report generated for tenant ${tenant_id} by user ${user.email}`);
+    console.error(`[GENERATE-REPORT] ${report_type} report generated for tenant ${tenant_id} by user ${user.email}`);
 
     return new Response(
       JSON.stringify({

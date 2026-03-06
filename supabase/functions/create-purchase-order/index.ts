@@ -13,14 +13,38 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
+    // Auth check
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const rawBody = await req.json();
     const { tenant_id, supplier_id, items, delivery_date, notes }: CreatePurchaseOrderInput = validateCreatePurchaseOrder(rawBody);
+
+    // Verify tenant ownership
+    const { data: tenantUser } = await supabaseClient
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!tenantUser?.tenant_id || tenantUser.tenant_id !== tenant_id) {
+      return new Response(
+        JSON.stringify({ error: 'Not authorized for this tenant' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Get supplier info
     const { data: supplier } = await supabaseClient
       .from('suppliers')
       .select('*')
       .eq('id', supplier_id)
+      .eq('tenant_id', tenant_id)
       .single();
 
     if (!supplier) {
@@ -39,6 +63,7 @@ serve(async (req) => {
         .from('products')
         .select('wholesale_price_per_lb')
         .eq('id', item.product_id)
+        .eq('tenant_id', tenant_id)
         .single();
 
       const itemTotal = item.quantity_lbs * (product?.wholesale_price_per_lb || item.price_per_lb);
@@ -66,21 +91,42 @@ serve(async (req) => {
       );
     }
 
-    // Create purchase order
-    const { data: po, error: poError } = await supabaseClient
-      .from('purchase_orders')
-      .insert({
-        tenant_id,
-        supplier_id,
-        total_amount: totalAmount,
-        expected_delivery_date: delivery_date,
-        notes,
-        status: 'pending'
-      })
-      .select()
-      .single();
+    // Create purchase order with retry on PO number collision
+    // The DB trigger generates po_number via generate_po_number() which uses
+    // random hex suffix. The column has a UNIQUE constraint, so concurrent
+    // inserts could collide. Retry up to 3 times with a fresh generated number.
+    const MAX_PO_RETRIES = 3;
+    let po: Record<string, unknown> | null = null;
 
-    if (poError) throw poError;
+    for (let attempt = 0; attempt < MAX_PO_RETRIES; attempt++) {
+      const { data: poData, error: poError } = await supabaseClient
+        .from('purchase_orders')
+        .insert({
+          tenant_id,
+          supplier_id,
+          total_amount: totalAmount,
+          expected_delivery_date: delivery_date,
+          notes,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (!poError) {
+        po = poData;
+        break;
+      }
+
+      // Retry only on unique constraint violation (code 23505)
+      const isUniqueViolation = poError.code === '23505' || poError.message?.includes('duplicate key');
+      if (!isUniqueViolation || attempt === MAX_PO_RETRIES - 1) {
+        throw poError;
+      }
+      // Brief pause before retry to allow clock/random state to change
+      await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+    }
+
+    if (!po) throw new Error('Failed to create purchase order after retries');
 
     // Create PO items
     const poItems = processedItems.map(item => ({
@@ -92,7 +138,11 @@ serve(async (req) => {
       .from('purchase_order_items')
       .insert(poItems);
 
-    if (itemsError) throw itemsError;
+    if (itemsError) {
+      // Rollback: delete the orphaned PO header
+      await supabaseClient.from('purchase_orders').delete().eq('id', po.id as string);
+      throw itemsError;
+    }
 
     // TODO: Generate PDF and upload to storage
     // TODO: Send email to supplier

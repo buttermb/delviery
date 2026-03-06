@@ -175,7 +175,7 @@ serve(secureHeadersMiddleware(async (req) => {
         );
       }
 
-      console.log('[LOGIN] Tenant admin login attempt:', { email, tenantSlug, clientIP });
+      console.error('[LOGIN] Tenant admin login attempt:', { email, tenantSlug, clientIP });
 
       // Create a separate service role client for tenant lookup (bypasses RLS)
       const serviceClient = createClient(
@@ -183,7 +183,7 @@ serve(secureHeadersMiddleware(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
-      console.log('Looking up tenant with slug:', tenantSlug.toLowerCase());
+      console.error('Looking up tenant with slug:', tenantSlug.toLowerCase());
 
       // Get tenant by slug BEFORE authentication (using service role)
       const { data: tenant, error: tenantError } = await serviceClient
@@ -192,7 +192,7 @@ serve(secureHeadersMiddleware(async (req) => {
         .eq('slug', tenantSlug.toLowerCase())
         .maybeSingle();
 
-      console.log('Tenant lookup result:', {
+      console.error('Tenant lookup result:', {
         found: !!tenant,
         tenantId: tenant?.id,
         ownerEmail: tenant?.owner_email,
@@ -214,10 +214,10 @@ serve(secureHeadersMiddleware(async (req) => {
         );
       }
 
-      console.log('Tenant found:', tenant.business_name, 'Owner:', tenant.owner_email);
+      console.error('Tenant found:', tenant.business_name, 'Owner:', tenant.owner_email);
 
       // Verify credentials with Supabase Auth
-      console.log('Attempting authentication for:', email);
+      console.error('Attempting authentication for:', email);
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -267,11 +267,11 @@ serve(secureHeadersMiddleware(async (req) => {
         );
       }
 
-      console.log('Authentication successful for user:', authData.user.id);
+      console.error('Authentication successful for user:', authData.user.id);
 
       // Verify user has access to this tenant (check if email matches tenant owner or is a tenant user)
       const isOwner = tenant.owner_email?.toLowerCase() === email.toLowerCase();
-      console.log('Access check:', {
+      console.error('Access check:', {
         email,
         tenantOwner: tenant.owner_email,
         isOwner
@@ -279,7 +279,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       let tenantUser = null;
       if (!isOwner) {
-        console.log('User is not owner, checking tenant_users table');
+        console.error('User is not owner, checking tenant_users table');
         const { data: userCheck, error: userCheckError } = await serviceClient
           .from('tenant_users')
           .select('*')
@@ -287,7 +287,7 @@ serve(secureHeadersMiddleware(async (req) => {
           .eq('tenant_id', tenant.id)
           .maybeSingle();
 
-        console.log('Tenant user lookup:', {
+        console.error('Tenant user lookup:', {
           found: !!userCheck,
           error: userCheckError
         });
@@ -325,9 +325,9 @@ serve(secureHeadersMiddleware(async (req) => {
           );
         }
 
-        console.log('User authorized via tenant_users:', tenantUser.role);
+        console.error('User authorized via tenant_users:', tenantUser.role);
       } else {
-        console.log('User authorized as tenant owner');
+        console.error('User authorized as tenant owner');
       }
 
       // Build admin object
@@ -347,7 +347,7 @@ serve(secureHeadersMiddleware(async (req) => {
         userId: authData.user.id,
       };
 
-      console.log('Login successful for:', email, 'tenant:', tenant.business_name);
+      console.error('Login successful for:', email, 'tenant:', tenant.business_name);
 
       // Log successful login to auth_audit_log
       await logAuthEvent({
@@ -366,7 +366,7 @@ serve(secureHeadersMiddleware(async (req) => {
           .from('tenant_admin_sessions')
           .delete()
           .eq('user_id', authData.user.id);
-        console.log('[SESSION_FIXATION] Previous sessions invalidated for user:', authData.user.id);
+        console.error('[SESSION_FIXATION] Previous sessions invalidated for user:', authData.user.id);
       } catch (sessionCleanupError) {
         // Log but don't block login - session cleanup is best-effort
         console.warn('[SESSION_FIXATION] Failed to invalidate previous sessions:', sessionCleanupError);
@@ -376,7 +376,7 @@ serve(secureHeadersMiddleware(async (req) => {
       // other sessions. The current session just created by signInWithPassword is preserved.
       try {
         await supabase.auth.admin.signOut(authData.user.id, 'others');
-        console.log('[SESSION_FIXATION] Other Supabase sessions invalidated for user:', authData.user.id);
+        console.error('[SESSION_FIXATION] Other Supabase sessions invalidated for user:', authData.user.id);
       } catch (signOutError) {
         // Log but don't block - this is a supplementary protection
         console.warn('[SESSION_FIXATION] Failed to invalidate other Supabase sessions:', signOutError);
@@ -473,7 +473,7 @@ serve(secureHeadersMiddleware(async (req) => {
         );
       }
 
-      console.log('Attempting token refresh', {
+      console.error('Attempting token refresh', {
         tokenLength: refresh_token.length,
         tokenPrefix: refresh_token.substring(0, 10) + '...',
       });
@@ -485,7 +485,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (error || !data.session) {
         console.error('Token refresh error:', error);
-        console.log('Refresh request details:', {
+        console.error('Refresh request details:', {
           hasRefreshToken: !!refresh_token,
           tokenLength: refresh_token?.length,
           errorMsg: error?.message,
@@ -521,7 +521,7 @@ serve(secureHeadersMiddleware(async (req) => {
         `Max-Age=${30 * 24 * 60 * 60}` // 30 days for refresh token
       ].join('; ');
 
-      console.log('Token refresh successful', {
+      console.error('Token refresh successful', {
         userId: data.user?.id,
         expiresIn: data.session?.expires_in,
       });
@@ -688,6 +688,79 @@ serve(secureHeadersMiddleware(async (req) => {
         );
       }
 
+      // --- AUTH CHECK: Verify caller is authenticated via JWT ---
+      const impersonateAuthHeader = req.headers.get('Authorization');
+      if (!impersonateAuthHeader || !impersonateAuthHeader.startsWith('Bearer ')) {
+        return new Response(
+          JSON.stringify({ error: 'Authentication required' }),
+          { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const impersonateJwt = impersonateAuthHeader.replace('Bearer ', '');
+      const { data: { user: callerUser }, error: callerAuthError } = await supabase.auth.getUser(impersonateJwt);
+
+      if (callerAuthError || !callerUser) {
+        console.error('[impersonate] Caller authentication failed:', callerAuthError);
+        return new Response(
+          JSON.stringify({ error: 'Invalid or expired token' }),
+          { status: 401, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // --- AUTHZ CHECK: Verify the authenticated user is a super_admin ---
+      // If super_admin_id is provided, verify it matches the authenticated user
+      if (super_admin_id && callerUser.id !== super_admin_id) {
+        console.error('[impersonate] super_admin_id mismatch:', {
+          authenticated: callerUser.id,
+          claimed: super_admin_id,
+        });
+        return new Response(
+          JSON.stringify({ error: 'Forbidden: super_admin_id does not match authenticated user' }),
+          { status: 403, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Verify caller exists in super_admin_users table with active status
+      const { data: callerSuperAdmin, error: saLookupError } = await supabase
+        .from('super_admin_users')
+        .select('id, email, status')
+        .eq('email', callerUser.email?.toLowerCase())
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (saLookupError || !callerSuperAdmin) {
+        // Fallback: check user_roles table for super_admin role
+        const { data: callerRole, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', callerUser.id)
+          .eq('role', 'super_admin')
+          .maybeSingle();
+
+        if (roleError || !callerRole) {
+          console.error('[impersonate] Caller is not a super_admin:', callerUser.id);
+          return new Response(
+            JSON.stringify({ error: 'Forbidden: super_admin role required for impersonation' }),
+            { status: 403, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      // Verify caller has an active super_admin session
+      const { data: activeSession, error: sessionError } = await supabase
+        .from('super_admin_sessions')
+        .select('id')
+        .eq('super_admin_id', callerSuperAdmin?.id ?? callerUser.id)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      if (sessionError || !activeSession) {
+        console.error('[impersonate] No active super_admin session found for:', callerUser.id);
+        // Non-blocking: log but still allow if other checks passed
+        // Some super admins may authenticate via Supabase auth directly
+      }
+
       // Get tenant
       const { data: tenant, error: tenantError } = await supabase
         .from('tenants')
@@ -721,12 +794,12 @@ serve(secureHeadersMiddleware(async (req) => {
 
       // Log impersonation start in audit_logs
       const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-      const userAgent = req.headers.get('user-agent') || 'unknown';
+      const impersonateUserAgent = req.headers.get('user-agent') || 'unknown';
 
       await supabase
         .from('audit_logs')
         .insert({
-          actor_id: super_admin_id || '00000000-0000-0000-0000-000000000000',
+          actor_id: callerUser.id,
           actor_type: 'super_admin',
           action: 'impersonate_started',
           resource_type: 'tenant',
@@ -741,9 +814,9 @@ serve(secureHeadersMiddleware(async (req) => {
             timestamp: new Date().toISOString(),
           },
           ip_address: ipAddress,
-          user_agent: userAgent,
+          user_agent: impersonateUserAgent,
         })
-        .catch((logError) => {
+        .catch((logError: unknown) => {
           // Log error but don't fail impersonation
           console.error('Failed to log impersonation:', logError);
         });
@@ -817,7 +890,7 @@ serve(secureHeadersMiddleware(async (req) => {
       }
 
       const userEmail = user.email.toLowerCase();
-      console.log('[VERIFY] Checking access for:', userEmail);
+      console.error('[VERIFY] Checking access for:', userEmail);
 
       // Optimized: Check tenant ownership first (single query, no joins)
       const { data: ownedTenant, error: ownerError } = await supabase
@@ -832,7 +905,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       if (ownedTenant) {
         // User is tenant owner - fast path
-        console.log('[VERIFY] User is owner of tenant:', ownedTenant.business_name);
+        console.error('[VERIFY] User is owner of tenant:', ownedTenant.business_name);
 
         const admin = {
           id: user.id,
@@ -863,7 +936,7 @@ serve(secureHeadersMiddleware(async (req) => {
       }
 
       // Not owner - check tenant_users (optimized: specific fields only, manual join)
-      console.log('[VERIFY] User not owner, checking tenant_users');
+      console.error('[VERIFY] User not owner, checking tenant_users');
 
       const { data: tenantUser, error: tenantUserError } = await supabase
         .from('tenant_users')
@@ -877,7 +950,7 @@ serve(secureHeadersMiddleware(async (req) => {
       }
 
       if (!tenantUser) {
-        console.log('[VERIFY] No tenant access found for:', userEmail);
+        console.error('[VERIFY] No tenant access found for:', userEmail);
         return new Response(
           JSON.stringify({ error: 'No tenant access found' }),
           { status: 403, headers: { ...corsHeadersWithOrigin, 'Content-Type': 'application/json' } }
@@ -899,7 +972,7 @@ serve(secureHeadersMiddleware(async (req) => {
         );
       }
 
-      console.log('[VERIFY] User has access to tenant:', userTenant.business_name);
+      console.error('[VERIFY] User has access to tenant:', userTenant.business_name);
 
       const admin = {
         id: tenantUser.id,

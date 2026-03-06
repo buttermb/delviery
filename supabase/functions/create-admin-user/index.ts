@@ -12,13 +12,61 @@ serve(async (req) => {
   }
 
   try {
-    // For initial setup, allow this to be called without auth
-    // In production, you should add proper authentication
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { email, password, full_name, role } = await req.json();
+    // --- AUTH CHECK: Verify caller is authenticated ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const jwt = authHeader.replace("Bearer ", "");
+    const { data: { user: callerUser }, error: callerAuthError } = await supabase.auth.getUser(jwt);
+
+    if (callerAuthError || !callerUser) {
+      console.error("[create-admin-user] Caller authentication failed:", callerAuthError);
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // --- AUTHZ CHECK: Verify caller has admin or super_admin role ---
+    const { data: callerRoles, error: callerRolesError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callerUser.id);
+
+    const callerRoleList = (callerRoles || []).map((r: { role: string }) => r.role);
+
+    // Also check super_admin_users table as fallback for super_admin status
+    let callerIsSuperAdmin = callerRoleList.includes("super_admin");
+    if (!callerIsSuperAdmin) {
+      const { data: saUser } = await supabase
+        .from("super_admin_users")
+        .select("id")
+        .eq("email", callerUser.email?.toLowerCase())
+        .eq("status", "active")
+        .maybeSingle();
+      callerIsSuperAdmin = !!saUser;
+    }
+
+    const callerIsAdmin = callerIsSuperAdmin || callerRoleList.includes("admin");
+
+    if (!callerIsAdmin) {
+      console.error("[create-admin-user] Caller lacks admin/super_admin role:", callerUser.id);
+      return new Response(
+        JSON.stringify({ error: "Forbidden: admin or super_admin role required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { email, password, full_name, role, tenant_id } = await req.json();
 
     // Validate inputs
     if (!email || !password) {
@@ -26,6 +74,56 @@ serve(async (req) => {
         JSON.stringify({ error: "Email and password are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // --- ROLE ESCALATION CHECK: Don't allow creating roles higher than caller's own ---
+    const rolePriority: Record<string, number> = {
+      super_admin: 4,
+      owner: 3,
+      admin: 2,
+      member: 1,
+      viewer: 0,
+    };
+
+    const requestedRole = role || "super_admin";
+    const callerHighestRole = callerIsSuperAdmin ? "super_admin" : "admin";
+    const callerPriority = rolePriority[callerHighestRole] ?? 0;
+    const requestedPriority = rolePriority[requestedRole] ?? 0;
+
+    if (requestedPriority > callerPriority) {
+      console.error("[create-admin-user] Role escalation attempt:", {
+        caller: callerUser.id,
+        callerRole: callerHighestRole,
+        requestedRole,
+      });
+      return new Response(
+        JSON.stringify({ error: "Forbidden: cannot create a user with a higher role than your own" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // --- TENANT ISOLATION CHECK: Non-super-admins can only create admins for their own tenant ---
+    if (!callerIsSuperAdmin && tenant_id) {
+      // Verify caller belongs to the target tenant
+      const { data: callerTenantUser } = await supabase
+        .from("admin_users")
+        .select("id, tenant_id")
+        .eq("user_id", callerUser.id)
+        .maybeSingle();
+
+      const callerAdminData = callerTenantUser as { id: string; tenant_id?: string } | null;
+
+      if (!callerAdminData || callerAdminData.tenant_id !== tenant_id) {
+        console.error("[create-admin-user] Tenant isolation violation:", {
+          caller: callerUser.id,
+          callerTenant: callerAdminData?.tenant_id,
+          targetTenant: tenant_id,
+        });
+        return new Response(
+          JSON.stringify({ error: "Forbidden: cannot create admin users for a different tenant" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Step 1: Create auth user
@@ -69,8 +167,8 @@ serve(async (req) => {
       .insert({
         user_id: userId,
         email,
-        full_name: full_name || "Super Admin",
-        role: role || "super_admin",
+        full_name: full_name || "Admin",
+        role: requestedRole,
         is_active: true,
       });
 
@@ -91,8 +189,8 @@ serve(async (req) => {
         user: {
           id: userId,
           email,
-          full_name: full_name || "Super Admin",
-          role: role || "super_admin",
+          full_name: full_name || "Admin",
+          role: requestedRole,
         },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -8,9 +8,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import Stripe from 'https://esm.sh/stripe@18.5.0';
 
 // Helper logging function
-const logStep = (step: string, details?: any) => {
+const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[UPDATE-SUBSCRIPTION] ${step}${detailsStr}`);
+  console.error(`[UPDATE-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -50,15 +50,42 @@ serve(async (req) => {
 
     logStep('User authenticated', { userId: user.id, email: user.email });
 
-    const { tenant_id, plan_id } = await req.json();
+    const { tenant_id: clientTenantId, plan_id } = await req.json();
 
-    if (!tenant_id || !plan_id) {
-      logStep('ERROR: Missing required parameters', { tenant_id, plan_id });
+    if (!clientTenantId || !plan_id) {
+      logStep('ERROR: Missing required parameters', { tenant_id: clientTenantId, plan_id });
       return new Response(
         JSON.stringify({ error: "Missing tenant_id or plan_id" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Resolve caller's tenant_id from tenant_users — never trust client-supplied value
+    const { data: tenantUser, error: tenantUserError } = await supabaseClient
+      .from("tenant_users")
+      .select("tenant_id, role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const resolvedTenantId = tenantUser?.tenant_id;
+
+    if (tenantUserError || !resolvedTenantId) {
+      logStep('ERROR: No tenant associated with user');
+      return new Response(
+        JSON.stringify({ error: "No tenant associated with user" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (resolvedTenantId !== clientTenantId) {
+      logStep('ERROR: Tenant ID mismatch — caller does not own requested tenant');
+      return new Response(
+        JSON.stringify({ error: "Not authorized for this tenant" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const tenant_id = resolvedTenantId;
 
     logStep('Fetching tenant', { tenantId: tenant_id });
 
@@ -67,7 +94,7 @@ serve(async (req) => {
       .from("tenants")
       .select("*")
       .eq("id", tenant_id)
-      .single();
+      .maybeSingle();
 
     if (tenantError || !tenant) {
       logStep('ERROR: Tenant not found', { error: tenantError?.message });
@@ -173,13 +200,12 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-  } catch (error: any) {
-    logStep('CRITICAL ERROR', { message: error.message, stack: error.stack });
+  } catch (error: unknown) {
+    console.error('[UPDATE-SUBSCRIPTION] CRITICAL ERROR', { message: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined });
     console.error('[UPDATE-SUBSCRIPTION] Error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Internal server error',
-        details: error.stack || 'No stack trace available'
+      JSON.stringify({
+        error: 'Internal server error',
       }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

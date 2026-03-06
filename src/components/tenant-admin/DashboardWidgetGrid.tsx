@@ -24,6 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useDashboardWidgets, DashboardWidgetId } from '@/hooks/useDashboardWidgets';
 import { Skeleton } from '@/components/ui/skeleton';
+import { WidgetErrorBoundary } from '@/components/tenant-admin/WidgetErrorBoundary';
 
 function renderWidget(id: DashboardWidgetId) {
     switch (id) {
@@ -140,7 +141,9 @@ export function DashboardWidgetGrid() {
             <div className="space-y-6">
                 {visibleWidgets.map(widget => (
                     <div key={widget.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {renderWidget(widget.id)}
+                        <WidgetErrorBoundary widgetId={widget.id}>
+                            {renderWidget(widget.id)}
+                        </WidgetErrorBoundary>
                     </div>
                 ))}
             </div>

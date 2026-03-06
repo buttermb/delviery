@@ -63,18 +63,20 @@ export const useCreateDisposableMenu = () => {
       min_order_quantity?: number;
       max_order_quantity?: number;
       custom_prices?: Record<string, number>;
+      product_prices?: Record<string, Array<{ label: string; price: number; weight_grams?: number; max_qty?: number; note?: string }>>;
       access_code: string;
       tenant_id: string;
       expiration_date?: string;
       never_expires?: boolean;
     }) => {
-      // Transform product_ids and custom_prices into products array (only if products exist)
+      // Transform product_ids, custom_prices, and product_prices into products array
       const products = menuData.product_ids && menuData.product_ids.length > 0
         ? menuData.product_ids.map(productId => ({
           product_id: productId,
           custom_price: menuData.custom_prices?.[productId],
           display_availability: true,
           display_order: 0,
+          prices: menuData.product_prices?.[productId],
         }))
         : undefined; // Don't pass empty array, use undefined for forum menus
 

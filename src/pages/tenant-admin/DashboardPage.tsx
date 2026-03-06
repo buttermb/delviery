@@ -1,7 +1,7 @@
 // Dashboard Page - TypeScript enabled
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,6 +89,7 @@ interface LowStockItem {
 export default function TenantAdminDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { admin, tenant, logout, loading: authLoading } = useTenantAdminAuth();
   const { getLimit, getCurrent } = useTenantLimits();
   const { usage, hasPurchasedCredits, hasActiveCredits, limitsApply } = useFreeTierLimits();
@@ -556,8 +557,8 @@ export default function TenantAdminDashboardPage() {
         description: "Your dashboard has been populated with sample data.",
       });
 
-      // Refresh page to show new data
-      window.location.reload();
+      // Invalidate all dashboard queries to show new data
+      await queryClient.invalidateQueries();
     } catch (error) {
       handleError(error, {
         component: 'DashboardPage',
@@ -1371,7 +1372,7 @@ export default function TenantAdminDashboardPage() {
         onComplete={() => {
           setShowQuickStart(false);
           localStorage.setItem(`${STORAGE_KEYS.ONBOARDING_COMPLETED_PREFIX}${tenantId}`, 'true');
-          window.location.reload(); // Refresh to show new data
+          queryClient.invalidateQueries(); // Refresh queries to show new data
         }}
       />
     </div >

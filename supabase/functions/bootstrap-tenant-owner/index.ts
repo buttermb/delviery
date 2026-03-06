@@ -64,18 +64,18 @@ serve(async (req: Request) => {
       );
     }
 
-    console.log(`[bootstrap] Found tenant: ${tenant.business_name} (${tenant.id})`);
+    console.error(`[bootstrap] Found tenant: ${tenant.business_name} (${tenant.id})`);
 
     // 2. Check if user already exists
-    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    const { data: existingUsers } = await supabase.auth.admin.listUsers({ perPage: 1000 });
     const existingUser = existingUsers?.users?.find(
-      (u: any) => u.email?.toLowerCase() === email.toLowerCase()
+      (u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase()
     );
 
     let userId: string;
 
     if (existingUser) {
-      console.log(`[bootstrap] User already exists: ${existingUser.id}`);
+      console.error(`[bootstrap] User already exists: ${existingUser.id}`);
       userId = existingUser.id;
 
       // Update password for existing user
@@ -91,7 +91,7 @@ serve(async (req: Request) => {
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      console.log(`[bootstrap] Updated password for user: ${userId}`);
+      console.error(`[bootstrap] Updated password for user: ${userId}`);
     } else {
       // 3. Create new auth user
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
@@ -112,7 +112,7 @@ serve(async (req: Request) => {
       }
 
       userId = newUser.user.id;
-      console.log(`[bootstrap] Created new user: ${userId}`);
+      console.error(`[bootstrap] Created new user: ${userId}`);
     }
 
     // 4. Check if tenant_users link already exists
@@ -133,7 +133,7 @@ serve(async (req: Request) => {
       if (updateLinkError) {
         console.error("[bootstrap] Failed to update tenant link:", updateLinkError);
       } else {
-        console.log(`[bootstrap] Updated existing tenant link to active`);
+        console.error(`[bootstrap] Updated existing tenant link to active`);
       }
     } else {
       // 5. Create tenant_users link with required email and name fields
@@ -157,7 +157,7 @@ serve(async (req: Request) => {
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      console.log(`[bootstrap] Linked user ${userId} to tenant ${tenant.id}`);
+      console.error(`[bootstrap] Linked user ${userId} to tenant ${tenant.id}`);
     }
 
     // Success response

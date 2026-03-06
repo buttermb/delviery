@@ -34,7 +34,7 @@ serve(async (req) => {
       throw new Error("User profile not found");
     }
 
-    const flags: any[] = [];
+    const flags: Record<string, unknown>[] = [];
     let shouldBlock = false;
 
     // Check account status
@@ -55,7 +55,7 @@ serve(async (req) => {
       .eq("user_id", userId)
       .gte("created_at", `${today}T00:00:00`);
 
-    const todaySpent = todayOrders?.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0) || 0;
+    const todaySpent = todayOrders?.reduce((sum: number, o: Record<string, unknown>) => sum + (Number(o.total_amount) || 0), 0) || 0;
 
     if (todaySpent + orderTotal > profile.daily_limit) {
       flags.push({
@@ -136,10 +136,10 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Fraud check error:", error);
     return new Response(
-      JSON.stringify({ error: error?.message || "Unknown error" }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

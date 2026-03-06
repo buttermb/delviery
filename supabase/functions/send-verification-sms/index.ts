@@ -164,10 +164,10 @@ serve(async (req) => {
         );
       }
 
-      console.log('[SEND_VERIFICATION_SMS] SMS sent to:', fullPhoneNumber.slice(0, -4) + '****');
+      console.error('[SEND_VERIFICATION_SMS] SMS sent to:', fullPhoneNumber.slice(0, -4) + '****');
     } else {
       // Development mode - log OTP instead of sending
-      console.log('[SEND_VERIFICATION_SMS] DEV MODE - OTP:', otp, 'for', fullPhoneNumber);
+      console.error('[SEND_VERIFICATION_SMS] DEV MODE - OTP:', otp, 'for', fullPhoneNumber);
     }
 
     return new Response(

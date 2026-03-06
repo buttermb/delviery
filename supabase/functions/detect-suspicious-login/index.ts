@@ -181,6 +181,49 @@ Deno.serve(withZenProtection(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Authenticate the caller: must be a valid user session or a service-level call
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401,
+        }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+
+    // Allow service role key as a trusted internal caller
+    const isServiceCall = token === supabaseKey;
+
+    if (!isServiceCall) {
+      // Verify the token belongs to a real user and matches the userId in the request
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !authUser) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 401,
+          }
+        );
+      }
+
+      // The authenticated user can only check their own login
+      if (authUser.id !== body.userId) {
+        console.error('detect-suspicious-login: userId mismatch', { authUserId: authUser.id, requestUserId: body.userId });
+        return new Response(
+          JSON.stringify({ error: 'Forbidden: userId does not match authenticated user' }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 403,
+          }
+        );
+      }
+    }
+
     // Get IP address
     const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       req.headers.get('x-real-ip') ||

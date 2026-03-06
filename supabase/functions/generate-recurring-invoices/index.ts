@@ -17,7 +17,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const today = new Date().toISOString().split("T")[0];
-    console.log(`[generate-recurring-invoices] Running for date: ${today}`);
+    console.error(`[generate-recurring-invoices] Running for date: ${today}`);
 
     // Fetch all active schedules due today or earlier
     const { data: schedules, error: schedulesError } = await supabase
@@ -35,7 +35,7 @@ serve(async (req) => {
       throw schedulesError;
     }
 
-    console.log(`[generate-recurring-invoices] Found ${schedules?.length || 0} schedules to process`);
+    console.error(`[generate-recurring-invoices] Found ${schedules?.length || 0} schedules to process`);
 
     const results = {
       processed: 0,
@@ -50,8 +50,8 @@ serve(async (req) => {
         
         // Calculate totals from line items
         const lineItems = schedule.line_items || [];
-        const subtotal = lineItems.reduce((sum: number, item: any) => 
-          sum + (item.quantity || 1) * (item.unit_price || 0), 0
+        const subtotal = lineItems.reduce((sum: number, item: Record<string, unknown>) =>
+          sum + (Number(item.quantity) || 1) * (Number(item.unit_price) || 0), 0
         );
         const taxRate = schedule.template?.template_data?.taxRate || 0;
         const taxAmount = subtotal * (taxRate / 100);
@@ -90,7 +90,7 @@ serve(async (req) => {
           continue;
         }
 
-        console.log(`[generate-recurring-invoices] Created invoice ${invoice.id} for schedule ${schedule.id}`);
+        console.error(`[generate-recurring-invoices] Created invoice ${invoice.id} for schedule ${schedule.id}`);
         results.created++;
 
         // Calculate next run date based on frequency
@@ -132,7 +132,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`[generate-recurring-invoices] Completed:`, results);
+    console.error(`[generate-recurring-invoices] Completed:`, results);
 
     return new Response(JSON.stringify(results), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -20,8 +20,10 @@ import { toast } from 'sonner';
 import { humanizeError } from '@/lib/humanizeError';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 
 export const PanicModeButton = () => {
+  const { tenant } = useTenantAdminAuth();
   const [open, setOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [reason, setReason] = useState('');
@@ -35,32 +37,44 @@ export const PanicModeButton = () => {
     }
 
     setLoading(true);
+    const tenantId = tenant?.id;
+    if (!tenantId) {
+      toast.error('No tenant context available');
+      setLoading(false);
+      return;
+    }
 
     try {
-      // 1. Get all active menus
+      // 1. Get all active menus for this tenant
       const { data: activeMenus, error: fetchError } = await supabase
         .from('disposable_menus')
         .select('id, name')
+        .eq('tenant_id', tenantId)
         .eq('status', 'active');
 
       if (fetchError) throw fetchError;
 
-      // 2. Burn all active menus
+      // 2. Burn all active menus for this tenant
       const { error: burnError } = await supabase
         .from('disposable_menus')
         .update({
           status: 'hard_burned',
           burned_at: new Date().toISOString(),
         })
+        .eq('tenant_id', tenantId)
         .eq('status', 'active');
 
       if (burnError) throw burnError;
 
-      // 3. Revoke all whitelist access
-      const { error: revokeError } = await supabase
-        .from('menu_access_whitelist')
-        .update({ status: 'revoked' })
-        .eq('status', 'active');
+      // 3. Revoke all whitelist access for this tenant's menus
+      const menuIds = activeMenus?.map(m => m.id) ?? [];
+      const { error: revokeError } = menuIds.length > 0
+        ? await supabase
+            .from('menu_access_whitelist')
+            .update({ status: 'revoked' })
+            .in('menu_id', menuIds)
+            .eq('status', 'active')
+        : { error: null };
 
       if (revokeError) throw revokeError;
 
@@ -91,7 +105,7 @@ export const PanicModeButton = () => {
       );
 
       // Invalidate queries to refresh UI
-      queryClient.invalidateQueries({ queryKey: queryKeys.disposableMenus.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.menuSecurityEvents.all });
 
       setOpen(false);

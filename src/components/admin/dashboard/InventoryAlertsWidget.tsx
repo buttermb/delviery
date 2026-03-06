@@ -10,14 +10,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AlertTriangle, ArrowRight, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
 import { queryKeys } from '@/lib/queryKeys';
 
 export function InventoryAlertsWidget() {
   const navigate = useNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { account } = useAccount();
+  const { tenant } = useTenantAdminAuth();
 
   const getFullPath = (href: string) => {
     if (href.startsWith('/admin') && tenantSlug) {
@@ -27,9 +27,9 @@ export function InventoryAlertsWidget() {
   };
 
   const { data: alerts, isLoading } = useQuery({
-    queryKey: queryKeys.dashboardWidgets.inventoryAlerts(account?.id),
+    queryKey: queryKeys.dashboardWidgets.inventoryAlerts(tenant?.id),
     queryFn: async () => {
-      if (!account?.id) return [];
+      if (!tenant?.id) return [];
 
       interface AlertRow {
         product_name: string | null;
@@ -41,7 +41,7 @@ export function InventoryAlertsWidget() {
       const { data, error } = await supabase
         .from('products')
         .select('name, stock_quantity, category')
-        .eq('tenant_id', account.id)
+        .eq('tenant_id', tenant.id)
         .lt('stock_quantity', 30)
         .order('stock_quantity', { ascending: true })
         .limit(5);
@@ -55,7 +55,7 @@ export function InventoryAlertsWidget() {
         warehouse_location: p.category || 'Unknown'
       })) as AlertRow[];
     },
-    enabled: !!account?.id,
+    enabled: !!tenant?.id,
     // Use real-time updates via useRealtimeSync instead of polling
     staleTime: 10000, // Allow 10s stale time for real-time updates
   });

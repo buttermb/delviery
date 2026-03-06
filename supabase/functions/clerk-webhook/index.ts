@@ -79,7 +79,7 @@ serve(async (req) => {
             status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
           });
         }
-        console.log('[CLERK-WEBHOOK] Signature verified successfully');
+        console.error('[CLERK-WEBHOOK] Signature verified successfully');
       } catch (verifyError) {
         console.warn('[CLERK-WEBHOOK] Signature verification failed:', verifyError);
       }
@@ -89,7 +89,7 @@ serve(async (req) => {
     
     // Parse the body
     event = JSON.parse(bodyText);
-    console.log('[CLERK-WEBHOOK] Processing event:', event.type);
+    console.error('[CLERK-WEBHOOK] Processing event:', event.type);
 
     switch (event.type) {
       case 'user.created': {
@@ -99,7 +99,7 @@ serve(async (req) => {
         const tenantId = user.public_metadata?.tenant_id as string | undefined;
         const role = (user.public_metadata?.role as string) || 'member';
 
-        console.log('[CLERK-WEBHOOK] Creating user:', { clerkId: user.id, email, tenantId, role });
+        console.error('[CLERK-WEBHOOK] Creating user:', { clerkId: user.id, email, tenantId, role });
 
         if (tenantId) {
           // Check if user already exists
@@ -130,7 +130,7 @@ serve(async (req) => {
             if (error) {
               console.error('[CLERK-WEBHOOK] Failed to create tenant_user:', error);
             } else {
-              console.log('[CLERK-WEBHOOK] Created tenant_user for:', email);
+              console.error('[CLERK-WEBHOOK] Created tenant_user for:', email);
             }
           } else {
             // Update existing user with Clerk ID
@@ -143,11 +143,11 @@ serve(async (req) => {
               })
               .eq('id', existingUser.id);
 
-            console.log('[CLERK-WEBHOOK] Updated existing tenant_user:', email);
+            console.error('[CLERK-WEBHOOK] Updated existing tenant_user:', email);
           }
         } else {
           // No tenant - might be super admin or pending signup
-          console.log('[CLERK-WEBHOOK] User has no tenant_id, checking for super admin');
+          console.error('[CLERK-WEBHOOK] User has no tenant_id, checking for super admin');
           
           const { data: superAdmin } = await supabase
             .from('super_admin_users')
@@ -165,7 +165,7 @@ serve(async (req) => {
               })
               .eq('id', superAdmin.id);
 
-            console.log('[CLERK-WEBHOOK] Updated super_admin_user:', email);
+            console.error('[CLERK-WEBHOOK] Updated super_admin_user:', email);
           }
         }
         break;
@@ -176,7 +176,7 @@ serve(async (req) => {
         const email = user.email_addresses[0]?.email_address?.toLowerCase();
         const name = [user.first_name, user.last_name].filter(Boolean).join(' ');
 
-        console.log('[CLERK-WEBHOOK] Updating user:', { clerkId: user.id, email });
+        console.error('[CLERK-WEBHOOK] Updating user:', { clerkId: user.id, email });
 
         // Update tenant_users
         const { error: tenantUserError } = await supabase
@@ -202,13 +202,13 @@ serve(async (req) => {
           })
           .eq('clerk_user_id', user.id);
 
-        console.log('[CLERK-WEBHOOK] User updated:', email);
+        console.error('[CLERK-WEBHOOK] User updated:', email);
         break;
       }
 
       case 'user.deleted': {
         const userId = (event.data as { user_id?: string }).user_id || (event.data as { id?: string }).id;
-        console.log('[CLERK-WEBHOOK] Deleting user:', userId);
+        console.error('[CLERK-WEBHOOK] Deleting user:', userId);
 
         // Soft delete by setting status to inactive
         await supabase
@@ -219,7 +219,7 @@ serve(async (req) => {
           })
           .eq('clerk_user_id', userId);
 
-        console.log('[CLERK-WEBHOOK] User deactivated:', userId);
+        console.error('[CLERK-WEBHOOK] User deactivated:', userId);
         break;
       }
 
@@ -228,7 +228,7 @@ serve(async (req) => {
         const userId = sessionData.user_id;
         
         if (userId) {
-          console.log('[CLERK-WEBHOOK] Session created for user:', userId);
+          console.error('[CLERK-WEBHOOK] Session created for user:', userId);
 
           // Update last login timestamp
           await supabase
@@ -240,7 +240,7 @@ serve(async (req) => {
       }
 
       default:
-        console.log('[CLERK-WEBHOOK] Unhandled event type:', event.type);
+        console.error('[CLERK-WEBHOOK] Unhandled event type:', event.type);
     }
 
     return new Response(

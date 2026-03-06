@@ -63,6 +63,16 @@ async function hashPassword(password: string): Promise<string> {
   return base64Encode(combined.buffer);
 }
 
+// Constant-time comparison to prevent timing attacks
+function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i++) {
+    mismatch |= a[i] ^ b[i];
+  }
+  return mismatch === 0;
+}
+
 async function comparePassword(password: string, hashValue: string): Promise<boolean> {
   try {
     // Check if it's the old SHA-256 format (hex string, 64 characters)
@@ -76,10 +86,9 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
       const encoder = new TextEncoder();
       const data = encoder.encode(password + secret);
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const computedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-      // Timing-safe comparison
-      return computedHash === hashValue.toLowerCase();
+      const computedHashBytes = new Uint8Array(hashBuffer);
+      const storedHashBytes = new Uint8Array(hashValue.toLowerCase().match(/.{2}/g)!.map(b => parseInt(b, 16)));
+      return timingSafeEqual(computedHashBytes, storedHashBytes);
     }
 
     // New PBKDF2 format (base64 encoded)
@@ -110,14 +119,7 @@ async function comparePassword(password: string, hashValue: string): Promise<boo
     );
 
     const hashArray = new Uint8Array(hashBuffer);
-
-    if (hashArray.length !== storedHash.length) return false;
-
-    for (let i = 0; i < hashArray.length; i++) {
-      if (hashArray[i] !== storedHash[i]) return false;
-    }
-
-    return true;
+    return timingSafeEqual(hashArray, storedHash);
   } catch (error) {
     // console.error OK in edge functions (server-side)
     console.error("Password comparison error:", error);
@@ -202,7 +204,7 @@ serve(secureHeadersMiddleware(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let body: any = {};
+    let body: Record<string, unknown> = {};
     if (req.method === "POST") {
       try {
         const text = await req.text();
@@ -298,7 +300,7 @@ serve(secureHeadersMiddleware(async (req) => {
 
       try {
         // Check if Supabase auth user exists
-        const { data: existingAuthUsers } = await supabase.auth.admin.listUsers();
+        const { data: existingAuthUsers } = await supabase.auth.admin.listUsers({ perPage: 1000 });
         const existingAuthUser = existingAuthUsers?.users?.find(
           (u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase()
         );
@@ -388,7 +390,7 @@ serve(secureHeadersMiddleware(async (req) => {
         .eq("id", superAdmin.id);
 
       // Return both custom JWT and Supabase session
-      const response: any = {
+      const response: Record<string, unknown> = {
         token,
         superAdmin: {
           id: superAdmin.id,
@@ -518,9 +520,9 @@ serve(secureHeadersMiddleware(async (req) => {
         type: "super_admin",
       });
 
-      // Update session
+      // Update session — match login session expiry (8 hours)
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
+      expiresAt.setHours(expiresAt.getHours() + 8);
 
       await supabase
         .from("super_admin_sessions")

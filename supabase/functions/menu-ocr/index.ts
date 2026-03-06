@@ -247,7 +247,7 @@ serve(withZenProtection(async (req: Request) => {
       contextAdditions += "\nLook for tabular structures and maintain row/column relationships.\n";
     }
 
-    console.log("Calling Lovable AI Gateway for OCR...");
+    console.error("Calling Lovable AI Gateway for OCR...");
 
     // Create data URL for the image
     const imageDataUrl = `data:${mimeType};base64,${cleanImageData}`;
@@ -410,7 +410,7 @@ serve(withZenProtection(async (req: Request) => {
       summary.averageConfidence /= enhancedProducts.length;
     }
 
-    console.log(`Successfully extracted ${enhancedProducts.length} products from image`);
+    console.error(`Successfully extracted ${enhancedProducts.length} products from image`);
 
     // Consume credits after successful OCR for free tier users
     if (tenantUser?.tenant_id) {

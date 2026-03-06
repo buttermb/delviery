@@ -35,30 +35,26 @@ serve(async (req) => {
       custom_message
     } = validateMenuGenerate(rawBody);
 
-    console.log('Creating disposable menu:', { name, product_count: product_ids?.length });
+    console.error('Creating disposable menu:', { name, product_count: product_ids?.length });
 
-    const generateAccessCode = () => {
+    const generateAccessCode = (): string => {
       const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let code = '';
-      for (let i = 0; i < 8; i++) {
-        code += chars[Math.floor(Math.random() * chars.length)];
-      }
-      return code;
+      const randomBytes = new Uint8Array(8);
+      crypto.getRandomValues(randomBytes);
+      return Array.from(randomBytes, (b) => chars[b % chars.length]).join('');
     };
 
-    const generateUrlToken = () => {
+    const generateUrlToken = (): string => {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let token = '';
-      for (let i = 0; i < 32; i++) {
-        token += chars[Math.floor(Math.random() * chars.length)];
-      }
-      return token;
+      const randomBytes = new Uint8Array(32);
+      crypto.getRandomValues(randomBytes);
+      return Array.from(randomBytes, (b) => chars[b % chars.length]).join('');
     };
 
     const accessCode: string = (security_settings?.access_code as string) || generateAccessCode();
     const urlToken = generateUrlToken();
     
-    console.log('Generated access code:', accessCode);
+    console.error('Generated access code:', accessCode);
     
     // Hash the access code using SHA-256
     const encoder = new TextEncoder();
@@ -67,7 +63,7 @@ serve(async (req) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const accessCodeHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     
-    console.log('Generated hash:', accessCodeHash);
+    console.error('Generated hash:', accessCodeHash);
 
     // Get authenticated user
     const authHeader = req.headers.get('Authorization');
@@ -140,7 +136,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Creating menu with settings:', {
+    console.error('Creating menu with settings:', {
       name,
       description,
       product_count: product_ids.length,
@@ -179,7 +175,7 @@ serve(async (req) => {
       throw menuError;
     }
 
-    console.log('Menu created successfully:', menu.id);
+    console.error('Menu created successfully:', menu.id);
 
     // Create product associations in disposable_menu_products table
     const productAssociations = product_ids.map((productId: string, index: number) => ({
@@ -190,7 +186,7 @@ serve(async (req) => {
       display_order: index
     }));
 
-    console.log('Creating product associations:', productAssociations.length);
+    console.error('Creating product associations:', productAssociations.length);
 
     const { data: products, error: productsError } = await supabase
       .from('disposable_menu_products')
@@ -204,7 +200,7 @@ serve(async (req) => {
       throw new Error(`Failed to associate products: ${productsError.message}`);
     }
 
-    console.log('Product associations created:', products.length);
+    console.error('Product associations created:', products.length);
 
     // Log security event
     await supabase.from('menu_security_events').insert({
@@ -233,10 +229,10 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in menu-generate:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

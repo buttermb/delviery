@@ -19,6 +19,43 @@ serve(withZenProtection(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Auth check: only allow service-role (cron) or super_admin callers
+    const authHeader = req.headers.get('Authorization');
+    const isServiceRoleCall = authHeader === `Bearer ${supabaseServiceKey}`;
+
+    if (!isServiceRoleCall) {
+      // Not a cron/service-role call — require super_admin auth
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized - missing authorization header' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Verify user has super_admin role
+      const { data: isSuperAdmin } = await supabase.rpc('has_role', {
+        _user_id: user.id,
+        _role: 'super_admin',
+      });
+
+      if (!isSuperAdmin) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden - super_admin access required' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     // Get all tenants with unencrypted menus
     const { data: tenantsWithUnencryptedMenus, error: tenantsError } = await supabase
       .from('tenants')
@@ -39,7 +76,7 @@ serve(withZenProtection(async (req) => {
     }
 
     // Group by tenant and count unencrypted menus
-    const reportData = tenantsWithUnencryptedMenus?.reduce((acc: any[], tenant: any) => {
+    const reportData = tenantsWithUnencryptedMenus?.reduce((acc: Record<string, unknown>[], tenant: Record<string, unknown>) => {
       const existingTenant = acc.find((t) => t.tenant_id === tenant.id);
       
       if (existingTenant) {
@@ -121,8 +158,8 @@ serve(withZenProtection(async (req) => {
       try {
         // Use Supabase Auth to send email
         // Note: In production, you'd use a proper email service like SendGrid, Resend, etc.
-        console.log(`Would send email to ${report.owner_email} for ${report.business_name}`);
-        console.log(`Subject: 🔐 Weekly Encryption Report - ${report.unencrypted_count} Menu${report.unencrypted_count > 1 ? 's' : ''} Need${report.unencrypted_count > 1 ? '' : 's'} Encryption`);
+        console.error(`Would send email to ${report.owner_email} for ${report.business_name}`);
+        console.error(`Subject: Weekly Encryption Report - ${report.unencrypted_count} Menu${report.unencrypted_count > 1 ? 's' : ''} Need${report.unencrypted_count > 1 ? '' : 's'} Encryption`);
         
         emailResults.push({
           tenant_id: report.tenant_id,

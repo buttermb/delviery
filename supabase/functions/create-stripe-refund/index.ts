@@ -13,6 +13,46 @@ serve(async (req) => {
   }
 
   try {
+    // --- Auth check ---
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid token" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+      );
+    }
+
+    // Resolve tenant from authenticated user
+    const { data: tenantUser } = await supabase
+      .from("tenant_users")
+      .select("tenant_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!tenantUser?.tenant_id) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Forbidden: no tenant membership" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+      );
+    }
+
+    const tenantId = tenantUser.tenant_id;
+    // --- End auth check ---
+
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       throw new Error("STRIPE_SECRET_KEY is not configured");
@@ -37,6 +77,20 @@ serve(async (req) => {
     }
 
     const { customerId, amount, reason } = validationResult.data;
+
+    // Verify the Stripe customer belongs to the caller's tenant
+    const { data: tenant } = await supabase
+      .from("tenants")
+      .select("stripe_customer_id")
+      .eq("id", tenantId)
+      .maybeSingle();
+
+    if (!tenant?.stripe_customer_id || tenant.stripe_customer_id !== customerId) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Forbidden: customer does not belong to your tenant" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+      );
+    }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -75,7 +129,7 @@ serve(async (req) => {
 
     const refund = await stripe.refunds.create(refundParams);
 
-    console.log(`Refund created successfully: ${refund.id} for customer ${customerId}`);
+    console.error(`Refund created successfully: ${refund.id} for customer ${customerId}`);
 
     return new Response(
       JSON.stringify({ 

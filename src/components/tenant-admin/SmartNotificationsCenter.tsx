@@ -3,7 +3,7 @@
  * Actionable, prioritized notifications instead of generic alerts
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -60,6 +60,7 @@ export function SmartNotificationsCenter() {
 
   // Local state for read/dismissed notifications
   const [readNotificationIds, setReadNotificationIds] = useState<string[]>(() => {
+    if (!tenantId) return [];
     try {
       const stored = localStorage.getItem(`${STORAGE_KEYS.NOTIFICATIONS_READ_PREFIX}${tenantId}`);
       return stored ? JSON.parse(stored) : [];
@@ -68,15 +69,29 @@ export function SmartNotificationsCenter() {
     }
   });
 
+  // Sync localStorage when tenantId becomes available
+  useEffect(() => {
+    if (!tenantId) return;
+    try {
+      const stored = localStorage.getItem(`${STORAGE_KEYS.NOTIFICATIONS_READ_PREFIX}${tenantId}`);
+      if (stored) {
+        setReadNotificationIds(JSON.parse(stored));
+      }
+    } catch {
+      // Ignore parse errors; keep current state
+    }
+  }, [tenantId]);
+
   // Persist to localStorage
   const markAsRead = (id: string) => {
+    if (!tenantId) return;
     const newIds = [...readNotificationIds, id];
     setReadNotificationIds(newIds);
     localStorage.setItem(`${STORAGE_KEYS.NOTIFICATIONS_READ_PREFIX}${tenantId}`, JSON.stringify(newIds));
   };
 
   const markAllAsRead = () => {
-    if (!notifications) return;
+    if (!tenantId || !notifications) return;
     const newIds = [...readNotificationIds, ...notifications.map(n => n.id)];
     // Deduplicate
     const uniqueIds = Array.from(new Set(newIds));

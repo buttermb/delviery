@@ -4,9 +4,39 @@ import { validateAdminAction, type AdminActionInput } from './validation.ts';
 
 const logger = createLogger('admin-actions');
 
-// deno-lint-ignore no-explicit-any
+/**
+ * Resolve tenant_id from an authenticated user.
+ * Checks tenant_users first, then falls back to tenant owner_email.
+ */
+async function resolveTenantId(supabase: ReturnType<typeof createClient>, userId: string, userEmail: string | undefined): Promise<string | null> {
+  const { data: tenantUser } = await supabase
+    .from('tenant_users')
+    .select('tenant_id')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (tenantUser) {
+    return tenantUser.tenant_id;
+  }
+
+  // Fallback: check if user is a tenant owner
+  if (userEmail) {
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('id')
+      .eq('owner_email', userEmail)
+      .maybeSingle();
+
+    if (tenant) {
+      return tenant.id;
+    }
+  }
+
+  return null;
+}
+
 async function logAdminAction(
-  supabase: any,
+  supabase: ReturnType<typeof createClient>,
   adminId: string,
   action: string,
   entityType?: string,
@@ -71,6 +101,16 @@ serve(async (req) => {
       );
     }
 
+    // Resolve tenant_id for cross-tenant isolation
+    const tenantId = await resolveTenantId(supabase, user.id, user.email);
+    if (!tenantId) {
+      logger.warn('Admin has no tenant association', { userId: user.id });
+      return new Response(
+        JSON.stringify({ error: 'Tenant not found or user not authorized' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Parse and validate request body
     const rawBody = await req.json();
     let validatedInput: AdminActionInput;
@@ -106,6 +146,7 @@ serve(async (req) => {
         .from('orders')
         .update({ status: 'cancelled', payment_status: 'refunded' })
         .eq('id', orderId)
+        .eq('tenant_id', tenantId)
         .select()
         .maybeSingle();
 
@@ -129,6 +170,7 @@ serve(async (req) => {
           .from('orders')
           .select('user_id, courier_id, order_number')
           .eq('id', orderId)
+          .eq('tenant_id', tenantId)
           .maybeSingle();
 
         if (orderDetails?.user_id) {
@@ -188,6 +230,7 @@ serve(async (req) => {
         .from('orders')
         .update({ flagged_reason: reason, flagged_at: new Date().toISOString() })
         .eq('id', orderId)
+        .eq('tenant_id', tenantId)
         .select()
         .maybeSingle();
 
@@ -221,8 +264,9 @@ serve(async (req) => {
         .from('orders')
         .update({ flagged_reason: null, flagged_at: null })
         .eq('id', orderId)
+        .eq('tenant_id', tenantId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         logger.error('Failed to unflag order', { orderId, error: updateError.message });
@@ -254,6 +298,7 @@ serve(async (req) => {
         .from('orders')
         .select('*')
         .eq('id', orderId)
+        .eq('tenant_id', tenantId)
         .maybeSingle();
 
       if (fetchError || !orderData) {
@@ -276,6 +321,7 @@ serve(async (req) => {
       const { data: courier } = await supabase
         .from('couriers')
         .select('*')
+        .eq('tenant_id', tenantId)
         .eq('is_active', true)
         .eq('is_online', true)
         .limit(1)
@@ -289,6 +335,7 @@ serve(async (req) => {
           courier_id: courier?.id || null,
         })
         .eq('id', orderId)
+        .eq('tenant_id', tenantId)
         .select()
         .maybeSingle();
 
@@ -348,6 +395,7 @@ serve(async (req) => {
         .from('orders')
         .update({ status: 'cancelled', payment_status: 'refunded' })
         .eq('id', orderId)
+        .eq('tenant_id', tenantId)
         .select()
         .maybeSingle();
 
@@ -383,10 +431,27 @@ serve(async (req) => {
         );
       }
 
+      // Verify the target user belongs to this tenant
+      const { data: targetProfile } = await supabase
+        .from('profiles')
+        .select('user_id, tenant_id')
+        .eq('user_id', userId)
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+
+      if (!targetProfile) {
+        logger.warn('Suspend user: target not in admin tenant', { userId, tenantId });
+        return new Response(
+          JSON.stringify({ error: 'User not found in your tenant' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       const { data: profile, error: updateError } = await supabase
         .from('profiles')
         .update({ age_verified: false })
         .eq('user_id', userId)
+        .eq('tenant_id', tenantId)
         .select()
         .maybeSingle();
 
@@ -418,10 +483,27 @@ serve(async (req) => {
         );
       }
 
+      // Verify the courier belongs to this tenant
+      const { data: courierCheck } = await supabase
+        .from('couriers')
+        .select('id')
+        .eq('id', courierId)
+        .eq('tenant_id', tenantId)
+        .maybeSingle();
+
+      if (!courierCheck) {
+        logger.warn('Assign courier: courier not in admin tenant', { courierId, tenantId });
+        return new Response(
+          JSON.stringify({ error: 'Courier not found in your tenant' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       const { data: order, error: updateError } = await supabase
         .from('orders')
         .update({ courier_id: courierId, status: 'confirmed' })
         .eq('id', orderId)
+        .eq('tenant_id', tenantId)
         .select()
         .maybeSingle();
 

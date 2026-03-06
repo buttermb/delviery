@@ -29,7 +29,7 @@ interface StorefrontStats {
 }
 
 export function StorefrontWidget() {
-  const { tenant, tenantSlug } = useTenantAdminAuth();
+  const { tenant } = useTenantAdminAuth();
   const tenantId = tenant?.id;
 
   const { data: stats, isLoading } = useQuery({
@@ -108,7 +108,7 @@ export function StorefrontWidget() {
               icon={<Store className="h-5 w-5" />}
               description="Stores currently live"
               variant={stats?.activeStores && stats.activeStores > 0 ? 'success' : 'default'}
-              href={`/${tenantSlug}/admin/storefront`}
+              href="/admin/storefront"
             />
             <KPICard
               title="Today's Orders"
@@ -116,7 +116,7 @@ export function StorefrontWidget() {
               icon={<ShoppingCart className="h-5 w-5" />}
               description="Storefront orders today"
               variant={stats?.todayOrders && stats.todayOrders > 0 ? 'success' : 'default'}
-              href={`/${tenantSlug}/admin/storefront/orders`}
+              href="/admin/storefront/orders"
             />
             <KPICard
               title="Today's Revenue"
@@ -124,7 +124,7 @@ export function StorefrontWidget() {
               icon={<DollarSign className="h-5 w-5" />}
               description="Storefront revenue today"
               variant="success"
-              href={`/${tenantSlug}/admin/storefront/analytics`}
+              href="/admin/storefront/analytics"
             />
             <KPICard
               title="Customers"
@@ -132,7 +132,7 @@ export function StorefrontWidget() {
               icon={<Users className="h-5 w-5" />}
               description="Total storefront customers"
               variant="default"
-              href={`/${tenantSlug}/admin/storefront/customers`}
+              href="/admin/storefront/customers"
             />
           </>
         )}

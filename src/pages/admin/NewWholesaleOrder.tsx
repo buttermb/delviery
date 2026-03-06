@@ -116,7 +116,7 @@ export default function NewWholesaleOrder() {
   const queryClient = useQueryClient();
 
   // Fetch pricing tiers
-  const { data: pricingTiers = [] } = useQuery({
+  const { data: pricingTiers = [], isError: isPricingError, error: pricingError, refetch: refetchPricing } = useQuery({
     queryKey: queryKeys.wholesalePricingTiers.byTenant(tenant?.id),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -134,7 +134,7 @@ export default function NewWholesaleOrder() {
 
   // Products catalog for wholesale orders
   const { data: inventory = [], isLoading: isInventoryLoading, isError: isInventoryError, refetch: refetchInventory } = useProductsForWholesale();
-  const { data: couriers = [], isLoading: couriersLoading } = useWholesaleCouriers();
+  const { data: couriers = [], isLoading: couriersLoading, isError: isCouriersError, error: couriersError, refetch: refetchCouriers } = useWholesaleCouriers();
 
   const [currentStep, setCurrentStep] = useState<OrderStep>('client');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -290,19 +290,15 @@ export default function NewWholesaleOrder() {
   };
 
   const handleUpdateQty = useCallback((productId: string, qty: number) => {
-    if (qty <= 0) {
-      setOrderData((prev) => ({
-        ...prev,
-        products: prev.products.filter((p) => p.id !== productId),
-      }));
-    } else {
-      setOrderData((prev) => ({
-        ...prev,
-        products: prev.products.map((p) =>
-          p.id === productId ? { ...p, qty } : p
-        ),
-      }));
-    }
+    // Clamp to minimum of 1 — use the remove button (X) to delete items.
+    // This prevents zero or negative quantities from reaching the order.
+    const clampedQty = Math.max(1, Math.round(qty));
+    setOrderData((prev) => ({
+      ...prev,
+      products: prev.products.map((p) =>
+        p.id === productId ? { ...p, qty: clampedQty } : p
+      ),
+    }));
   }, []);
 
   const handleQuickQty = useCallback((productId: string, preset: number) => {
@@ -491,6 +487,24 @@ export default function NewWholesaleOrder() {
         return false;
     }
   }, [currentStep, orderData, validationErrors]);
+
+  if (isPricingError || isCouriersError) {
+    const failedMessage = isPricingError
+      ? (pricingError?.message || 'Failed to load pricing tiers')
+      : (couriersError?.message || 'Failed to load couriers');
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center">
+        <p className="text-destructive font-medium">Failed to load data</p>
+        <p className="text-sm text-muted-foreground mt-1">{failedMessage}</p>
+        <Button variant="outline" size="sm" className="mt-4" onClick={() => {
+          if (isPricingError) refetchPricing();
+          if (isCouriersError) refetchCouriers();
+        }}>
+          Try Again
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-dvh bg-background">
@@ -773,6 +787,8 @@ export default function NewWholesaleOrder() {
                                   value={product.qty}
                                   onChange={(e) => handleUpdateQty(product.id, Number(e.target.value))}
                                   className="h-7 w-16 text-center"
+                                  min={1}
+                                  aria-label={`Quantity for ${product.name}`}
                                 />
                                 <Button
                                   size="icon"

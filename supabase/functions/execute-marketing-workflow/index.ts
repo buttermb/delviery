@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     if (workflowError) throw workflowError;
 
     // Check trigger conditions
-    const conditions = workflow.trigger_conditions as Record<string, any>;
+    const conditions = workflow.trigger_conditions as Record<string, unknown>;
     let conditionsMet = true;
 
     if (conditions && Object.keys(conditions).length > 0) {
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     }
 
     // Execute actions
-    const actions = workflow.actions as Array<Record<string, any>>;
+    const actions = workflow.actions as Array<Record<string, unknown>>;
     const results = [];
 
     for (const action of actions) {
@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
 
     if (updateError) throw updateError;
 
-    console.log(`Workflow ${workflow.name} executed with ${results.length} actions`);
+    console.error(`Workflow ${workflow.name} executed with ${results.length} actions`);
 
     return new Response(
       JSON.stringify({

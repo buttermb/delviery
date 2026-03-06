@@ -50,14 +50,14 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[TRIAL REMINDER] Sending for tenant ${tenant_id}, ${days_remaining} days left`);
+    console.error(`[TRIAL REMINDER] Sending for tenant ${tenant_id}, ${days_remaining} days left`);
 
     // Get tenant details
     const { data: tenant } = await supabaseClient
       .from("tenants")
       .select("*")
       .eq("id", tenant_id)
-      .single();
+      .maybeSingle();
 
     if (!tenant) {
       throw new Error("Tenant not found");
@@ -123,7 +123,7 @@ serve(async (req) => {
         .eq("id", tenant_id);
     }
 
-    console.log(`[TRIAL REMINDER] Sent successfully to ${tenant.owner_email}`);
+    console.error(`[TRIAL REMINDER] Sent successfully to ${tenant.owner_email}`);
 
     // TODO: Integrate with SendGrid/Resend when configured
     // For now, just log the email
@@ -133,10 +133,10 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error sending trial reminder:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

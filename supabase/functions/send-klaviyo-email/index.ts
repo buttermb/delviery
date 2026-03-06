@@ -12,7 +12,7 @@ interface EmailRequest {
   text?: string;
   fromEmail?: string;
   fromName?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 serve(async (req) => {
@@ -43,7 +43,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Sending email via Klaviyo:', { to, subject, fromEmail });
+    console.error('Sending email via Klaviyo:', { to, subject, fromEmail });
 
     // Klaviyo Campaigns API - Create Email Campaign
     const response = await fetch('https://a.klaviyo.com/api/campaigns/', {
@@ -87,17 +87,17 @@ serve(async (req) => {
     }
 
     const result = await response.json();
-    console.log('Email sent successfully via Klaviyo:', result);
+    console.error('Email sent successfully via Klaviyo:', result);
 
     return new Response(
       JSON.stringify({ success: true, messageId: result.data?.id }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in send-klaviyo-email function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

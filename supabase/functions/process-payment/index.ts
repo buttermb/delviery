@@ -67,11 +67,29 @@ serve(
       const body = await req.json();
       const { order_id, payment_method, amount, retry_count } = paymentSchema.parse(body);
 
-      // Get order
+      // Resolve tenant from user's JWT
+      const { data: tenantUser, error: tenantUserError } = await supabase
+        .from('tenant_users')
+        .select('tenant_id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (tenantUserError || !tenantUser) {
+        return new Response(
+          JSON.stringify({ error: 'Tenant not found for user' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const tenant_id = tenantUser.tenant_id;
+
+      // Get order — filtered by tenant_id to prevent cross-tenant access
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .select('*')
         .eq('id', order_id)
+        .eq('tenant_id', tenant_id)
         .single();
 
       if (orderError || !order) {
@@ -90,7 +108,7 @@ serve(
       }
 
       // Process payment based on method
-      let paymentResult: any = {
+      let paymentResult: Record<string, unknown> = {
         success: false,
         payment_id: null,
         transaction_id: null,

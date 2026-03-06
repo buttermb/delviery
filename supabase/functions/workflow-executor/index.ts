@@ -9,7 +9,7 @@ import { validateWorkflowExecutor, type WorkflowExecutorInput } from './validati
 interface WorkflowAction {
   id: string;
   type: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   edge_function?: string;
 }
 
@@ -17,7 +17,7 @@ interface WorkflowExecution {
   id: string;
   workflow_id: string;
   tenant_id: string;
-  trigger_data: Record<string, any>;
+  trigger_data: Record<string, unknown>;
 }
 
 serve(async (req) => {
@@ -47,7 +47,7 @@ serve(async (req) => {
         )
       `)
       .eq('id', execution_id)
-      .single();
+      .maybeSingle();
 
     if (execError || !execution) {
       return new Response(
@@ -62,7 +62,7 @@ serve(async (req) => {
       .update({ status: 'running', started_at: new Date().toISOString() })
       .eq('id', execution_id);
 
-    const executionLog: any[] = [];
+    const executionLog: Record<string, unknown>[] = [];
     const startTime = Date.now();
 
     try {
@@ -118,12 +118,12 @@ serve(async (req) => {
             duration_ms: Date.now() - actionStart,
             timestamp: new Date().toISOString()
           });
-        } catch (actionError: any) {
+        } catch (actionError: unknown) {
           executionLog.push({
             action_id: action.id,
             action_type: action.type,
             status: 'failed',
-            error: actionError.message,
+            error: actionError instanceof Error ? actionError.message : 'Unknown error',
             duration_ms: Date.now() - actionStart,
             timestamp: new Date().toISOString()
           });
@@ -154,13 +154,15 @@ serve(async (req) => {
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Classify error type for retry logic
       const errorType = classifyError(error);
+      const errMsg = error instanceof Error ? error.message : 'Unknown error';
+      const errStack = error instanceof Error ? error.stack : undefined;
       const errorDetails = {
         error_type: errorType,
-        message: error.message,
-        stack: error.stack,
+        message: errMsg,
+        stack: errStack,
         timestamp: new Date().toISOString()
       };
 
@@ -194,7 +196,7 @@ serve(async (req) => {
           .update({
             status: 'failed',
             execution_log: executionLog,
-            last_error: error.message,
+            last_error: errMsg,
             error_details: errorDetails,
             retry_count: retryCount,
             next_retry_at: nextRetryAt,
@@ -203,12 +205,12 @@ serve(async (req) => {
           })
           .eq('id', execution_id);
 
-        console.log(`Workflow execution ${execution_id} will retry in ${delaySeconds}s (attempt ${retryCount}/${retryConfig.max_attempts})`);
+        console.error(`Workflow execution ${execution_id} will retry in ${delaySeconds}s (attempt ${retryCount}/${retryConfig.max_attempts})`);
 
         return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: error.message,
+          JSON.stringify({
+            success: false,
+            error: errMsg,
             retry_scheduled: true,
             retry_attempt: retryCount,
             max_attempts: retryConfig.max_attempts,
@@ -224,7 +226,7 @@ serve(async (req) => {
           .update({
             status: 'failed',
             execution_log: executionLog,
-            last_error: error.message,
+            last_error: errMsg,
             error_details: errorDetails,
             retry_count: retryCount,
             is_retryable: false,
@@ -241,9 +243,9 @@ serve(async (req) => {
         console.error(`Workflow execution ${execution_id} moved to dead letter queue after ${retryCount} attempts`);
 
         return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: error.message,
+          JSON.stringify({
+            success: false,
+            error: errMsg,
             moved_to_dlq: true,
             total_attempts: retryCount,
             error_type: errorType,
@@ -254,17 +256,17 @@ serve(async (req) => {
       }
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Workflow execution error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
 
 // Action Executors
-async function executeEmailAction(supabase: any, action: WorkflowAction, execution: any) {
+async function executeEmailAction(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
   const { to, subject, body } = action.config;
   
   // Call email edge function
@@ -276,7 +278,7 @@ async function executeEmailAction(supabase: any, action: WorkflowAction, executi
   return data;
 }
 
-async function executeSMSAction(supabase: any, action: WorkflowAction, execution: any) {
+async function executeSMSAction(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
   const { to, message } = action.config;
   
   const { data, error } = await supabase.functions.invoke('send-sms', {
@@ -287,7 +289,7 @@ async function executeSMSAction(supabase: any, action: WorkflowAction, execution
   return data;
 }
 
-async function executeInventoryUpdate(supabase: any, action: WorkflowAction, execution: any) {
+async function executeInventoryUpdate(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
   const { product_id, quantity } = action.config;
   
   const { data, error } = await supabase
@@ -301,7 +303,7 @@ async function executeInventoryUpdate(supabase: any, action: WorkflowAction, exe
   return data;
 }
 
-async function executeAssignCourier(supabase: any, action: WorkflowAction, execution: any) {
+async function executeAssignCourier(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
   const { order_id, courier_id } = action.config;
   
   const { data, error } = await supabase.functions.invoke('assign-courier', {
@@ -312,7 +314,7 @@ async function executeAssignCourier(supabase: any, action: WorkflowAction, execu
   return data;
 }
 
-async function executeWebhook(action: WorkflowAction, execution: any) {
+async function executeWebhook(action: WorkflowAction, execution: WorkflowExecution) {
   const { url, method = 'POST', body, headers = {} } = action.config;
   
   const response = await fetch(url, {
@@ -331,7 +333,7 @@ async function executeWebhook(action: WorkflowAction, execution: any) {
   return await response.json();
 }
 
-async function executeDatabaseQuery(supabase: any, action: WorkflowAction, execution: any) {
+async function executeDatabaseQuery(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
   const { table, operation, data, filter } = action.config;
   
   let query = supabase.from(table);
@@ -364,7 +366,7 @@ async function executeDatabaseQuery(supabase: any, action: WorkflowAction, execu
   return result;
 }
 
-async function executeEdgeFunction(supabase: any, action: WorkflowAction, execution: any) {
+async function executeEdgeFunction(supabase: ReturnType<typeof createClient>, action: WorkflowAction, execution: WorkflowExecution) {
   const { data, error } = await supabase.functions.invoke(action.edge_function!, {
     body: { ...action.config, trigger_data: execution.trigger_data }
   });
@@ -374,8 +376,9 @@ async function executeEdgeFunction(supabase: any, action: WorkflowAction, execut
 }
 
 // Error classifier for retry logic
-function classifyError(error: any): string {
-  const message = error.message?.toLowerCase() || '';
+function classifyError(error: unknown): string {
+  const errorObj = error as Record<string, unknown>;
+  const message = (error instanceof Error ? error.message : String(errorObj?.message ?? '')).toLowerCase();
   
   // Timeout errors
   if (message.includes('timeout') || message.includes('timed out')) {
@@ -393,42 +396,44 @@ function classifyError(error: any): string {
     return 'network_error';
   }
   
+  const status = typeof errorObj?.status === 'number' ? errorObj.status : 0;
+
   // Rate limiting
   if (
     message.includes('rate limit') ||
     message.includes('too many requests') ||
-    error.status === 429
+    status === 429
   ) {
     return 'rate_limit';
   }
-  
+
   // Server errors (5xx)
-  if (error.status >= 500 && error.status < 600) {
+  if (status >= 500 && status < 600) {
     return 'server_error';
   }
-  
+
   // Authentication errors (non-retryable)
   if (
     message.includes('unauthorized') ||
     message.includes('authentication') ||
-    error.status === 401 ||
-    error.status === 403
+    status === 401 ||
+    status === 403
   ) {
     return 'auth_error';
   }
-  
+
   // Validation errors (non-retryable)
   if (
     message.includes('validation') ||
     message.includes('invalid') ||
-    error.status === 400 ||
-    error.status === 422
+    status === 400 ||
+    status === 422
   ) {
     return 'validation_error';
   }
-  
+
   // Not found errors (non-retryable)
-  if (message.includes('not found') || error.status === 404) {
+  if (message.includes('not found') || status === 404) {
     return 'not_found';
   }
   

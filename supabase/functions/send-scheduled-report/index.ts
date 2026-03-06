@@ -22,9 +22,14 @@ serve(async (req) => {
       .select('*, custom_reports(*)')
       .eq('id', schedule_id)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
-    if (scheduleError) throw scheduleError;
+    if (scheduleError || !schedule) {
+      return new Response(
+        JSON.stringify({ error: 'Scheduled report not found or inactive' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Generate the report
     const reportConfig = schedule.custom_reports;
@@ -48,7 +53,7 @@ serve(async (req) => {
     }
 
     // Fetch report data
-    const reportData: Record<string, any> = {};
+    const reportData: Record<string, unknown> = {};
 
     for (const dataSource of dataSources) {
       const query = supabaseClient
@@ -69,13 +74,13 @@ serve(async (req) => {
     }
 
     // Calculate metrics
-    const calculatedMetrics: Record<string, any> = {};
+    const calculatedMetrics: Record<string, unknown> = {};
 
     for (const metric of metrics) {
       switch (metric) {
         case 'total_revenue':
           calculatedMetrics[metric] = reportData.wholesale_orders?.reduce(
-            (sum: number, order: any) => sum + (order.total_amount || 0),
+            (sum: number, order: Record<string, unknown>) => sum + (Number(order.total_amount) || 0),
             0
           ) || 0;
           break;
@@ -102,7 +107,7 @@ serve(async (req) => {
     // TODO: Generate PDF/CSV and upload to storage
     // TODO: Send email to recipients
 
-    console.log(`Scheduled report ${reportConfig.name} generated and sent`);
+    console.error(`Scheduled report ${reportConfig.name} generated and sent`);
 
     return new Response(
       JSON.stringify({

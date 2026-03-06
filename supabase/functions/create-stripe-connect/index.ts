@@ -8,9 +8,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import Stripe from 'https://esm.sh/stripe@18.5.0';
 
 // Helper logging function
-const logStep = (step: string, details?: any) => {
+const logStep = (step: string, details?: unknown) => {
     const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-    console.log(`[CREATE-STRIPE-CONNECT] ${step}${detailsStr}`);
+    console.error(`[CREATE-STRIPE-CONNECT] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -73,7 +73,7 @@ serve(async (req) => {
             .from('tenants')
             .select('*')
             .eq('id', tenant_id)
-            .single();
+            .maybeSingle();
 
         if (tenantError || !tenant) {
             logStep('ERROR: Tenant not found');
@@ -169,11 +169,12 @@ serve(async (req) => {
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
 
-    } catch (error: any) {
-        logStep('CRITICAL ERROR', { message: error.message });
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+        logStep('CRITICAL ERROR', { message: errorMessage });
         return new Response(
             JSON.stringify({
-                error: error.message || 'Internal server error'
+                error: errorMessage
             }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

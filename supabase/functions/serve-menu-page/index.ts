@@ -21,6 +21,111 @@ function formatPrice(price: number | null | undefined): string {
   return `$${price.toFixed(2)}`;
 }
 
+/**
+ * Sanitize a CSS value to prevent CSS injection and XSS.
+ * Strips dangerous patterns: closing style tags, script injection,
+ * expression(), javascript: urls, @import, behavior:, etc.
+ */
+function sanitizeCssValue(value: string): string {
+  if (typeof value !== 'string') return '';
+  return value
+    // Strip anything that could close a style tag or inject scripts
+    .replace(/<\/?style[^>]*>/gi, '')
+    .replace(/<\/?script[^>]*>/gi, '')
+    // Remove expression() (IE CSS expression)
+    .replace(/expression\s*\(/gi, '')
+    // Remove javascript: and data: in url()
+    .replace(/url\s*\(\s*['"]?\s*(?:javascript|data)\s*:/gi, 'url(blocked:')
+    // Remove @import
+    .replace(/@import/gi, '')
+    // Remove behavior: (IE behavior property)
+    .replace(/behavior\s*:/gi, '')
+    // Remove -moz-binding (Firefox XBL)
+    .replace(/-moz-binding\s*:/gi, '')
+    // Strip any remaining angle brackets as safety net
+    .replace(/[<>]/g, '');
+}
+
+/**
+ * Sanitize a ColorConfig, ensuring each value is a safe CSS color string.
+ * Only allows hex colors, rgb/rgba/hsl/hsla functions, and named colors.
+ */
+function sanitizeColors(colors: ColorConfig): ColorConfig {
+  const sanitized: Record<string, string> = {};
+  for (const [key, value] of Object.entries(colors)) {
+    sanitized[key] = sanitizeCssValue(value);
+  }
+  return sanitized as unknown as ColorConfig;
+}
+
+/**
+ * Check if a menu is expired based on expiration_date and never_expires.
+ */
+function isMenuExpired(expirationDate: string | null, neverExpires: boolean): boolean {
+  if (neverExpires) return false;
+  if (!expirationDate) return false;
+  return new Date(expirationDate) < new Date();
+}
+
+/**
+ * Build an access code prompt page for menus that require an access code.
+ */
+function buildAccessCodePage(title: string, errorMessage?: string): string {
+  const errorHtml = errorMessage
+    ? `<p class="error-msg">${escapeHtml(errorMessage)}</p>`
+    : '';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Code Required - ${escapeHtml(title)}</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; margin: 0; background: #f8f9fa; color: #374151;
+    }
+    .access-box { text-align: center; padding: 48px 24px; max-width: 400px; width: 100%; }
+    .access-box h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: #111827; }
+    .access-box p { font-size: 14px; color: #6b7280; margin-bottom: 20px; }
+    .error-msg { color: #dc2626; font-size: 13px; margin-bottom: 12px; }
+    form { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+    input[type="text"] {
+      padding: 10px 14px; font-size: 16px; border: 1px solid #d1d5db;
+      border-radius: 8px; width: 100%; max-width: 260px; text-align: center;
+      letter-spacing: 0.1em;
+    }
+    button {
+      padding: 10px 24px; font-size: 14px; font-weight: 600;
+      background: #059669; color: #fff; border: none; border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover { background: #047857; }
+  </style>
+</head>
+<body>
+  <div class="access-box">
+    <h1>Access Code Required</h1>
+    <p>Enter the access code to view this menu.</p>
+    ${errorHtml}
+    <form method="GET">
+      <input type="text" name="code" placeholder="Enter access code" autocomplete="off" required />
+      <input type="hidden" name="token" value="" id="tokenField" />
+      <button type="submit">View Menu</button>
+    </form>
+    <script>
+      (function() {
+        var params = new URLSearchParams(window.location.search);
+        document.getElementById('tokenField').value = params.get('token') || '';
+      })();
+    </script>
+  </div>
+</body>
+</html>`;
+}
+
 interface ColorConfig {
   bg: string;
   text: string;
@@ -65,12 +170,11 @@ serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Fetch menu by token
+    // Fetch menu by token — include security-relevant fields
     const { data: menu, error: menuError } = await supabase
       .from('disposable_menus')
-      .select('id, name, description, tenant_id, status, custom_message, show_product_images, appearance_settings')
+      .select('id, name, description, tenant_id, status, custom_message, show_product_images, appearance_settings, expiration_date, never_expires, security_settings, access_code_hash')
       .eq('encrypted_url_token', token)
-      .eq('status', 'active')
       .maybeSingle();
 
     if (menuError || !menu) {
@@ -78,6 +182,56 @@ serve(async (req: Request) => {
         buildErrorPage('Menu Not Found', 'This menu page is no longer available or has expired.'),
         { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
       );
+    }
+
+    // Security check 1: Menu must be active (not burned)
+    if (menu.status !== 'active') {
+      return new Response(
+        buildErrorPage('Menu Unavailable', 'This menu is no longer available.'),
+        { status: 403, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+      );
+    }
+
+    // Security check 2: Menu must not be expired
+    if (isMenuExpired(menu.expiration_date as string | null, !!menu.never_expires)) {
+      return new Response(
+        buildErrorPage('Menu Expired', 'This menu has expired and is no longer available.'),
+        { status: 410, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+      );
+    }
+
+    // Security check 3: Access code verification
+    const accessCodeHash = menu.access_code_hash as string | null;
+    const hasAccessCode = accessCodeHash && accessCodeHash.length > 0 && accessCodeHash !== 'none';
+
+    if (hasAccessCode) {
+      const providedCode = url.searchParams.get('code');
+
+      if (!providedCode) {
+        return new Response(
+          buildAccessCodePage(menu.name ?? 'Menu'),
+          { status: 401, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+        );
+      }
+
+      // Hash the provided code and compare (using SubtleCrypto for Deno edge)
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(providedCode));
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const providedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      if (providedHash !== accessCodeHash) {
+        // Log failed access attempt
+        await supabase.from('menu_access_logs').insert({
+          menu_id: menu.id,
+          access_type: 'failed_access_code',
+        }).then(() => { /* fire and forget */ });
+
+        return new Response(
+          buildAccessCodePage(menu.name ?? 'Menu', 'Invalid access code. Please try again.'),
+          { status: 401, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+        );
+      }
     }
 
     // Fetch products for this menu
@@ -123,12 +277,12 @@ serve(async (req: Request) => {
       };
     });
 
-    // Parse appearance settings
+    // Parse appearance settings — sanitize to prevent CSS injection
     const appearance = (menu.appearance_settings ?? {}) as AppearanceSettings;
-    const colors: ColorConfig = {
+    const colors: ColorConfig = sanitizeColors({
       ...DEFAULT_COLORS,
       ...(appearance.colors ?? {}),
-    };
+    });
     const showImages = menu.show_product_images !== false;
     const showPrices = appearance.show_prices !== false;
     const showDescriptions = appearance.show_descriptions !== false;

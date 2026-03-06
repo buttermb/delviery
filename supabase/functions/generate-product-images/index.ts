@@ -40,7 +40,7 @@ serve(async (req) => {
       Studio lighting showing clarity and quality. Commercial cannabis product photo style.`;
     }
 
-    console.log('Generating image with prompt:', prompt);
+    console.error('Generating image with prompt:', prompt);
 
     // Call Lovable AI API to generate image
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -74,7 +74,7 @@ serve(async (req) => {
       throw new Error('No image generated');
     }
 
-    console.log('Image generated successfully');
+    console.error('Image generated successfully');
 
     return new Response(
       JSON.stringify({ imageUrl }),

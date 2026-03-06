@@ -108,7 +108,7 @@ serve(async (req) => {
       .from('custom_reports')
       .select('*')
       .eq('id', reportId)
-      .single();
+      .maybeSingle();
 
     if (reportError) {
       console.error('Error fetching report:', reportError);

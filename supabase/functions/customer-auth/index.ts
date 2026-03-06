@@ -4,6 +4,7 @@ import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { hashPassword, comparePassword } from '../_shared/password.ts';
 import { signJWT, verifyJWT as verifyJWTSecure } from '../_shared/jwt.ts';
 import { signupSchema, loginSchema, updatePasswordSchema } from './validation.ts';
+import { checkBruteForce, logAuthEvent, getClientIP, GENERIC_AUTH_ERROR } from '../_shared/bruteForceProtection.ts';
 
 interface CustomerJWTPayload {
   customer_user_id: string;
@@ -14,7 +15,7 @@ interface CustomerJWTPayload {
 
 // Wrapper for signing customer tokens
 async function createCustomerToken(payload: { customer_user_id: string; customer_id: string; tenant_id: string; type: "customer" }): Promise<string> {
-  return await signJWT({ ...payload }, 30 * 24 * 60 * 60); // 30 days
+  return await signJWT({ ...payload }, 7 * 24 * 60 * 60); // 7 days
 }
 
 // Wrapper for verifying customer tokens
@@ -111,7 +112,7 @@ serve(secureHeadersMiddleware(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let requestBody: any = {};
+    let requestBody: Record<string, unknown> = {};
     if (action !== 'verify' && action !== 'logout' && req.method === 'POST') {
       try {
         requestBody = await req.json();
@@ -322,7 +323,7 @@ serve(secureHeadersMiddleware(async (req) => {
               console.error('Failed to create marketplace profile:', profileError);
               // Don't fail signup if profile creation fails - user can complete it later
             } else {
-              console.log('Marketplace profile created for business buyer:', businessName);
+              console.error('Marketplace profile created for business buyer:', businessName);
             }
           } else {
             // Update existing profile with business buyer info
@@ -344,7 +345,7 @@ serve(secureHeadersMiddleware(async (req) => {
         }
       }
 
-      console.log('Customer signup successful:', email);
+      console.error('Customer signup successful:', email);
 
       return new Response(
         JSON.stringify({
@@ -374,6 +375,28 @@ serve(secureHeadersMiddleware(async (req) => {
 
       const { email, password, tenantSlug } = validationResult.data;
 
+      // Extract client IP for brute force protection
+      const clientIP = getClientIP(req);
+      const userAgent = req.headers.get("user-agent") || "unknown";
+
+      // Brute force protection: Block IP after repeated failed attempts
+      const bruteForceResult = await checkBruteForce(clientIP);
+      if (bruteForceResult.blocked) {
+        await logAuthEvent({
+          eventType: 'customer_login_attempt',
+          ipAddress: clientIP,
+          email: email.toLowerCase(),
+          success: false,
+          failureReason: 'ip_blocked_brute_force',
+          userAgent,
+          metadata: { tenantSlug, failedAttempts: bruteForceResult.failedAttempts },
+        });
+        return new Response(
+          JSON.stringify({ error: GENERIC_AUTH_ERROR }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Find tenant by slug
       const { data: tenant, error: tenantError } = await supabase
         .from("tenants")
@@ -399,8 +422,17 @@ serve(secureHeadersMiddleware(async (req) => {
         .maybeSingle();
 
       if (customerError || !customerUser) {
+        await logAuthEvent({
+          eventType: 'customer_login_attempt',
+          ipAddress: clientIP,
+          email: email.toLowerCase(),
+          success: false,
+          failureReason: 'user_not_found',
+          userAgent,
+          metadata: { tenantSlug },
+        });
         return new Response(
-          JSON.stringify({ error: "Invalid credentials" }),
+          JSON.stringify({ error: GENERIC_AUTH_ERROR }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -408,8 +440,17 @@ serve(secureHeadersMiddleware(async (req) => {
       // Verify password
       const validPassword = await comparePassword(password, customerUser.password_hash);
       if (!validPassword) {
+        await logAuthEvent({
+          eventType: 'customer_login_attempt',
+          ipAddress: clientIP,
+          email: email.toLowerCase(),
+          success: false,
+          failureReason: 'invalid_password',
+          userAgent,
+          metadata: { tenantSlug, tenantId: tenant.id },
+        });
         return new Response(
-          JSON.stringify({ error: "Invalid credentials" }),
+          JSON.stringify({ error: GENERIC_AUTH_ERROR }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -446,7 +487,7 @@ serve(secureHeadersMiddleware(async (req) => {
           .delete()
           .eq('customer_user_id', customerUser.id)
           .eq('tenant_id', tenant.id);
-        console.log('[SESSION_FIXATION] Previous customer sessions invalidated:', customerUser.id);
+        console.error('[SESSION_FIXATION] Previous customer sessions invalidated:', customerUser.id);
       } catch (sessionCleanupError) {
         // Log but don't block login - session cleanup is best-effort
         console.warn('[SESSION_FIXATION] Failed to invalidate previous customer sessions:', sessionCleanupError);
@@ -462,18 +503,25 @@ serve(secureHeadersMiddleware(async (req) => {
 
       // Create session record
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
-
-      const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-      const userAgent = req.headers.get("user-agent") || "unknown";
+      expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
       await supabase.from("customer_sessions").insert({
         customer_user_id: customerUser.id,
         tenant_id: tenant.id,
         token,
-        ip_address: clientIp,
+        ip_address: clientIP,
         user_agent: userAgent,
         expires_at: expiresAt.toISOString(),
+      });
+
+      // Log successful login for brute force tracking
+      await logAuthEvent({
+        eventType: 'customer_login_attempt',
+        ipAddress: clientIP,
+        email: email.toLowerCase(),
+        success: true,
+        userAgent,
+        metadata: { tenantSlug, tenantId: tenant.id },
       });
 
       return new Response(

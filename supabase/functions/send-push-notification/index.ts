@@ -38,7 +38,7 @@ serve(async (req) => {
     const allowPush = pushEnabled && (prefs?.push_all_updates || (prefs?.push_critical_only && isCritical));
 
     if (!allowPush) {
-      console.log("Push notifications disabled for user:", userId);
+      console.error("Push notifications disabled for user:", userId);
       return new Response(
         JSON.stringify({ success: true, skipped: true, reason: "User preferences" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -94,7 +94,7 @@ serve(async (req) => {
 
             if (response.ok) {
               sentCount++;
-              console.log(`Push sent to ${tokenRecord.platform} device`);
+              console.error(`Push sent to ${tokenRecord.platform} device`);
             } else {
               failedCount++;
               const errorText = await response.text();
@@ -117,7 +117,7 @@ serve(async (req) => {
         console.warn("FCM_SERVER_KEY not configured, skipping push send");
       }
     } else {
-      console.log("No active push tokens found for user:", userId);
+      console.error("No active push tokens found for user:", userId);
     }
 
     // Log the notification

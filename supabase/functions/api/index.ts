@@ -194,16 +194,10 @@ serve(async (req) => {
       }
     }
 
-    // No route matched
+    // No route matched - return generic 404 without leaking route structure
+    console.error(`API 404: ${req.method} ${path}`);
     return new Response(
-      JSON.stringify({ 
-        error: 'Not found', 
-        path,
-        method: req.method,
-        availableRoutes: Object.keys(routes).flatMap(method => 
-          routes[method].map(r => `${method} ${r.pattern.source}`)
-        )
-      }),
+      JSON.stringify({ error: 'Not found' }),
       {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -216,7 +210,6 @@ serve(async (req) => {
       JSON.stringify({
         error: 'Internal server error',
         requestId,
-        message: error instanceof Error ? error.message : 'Unknown error',
       }),
       {
         status: 500,

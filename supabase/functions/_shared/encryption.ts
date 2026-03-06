@@ -109,10 +109,10 @@ export async function decryptData(
  * Encrypt customer record fields
  */
 export async function encryptCustomerFields(
-  customer: any,
+  customer: Record<string, unknown>,
   password: string
-): Promise<any> {
-  const encrypted: any = { ...customer };
+): Promise<Record<string, unknown>> {
+  const encrypted: Record<string, unknown> = { ...customer };
   
   // Fields to encrypt
   const fieldsToEncrypt = [
@@ -160,10 +160,10 @@ export async function encryptCustomerFields(
  * Decrypt customer record fields
  */
 export async function decryptCustomerFields(
-  encryptedCustomer: any,
+  encryptedCustomer: Record<string, unknown>,
   password: string
-): Promise<any> {
-  const decrypted: any = { ...encryptedCustomer };
+): Promise<Record<string, unknown>> {
+  const decrypted: Record<string, unknown> = { ...encryptedCustomer };
   
   // Fields that are encrypted
   const encryptedFields = [
@@ -217,7 +217,7 @@ export async function createSearchHash(value: string): Promise<string> {
  * Log PHI access for HIPAA compliance
  */
 export async function logPHIAccess(
-  supabaseClient: any,
+  supabaseClient: { rpc: (name: string, params: Record<string, unknown>) => Promise<unknown> },
   customerId: string,
   action: 'view' | 'create' | 'update' | 'decrypt' | 'search' | 'export' | 'delete',
   fieldsAccessed: string[],

@@ -56,7 +56,7 @@ async function checkMxRecords(domain: string): Promise<{ hasMx: boolean; records
     return { hasMx: mxHosts.length > 0, records: mxHosts };
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-    console.log(`MX lookup failed for ${domain}:`, errorMsg);
+    console.error(`MX lookup failed for ${domain}:`, errorMsg);
     return { hasMx: false, records: [] };
   }
 }
@@ -89,7 +89,7 @@ serve(async (req) => {
     const body = await req.json();
     const { email, checkMx, checkDisposable } = RequestSchema.parse(body);
     
-    console.log(`Verifying email: ${email}`);
+    console.error(`Verifying email: ${email}`);
     
     // Extract domain
     const [, domain] = email.toLowerCase().split('@');
@@ -144,7 +144,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Email verification result for ${email}:`, result);
+    console.error(`Email verification result for ${email}:`, result);
 
     return new Response(JSON.stringify(result), {
       status: 200,

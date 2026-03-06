@@ -135,11 +135,11 @@ If you didn't create this account, please contact our support team.
         const errorText = await emailResponse.text();
         console.error('[WELCOME-EMAIL] Failed to send via Klaviyo:', errorText);
       } else {
-        console.log('[WELCOME-EMAIL] Sent successfully to:', email);
+        console.error('[WELCOME-EMAIL] Sent successfully to:', email);
       }
     } else {
       // Log email for development
-      console.log('[WELCOME-EMAIL] Klaviyo not configured, email logged:', {
+      console.error('[WELCOME-EMAIL] Klaviyo not configured, email logged:', {
         to: email,
         subject,
         dashboard_url: dashboardUrl,

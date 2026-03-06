@@ -132,7 +132,7 @@ serve(withZenProtection(async (req: Request) => {
   }
 
   try {
-    console.log("menu-parse: Request received");
+    console.error("menu-parse: Request received");
     
     // Create Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -157,7 +157,7 @@ serve(withZenProtection(async (req: Request) => {
 
     // Extract token from Authorization header
     const authHeader = req.headers.get("Authorization");
-    console.log("menu-parse: Auth header present:", !!authHeader);
+    console.error("menu-parse: Auth header present:", !!authHeader);
     
     if (!authHeader?.startsWith("Bearer ")) {
       console.error("menu-parse: No valid authorization header");
@@ -183,7 +183,7 @@ serve(withZenProtection(async (req: Request) => {
     // Verify the JWT by getting the user
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
-    console.log("menu-parse: Auth result - user:", !!user, "error:", authError?.message);
+    console.error("menu-parse: Auth result - user:", !!user, "error:", authError?.message);
     
     if (authError || !user) {
       console.error("menu-parse: Auth failed:", authError?.message);
@@ -193,7 +193,7 @@ serve(withZenProtection(async (req: Request) => {
       );
     }
     
-    console.log("menu-parse: User authenticated:", user.id);
+    console.error("menu-parse: User authenticated:", user.id);
 
     // Parse and validate request body
     let body: unknown;
@@ -243,7 +243,7 @@ serve(withZenProtection(async (req: Request) => {
       categoryContext = `\nNote: Focus primarily on ${options.targetCategory} products.\n`;
     }
 
-    console.log("Calling Lovable AI Gateway for menu parsing...");
+    console.error("Calling Lovable AI Gateway for menu parsing...");
 
     // Call Lovable AI Gateway (OpenAI-compatible API)
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -413,7 +413,7 @@ serve(withZenProtection(async (req: Request) => {
       summary.averageConfidence /= enhancedProducts.length;
     }
 
-    console.log(`Successfully parsed ${enhancedProducts.length} products`);
+    console.error(`Successfully parsed ${enhancedProducts.length} products`);
 
     return new Response(
       JSON.stringify({

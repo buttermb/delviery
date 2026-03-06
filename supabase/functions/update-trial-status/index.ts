@@ -6,9 +6,9 @@
 import { serve, createClient, corsHeaders } from "../_shared/deps.ts";
 
 // Helper logging function
-const logStep = (step: string, details?: any) => {
+const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[UPDATE-TRIAL-STATUS] ${step}${detailsStr}`);
+  console.error(`[UPDATE-TRIAL-STATUS] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -80,11 +80,12 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-  } catch (error: any) {
-    logStep('CRITICAL ERROR', { message: error.message });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logStep('CRITICAL ERROR', { message: errorMessage });
     console.error("Error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

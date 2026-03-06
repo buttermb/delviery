@@ -83,6 +83,38 @@ const INVENTORY_PRESET: WidgetConfig[] = [
 
 const LAYOUT_STORAGE_KEY = STORAGE_KEYS.DASHBOARD_LAYOUT;
 
+const VALID_WIDGET_IDS: ReadonlySet<string> = new Set<WidgetId>([
+    'stats', 'quick-actions', 'sales-chart', 'revenue-prediction',
+    'recent-orders', 'inventory-alerts', 'activity-feed', 'location-map',
+    'pending-transfers', 'revenue-chart', 'top-products', 'insights',
+]);
+
+const VALID_PRESETS: ReadonlySet<string> = new Set(['default', 'sales', 'inventory', 'custom']);
+
+const VALID_SIZES: ReadonlySet<string> = new Set(['small', 'medium', 'large', 'full']);
+
+/** Validate that a parsed layout has the expected shape */
+function isValidLayout(value: unknown): value is DashboardLayout {
+    if (typeof value !== 'object' || value === null) return false;
+    const obj = value as Record<string, unknown>;
+
+    if (!VALID_PRESETS.has(obj.preset as string)) return false;
+    if (!Array.isArray(obj.widgets)) return false;
+    if (obj.widgets.length === 0) return false;
+
+    return obj.widgets.every((w: unknown) => {
+        if (typeof w !== 'object' || w === null) return false;
+        const widget = w as Record<string, unknown>;
+        return (
+            VALID_WIDGET_IDS.has(widget.id as string) &&
+            typeof widget.label === 'string' &&
+            typeof widget.visible === 'boolean' &&
+            typeof widget.order === 'number' &&
+            VALID_SIZES.has(widget.size as string)
+        );
+    });
+}
+
 function getPresetWidgets(preset: DashboardLayout['preset']): WidgetConfig[] {
     switch (preset) {
         case 'sales':
@@ -99,8 +131,9 @@ export function useDashboardLayout() {
     const tenantId = tenant?.id;
 
     const [layout, setLayout] = useState<DashboardLayout>(() => {
+        const defaultLayout: DashboardLayout = { widgets: DEFAULT_WIDGETS, preset: 'default' };
         if (typeof window === 'undefined') {
-            return { widgets: DEFAULT_WIDGETS, preset: 'default' };
+            return defaultLayout;
         }
 
         const key = tenantId ? `${LAYOUT_STORAGE_KEY}-${tenantId}` : LAYOUT_STORAGE_KEY;
@@ -108,13 +141,21 @@ export function useDashboardLayout() {
 
         if (saved) {
             try {
-                return JSON.parse(saved);
+                const parsed: unknown = JSON.parse(saved);
+                if (isValidLayout(parsed)) {
+                    return parsed;
+                }
+                // Remove corrupted data
+                localStorage.removeItem(key);
+                return defaultLayout;
             } catch {
-                return { widgets: DEFAULT_WIDGETS, preset: 'default' };
+                // Remove corrupted data
+                localStorage.removeItem(key);
+                return defaultLayout;
             }
         }
 
-        return { widgets: DEFAULT_WIDGETS, preset: 'default' };
+        return defaultLayout;
     });
 
     const [isEditing, setIsEditing] = useState(false);

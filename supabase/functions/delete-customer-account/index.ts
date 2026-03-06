@@ -22,8 +22,56 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // --- Auth check ---
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    // --- End auth check ---
+
     const body = await req.json();
     const { customer_user_id, tenant_id, reason } = deleteAccountSchema.parse(body);
+
+    // --- Authorization: caller must be tenant admin OR the customer themselves ---
+    // Check if caller is a tenant admin
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id, role')
+      .eq('user_id', user.id)
+      .eq('tenant_id', tenant_id)
+      .maybeSingle();
+
+    // Check if caller is the customer themselves
+    const { data: customerSelf } = await supabase
+      .from('customer_users')
+      .select('id')
+      .eq('id', customer_user_id)
+      .eq('auth_user_id', user.id)
+      .maybeSingle();
+
+    const isAdmin = tenantUser?.tenant_id === tenant_id && ['owner', 'admin'].includes(tenantUser?.role ?? '');
+    const isSelf = !!customerSelf;
+
+    if (!isAdmin && !isSelf) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: insufficient permissions' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    // --- End authorization ---
 
     // Verify customer exists and belongs to tenant
     const { data: customerUser, error: customerError } = await supabase

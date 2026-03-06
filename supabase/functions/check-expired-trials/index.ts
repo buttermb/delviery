@@ -18,7 +18,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    console.log('Checking for expired trials...');
+    console.error('Checking for expired trials...');
 
     // Find tenants with expired trials
     const { data: expiredTrials, error: selectError } = await supabaseClient
@@ -32,12 +32,12 @@ serve(async (req) => {
       throw selectError;
     }
 
-    console.log(`Found ${expiredTrials?.length || 0} expired trials`);
+    console.error(`Found ${expiredTrials?.length || 0} expired trials`);
 
     // Update status to 'suspended' for expired trials
     const results = [];
     for (const tenant of expiredTrials || []) {
-      console.log(`Suspending tenant: ${tenant.business_name} (${tenant.id})`);
+      console.error(`Suspending tenant: ${tenant.business_name} (${tenant.id})`);
       
       const { error: updateError } = await supabaseClient
         .from('tenants')
@@ -59,7 +59,7 @@ serve(async (req) => {
         });
         
         // TODO: Send trial expiration notification email
-        console.log(`Successfully suspended tenant ${tenant.business_name}`);
+        console.error(`Successfully suspended tenant ${tenant.business_name}`);
       }
     }
 

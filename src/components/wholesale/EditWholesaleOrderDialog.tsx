@@ -158,28 +158,49 @@ export function EditWholesaleOrderDialog({
 
       if (orderError) throw orderError;
 
-      // Update order items
-      // First, delete existing items
-      const { error: deleteError } = await supabase
-        .from('wholesale_order_items')
-        .delete()
-        .eq('order_id', order.id);
+      // Update order items safely (update existing, delete removed, insert new)
+      const originalIds = new Set((order.items ?? []).map((i) => i.id));
+      const currentIds = new Set(items.map((i) => i.id));
 
-      if (deleteError) throw deleteError;
+      // Delete removed items
+      const removedIds = [...originalIds].filter((id) => !currentIds.has(id));
+      if (removedIds.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('wholesale_order_items')
+          .delete()
+          .in('id', removedIds);
+        if (deleteError) throw deleteError;
+      }
 
-      // Insert updated items
-      const { error: insertError } = await supabase
-        .from('wholesale_order_items')
-        .insert(
-          items.map((item) => ({
-            order_id: order.id,
-            product_name: item.product_name,
-            quantity_lbs: item.quantity_lbs,
-            unit_price: item.unit_price,
-          }))
-        );
+      // Update existing items
+      for (const item of items) {
+        if (originalIds.has(item.id)) {
+          const { error: updateItemError } = await supabase
+            .from('wholesale_order_items')
+            .update({
+              quantity_lbs: item.quantity_lbs,
+              unit_price: item.unit_price,
+            })
+            .eq('id', item.id);
+          if (updateItemError) throw updateItemError;
+        }
+      }
 
-      if (insertError) throw insertError;
+      // Insert new items (items without existing IDs)
+      const newItems = items.filter((item) => !originalIds.has(item.id));
+      if (newItems.length > 0) {
+        const { error: insertError } = await supabase
+          .from('wholesale_order_items')
+          .insert(
+            newItems.map((item) => ({
+              order_id: order.id,
+              product_name: item.product_name,
+              quantity_lbs: item.quantity_lbs,
+              unit_price: item.unit_price,
+            }))
+          );
+        if (insertError) throw insertError;
+      }
 
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: queryKeys.wholesaleOrders.all });
@@ -241,7 +262,8 @@ export function EditWholesaleOrderDialog({
                 <SelectContent>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="in_transit">In Transit</SelectItem>
+                  <SelectItem value="ready">Ready for Pickup</SelectItem>
+                  <SelectItem value="shipped">Shipped</SelectItem>
                   <SelectItem value="delivered">Delivered</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>

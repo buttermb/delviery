@@ -36,26 +36,26 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting automated tenant limit enforcement...');
+    console.error('Starting automated tenant limit enforcement...');
 
     // 1. CHECK USAGE LIMITS
-    console.log('Checking usage limits...');
+    console.error('Checking usage limits...');
     await checkUsageLimits();
 
     // 2. CHECK TRIAL EXPIRATIONS
-    console.log('Checking trial expirations...');
+    console.error('Checking trial expirations...');
     await checkTrialExpirations();
 
     // 3. CHECK PAYMENT FAILURES
-    console.log('Checking payment failures...');
+    console.error('Checking payment failures...');
     await checkPaymentFailures();
 
     // 4. CHECK HEALTH SCORES
-    console.log('Checking health scores...');
+    console.error('Checking health scores...');
     await checkHealthScores();
 
     // 5. CHECK COMPLIANCE
-    console.log('Checking compliance...');
+    console.error('Checking compliance...');
     await checkCompliance();
 
     return new Response(
@@ -65,10 +65,10 @@ serve(async (req) => {
         status: 200,
       }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Enforcement error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
@@ -312,7 +312,7 @@ async function checkCompliance() {
 /**
  * Calculate health score for tenant
  */
-function calculateHealthScore(tenant: any): number {
+function calculateHealthScore(tenant: Tenant): number {
   let score = 100;
 
   // Check activity
@@ -320,7 +320,7 @@ function calculateHealthScore(tenant: any): number {
     const daysSinceActivity = Math.floor(
       (Date.now() - new Date(tenant.last_activity_at).getTime()) / (1000 * 60 * 60 * 24)
     );
-    
+
     if (daysSinceActivity > 7) score -= 20;
     if (daysSinceActivity > 30) score -= 30;
   }
@@ -334,12 +334,6 @@ function calculateHealthScore(tenant: any): number {
   const usageRate = (tenant.usage?.customers || 0) / (tenant.limits?.customers || 1);
   if (usageRate < 0.2 && tenant.usage?.customers > 0) score -= 15;
 
-  // Check onboarding
-  if (!tenant.onboarded) score -= 10;
-
-  // Check engagement
-  if (tenant.usage?.menus === 0 && tenant.onboarded) score -= 20;
-
   return Math.max(0, Math.min(100, score));
 }
 
@@ -349,7 +343,7 @@ function calculateHealthScore(tenant: any): number {
 async function logEnforcementEvent(
   tenantId: string,
   eventType: string,
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 ) {
   await supabase.from('subscription_events').insert({
     tenant_id: tenantId,

@@ -24,7 +24,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Initialize Stripe for signature verification
 const stripe = new Stripe(STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-08-27.basil',
 });
 
 serve(async (req) => {
@@ -52,7 +52,7 @@ serve(async (req) => {
     let rawEvent: Stripe.Event;
     try {
       rawEvent = await stripe.webhooks.constructEventAsync(body, signature, STRIPE_WEBHOOK_SECRET);
-      console.log('[STRIPE-WEBHOOK] Signature verified successfully for event:', rawEvent.id);
+      console.error('[STRIPE-WEBHOOK] Signature verified successfully for event:', rawEvent.id);
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : 'Unknown error';
       console.error('[STRIPE-WEBHOOK] Signature verification failed:', errMsg);
@@ -62,20 +62,31 @@ serve(async (req) => {
     // Validate event structure
     const event: StripeWebhookInput = validateStripeWebhook(rawEvent);
 
-    // IDEMPOTENCY CHECK: Prevent duplicate webhook processing
+    // IDEMPOTENCY CHECK: Atomic INSERT ... ON CONFLICT to prevent TOCTOU race conditions.
+    // If the insert succeeds, we own this event. If it conflicts, another invocation already handled it.
     const stripeEventId = rawEvent.id;
     if (stripeEventId) {
-      const { data: existingEvent } = await supabase
-        .from('subscription_events')
+      const { error: idempotencyError } = await supabase
+        .from('webhook_idempotency')
+        .insert({ stripe_event_id: stripeEventId })
         .select('id')
-        .eq('stripe_event_id', stripeEventId)
         .maybeSingle();
 
-      if (existingEvent) {
-        console.log('[WEBHOOK_IDEMPOTENCY] Event already processed, skipping:', stripeEventId);
+      // A unique-constraint violation means another invocation already claimed this event
+      if (idempotencyError && idempotencyError.code === '23505') {
+        console.error('[WEBHOOK_IDEMPOTENCY] Event already processed, skipping:', stripeEventId);
         return new Response(JSON.stringify({ received: true, duplicate: true }), {
           headers: { 'Content-Type': 'application/json' },
           status: 200,
+        });
+      }
+
+      // Any other DB error is unexpected — fail loudly so Stripe retries
+      if (idempotencyError) {
+        console.error('[WEBHOOK_IDEMPOTENCY] Unexpected DB error:', idempotencyError);
+        return new Response(JSON.stringify({ error: 'Idempotency check failed' }), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 500,
         });
       }
     }
@@ -99,7 +110,7 @@ serve(async (req) => {
             return new Response('Missing tenant_id or credits', { status: 400 });
           }
 
-          console.log('[STRIPE-WEBHOOK] Processing credit purchase:', { tenantId, credits, packageSlug });
+          console.error('[STRIPE-WEBHOOK] Processing credit purchase:', { tenantId, credits, packageSlug });
 
           // Grant credits to tenant
           await supabase.rpc('purchase_credits', {
@@ -131,7 +142,7 @@ serve(async (req) => {
             })
             .eq('tenant_id', tenantId);
 
-          console.log(`[STRIPE-WEBHOOK] Granted ${credits} credits to tenant ${tenantId}`);
+          console.error(`[STRIPE-WEBHOOK] Granted ${credits} credits to tenant ${tenantId}`);
           break;
         }
 
@@ -187,7 +198,7 @@ serve(async (req) => {
             },
           });
 
-          console.log(`[STRIPE-WEBHOOK] Credit subscription created for tenant ${tenantId}: ${creditsPerPeriod} credits/${periodType}`);
+          console.error(`[STRIPE-WEBHOOK] Credit subscription created for tenant ${tenantId}: ${creditsPerPeriod} credits/${periodType}`);
           break;
         }
 
@@ -251,7 +262,7 @@ serve(async (req) => {
           }
         }
 
-        console.log('[STRIPE-WEBHOOK] Checkout completed:', {
+        console.error('[STRIPE-WEBHOOK] Checkout completed:', {
           planId,
           planName: plan?.name,
           resolvedTier: subscriptionTier,
@@ -384,7 +395,7 @@ serve(async (req) => {
               });
             }
 
-            console.log('[STRIPE-WEBHOOK] Subscription active, synced is_free_tier=false:', { tenantId, status });
+            console.error('[STRIPE-WEBHOOK] Subscription active, synced is_free_tier=false:', { tenantId, status });
           }
 
           // If subscription is cancelled or deleted, revert to free tier
@@ -402,7 +413,7 @@ serve(async (req) => {
               .update({ is_free_tier: true })
               .eq('tenant_id', tenantId);
 
-            console.log('[STRIPE-WEBHOOK] Subscription ended, reverted to free tier:', { tenantId, status });
+            console.error('[STRIPE-WEBHOOK] Subscription ended, reverted to free tier:', { tenantId, status });
           }
 
           await supabase
@@ -480,7 +491,7 @@ serve(async (req) => {
               .update(creditSubUpdate)
               .eq('id', creditSub.id);
 
-            console.log('[STRIPE-WEBHOOK] Credit subscription status updated:', {
+            console.error('[STRIPE-WEBHOOK] Credit subscription status updated:', {
               creditSubId: creditSub.id,
               tenantId: creditSub.tenant_id,
               newStatus: creditSubStatus,
@@ -554,7 +565,7 @@ serve(async (req) => {
               },
             });
 
-            console.log('[STRIPE-WEBHOOK] Recurring credits granted:', {
+            console.error('[STRIPE-WEBHOOK] Recurring credits granted:', {
               tenantId: creditSub.tenant_id,
               credits: creditSub.credits_per_period,
               periodType: creditSub.period_type,
@@ -626,7 +637,7 @@ serve(async (req) => {
               },
             });
 
-            console.log('[STRIPE-WEBHOOK] Credit subscription set to past_due:', {
+            console.error('[STRIPE-WEBHOOK] Credit subscription set to past_due:', {
               creditSubId: creditSub.id,
               tenantId: creditSub.tenant_id,
               invoiceId: object.id,
@@ -722,7 +733,7 @@ serve(async (req) => {
 
       case 'customer.deleted': {
         const customerId = object.id;
-        console.log('[STRIPE-WEBHOOK] Customer deleted:', customerId);
+        console.error('[STRIPE-WEBHOOK] Customer deleted:', customerId);
 
         if (customerId) {
           const { data: tenant } = await supabase
@@ -770,7 +781,7 @@ serve(async (req) => {
               },
             });
 
-            console.log('[STRIPE-WEBHOOK] Tenant reverted to free tier after customer deletion:', tenant.id);
+            console.error('[STRIPE-WEBHOOK] Tenant reverted to free tier after customer deletion:', tenant.id);
           }
         }
 

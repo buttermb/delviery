@@ -30,7 +30,7 @@ export const log = {
   },
   
   info: (message: string, context?: LogContext) => {
-    console.log(formatLog('info', message, context));
+    console.error(formatLog('info', message, context));
   },
   
   warn: (message: string, context?: LogContext) => {

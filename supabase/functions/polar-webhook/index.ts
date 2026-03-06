@@ -22,7 +22,7 @@ serve(async (req) => {
         const body = await req.json();
         const eventType = body.type;
 
-        console.log('Polar webhook received:', eventType);
+        console.error('Polar webhook received:', eventType);
 
         switch (eventType) {
             case 'checkout.completed': {
@@ -51,7 +51,7 @@ serve(async (req) => {
                         metadata: body.data,
                     });
 
-                    console.log(`Tenant ${tenantId} upgraded to ${plan}`);
+                    console.error(`Tenant ${tenantId} upgraded to ${plan}`);
                 }
                 break;
             }
@@ -105,13 +105,13 @@ serve(async (req) => {
                         .update({ balance: 10000 })
                         .eq('tenant_id', tenant.id);
 
-                    console.log(`Tenant ${tenant.id} downgraded to free tier`);
+                    console.error(`Tenant ${tenant.id} downgraded to free tier`);
                 }
                 break;
             }
 
             default:
-                console.log('Unhandled Polar event:', eventType);
+                console.error('Unhandled Polar event:', eventType);
         }
 
         return new Response(

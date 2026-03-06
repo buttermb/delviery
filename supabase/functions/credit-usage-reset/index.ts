@@ -76,7 +76,7 @@ serve(async (req) => {
       // Default to daily if no body
     }
 
-    console.log(`[CREDIT_USAGE_RESET] Starting ${resetType} reset job`);
+    console.error(`[CREDIT_USAGE_RESET] Starting ${resetType} reset job`);
 
     const results = {
       resetType,
@@ -94,7 +94,7 @@ serve(async (req) => {
         results.errors.push(`Daily reset: ${error.message}`);
       } else {
         results.dailyReset = data || 0;
-        console.log(`[CREDIT_USAGE_RESET] Daily reset completed: ${data} tenants updated`);
+        console.error(`[CREDIT_USAGE_RESET] Daily reset completed: ${data} tenants updated`);
       }
     }
 
@@ -107,7 +107,7 @@ serve(async (req) => {
         results.errors.push(`Weekly reset: ${error.message}`);
       } else {
         results.weeklyReset = data || 0;
-        console.log(`[CREDIT_USAGE_RESET] Weekly reset completed: ${data} tenants updated`);
+        console.error(`[CREDIT_USAGE_RESET] Weekly reset completed: ${data} tenants updated`);
       }
     }
 
@@ -125,7 +125,7 @@ serve(async (req) => {
         },
       });
 
-    console.log('[CREDIT_USAGE_RESET] Job completed:', results);
+    console.error('[CREDIT_USAGE_RESET] Job completed:', results);
 
     return new Response(
       JSON.stringify({

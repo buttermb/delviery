@@ -90,7 +90,7 @@ function getStatusBadge(status: string) {
   return (
     <Badge variant={config.variant} className={`capitalize gap-1 ${config.className}`}>
       <Icon className="h-3 w-3" />
-      {status.replace('_', ' ')}
+      {status.replaceAll('_', ' ')}
     </Badge>
   );
 }
@@ -193,13 +193,13 @@ export function OrdersWidget() {
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`orders?order=${order.id}`); } }}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusDotColor(order.status)}`} aria-label={`Order status: ${order.status.replace('_', ' ')}`} title={order.status.replace('_', ' ')} />
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusDotColor(order.status)}`} aria-label={`Order status: ${order.status.replaceAll('_', ' ')}`} title={order.status.replaceAll('_', ' ')} />
                 <div className="min-w-0">
                   <div className="font-medium truncate">
                     #{order.order_number || order.id.slice(0, 8)}
                   </div>
                   <div className="text-sm text-muted-foreground truncate">
-                    {order.user?.full_name || 'Customer'} • {format(new Date(order.created_at), 'MMM d, h:mm a')}
+                    {order.user?.full_name || 'Customer'} • {order.created_at ? format(new Date(order.created_at), 'MMM d, h:mm a') : '—'}
                   </div>
                 </div>
               </div>

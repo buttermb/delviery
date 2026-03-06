@@ -126,7 +126,7 @@ serve(async (req) => {
       }
     }
 
-    console.log('[VERIFY_PHONE] Phone verified:', verification.phone_number.slice(0, -4) + '****');
+    console.error('[VERIFY_PHONE] Phone verified:', verification.phone_number.slice(0, -4) + '****');
 
     return new Response(
       JSON.stringify({

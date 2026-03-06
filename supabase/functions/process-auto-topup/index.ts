@@ -104,6 +104,40 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // --- Auth check ---
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Resolve tenant from authenticated user
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!tenantUser?.tenant_id) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Forbidden: no tenant membership' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    // --- End auth check ---
+
     const body: RequestBody = await req.json();
     const { tenant_id, force = false } = body;
 
@@ -114,14 +148,22 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[AUTO_TOPUP] Processing for tenant: ${tenant_id}`);
+    // Verify the request tenant_id matches the authenticated user's tenant
+    if (tenant_id !== tenantUser.tenant_id) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Forbidden: tenant mismatch' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.error(`[AUTO_TOPUP] Processing for tenant: ${tenant_id}`);
 
     // Get auto top-up config
     const { data: config, error: configError } = await supabase
       .from('credit_auto_topup')
       .select('*')
       .eq('tenant_id', tenant_id)
-      .single();
+      .maybeSingle();
 
     if (configError || !config) {
       return new Response(
@@ -158,7 +200,7 @@ serve(async (req) => {
     // Check hourly rate limit (max 3 top-ups per hour)
     const topUpsInLastHour = await getTopUpsInLastHour(supabase, tenant_id);
     if (topUpsInLastHour >= MAX_TOPUPS_PER_HOUR) {
-      console.log(`[AUTO_TOPUP] Hourly rate limit reached for tenant ${tenant_id}: ${topUpsInLastHour} top-ups in last hour`);
+      console.error(`[AUTO_TOPUP] Hourly rate limit reached for tenant ${tenant_id}: ${topUpsInLastHour} top-ups in last hour`);
       return new Response(
         JSON.stringify({
           success: false,
@@ -175,7 +217,7 @@ serve(async (req) => {
       .from('tenant_credits')
       .select('balance')
       .eq('tenant_id', tenant_id)
-      .single();
+      .maybeSingle();
 
     if (creditsError || !credits) {
       return new Response(
@@ -201,7 +243,7 @@ serve(async (req) => {
     const packageInfo = CREDIT_PACKAGES.find(p => p.credits === topupConfig.topup_amount) 
       || CREDIT_PACKAGES[0]; // Default to smallest package
 
-    console.log(`[AUTO_TOPUP] Charging ${packageInfo.priceCents} cents for ${packageInfo.credits} credits`);
+    console.error(`[AUTO_TOPUP] Charging ${packageInfo.priceCents} cents for ${packageInfo.credits} credits`);
 
     // Process payment with Stripe
     let paymentIntent;
@@ -284,7 +326,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[AUTO_TOPUP] Payment succeeded: ${paymentIntent.id}`);
+    console.error(`[AUTO_TOPUP] Payment succeeded: ${paymentIntent.id}`);
 
     // Add credits to balance
     const newBalance = credits.balance + packageInfo.credits;
@@ -382,7 +424,7 @@ serve(async (req) => {
         },
       });
 
-    console.log(`[AUTO_TOPUP] Success! Added ${packageInfo.credits} credits. New balance: ${newBalance}`);
+    console.error(`[AUTO_TOPUP] Success! Added ${packageInfo.credits} credits. New balance: ${newBalance}`);
 
     return new Response(
       JSON.stringify({

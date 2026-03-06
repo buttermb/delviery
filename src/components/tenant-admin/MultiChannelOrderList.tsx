@@ -79,6 +79,8 @@ export function MultiChannelOrderList() {
             if (!tenantId) return [];
 
             const unifiedOrders: ChannelOrder[] = [];
+            // Fetch only what we need: display limit per channel to avoid over-fetching
+            const CHANNEL_LIMIT = 5;
 
             // 1. Fetch Wholesale Orders
             try {
@@ -93,7 +95,7 @@ export function MultiChannelOrderList() {
                     `)
                     .eq('tenant_id', tenantId)
                     .order('created_at', { ascending: false })
-                    .limit(20);
+                    .limit(CHANNEL_LIMIT);
 
                 if (wholesaleError) {
                     logger.warn('Failed to fetch wholesale orders', wholesaleError, { component: 'MultiChannelOrderList' });
@@ -120,7 +122,7 @@ export function MultiChannelOrderList() {
                     .select('id, total_amount, payment_status, created_at, transaction_number, customer_name')
                     .eq('tenant_id', tenantId)
                     .order('created_at', { ascending: false })
-                    .limit(20);
+                    .limit(CHANNEL_LIMIT);
 
                 if (posError) {
                     logger.warn('Failed to fetch POS transactions', posError, { component: 'MultiChannelOrderList' });
@@ -148,7 +150,7 @@ export function MultiChannelOrderList() {
                     .eq('tenant_id', tenantId)
                     .in('source', ['online', 'web', 'app', 'marketplace'])
                     .order('created_at', { ascending: false })
-                    .limit(20);
+                    .limit(CHANNEL_LIMIT);
 
                 if (unifiedError) {
                     logger.warn('Failed to fetch unified orders', unifiedError, { component: 'MultiChannelOrderList' });
@@ -183,7 +185,7 @@ export function MultiChannelOrderList() {
                         .select('id, total, status, created_at, order_number, customer_name, store_id')
                         .in('store_id', storeIds)
                         .order('created_at', { ascending: false })
-                        .limit(20);
+                        .limit(CHANNEL_LIMIT);
 
                     if (sfError) {
                         logger.warn('Failed to fetch storefront orders', sfError, { component: 'MultiChannelOrderList' });

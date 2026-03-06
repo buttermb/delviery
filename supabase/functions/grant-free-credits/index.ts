@@ -85,7 +85,7 @@ serve(async (req) => {
         );
       }
 
-      console.log(`[GRANT_FREE_CREDITS] Authorized super-admin: ${user.email}`);
+      console.error(`[GRANT_FREE_CREDITS] Authorized super-admin: ${user.email}`);
     }
   }
 
@@ -94,7 +94,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('[GRANT_FREE_CREDITS] Starting daily credit grant job');
+    console.error('[GRANT_FREE_CREDITS] Starting daily credit grant job');
 
     // Find all tenants whose credits need refreshing
     // Note: We now query ALL tenants (not just free tier) to support plan-based amounts
@@ -121,7 +121,7 @@ serve(async (req) => {
       throw queryError;
     }
 
-    console.log(`[GRANT_FREE_CREDITS] Found ${eligibleTenants?.length || 0} eligible tenants`);
+    console.error(`[GRANT_FREE_CREDITS] Found ${eligibleTenants?.length || 0} eligible tenants`);
 
     const results = {
       processed: 0,
@@ -196,12 +196,12 @@ serve(async (req) => {
 
         // If duplicate key error, this grant was already processed
         if (txError?.code === '23505') {
-          console.log(`[GRANT_FREE_CREDITS] Skipping ${tenantId} - already granted today`);
+          console.error(`[GRANT_FREE_CREDITS] Skipping ${tenantId} - already granted today`);
           results.skipped++;
           continue;
         }
 
-        console.log(`[GRANT_FREE_CREDITS] Granted ${planCredits} credits to ${tenant.slug} (plan: ${tenant?.subscription_plan || 'free'}, rollover: ${rolloverAmount})`);
+        console.error(`[GRANT_FREE_CREDITS] Granted ${planCredits} credits to ${tenant.slug} (plan: ${tenant?.subscription_plan || 'free'}, rollover: ${rolloverAmount})`);
         results.granted++;
 
         // Track analytics event
@@ -221,7 +221,7 @@ serve(async (req) => {
         // Send notification email (optional - integrate with email service)
         if (tenant.owner_email) {
           // TODO: Integrate with email service (Resend, SendGrid, etc.)
-          console.log(`[GRANT_FREE_CREDITS] Would send email to ${tenant.owner_email}`);
+          console.error(`[GRANT_FREE_CREDITS] Would send email to ${tenant.owner_email}`);
         }
 
       } catch (err) {
@@ -238,7 +238,7 @@ serve(async (req) => {
       .limit(100);
 
     if (!missingError && tenantsWithoutCredits?.length) {
-      console.log(`[GRANT_FREE_CREDITS] Found ${tenantsWithoutCredits.length} tenants without credit records`);
+      console.error(`[GRANT_FREE_CREDITS] Found ${tenantsWithoutCredits.length} tenants without credit records`);
 
       for (const tenant of tenantsWithoutCredits) {
         try {
@@ -264,7 +264,7 @@ serve(async (req) => {
             });
 
           if (!createError) {
-            console.log(`[GRANT_FREE_CREDITS] Created credit record for ${tenant.slug} (${planCredits} credits, ${tenant.subscription_plan || 'free'} plan)`);
+            console.error(`[GRANT_FREE_CREDITS] Created credit record for ${tenant.slug} (${planCredits} credits, ${tenant.subscription_plan || 'free'} plan)`);
 
             // Log the initial grant transaction with idempotency
             const initKey = `initial_grant:${tenant.id}`;
@@ -291,7 +291,7 @@ serve(async (req) => {
       }
     }
 
-    console.log('[GRANT_FREE_CREDITS] Job completed:', results);
+    console.error('[GRANT_FREE_CREDITS] Job completed:', results);
 
     return new Response(
       JSON.stringify({

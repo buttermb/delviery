@@ -40,8 +40,11 @@ const DEFAULT_TABLES = [
 
 // Track failed connection attempts per table
 const connectionFailures = new Map<string, number>();
+const connectionFailureTimestamps = new Map<string, number>();
 const MAX_FAILURES = 3; // Disable after 3 failures
+const FAILURE_RESET_MS = 5 * 60 * 1000; // Reset failures after 5 minutes
 const INVALIDATION_DEDUPE_MS = 300;
+const MAX_INVALIDATION_ENTRIES = 500;
 
 const TENANT_FILTER_TABLES = new Set([
   'orders',
@@ -373,10 +376,21 @@ export function useRealtimeSync({
     // Supabase supports multiple .on() listeners per channel.
     // This reduces connection count from N to ceil(N/BATCH_SIZE).
     const BATCH_SIZE = 8;
+    const now = Date.now();
     const eligibleTables = tables.filter((table) => {
       const failureKey = `${table}-${tenantId}`;
       const failures = connectionFailures.get(failureKey) || 0;
       if (failures >= MAX_FAILURES) {
+        // Reset failures if enough time has passed, allowing retry
+        const failedAt = connectionFailureTimestamps.get(failureKey) ?? 0;
+        if (now - failedAt >= FAILURE_RESET_MS) {
+          connectionFailures.delete(failureKey);
+          connectionFailureTimestamps.delete(failureKey);
+          logger.debug(`Reset realtime failures for ${table} after timeout`, {
+            component: 'useRealtimeSync',
+          });
+          return true;
+        }
         logger.debug(`Skipping realtime for ${table} (too many failures)`, {
           failures,
           component: 'useRealtimeSync',
@@ -432,12 +446,21 @@ export function useRealtimeSync({
                 if (result) {
                   // Deduplicate bursty realtime events to avoid invalidation storms.
                   const invalidationKey = `${tenantId}:${result.event}:${JSON.stringify(result.metadata ?? {})}`;
-                  const now = Date.now();
+                  const currentTime = Date.now();
                   const lastAt = lastInvalidationRef.current.get(invalidationKey) ?? 0;
-                  if (now - lastAt < INVALIDATION_DEDUPE_MS) {
+                  if (currentTime - lastAt < INVALIDATION_DEDUPE_MS) {
                     return;
                   }
-                  lastInvalidationRef.current.set(invalidationKey, now);
+                  // Prune stale entries when Map grows too large
+                  if (lastInvalidationRef.current.size >= MAX_INVALIDATION_ENTRIES) {
+                    const cutoff = currentTime - INVALIDATION_DEDUPE_MS * 2;
+                    for (const [key, timestamp] of lastInvalidationRef.current) {
+                      if (timestamp < cutoff) {
+                        lastInvalidationRef.current.delete(key);
+                      }
+                    }
+                  }
+                  lastInvalidationRef.current.set(invalidationKey, currentTime);
 
                   // Use centralized invalidation system for consistent cross-panel sync
                   invalidateOnEvent(queryClient, result.event, tenantId, result.metadata);
@@ -459,6 +482,7 @@ export function useRealtimeSync({
           if (status === 'SUBSCRIBED') {
             batch.forEach((table) => {
               connectionFailures.delete(`${table}-${tenantId}`);
+              connectionFailureTimestamps.delete(`${table}-${tenantId}`);
             });
             logger.debug(`Realtime batch subscription active: [${batch.join(', ')}]`, {
               tenantId,
@@ -469,6 +493,7 @@ export function useRealtimeSync({
               const failureKey = `${table}-${tenantId}`;
               const currentFailures = connectionFailures.get(failureKey) || 0;
               connectionFailures.set(failureKey, currentFailures + 1);
+              connectionFailureTimestamps.set(failureKey, Date.now());
             });
             logger.warn(`Realtime batch subscription ${status.toLowerCase()}: [${batch.join(', ')}]`, {
               tenantId,
@@ -483,6 +508,7 @@ export function useRealtimeSync({
           const failureKey = `${table}-${tenantId}`;
           const currentFailures = connectionFailures.get(failureKey) || 0;
           connectionFailures.set(failureKey, currentFailures + 1);
+          connectionFailureTimestamps.set(failureKey, Date.now());
         });
         logger.warn(`Failed to create realtime batch channel for [${batch.join(', ')}]`, error, {
           component: 'useRealtimeSync',
@@ -498,6 +524,7 @@ export function useRealtimeSync({
         cleanupRef.current = null;
       }
       isConnectingRef.current = false;
+      lastInvalidationRef.current.clear();
     };
   }, [tenantId, tables, enabled, queryClient]);
 

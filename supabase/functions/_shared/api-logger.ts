@@ -14,8 +14,8 @@ interface LogRequest {
   responseTimeMs: number;
   userAgent?: string;
   ipAddress?: string;
-  requestBody?: any;
-  responseBody?: any;
+  requestBody?: unknown;
+  responseBody?: unknown;
   errorMessage?: string;
 }
 
@@ -23,6 +23,37 @@ interface RateLimitCheck {
   tenantId: string;
   endpoint: string;
   method: string;
+}
+
+const SENSITIVE_FIELDS = [
+  'password',
+  'token',
+  'access_token',
+  'refresh_token',
+  'authorization',
+  'credit_card',
+  'card_number',
+  'cvv',
+  'secret',
+  'api_key',
+];
+
+function redactSensitiveFields(obj: unknown): unknown {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(redactSensitiveFields);
+
+  const redacted: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+    if (SENSITIVE_FIELDS.includes(key.toLowerCase())) {
+      redacted[key] = '[REDACTED]';
+    } else if (typeof value === 'object' && value !== null) {
+      redacted[key] = redactSensitiveFields(value);
+    } else {
+      redacted[key] = value;
+    }
+  }
+  return redacted;
 }
 
 export async function logApiRequest(
@@ -33,6 +64,13 @@ export async function logApiRequest(
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const redactedRequestBody = request.requestBody
+      ? redactSensitiveFields(request.requestBody)
+      : null;
+    const redactedResponseBody = request.responseBody
+      ? redactSensitiveFields(request.responseBody)
+      : null;
+
     await supabase.from('api_logs').insert({
       tenant_id: request.tenantId || null,
       endpoint: request.endpoint,
@@ -41,8 +79,8 @@ export async function logApiRequest(
       response_time_ms: request.responseTimeMs,
       user_agent: request.userAgent,
       ip_address: request.ipAddress,
-      request_body: request.requestBody ? JSON.stringify(request.requestBody) : null,
-      response_body: request.responseBody ? JSON.stringify(request.responseBody) : null,
+      request_body: redactedRequestBody ? JSON.stringify(redactedRequestBody) : null,
+      response_body: redactedResponseBody ? JSON.stringify(redactedResponseBody) : null,
       error_message: request.errorMessage,
     });
   } catch (error) {

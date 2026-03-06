@@ -17,7 +17,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    console.log('Sending expired trial notifications...');
+    console.error('Sending expired trial notifications...');
 
     // Find recently suspended accounts (suspended in last 24 hours)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -33,7 +33,7 @@ serve(async (req) => {
       throw selectError;
     }
 
-    console.log(`Found ${suspendedTenants?.length || 0} recently suspended tenants`);
+    console.error(`Found ${suspendedTenants?.length || 0} recently suspended tenants`);
 
     const emailTasks = (suspendedTenants || []).map(async (tenant) => {
       const emailSubject = `⏰ Your trial has expired - ${tenant.business_name}`;
@@ -120,7 +120,7 @@ serve(async (req) => {
         </html>
       `;
 
-      console.log(`Would send expiration email to ${tenant.owner_email}`);
+      console.error(`Would send expiration email to ${tenant.owner_email}`);
       
       // Example SendGrid integration
       // const sendGridKey = Deno.env.get('SENDGRID_API_KEY');

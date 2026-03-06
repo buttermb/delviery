@@ -30,11 +30,11 @@ export function EmailVerificationBanner() {
     }
   }, [admin?.id]);
 
-  // Fetch email verification status
-  const { data: emailVerified, isLoading } = useQuery({
+  // Fetch email verification status and expiry
+  const { data: verificationData, isLoading } = useQuery({
     queryKey: queryKeys.emailVerification.byAdmin(admin?.id),
     queryFn: async () => {
-      if (!admin?.id) return true; // Assume verified if no admin
+      if (!admin?.id) return { verified: true, expiresAt: null }; // Assume verified if no admin
 
       try {
         const { data, error } = await supabase
@@ -45,18 +45,23 @@ export function EmailVerificationBanner() {
 
         if (error) {
           logger.error('Failed to fetch email verification status', error);
-          return true; // Assume verified on error to avoid blocking user
+          return { verified: true, expiresAt: null }; // Assume verified on error to avoid blocking user
         }
 
-        return data?.email_verified ?? false;
+        return {
+          verified: data?.email_verified ?? false,
+          expiresAt: data?.email_verification_token_expires_at ?? null,
+        };
       } catch (error) {
         logger.error('Error checking email verification', error);
-        return true; // Assume verified on error
+        return { verified: true, expiresAt: null }; // Assume verified on error
       }
     },
     enabled: !!admin?.id && !dismissed,
     refetchInterval: 60000, // Check every minute
   });
+
+  const emailVerified = verificationData?.verified ?? true;
 
   const handleDismiss = () => {
     try {
@@ -77,8 +82,10 @@ export function EmailVerificationBanner() {
     return null;
   }
 
-  // Calculate days remaining (7-day grace period)
-  const daysRemaining = 7; // This would be calculated from email_verification_token_expires_at if needed
+  // Calculate days remaining from expiry date
+  const daysRemaining = verificationData?.expiresAt
+    ? Math.max(0, Math.ceil((new Date(verificationData.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null;
 
   return (
     <Card className="bg-warning/10 border-warning/30 mb-6 animate-in slide-in-from-top-2">
@@ -94,8 +101,10 @@ export function EmailVerificationBanner() {
                 Verify Your Email Address
               </h3>
               <p className="text-sm text-muted-foreground mb-2">
-                Please verify your email address to ensure you receive important account updates. 
-                You have {daysRemaining} days to verify your email.
+                Please verify your email address to ensure you receive important account updates.{' '}
+                {daysRemaining !== null
+                  ? `You have ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} to verify your email.`
+                  : 'Please verify your email as soon as possible.'}
               </p>
               <div className="flex items-center gap-2">
                 <Button

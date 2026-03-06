@@ -33,7 +33,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2023-10-16',
+      apiVersion: '2025-08-27.basil',
     });
 
     // Verify authentication
@@ -97,10 +97,19 @@ serve(async (req) => {
       .maybeSingle();
 
     const isOwner = tenant.owner_email?.toLowerCase() === user.email?.toLowerCase();
-    
+
     if (!isOwner && !tenantUser) {
       return new Response(
         JSON.stringify({ error: 'Not authorized for this tenant' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Only admin/owner roles can make purchases
+    const userRole = tenantUser?.role;
+    if (!isOwner && userRole !== 'admin' && userRole !== 'owner') {
+      return new Response(
+        JSON.stringify({ error: 'Only admin or owner roles can purchase credits' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -164,8 +173,8 @@ serve(async (req) => {
         .eq('id', creditPackage.id);
     }
 
-    // Generate idempotency key for this purchase attempt
-    const idempotencyKey = `purchase:${tenant_id}:${package_slug}:${Date.now()}`;
+    // Stable idempotency key — no Date.now() so duplicate submissions are truly deduplicated
+    const idempotencyKey = `purchase:${tenant_id}:${package_slug}:${stripePriceId}`;
 
     // Create checkout session with idempotency
     const session = await stripe.checkout.sessions.create({
@@ -205,7 +214,7 @@ serve(async (req) => {
         },
       });
 
-    console.log(`[PURCHASE_CREDITS] Created checkout session for ${tenant.slug}, package: ${package_slug}`);
+    console.error(`[PURCHASE_CREDITS] Created checkout session for ${tenant.slug}, package: ${package_slug}`);
 
     return new Response(
       JSON.stringify({

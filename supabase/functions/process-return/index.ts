@@ -47,7 +47,7 @@ serve(async (req) => {
     if (raError) throw raError;
 
     // Create return items
-    const returnItems = items.map((item: any) => ({
+    const returnItems = items.map((item: ProcessReturnInput['items'][number]) => ({
       return_authorization_id: ra.id,
       product_id: item.product_id,
       product_name: item.product_name,

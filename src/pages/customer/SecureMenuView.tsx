@@ -550,13 +550,21 @@ const SecureMenuView = () => {
   const handleAddToCart = useCallback((product: Product) => {
     const weight = selectedWeights[product.id] || getDefaultWeight(product.prices);
     const price = getProductPrice(product, weight);
+    const maxOrder = menuData?.max_order_quantity;
+
+    // Check if max order quantity would be exceeded
+    const currentCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    if (maxOrder != null && maxOrder > 0 && currentCount >= maxOrder) {
+      toast.error(`Maximum ${maxOrder} items allowed per order`);
+      return;
+    }
 
     addItem({
       productId: product.id,
       weight,
       price,
       productName: product.name,
-    });
+    }, maxOrder ?? undefined);
 
     // Track add to cart event for conversion funnel
     if (menuData?.tenant_id) {
@@ -564,17 +572,26 @@ const SecureMenuView = () => {
     }
 
     toast.success(`${product.name} added to cart`);
-  }, [selectedWeights, addItem, menuData?.tenant_id, trackAddToCart, getProductPrice]);
+  }, [selectedWeights, addItem, menuData?.tenant_id, menuData?.max_order_quantity, cartItems, trackAddToCart, getProductPrice]);
 
   const handleUpdateQuantity = (productId: string, delta: number) => {
     const existingItem = cartItems.find(item => item.productId === productId);
     if (!existingItem) return;
+    const maxOrder = menuData?.max_order_quantity;
 
     const newQty = existingItem.quantity + delta;
     if (newQty <= 0) {
-      removeItem(productId);
+      removeItem(productId, existingItem.weight);
     } else {
-      updateQuantityStore(productId, newQty);
+      // Check max order quantity when increasing
+      if (delta > 0 && maxOrder != null && maxOrder > 0) {
+        const currentCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+        if (currentCount >= maxOrder) {
+          toast.error(`Maximum ${maxOrder} items allowed per order`);
+          return;
+        }
+      }
+      updateQuantityStore(productId, newQty, existingItem.weight, maxOrder ?? undefined);
     }
   };
 

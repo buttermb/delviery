@@ -101,6 +101,15 @@ serve(async (req: Request) => {
 
     const tenantId = tenantUser.tenant_id;
 
+    // Only admin/owner roles can make purchases
+    const userRole = tenantUser.role;
+    if (userRole !== 'admin' && userRole !== 'owner') {
+      return new Response(
+        JSON.stringify({ error: 'Only admin or owner roles can purchase credits' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Validate the credit package exists and is active
     const { data: creditPackage, error: packageError } = await supabase
       .from('credit_packages')
@@ -169,8 +178,8 @@ serve(async (req: Request) => {
         .eq('id', tenantId);
     }
 
-    // Create a PaymentIntent with the saved payment method
-    const idempotencyKey = `credits-purchase:${tenantId}:${package_id}:${Date.now()}`;
+    // Stable idempotency key — no Date.now() so duplicate submissions are truly deduplicated
+    const idempotencyKey = `credits-purchase:${tenantId}:${package_id}:${payment_method_id}`;
 
     const paymentIntentResponse = await fetch('https://api.stripe.com/v1/payment_intents', {
       method: 'POST',
@@ -349,7 +358,7 @@ serve(async (req: Request) => {
       .limit(1)
       .maybeSingle();
 
-    console.log(`[CREDITS_PURCHASE] Success: tenant=${tenant.slug}, package=${pkg.slug}, credits=${pkg.credits}, new_balance=${result.new_balance}`);
+    console.error(`[CREDITS_PURCHASE] Success: tenant=${tenant.slug}, package=${pkg.slug}, credits=${pkg.credits}, new_balance=${result.new_balance}`);
 
     return new Response(
       JSON.stringify({

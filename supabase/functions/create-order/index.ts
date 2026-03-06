@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       const DELIVERY_FEE = 5.00; // Could fetch from config table
       const calculatedTotal = calculatedSubtotal + DELIVERY_FEE;
 
-      console.log(`[CREATE_ORDER] Server-calculated: subtotal=${calculatedSubtotal}, total=${calculatedTotal}`);
+      console.error(`[CREATE_ORDER] Server-calculated: subtotal=${calculatedSubtotal}, total=${calculatedTotal}`);
 
       // Create order with SERVER-calculated values
       const { data: order, error: orderError } = await supabaseClient

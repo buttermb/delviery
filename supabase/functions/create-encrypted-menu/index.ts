@@ -19,6 +19,15 @@ const CreateMenuSchema = z.object({
     custom_price: z.number().positive().optional(),
     display_availability: z.boolean().optional(),
     display_order: z.number().int().optional(),
+    prices: z.array(z.object({
+      label: z.string().min(1),
+      price: z.number().positive(),
+      weight_grams: z.number().positive().optional(),
+      max_qty: z.number().int().positive().optional(),
+      note: z.string().optional(),
+    })).optional(),
+    vendor_name: z.string().optional(),
+    badge: z.string().optional(),
   })).optional(),
   expiration_date: z.string().datetime().optional(),
   never_expires: z.boolean().optional(),
@@ -42,6 +51,25 @@ serve(withZenProtection(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Authenticate caller
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Parse and validate request
     const body = await req.json();
     const validationResult = CreateMenuSchema.safeParse(body);
@@ -58,6 +86,31 @@ serve(withZenProtection(async (req) => {
     }
 
     const menuData = validationResult.data;
+
+    // Verify the caller belongs to the tenant
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id, role')
+      .eq('user_id', user.id)
+      .eq('tenant_id', menuData.tenant_id)
+      .maybeSingle();
+
+    if (!tenantUser) {
+      // Fallback: check if user is the tenant owner
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('id')
+        .eq('id', menuData.tenant_id)
+        .eq('owner_email', user.email)
+        .maybeSingle();
+
+      if (!tenant) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden - you do not belong to this tenant' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     // Generate unique encrypted URL token
     const urlToken = crypto.randomUUID().replace(/-/g, '').substring(0, 24);
@@ -142,6 +195,9 @@ serve(withZenProtection(async (req) => {
         custom_price: p.custom_price,
         display_availability: p.display_availability ?? true,
         display_order: p.display_order ?? 0,
+        prices: p.prices && p.prices.length > 0 ? p.prices : null,
+        vendor_name: p.vendor_name ?? null,
+        badge: p.badge ?? null,
         is_encrypted: false, // Will be set to true after encryption
       }));
 

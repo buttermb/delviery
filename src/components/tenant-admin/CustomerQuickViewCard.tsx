@@ -41,7 +41,8 @@ export function CustomerQuickViewCard({ children, customer }: CustomerQuickViewC
     const navigate = useNavigate();
     const { tenantSlug } = useParams<{ tenantSlug: string }>();
 
-    const initials = customer.business_name
+    const businessName = customer.business_name || 'Unknown';
+    const initials = businessName
         .split(' ')
         .map(n => n[0])
         .join('')
@@ -59,11 +60,11 @@ export function CustomerQuickViewCard({ children, customer }: CustomerQuickViewC
                 {/* Header */}
                 <div className="bg-muted/30 p-4 border-b flex items-start gap-3">
                     <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
-                        <AvatarImage src={`https://avatar.vercel.sh/${customer.business_name}.png`} alt={customer.business_name} />
+                        <AvatarImage src={`https://avatar.vercel.sh/${businessName}.png`} alt={businessName} />
                         <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-semibold truncate">{customer.business_name}</h4>
+                        <h4 className="text-sm font-semibold truncate">{businessName}</h4>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <User className="h-3 w-3" />
                             <span className="truncate">{customer.contact_name}</span>

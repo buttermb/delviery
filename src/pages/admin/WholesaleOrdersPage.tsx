@@ -288,7 +288,7 @@ export default function WholesaleOrdersPage() {
   });
 
   // Fetch orders (Wholesale or Purchase based on viewMode)
-  const { data: orders = [], isLoading, refetch } = useQuery({
+  const { data: orders = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: queryKeys.orders.list(tenant?.id, { viewMode }),
     queryFn: async () => {
       if (!tenant?.id) return [];
@@ -874,6 +874,18 @@ export default function WholesaleOrdersPage() {
   // Show full-page skeleton during initial load
   if (isLoading && orders.length === 0) {
     return <WholesaleOrdersPageSkeleton />;
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center">
+        <p className="text-destructive font-medium">Failed to load data</p>
+        <p className="text-sm text-muted-foreground mt-1">{error?.message || 'An unexpected error occurred'}</p>
+        <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>
+          Try Again
+        </Button>
+      </div>
+    );
   }
 
   return (

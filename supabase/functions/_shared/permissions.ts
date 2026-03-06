@@ -119,7 +119,7 @@ export async function checkUserPermission(
   // Super admins have all permissions
   const isSuperAdmin = await hasRole(supabase, userId, 'super_admin');
   if (isSuperAdmin) {
-    console.log(`Super admin ${userId} granted permission: ${permission}`);
+    console.error(`Super admin ${userId} granted permission: ${permission}`);
     return true;
   }
 
@@ -127,13 +127,13 @@ export async function checkUserPermission(
   const role = await getPrimaryRole(supabase, userId, tenantId, userEmail);
   
   if (!role) {
-    console.log(`No role found for user ${userId}`);
+    console.error(`No role found for user ${userId}`);
     return false;
   }
 
   // Owner has all permissions
   if (role === 'owner') {
-    console.log(`Owner ${userId} granted permission: ${permission}`);
+    console.error(`Owner ${userId} granted permission: ${permission}`);
     return true;
   }
 
@@ -165,7 +165,7 @@ export async function checkUserPermission(
   const allowedPermissions = rolePermissions[role] || [];
   const hasPermission = allowedPermissions.includes(permission);
 
-  console.log(`User ${userId} (${role}) ${hasPermission ? 'granted' : 'denied'} permission: ${permission}`);
+  console.error(`User ${userId} (${role}) ${hasPermission ? 'granted' : 'denied'} permission: ${permission}`);
   return hasPermission;
 }
 

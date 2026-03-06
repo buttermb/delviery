@@ -1,10 +1,11 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const DeliveryUpdateSchema = z.object({
+  delivery_id: z.string().uuid(),
+  status: z.enum(['assigned', 'picked_up', 'in_transit', 'delivered', 'failed']),
+  location: z.string().optional(),
+  notes: z.string().optional(),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -18,21 +19,36 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     );
 
-    const { delivery_id, status, location, notes } = await req.json();
-
-    // Validate input
-    if (!delivery_id || !status) {
+    // Auth check
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const validStatuses = ['assigned', 'picked_up', 'in_transit', 'delivered', 'failed'];
-    if (!validStatuses.includes(status)) {
+    // Validate input with Zod
+    const parseResult = DeliveryUpdateSchema.safeParse(await req.json());
+    if (!parseResult.success) {
       return new Response(
-        JSON.stringify({ error: 'Invalid status' }),
+        JSON.stringify({ error: 'Invalid input', details: parseResult.error.flatten() }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const { delivery_id, status, location, notes } = parseResult.data;
+
+    // Tenant verification
+    const { data: tenantUser } = await supabaseClient
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!tenantUser?.tenant_id) {
+      return new Response(
+        JSON.stringify({ error: 'Tenant not found' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -50,8 +66,23 @@ serve(async (req) => {
       );
     }
 
+    // Verify order belongs to tenant
+    const { data: order } = await supabaseClient
+      .from('wholesale_orders')
+      .select('id')
+      .eq('id', delivery.order_id)
+      .eq('tenant_id', tenantUser.tenant_id)
+      .maybeSingle();
+
+    if (!order) {
+      return new Response(
+        JSON.stringify({ error: 'Not authorized for this delivery' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Update delivery record
-    const updateData: any = { status };
+    const updateData: Record<string, unknown> = { status };
     
     if (status === 'picked_up') updateData.picked_up_at = new Date().toISOString();
     if (status === 'delivered') updateData.delivered_at = new Date().toISOString();
@@ -65,14 +96,22 @@ serve(async (req) => {
 
     if (updateError) throw updateError;
 
-    // Update order status
-    const orderStatus = status === 'delivered' ? 'completed' : 
-                       status === 'failed' ? 'failed' : 'in_progress';
-    
-    await supabaseClient
-      .from('wholesale_orders')
-      .update({ status: orderStatus })
-      .eq('id', delivery.order_id);
+    // Update order status (aligned with wholesale order flow manager)
+    const orderStatusMap: Record<string, string> = {
+      'delivered': 'delivered',
+      'failed': 'cancelled',
+      'picked_up': 'shipped',
+      'in_transit': 'shipped',
+      'assigned': 'shipped',
+    };
+    const orderStatus = orderStatusMap[status] || null;
+
+    if (orderStatus) {
+      await supabaseClient
+        .from('wholesale_orders')
+        .update({ status: orderStatus })
+        .eq('id', delivery.order_id);
+    }
 
     // If delivered, update runner status to available
     if (status === 'delivered' || status === 'failed') {

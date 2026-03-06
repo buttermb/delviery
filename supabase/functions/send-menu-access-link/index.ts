@@ -1,10 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve, createClient, corsHeaders } from '../_shared/deps.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,10 +6,28 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Authenticate caller
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const { whitelistId, method = 'email' } = await req.json();
 
@@ -39,9 +51,53 @@ serve(async (req) => {
       .eq('id', whitelistId)
       .single();
 
-    if (whitelistError) throw whitelistError;
+    if (whitelistError || !whitelist) {
+      return new Response(
+        JSON.stringify({ error: 'Whitelist entry not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const menu = whitelist.disposable_menus;
+
+    // Verify the menu belongs to the caller's tenant
+    const { data: menuRecord } = await supabase
+      .from('disposable_menus')
+      .select('tenant_id')
+      .eq('id', menu.id)
+      .maybeSingle();
+
+    if (!menuRecord) {
+      return new Response(
+        JSON.stringify({ error: 'Menu not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify user belongs to the menu's tenant
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .eq('tenant_id', menuRecord.tenant_id)
+      .maybeSingle();
+
+    if (!tenantUser) {
+      // Fallback: check if user is the tenant owner
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('id')
+        .eq('id', menuRecord.tenant_id)
+        .eq('owner_email', user.email)
+        .maybeSingle();
+
+      if (!tenant) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden - menu does not belong to your tenant' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
     const accessUrl = `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovable.app')}/menu/${whitelist.unique_access_token}${
       menu.access_code_required ? '?code=XXXXX' : ''
     }`;
@@ -68,7 +124,7 @@ Your Team
 
     if (method === 'email' && whitelist.customer_email) {
       // Send email (placeholder - would integrate with email service)
-      console.log('Email notification:', {
+      console.error('Email notification:', {
         to: whitelist.customer_email,
         subject,
         message,
@@ -101,7 +157,7 @@ Your Team
         menu.access_code_required ? ' (Access code required)' : ''
       }`;
 
-      console.log('SMS notification:', {
+      console.error('SMS notification:', {
         to: whitelist.customer_phone,
         message: smsMessage,
       });
@@ -128,11 +184,11 @@ Your Team
     }
 
     throw new Error('Invalid method or missing contact information');
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error sending access link:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Internal server error' }),
+      {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }

@@ -151,7 +151,7 @@ If you didn't create an account with ${businessName}, please ignore this email.
       }
     } else {
       // Log email for development
-      console.log('Verification email (Klaviyo not configured):', {
+      console.error('Verification email (Klaviyo not configured):', {
         to: email,
         subject,
         code,

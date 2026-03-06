@@ -41,7 +41,7 @@ serve(async (req) => {
       .from("tenant_users")
       .select("tenant_id")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (!tenantUser) {
       throw new Error("Tenant not found for user");
@@ -52,7 +52,7 @@ serve(async (req) => {
       .from("accounts")
       .select("id")
       .eq("tenant_id", tenantUser.tenant_id)
-      .single();
+      .maybeSingle();
 
     if (!account) {
       throw new Error("Account not found");
@@ -63,9 +63,9 @@ serve(async (req) => {
       .from("account_settings")
       .select("integration_settings")
       .eq("account_id", account.id)
-      .single();
+      .maybeSingle();
 
-    const integrationSettings = settings?.integration_settings as Record<string, any> | null;
+    const integrationSettings = settings?.integration_settings as Record<string, unknown> | null;
     const tenantStripeSecretKey = integrationSettings?.stripe_secret_key;
 
     if (!tenantStripeSecretKey) {
@@ -80,7 +80,7 @@ serve(async (req) => {
 
     // Initialize Stripe with TENANT's credentials
     const stripe = new Stripe(tenantStripeSecretKey, {
-      apiVersion: "2023-10-16",
+      apiVersion: "2025-08-27.basil",
     });
 
     // Get or create customer
@@ -117,10 +117,10 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

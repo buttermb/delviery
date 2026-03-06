@@ -16,7 +16,7 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   socket.onopen = () => {
-    console.log("WebSocket connection established");
+    console.error("WebSocket connection established");
     socket.send(JSON.stringify({ type: "connected", message: "Real-time tracking active" }));
   };
 
@@ -98,7 +98,7 @@ serve(async (req) => {
   };
 
   socket.onclose = () => {
-    console.log("WebSocket connection closed");
+    console.error("WebSocket connection closed");
   };
 
   return response;

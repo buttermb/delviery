@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { format } from 'date-fns';
 import { showSuccessToast, showErrorToast } from '@/utils/toastHelpers';
@@ -69,8 +70,9 @@ const COLUMNS = [
 ];
 
 export function OrderKanban({ onViewDetails: _onViewDetails, onUpdate: _onUpdate }: OrderKanbanProps) {
+  const { tenant } = useTenantAdminAuth();
   const queryClient = useQueryClient();
-  const { data: orders = [], isLoading, refetch } = useMenuOrders();
+  const { data: orders = [], isLoading, refetch } = useMenuOrders(undefined, tenant?.id);
   const [selectedOrder, setSelectedOrder] = useState<MenuOrderItem | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [convertOrder, setConvertOrder] = useState<MenuOrderItem | null>(null);

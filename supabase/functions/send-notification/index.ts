@@ -7,7 +7,7 @@ const notificationSchema = z.object({
   type: z.enum(['order_status', 'order_cancelled', 'payment', 'inventory', 'system']),
   title: z.string().min(1).max(255),
   message: z.string().min(1).max(1000),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.unknown()).optional(),
   channels: z.array(z.enum(['database', 'email', 'push'])).default(['database']),
 });
 
@@ -35,7 +35,7 @@ serve(
       const body = await req.json();
       const notificationData = notificationSchema.parse(body);
 
-      const results: Record<string, any> = {};
+      const results: Record<string, unknown> = {};
 
       // Send to database (always)
       if (notificationData.channels.includes('database')) {
@@ -69,7 +69,7 @@ serve(
         if (user?.user?.email) {
           // In production, integrate with email service (SendGrid, Resend, etc.)
           // For now, just log
-          console.log('Email notification would be sent to:', user.user.email);
+          console.error('Email notification would be sent to:', user.user.email);
           results.email = { success: true, sent: false, note: 'Email service not configured' };
         } else {
           results.email = { error: 'User email not found' };
@@ -80,7 +80,7 @@ serve(
       if (notificationData.channels.includes('push') && notificationData.user_id) {
         // In production, integrate with FCM/APNS
         // For now, just log
-        console.log('Push notification would be sent to user:', notificationData.user_id);
+        console.error('Push notification would be sent to user:', notificationData.user_id);
         results.push = { success: true, sent: false, note: 'Push service not configured' };
       }
 

@@ -405,14 +405,16 @@ function SwipeableCartItem({
 }
 
 // Enhanced Cart Step
-function CartStep({ 
+function CartStep({
   onNext,
   onClose,
-  products
-}: { 
+  products,
+  maxOrder,
+}: {
   onNext: () => void;
   onClose: () => void;
   products?: Array<{ id: string; name: string; image_url?: string }>;
+  maxOrder?: number;
 }) {
   const cartItems = useMenuCartStore((state) => state.items);
   const removeItem = useMenuCartStore((state) => state.removeItem);
@@ -428,6 +430,8 @@ function CartStep({
   const totalItems = getItemCount();
   const serviceFee = totalAmount * 0.05; // 5% service fee
   const finalTotal = totalAmount + serviceFee - promoDiscount;
+
+  const exceedsMaxOrder = maxOrder != null && maxOrder > 0 && totalItems > maxOrder;
 
   const handleApplyPromo = () => {
     // Mock promo code validation
@@ -473,12 +477,12 @@ function CartStep({
               product={product}
               onUpdateQuantity={(qty) => {
                 if (qty <= 0) {
-                  removeItem(item.productId);
+                  removeItem(item.productId, item.weight);
                 } else {
-                  updateQuantity(item.productId, qty);
+                  updateQuantity(item.productId, qty, item.weight, maxOrder);
                 }
               }}
-              onRemove={() => removeItem(item.productId)}
+              onRemove={() => removeItem(item.productId, item.weight)}
             />
           );
         })}
@@ -519,6 +523,15 @@ function CartStep({
           </Button>
         </div>
 
+        {/* Max order warning */}
+        {exceedsMaxOrder && (
+          <Alert className="border-red-500/30 bg-red-50 dark:bg-red-950/30">
+            <AlertDescription className="text-red-600 dark:text-red-400 text-sm">
+              Maximum {maxOrder} items per order. Please remove {totalItems - maxOrder!} item{totalItems - maxOrder! !== 1 ? 's' : ''}.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Price breakdown */}
         <div className="space-y-2 text-sm">
           <div className="flex justify-between text-muted-foreground">
@@ -542,8 +555,9 @@ function CartStep({
         </div>
 
         {/* Continue button */}
-        <Button 
-          onClick={onNext} 
+        <Button
+          onClick={onNext}
+          disabled={exceedsMaxOrder}
           className="w-full h-14 text-lg font-semibold gap-2 bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90"
           size="lg"
         >
@@ -1713,7 +1727,7 @@ export function ModernCheckoutFlow({
   tenantId: tenantIdProp,
   accessToken: _accessToken,
   minOrder: _minOrder,
-  maxOrder: _maxOrder,
+  maxOrder,
   onOrderComplete,
   products
 }: CheckoutFlowProps) {
@@ -1837,6 +1851,13 @@ export function ModernCheckoutFlow({
   };
 
   const handleSubmit = async () => {
+    // Validate max order quantity before submission
+    const totalItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    if (maxOrder != null && maxOrder > 0 && totalItemCount > maxOrder) {
+      showErrorToast('Order Limit Exceeded', `Maximum ${maxOrder} items allowed per order. You have ${totalItemCount}.`);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -2018,10 +2039,11 @@ export function ModernCheckoutFlow({
               {/* Step Content */}
               <div className="flex-1 min-h-0">
                 {currentStep === 'cart' && (
-                  <CartStep 
-                    onNext={() => goToStep('details')} 
+                  <CartStep
+                    onNext={() => goToStep('details')}
                     onClose={() => onOpenChange(false)}
                     products={products}
+                    maxOrder={maxOrder}
                   />
                 )}
                 {currentStep === 'details' && (

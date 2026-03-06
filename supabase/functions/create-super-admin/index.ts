@@ -16,6 +16,52 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // --- AUTH CHECK: Verify caller is authenticated ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const jwt = authHeader.replace("Bearer ", "");
+    const { data: { user: callerUser }, error: callerAuthError } = await supabase.auth.getUser(jwt);
+
+    if (callerAuthError || !callerUser) {
+      console.error("Caller authentication failed:", callerAuthError);
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // --- AUTHZ CHECK: Verify caller is an existing super_admin ---
+    const { data: callerSuperAdmin, error: callerRoleError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callerUser.id)
+      .eq("role", "super_admin")
+      .maybeSingle();
+
+    if (callerRoleError || !callerSuperAdmin) {
+      // Also check super_admin_users table as fallback
+      const { data: callerSuperAdminUser, error: saError } = await supabase
+        .from("super_admin_users")
+        .select("id, email, status")
+        .eq("email", callerUser.email?.toLowerCase())
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (saError || !callerSuperAdminUser) {
+        console.error("Caller is not a super_admin:", callerUser.id);
+        return new Response(
+          JSON.stringify({ error: "Forbidden: super_admin role required" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     const { email, password, full_name } = await req.json();
 
     if (!email || !password) {
@@ -25,7 +71,35 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Creating super admin user: ${email}`);
+    // Password complexity validation for super admin accounts
+    const passwordErrors: string[] = [];
+    if (password.length < 12) {
+      passwordErrors.push("at least 12 characters");
+    }
+    if (!/[A-Z]/.test(password)) {
+      passwordErrors.push("at least one uppercase letter");
+    }
+    if (!/[a-z]/.test(password)) {
+      passwordErrors.push("at least one lowercase letter");
+    }
+    if (!/[0-9]/.test(password)) {
+      passwordErrors.push("at least one digit");
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password)) {
+      passwordErrors.push("at least one special character");
+    }
+    if (passwordErrors.length > 0) {
+      return new Response(
+        JSON.stringify({
+          error: "Password does not meet complexity requirements",
+          requirements: passwordErrors,
+          message: `Password must contain: ${passwordErrors.join(", ")}`,
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.error(`[create-super-admin] Creating super admin user: ${email}`);
 
     // Create auth user
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
@@ -44,7 +118,7 @@ serve(async (req) => {
     }
 
     const userId = authData.user.id;
-    console.log(`User created with ID: ${userId}`);
+    console.error(`[create-super-admin] User created with ID: ${userId}`);
 
     // Add super_admin role to user_roles
     const { error: roleError } = await supabase
@@ -64,7 +138,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Super admin role assigned to user ${userId}`);
+    console.error(`[create-super-admin] Super admin role assigned to user ${userId}`);
 
     return new Response(
       JSON.stringify({

@@ -19,9 +19,9 @@ serve(async (req) => {
 
     const { tenantId, reportType = 'full' } = await req.json();
 
-    console.log(`Generating ${reportType} compliance report for tenant ${tenantId}`);
+    console.error(`Generating ${reportType} compliance report for tenant ${tenantId}`);
 
-    const report: any = {
+    const report: Record<string, unknown> = {
       generated_at: new Date().toISOString(),
       tenant_id: tenantId,
       report_type: reportType,
@@ -126,8 +126,8 @@ serve(async (req) => {
 
     report.audit_summary.medical = {
       total_accesses_30d: medicalAccesses || 0,
-      by_type: medicalAccessByType?.reduce((acc: any, curr: any) => {
-        acc[curr.access_type] = (acc[curr.access_type] || 0) + 1;
+      by_type: medicalAccessByType?.reduce((acc: Record<string, number>, curr: Record<string, unknown>) => {
+        acc[String(curr.access_type)] = (acc[String(curr.access_type)] || 0) + 1;
         return acc;
       }, {}) || {},
       compliance: 'HIPAA - All access logged'
@@ -138,7 +138,7 @@ serve(async (req) => {
       .from('pii_access_audit')
       .select('id', { count: 'exact' })
       .gte('accessed_at', thirtyDaysAgo.toISOString());
-    
+
     const { data: piiAccessByType } = await supabaseClient
       .from('pii_access_audit')
       .select('access_type')
@@ -146,8 +146,8 @@ serve(async (req) => {
 
     report.audit_summary.pii = {
       total_accesses_30d: piiAccesses || 0,
-      by_type: piiAccessByType?.reduce((acc: any, curr: any) => {
-        acc[curr.access_type] = (acc[curr.access_type] || 0) + 1;
+      by_type: piiAccessByType?.reduce((acc: Record<string, number>, curr: Record<string, unknown>) => {
+        acc[String(curr.access_type)] = (acc[String(curr.access_type)] || 0) + 1;
         return acc;
       }, {}) || {},
       compliance: 'GDPR - All access logged'
@@ -224,7 +224,7 @@ serve(async (req) => {
       });
     }
 
-    console.log('Compliance report generated:', report);
+    console.error('Compliance report generated:', report);
 
     return new Response(
       JSON.stringify({ success: true, report }),

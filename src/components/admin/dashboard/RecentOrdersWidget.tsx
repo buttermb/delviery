@@ -11,7 +11,7 @@ import { FileText, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAccount } from '@/contexts/AccountContext';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { OrderLink } from '@/components/admin/cross-links';
 import { TruncatedText } from '@/components/shared/TruncatedText';
 import { queryKeys } from '@/lib/queryKeys';
@@ -27,12 +27,12 @@ export function RecentOrdersWidget() {
     }
     return path;
   };
-  const { account } = useAccount();
+  const { tenant } = useTenantAdminAuth();
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: queryKeys.dashboardWidgets.recentOrders(account?.id),
+    queryKey: queryKeys.dashboardWidgets.recentOrders(tenant?.id),
     queryFn: async () => {
-      if (!account?.id) return [];
+      if (!tenant?.id) return [];
 
       interface OrderRow {
         id: string;
@@ -53,13 +53,13 @@ export function RecentOrdersWidget() {
           created_at,
           wholesale_clients(business_name)
         `)
-        .eq('account_id', account.id)
+        .eq('account_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(5);
 
       return (data ?? []) as OrderRow[];
     },
-    enabled: !!account?.id,
+    enabled: !!tenant?.id,
     // Use real-time updates via useRealtimeSync instead of polling
     staleTime: 10000, // Allow 10s stale time for real-time updates
   });
@@ -133,7 +133,7 @@ export function RecentOrdersWidget() {
                     />
                   </div>
                   <TruncatedText
-                    text={`${order.wholesale_clients?.business_name || 'Client'} • ${format(new Date(order.created_at), 'MMM d, h:mm a')}`}
+                    text={`${order.wholesale_clients?.business_name || 'Client'} • ${order.created_at ? format(new Date(order.created_at), 'MMM d, h:mm a') : '—'}`}
                     className="text-sm text-muted-foreground"
                     maxWidthClass="max-w-[220px]"
                     as="div"

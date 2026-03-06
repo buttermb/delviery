@@ -14,9 +14,9 @@ interface CartItem {
 interface MenuCartStore {
   items: CartItem[];
   menuToken: string | null;
-  addItem: (item: Omit<CartItem, 'quantity'>) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (item: Omit<CartItem, 'quantity'>, maxQuantity?: number) => void;
+  removeItem: (productId: string, weight?: string) => void;
+  updateQuantity: (productId: string, quantity: number, weight?: string, maxQuantity?: number) => void;
   clearCart: () => void;
   setMenuToken: (token: string | null) => void;
   getTotal: () => number;
@@ -92,13 +92,23 @@ export const useMenuCartStore = create<MenuCartStore>()(
       items: [],
       menuToken: null,
 
-      addItem: (item) => {
+      addItem: (item, maxQuantity) => {
+        const currentCount = get().items.reduce((sum, i) => sum + i.quantity, 0);
+        if (maxQuantity != null && maxQuantity > 0 && currentCount >= maxQuantity) {
+          logger.warn('Max order quantity reached', { maxQuantity, currentCount });
+          return;
+        }
+
         const existing = get().items.find(i => i.productId === item.productId && i.weight === item.weight);
         if (existing) {
+          const newQty = existing.quantity + 1;
+          const cappedQty = (maxQuantity != null && maxQuantity > 0)
+            ? Math.min(newQty, maxQuantity - currentCount + existing.quantity)
+            : newQty;
           set((state) => ({
             items: state.items.map(i =>
               i.productId === item.productId && i.weight === item.weight
-                ? { ...i, quantity: i.quantity + 1 }
+                ? { ...i, quantity: cappedQty }
                 : i
             ),
           }));
@@ -109,21 +119,40 @@ export const useMenuCartStore = create<MenuCartStore>()(
         }
       },
 
-      removeItem: (productId) => {
+      removeItem: (productId, weight) => {
         set((state) => ({
-          items: state.items.filter(i => i.productId !== productId),
+          items: state.items.filter(i =>
+            !(i.productId === productId && (weight === undefined || i.weight === weight))
+          ),
         }));
       },
 
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (productId, quantity, weight, maxQuantity) => {
         if (quantity <= 0) {
-          get().removeItem(productId);
+          get().removeItem(productId, weight);
           return;
         }
+
+        // Calculate what the new total would be if we apply this quantity
+        const items = get().items;
+        const currentItem = items.find(
+          i => i.productId === productId && (weight === undefined || i.weight === weight)
+        );
+        const currentItemQty = currentItem?.quantity ?? 0;
+        const otherItemsTotal = items.reduce((sum, i) => sum + i.quantity, 0) - currentItemQty;
+        const cappedQty = (maxQuantity != null && maxQuantity > 0)
+          ? Math.min(quantity, maxQuantity - otherItemsTotal)
+          : quantity;
+
+        if (cappedQty <= 0) {
+          get().removeItem(productId, weight);
+          return;
+        }
+
         set((state) => ({
           items: state.items.map(i =>
-            i.productId === productId
-              ? { ...i, quantity }
+            i.productId === productId && (weight === undefined || i.weight === weight)
+              ? { ...i, quantity: cappedQty }
               : i
           ),
         }));

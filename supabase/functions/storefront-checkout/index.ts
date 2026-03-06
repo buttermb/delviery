@@ -881,7 +881,7 @@ serve(secureHeadersMiddleware(async (req) => {
       }
 
       try {
-        const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
+        const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-08-27.basil" });
 
         // Build Stripe line items from server-side product data
         const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = body.items.map((item) => {

@@ -35,30 +35,22 @@ serve(async (req) => {
     // Parse the webhook event with optional signature verification
     let event: Stripe.Event;
 
-    if (signature && webhookSecret) {
-      // Production: Verify signature using Stripe's constructEvent
-      try {
-        const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
-          apiVersion: "2024-06-20",
-        });
-        event = await stripe.webhooks.constructEventAsync(
-          body,
-          signature,
-          webhookSecret
-        );
-      } catch (_verifyError: unknown) {
-        return jsonResponse({ error: "Webhook signature verification failed" }, 401);
-      }
-    } else if (Deno.env.get("ALLOW_UNVERIFIED_WEBHOOKS") === "true") {
-      // Development/testing ONLY: Allow unverified webhooks
-      try {
-        event = JSON.parse(body) as Stripe.Event;
-      } catch (_parseError: unknown) {
-        return jsonResponse({ error: "Invalid JSON body" }, 400);
-      }
-    } else {
-      // Production without proper configuration
-      return jsonResponse({ error: "Webhook security not configured" }, 500);
+    if (!signature || !webhookSecret) {
+      return jsonResponse({ error: "Webhook signature and secret are required" }, 401);
+    }
+
+    // Always verify webhook signature — no bypass allowed
+    try {
+      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
+        apiVersion: "2025-08-27.basil",
+      });
+      event = await stripe.webhooks.constructEventAsync(
+        body,
+        signature,
+        webhookSecret
+      );
+    } catch (_verifyError: unknown) {
+      return jsonResponse({ error: "Webhook signature verification failed" }, 401);
     }
 
     // Handle checkout.session.completed

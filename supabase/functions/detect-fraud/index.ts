@@ -23,7 +23,7 @@ serve(async (req) => {
       throw new Error("User ID is required");
     }
 
-    const flags: any[] = [];
+    const flags: Record<string, unknown>[] = [];
 
     // Run fraud checks
     const velocityCheck = await checkVelocity(userId, supabaseClient);
@@ -73,16 +73,16 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Fraud detection error:", error);
     return new Response(
-      JSON.stringify({ error: error?.message || "Unknown error" }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
 
-async function checkVelocity(userId: string, supabase: any) {
+async function checkVelocity(userId: string, supabase: ReturnType<typeof createClient>) {
   const hourAgo = new Date(Date.now() - 3600000).toISOString();
   
   const { data: recentOrders, error } = await supabase
@@ -105,7 +105,7 @@ async function checkVelocity(userId: string, supabase: any) {
   return { flagged: false };
 }
 
-async function checkAddress(userId: string, supabase: any) {
+async function checkAddress(userId: string, supabase: ReturnType<typeof createClient>) {
   const { data: addresses } = await supabase
     .from("addresses")
     .select("*, risk_zone")
@@ -131,7 +131,7 @@ async function checkAddress(userId: string, supabase: any) {
   }
 
   // Check for high-risk zones
-  const highRiskAddresses = addresses.filter((a: any) => a.risk_zone === "red");
+  const highRiskAddresses = addresses.filter((a: Record<string, unknown>) => a.risk_zone === "red");
   if (highRiskAddresses.length > 0) {
     return {
       flagged: true,
@@ -144,7 +144,7 @@ async function checkAddress(userId: string, supabase: any) {
   return { flagged: false };
 }
 
-async function checkDeviceFingerprint(userId: string, supabase: any) {
+async function checkDeviceFingerprint(userId: string, supabase: ReturnType<typeof createClient>) {
   const { data: devices } = await supabase
     .from("device_fingerprints")
     .select("*")
@@ -155,7 +155,7 @@ async function checkDeviceFingerprint(userId: string, supabase: any) {
   }
 
   // Check for multiple accounts on same device
-  const multipleAccounts = devices.some((d: any) => d.multiple_accounts);
+  const multipleAccounts = devices.some((d: Record<string, unknown>) => d.multiple_accounts);
   if (multipleAccounts) {
     return {
       flagged: true,
@@ -178,7 +178,7 @@ async function checkDeviceFingerprint(userId: string, supabase: any) {
   return { flagged: false };
 }
 
-async function checkBehavior(userId: string, supabase: any) {
+async function checkBehavior(userId: string, supabase: ReturnType<typeof createClient>) {
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
@@ -215,7 +215,7 @@ async function checkBehavior(userId: string, supabase: any) {
   return { flagged: false };
 }
 
-function calculateRiskLevel(flags: any[]): string {
+function calculateRiskLevel(flags: Record<string, unknown>[]): string {
   if (flags.length === 0) return "low";
 
   const hasCritical = flags.some(f => f.severity === "critical");

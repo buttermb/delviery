@@ -19,13 +19,13 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 }
 
 // Send SMS notification via Twilio
-async function sendSMS(to: string, message: string, orderId: string, stage: number, supabase: any) {
+async function sendSMS(to: string, message: string, orderId: string, stage: number, supabase: ReturnType<typeof createClient>) {
   const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
   const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
 
   if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
-    console.log("Twilio not configured, skipping SMS");
+    console.error("Twilio not configured, skipping SMS");
     await supabase.from("notifications_log").insert({
       order_id: orderId,
       notification_stage: stage,

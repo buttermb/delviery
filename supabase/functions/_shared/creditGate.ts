@@ -192,17 +192,7 @@ async function getTenantFromRequest(
     }
   }
 
-  // Try to get tenant_id from request body
-  try {
-    const clonedReq = req.clone();
-    const body = await clonedReq.json();
-    if (body.tenant_id) {
-      return getTenantInfo(supabaseClient, body.tenant_id);
-    }
-  } catch {
-    // Body parsing failed, continue
-  }
-
+  // Never fall back to client-supplied tenant_id — if JWT auth fails, deny access
   return null;
 }
 

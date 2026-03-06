@@ -16,9 +16,26 @@ export function TrialExpirationBanner({
     hasPaymentMethod,
     trialEndsAt: _trialEndsAt
 }: TrialExpirationBannerProps) {
-    const [dismissed, setDismissed] = useState(false);
     const navigate = useNavigate();
     const { tenant } = useTenantAdminAuth();
+
+    const dismissKey = `trial_banner_dismissed_${tenant?.id ?? ''}`;
+    const [dismissed, setDismissed] = useState(() => {
+        try {
+            return localStorage.getItem(dismissKey) === 'true';
+        } catch {
+            return false;
+        }
+    });
+
+    const handleDismiss = () => {
+        try {
+            localStorage.setItem(dismissKey, 'true');
+        } catch {
+            // Ignore localStorage errors
+        }
+        setDismissed(true);
+    };
 
     // Don't show if dismissed or if payment method already added
     if (dismissed || hasPaymentMethod) return null;
@@ -79,7 +96,7 @@ export function TrialExpirationBanner({
                     </Button>
                 </AlertDescription>
                 <button
-                    onClick={() => setDismissed(true)}
+                    onClick={handleDismiss}
                     className="absolute top-3 right-3 text-foreground/50 hover:text-foreground"
                     aria-label="Dismiss"
                 >

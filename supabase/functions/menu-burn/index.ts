@@ -85,7 +85,7 @@ serve(async (req) => {
       .select('*')
       .eq('id', menu_id)
       .eq('tenant_id', tenantId)
-      .single();
+      .maybeSingle();
 
     if (fetchError || !menu) {
       return new Response(
@@ -152,7 +152,7 @@ serve(async (req) => {
       });
     }
 
-    const response: any = { success: true, burn_type };
+    const response: Record<string, unknown> = { success: true, burn_type };
 
     // Get whitelist entries for auto-reinvite
     const { data: whitelistEntries } = await supabase
@@ -192,6 +192,7 @@ serve(async (req) => {
       const { data: newMenu, error: createError } = await supabase
         .from('disposable_menus')
         .insert({
+          tenant_id: tenantId,
           name: menu.name + ' (Regenerated)',
           access_code: newAccessCode,
           access_code_hash: newAccessCodeHash,
@@ -229,10 +230,10 @@ serve(async (req) => {
         }
 
         // Auto-reinvite customers if requested
-        const customersToNotify: any[] = [];
+        const customersToNotify: Record<string, unknown>[] = [];
 
         if (auto_regenerate && migrate_customers && whitelistEntries && whitelistEntries.length > 0) {
-          console.log(`Auto-reinviting ${whitelistEntries.length} customers`);
+          console.error(`[MENU-BURN] Auto-reinviting ${whitelistEntries.length} customers`);
 
           for (const entry of whitelistEntries) {
             // Create new access token
@@ -311,10 +312,10 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Error logged to Supabase internal logs only, no token exposure
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

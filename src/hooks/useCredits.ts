@@ -149,22 +149,24 @@ function getWarningMessage(threshold: number, balance: number): { title: string;
   }
 }
 
-// Safe wrapper to get tenant and session
+// Safe wrapper to get tenant and auth state
 // Note: useTenantAdminAuth must be called unconditionally per React hooks rules
 function useTenantSafe() {
   const authContext = useTenantAdminAuth();
-  // Return tenant from context, or null if context is unavailable
-  return { tenant: authContext?.tenant ?? null, session: null };
+  return {
+    tenant: authContext?.tenant ?? null,
+    isAuthenticated: authContext?.isAuthenticated ?? false,
+    accessToken: authContext?.accessToken ?? null,
+  };
 }
 
 // Fetch credits balance from edge function
-async function fetchCreditsBalance(tenantId: string): Promise<CreditsBalanceResponse> {
-  const { data, error } = await supabase.functions.invoke('credits-balance', {
-    body: { tenant_id: tenantId },
-  });
+// Note: tenant_id is derived server-side from the auth token, not sent by the client.
+async function fetchCreditsBalance(): Promise<CreditsBalanceResponse> {
+  const { data, error } = await supabase.functions.invoke('credits-balance');
 
   if (error) {
-    logger.error('Failed to fetch credits balance', error, { tenantId });
+    logger.error('Failed to fetch credits balance', error);
     throw error;
   }
 
@@ -172,7 +174,7 @@ async function fetchCreditsBalance(tenantId: string): Promise<CreditsBalanceResp
 }
 
 export function useCredits(): UseCreditsReturn {
-  const { tenant, session } = useTenantSafe();
+  const { tenant, isAuthenticated, accessToken } = useTenantSafe();
   const queryClient = useQueryClient();
   const [showWarning, setShowWarning] = useState(false);
   // Track which warning thresholds have been shown to avoid duplicates
@@ -182,8 +184,6 @@ export function useCredits(): UseCreditsReturn {
   const [recentOperations, setRecentOperations] = useState<number[]>([]);
 
   const tenantId = tenant?.id;
-  // Only fetch credits when both tenant AND session exist (user is authenticated)
-  const isAuthenticated = !!session?.access_token;
 
   // Fetch credit balance from credits-balance edge function
   const {
@@ -193,8 +193,8 @@ export function useCredits(): UseCreditsReturn {
     refetch,
   } = useQuery({
     queryKey: queryKeys.credits.balance(tenantId),
-    queryFn: () => fetchCreditsBalance(tenantId!),
-    enabled: !!tenantId && isAuthenticated,
+    queryFn: () => fetchCreditsBalance(),
+    enabled: !!tenantId && isAuthenticated && !!accessToken,
     staleTime: STALE_TIME_MS,
     refetchInterval: REFETCH_INTERVAL_MS,
   });
@@ -237,7 +237,8 @@ export function useCredits(): UseCreditsReturn {
   }, [tenantId, queryClient]);
 
   // Derived values
-  const balance = creditData?.balance ?? FREE_TIER_MONTHLY_CREDITS;
+  // Default to 0 during loading so credit-gated features remain locked until actual balance is known
+  const balance = creditData?.balance ?? 0;
   const lifetimeStats: LifetimeStats = creditData?.lifetimeStats ?? DEFAULT_LIFETIME_STATS;
   const subscription: SubscriptionInfo = creditData?.subscription ?? DEFAULT_SUBSCRIPTION;
   

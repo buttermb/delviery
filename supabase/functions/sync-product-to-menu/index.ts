@@ -1,10 +1,9 @@
 import { serve, createClient, corsHeaders, z } from '../_shared/deps.ts';
 import { withZenProtection } from '../_shared/zen-firewall.ts';
 
-// Request validation schema
+// Request validation schema — tenant_id derived from JWT, not from request body
 const RequestSchema = z.object({
   product_id: z.string().uuid(),
-  tenant_id: z.string().uuid(),
   menu_ids: z.array(z.string().uuid()).optional(),
 });
 
@@ -30,6 +29,52 @@ serve(withZenProtection(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Authenticate caller
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Derive tenant_id from JWT user — never trust request body for tenant_id
+    const { data: tenantUser } = await supabase
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    let tenant_id: string | null = tenantUser?.tenant_id ?? null;
+
+    if (!tenant_id && user.email) {
+      // Fallback: check if user is a tenant owner
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('id')
+        .eq('owner_email', user.email)
+        .maybeSingle();
+
+      tenant_id = tenant?.id ?? null;
+    }
+
+    if (!tenant_id) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden - tenant not found for user' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Validate request body
     const rawBody = await req.json();
     const validationResult = RequestSchema.safeParse(rawBody);
@@ -47,7 +92,7 @@ serve(withZenProtection(async (req) => {
       );
     }
 
-    const { product_id, tenant_id, menu_ids } = validationResult.data;
+    const { product_id, menu_ids } = validationResult.data;
 
     // Get product to check visibility and stock
     const { data: product, error: productError } = await supabase

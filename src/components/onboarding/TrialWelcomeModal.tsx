@@ -158,7 +158,7 @@ export function TrialWelcomeModal({ tenantSlug, businessName, onClose }: TrialWe
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Crown className="w-5 h-5 text-amber-500" />
-              <span className="font-semibold">{tierDisplayNames[subscriptionTier]} Plan</span>
+              <span className="font-semibold">{tierDisplayNames[subscriptionTier] ?? subscriptionTier.charAt(0).toUpperCase() + subscriptionTier.slice(1)} Plan</span>
             </div>
             {isTrial && (
               <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">

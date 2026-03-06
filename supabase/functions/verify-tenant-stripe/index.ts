@@ -62,14 +62,14 @@ serve(async (req) => {
           status: 200 
         }
       );
-    } catch (stripeError: any) {
+    } catch (stripeError: unknown) {
       console.error('Stripe API test failed:', stripeError);
-      
+
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           configured: true,
           valid: false,
-          error: `Stripe API test failed: ${stripeError.message || 'Invalid API key or network error'}`
+          error: `Stripe API test failed: ${stripeError instanceof Error ? stripeError.message : 'Invalid API key or network error'}`
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

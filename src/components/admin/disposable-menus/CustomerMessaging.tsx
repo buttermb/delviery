@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useMenuOrders } from '@/hooks/useDisposableMenus';
+import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { toast } from 'sonner';
 import { useFreeTierLimits } from '@/hooks/useFreeTierLimits';
 import { formatPhoneNumber } from '@/lib/formatters';
@@ -28,7 +29,8 @@ import {
 } from '@/components/ui/select';
 
 export const CustomerMessaging = () => {
-  const { data: orders } = useMenuOrders();
+  const { tenant } = useTenantAdminAuth();
+  const { data: orders } = useMenuOrders(undefined, tenant?.id);
   const [sending, setSending] = useState(false);
   const { checkLimit, recordAction, limitsApply } = useFreeTierLimits();
   const [filterStatus, setFilterStatus] = useState<string>('all');
