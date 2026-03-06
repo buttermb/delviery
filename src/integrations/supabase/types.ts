@@ -15625,7 +15625,7 @@ export type Database = {
           max_speed: number
           points_count: number
           total_distance: number
-          total_duration: unknown
+          total_duration: string
         }[]
       }
       get_store_by_encrypted_token: {
