@@ -94,11 +94,13 @@ export interface ThemePreset {
 /**
  * Pre-built theme presets
  *
- * 4 themes with CSS variables:
+ * 6 themes with CSS variables:
  * 1. Dark Mode - #0a0a0a bg, #22c55e primary, neon accents
  * 2. Minimalist - #ffffff bg, #0f172a primary, clean
  * 3. Strain Focused - #fefce8 bg, #65a30d primary, nature
  * 4. Luxury - #0c0a09 bg, #d4af37 gold primary
+ * 5. Professional - #ffffff bg, #1e3a5f primary, blue accents
+ * 6. Landing Page - #fff7ed bg, #ea580c primary, warm orange
  */
 export const THEME_PRESETS: ThemePreset[] = [
     {
@@ -319,6 +321,116 @@ export const THEME_PRESETS: ThemePreset[] = [
             '--storefront-border': '#292524',
             '--storefront-radius': '2px',
             '--storefront-shadow': '0 25px 60px rgba(0, 0, 0, 0.5)',
+        },
+    },
+    {
+        id: 'professional',
+        name: 'Professional',
+        description: 'Trustworthy blue-accented theme for established cannabis businesses',
+        tagline: 'Confidence through clarity',
+        thumbnail: '/themes/professional.png',
+        darkMode: false,
+        colors: {
+            primary: '#1e3a5f', // Navy
+            primaryForeground: '#ffffff',
+            secondary: '#f8fafc', // Slate 50
+            secondaryForeground: '#0f172a',
+            accent: '#2563eb', // Blue 600
+            accentForeground: '#ffffff',
+            background: '#ffffff',
+            foreground: '#0f172a',
+            muted: '#f1f5f9',
+            mutedForeground: '#5b6f82',
+            card: '#f8fafc',
+            cardForeground: '#0f172a',
+            border: '#e2e8f0',
+        },
+        typography: {
+            fontFamily: 'Inter, system-ui, sans-serif',
+            headingFamily: 'DM Sans, Inter, sans-serif',
+            headingWeight: '700',
+            bodySize: '16px',
+            headingSize: {
+                h1: '3rem',
+                h2: '2.25rem',
+                h3: '1.5rem',
+            },
+            fonts: {
+                heading: 'DM Sans',
+                body: 'Inter',
+            },
+        },
+        layout: {
+            borderRadius: '10px',
+            containerWidth: '1400px',
+            sectionPadding: '5rem',
+            cardShadow: '0 2px 8px rgba(30, 58, 95, 0.08)',
+            buttonStyle: 'solid',
+        },
+        cssVariables: {
+            '--storefront-bg': '#ffffff',
+            '--storefront-text': '#0f172a',
+            '--storefront-primary': '#1e3a5f',
+            '--storefront-accent': '#2563eb',
+            '--storefront-card-bg': '#f8fafc',
+            '--storefront-border': '#e2e8f0',
+            '--storefront-radius': '10px',
+            '--storefront-shadow': '0 2px 8px rgba(30, 58, 95, 0.08)',
+        },
+    },
+    {
+        id: 'landing-page',
+        name: 'Landing Page',
+        description: 'Warm, conversion-focused theme for marketing campaigns and product drops',
+        tagline: 'Drive action with warmth',
+        thumbnail: '/themes/landing-page.png',
+        darkMode: false,
+        colors: {
+            primary: '#ea580c', // Orange 600
+            primaryForeground: '#ffffff',
+            secondary: '#fff7ed', // Orange 50
+            secondaryForeground: '#1c1917',
+            accent: '#ff6b35', // Warm orange
+            accentForeground: '#ffffff',
+            background: '#fff7ed', // Warm off-white
+            foreground: '#1c1917',
+            muted: '#ffedd5',
+            mutedForeground: '#78716c',
+            card: '#ffffff',
+            cardForeground: '#1c1917',
+            border: '#fed7aa',
+        },
+        typography: {
+            fontFamily: 'Inter, system-ui, sans-serif',
+            headingFamily: 'Outfit, Inter, sans-serif',
+            headingWeight: '800',
+            bodySize: '16px',
+            headingSize: {
+                h1: '3.5rem',
+                h2: '2.5rem',
+                h3: '1.75rem',
+            },
+            fonts: {
+                heading: 'Outfit',
+                body: 'Inter',
+            },
+        },
+        layout: {
+            borderRadius: '12px',
+            containerWidth: '1200px',
+            sectionPadding: '6rem',
+            cardShadow: '0 8px 30px rgba(234, 88, 12, 0.1)',
+            buttonStyle: 'gradient',
+        },
+        cssVariables: {
+            '--storefront-bg': '#fff7ed',
+            '--storefront-text': '#1c1917',
+            '--storefront-primary': '#ea580c',
+            '--storefront-accent': '#ff6b35',
+            '--storefront-card-bg': '#ffffff',
+            '--storefront-border': '#fed7aa',
+            '--storefront-radius': '12px',
+            '--storefront-shadow': '0 8px 30px rgba(234, 88, 12, 0.1)',
         },
     },
 ];

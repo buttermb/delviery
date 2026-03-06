@@ -167,7 +167,7 @@ export const PRESET_PACKS: PresetPack[] = [
         name: 'Professional',
         description: 'Complete store with features and product showcase',
         tagline: 'Everything you need to succeed.',
-        themeId: 'minimalist',
+        themeId: 'professional',
         templateId: 'standard',
         category: 'professional',
         recommendedFor: ['established stores', 'multi-location', 'brands'],
@@ -187,9 +187,9 @@ export const PRESET_PACKS: PresetPack[] = [
             showFAQ: false,
         },
         defaultContent: {
-            heroHeadline: 'Your Trusted Source',
-            heroSubheadline: 'Premium products. Expert service. Unmatched quality.',
-            heroCtaText: 'Explore Collection',
+            heroHeadline: 'Your Trusted Cannabis Partner',
+            heroSubheadline: 'Lab-tested products from licensed cultivators. Same-day delivery available.',
+            heroCtaText: 'Explore Products',
             heroCtaLink: '/shop',
         },
     },
@@ -218,8 +218,8 @@ export const PRESET_PACKS: PresetPack[] = [
             showFAQ: false,
         },
         defaultContent: {
-            heroHeadline: 'Craft Cannabis',
-            heroSubheadline: 'Grown with care. Curated for you.',
+            heroHeadline: 'Farm-Fresh Cannabis',
+            heroSubheadline: 'Sustainably grown. Hand-trimmed. From our farms to your door.',
             heroCtaText: 'Shop Strains',
             heroCtaLink: '/shop',
         },
@@ -260,7 +260,7 @@ export const PRESET_PACKS: PresetPack[] = [
         name: 'Landing Page',
         description: 'Conversion-focused design for marketing campaigns',
         tagline: 'Convert visitors to customers.',
-        themeId: 'dark-mode',
+        themeId: 'landing-page',
         templateId: 'landing',
         category: 'premium',
         recommendedFor: ['campaigns', 'launches', 'promotions'],
@@ -281,8 +281,8 @@ export const PRESET_PACKS: PresetPack[] = [
         },
         defaultContent: {
             announcementBanner: 'Limited Time: Free Delivery on Orders $50+',
-            heroHeadline: 'Spring Collection',
-            heroSubheadline: 'New strains. New experiences. Available now.',
+            heroHeadline: 'Spring Drop is Here',
+            heroSubheadline: 'Limited edition strains. First 100 orders get free delivery.',
             heroCtaText: 'Shop the Drop',
             heroCtaLink: '/shop',
         },
@@ -385,17 +385,27 @@ function getSectionDefaultContent(type: string, preset: PresetPack): Record<stri
                 cta_secondary_link: '/about',
                 trust_badges: true,
             };
-        case 'features':
+        case 'features': {
+            const theme = getPresetTheme(preset);
+            const isProTheme = theme?.id === 'professional';
             return {
                 heading_small: 'Why Choose Us',
-                heading_large: 'The Difference',
-                features: [
-                    { icon: 'clock', title: 'Fast Delivery', description: 'Same-day delivery available.' },
-                    { icon: 'shield', title: 'Lab Tested', description: 'Every product verified for quality.' },
-                    { icon: 'lock', title: 'Discreet', description: 'Unmarked packaging guaranteed.' },
-                    { icon: 'star', title: 'Premium Selection', description: 'Only the best strains.' },
-                ],
+                heading_large: isProTheme ? 'Built on Trust' : 'The Difference',
+                features: isProTheme
+                    ? [
+                        { icon: 'shield', title: 'Licensed Products', description: 'Every item sourced from licensed cultivators.' },
+                        { icon: 'flask', title: 'Lab Tested', description: 'Third-party tested for purity and potency.' },
+                        { icon: 'truck', title: 'Same-Day Delivery', description: 'Order before 4 PM for same-day service.' },
+                        { icon: 'lock', title: 'Secure Payments', description: 'Encrypted transactions. Your data stays safe.' },
+                    ]
+                    : [
+                        { icon: 'clock', title: 'Fast Delivery', description: 'Same-day delivery available.' },
+                        { icon: 'shield', title: 'Lab Tested', description: 'Every product verified for quality.' },
+                        { icon: 'lock', title: 'Discreet', description: 'Unmarked packaging guaranteed.' },
+                        { icon: 'star', title: 'Premium Selection', description: 'Only the best strains.' },
+                    ],
             };
+        }
         case 'product_grid':
             return {
                 heading: 'Shop Collection',
@@ -463,13 +473,24 @@ function getSectionDefaultStyles(type: string, theme?: ThemePreset): Record<stri
     const isDark = theme?.darkMode ?? false;
 
     switch (type) {
-        case 'hero':
+        case 'hero': {
+            // Theme-specific hero gradients matching Paper designs
+            const gradients: Record<string, [string, string]> = {
+                'dark-mode': ['#000000', '#022c22'],
+                'minimalist': ['#f8fafc', '#e2e8f0'],
+                'professional': ['#1e3a5f', '#2563eb'],
+                'strain-focused': ['#365314', '#4d7c0f'],
+                'luxury': ['#0c0a09', '#1c1917'],
+                'landing-page': ['#ea580c', '#ff6b35'],
+            };
+            const [gradStart, gradEnd] = gradients[theme?.id || ''] || (isDark ? ['#000000', '#022c22'] : ['#f8fafc', '#e2e8f0']);
             return {
-                background_gradient_start: isDark ? '#000000' : '#f8fafc',
-                background_gradient_end: isDark ? '#022c22' : '#e2e8f0',
-                text_color: colors.foreground,
+                background_gradient_start: gradStart,
+                background_gradient_end: gradEnd,
+                text_color: isDark || theme?.id === 'professional' ? '#ffffff' : colors.foreground,
                 accent_color: colors.accent,
             };
+        }
         case 'features':
             return {
                 background_color: isDark ? '#171717' : '#f9fafb',
