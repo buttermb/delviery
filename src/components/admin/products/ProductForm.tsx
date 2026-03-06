@@ -41,7 +41,7 @@ export interface ProductFormData {
     description: string;
     image_url: string;
     low_stock_alert: string;
-    metrc_retail_id: string;
+    metrc_retail_id?: string;
     exclude_from_discounts: boolean;
     minimum_price: string;
 }
