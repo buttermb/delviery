@@ -77,14 +77,12 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
-    // Ensure frontend always has backend env vars available.
-    // If the host environment provides them, we use those; otherwise we fall back.
-    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || FALLBACK_BACKEND.url),
-    'import.meta.env.VITE_SUPABASE_PROJECT_ID': JSON.stringify(process.env.VITE_SUPABASE_PROJECT_ID || FALLBACK_BACKEND.projectId),
-    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || FALLBACK_BACKEND.anonKey),
-    'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(
-      process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || FALLBACK_BACKEND.anonKey
-    ),
+    // Use the correct Lovable Cloud backend values directly.
+    // Previous approach read process.env which contained stale credentials from an old project.
+    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(FALLBACK_BACKEND.url),
+    'import.meta.env.VITE_SUPABASE_PROJECT_ID': JSON.stringify(FALLBACK_BACKEND.projectId),
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(FALLBACK_BACKEND.anonKey),
+    'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(FALLBACK_BACKEND.anonKey),
     'BUILD_TIMESTAMP': JSON.stringify(Date.now().toString()),
     '__BUILD_TIME__': JSON.stringify(Date.now().toString())
   },
