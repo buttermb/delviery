@@ -1,6 +1,6 @@
 /**
  * Top Products Widget
- * Displays best-selling products
+ * Displays best-selling products from order_items
  */
 
 import { Card } from '@/components/ui/card';
@@ -11,11 +11,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { logger } from '@/lib/logger';
-import { DASHBOARD_QUERY_CONFIG } from '@/lib/react-query-config';
-import { formatWeight } from '@/lib/utils/formatWeight';
+import { formatCurrency } from '@/lib/formatters';
 import { useNavigate, useParams } from 'react-router-dom';
 import { subDays } from 'date-fns';
-import { ProductLink } from '@/components/admin/cross-links';
 import { queryKeys } from '@/lib/queryKeys';
 
 interface TopProduct {
@@ -40,91 +38,60 @@ export function TopProductsWidget() {
 
   const { data: topProducts, isLoading } = useQuery({
     queryKey: queryKeys.dashboardWidgets.topProducts(tenant?.id),
-    queryFn: async () => {
+    queryFn: async (): Promise<TopProduct[]> => {
       if (!tenant?.id) return [];
 
       const last30Days = subDays(new Date(), 30);
 
-      // Get order items from completed orders
+      // Get completed/delivered orders for this tenant
       const { data: orders, error: ordersError } = await supabase
-        .from('wholesale_orders')
-        .select('id, created_at, status')
-        .eq('account_id', tenant.id)
-        .eq('status', 'completed')
+        .from('orders')
+        .select('id')
+        .eq('tenant_id', tenant.id)
+        .in('status', ['completed', 'delivered'])
         .gte('created_at', last30Days.toISOString());
 
-      if (ordersError) logger.error('Failed to fetch wholesale orders for top products', ordersError, { component: 'TopProductsWidget' });
+      if (ordersError) {
+        logger.error('Failed to fetch orders for top products', ordersError, { component: 'TopProductsWidget' });
+        return [];
+      }
 
       if (!orders || orders.length === 0) return [];
 
-      interface OrderRow {
-        id: string;
-        created_at: string;
-        status: string;
-      }
+      const orderIds = orders.map((o) => o.id);
 
-      const orderIds = (orders as OrderRow[]).map((o) => o.id);
-
-      // Get order items
-      const { data: orderItems, error: orderItemsError } = await supabase
-        .from('wholesale_order_items')
-        .select('product_id, quantity_lbs, unit_price')
+      // Get order items — columns: product_id, product_name, quantity, price
+      const { data: orderItems, error: itemsError } = await supabase
+        .from('order_items')
+        .select('product_id, product_name, quantity, price')
         .in('order_id', orderIds);
 
-      if (orderItemsError) logger.error('Failed to fetch order items for top products', orderItemsError, { component: 'TopProductsWidget' });
+      if (itemsError) {
+        logger.error('Failed to fetch order items for top products', itemsError, { component: 'TopProductsWidget' });
+        return [];
+      }
 
       if (!orderItems || orderItems.length === 0) return [];
 
       // Aggregate by product
       const productMap = new Map<string, TopProduct>();
 
-      interface OrderItemRow {
-        product_id: string;
-        quantity_lbs: number | null;
-        unit_price: number | null;
-      }
-
-      (orderItems as unknown as OrderItemRow[]).forEach((item: OrderItemRow) => {
+      for (const item of orderItems) {
         const productId = item.product_id;
         if (!productMap.has(productId)) {
           productMap.set(productId, {
             product_id: productId,
-            product_name: `Product ${productId.slice(0, 8)}`,
+            product_name: item.product_name || `Product ${productId.slice(0, 8)}`,
             total_quantity: 0,
             total_value: 0,
             order_count: 0,
           });
         }
 
-        const product = productMap.get(productId);
-        if (!product) return;
-        product.total_quantity += Number(item.quantity_lbs || 0);
-        product.total_value +=
-          Number(item.quantity_lbs || 0) * Number(item.unit_price || 0);
+        const product = productMap.get(productId)!;
+        product.total_quantity += Number(item.quantity || 0);
+        product.total_value += Number(item.quantity || 0) * Number(item.price || 0);
         product.order_count += 1;
-      });
-
-      // Get product names
-      const productIds = Array.from(productMap.keys());
-      const { data: products, error: productsError } = await supabase
-        .from('products')
-        .select('id, name')
-        .in('id', productIds);
-
-      if (productsError) logger.error('Failed to fetch product names for top products', productsError, { component: 'TopProductsWidget' });
-
-      interface ProductRow {
-        id: string;
-        name: string;
-      }
-
-      if (products) {
-        (products as ProductRow[]).forEach((product) => {
-          const topProduct = productMap.get(product.id);
-          if (topProduct) {
-            topProduct.product_name = product.name;
-          }
-        });
       }
 
       // Sort by total value and take top 5
@@ -133,21 +100,24 @@ export function TopProductsWidget() {
         .slice(0, 5);
     },
     enabled: !!tenant?.id,
-    ...DASHBOARD_QUERY_CONFIG,
+    staleTime: 60 * 1000,
   });
+
+  // Find max value for bar proportions
+  const maxValue = topProducts?.reduce((max, p) => Math.max(max, p.total_value), 0) ?? 1;
 
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
+        <h3 className="text-base font-semibold flex items-center gap-2">
           <Package className="h-5 w-5" />
           Top Products
         </h3>
         <button
-          onClick={() => navigate(getFullPath('/admin/analytics/comprehensive'))}
-          className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
+          onClick={() => navigate(getFullPath('/admin/inventory-hub'))}
+          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
         >
-          View All
+          Full report
           <ArrowRight className="h-3 w-3" />
         </button>
       </div>
@@ -155,13 +125,11 @@ export function TopProductsWidget() {
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-3 flex-1">
-                <Skeleton className="w-8 h-8 rounded-full" />
-                <div className="flex-1 space-y-1">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="w-6 h-6 rounded-full" />
+              <div className="flex-1 space-y-1">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-2 w-full rounded-full" />
               </div>
               <Skeleton className="h-4 w-16" />
             </div>
@@ -170,52 +138,33 @@ export function TopProductsWidget() {
       ) : topProducts && topProducts.length > 0 ? (
         <div className="space-y-3">
           {topProducts.map((product, index) => (
-            <div
-              key={product.product_id}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              onClick={() => navigate(getFullPath(`/admin/inventory/products?product=${product.product_id}`))}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(getFullPath(`/admin/inventory/products?product=${product.product_id}`)); } }}
-            >
-              <div className="flex items-center gap-3 flex-1">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
-                  {index + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">
-                    <ProductLink
-                      productId={product.product_id}
-                      productName={product.product_name}
-                    />
-                  </div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-2">
-                    <span>{formatWeight(product.total_quantity)}</span>
-                    <span>•</span>
-                    <span>{product.order_count} orders</span>
-                  </div>
+            <div key={product.product_id} className="flex items-center gap-3">
+              <span className="text-sm font-bold text-muted-foreground w-5 text-right shrink-0">
+                {index + 1}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium truncate">{product.product_name}</div>
+                <div className="h-1.5 rounded-full bg-muted mt-1 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-emerald-500"
+                    style={{ width: `${Math.max(5, (product.total_value / maxValue) * 100)}%` }}
+                  />
                 </div>
               </div>
-              <div className="text-right">
-                <div className="font-semibold">${product.total_value.toFixed(2)}</div>
-                <Badge variant="secondary" className="mt-1">
-                  <TrendingUp className="h-2 w-2 mr-1" />
-                  Top
-                </Badge>
-              </div>
+              <span className="text-sm font-semibold tabular-nums shrink-0">
+                {formatCurrency(product.total_value)}
+              </span>
             </div>
           ))}
         </div>
       ) : (
-        <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+        <div className="h-[180px] flex items-center justify-center text-muted-foreground">
           <div className="text-center">
             <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No product data</p>
-            <p className="text-xs mt-1">Complete some orders to see top products</p>
+            <p className="text-sm">No product data yet</p>
           </div>
         </div>
       )}
     </Card>
   );
 }
-
