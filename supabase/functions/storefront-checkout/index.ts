@@ -737,20 +737,6 @@ serve(secureHeadersMiddleware(async (req) => {
     // 7b. Fetch Telegram contact link for confirmation page (if configured)
     // ------------------------------------------------------------------
     let telegramLink: string | null = null;
-    const cachedSettings = (store as Record<string, unknown>)._acctSettings as Record<string, unknown> | undefined;
-    if (cachedSettings) {
-      const notifSettings = cachedSettings.notification_settings as Record<string, unknown> | null;
-      telegramLink = (notifSettings?.telegram_customer_link as string) || null;
-    } else if (tenantAccount) {
-    let telegramButtonLabel: string | null = null;
-    if (tenantAccount) {
-      const { data: acctSettings } = await supabase
-        .from("account_settings")
-        .select("notification_settings")
-        .eq("account_id", tenantAccount.id)
-        .maybeSingle();
-      const notifSettings = acctSettings?.notification_settings as Record<string, unknown> | null;
-      telegramLink = (notifSettings?.telegram_customer_link as string) || null;
     let telegramButtonLabel: string | null = null;
     if (tenantAccount) {
       const { data: acctSettings } = await supabase
@@ -770,7 +756,6 @@ serve(secureHeadersMiddleware(async (req) => {
         // Fallback to legacy telegram_video_link field
         telegramLink = (acctSettings?.telegram_video_link as string) || null;
       }
-      telegramButtonLabel = (notifSettings?.telegram_button_label as string) || null;
     }
 
     const result: Record<string, unknown> = {
