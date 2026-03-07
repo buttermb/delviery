@@ -29,11 +29,7 @@ import { serve, createClient, corsHeaders, z } from "../_shared/deps.ts";
 import { secureHeadersMiddleware } from '../_shared/secure-headers.ts';
 import { createLogger } from '../_shared/logger.ts';
 import { checkRateLimit } from '../_shared/rateLimiting.ts';
-import { hashPassword } from '../_shared/password.ts';
-import { signJWT } from '../_shared/jwt.ts';
-import { checkRateLimit, getRateLimitHeaders, RATE_LIMITS } from '../_shared/rateLimiting.ts';
-import { getClientIP } from '../_shared/bruteForceProtection.ts';
-import { sanitizeString } from '../_shared/validation.ts';
+import Stripe from "https://esm.sh/stripe@14.21.0";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const logger = createLogger('storefront-checkout');
