@@ -44,7 +44,7 @@ export default function BatchRecallPage() {
       try {
         const { data, error } = await supabase
           .from("batch_recalls")
-          .select('id, batch_number, batch_id, recall_reason, reason, severity, status, affected_customers, initiated_at, created_at')
+          .select('id, batch_number, recall_reason, severity, status, initiated_at, created_at')
           .eq("tenant_id", tenant.id)
           .order("initiated_at", { ascending: false });
 
@@ -55,9 +55,9 @@ export default function BatchRecallPage() {
 
         return (data ?? []).map((recall) => ({
           ...recall,
-          batch_id: recall.batch_number || recall.batch_id,
-          reason: recall.recall_reason || recall.reason,
-          affected_customers_count: recall.affected_customers ?? 0,
+          batch_id: recall.batch_number,
+          reason: recall.recall_reason,
+          affected_customers_count: 0,
           created_at: recall.initiated_at || recall.created_at
         })) as Recall[];
       } catch {

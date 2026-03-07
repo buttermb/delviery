@@ -36,7 +36,7 @@ import { queryKeys } from '@/lib/queryKeys';
 interface OrderItem {
   id: string;
   product_name: string;
-  quantity_lbs: number;
+  quantity: number;
   unit_price: number;
 }
 
@@ -110,11 +110,11 @@ export function EditWholesaleOrderDialog({
   }, [order]);
 
   // Calculate totals
-  const subtotal = items.reduce((sum, item) => sum + item.quantity_lbs * item.unit_price, 0);
-  const totalWeight = items.reduce((sum, item) => sum + item.quantity_lbs, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+  const totalWeight = items.reduce((sum, item) => sum + item.quantity, 0);
 
   // Item handlers
-  const handleUpdateItem = (itemId: string, field: 'quantity_lbs' | 'unit_price', value: number) => {
+  const handleUpdateItem = (itemId: string, field: 'quantity' | 'unit_price', value: number) => {
     setItems((prev) =>
       prev.map((item) =>
         item.id === itemId ? { ...item, [field]: value } : item
@@ -178,7 +178,7 @@ export function EditWholesaleOrderDialog({
           const { error: updateItemError } = await supabase
             .from('wholesale_order_items')
             .update({
-              quantity_lbs: item.quantity_lbs,
+              quantity: item.quantity,
               unit_price: item.unit_price,
             })
             .eq('id', item.id);
@@ -195,7 +195,7 @@ export function EditWholesaleOrderDialog({
             newItems.map((item) => ({
               order_id: order.id,
               product_name: item.product_name,
-              quantity_lbs: item.quantity_lbs,
+              quantity: item.quantity,
               unit_price: item.unit_price,
             }))
           );
@@ -302,7 +302,7 @@ export function EditWholesaleOrderDialog({
                           size="icon"
                           className="h-11 w-11 sm:h-7 sm:w-7"
                           onClick={() =>
-                            handleUpdateItem(item.id, 'quantity_lbs', Math.max(1, item.quantity_lbs - 1))
+                            handleUpdateItem(item.id, 'quantity', Math.max(1, item.quantity - 1))
                           }
                           aria-label="Decrease quantity"
                         >
@@ -310,9 +310,9 @@ export function EditWholesaleOrderDialog({
                         </Button>
                         <Input
                           type="number"
-                          value={item.quantity_lbs}
+                          value={item.quantity}
                           onChange={(e) =>
-                            handleUpdateItem(item.id, 'quantity_lbs', Math.max(1, Number(e.target.value)))
+                            handleUpdateItem(item.id, 'quantity', Math.max(1, Number(e.target.value)))
                           }
                           className="h-7 w-16 text-center"
                           aria-label="Quantity in pounds"
@@ -323,7 +323,7 @@ export function EditWholesaleOrderDialog({
                           size="icon"
                           className="h-11 w-11 sm:h-7 sm:w-7"
                           onClick={() =>
-                            handleUpdateItem(item.id, 'quantity_lbs', item.quantity_lbs + 1)
+                            handleUpdateItem(item.id, 'quantity', item.quantity + 1)
                           }
                           aria-label="Increase quantity"
                         >
@@ -350,7 +350,7 @@ export function EditWholesaleOrderDialog({
                   </div>
                   <div className="text-right shrink-0">
                     <p className="font-mono font-semibold">
-                      {formatCurrency(item.quantity_lbs * item.unit_price)}
+                      {formatCurrency(item.quantity * item.unit_price)}
                     </p>
                     <Button
                       type="button"

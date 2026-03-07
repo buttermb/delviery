@@ -53,7 +53,7 @@ export function RecentOrdersWidget() {
           created_at,
           wholesale_clients(business_name)
         `)
-        .eq('account_id', tenant.id)
+        .eq('tenant_id', tenant.id)
         .order('created_at', { ascending: false })
         .limit(5);
 

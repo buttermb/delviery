@@ -163,10 +163,10 @@ export async function fetchAttentionItems(
     // Late deliveries (ETA passed)
     supabase
       .from('deliveries')
-      .select('id, created_at, estimated_delivery_time')
+      .select('id, created_at, estimated_dropoff_time')
       .eq('tenant_id', tenantId)
       .eq('status', 'in_transit')
-      .lt('estimated_delivery_time', now.toISOString()),
+      .lt('estimated_dropoff_time', now.toISOString()),
 
     // Active deliveries (on schedule)
     supabase
@@ -174,7 +174,7 @@ export async function fetchAttentionItems(
       .select('id, created_at')
       .eq('tenant_id', tenantId)
       .eq('status', 'in_transit')
-      .gte('estimated_delivery_time', now.toISOString()),
+      .gte('estimated_dropoff_time', now.toISOString()),
 
     // Out of stock products
     supabase

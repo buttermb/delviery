@@ -808,17 +808,12 @@ function getProductQueries(
           .from('inventory')
           .select(`
             id,
-            quantity,
-            reserved_quantity,
-            location_id,
-            low_stock_threshold,
-            locations:location_id (
-              id,
-              name
-            )
+            stock,
+            product_id,
+            merchant_id,
+            updated_at
           `)
-          .eq('product_id', productId!)
-          .eq('tenant_id', tenantId!);
+          .eq('product_id', productId!);
 
         if (error) {
           logger.error('Failed to fetch product stock', error, { productId, tenantId });
@@ -827,31 +822,25 @@ function getProductQueries(
 
         interface InventoryRow {
           id: string;
-          quantity: number | null;
-          reserved_quantity: number | null;
-          location_id: string | null;
-          low_stock_threshold: number | null;
-          locations: { id: string; name: string } | null;
+          stock: number | null;
+          product_id: string | null;
+          merchant_id: string | null;
+          updated_at: string | null;
         }
 
         let totalStock = 0;
         const stock = (data ?? []).map((item: InventoryRow) => {
-          const location = item.locations;
-          const quantity = item.quantity ?? 0;
-          const reserved = item.reserved_quantity ?? 0;
-          const available = quantity - reserved;
-          const threshold = item.low_stock_threshold ?? 10;
-
-          totalStock += available;
+          const quantity = item.stock ?? 0;
+          totalStock += quantity;
 
           return {
-            location_id: item.location_id ?? location?.id ?? '',
-            location_name: location?.name ?? 'Unknown Location',
+            location_id: item.merchant_id ?? '',
+            location_name: 'Main',
             quantity,
-            reserved,
-            available,
-            low_stock_threshold: threshold,
-            is_low_stock: available <= threshold,
+            reserved: 0,
+            available: quantity,
+            low_stock_threshold: 10,
+            is_low_stock: quantity <= 10,
           } as RelatedStock;
         });
 

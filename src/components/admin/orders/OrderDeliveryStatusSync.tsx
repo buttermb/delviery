@@ -42,13 +42,13 @@ interface DeliveryRecord {
   tenant_id: string;
   courier_id: string | null;
   status: string;
-  estimated_delivery_time: string | null;
-  actual_delivery_time: string | null;
-  current_lat: number | null;
-  current_lng: number | null;
-  last_location_update: string | null;
+  estimated_dropoff_time: string | null;
+  actual_dropoff_time: string | null;
+  pickup_lat: number | null;
+  pickup_lng: number | null;
+  dropoff_lat: number | null;
+  dropoff_lng: number | null;
   created_at: string;
-  updated_at: string | null;
   courier?: {
     id: string;
     full_name: string;
@@ -157,13 +157,13 @@ export function OrderDeliveryStatusSync({
           tenant_id,
           courier_id,
           status,
-          estimated_delivery_time,
-          actual_delivery_time,
-          current_lat,
-          current_lng,
-          last_location_update,
+          estimated_dropoff_time,
+          actual_dropoff_time,
+          pickup_lat,
+          pickup_lng,
+          dropoff_lat,
+          dropoff_lng,
           created_at,
-          updated_at,
           courier:couriers(id, full_name, phone)
         `)
         .eq('order_id', orderId)
@@ -374,7 +374,7 @@ export function OrderDeliveryStatusSync({
 
   const isDelivered = delivery.status === 'delivered' || delivery.status === 'completed';
   const isInTransit = delivery.status === 'in_transit' || delivery.status === 'out_for_delivery';
-  const hasLocation = delivery.current_lat !== null && delivery.current_lng !== null;
+  const hasLocation = delivery.dropoff_lat !== null && delivery.dropoff_lng !== null;
 
   return (
     <Card>
@@ -431,23 +431,23 @@ export function OrderDeliveryStatusSync({
         )}
 
         {/* Estimated/Actual Delivery Time */}
-        {(delivery.estimated_delivery_time || delivery.actual_delivery_time) && (
+        {(delivery.estimated_dropoff_time || delivery.actual_dropoff_time) && (
           <>
             <Separator />
-            {isDelivered && delivery.actual_delivery_time ? (
+            {isDelivered && delivery.actual_dropoff_time ? (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Delivered At</span>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-success" />
-                  <span className="text-sm">{formatSmartDate(delivery.actual_delivery_time)}</span>
+                  <span className="text-sm">{formatSmartDate(delivery.actual_dropoff_time)}</span>
                 </div>
               </div>
-            ) : delivery.estimated_delivery_time ? (
+            ) : delivery.estimated_dropoff_time ? (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Estimated Arrival</span>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{formatSmartDate(delivery.estimated_delivery_time)}</span>
+                  <span className="text-sm">{formatSmartDate(delivery.estimated_dropoff_time)}</span>
                 </div>
               </div>
             ) : null}
@@ -464,24 +464,16 @@ export function OrderDeliveryStatusSync({
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4 text-info" />
                   <span className="text-xs text-muted-foreground font-mono">
-                    {delivery.current_lat?.toFixed(6)}, {delivery.current_lng?.toFixed(6)}
+                    {delivery.dropoff_lat?.toFixed(6)}, {delivery.dropoff_lng?.toFixed(6)}
                   </span>
                 </div>
               </div>
-              {delivery.last_location_update && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Last Updated</span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatSmartDate(delivery.last_location_update)}
-                  </span>
-                </div>
-              )}
               <Button
                 variant="outline"
                 size="sm"
                 className="w-full"
                 onClick={() => {
-                  const url = `https://www.google.com/maps?q=${delivery.current_lat},${delivery.current_lng}`;
+                  const url = `https://www.google.com/maps?q=${delivery.dropoff_lat},${delivery.dropoff_lng}`;
                   window.open(url, '_blank', 'noopener,noreferrer');
                 }}
               >
@@ -499,12 +491,6 @@ export function OrderDeliveryStatusSync({
             <span>Created</span>
             <span>{formatSmartDate(delivery.created_at)}</span>
           </div>
-          {delivery.updated_at && (
-            <div className="flex justify-between">
-              <span>Last Update</span>
-              <span>{formatSmartDate(delivery.updated_at)}</span>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
