@@ -78,7 +78,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
     max_products = 50
   } = content || {};
 
-  const customAccent = styles?.accent_color || '#015358';
+  const customAccent = styles?.accent_color || 'var(--storefront-accent, #015358)';
 
   const { data: products = [], isLoading, error: _error } = useQuery({
     queryKey: queryKeys.shopPages.luxuryProducts(storeId),
@@ -171,7 +171,7 @@ export function LuxuryProductGridSection({ content, styles, storeId }: LuxuryPro
   const activeCategory = selectedCategory || "All";
 
   return (
-    <section className="min-h-dvh bg-shop-bg pb-32" id="products">
+    <section className="min-h-dvh pb-32" id="products" style={{ backgroundColor: 'var(--storefront-bg, hsl(var(--shop-bg, 200 20% 97%)))' }}>
 
       {/* Search Overlay (if active) */}
       <AnimatePresence>

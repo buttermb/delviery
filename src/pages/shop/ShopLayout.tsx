@@ -23,6 +23,7 @@ import {
   Store,
 } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { getThemeById, loadGoogleFonts } from '@/lib/storefrontThemes';
 import { MobileBottomNav } from '@/components/shop/MobileBottomNav';
 import { LuxuryNav } from '@/components/shop/LuxuryNav';
 import { LuxuryFooter } from '@/components/shop/LuxuryFooter';
@@ -53,11 +54,16 @@ interface StoreInfo {
   layout_config?: Record<string, unknown>[] | null;
   theme_config?: {
     theme?: 'default' | 'luxury' | 'minimal';
+    theme_id?: string;
     colors?: {
       primary?: string;
       secondary?: string;
       accent?: string;
       background?: string;
+      text?: string;
+    };
+    typography?: {
+      fontFamily?: string;
     };
   } | null;
   operating_hours: Record<string, unknown>;
@@ -410,8 +416,8 @@ export default function ShopLayout() {
     );
   }
 
-  // Determine if using luxury theme - defensive null check
-  const isLuxuryTheme = store?.theme_config?.theme === 'luxury';
+  // Determine if using luxury theme - check both legacy .theme and new .theme_id
+  const isLuxuryTheme = store?.theme_config?.theme === 'luxury' || store?.theme_config?.theme_id === 'luxury';
 
   // Age verification gate (skip in preview mode)
   if (store.require_age_verification && !ageVerified && !isPreviewMode) {
@@ -465,15 +471,33 @@ export default function ShopLayout() {
     );
   }
 
-  // Apply theme colors
+  // Look up the full ThemePreset from theme_config.theme_id
+  const themePreset = store.theme_config?.theme_id
+    ? getThemeById(store.theme_config.theme_id)
+    : undefined;
+
+  // Apply theme colors — merge store-level vars with full --storefront-* variables from the preset
   const themeStyles = {
     '--store-primary': store.primary_color,
     '--store-secondary': store.secondary_color,
     '--store-accent': store.accent_color,
+    // Apply all --storefront-* CSS variables from the theme preset
+    ...(themePreset ? {
+      ...themePreset.cssVariables,
+      '--storefront-font-heading': themePreset.typography.fonts.heading,
+      '--storefront-font-body': themePreset.typography.fonts.body,
+    } : {}),
   } as React.CSSProperties;
 
+  // Load theme-specific Google Fonts
+  useEffect(() => {
+    if (themePreset) {
+      loadGoogleFonts([themePreset.typography.fonts.heading, themePreset.typography.fonts.body]);
+    }
+  }, [themePreset]);
+
   // Get accent color for theme elements
-  const accentColor = store.theme_config?.colors?.accent || store.accent_color || '#10b981';
+  const accentColor = themePreset?.colors.accent || store.theme_config?.colors?.accent || store.accent_color || '#10b981';
 
   // Handler for floating cart checkout
   const _handleCartCheckout = () => {
@@ -563,9 +587,16 @@ export default function ShopLayout() {
     <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
       <div
         className={`min-h-dvh ${isLuxuryTheme ? 'bg-black' : 'bg-background'}`}
-        style={themeStyles}
+        style={{
+          ...themeStyles,
+          ...(themePreset && !isLuxuryTheme ? {
+            backgroundColor: themePreset.colors.background,
+            color: themePreset.colors.foreground,
+            fontFamily: themePreset.typography.fontFamily,
+          } : {}),
+        } as React.CSSProperties}
         data-testid="storefront-wrapper"
-        data-theme={isLuxuryTheme ? 'luxury' : 'default'}
+        data-theme={store?.theme_config?.theme_id || (isLuxuryTheme ? 'luxury' : 'default')}
       >
         {/* Admin Preview Banner */}
         {isPreviewMode && (
