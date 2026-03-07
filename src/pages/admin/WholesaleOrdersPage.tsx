@@ -82,7 +82,7 @@ interface WholesaleOrder {
   items?: Array<{
     id: string;
     product_name: string;
-    quantity_lbs: number;
+    quantity: number;
     unit_price: number;
   }>;
 }
@@ -299,7 +299,7 @@ export default function WholesaleOrdersPage() {
           .select(`
             *,
             client:wholesale_clients(id, business_name, contact_name, phone),
-            items:wholesale_order_items(id, product_name, quantity_lbs, unit_price)
+            items:wholesale_order_items(id, product_name, quantity, unit_price)
           `)
           .eq('tenant_id', tenant.id)
           .order('created_at', { ascending: false });

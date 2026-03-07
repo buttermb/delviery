@@ -104,7 +104,7 @@ export function usePrefetchDashboard() {
           queryFn: async () => {
             const { data } = await supabase
               .from('wholesale_orders')
-              .select('id, order_number, status, total_amount, contact_name, customer_id, created_at, updated_at')
+              .select('id, order_number, status, total_amount, client_id, created_at')
               .eq('tenant_id', tenantId)
               .order('created_at', { ascending: false })
               .limit(5);

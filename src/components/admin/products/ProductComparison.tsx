@@ -168,7 +168,7 @@ function useProductRevenueData(productIds: string[]) {
         .select(`
           product_id,
           quantity,
-          total,
+          price,
           orders!inner(tenant_id, created_at, status)
         `)
         .in('product_id', productIds)
@@ -206,7 +206,7 @@ function useProductRevenueData(productIds: string[]) {
 
         const existing = revenueMap.get(item.product_id);
         if (existing) {
-          existing.revenue30d += item.total ?? 0;
+          existing.revenue30d += (item.quantity ?? 0) * (item.price ?? 0);
           existing.unitsSold30d += item.quantity ?? 0;
         }
       }

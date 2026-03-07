@@ -141,7 +141,7 @@ function useProductPerformance(productId: string | undefined, productCategory?: 
         .from('order_items')
         .select(`
           quantity,
-          total,
+          price,
           orders!inner(
             id,
             created_at,
@@ -194,7 +194,7 @@ function useProductPerformance(productId: string | undefined, productCategory?: 
         };
         const orderDate = new Date(order.created_at);
         const quantity = item.quantity ?? 0;
-        const total = item.total ?? 0;
+        const total = quantity * (item.price ?? 0);
 
         // Calculate period totals
         if (orderDate >= date7dAgo) {
@@ -316,7 +316,7 @@ function useProductPerformance(productId: string | undefined, productCategory?: 
             .from('order_items')
             .select(`
               quantity,
-              total,
+              price,
               orders!inner(created_at, tenant_id)
             `)
             .in('product_id', categoryProductIds)
@@ -325,7 +325,7 @@ function useProductPerformance(productId: string | undefined, productCategory?: 
 
           if (categoryItems && categoryItems.length > 0) {
             const categoryTotalUnits = categoryItems.reduce((sum, item) => sum + (item.quantity ?? 0), 0);
-            const categoryTotalRevenue = categoryItems.reduce((sum, item) => sum + (item.total ?? 0), 0);
+            const categoryTotalRevenue = categoryItems.reduce((sum, item) => sum + ((item.quantity ?? 0) * (item.price ?? 0)), 0);
             categoryAvgUnits30d = Math.round(categoryTotalUnits / categoryProducts.length);
             categoryAvgRevenue30d = Math.round((categoryTotalRevenue / categoryProducts.length) * 100) / 100;
 
