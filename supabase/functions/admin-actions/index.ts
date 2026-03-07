@@ -8,7 +8,7 @@ const logger = createLogger('admin-actions');
  * Resolve tenant_id from an authenticated user.
  * Checks tenant_users first, then falls back to tenant owner_email.
  */
-async function resolveTenantId(supabase: ReturnType<typeof createClient>, userId: string, userEmail: string | undefined): Promise<string | null> {
+async function resolveTenantId(supabase: any, userId: string, userEmail: string | undefined): Promise<string | null> {
   const { data: tenantUser } = await supabase
     .from('tenant_users')
     .select('tenant_id')
@@ -36,7 +36,7 @@ async function resolveTenantId(supabase: ReturnType<typeof createClient>, userId
 }
 
 async function logAdminAction(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   adminId: string,
   action: string,
   entityType?: string,
