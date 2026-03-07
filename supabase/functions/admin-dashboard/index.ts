@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve, createClient, corsHeaders as sharedCorsHeaders } from '../_shared/deps.ts';
 import { validateAdminDashboard, type AdminDashboardInput } from './validation.ts';
 
 const corsHeaders = {
@@ -10,7 +9,7 @@ const corsHeaders = {
 const JSON_HEADERS = { ...corsHeaders, "Content-Type": "application/json" };
 
 async function logAdminAction(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   adminId: string,
   action: string,
   tenantId: string,
@@ -34,7 +33,7 @@ async function logAdminAction(
  * Resolve tenant_id from an authenticated user.
  * Checks tenant_users first, then falls back to tenant owner_email.
  */
-async function resolveTenantId(supabase: ReturnType<typeof createClient>, userId: string, userEmail: string | undefined): Promise<string | null> {
+async function resolveTenantId(supabase: any, userId: string, userEmail: string | undefined): Promise<string | null> {
   const { data: tenantUser } = await supabase
     .from("tenant_users")
     .select("tenant_id")
@@ -572,9 +571,9 @@ serve(async (req) => {
         heatmapData = orders?.filter((o: Record<string, unknown>) => o.address && Array.isArray(o.address) && (o.address as unknown[]).length > 0).map((order: Record<string, unknown>) => {
           const addr = Array.isArray(order.address) ? order.address[0] : order.address;
           return {
-            lat: parseFloat(addr.lat),
-            lng: parseFloat(addr.lng),
-            intensity: parseFloat(order.total_amount),
+            lat: parseFloat(addr.lat as string),
+            lng: parseFloat(addr.lng as string),
+            intensity: parseFloat(order.total_amount as string),
           };
         }) || [];
       } else if (type === "users") {
@@ -595,8 +594,8 @@ serve(async (req) => {
           : { data: [] };
 
         heatmapData = addresses?.map((addr: Record<string, unknown>) => ({
-          lat: parseFloat(addr.lat),
-          lng: parseFloat(addr.lng),
+          lat: parseFloat(addr.lat as string),
+          lng: parseFloat(addr.lng as string),
           intensity: 1,
         })) || [];
       }
@@ -659,11 +658,11 @@ serve(async (req) => {
       const salesByDay: Record<string, { date: string; revenue: number; orders: number }> = {};
 
       orders?.forEach((order: Record<string, unknown>) => {
-        const date = order.created_at.split("T")[0];
+        const date = (order.created_at as string).split("T")[0];
         if (!salesByDay[date]) {
           salesByDay[date] = { date, revenue: 0, orders: 0 };
         }
-        salesByDay[date].revenue += parseFloat(order.total_amount);
+        salesByDay[date].revenue += parseFloat(order.total_amount as string);
         salesByDay[date].orders += 1;
       });
 
