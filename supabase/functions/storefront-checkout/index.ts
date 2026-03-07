@@ -46,17 +46,12 @@ const sanitized = (maxLength = 255) =>
 const CheckoutItemSchema = z.object({
   product_id: z.string().uuid(),
   quantity: z.number().int().positive().max(100),
-  variant: z.string().optional(),
   variant: z.string().transform((v) => sanitizeString(v, 100)).optional(),
   // Client may send price for display — always overridden by DB price
   price: z.number().optional(),
 });
 
 const CustomerInfoSchema = z.object({
-  firstName: z.string().min(1).max(100),
-  lastName: z.string().min(1).max(100),
-  email: z.string().email().optional().or(z.literal("")),
-  phone: z.string().min(1).max(30),
   firstName: sanitized(100).pipe(z.string().min(1)),
   lastName: sanitized(100).pipe(z.string().min(1)),
   email: z.string().email().transform((v) => v.trim().toLowerCase().slice(0, 255)),
@@ -65,7 +60,6 @@ const CustomerInfoSchema = z.object({
 
 const CheckoutRequestSchema = z.object({
   // Store identification — slug is the canonical field
-  storeSlug: z.string().min(1).max(100),
   storeSlug: sanitized(100).pipe(z.string().min(1)),
   // Cart items (prices are ALWAYS fetched server-side)
   items: z.array(CheckoutItemSchema).min(1).max(50),
@@ -75,16 +69,13 @@ const CheckoutRequestSchema = z.object({
   fulfillmentMethod: z.enum(["delivery", "pickup"]).default("delivery"),
   paymentMethod: z.enum(["card", "cash", "venmo", "zelle"]).default("cash"),
   // Optional fields
-  deliveryAddress: z.string().max(500).optional(),
-  deliveryZip: z.string().max(20).optional(),
-  notes: z.string().max(1000).optional(),
   deliveryAddress: sanitized(500).optional(),
+  deliveryZip: z.string().max(20).optional(),
   notes: sanitized(1000).optional(),
   preferredContactMethod: z.enum(["phone", "email", "text", "telegram"]).optional(),
   discountAmount: z.number().min(0).optional(),
   successUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
-  idempotencyKey: z.string().max(200).optional(),
   idempotencyKey: sanitized(100).optional(),
   // Client-side total for discrepancy detection (always overridden by server)
   clientTotal: z.number().optional(),
