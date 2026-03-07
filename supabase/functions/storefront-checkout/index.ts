@@ -189,43 +189,6 @@ serve(secureHeadersMiddleware(async (req) => {
           { error: "Too many orders from this phone number. Please try again later." },
           429,
           { "Retry-After": String(Math.ceil((phoneRateLimit.resetAt - Date.now()) / 1000)) },
-    // Rate limiting — 5 orders per IP per hour, 3 per phone per hour
-    // ------------------------------------------------------------------
-    const clientIP = getClientIP(req);
-
-    const ipRateLimit = await checkRateLimit(RATE_LIMITS.CHECKOUT_IP, clientIP);
-    if (!ipRateLimit.allowed) {
-      logger.warn("Checkout rate limited by IP", { ip: clientIP });
-      return new Response(
-        JSON.stringify({ error: "Too many checkout attempts. Please try again later." }),
-        {
-          status: 429,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-            ...getRateLimitHeaders(ipRateLimit),
-          },
-        },
-      );
-    }
-
-    if (body.customerInfo.phone) {
-      const phoneRateLimit = await checkRateLimit(
-        RATE_LIMITS.CHECKOUT_PHONE,
-        body.customerInfo.phone,
-      );
-      if (!phoneRateLimit.allowed) {
-        logger.warn("Checkout rate limited by phone", { phone: body.customerInfo.phone });
-        return new Response(
-          JSON.stringify({ error: "Too many checkout attempts. Please try again later." }),
-          {
-            status: 429,
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "application/json",
-              ...getRateLimitHeaders(phoneRateLimit),
-            },
-          },
         );
       }
     }
