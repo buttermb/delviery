@@ -3,7 +3,6 @@
  */
 
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Activity, CheckCircle2, Package, User, Box } from 'lucide-react';
 import { format } from 'date-fns';
@@ -151,11 +150,10 @@ export function ActivityFeedWidget() {
   return (
     <Card className="p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
+        <h3 className="text-base font-semibold flex items-center gap-2">
           <Activity className="h-5 w-5" />
-          Activity
+          Recent Activity
         </h3>
-        <Badge variant="outline">Live</Badge>
       </div>
 
       <div className="space-y-3">

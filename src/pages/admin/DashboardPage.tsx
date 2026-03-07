@@ -1,96 +1,59 @@
 /**
  * Admin Dashboard Page
- * Displays comprehensive KPI cards for:
- * - Revenue: Today's revenue, MTD, growth percentage, avg order value (lazy loaded)
- * - Orders: Pending, today, completed, MTD totals
- * - Customers: Total, new (last 30 days), active sessions
- * - Inventory: Total products, low stock, out of stock, inventory value
- * - Alerts: Recent inventory alerts and notifications (lazy loaded)
- * - Activity: Recent activity feed (lazy loaded)
+ * Clean, focused command center layout:
+ * - Personalized greeting with status indicators
+ * - Needs Your Attention list
+ * - Quick Actions row (6 buttons with keyboard shortcuts)
+ * - 4 focused KPI cards
+ * - Two-column: Recent Activity | Revenue chart
+ * - AI suggestion banner
  *
  * Uses TanStack Query with 30s auto-refresh for real-time data.
  */
 
-import { lazy, Suspense, useState, useCallback } from 'react';
+import { lazy, Suspense, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
-import PackageX from "lucide-react/dist/esm/icons/package-x";
-import Package from "lucide-react/dist/esm/icons/package";
 import Rocket from "lucide-react/dist/esm/icons/rocket";
-import UserPlus from "lucide-react/dist/esm/icons/user-plus";
-import Users from "lucide-react/dist/esm/icons/users";
-import Activity from "lucide-react/dist/esm/icons/activity";
-import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
-import Warehouse from "lucide-react/dist/esm/icons/warehouse";
-import Clock from "lucide-react/dist/esm/icons/clock";
-import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
-import XCircle from "lucide-react/dist/esm/icons/x-circle";
 import RefreshCw from "lucide-react/dist/esm/icons/refresh-cw";
-import X from "lucide-react/dist/esm/icons/x";
-import Sparkles from "lucide-react/dist/esm/icons/sparkles";
+import TrendingUp from "lucide-react/dist/esm/icons/trending-up";
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down";
+import ShoppingCart from "lucide-react/dist/esm/icons/shopping-cart";
+import Users from "lucide-react/dist/esm/icons/users";
+import Package from "lucide-react/dist/esm/icons/package";
+import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import { useNavigate } from 'react-router-dom';
-import { useDashboardStats, type DashboardPeriod } from '@/hooks/useDashboardStats';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { HubBreadcrumbs } from '@/components/admin/HubBreadcrumbs';
 import { formatCurrency, formatSmartDate } from '@/lib/formatters';
 import { KPICard, KPICardSkeleton } from '@/components/admin/dashboard/KPICard';
 import { SetupCompletionWidget } from '@/components/admin/dashboard/SetupCompletionWidget';
+import { NeedsAttentionWidget } from '@/components/admin/dashboard/NeedsAttentionWidget';
+import { QuickActionsRow } from '@/components/admin/dashboard/QuickActionsRow';
+import { AISuggestionBanner } from '@/components/admin/dashboard/AISuggestionBanner';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { EmptyState } from '@/components/admin/shared/EmptyState';
-import { STORAGE_KEYS } from '@/constants/storageKeys';
+import { format } from 'date-fns';
 
-// Lazy load RevenueWidget for better performance
-const RevenueWidget = lazy(() => import('@/components/admin/dashboard/RevenueWidget').then(module => ({ default: module.RevenueWidget })));
-
-// Lazy load ActivityWidget for better performance
+// Lazy load widgets for better performance
 const ActivityWidget = lazy(() => import('@/components/admin/dashboard/ActivityFeedWidget').then(module => ({ default: module.ActivityFeedWidget })));
+const RevenueChartWidget = lazy(() => import('@/components/admin/dashboard/RevenueChartWidget').then(module => ({ default: module.RevenueChartWidget })));
 
-// Lazy load StorefrontWidget for better performance
-const StorefrontWidget = lazy(() => import('@/components/admin/dashboard/StorefrontWidget').then(module => ({ default: module.StorefrontWidget })));
-
-// Lazy load AlertsWidget for better performance
-const AlertsWidget = lazy(() => import('@/components/admin/dashboard/AlertsWidget').then(module => ({ default: module.AlertsWidget })));
-
-// Fallback component for StorefrontWidget while loading
-function StorefrontWidgetFallback() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-7 w-32" />
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <KPICardSkeleton key={i} />
-        ))}
-      </div>
-    </div>
-  );
+function getTimeOfDay(): 'morning' | 'afternoon' | 'evening' {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'morning';
+  if (hour < 17) return 'afternoon';
+  return 'evening';
 }
 
-// Fallback component for RevenueWidget while loading
-function RevenueWidgetFallback() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-7 w-32" />
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <KPICardSkeleton key={i} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Fallback component for ActivityWidget while loading
+// Loading skeleton for activity widget
 function ActivityWidgetFallback() {
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
         <Skeleton className="h-6 w-32" />
-        <Skeleton className="h-5 w-12" />
       </div>
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -107,98 +70,46 @@ function ActivityWidgetFallback() {
   );
 }
 
-// Full-page loading skeleton for initial dashboard load
+// Loading skeleton for revenue chart
+function RevenueChartFallback() {
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <Skeleton className="h-6 w-24" />
+        <Skeleton className="h-7 w-32" />
+      </div>
+      <Skeleton className="h-8 w-32 mb-2" />
+      <Skeleton className="h-[160px] w-full rounded-lg" />
+    </Card>
+  );
+}
+
+// Full-page loading skeleton
 function DashboardPageSkeleton() {
   return (
     <div className="p-4 sm:p-4 space-y-4">
-      <Skeleton className="h-5 w-48" />
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-36" />
-          <Skeleton className="h-4 w-56" />
-        </div>
-        <Skeleton className="h-9 w-64" />
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-96" />
       </div>
-      {/* Revenue section skeleton */}
-      <div className="space-y-4">
-        <Skeleton className="h-6 w-28" />
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)}
-        </div>
+      <Skeleton className="h-24 w-full rounded-lg" />
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-lg" />
+        ))}
       </div>
-      {/* Orders section skeleton */}
-      <div className="space-y-4">
-        <Skeleton className="h-6 w-20" />
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)}
-        </div>
-      </div>
-      {/* Customers section skeleton */}
-      <div className="space-y-4">
-        <Skeleton className="h-6 w-28" />
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)}
-        </div>
-      </div>
-      {/* Inventory section skeleton */}
-      <div className="space-y-4">
-        <Skeleton className="h-6 w-24" />
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)}
-        </div>
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)}
       </div>
     </div>
   );
 }
 
-// Fallback component for AlertsWidget while loading
-function AlertsWidgetFallback() {
-  return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <Skeleton className="h-6 w-32" />
-        <Skeleton className="h-5 w-12" />
-      </div>
-      <div className="space-y-2">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between p-3 border rounded-lg"
-          >
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-8 w-8 rounded-full" />
-              <div className="space-y-1">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-            </div>
-            <Skeleton className="h-6 w-6 rounded" />
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-const PERIOD_LABELS: Record<DashboardPeriod, string> = {
-  '7d': '7D',
-  '30d': '30D',
-  '90d': '90D',
-  'mtd': 'MTD',
-  'ytd': 'YTD',
-};
-
-const WHATS_NEW_KEY = STORAGE_KEYS.WHATS_NEW;
-
 export function DashboardPage() {
   usePageTitle('Dashboard');
-  const { tenant, tenantSlug } = useTenantAdminAuth();
+  const { tenant, admin, tenantSlug } = useTenantAdminAuth();
   const navigate = useNavigate();
-  const [period, setPeriod] = useState<DashboardPeriod>('30d');
-  const { data: stats, isLoading, error, dataUpdatedAt, refetch, isFetching } = useDashboardStats(period);
-  const [whatsNewDismissed, setWhatsNewDismissed] = useState(() =>
-    localStorage.getItem(WHATS_NEW_KEY) === 'dismissed'
-  );
+  const { data: stats, isLoading, error, dataUpdatedAt, refetch, isFetching } = useDashboardStats('30d');
 
   const handleRefresh = useCallback(() => {
     refetch();
@@ -208,43 +119,56 @@ export function DashboardPage() {
     return <DashboardPageSkeleton />;
   }
 
+  const userName = admin?.name || admin?.email?.split('@')[0] || 'there';
+  const formattedDate = format(new Date(), 'EEEE, MMM d');
   const lastUpdated = dataUpdatedAt
     ? formatSmartDate(new Date(dataUpdatedAt), { includeTime: true })
     : null;
 
   return (
     <div className="p-4 sm:p-4 space-y-4 overflow-x-hidden">
-      <HubBreadcrumbs
-        hubName="dashboard"
-        hubHref="dashboard"
-      />
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* Header — Personalized greeting + status indicators */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground text-sm">
-            Real-time overview of your operations
+          <h1 className="text-2xl md:text-3xl font-bold">
+            Good {getTimeOfDay()}, {userName}
+          </h1>
+          <p className="text-muted-foreground text-sm flex items-center gap-2 flex-wrap">
+            <span>{formattedDate}</span>
+            {stats && (stats.pendingOrders ?? 0) > 0 && (
+              <>
+                <span className="text-muted-foreground/40">|</span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  {stats.pendingOrders} orders need attention
+                </span>
+              </>
+            )}
+            {stats && (stats.lowStockItems ?? 0) > 0 && (
+              <>
+                <span className="text-muted-foreground/40">|</span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  {stats.lowStockItems} low stock alerts
+                </span>
+              </>
+            )}
+            {stats && (stats.revenueGrowthPercent ?? 0) > 0 && (
+              <>
+                <span className="text-muted-foreground/40">|</span>
+                <span className="flex items-center gap-1 text-emerald-600">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  Revenue up {stats.revenueGrowthPercent.toFixed(0)}%
+                </span>
+              </>
+            )}
           </p>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible scrollbar-none">
-          <ToggleGroup
-            type="single"
-            value={period}
-            onValueChange={(val) => { if (val) setPeriod(val as DashboardPeriod); }}
-            size="sm"
-            variant="outline"
-            className="shrink-0"
-          >
-            {(Object.keys(PERIOD_LABELS) as DashboardPeriod[]).map((key) => (
-              <ToggleGroupItem key={key} value={key} aria-label={`Show ${PERIOD_LABELS[key]} data`}>
-                {PERIOD_LABELS[key]}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+        <div className="flex items-center gap-2">
           {lastUpdated && (
-            <Badge variant="secondary" className="text-xs whitespace-nowrap hidden sm:inline-flex">
+            <span className="text-xs text-muted-foreground hidden sm:inline">
               Updated {lastUpdated}
-            </Badge>
+            </span>
           )}
           <Button
             variant="ghost"
@@ -252,13 +176,14 @@ export function DashboardPage() {
             onClick={handleRefresh}
             disabled={isFetching}
             aria-label="Refresh dashboard"
-            className="h-11 w-11"
+            className="h-8 w-8"
           >
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
 
+      {/* Error states */}
       {error && !stats && (
         <Card className="border-destructive bg-destructive/5">
           <CardContent className="pt-6 flex flex-col items-center text-center gap-4 py-12">
@@ -305,42 +230,10 @@ export function DashboardPage() {
         </Card>
       )}
 
-      {/* Setup Completion Checklist */}
+      {/* Setup Completion Checklist — shown for new tenants */}
       <SetupCompletionWidget />
 
-      {/* What's New Banner — dismissible, for returning users with data */}
-      {!whatsNewDismissed && !isLoading && stats && (stats.totalProducts > 0 || stats.totalCustomers > 0) && (
-        <div className="relative flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
-          <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
-          <div className="flex-1 text-sm">
-            <p className="font-medium text-blue-900 dark:text-blue-100">What&apos;s New</p>
-            <p className="text-blue-700 dark:text-blue-300">
-              Edit orders, record partial payments, process refunds, and more.{' '}
-              <button
-                type="button"
-                className="underline underline-offset-2 hover:text-blue-900 dark:hover:text-blue-100"
-                onClick={() => navigate(`/${tenantSlug}/admin/settings-hub?tab=features`)}
-              >
-                Enable more features in Settings
-              </button>.
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-11 w-11 sm:h-6 sm:w-6 shrink-0 text-blue-600 hover:bg-blue-100 hover:text-blue-800 dark:text-blue-400 dark:hover:bg-blue-900"
-            onClick={() => {
-              localStorage.setItem(WHATS_NEW_KEY, 'dismissed');
-              setWhatsNewDismissed(true);
-            }}
-            aria-label="Dismiss"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-
-      {/* Empty state for brand-new tenants with zero orders AND zero products */}
+      {/* Empty state for brand-new tenants */}
       {error && !stats ? null : !isLoading && stats && stats.totalProducts === 0 && stats.totalOrdersMTD === 0 && stats.pendingOrders === 0 ? (
         <Card>
           <CardContent className="pt-6">
@@ -355,189 +248,76 @@ export function DashboardPage() {
         </Card>
       ) : (
         <>
-          {/* Low Stock Alert */}
-          {!isLoading && stats && (stats.lowStockItems ?? 0) > 0 && (
-            <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
-              <CardContent className="flex flex-col sm:flex-row sm:items-center gap-3 pt-6">
-                <div className="flex items-start sm:items-center gap-3 flex-1">
-                  <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
-                  <div className="flex-1">
-                    <p className="font-medium text-amber-900 dark:text-amber-100">
-                      {stats.lowStockItems} product{stats.lowStockItems !== 1 ? 's' : ''} low on stock
-                    </p>
-                    <p className="text-sm text-amber-700 dark:text-amber-300">
-                      {(stats.outOfStockItems ?? 0) > 0 && `${stats.outOfStockItems} out of stock. `}
-                      Review and restock to avoid missed sales.
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 border-amber-300 text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-200 dark:hover:bg-amber-900 w-full sm:w-auto"
-                  onClick={() => navigate(`/${tenantSlug}/admin/inventory-hub?tab=alerts`)}
-                >
-                  View Inventory
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          {/* Needs Your Attention */}
+          <NeedsAttentionWidget />
 
-          {/* Revenue Section - Lazy Loaded */}
-          <Suspense fallback={<RevenueWidgetFallback />}>
-            <RevenueWidget period={period} />
-          </Suspense>
+          {/* Quick Actions */}
+          <QuickActionsRow />
 
-          {/* Storefront Section - Lazy Loaded */}
-          <Suspense fallback={<StorefrontWidgetFallback />}>
-            <StorefrontWidget />
-          </Suspense>
-
-          {/* Orders Section */}
-          <div className="space-y-4">
-            <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-blue-600" />
-              Orders
-            </h2>
-            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-              {isLoading ? (
-                Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
-              ) : (
-                <>
-                  <KPICard
-                    title="Pending Orders"
-                    value={stats?.pendingOrders ?? 0}
-                    icon={<Clock className="h-5 w-5" />}
-                    description="Awaiting processing"
-                    variant={stats?.pendingOrders && stats.pendingOrders > 0 ? 'warning' : 'default'}
-                    href={`/${tenantSlug}/admin/orders?status=pending`}
-                  />
-                  <KPICard
-                    title="Today's Orders"
-                    value={stats?.totalOrdersToday ?? 0}
-                    icon={<ShoppingCart className="h-5 w-5" />}
-                    description="Orders placed today"
-                    variant="default"
-                    href={`/${tenantSlug}/admin/orders`}
-                  />
-                  <KPICard
-                    title="Completed Today"
-                    value={stats?.completedOrdersToday ?? 0}
-                    icon={<CheckCircle2 className="h-5 w-5" />}
-                    description="Successfully delivered"
-                    variant="success"
-                    href={`/${tenantSlug}/admin/orders?status=completed`}
-                  />
-                  <KPICard
-                    title={`Orders (${PERIOD_LABELS[period]})`}
-                    value={stats?.totalOrdersMTD ?? 0}
-                    icon={<TrendingUp className="h-5 w-5" />}
-                    description={`Total in selected period`}
-                    variant="default"
-                    href={`/${tenantSlug}/admin/orders`}
-                  />
-                </>
-              )}
-            </div>
+          {/* 4 Focused KPI Cards */}
+          <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
+            ) : (
+              <>
+                <KPICard
+                  title="Today's Revenue"
+                  value={formatCurrency(stats?.revenueToday ?? 0)}
+                  icon={<DollarSign className="h-5 w-5" />}
+                  description="Completed orders today"
+                  variant="success"
+                  trend={stats?.revenueYesterday && stats.revenueYesterday > 0 ? {
+                    value: ((stats.revenueToday - stats.revenueYesterday) / stats.revenueYesterday) * 100,
+                    label: 'vs yesterday',
+                  } : undefined}
+                  href="/admin/finance-hub"
+                />
+                <KPICard
+                  title="Orders Today"
+                  value={stats?.totalOrdersToday ?? 0}
+                  icon={<ShoppingCart className="h-5 w-5" />}
+                  description={`${stats?.pendingOrders ?? 0} pending`}
+                  variant={stats?.pendingOrders && stats.pendingOrders > 0 ? 'warning' : 'default'}
+                  trend={stats?.totalOrdersYesterday && stats.totalOrdersYesterday > 0 ? {
+                    value: ((stats.totalOrdersToday - stats.totalOrdersYesterday) / stats.totalOrdersYesterday) * 100,
+                    label: 'vs yesterday',
+                  } : undefined}
+                  href="/admin/orders"
+                />
+                <KPICard
+                  title="Active Customers"
+                  value={stats?.totalCustomers ?? 0}
+                  icon={<Users className="h-5 w-5" />}
+                  description={`+${stats?.newCustomers ?? 0} this period`}
+                  variant="default"
+                  href="/admin/customer-hub"
+                />
+                <KPICard
+                  title="Inventory Health"
+                  value={stats?.totalProducts
+                    ? `${Math.round(((stats.totalProducts - (stats.outOfStockItems ?? 0)) / stats.totalProducts) * 100)}% in stock`
+                    : '—'}
+                  icon={<Package className="h-5 w-5" />}
+                  description={`${stats?.lowStockItems ?? 0} low of ${stats?.totalProducts ?? 0} SKUs`}
+                  variant={stats?.lowStockItems && stats.lowStockItems > 0 ? 'warning' : 'default'}
+                  href="/admin/inventory-hub"
+                />
+              </>
+            )}
           </div>
 
-          {/* Customers Section */}
-          <div className="space-y-4">
-            <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
-              <Users className="h-5 w-5 text-indigo-600" />
-              Customers
-            </h2>
-            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3">
-              {isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => <KPICardSkeleton key={i} />)
-              ) : (
-                <>
-                  <KPICard
-                    title="Total Customers"
-                    value={stats?.totalCustomers ?? 0}
-                    icon={<Users className="h-5 w-5" />}
-                    description="All registered customers"
-                    variant="default"
-                    href={`/${tenantSlug}/admin/customer-hub`}
-                  />
-                  <KPICard
-                    title="New Customers"
-                    value={stats?.newCustomers ?? 0}
-                    icon={<UserPlus className="h-5 w-5" />}
-                    description={`Joined in the last ${PERIOD_LABELS[period]}`}
-                    variant="success"
-                    href={`/${tenantSlug}/admin/customer-hub`}
-                  />
-                  <KPICard
-                    title="Active Sessions"
-                    value={stats?.activeSessions ?? 0}
-                    icon={<Activity className="h-5 w-5" />}
-                    description="Online in last 15 minutes"
-                    variant="default"
-                    href={`/${tenantSlug}/admin/analytics-hub`}
-                  />
-                </>
-              )}
-            </div>
+          {/* Two-column: Activity + Revenue chart */}
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Suspense fallback={<ActivityWidgetFallback />}>
+              <ActivityWidget />
+            </Suspense>
+            <Suspense fallback={<RevenueChartFallback />}>
+              <RevenueChartWidget />
+            </Suspense>
           </div>
 
-          {/* Inventory Section */}
-          <div className="space-y-4">
-            <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
-              <Package className="h-5 w-5 text-purple-600" />
-              Inventory
-            </h2>
-            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-              {isLoading ? (
-                Array.from({ length: 4 }).map((_, i) => <KPICardSkeleton key={i} />)
-              ) : (
-                <>
-                  <KPICard
-                    title="Total Products"
-                    value={stats?.totalProducts ?? 0}
-                    icon={<Package className="h-5 w-5" />}
-                    description="In catalog"
-                    variant="default"
-                    href={`/${tenantSlug}/admin/inventory-hub`}
-                  />
-                  <KPICard
-                    title="Low Stock"
-                    value={stats?.lowStockItems ?? 0}
-                    icon={<PackageX className="h-5 w-5" />}
-                    description="Below reorder threshold"
-                    variant={stats?.lowStockItems && stats.lowStockItems > 0 ? 'warning' : 'default'}
-                    href={`/${tenantSlug}/admin/inventory-hub?tab=alerts`}
-                  />
-                  <KPICard
-                    title="Out of Stock"
-                    value={stats?.outOfStockItems ?? 0}
-                    icon={<XCircle className="h-5 w-5" />}
-                    description="Needs restocking"
-                    variant={stats?.outOfStockItems && stats.outOfStockItems > 0 ? 'destructive' : 'default'}
-                    href={`/${tenantSlug}/admin/inventory-hub?tab=alerts`}
-                  />
-                  <KPICard
-                    title="Inventory Value"
-                    value={formatCurrency(stats?.totalInventoryValue ?? 0)}
-                    icon={<Warehouse className="h-5 w-5" />}
-                    description="Total stock value"
-                    variant="default"
-                    href={`/${tenantSlug}/admin/finance-hub`}
-                  />
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Alerts Section - Lazy Loaded */}
-          <Suspense fallback={<AlertsWidgetFallback />}>
-            <AlertsWidget />
-          </Suspense>
-
-          {/* Activity Feed Section - Lazy Loaded */}
-          <Suspense fallback={<ActivityWidgetFallback />}>
-            <ActivityWidget />
-          </Suspense>
+          {/* AI Suggestion Banner */}
+          <AISuggestionBanner />
         </>
       )}
     </div>

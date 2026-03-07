@@ -1,14 +1,12 @@
 /**
  * Hotbox Dashboard - Command Center
- * 
- * The main dashboard component that provides a morning briefing experience
- * instead of a feature maze. Adapts to the 5 business tiers.
- * 
- * Enhanced with:
- * - Smart pattern detection for personalized quick actions
- * - Tier-specific views and data
- * - Real-time attention queue
- * - Kanban view option for attention items
+ *
+ * Clean operational dashboard with:
+ * - Personalized greeting + Live indicator
+ * - 4 white KPI cards (Revenue, Profit, Orders, Needs Attention)
+ * - Attention Queue kanban (3 columns)
+ * - Quick Actions row (5 buttons with shortcuts)
+ * - Two-column: Location Overview | Top Products Today
  */
 
 import { useEffect, useMemo } from 'react';
@@ -16,41 +14,32 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useAttentionQueue } from '@/hooks/useAttentionQueue';
+import { useQuickActionShortcuts } from '@/hooks/useQuickActionShortcuts';
 import {
-  DollarSign,
   Package,
-  Sparkles,
+  RefreshCw,
+  PlusCircle,
+  MapPin,
+  Truck,
+  BarChart3,
+  Star,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { useTierDashboard } from '@/hooks/useTierDashboard';
 import { useFeatureTracking } from '@/hooks/useFeatureTracking';
 import { cn } from '@/lib/utils';
-
 import { formatCurrency } from '@/lib/formatters';
-import { generateGreeting } from '@/lib/presets/businessTiers';
+import { queryKeys } from '@/lib/queryKeys';
 
-import {
-  type QuickAction,
-} from '@/types/hotbox';
-import { TierUpgradeCard } from './TierUpgradeCard';
 import { AttentionQueueKanban } from './AttentionQueueKanban';
+import { LocationOverviewWidget } from './widgets/LocationOverviewWidget';
+import { TopProductsTodayWidget } from './widgets/TopProductsWidget';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-// Widgets
-import { StreetTierTips } from './widgets/StreetTierTips';
-import { TeamActivityWidget } from './widgets/TeamActivityWidget';
-import { LocationOverviewWidget } from './widgets/LocationOverviewWidget';
-import { ExecutiveSummaryWidget } from './widgets/ExecutiveSummaryWidget';
-import { StrategicDecisionsWidget } from './widgets/StrategicDecisionsWidget';
-import { WeeklyTrendsWidget } from './widgets/WeeklyTrendsWidget';
-import { LiveOrdersWidget } from './widgets/LiveOrdersWidget';
-
-// Type definitions
+// Pulse metric type
 interface PulseMetric {
   id: string;
   label: string;
@@ -60,60 +49,59 @@ interface PulseMetric {
   subtext?: string;
 }
 
-
-// Get tier-specific motivational greeting - memoized to not change on re-render
-function useTierGreeting(userName: string, tier: string) {
-  // Use date as seed so greeting changes daily, not on every render
-  const dateKey = format(new Date(), 'yyyy-MM-dd');
-
-  return useMemo(() => {
-    return generateGreeting(userName, tier as Parameters<typeof generateGreeting>[1]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- dateKey is intentionally used to refresh greeting daily
-  }, [userName, tier, dateKey]);
+function getTimeOfDay(): 'morning' | 'afternoon' | 'evening' {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'morning';
+  if (hour < 17) return 'afternoon';
+  return 'evening';
 }
 
-// Priority icon component - kept but prefixed as currently unused
-function _PriorityIcon({ priority }: { priority: 'critical' | 'important' | 'info' }) {
-  const colors = {
-    critical: 'bg-red-500',
-    important: 'bg-yellow-500',
-    info: 'bg-green-500',
-  };
-
-  return (
-    <span className={cn('inline-block w-3 h-3 rounded-full', colors[priority])} />
-  );
+// Quick action config for Hotbox
+interface HotboxAction {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  path: string;
+  shortcut?: string;
 }
 
-// Use centralized icon map
-import { iconMap } from '@/lib/icons/iconMap';
-import { queryKeys } from '@/lib/queryKeys';
+const HOTBOX_ACTIONS: HotboxAction[] = [
+  { id: 'new-order', label: 'New Order', icon: <PlusCircle className="h-5 w-5" />, path: '/admin/orders?new=true', shortcut: 'Alt+N' },
+  { id: 'locations', label: 'Locations', icon: <MapPin className="h-5 w-5" />, path: '/admin/locations', shortcut: 'Alt+L' },
+  { id: 'fleet', label: 'Fleet', icon: <Truck className="h-5 w-5" />, path: '/admin/fulfillment-hub', shortcut: 'Alt+F' },
+  { id: 'analytics', label: 'Analytics', icon: <BarChart3 className="h-5 w-5" />, path: '/admin/analytics-hub', shortcut: 'Alt+A' },
+  { id: 'pos', label: 'POS System', icon: <Star className="h-5 w-5" />, path: '/admin/pos' },
+];
+
+const HOTBOX_SHORTCUT_ACTIONS = [
+  { key: 'n', path: '/admin/orders?new=true' },
+  { key: 'l', path: '/admin/locations' },
+  { key: 'f', path: '/admin/fulfillment-hub' },
+  { key: 'a', path: '/admin/analytics-hub' },
+];
 
 export function HotboxDashboard() {
   const { tenant, admin } = useTenantAdminAuth();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
-  const { tier, preset, hasWidget, isLoading: tierLoading } = useTierDashboard();
-  const {
-    trackFeature,
-    getPersonalizedQuickActions,
-    isPowerUser,
-  } = useFeatureTracking();
+  const { trackFeature } = useFeatureTracking();
   const navigate = useNavigate();
 
-  // Use centralized attention queue hook (single source of truth)
-  const { queue: attentionQueue, isLoading: attentionLoading } = useAttentionQueue();
+  // Keyboard shortcuts
+  useQuickActionShortcuts(HOTBOX_SHORTCUT_ACTIONS);
+
+  // Attention queue
+  const { queue: attentionQueue, isLoading: attentionLoading, counts, refetch: refetchAttention } = useAttentionQueue();
 
   // Track Hotbox visit
   useEffect(() => {
     trackFeature('hotbox');
   }, [trackFeature]);
 
-  // Get tier-specific motivational message
   const userName = admin?.name || admin?.email?.split('@')[0] || 'there';
-  const tierGreeting = useTierGreeting(userName, tier);
+  const formattedDate = format(new Date(), 'EEEE, MMMM d');
 
-  // Fetch ONLY pulse metrics (attention queue comes from hook)
-  const { data: pulseData, isLoading: pulseLoading } = useQuery({
+  // Fetch pulse metrics
+  const { data: pulseData, isLoading: pulseLoading, dataUpdatedAt, refetch: refetchPulse } = useQuery({
     queryKey: queryKeys.hotbox.pulse(tenant?.id),
     queryFn: async (): Promise<{ pulseMetrics: PulseMetric[] }> => {
       if (!tenant?.id) throw new Error('No tenant');
@@ -123,110 +111,41 @@ export function HotboxDashboard() {
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
 
-      // Aggregate revenue from ALL order sources using Promise.allSettled for resilience
+      // Aggregate revenue from ALL order sources
       const results = await Promise.allSettled([
-        // Today's retail orders
-        supabase
-          .from('orders')
-          .select('total_amount')
-          .eq('tenant_id', tenant.id)
-          .gte('created_at', today.toISOString())
-          .not('status', 'in', '("cancelled","rejected","refunded")'),
-
-        // Today's menu orders
-        supabase
-          .from('menu_orders')
-          .select('total_amount')
-          .eq('tenant_id', tenant.id)
-          .gte('created_at', today.toISOString()),
-
-        // Today's wholesale orders
-        supabase
-          .from('wholesale_orders')
-          .select('total_amount')
-          .eq('tenant_id', tenant.id)
-          .gte('created_at', today.toISOString()),
-
-        // Yesterday's retail orders for comparison
-        supabase
-          .from('orders')
-          .select('total_amount')
-          .eq('tenant_id', tenant.id)
-          .gte('created_at', yesterday.toISOString())
-          .lt('created_at', today.toISOString())
-          .not('status', 'in', '("cancelled","rejected","refunded")'),
-
-        // Yesterday's menu orders for comparison
-        supabase
-          .from('menu_orders')
-          .select('total_amount')
-          .eq('tenant_id', tenant.id)
-          .gte('created_at', yesterday.toISOString())
-          .lt('created_at', today.toISOString()),
-
-        // Yesterday's wholesale orders for comparison
-        supabase
-          .from('wholesale_orders')
-          .select('total_amount')
-          .eq('tenant_id', tenant.id)
-          .gte('created_at', yesterday.toISOString())
-          .lt('created_at', today.toISOString()),
-
-        // Pending orders count
-        supabase
-          .from('orders')
-          .select('*', { count: 'exact', head: true })
-          .eq('tenant_id', tenant.id)
-          .eq('status', 'pending'),
-
-        // Pending menu orders count
-        supabase
-          .from('menu_orders')
-          .select('*', { count: 'exact', head: true })
-          .eq('tenant_id', tenant.id)
-          .eq('status', 'pending'),
-
-        // Pending wholesale orders count
-        supabase
-          .from('wholesale_orders')
-          .select('*', { count: 'exact', head: true })
-          .eq('tenant_id', tenant.id)
-          .eq('status', 'pending'),
+        supabase.from('orders').select('total_amount').eq('tenant_id', tenant.id).gte('created_at', today.toISOString()).not('status', 'in', '("cancelled","rejected","refunded")'),
+        supabase.from('menu_orders').select('total_amount').eq('tenant_id', tenant.id).gte('created_at', today.toISOString()),
+        supabase.from('wholesale_orders').select('total_amount').eq('tenant_id', tenant.id).gte('created_at', today.toISOString()),
+        supabase.from('orders').select('total_amount').eq('tenant_id', tenant.id).gte('created_at', yesterday.toISOString()).lt('created_at', today.toISOString()).not('status', 'in', '("cancelled","rejected","refunded")'),
+        supabase.from('menu_orders').select('total_amount').eq('tenant_id', tenant.id).gte('created_at', yesterday.toISOString()).lt('created_at', today.toISOString()),
+        supabase.from('wholesale_orders').select('total_amount').eq('tenant_id', tenant.id).gte('created_at', yesterday.toISOString()).lt('created_at', today.toISOString()),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'pending'),
+        supabase.from('menu_orders').select('*', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'pending'),
+        supabase.from('wholesale_orders').select('*', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('status', 'pending'),
       ]);
 
-      // Helper to safely extract data from settled results
-      const getOrderData = (result: PromiseSettledResult<{ data: { total_amount: number }[] | null }>) => {
-        if (result.status === 'fulfilled' && result.value.data) {
-          return result.value.data;
-        }
-        return [];
-      };
-      
-      const getCount = (result: PromiseSettledResult<{ count: number | null }>) => {
-        if (result.status === 'fulfilled' && result.value.count !== null) {
-          return result.value.count;
-        }
-        return 0;
-      };
+      const getOrderData = (result: PromiseSettledResult<{ data: { total_amount: number }[] | null }>) =>
+        result.status === 'fulfilled' && result.value.data ? result.value.data : [];
 
-      // Aggregate today's revenue from all sources
+      const getCount = (result: PromiseSettledResult<{ count: number | null }>) =>
+        result.status === 'fulfilled' && result.value.count !== null ? result.value.count : 0;
+
       const todayRetailOrders = getOrderData(results[0] as PromiseSettledResult<{ data: { total_amount: number }[] | null }>);
       const todayMenuOrders = getOrderData(results[1] as PromiseSettledResult<{ data: { total_amount: number }[] | null }>);
       const todayWholesaleOrders = getOrderData(results[2] as PromiseSettledResult<{ data: { total_amount: number }[] | null }>);
-      
-      const todayRevenue = 
+
+      const todayRevenue =
         todayRetailOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) +
         todayMenuOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) +
         todayWholesaleOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-      
+
       const todayOrderCount = todayRetailOrders.length + todayMenuOrders.length + todayWholesaleOrders.length;
 
-      // Aggregate yesterday's revenue from all sources
       const yesterdayRetailOrders = getOrderData(results[3] as PromiseSettledResult<{ data: { total_amount: number }[] | null }>);
       const yesterdayMenuOrders = getOrderData(results[4] as PromiseSettledResult<{ data: { total_amount: number }[] | null }>);
       const yesterdayWholesaleOrders = getOrderData(results[5] as PromiseSettledResult<{ data: { total_amount: number }[] | null }>);
-      
-      const yesterdayRevenue = 
+
+      const yesterdayRevenue =
         yesterdayRetailOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) +
         yesterdayMenuOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) +
         yesterdayWholesaleOrders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
@@ -235,79 +154,68 @@ export function HotboxDashboard() {
         ? Math.round(((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100)
         : 0;
 
-      // Get pending counts from all sources
       const pendingOrders = getCount(results[6] as PromiseSettledResult<{ count: number | null }>);
       const pendingMenuOrders = getCount(results[7] as PromiseSettledResult<{ count: number | null }>);
       const pendingWholesaleOrders = getCount(results[8] as PromiseSettledResult<{ count: number | null }>);
       const totalPending = pendingOrders + pendingMenuOrders + pendingWholesaleOrders;
-      
-      // Calculate profit using actual product costs when available
-      // Fetch today's order items with product costs for accurate margin calculation
+      const completedToday = todayOrderCount - totalPending;
+
+      // Calculate profit with actual costs when available
       const { data: orderItems } = await supabase
         .from('order_items')
-        .select(`
-          quantity,
-          price,
-          product_id,
-          order:orders!inner(tenant_id, created_at),
-          product:products(cost)
-        `)
+        .select(`quantity, price, product:products(cost), order:orders!inner(tenant_id, created_at)`)
         .eq('order.tenant_id', tenant.id)
         .gte('order.created_at', today.toISOString());
 
       let profit: number;
       let actualMargin: number | null = null;
       const ESTIMATED_PROFIT_MARGIN = 0.25;
-      
+
       if (orderItems && orderItems.length > 0) {
-        // Calculate actual profit from product costs
         const totalCost = orderItems.reduce((sum, item) => {
           const productCost = (item.product as { cost?: number } | null)?.cost ?? 0;
           return sum + (productCost * (item.quantity ?? 0));
         }, 0);
-        
+
         if (totalCost > 0 && todayRevenue > 0) {
           profit = todayRevenue - totalCost;
           actualMargin = profit / todayRevenue;
         } else {
-          // Fall back to estimated margin if no cost data
           profit = todayRevenue * ESTIMATED_PROFIT_MARGIN;
         }
       } else {
-        // Fall back to estimated margin if no order items
         profit = todayRevenue * ESTIMATED_PROFIT_MARGIN;
       }
-      
-      const marginDisplay = actualMargin !== null 
-        ? `${Math.round(actualMargin * 100)}% margin` 
+
+      const marginDisplay = actualMargin !== null
+        ? `${Math.round(actualMargin * 100)}% margin`
         : '~25% est.';
 
       const pulseMetrics: PulseMetric[] = [
         {
           id: 'revenue',
-          label: 'Revenue',
+          label: 'REVENUE TODAY',
           value: formatCurrency(todayRevenue),
-          change: revenueChange !== 0 ? `${revenueChange > 0 ? '+' : ''}${revenueChange}%` : undefined,
+          change: revenueChange !== 0 ? `${revenueChange > 0 ? '+' : ''}${revenueChange}% vs yesterday` : undefined,
           changeType: revenueChange > 0 ? 'increase' : revenueChange < 0 ? 'decrease' : 'neutral',
-          subtext: 'today',
         },
         {
           id: 'profit',
-          label: 'Profit',
+          label: 'PROFIT',
           value: formatCurrency(profit),
           subtext: marginDisplay,
         },
         {
           id: 'orders',
-          label: 'Orders',
+          label: 'ORDERS TODAY',
           value: `${todayOrderCount}`,
-          subtext: 'today',
+          subtext: `${totalPending} pending / ${Math.max(0, completedToday)} completed`,
         },
         {
-          id: 'pending',
-          label: 'Pending',
-          value: `${totalPending}`,
-          subtext: totalPending > 0 ? 'action needed' : 'none',
+          id: 'attention',
+          label: 'NEEDS ATTENTION',
+          value: `${counts.total} items`,
+          subtext: counts.critical > 0 ? `${counts.critical} urgent` : undefined,
         },
       ];
 
@@ -318,211 +226,119 @@ export function HotboxDashboard() {
     refetchInterval: 60 * 1000,
   });
 
-  // Get attention items from the centralized hook
   const attentionItems = attentionQueue?.items ?? [];
 
-  // Build quick actions from tier preset + personalized suggestions
-  const presetActions: QuickAction[] = useMemo(() =>
-    preset.quickActions.map(action => ({
-      id: action.id,
-      label: action.label,
-      icon: iconMap[action.icon] || <Package className="h-5 w-5" />,
-      path: action.path,
-      isPersonalized: false,
-    })),
-    [preset.quickActions]
-  );
+  const isLoading = pulseLoading || attentionLoading;
 
-  // Add personalized actions based on user patterns
-  const personalizedFeatures = useMemo(() => getPersonalizedQuickActions(), [getPersonalizedQuickActions]);
-  const personalizedActions: QuickAction[] = useMemo(() =>
-    personalizedFeatures
-      .filter(featureId => !presetActions.some(a => a.id === featureId))
-      .slice(0, 2) // Add up to 2 personalized actions
-      .map(featureId => ({
-        id: featureId,
-        label: featureId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-        icon: <Sparkles className="h-5 w-5 text-yellow-500" />,
-        path: `/admin/${featureId}`,
-        isPersonalized: true,
-      })),
-    [personalizedFeatures, presetActions]
-  );
+  const lastUpdatedText = useMemo(() => {
+    if (!dataUpdatedAt) return null;
+    const seconds = Math.floor((Date.now() - dataUpdatedAt) / 1000);
+    if (seconds < 60) return `${seconds}s ago`;
+    return `${Math.floor(seconds / 60)}m ago`;
+  }, [dataUpdatedAt]);
 
-  const quickActions = useMemo(
-    () => [...presetActions, ...personalizedActions],
-    [presetActions, personalizedActions]
-  );
+  const handleRefresh = () => {
+    refetchPulse();
+    refetchAttention();
+  };
 
-  const isLoading = tierLoading || pulseLoading || attentionLoading;
+  if (isLoading) return <HotboxSkeleton />;
 
-  // Render logic
-  return isLoading ? <HotboxSkeleton /> : (
+  return (
     <div className="space-y-6 p-4 md:p-6">
-      {/* Header - Personalized Greeting with Tier-Specific Message */}
+      {/* Header — Personalized greeting + Live indicator */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">
-            {tierGreeting.timeGreeting}, {userName}!
+            Good {getTimeOfDay()}, {userName}
           </h1>
           <p className="text-muted-foreground">
-            {tierGreeting.tierMessage} • {format(new Date(), 'EEEE, MMMM d')}
+            Daily operations summary.{' '}
+            <span className="text-muted-foreground/40">|</span>{' '}
+            {formattedDate}
           </p>
-          {isPowerUser() && (
-            <Badge variant="secondary" className="mt-1 text-xs">
-              <Sparkles className="h-3 w-3 mr-1" />
-              Power User
-            </Badge>
-          )}
         </div>
-        <div className="flex items-center gap-2">
-          <Badge
-            variant="outline"
-            className={cn(
-              'text-sm font-medium',
-              tier === 'street' && 'border-gray-500 text-gray-600',
-              tier === 'trap' && 'border-blue-500 text-blue-600',
-              tier === 'block' && 'border-purple-500 text-purple-600',
-              tier === 'hood' && 'border-orange-500 text-orange-600',
-              tier === 'empire' && 'border-yellow-500 text-yellow-600',
-            )}
-          >
-            {preset.displayName} Tier
-          </Badge>
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Live
+          </span>
+          {lastUpdatedText && <span>Updated {lastUpdatedText}</span>}
+          <Button variant="ghost" size="icon" onClick={handleRefresh} className="h-8 w-8">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Pulse Metrics - The 4 key numbers */}
-      <Card className="bg-gradient-to-br from-slate-900 to-slate-800 text-white border-0">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <DollarSign className="h-5 w-5" /> TODAY'S PULSE
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {pulseData?.pulseMetrics.map((metric) => (
-              <div
-                key={metric.id}
-                className="bg-white/10 rounded-lg p-4 backdrop-blur-sm"
-              >
-                <div className="text-2xl md:text-3xl font-bold">{metric.value}</div>
-                <div className="text-sm text-white/70">{metric.label}</div>
-                {metric.change && (
-                  <div className={cn(
-                    'text-sm font-medium',
-                    metric.changeType === 'increase' && 'text-green-400',
-                    metric.changeType === 'decrease' && 'text-red-400',
-                  )}>
-                    {metric.change}
-                  </div>
-                )}
-                {metric.subtext && !metric.change && (
-                  <div className="text-xs text-white/50">{metric.subtext}</div>
-                )}
+      {/* 4 White KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {pulseData?.pulseMetrics.map((metric) => (
+          <Card key={metric.id} className="p-5">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              {metric.label}
+            </div>
+            <div className="text-2xl md:text-3xl font-bold mt-2">{metric.value}</div>
+            {metric.change && (
+              <div className={cn(
+                'text-sm font-medium mt-1',
+                metric.changeType === 'increase' && 'text-emerald-600',
+                metric.changeType === 'decrease' && 'text-red-500',
+              )}>
+                {metric.change}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            )}
+            {metric.subtext && !metric.change && (
+              <div className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                {metric.id === 'attention' && counts.critical > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+                )}
+                {metric.subtext}
+              </div>
+            )}
+          </Card>
+        ))}
+      </div>
 
-      {/* Attention Queue with View Toggle */}
+      {/* Attention Queue Kanban */}
       <AttentionQueueKanban items={attentionItems} />
 
-
       {/* Quick Actions */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <Sparkles className="h-5 w-5" /> QUICK ACTIONS
-            {personalizedActions.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                <Sparkles className="h-3 w-3 mr-1" />
-                Personalized
-              </Badge>
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+        {HOTBOX_ACTIONS.map((action) => (
+          <Card
+            key={action.id}
+            className="p-3 flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50 hover:shadow-sm transition-all text-center"
+            onClick={() => {
+              trackFeature(action.id);
+              navigate(`/${tenantSlug}${action.path}`);
+            }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                trackFeature(action.id);
+                navigate(`/${tenantSlug}${action.path}`);
+              }
+            }}
+          >
+            <span className="text-muted-foreground">{action.icon}</span>
+            <span className="text-xs font-medium leading-tight">{action.label}</span>
+            {action.shortcut && (
+              <span className="text-[10px] text-muted-foreground/60">{action.shortcut}</span>
             )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            {quickActions.map((action) => (
-              <Button
-                key={action.id}
-                variant={action.isPersonalized ? 'secondary' : 'outline'}
-                className={cn(
-                  'flex items-center gap-2 h-auto py-2 px-3',
-                  action.isPersonalized && 'border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20'
-                )}
-                onClick={() => {
-                  trackFeature(action.id);
-                  navigate(`/${tenantSlug}${action.path}`);
-                }}
-              >
-                <span className="shrink-0">{action.icon}</span>
-                <span>{action.label}</span>
-                {action.isPersonalized && (
-                  <span className="text-xs text-muted-foreground ml-1">(for you)</span>
-                )}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+          </Card>
+        ))}
+      </div>
 
-      {/* Tier Upgrade Progress */}
-      <TierUpgradeCard />
-
-      {/* Tier-specific sections - Dynamic Rendering */}
-
-      <div className="space-y-6">
-        {/* Live Orders Widget - Real-time order queue */}
-        {hasWidget('live-orders') && (
-          <ErrorBoundary>
-            <LiveOrdersWidget />
-          </ErrorBoundary>
-        )}
-
-        {/* Street Tier Tips */}
-        {hasWidget('street-tips') && (
-          <ErrorBoundary>
-            <StreetTierTips />
-          </ErrorBoundary>
-        )}
-
-        {/* Team Activity */}
-        {hasWidget('team-activity') && (
-          <ErrorBoundary>
-            <TeamActivityWidget />
-          </ErrorBoundary>
-        )}
-
-        {/* Network Overview */}
-        {hasWidget('location-overview') && (
-          <ErrorBoundary>
-            <LocationOverviewWidget />
-          </ErrorBoundary>
-        )}
-
-        {/* Executive Summary */}
-        {hasWidget('executive-summary') && (
-          <ErrorBoundary>
-            <ExecutiveSummaryWidget />
-          </ErrorBoundary>
-        )}
-
-        {/* Strategic Decisions */}
-        {hasWidget('strategic-decisions') && (
-          <ErrorBoundary>
-            <StrategicDecisionsWidget />
-          </ErrorBoundary>
-        )}
-
-        {/* Weekly Trends */}
-        {hasWidget('weekly-trends') && (
-          <ErrorBoundary>
-            <WeeklyTrendsWidget />
-          </ErrorBoundary>
-        )}
+      {/* Two-column: Location Overview + Top Products */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ErrorBoundary>
+          <LocationOverviewWidget />
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <TopProductsTodayWidget />
+        </ErrorBoundary>
       </div>
     </div>
   );
@@ -536,15 +352,15 @@ function HotboxSkeleton() {
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-4 w-48" />
       </div>
-      <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-24 rounded-lg" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} className="p-5">
+            <Skeleton className="h-3 w-20 mb-3" />
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-4 w-32 mt-2" />
+          </Card>
+        ))}
+      </div>
       <Card>
         <CardContent className="pt-6 space-y-2">
           {[1, 2, 3].map((i) => (
