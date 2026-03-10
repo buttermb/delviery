@@ -174,7 +174,7 @@ export async function checkUserPermission(
  * Use this in edge functions for critical operations
  */
 export async function requirePermission(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   tenantId: string,
   permission: string,
