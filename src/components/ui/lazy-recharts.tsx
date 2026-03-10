@@ -10,10 +10,9 @@
  * beyond the import path.
  */
 
-import { lazy, Suspense, type ComponentProps } from 'react';
-import type { FC } from 'react';
+import { lazy, Suspense } from 'react';
 
-import * as RechartsTypes from 'recharts';
+import type * as RechartsTypes from 'recharts';
 
 // ---------------------------------------------------------------------------
 // Lazy module loader (single dynamic import shared by every wrapper)
@@ -21,29 +20,31 @@ import * as RechartsTypes from 'recharts';
 const lazyRecharts = () => import('recharts');
 
 // ---------------------------------------------------------------------------
-// Factory – creates a Suspense-wrapped lazy component that preserves the
-// original recharts component's prop types.
+// Factory – creates a Suspense-wrapped lazy component.
+// Uses `any` internally because recharts exports a mix of components and
+// non-component values (e.g. `Global`), which makes strict generic
+// constraints on ComponentProps impossible.  Call-sites are correctly typed
+// since they only pass known component names.
 // ---------------------------------------------------------------------------
 type RechartsExports = typeof RechartsTypes;
 
-function createLazy<K extends keyof RechartsExports>(
-  name: K,
-): FC<ComponentProps<RechartsExports[K]>> {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function createLazy<K extends keyof RechartsExports>(name: K) {
   const LazyComp = lazy(() =>
     lazyRecharts().then((mod) => ({
-      default: mod[name] as React.ComponentType<ComponentProps<RechartsExports[K]>>,
+      default: mod[name] as any,
     })),
   );
 
-  const Wrapped: FC<ComponentProps<RechartsExports[K]>> = (props) => (
+  const Wrapped = (props: any) => (
     <Suspense fallback={null}>
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- props are correctly typed at call-site */}
-      <LazyComp {...(props as Record<string, unknown>)} />
+      <LazyComp {...props} />
     </Suspense>
   );
   Wrapped.displayName = `Lazy${String(name)}`;
-  return Wrapped;
+  return Wrapped as any;
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 // ---------------------------------------------------------------------------
 // Lazy-wrapped exports – one per recharts component used in the codebase
