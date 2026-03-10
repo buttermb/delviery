@@ -12,7 +12,7 @@ import { createClient } from '../_shared/deps.ts';
  * Note: Requires service role client for auth.admin access
  */
 export async function getUserRoles(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string
 ): Promise<string[]> {
   const { data: userRoles, error } = await supabase
