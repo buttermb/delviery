@@ -132,7 +132,7 @@ async function handleGetSessions(
 }
 
 async function handleRevokeSession(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   sessionId: string,
   ipAddress: string,
