@@ -279,7 +279,7 @@ serve(async (req) => {
               ...order,
               user: profiles?.find((p: Record<string, unknown>) => p.user_id === order.user_id) || null,
               items: orderItems?.filter((item: Record<string, unknown>) => item.order_id === order.id) || [],
-              order_number: order.order_number || `ORD-${order.id.substring(0, 8).toUpperCase()}`,
+              order_number: order.order_number || `ORD-${(order.id as string).substring(0, 8).toUpperCase()}`,
             }
           };
         }) || [];
