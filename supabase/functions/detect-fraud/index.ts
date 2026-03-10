@@ -144,7 +144,7 @@ async function checkAddress(userId: string, supabase: any) {
   return { flagged: false };
 }
 
-async function checkDeviceFingerprint(userId: string, supabase: ReturnType<typeof createClient>) {
+async function checkDeviceFingerprint(userId: string, supabase: any) {
   const { data: devices } = await supabase
     .from("device_fingerprints")
     .select("*")
