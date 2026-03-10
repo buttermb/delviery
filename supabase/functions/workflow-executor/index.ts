@@ -266,7 +266,7 @@ serve(async (req) => {
 });
 
 // Action Executors
-async function executeEmailAction(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
+async function executeEmailAction(supabase: any, action: WorkflowAction, _execution: WorkflowExecution) {
   const { to, subject, body } = action.config;
   
   // Call email edge function
