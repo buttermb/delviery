@@ -265,7 +265,7 @@ serve(async (req) => {
  * Get low stock products for a tenant
  */
 async function getLowStockProducts(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   thresholdOverride?: number
 ): Promise<LowStockProduct[]> {
