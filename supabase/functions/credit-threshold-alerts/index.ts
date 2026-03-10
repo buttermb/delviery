@@ -341,7 +341,7 @@ async function sendInAppNotification(
  * Send email alert using send-notification function
  */
 async function sendEmailAlert(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   email: string,
   tenantSlug: string,
   threshold: typeof ALERT_THRESHOLDS[number],
