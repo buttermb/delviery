@@ -278,7 +278,7 @@ async function executeEmailAction(supabase: any, action: WorkflowAction, _execut
   return data;
 }
 
-async function executeSMSAction(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
+async function executeSMSAction(supabase: any, action: WorkflowAction, _execution: WorkflowExecution) {
   const { to, message } = action.config;
   
   const { data, error } = await supabase.functions.invoke('send-sms', {
