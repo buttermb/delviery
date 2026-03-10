@@ -93,7 +93,7 @@ serve(async (req) => {
 });
 
 async function handleGetSessions(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   currentToken: string
 ): Promise<Response> {
