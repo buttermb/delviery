@@ -389,7 +389,7 @@ async function consumeApiCredits(
  * Log API usage for analytics
  */
 async function logApiUsage(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   req: Request,
   creditCost: number,
