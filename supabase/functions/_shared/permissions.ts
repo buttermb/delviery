@@ -192,7 +192,7 @@ export async function requirePermission(
  * Kept for backward compatibility
  */
 export async function getUserRole(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   tenantId: string,
   userEmail?: string

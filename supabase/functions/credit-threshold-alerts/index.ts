@@ -376,7 +376,7 @@ async function sendEmailAlert(
  * Send SMS alert
  */
 async function sendSmsAlert(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   phone: string,
   threshold: typeof ALERT_THRESHOLDS[number],
   balance: number

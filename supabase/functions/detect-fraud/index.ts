@@ -178,7 +178,7 @@ async function checkDeviceFingerprint(userId: string, supabase: any) {
   return { flagged: false };
 }
 
-async function checkBehavior(userId: string, supabase: ReturnType<typeof createClient>) {
+async function checkBehavior(userId: string, supabase: any) {
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")

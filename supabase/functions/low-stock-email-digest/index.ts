@@ -371,7 +371,7 @@ async function calculateAverageDailyUsage(
  * Send email digest to tenant admin(s)
  */
 async function sendDigestEmail(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   data: TenantDigestData,
   recipients: string[]
 ): Promise<{ success: boolean; error?: string }> {

@@ -184,7 +184,7 @@ function assessNameRisk(profile: Profile): number {
   return Math.min(risk, 100);
 }
 
-async function assessAddressRisk(address: Address | null, supabaseClient: ReturnType<typeof createClient>): Promise<number> {
+async function assessAddressRisk(address: Address | null, supabaseClient: any): Promise<number> {
   if (!address) return 50;
 
   let risk = 0;

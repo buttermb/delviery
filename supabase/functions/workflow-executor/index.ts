@@ -366,7 +366,7 @@ async function executeDatabaseQuery(supabase: any, action: WorkflowAction, _exec
   return result;
 }
 
-async function executeEdgeFunction(supabase: ReturnType<typeof createClient>, action: WorkflowAction, execution: WorkflowExecution) {
+async function executeEdgeFunction(supabase: any, action: WorkflowAction, execution: WorkflowExecution) {
   const { data, error } = await supabase.functions.invoke(action.edge_function!, {
     body: { ...action.config, trigger_data: execution.trigger_data }
   });

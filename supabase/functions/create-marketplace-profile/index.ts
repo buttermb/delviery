@@ -87,22 +87,23 @@ serve(async (req) => {
     }
 
     // Log platform transaction (profile creation event)
-    await supabase
-      .from('platform_transactions')
-      .insert({
-        tenant_id: body.tenant_id,
-        transaction_type: 'subscription_fee', // Or create a new type 'profile_creation'
-        amount: 0,
-        status: 'collected',
-        description: 'Marketplace profile created',
-        metadata: {
-          profile_id: profile.id,
-          action: existing ? 'updated' : 'created',
-        },
-      })
-      .catch((err) => {
-        console.warn('Failed to log platform transaction (non-blocking)', err);
-      });
+    try {
+      await supabase
+        .from('platform_transactions')
+        .insert({
+          tenant_id: body.tenant_id,
+          transaction_type: 'subscription_fee',
+          amount: 0,
+          status: 'collected',
+          description: 'Marketplace profile created',
+          metadata: {
+            profile_id: profile.id,
+            action: existing ? 'updated' : 'created',
+          },
+        });
+    } catch (err) {
+      console.warn('Failed to log platform transaction (non-blocking)', err);
+    }
 
     return new Response(
       JSON.stringify({

@@ -250,7 +250,7 @@ async function handleRevokeAllOthers(
 }
 
 async function logSessionRevokedEvent(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   ipAddress: string,
   userAgent: string,

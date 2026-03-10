@@ -189,7 +189,7 @@ async function releaseReservedInventory(supabase: any, orderId: string, itemsTab
   }
 }
 
-async function createNotification(supabase: ReturnType<typeof createClient>, order: { id: string; order_number: string; tenant_id: string }, daysPending: number) {
+async function createNotification(supabase: any, order: { id: string; order_number: string; tenant_id: string }, daysPending: number) {
   try {
     await supabase
       .from("notifications")

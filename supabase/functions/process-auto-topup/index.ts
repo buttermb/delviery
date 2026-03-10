@@ -75,7 +75,7 @@ async function getTopUpsInLastHour(
  * Send a failure notification to the tenant.
  */
 async function sendFailureNotification(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   errorMessage: string
 ): Promise<void> {

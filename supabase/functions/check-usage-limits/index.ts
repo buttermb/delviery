@@ -106,7 +106,7 @@ serve(async (req) => {
         acc[key].warning.push(alert);
       }
       return acc;
-    }, {} as Record<string, unknown>);
+    }, {} as Record<string, any>);
 
     // Send consolidated emails
     const emailTasks = Object.values(tenantAlerts).map(async (data: unknown) => {

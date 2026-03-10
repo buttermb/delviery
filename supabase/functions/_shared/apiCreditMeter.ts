@@ -424,7 +424,7 @@ async function logApiUsage(
  * Check API rate limit (calls per minute)
  */
 export async function checkApiRateLimit(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   maxRequestsPerMinute: number = 60
 ): Promise<{ allowed: boolean; remaining: number; resetAt: Date }> {
