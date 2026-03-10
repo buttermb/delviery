@@ -105,7 +105,7 @@ async function checkVelocity(userId: string, supabase: any) {
   return { flagged: false };
 }
 
-async function checkAddress(userId: string, supabase: ReturnType<typeof createClient>) {
+async function checkAddress(userId: string, supabase: any) {
   const { data: addresses } = await supabase
     .from("addresses")
     .select("*, risk_zone")
