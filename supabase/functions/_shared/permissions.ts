@@ -110,7 +110,7 @@ export async function getPrimaryRole(
  * Owners have all permissions within their tenant
  */
 export async function checkUserPermission(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   tenantId: string,
   permission: string,
