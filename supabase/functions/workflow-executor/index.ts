@@ -289,7 +289,7 @@ async function executeSMSAction(supabase: any, action: WorkflowAction, _executio
   return data;
 }
 
-async function executeInventoryUpdate(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
+async function executeInventoryUpdate(supabase: any, action: WorkflowAction, _execution: WorkflowExecution) {
   const { product_id, quantity } = action.config;
   
   const { data, error } = await supabase
