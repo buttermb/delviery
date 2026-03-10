@@ -32,7 +32,7 @@ export async function getUserRoles(
  * Check if user has a specific role using has_role() database function
  */
 export async function hasRole(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   role: string
 ): Promise<boolean> {
