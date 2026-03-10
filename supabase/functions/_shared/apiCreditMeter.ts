@@ -340,7 +340,7 @@ function getApiCreditCost(req: Request): number {
  * Consume credits for an API request
  */
 async function consumeApiCredits(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   req: Request,
   creditCost: number
