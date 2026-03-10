@@ -186,7 +186,7 @@ serve(async (req) => {
  * Check a single tenant and send alerts if needed
  */
 async function checkAndAlertTenant(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   balance: number,
   tenantData?: { owner_email?: string; owner_phone?: string; slug?: string },
