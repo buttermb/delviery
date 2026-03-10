@@ -112,7 +112,7 @@ interface TenantInfo {
  */
 export async function withApiCreditMeter(
   req: Request,
-  handler: (tenantId: string, supabase: ReturnType<typeof createClient>) => Promise<Response>,
+  handler: (tenantId: string, supabase: any) => Promise<Response>,
   options?: {
     customCost?: number;
     skipForPaidTiers?: boolean;
