@@ -228,7 +228,7 @@ export async function withApiCreditMeter(
  */
 async function getTenantFromApiKey(
   req: Request,
-  supabase: ReturnType<typeof createClient>
+  supabase: any
 ): Promise<TenantInfo | null> {
   // Try X-API-Key header
   const apiKey = req.headers.get('X-API-Key') || req.headers.get('Authorization')?.replace('Bearer ', '');
