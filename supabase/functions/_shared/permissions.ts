@@ -60,7 +60,7 @@ export async function hasRole(
  * Priority: super_admin > owner > admin > member > viewer
  */
 export async function getPrimaryRole(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   tenantId?: string,
   userEmail?: string
