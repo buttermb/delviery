@@ -280,7 +280,7 @@ async function hashApiKey(apiKey: string): Promise<string> {
  * Get tenant info including free tier status
  */
 async function getTenantInfo(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string
 ): Promise<TenantInfo | null> {
   const { data: tenant, error } = await supabase
