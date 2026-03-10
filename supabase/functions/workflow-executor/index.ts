@@ -266,7 +266,7 @@ serve(async (req) => {
 });
 
 // Action Executors
-async function executeEmailAction(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
+async function executeEmailAction(supabase: any, action: WorkflowAction, _execution: WorkflowExecution) {
   const { to, subject, body } = action.config;
   
   // Call email edge function
@@ -278,7 +278,7 @@ async function executeEmailAction(supabase: ReturnType<typeof createClient>, act
   return data;
 }
 
-async function executeSMSAction(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
+async function executeSMSAction(supabase: any, action: WorkflowAction, _execution: WorkflowExecution) {
   const { to, message } = action.config;
   
   const { data, error } = await supabase.functions.invoke('send-sms', {
@@ -289,7 +289,7 @@ async function executeSMSAction(supabase: ReturnType<typeof createClient>, actio
   return data;
 }
 
-async function executeInventoryUpdate(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
+async function executeInventoryUpdate(supabase: any, action: WorkflowAction, _execution: WorkflowExecution) {
   const { product_id, quantity } = action.config;
   
   const { data, error } = await supabase
@@ -303,7 +303,7 @@ async function executeInventoryUpdate(supabase: ReturnType<typeof createClient>,
   return data;
 }
 
-async function executeAssignCourier(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
+async function executeAssignCourier(supabase: any, action: WorkflowAction, _execution: WorkflowExecution) {
   const { order_id, courier_id } = action.config;
   
   const { data, error } = await supabase.functions.invoke('assign-courier', {
@@ -333,7 +333,7 @@ async function executeWebhook(action: WorkflowAction, execution: WorkflowExecuti
   return await response.json();
 }
 
-async function executeDatabaseQuery(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
+async function executeDatabaseQuery(supabase: any, action: WorkflowAction, _execution: WorkflowExecution) {
   const { table, operation, data, filter } = action.config;
   
   let query = supabase.from(table);
@@ -366,7 +366,7 @@ async function executeDatabaseQuery(supabase: ReturnType<typeof createClient>, a
   return result;
 }
 
-async function executeEdgeFunction(supabase: ReturnType<typeof createClient>, action: WorkflowAction, execution: WorkflowExecution) {
+async function executeEdgeFunction(supabase: any, action: WorkflowAction, execution: WorkflowExecution) {
   const { data, error } = await supabase.functions.invoke(action.edge_function!, {
     body: { ...action.config, trigger_data: execution.trigger_data }
   });

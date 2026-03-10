@@ -112,7 +112,7 @@ interface TenantInfo {
  */
 export async function withApiCreditMeter(
   req: Request,
-  handler: (tenantId: string, supabase: ReturnType<typeof createClient>) => Promise<Response>,
+  handler: (tenantId: string, supabase: any) => Promise<Response>,
   options?: {
     customCost?: number;
     skipForPaidTiers?: boolean;
@@ -228,7 +228,7 @@ export async function withApiCreditMeter(
  */
 async function getTenantFromApiKey(
   req: Request,
-  supabase: ReturnType<typeof createClient>
+  supabase: any
 ): Promise<TenantInfo | null> {
   // Try X-API-Key header
   const apiKey = req.headers.get('X-API-Key') || req.headers.get('Authorization')?.replace('Bearer ', '');
@@ -280,7 +280,7 @@ async function hashApiKey(apiKey: string): Promise<string> {
  * Get tenant info including free tier status
  */
 async function getTenantInfo(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string
 ): Promise<TenantInfo | null> {
   const { data: tenant, error } = await supabase
@@ -340,7 +340,7 @@ function getApiCreditCost(req: Request): number {
  * Consume credits for an API request
  */
 async function consumeApiCredits(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   req: Request,
   creditCost: number
@@ -389,7 +389,7 @@ async function consumeApiCredits(
  * Log API usage for analytics
  */
 async function logApiUsage(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   req: Request,
   creditCost: number,
@@ -424,7 +424,7 @@ async function logApiUsage(
  * Check API rate limit (calls per minute)
  */
 export async function checkApiRateLimit(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   maxRequestsPerMinute: number = 60
 ): Promise<{ allowed: boolean; remaining: number; resetAt: Date }> {

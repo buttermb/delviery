@@ -93,7 +93,7 @@ serve(async (req) => {
 });
 
 async function handleGetSessions(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   currentToken: string
 ): Promise<Response> {
@@ -132,7 +132,7 @@ async function handleGetSessions(
 }
 
 async function handleRevokeSession(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   sessionId: string,
   ipAddress: string,
@@ -187,7 +187,7 @@ async function handleRevokeSession(
 }
 
 async function handleRevokeAllOthers(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   currentToken: string,
   ipAddress: string,
@@ -250,7 +250,7 @@ async function handleRevokeAllOthers(
 }
 
 async function logSessionRevokedEvent(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   ipAddress: string,
   userAgent: string,

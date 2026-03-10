@@ -157,7 +157,7 @@ serve(async (req) => {
   }
 });
 
-async function releaseReservedInventory(supabase: ReturnType<typeof createClient>, orderId: string, itemsTable: string) {
+async function releaseReservedInventory(supabase: any, orderId: string, itemsTable: string) {
   try {
     const { data: items } = await supabase
       .from(itemsTable)
@@ -189,7 +189,7 @@ async function releaseReservedInventory(supabase: ReturnType<typeof createClient
   }
 }
 
-async function createNotification(supabase: ReturnType<typeof createClient>, order: { id: string; order_number: string; tenant_id: string }, daysPending: number) {
+async function createNotification(supabase: any, order: { id: string; order_number: string; tenant_id: string }, daysPending: number) {
   try {
     await supabase
       .from("notifications")

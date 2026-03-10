@@ -186,7 +186,7 @@ serve(async (req) => {
  * Check a single tenant and send alerts if needed
  */
 async function checkAndAlertTenant(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   balance: number,
   tenantData?: { owner_email?: string; owner_phone?: string; slug?: string },
@@ -315,7 +315,7 @@ async function checkAndAlertTenant(
  * Send in-app notification
  */
 async function sendInAppNotification(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   threshold: typeof ALERT_THRESHOLDS[number],
   balance: number
@@ -341,7 +341,7 @@ async function sendInAppNotification(
  * Send email alert using send-notification function
  */
 async function sendEmailAlert(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   email: string,
   tenantSlug: string,
   threshold: typeof ALERT_THRESHOLDS[number],
@@ -376,7 +376,7 @@ async function sendEmailAlert(
  * Send SMS alert
  */
 async function sendSmsAlert(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   phone: string,
   threshold: typeof ALERT_THRESHOLDS[number],
   balance: number

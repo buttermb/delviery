@@ -21,7 +21,7 @@ serve(async (req) => {
 
     console.error(`Generating ${reportType} compliance report for tenant ${tenantId}`);
 
-    const report: Record<string, unknown> = {
+    const report: Record<string, any> = {
       generated_at: new Date().toISOString(),
       tenant_id: tenantId,
       report_type: reportType,

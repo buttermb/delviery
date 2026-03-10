@@ -265,7 +265,7 @@ serve(async (req) => {
  * Get low stock products for a tenant
  */
 async function getLowStockProducts(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   thresholdOverride?: number
 ): Promise<LowStockProduct[]> {
@@ -337,7 +337,7 @@ async function getLowStockProducts(
  * Calculate average daily usage for a product over the last 30 days
  */
 async function calculateAverageDailyUsage(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   productId: string
 ): Promise<number> {
@@ -371,7 +371,7 @@ async function calculateAverageDailyUsage(
  * Send email digest to tenant admin(s)
  */
 async function sendDigestEmail(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   data: TenantDigestData,
   recipients: string[]
 ): Promise<{ success: boolean; error?: string }> {

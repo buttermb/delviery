@@ -12,7 +12,7 @@ import { createClient } from '../_shared/deps.ts';
  * Note: Requires service role client for auth.admin access
  */
 export async function getUserRoles(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string
 ): Promise<string[]> {
   const { data: userRoles, error } = await supabase
@@ -32,7 +32,7 @@ export async function getUserRoles(
  * Check if user has a specific role using has_role() database function
  */
 export async function hasRole(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   role: string
 ): Promise<boolean> {
@@ -60,7 +60,7 @@ export async function hasRole(
  * Priority: super_admin > owner > admin > member > viewer
  */
 export async function getPrimaryRole(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   tenantId?: string,
   userEmail?: string
@@ -110,7 +110,7 @@ export async function getPrimaryRole(
  * Owners have all permissions within their tenant
  */
 export async function checkUserPermission(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   tenantId: string,
   permission: string,
@@ -174,7 +174,7 @@ export async function checkUserPermission(
  * Use this in edge functions for critical operations
  */
 export async function requirePermission(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   tenantId: string,
   permission: string,
@@ -192,7 +192,7 @@ export async function requirePermission(
  * Kept for backward compatibility
  */
 export async function getUserRole(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   tenantId: string,
   userEmail?: string

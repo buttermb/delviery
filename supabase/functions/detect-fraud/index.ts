@@ -82,7 +82,7 @@ serve(async (req) => {
   }
 });
 
-async function checkVelocity(userId: string, supabase: ReturnType<typeof createClient>) {
+async function checkVelocity(userId: string, supabase: any) {
   const hourAgo = new Date(Date.now() - 3600000).toISOString();
   
   const { data: recentOrders, error } = await supabase
@@ -105,7 +105,7 @@ async function checkVelocity(userId: string, supabase: ReturnType<typeof createC
   return { flagged: false };
 }
 
-async function checkAddress(userId: string, supabase: ReturnType<typeof createClient>) {
+async function checkAddress(userId: string, supabase: any) {
   const { data: addresses } = await supabase
     .from("addresses")
     .select("*, risk_zone")
@@ -144,7 +144,7 @@ async function checkAddress(userId: string, supabase: ReturnType<typeof createCl
   return { flagged: false };
 }
 
-async function checkDeviceFingerprint(userId: string, supabase: ReturnType<typeof createClient>) {
+async function checkDeviceFingerprint(userId: string, supabase: any) {
   const { data: devices } = await supabase
     .from("device_fingerprints")
     .select("*")
@@ -178,7 +178,7 @@ async function checkDeviceFingerprint(userId: string, supabase: ReturnType<typeo
   return { flagged: false };
 }
 
-async function checkBehavior(userId: string, supabase: ReturnType<typeof createClient>) {
+async function checkBehavior(userId: string, supabase: any) {
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")

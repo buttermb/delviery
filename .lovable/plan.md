@@ -1,43 +1,56 @@
 
 
-# Fix All Edge Function Build Errors
+# Fix: Static Menu Page "Menu Not Found"
 
 ## Root Cause
 
-All errors stem from one issue: `ReturnType<typeof createClient>` produces strict generic types that don't match when the Supabase client is created without a database schema generic. This causes type mismatches on every function parameter and property access on query results typed as `unknown`.
+The `loadMenuDirect()` function in `StaticMenuPage.tsx` joins the wrong table and uses non-existent columns:
 
-## Fix Strategy
+1. **Wrong table join**: Line 328 joins `products(name, price, ...)` but `product_id` references `wholesale_inventory` (confirmed by DB query)
+2. **Wrong column names**: `wholesale_inventory` uses `product_name` and `base_price`, not `name` and `price`
+3. **Non-existent columns**: The query filters on `is_visible` and selects `vendor_name`, `badge` -- none of these exist on `disposable_menu_products`. The actual column is `display_availability`
 
-**One shared fix** + individual file fixes.
+These mismatches cause the Supabase query to fail silently (returning null), which triggers the "not found" state.
 
-### Shared Fix: `_shared/permissions.ts` and `_shared/apiCreditMeter.ts`
+## Fix
 
-Replace all `supabase: ReturnType<typeof createClient>` with `supabase: any` in both shared utility files. This fixes cascading errors in every edge function that imports from them.
+### File: `src/pages/public/StaticMenuPage.tsx` (lines 318-397)
 
-### Individual File Fixes (13 files total)
+Update the `loadMenuDirect` function's product query:
 
-| File | Fix |
-|------|-----|
-| `_shared/permissions.ts` (6 functions) | `supabase: any` |
-| `_shared/apiCreditMeter.ts` (6 functions) | `supabase: any` |
-| `admin-dashboard/index.ts:282` | `(order.id as string).substring(0, 8)` |
-| `assess-risk/index.ts:187` | `supabaseClient: any` on `assessAddressRisk` |
-| `check-usage-limits/index.ts:109` | Change `Record<string, unknown>` to `Record<string, any>` in reduce |
-| `compliance-report/index.ts:24` | Type `report` as `Record<string, any>` instead of `Record<string, unknown>` |
-| `create-marketplace-profile/index.ts:90-105` | Wrap insert in try/catch instead of `.catch()` |
-| `credit-threshold-alerts/index.ts` (4 functions) | `supabase: any` |
-| `low-stock-email-digest/index.ts` (3 functions) | `supabase: any` |
-| `process-auto-topup/index.ts` (2 functions) | `supabase: any` |
-| `auth-sessions/index.ts` (4 functions) | `supabase: any` |
-| `workflow-executor/index.ts` (6 functions) | `supabase: any` |
-| `detect-orphaned-orders/index.ts` (2 functions) | `supabase: any` |
-| `detect-fraud/index.ts` (4 functions) | `supabase: any` |
-| `admin-reset-password/index.ts` (1 function) | `supabase: any` |
+**Before (broken):**
+```
+.select(`
+  product_id, custom_price, prices, display_order,
+  is_visible, vendor_name, badge,
+  products (name, price, description, image_url, category, strain_type, created_at)
+`)
+.eq('is_visible', true)
+```
 
-### Summary
+**After (fixed):**
+```
+.select(`
+  product_id, custom_price, prices, display_order, display_availability,
+  wholesale_inventory!product_id (
+    product_name, base_price, description, image_url,
+    category, strain_type, created_at
+  )
+`)
+.eq('display_availability', true)
+```
 
-- **15 files** modified
-- **~45 function signatures** changed from `ReturnType<typeof createClient>` → `any`
-- **4 files** with additional inline casts (`as string`, `as any`, try/catch)
-- All fixes follow the established pattern from previous edge function fixes
+Then update the mapping code (lines 350-397) to use the correct field names:
+- `mp.products` becomes `mp.wholesale_inventory`
+- `inv.name` becomes `inv.product_name`
+- `inv.price` becomes `inv.base_price`
+- Remove references to `mp.vendor_name` and `mp.badge` (these columns don't exist)
+
+## Also Fix: Pre-existing build errors in unrelated edge functions
+
+The build errors in `create-marketplace-profile`, `credit-threshold-alerts`, `credit-warning-emails`, `grant-free-credits`, and `invoice-management` are pre-existing TypeScript issues unrelated to this fix. They will not be addressed here.
+
+## Result
+
+The menu page at `/page/55fd6a6446714bf19f6dcdca` will correctly load and display all 5 products (Amnesia Haze, Blue Dream, Gary Payton, etc.) from the `wholesale_inventory` table.
 

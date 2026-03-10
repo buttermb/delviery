@@ -50,7 +50,7 @@ interface AutoTopUpConfig {
  * Returns the count of top-ups in the last hour.
  */
 async function getTopUpsInLastHour(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string
 ): Promise<number> {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -75,7 +75,7 @@ async function getTopUpsInLastHour(
  * Send a failure notification to the tenant.
  */
 async function sendFailureNotification(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   errorMessage: string
 ): Promise<void> {
