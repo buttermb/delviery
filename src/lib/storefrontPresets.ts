@@ -373,11 +373,10 @@ function getSectionDefaultContent(type: string, preset: PresetPack): Record<stri
     const content = preset.defaultContent;
 
     switch (type) {
-        case 'hero':
-            return {
-                heading_line_1: content.heroHeadline.split(' ')[0] || 'Premium',
-                heading_line_2: content.heroHeadline.split(' ').slice(1, 2).join(' ') || 'Cannabis',
-                heading_line_3: content.heroHeadline.split(' ').slice(2).join(' ') || 'Delivered',
+        case 'hero': {
+            // Base hero content shared by all variants
+            const heroBase = {
+                headline: content.heroHeadline,
                 subheading: content.heroSubheadline,
                 cta_primary_text: content.heroCtaText,
                 cta_primary_link: content.heroCtaLink,
@@ -385,6 +384,69 @@ function getSectionDefaultContent(type: string, preset: PresetPack): Record<stri
                 cta_secondary_link: '/about',
                 trust_badges: true,
             };
+
+            // Template-specific hero variants matching Paper designs
+            switch (preset.id) {
+                case 'pro-standard':
+                    return {
+                        ...heroBase,
+                        hero_variant: 'split-features',
+                        label: 'ESTABLISHED 2019',
+                        hero_features: [
+                            { icon: 'shield-check', title: 'Lab Tested', description: 'Every product verified for purity and potency' },
+                            { icon: 'truck', title: 'Fast Delivery', description: 'Same-day dispatch on orders before 2pm' },
+                            { icon: 'lock', title: 'Secure Pay', description: 'Encrypted checkout with multiple payment options' },
+                            { icon: 'headphones', title: 'Expert Support', description: 'Knowledgeable staff available 7 days a week' },
+                        ],
+                    };
+                case 'pro-nature':
+                    return {
+                        ...heroBase,
+                        hero_variant: 'split-features',
+                        label: 'FARM TO TABLE',
+                        cta_secondary_text: 'Our Farms',
+                        cta_secondary_link: '/about',
+                        hero_features: [
+                            { icon: 'leaf', title: '100% Organic', description: 'No pesticides, ever' },
+                            { icon: 'users', title: 'Small Batch', description: 'Craft-grown quality' },
+                            { icon: 'shield-check', title: 'Lab Tested', description: 'Full COA available' },
+                        ],
+                    };
+                case 'luxury-full':
+                    return {
+                        ...heroBase,
+                        hero_variant: 'luxury-centered',
+                        label: 'CURATED COLLECTION',
+                        cta_primary_text: 'Enter Boutique',
+                        cta_secondary_text: undefined,
+                        trust_badges: false,
+                    };
+                case 'landing-focus':
+                    return {
+                        ...heroBase,
+                        hero_variant: 'split-gallery',
+                        label: 'LIMITED DROP',
+                        cta_secondary_text: 'View All',
+                        cta_secondary_link: '/shop',
+                        countdown: { days: '02', hours: '14', minutes: '37' },
+                        gallery_count: 4,
+                    };
+                case 'quick-dark':
+                    return {
+                        ...heroBase,
+                        hero_variant: 'centered',
+                        label: 'PREMIUM CANNABIS',
+                    };
+                case 'quick-light':
+                    return {
+                        ...heroBase,
+                        hero_variant: 'centered',
+                        label: 'PREMIUM CANNABIS',
+                    };
+                default:
+                    return heroBase;
+            }
+        }
         case 'features': {
             const theme = getPresetTheme(preset);
             const isProTheme = theme?.id === 'professional';
@@ -484,11 +546,14 @@ function getSectionDefaultStyles(type: string, theme?: ThemePreset): Record<stri
                 'landing-page': ['#ea580c', '#ff6b35'],
             };
             const [gradStart, gradEnd] = gradients[theme?.id || ''] || (isDark ? ['#000000', '#022c22'] : ['#f8fafc', '#e2e8f0']);
+            const heroTextColor = isDark || theme?.id === 'professional' || theme?.id === 'landing-page' ? '#ffffff' : colors.foreground;
             return {
                 background_gradient_start: gradStart,
                 background_gradient_end: gradEnd,
-                text_color: isDark || theme?.id === 'professional' ? '#ffffff' : colors.foreground,
+                text_color: heroTextColor,
                 accent_color: colors.accent,
+                card_bg: `${heroTextColor}12`,
+                card_text: heroTextColor,
             };
         }
         case 'features':

@@ -21,6 +21,7 @@ import { AnnouncementBar } from '@/components/shop/sections/AnnouncementBar';
 import { SEOHead } from '@/components/SEOHead';
 import { StorefrontShareDialog } from '@/components/shop/StorefrontShareDialog';
 import { logger } from '@/lib/logger';
+import { getThemeById } from '@/lib/storefrontThemes';
 
 /** Section component props contract */
 interface SectionComponentProps {
@@ -112,7 +113,13 @@ export function StorefrontPage() {
 
     const layoutConfig = store.layout_config as unknown as LayoutSection[] | null | undefined;
     const hasValidLayout = Array.isArray(layoutConfig) && layoutConfig.length > 0;
-    const accentColor = store.theme_config?.colors?.accent || store.accent_color || '#10b981';
+
+    const themePreset = store.theme_config?.theme_id
+        ? getThemeById(store.theme_config.theme_id)
+        : undefined;
+    const isDarkTheme = themePreset?.darkMode ?? false;
+
+    const accentColor = themePreset?.colors.accent || store.theme_config?.colors?.accent || store.accent_color || '#10b981';
 
     const sections: LayoutSection[] = hasValidLayout
         ? layoutConfig
@@ -129,10 +136,10 @@ export function StorefrontPage() {
                     primary_button_link: `/shop/${storeSlug}/products`,
                 },
                 styles: {
-                    background_gradient_start: store.theme_config?.colors?.primary || store.primary_color || '#000000',
-                    background_gradient_end: '#022c22',
-                    text_color: '#ffffff',
-                    accent_color: '#34d399',
+                    background_gradient_start: themePreset?.colors.primary || store.primary_color || '#000000',
+                    background_gradient_end: isDarkTheme ? '#022c22' : (themePreset?.colors.secondary || '#022c22'),
+                    text_color: isDarkTheme ? '#ffffff' : (themePreset?.colors.primaryForeground || '#ffffff'),
+                    accent_color: themePreset?.colors.accent || accentColor,
                 },
             },
             {
@@ -144,14 +151,14 @@ export function StorefrontPage() {
                     max_deals: 3,
                     show_view_all: true,
                 },
-                styles: { accent_color: accentColor },
+                styles: { accent_color: themePreset?.colors.accent || accentColor },
             },
             {
                 id: 'default-hot-items',
                 type: 'hot_items',
                 content: { show_time_indicator: true, max_items: 8 },
                 styles: {
-                    accent_color: store.theme_config?.colors?.primary || store.primary_color || undefined,
+                    accent_color: themePreset?.colors.primary || store.primary_color || undefined,
                 },
             },
             {
@@ -163,9 +170,9 @@ export function StorefrontPage() {
                     show_search: true,
                 },
                 styles: {
-                    background_color: '#ffffff',
-                    text_color: '#000000',
-                    accent_color: store.theme_config?.colors?.primary || store.primary_color || '#000000',
+                    background_color: themePreset?.colors.background || '#ffffff',
+                    text_color: themePreset?.colors.foreground || '#000000',
+                    accent_color: themePreset?.colors.primary || store.primary_color || '#000000',
                 },
             },
         ];

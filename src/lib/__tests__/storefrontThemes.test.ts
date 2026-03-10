@@ -12,8 +12,8 @@ import {
 
 describe('storefrontThemes', () => {
     describe('THEME_PRESETS', () => {
-        it('should have exactly 4 themes', () => {
-            expect(THEME_PRESETS).toHaveLength(4);
+        it('should have exactly 6 themes', () => {
+            expect(THEME_PRESETS).toHaveLength(6);
         });
 
         it('should have all required theme IDs', () => {
@@ -22,6 +22,8 @@ describe('storefrontThemes', () => {
             expect(themeIds).toContain('minimalist');
             expect(themeIds).toContain('strain-focused');
             expect(themeIds).toContain('luxury');
+            expect(themeIds).toContain('professional');
+            expect(themeIds).toContain('landing-page');
         });
 
         describe('Dark Mode theme', () => {

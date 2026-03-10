@@ -42,12 +42,14 @@ import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { formatSmartDate } from '@/lib/utils/formatDate';
 import { StorefrontFunnel } from '@/components/admin/storefront/StorefrontFunnel';
 import { DeleteStoreDialog } from '@/components/admin/storefront/DeleteStoreDialog';
-import { CreateStoreDialog } from '@/components/admin/storefront/CreateStoreDialog';
+import { CreateStoreDialog, type CreateStoreSubmitData } from '@/components/admin/storefront/CreateStoreDialog';
 import { StoreSelector } from '@/components/admin/storefront/StoreSelector';
 import { StoreListView } from '@/components/admin/storefront/StoreListView';
 import { SmartOnboardingWidget } from '@/components/admin/storefront/SmartOnboardingWidget';
 import { OnboardingProgressChecklist } from '@/components/admin/storefront/OnboardingProgressChecklist';
 import { StorefrontAnalyticsWidget } from '@/components/admin/storefront/StorefrontAnalyticsWidget';
+import { getPresetById, getPresetTheme, generateSectionsFromPreset } from '@/lib/storefrontPresets';
+import { applyThemeToConfig } from '@/lib/storefrontThemes';
 
 interface MarketplaceStore {
   id: string;
@@ -290,8 +292,14 @@ export default function StorefrontDashboard() {
 
   // Create new store mutation (used inside credit gate)
   const createNewStoreMutation = useMutation({
-    mutationFn: async (data: { storeName: string; slug: string; tagline: string }) => {
+    mutationFn: async (data: CreateStoreSubmitData) => {
       if (!tenantId) throw new Error('No tenant');
+
+      // Generate theme + layout config from selected preset
+      const preset = getPresetById(data.presetId);
+      const theme = preset ? getPresetTheme(preset) : undefined;
+      const themeConfig = theme ? applyThemeToConfig({}, theme) : {};
+      const layoutConfig = preset ? generateSectionsFromPreset(preset) : [];
 
       const { data: newStore, error } = await supabase
         .from('marketplace_stores')
@@ -302,6 +310,8 @@ export default function StorefrontDashboard() {
           tagline: data.tagline ?? 'Welcome to our store',
           is_active: false,
           is_public: false,
+          theme_config: themeConfig,
+          layout_config: layoutConfig,
         })
         .select()
         .maybeSingle();
@@ -323,7 +333,7 @@ export default function StorefrontDashboard() {
   });
 
   // Wrap store creation with credit gating + graceful fallback
-  const handleCreateStore = async (data: { storeName: string; slug: string; tagline: string }) => {
+  const handleCreateStore = async (data: CreateStoreSubmitData) => {
     try {
       await createStorefront(
         () => createNewStoreMutation.mutateAsync(data),

@@ -475,6 +475,7 @@ export default function ShopLayout() {
   const themePreset = store.theme_config?.theme_id
     ? getThemeById(store.theme_config.theme_id)
     : undefined;
+  const isDarkTheme = themePreset?.darkMode ?? false;
 
   // Apply theme colors — merge store-level vars with full --storefront-* variables from the preset
   const themeStyles = {
@@ -586,7 +587,7 @@ export default function ShopLayout() {
   return (
     <ShopContext.Provider value={{ store, isLoading, cartItemCount, setCartItemCount, isPreviewMode, openCartDrawer }}>
       <div
-        className={`min-h-dvh ${isLuxuryTheme ? 'bg-black' : 'bg-background'}`}
+        className={`min-h-dvh${isDarkTheme ? ' dark' : ''}`}
         style={{
           ...themeStyles,
           ...(themePreset && !isLuxuryTheme ? {
@@ -612,7 +613,7 @@ export default function ShopLayout() {
         )}
 
         {/* Header - Luxury vs Standard */}
-        <header className={`sticky top-0 z-50 ${isLuxuryTheme ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : 'bg-white dark:bg-zinc-950 border-b shadow-sm'}`}>
+        <header className={`sticky top-0 z-50 border-b ${isDarkTheme ? 'shadow-none' : 'shadow-sm'}`} style={{ backgroundColor: themePreset?.colors.card || '#ffffff', borderColor: themePreset?.colors.border || undefined, color: themePreset?.colors.foreground || undefined, ...(isDarkTheme ? { backdropFilter: 'blur(12px)' } : {}), }}>
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               {/* Logo / Store Name */}
@@ -633,7 +634,7 @@ export default function ShopLayout() {
                 ) : (
                   <span
                     className="text-xl font-bold"
-                    style={{ color: store.primary_color }}
+                    style={{ color: themePreset?.colors.primary || store.primary_color }}
                   >
                     {store.store_name}
                   </span>
@@ -644,18 +645,18 @@ export default function ShopLayout() {
               <nav className="hidden md:flex items-center gap-6">
                 <Link
                   to={`/shop/${storeSlug}/products${isPreviewMode ? '?preview=true' : ''}`}
-                  className={`text-sm font-medium transition-colors ${isLuxuryTheme ? 'text-white/70 hover:text-white' : 'hover:text-primary'}`}
+                  className="text-sm font-medium transition-colors hover:opacity-80"
                 >
                   Products
                 </Link>
                 <Link
                   to={`/shop/${storeSlug}/deals${isPreviewMode ? '?preview=true' : ''}`}
-                  className={`text-sm font-medium transition-colors ${isLuxuryTheme ? 'text-white/70 hover:text-white' : 'hover:text-primary'}`}
+                  className="text-sm font-medium transition-colors hover:opacity-80"
                 >
                   Deals
                 </Link>
                 {!isStoreOpen() && !isPreviewMode && (
-                  <Badge variant="secondary" className={isLuxuryTheme ? 'bg-white/10 text-white/70' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}>
+                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
                     <Clock className="w-3 h-3 mr-1" />
                     Currently Closed
                   </Badge>
@@ -664,7 +665,7 @@ export default function ShopLayout() {
 
               {/* Actions */}
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className={`hidden md:flex ${isLuxuryTheme ? 'text-white/70 hover:text-white hover:bg-white/10' : ''}`} aria-label="Search products">
+                <Button variant="ghost" size="icon" className="hidden md:flex" aria-label="Search products">
                   <Search className="w-5 h-5" />
                 </Button>
                 {!isPreviewMode && (
@@ -681,7 +682,7 @@ export default function ShopLayout() {
                       {cartItemCount > 0 && (
                         <Badge
                           className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
-                          style={{ backgroundColor: store.primary_color }}
+                          style={{ backgroundColor: themePreset?.colors.primary || store.primary_color }}
                           data-testid="cart-count"
                         >
                           {cartItemCount}
@@ -759,11 +760,8 @@ export default function ShopLayout() {
         </main>
 
         {/* Footer - Luxury vs Standard */}
-        {isLuxuryTheme ? (
-          <LuxuryFooter accentColor={accentColor} />
-        ) : (
-          <footer className="border-t mt-16 bg-muted/50 pb-24 md:pb-0">
-            <div className="container mx-auto px-4 py-8">
+        <footer className="border-t mt-16 pb-24 md:pb-0" style={{ backgroundColor: themePreset?.colors.muted || undefined, borderColor: themePreset?.colors.border || undefined, color: themePreset?.colors.foreground || undefined }}>
+          <div className="container mx-auto px-4 py-8">
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="text-center md:text-left">
                   <p className="font-semibold">{store.store_name}</p>
@@ -783,18 +781,17 @@ export default function ShopLayout() {
                   </div>
                 )}
               </div>
-              <div className="mt-6 pt-6 border-t text-center text-xs text-muted-foreground">
-                © {new Date().getFullYear()} {store.store_name}. All rights reserved.
-              </div>
+            <div className="mt-6 pt-6 border-t text-center text-xs text-muted-foreground">
+              © {new Date().getFullYear()} {store.store_name}. All rights reserved.
             </div>
-          </footer>
-        )}
+          </div>
+        </footer>
 
         {/* Mobile Bottom Navigation - hide in preview mode and luxury theme */}
         {!isPreviewMode && !isLuxuryTheme && (
           <MobileBottomNav
             cartItemCount={cartItemCount}
-            primaryColor={store.primary_color}
+            primaryColor={themePreset?.colors.primary || store.primary_color}
             onCartClick={openCartDrawer}
           />
         )}
@@ -817,7 +814,7 @@ export default function ShopLayout() {
           onRemoveItem={(productId) => {
             shopCart.removeItem(productId);
           }}
-          accentColor={store.primary_color}
+          accentColor={themePreset?.colors.primary || store.primary_color}
           deliveryFee={store.default_delivery_fee}
           freeDeliveryThreshold={store.free_delivery_threshold}
         />
