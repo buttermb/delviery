@@ -315,7 +315,7 @@ async function checkAndAlertTenant(
  * Send in-app notification
  */
 async function sendInAppNotification(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   threshold: typeof ALERT_THRESHOLDS[number],
   balance: number
