@@ -337,7 +337,7 @@ async function getLowStockProducts(
  * Calculate average daily usage for a product over the last 30 days
  */
 async function calculateAverageDailyUsage(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   tenantId: string,
   productId: string
 ): Promise<number> {
