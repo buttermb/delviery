@@ -333,7 +333,7 @@ async function executeWebhook(action: WorkflowAction, execution: WorkflowExecuti
   return await response.json();
 }
 
-async function executeDatabaseQuery(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
+async function executeDatabaseQuery(supabase: any, action: WorkflowAction, _execution: WorkflowExecution) {
   const { table, operation, data, filter } = action.config;
   
   let query = supabase.from(table);
