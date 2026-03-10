@@ -303,7 +303,7 @@ async function executeInventoryUpdate(supabase: any, action: WorkflowAction, _ex
   return data;
 }
 
-async function executeAssignCourier(supabase: ReturnType<typeof createClient>, action: WorkflowAction, _execution: WorkflowExecution) {
+async function executeAssignCourier(supabase: any, action: WorkflowAction, _execution: WorkflowExecution) {
   const { order_id, courier_id } = action.config;
   
   const { data, error } = await supabase.functions.invoke('assign-courier', {
