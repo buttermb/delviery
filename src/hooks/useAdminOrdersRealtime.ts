@@ -51,6 +51,8 @@ export function useAdminOrdersRealtime({
   const storeIdsRef = useRef<string[]>([]);
   const [newOrderIds, setNewOrderIds] = useState<Set<string>>(new Set());
   const notificationPermissionRef = useRef<NotificationPermission>('default');
+  const handleNewOrderRef = useRef<(event: NewOrderEvent) => void>(() => {});
+  const highlightTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   // Request notification permission
   useEffect(() => {
@@ -71,14 +73,27 @@ export function useAdminOrdersRealtime({
   // Clear highlight after timeout
   const addHighlightedOrder = useCallback((orderId: string) => {
     setNewOrderIds((prev) => new Set(prev).add(orderId));
+    // Clear any existing timeout for this order to avoid duplicates
+    const existing = highlightTimeoutsRef.current.get(orderId);
+    if (existing) clearTimeout(existing);
     // Remove highlight after 10 seconds
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
+      highlightTimeoutsRef.current.delete(orderId);
       setNewOrderIds((prev) => {
         const next = new Set(prev);
         next.delete(orderId);
         return next;
       });
     }, 10000);
+    highlightTimeoutsRef.current.set(orderId, timeoutId);
+  }, []);
+
+  // Clean up all pending highlight timeouts on unmount
+  useEffect(() => {
+    return () => {
+      highlightTimeoutsRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
+      highlightTimeoutsRef.current.clear();
+    };
   }, []);
 
   const showBrowserNotification = useCallback((event: NewOrderEvent) => {
@@ -141,6 +156,12 @@ export function useAdminOrdersRealtime({
     });
   }, [addHighlightedOrder, showBrowserNotification, queryClient, onNewOrder, tenant?.id]);
 
+  // Keep handleNewOrderRef in sync with the latest handleNewOrder callback
+  // so the subscription effect doesn't need handleNewOrder as a dependency
+  useEffect(() => {
+    handleNewOrderRef.current = handleNewOrder;
+  }, [handleNewOrder]);
+
   useEffect(() => {
     if (!enabled || !tenant?.id) return;
     let cancelled = false;
@@ -160,7 +181,7 @@ export function useAdminOrdersRealtime({
           },
           (payload) => {
             const newOrder = payload.new as Record<string, unknown>;
-            handleNewOrder({
+            handleNewOrderRef.current({
               id: newOrder.id as string,
               orderNumber: (newOrder.order_number as string) || (newOrder.id as string).slice(0, 8),
               source: (newOrder.order_source as OrderSource) || 'admin',
@@ -194,7 +215,7 @@ export function useAdminOrdersRealtime({
             // Only handle POS orders - other order types are handled by their respective channels
             if (newOrder.order_type !== 'pos') return;
 
-            handleNewOrder({
+            handleNewOrderRef.current({
               id: newOrder.id as string,
               orderNumber: (newOrder.order_number as string) || (newOrder.id as string).slice(0, 8),
               source: 'pos',
@@ -228,7 +249,7 @@ export function useAdminOrdersRealtime({
           },
           (payload) => {
             const order = payload.new as Record<string, unknown>;
-            handleNewOrder({
+            handleNewOrderRef.current({
               id: order.id as string,
               orderNumber: (order.order_number as string) || (order.id as string).slice(0, 8),
               source: 'storefront',
@@ -278,7 +299,7 @@ export function useAdminOrdersRealtime({
               if (!storeIdsRef.current.includes(storeId)) return;
 
               const storeName = storeNameMap[storeId] || 'Storefront';
-              handleNewOrder({
+              handleNewOrderRef.current({
                 id: order.id as string,
                 orderNumber: (order.order_number as string) || (order.id as string).slice(0, 8),
                 source: 'storefront',
@@ -313,7 +334,8 @@ export function useAdminOrdersRealtime({
       });
       channelsRef.current = [];
     };
-  }, [enabled, tenant?.id, handleNewOrder, queryClient]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- handleNewOrder accessed via handleNewOrderRef to prevent subscription churn
+  }, [enabled, tenant?.id, queryClient]);
 
   return {
     newOrderIds,

@@ -7,7 +7,7 @@ import {
   MoreHorizontal, MessageSquare, DollarSign, CreditCard, Store,
   ArrowUpDown, Pencil, FileText
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -74,7 +74,14 @@ interface MenuCardProps {
   compact?: boolean;
 }
 
-export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
+const statusConfig = {
+  active: { label: 'Active', color: 'bg-success text-success-foreground' },
+  expired: { label: 'Expired', color: 'bg-warning text-warning-foreground' },
+  soft_burned: { label: 'Soft Burned', color: 'bg-warning text-warning-foreground' },
+  hard_burned: { label: 'Burned', color: 'bg-destructive text-destructive-foreground' },
+};
+
+const MenuCardInner = ({ menu, compact = false }: MenuCardProps) => {
   const navigate = useTenantNavigate();
   const { tenantSlug } = useParams<{ tenantSlug: string }>();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -102,38 +109,35 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
   const isActive = menu.status === 'active' && !isExpired;
   const isForumMenu = extractSecuritySetting(menu.security_settings, 'menu_type') === 'forum';
 
-  const statusConfig = {
-    active: { label: 'Active', color: 'bg-success text-success-foreground' },
-    expired: { label: 'Expired', color: 'bg-warning text-warning-foreground' },
-    soft_burned: { label: 'Soft Burned', color: 'bg-warning text-warning-foreground' },
-    hard_burned: { label: 'Burned', color: 'bg-destructive text-destructive-foreground' },
-  };
   const effectiveStatus = isExpired ? 'expired' : menu.status;
   const status = statusConfig[effectiveStatus as keyof typeof statusConfig] || statusConfig.active;
 
   const menuUrl = `${window.location.protocol}//${window.location.host}/m/${menu.encrypted_url_token}`;
 
-  const copyUrl = (e?: React.MouseEvent) => {
+  const copyUrl = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
     navigator.clipboard.writeText(menuUrl);
     showSuccessToast('Copied!', 'Menu link copied to clipboard');
-  };
+  }, [menuUrl]);
 
-  const openMenu = (e?: React.MouseEvent) => {
+  const openMenu = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
     window.open(`/m/${menu.encrypted_url_token}`, '_blank', 'noopener,noreferrer');
-  };
+  }, [menu.encrypted_url_token]);
 
   // Security badges
-  const securityFeatures = [];
-  if (menu.is_encrypted) securityFeatures.push({ icon: Lock, label: 'Encrypted' });
-  if (jsonToBooleanSafe(extractSecuritySetting(menu.security_settings, 'require_geofence'))) {
-    securityFeatures.push({ icon: MapPin, label: 'Geofenced' });
-  }
-  if (menu.device_locking_enabled) securityFeatures.push({ icon: Shield, label: 'Device Lock' });
-  if (menu.max_views_per_period) {
-    securityFeatures.push({ icon: Clock, label: `${menu.max_views_per_period} views` });
-  }
+  const securityFeatures = useMemo(() => {
+    const features: Array<{ icon: typeof Lock; label: string }> = [];
+    if (menu.is_encrypted) features.push({ icon: Lock, label: 'Encrypted' });
+    if (jsonToBooleanSafe(extractSecuritySetting(menu.security_settings, 'require_geofence'))) {
+      features.push({ icon: MapPin, label: 'Geofenced' });
+    }
+    if (menu.device_locking_enabled) features.push({ icon: Shield, label: 'Device Lock' });
+    if (menu.max_views_per_period) {
+      features.push({ icon: Clock, label: `${menu.max_views_per_period} views` });
+    }
+    return features;
+  }, [menu.is_encrypted, menu.security_settings, menu.device_locking_enabled, menu.max_views_per_period]);
 
   return (
     <>
@@ -399,8 +403,8 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
         </div>
       </Card>
 
-      {/* Dialogs */}
-      {isActive && (
+      {/* Dialogs — conditionally mounted for performance */}
+      {editDialogOpen && isActive && (
         <EditMenuDialog
           menuId={menu.id}
           open={editDialogOpen}
@@ -408,61 +412,77 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
         />
       )}
 
-      <BurnMenuDialog
-        menu={menu as unknown as DisposableMenu}
-        open={burnDialogOpen}
-        onOpenChange={setBurnDialogOpen}
-      />
+      {burnDialogOpen && (
+        <BurnMenuDialog
+          menu={menu as unknown as DisposableMenu}
+          open={burnDialogOpen}
+          onOpenChange={setBurnDialogOpen}
+        />
+      )}
 
-      <ManageAccessDialog
-        menu={menu as unknown as DisposableMenu}
-        open={manageAccessOpen}
-        onOpenChange={setManageAccessOpen}
-      />
+      {manageAccessOpen && (
+        <ManageAccessDialog
+          menu={menu as unknown as DisposableMenu}
+          open={manageAccessOpen}
+          onOpenChange={setManageAccessOpen}
+        />
+      )}
 
-      <MenuShareDialogEnhanced
-        menu={menu as unknown as Parameters<typeof MenuShareDialogEnhanced>[0]['menu']}
-        open={shareDialogOpen}
-        onOpenChange={setShareDialogOpen}
-        whitelistEntry={undefined}
-      />
+      {shareDialogOpen && (
+        <MenuShareDialogEnhanced
+          menu={menu as unknown as Parameters<typeof MenuShareDialogEnhanced>[0]['menu']}
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          whitelistEntry={undefined}
+        />
+      )}
 
-      <MenuAnalyticsDialog
-        menu={menu}
-        open={analyticsOpen}
-        onOpenChange={setAnalyticsOpen}
-      />
+      {analyticsOpen && (
+        <MenuAnalyticsDialog
+          menu={menu}
+          open={analyticsOpen}
+          onOpenChange={setAnalyticsOpen}
+        />
+      )}
 
-      <QRCodeDialog
-        open={qrCodeOpen}
-        onClose={() => setQrCodeOpen(false)}
-        menuTitle={menu.name}
-        accessUrl={menuUrl}
-        menuId={menu.id}
-      />
+      {qrCodeOpen && (
+        <QRCodeDialog
+          open={qrCodeOpen}
+          onClose={() => setQrCodeOpen(false)}
+          menuTitle={menu.name}
+          accessUrl={menuUrl}
+          menuId={menu.id}
+        />
+      )}
 
-      <CloneMenuDialog
-        open={cloneDialogOpen}
-        onClose={() => setCloneDialogOpen(false)}
-        menu={menu as unknown as DisposableMenu}
-        onComplete={() => window.location.reload()}
-      />
+      {cloneDialogOpen && (
+        <CloneMenuDialog
+          open={cloneDialogOpen}
+          onClose={() => setCloneDialogOpen(false)}
+          menu={menu as unknown as DisposableMenu}
+          onComplete={() => window.location.reload()}
+        />
+      )}
 
-      <MenuAccessDetails
-        open={accessDetailsOpen}
-        onOpenChange={setAccessDetailsOpen}
-        accessCode={menu.access_code || 'N/A'}
-        shareableUrl={menuUrl}
-        menuName={menu.name || 'Menu'}
-      />
+      {accessDetailsOpen && (
+        <MenuAccessDetails
+          open={accessDetailsOpen}
+          onOpenChange={setAccessDetailsOpen}
+          accessCode={menu.access_code || 'N/A'}
+          shareableUrl={menuUrl}
+          menuName={menu.name || 'Menu'}
+        />
+      )}
 
-      <MenuPaymentSettingsDialog
-        open={paymentSettingsOpen}
-        onOpenChange={setPaymentSettingsOpen}
-        menu={menu as unknown as DisposableMenu}
-      />
+      {paymentSettingsOpen && (
+        <MenuPaymentSettingsDialog
+          open={paymentSettingsOpen}
+          onOpenChange={setPaymentSettingsOpen}
+          menu={menu as unknown as DisposableMenu}
+        />
+      )}
 
-      {!isForumMenu && (
+      {productOrderingOpen && !isForumMenu && (
         <MenuProductOrderingDialog
           open={productOrderingOpen}
           onOpenChange={setProductOrderingOpen}
@@ -471,13 +491,17 @@ export const MenuCard = ({ menu, compact = false }: MenuCardProps) => {
         />
       )}
 
-      <GenerateMenuPageDialog
-        open={generatePageOpen}
-        onOpenChange={setGeneratePageOpen}
-        preselectedMenuName={menu.name}
-      />
+      {generatePageOpen && (
+        <GenerateMenuPageDialog
+          open={generatePageOpen}
+          onOpenChange={setGeneratePageOpen}
+          preselectedMenuName={menu.name}
+        />
+      )}
     </>
   );
 };
+
+export const MenuCard = memo(MenuCardInner);
 
 export default MenuCard;

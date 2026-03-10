@@ -193,8 +193,8 @@ export function useSidebarBadges(): UseSidebarBadgesResult {
     queryKey: queryKeys.sidebarBadges.counts(tenant?.id),
     queryFn: fetchBadgeCounts,
     enabled: !!tenant?.id,
-    staleTime: 30000, // 30 seconds
-    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 60_000, // 1 minute
+    refetchInterval: 300_000, // 5 minutes (realtime handles live updates)
     refetchOnWindowFocus: true,
   });
 

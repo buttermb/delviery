@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from '@/components/ui/lazy-recharts';
 import { Users, TrendingUp, DollarSign } from 'lucide-react';
 import { isPostgrestError } from '@/utils/errorHandling/typeGuards';
 import { EnhancedLoadingState } from '@/components/EnhancedLoadingState';

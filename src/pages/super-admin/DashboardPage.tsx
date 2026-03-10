@@ -40,7 +40,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { useState, useEffect } from 'react';
 import { SUBSCRIPTION_PLANS } from '@/utils/subscriptionPlans';
 import { queryKeys } from '@/lib/queryKeys';

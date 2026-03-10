@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +41,8 @@ export const SecurityMonitoringPanel = () => {
   const [ipToUnblock, setIpToUnblock] = useState<BlockedIP | null>(null);
   const [isUnblocking, setIsUnblocking] = useState(false);
   const { data: recentEvents, refetch } = useMenuSecurityEvents();
+  const refetchRef = useRef(refetch);
+  refetchRef.current = refetch;
 
   // Real-time monitoring
   useEffect(() => {
@@ -71,7 +73,7 @@ export const SecurityMonitoringPanel = () => {
             toast.error("${newEvent.event_type || ");
           }
           
-          refetch();
+          refetchRef.current();
         }
       )
       .subscribe((status) => {
@@ -89,7 +91,7 @@ export const SecurityMonitoringPanel = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tenant?.id, refetch]);
+  }, [tenant?.id]);
 
   // Load blocked IPs
   useEffect(() => {

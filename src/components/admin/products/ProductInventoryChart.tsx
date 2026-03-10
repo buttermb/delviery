@@ -14,7 +14,7 @@ import {
     ResponsiveContainer,
     Scatter,
     ComposedChart,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';

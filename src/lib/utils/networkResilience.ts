@@ -375,10 +375,18 @@ export function onConnectionStatusChange(callback: (status: ConnectionStatus) =>
 /**
  * Initialize connection status monitoring
  */
+let connectionMonitoringInitialized = false;
+
 export function initConnectionMonitoring(): void {
   if (typeof window === 'undefined') {
     return;
   }
+
+  // Prevent duplicate listener registration from multiple auth contexts
+  if (connectionMonitoringInitialized) {
+    return;
+  }
+  connectionMonitoringInitialized = true;
 
   // Monitor online/offline events
   const updateStatus = () => {

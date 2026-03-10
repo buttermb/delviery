@@ -25,7 +25,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { formatDateForDisplay, groupOrdersByDate } from '@/lib/utils/revenue-analysis';
 import { SimpleRevenuePredictor } from '@/lib/ai/simple-revenue-prediction';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';

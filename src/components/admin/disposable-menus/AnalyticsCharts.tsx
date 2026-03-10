@@ -16,7 +16,7 @@ import {
   ResponsiveContainer,
   Area,
   AreaChart
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { TrendingUp, TrendingDown, Eye, ShoppingCart, DollarSign, Users } from 'lucide-react';
 import { formatCurrency } from '@/lib/formatters';
 import { CHART_COLORS } from '@/lib/chartColors';

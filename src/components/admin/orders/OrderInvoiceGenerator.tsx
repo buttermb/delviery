@@ -549,6 +549,7 @@ export async function printOrderInvoice(props: OrderInvoiceGeneratorProps): Prom
         printWindow.print();
       };
     }
+    setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000);
   } catch (error: unknown) {
     logger.error('Failed to print order invoice', error, {
       component: 'OrderInvoiceGenerator',

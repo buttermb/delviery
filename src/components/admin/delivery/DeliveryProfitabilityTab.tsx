@@ -17,7 +17,7 @@ import {
   PieChart,
   Pie,
   Legend,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign';
 import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
 import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';

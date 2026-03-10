@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { DollarSign, TrendingUp, ShoppingCart, Activity, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";

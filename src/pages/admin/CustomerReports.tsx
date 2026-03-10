@@ -128,6 +128,7 @@ export default function CustomerReports() {
     a.href = url;
     a.download = `customer-report-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+    window.URL.revokeObjectURL(url);
     toast.success('Report exported');
   };
 

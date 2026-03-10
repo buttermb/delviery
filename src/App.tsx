@@ -36,7 +36,6 @@ import { SkeletonDashboard } from "./components/loading/SkeletonDashboard";
 import { SkeletonStorefront } from "./components/loading/SkeletonStorefront";
 import { SkeletonCourier } from "./components/loading/SkeletonCourier";
 import { SmartRootRedirect } from "./components/SmartRootRedirect";
-import { setupGlobalErrorHandlers } from "./utils/reactErrorHandler";
 import { FeatureProtectedRoute } from "./components/tenant-admin/FeatureProtectedRoute";
 import { SubscriptionGuard } from "./components/tenant-admin/SubscriptionGuard";
 import { PublicOnlyRoute } from "./components/auth/PublicOnlyRoute";
@@ -46,7 +45,6 @@ import { runProductionHealthCheck } from "@/utils/productionHealthCheck";
 import { productionLogger } from "@/utils/productionLogger";
 import { toast } from "sonner";
 import NProgress from "nprogress";
-import "nprogress/nprogress.css";
 
 import OfflineBanner from "./components/OfflineBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
@@ -55,12 +53,13 @@ import { DocumentTitleManager } from "./components/DocumentTitleManager";
 import { initializeGlobalButtonMonitoring } from "./lib/utils/globalButtonInterceptor";
 import { useVersionCheck } from "./hooks/useVersionCheck";
 import { FeatureFlagsProvider } from "./config/featureFlags";
+import { scheduleIdle } from "./lib/scheduleIdle";
 // AdminDebugPanel is lazy-loaded to ensure admin code never ships in public bundles.
 // It's only used in DEV mode (see usage below), so we defer-load it there.
 const AdminDebugPanel = lazy(() => import("./components/admin/AdminDebugPanel").then(m => ({ default: m.AdminDebugPanel })));
 import { PerformanceMonitor } from "./utils/performance";
 
-import { initCapacitor } from '@/lib/capacitor';
+// initCapacitor is dynamically imported to avoid pulling @capacitor/* into the main bundle
 
 // Configure route-level progress indicator (NProgress)
 NProgress.configure({ showSpinner: false, trickleSpeed: 120, minimum: 0.1 });
@@ -167,21 +166,8 @@ function TenantAdminLoginRedirect() {
 }
 
 
-const scheduleNonCritical = (task: () => void, timeout = 1500) => {
-  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    (window as Window & {
-      requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number;
-    }).requestIdleCallback(task, { timeout });
-    return;
-  }
-  (window ?? globalThis).setTimeout(task, 0);
-};
-
 // Use the singleton QueryClient from centralized config
 const queryClient = appQueryClient;
-
-// Setup global error handlers
-setupGlobalErrorHandlers();
 
 const App = () => {
   const [VercelAnalytics, setVercelAnalytics] = useState<ComponentType | null>(null);
@@ -194,8 +180,8 @@ const App = () => {
 
   // Safety cleanup: Ensure scroll is never blocked on app load
   useEffect(() => {
-    // Initialize Capacitor (Splash Screen, Status Bar)
-    initCapacitor();
+    // Initialize Capacitor (Splash Screen, Status Bar) — dynamic import
+    import('@/lib/capacitor').then(({ initCapacitor }) => initCapacitor());
 
     // Remove any stuck keyboard-open state
     document.body.classList.remove('keyboard-open');
@@ -210,7 +196,7 @@ const App = () => {
 
   // Initialize global button monitoring
   useEffect(() => {
-    scheduleNonCritical(() => {
+    scheduleIdle(() => {
       initializeGlobalButtonMonitoring();
     }, 3000);
   }, []);
@@ -218,7 +204,7 @@ const App = () => {
   // Initialize performance monitoring (Core Web Vitals)
   useEffect(() => {
     let cleanup: (() => void) | undefined;
-    scheduleNonCritical(() => {
+    scheduleIdle(() => {
       PerformanceMonitor.init();
       cleanup = () => PerformanceMonitor.disconnect();
     }, 3000);
@@ -240,7 +226,7 @@ const App = () => {
   // Load analytics after initial UI is interactive
   useEffect(() => {
     if (!import.meta.env.PROD) return;
-    scheduleNonCritical(async () => {
+    scheduleIdle(async () => {
       const mod = await import('@vercel/analytics/react');
       setVercelAnalytics(() => mod.Analytics);
     }, 4000);
@@ -248,7 +234,7 @@ const App = () => {
 
   // Load non-critical global UI/hooks after initial paint.
   useEffect(() => {
-    scheduleNonCritical(async () => {
+    scheduleIdle(async () => {
       const [updateMod, pwaMod, deviceTrackerMod] = await Promise.all([
         import('./components/mobile/UpdateBanner'),
         import('./components/InstallPWA'),

@@ -5,7 +5,7 @@
  * Prefetches next page images when user scrolls near bottom
  */
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useReducer } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
@@ -116,6 +116,93 @@ interface ProductWithSettings {
 const DEFAULT_PAGE_SIZE = 24;
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96];
 
+// --- Filter state consolidation (replaces 9 individual useState hooks) ---
+
+interface CatalogFilterState {
+  searchQuery: string;
+  sortBy: string;
+  selectedCategories: string[];
+  selectedStrainTypes: string[];
+  inStockOnly: boolean;
+  priceRange: [number, number];
+  thcRange: [number, number];
+  cbdRange: [number, number];
+}
+
+type CatalogFilterAction =
+  | { type: 'SET_SEARCH'; query: string }
+  | { type: 'SET_SORT'; sortBy: string }
+  | { type: 'TOGGLE_CATEGORY'; category: string }
+  | { type: 'SET_STRAIN_TYPES'; strainTypes: string[] }
+  | { type: 'SET_IN_STOCK_ONLY'; inStockOnly: boolean }
+  | { type: 'SET_PRICE_RANGE'; range: [number, number] }
+  | { type: 'SET_THC_RANGE'; range: [number, number] }
+  | { type: 'SET_CBD_RANGE'; range: [number, number] }
+  | { type: 'APPLY_FILTERS'; filters: FilterState }
+  | { type: 'CLEAR_ALL' };
+
+function catalogFilterReducer(state: CatalogFilterState, action: CatalogFilterAction): CatalogFilterState {
+  switch (action.type) {
+    case 'SET_SEARCH':
+      return { ...state, searchQuery: action.query };
+    case 'SET_SORT':
+      return { ...state, sortBy: action.sortBy };
+    case 'TOGGLE_CATEGORY':
+      return {
+        ...state,
+        selectedCategories: state.selectedCategories.includes(action.category)
+          ? state.selectedCategories.filter(c => c !== action.category)
+          : [...state.selectedCategories, action.category],
+      };
+    case 'SET_STRAIN_TYPES':
+      return { ...state, selectedStrainTypes: action.strainTypes };
+    case 'SET_IN_STOCK_ONLY':
+      return { ...state, inStockOnly: action.inStockOnly };
+    case 'SET_PRICE_RANGE':
+      return { ...state, priceRange: action.range };
+    case 'SET_THC_RANGE':
+      return { ...state, thcRange: action.range };
+    case 'SET_CBD_RANGE':
+      return { ...state, cbdRange: action.range };
+    case 'APPLY_FILTERS':
+      return {
+        ...state,
+        selectedCategories: action.filters.categories,
+        selectedStrainTypes: action.filters.strainTypes,
+        priceRange: action.filters.priceRange,
+        sortBy: action.filters.sortBy,
+        inStockOnly: action.filters.inStockOnly ?? state.inStockOnly,
+        thcRange: action.filters.thcRange ?? state.thcRange,
+        cbdRange: action.filters.cbdRange ?? state.cbdRange,
+      };
+    case 'CLEAR_ALL':
+      return {
+        searchQuery: '',
+        sortBy: 'name',
+        selectedCategories: [],
+        selectedStrainTypes: [],
+        inStockOnly: false,
+        priceRange: [0, 1000],
+        thcRange: [0, 100],
+        cbdRange: [0, 100],
+      };
+  }
+}
+
+function createInitialFilterState(searchParams: URLSearchParams): CatalogFilterState {
+  const cat = searchParams.get('category');
+  return {
+    searchQuery: searchParams.get('q') ?? '',
+    sortBy: searchParams.get('sort') || 'name',
+    selectedCategories: cat ? [cat] : [],
+    selectedStrainTypes: [],
+    inStockOnly: false,
+    priceRange: [0, 1000],
+    thcRange: [0, 100],
+    cbdRange: [0, 100],
+  };
+}
+
 // Transform RPC response to component interface
 function transformProduct(rpc: RpcProduct): ProductWithSettings {
   return {
@@ -154,21 +241,16 @@ export function ProductCatalogPage() {
   const [searchParams] = useSearchParams();
   const { store } = useShop();
 
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? '');
+  // Consolidated filter state (replaces 9 individual useState hooks)
+  const [filters, dispatch] = useReducer(catalogFilterReducer, searchParams, createInitialFilterState);
+  const { searchQuery, sortBy, selectedCategories, selectedStrainTypes, inStockOnly, priceRange, thcRange, cbdRange } = filters;
+
   const handleSearch = useCallback((value: string) => {
-    setSearchQuery(value);
+    dispatch({ type: 'SET_SEARCH', query: value });
   }, []);
+
+  // UI state (independent of filters)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'name');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
-    const cat = searchParams.get('category');
-    return cat ? [cat] : [];
-  });
-  const [selectedStrainTypes, setSelectedStrainTypes] = useState<string[]>([]);
-  const [inStockOnly, setInStockOnly] = useState(false);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
-  const [thcRange, setThcRange] = useState<[number, number]>([0, 100]);
-  const [cbdRange, setCbdRange] = useState<[number, number]>([0, 100]);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [quickViewProductId, setQuickViewProductId] = useState<string | null>(null);
 
@@ -439,14 +521,7 @@ export function ProductCatalogPage() {
 
   // Clear all filters
   const clearFilters = () => {
-    setSearchQuery('');
-    setSelectedCategories([]);
-    setSelectedStrainTypes([]);
-    setInStockOnly(false);
-    setPriceRange([0, 1000]);
-    setThcRange([0, 100]);
-    setCbdRange([0, 100]);
-    setSortBy('name');
+    dispatch({ type: 'CLEAR_ALL' });
     goToPage(1);
     setSearchParams({});
   };
@@ -483,21 +558,11 @@ export function ProductCatalogPage() {
   const activeFilterCount = getActiveFilterCount(filterState, maxPrice);
 
   const handleApplyFilters = (newFilters: FilterState) => {
-    setSelectedCategories(newFilters.categories);
-    setSelectedStrainTypes(newFilters.strainTypes);
-    setPriceRange(newFilters.priceRange);
-    setSortBy(newFilters.sortBy);
-    if (newFilters.inStockOnly !== undefined) setInStockOnly(newFilters.inStockOnly);
-    if (newFilters.thcRange) setThcRange(newFilters.thcRange);
-    if (newFilters.cbdRange) setCbdRange(newFilters.cbdRange);
+    dispatch({ type: 'APPLY_FILTERS', filters: newFilters });
   };
 
   const toggleCategory = (category: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
+    dispatch({ type: 'TOGGLE_CATEGORY', category });
   };
 
   return (
@@ -575,7 +640,7 @@ export function ProductCatalogPage() {
           </Popover>
 
           {/* Sort */}
-          <Select value={sortBy} onValueChange={setSortBy}>
+          <Select value={sortBy} onValueChange={(val) => dispatch({ type: 'SET_SORT', sortBy: val })}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
@@ -592,7 +657,7 @@ export function ProductCatalogPage() {
           {/* Strain Type Filter */}
           <Select
             value={selectedStrainTypes[0] || "all"}
-            onValueChange={(val) => setSelectedStrainTypes(val === "all" ? [] : [val])}
+            onValueChange={(val) => dispatch({ type: 'SET_STRAIN_TYPES', strainTypes: val === "all" ? [] : [val] })}
           >
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Strain Type" />
@@ -669,7 +734,7 @@ export function ProductCatalogPage() {
               Search: {searchQuery}
               <button
                 type="button"
-                onClick={() => setSearchQuery('')}
+                onClick={() => dispatch({ type: 'SET_SEARCH', query: '' })}
                 className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Remove search filter"
               >
@@ -695,7 +760,7 @@ export function ProductCatalogPage() {
               {selectedStrainTypes.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')}
               <button
                 type="button"
-                onClick={() => setSelectedStrainTypes([])}
+                onClick={() => dispatch({ type: 'SET_STRAIN_TYPES', strainTypes: [] })}
                 className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Remove strain type filter"
               >
@@ -708,7 +773,7 @@ export function ProductCatalogPage() {
               In Stock
               <button
                 type="button"
-                onClick={() => setInStockOnly(false)}
+                onClick={() => dispatch({ type: 'SET_IN_STOCK_ONLY', inStockOnly: false })}
                 className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Remove in stock filter"
               >
@@ -721,7 +786,7 @@ export function ProductCatalogPage() {
               THC: {thcRange[0]}%-{thcRange[1]}%
               <button
                 type="button"
-                onClick={() => setThcRange([0, 100])}
+                onClick={() => dispatch({ type: 'SET_THC_RANGE', range: [0, 100] })}
                 className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Remove THC range filter"
               >
@@ -734,7 +799,7 @@ export function ProductCatalogPage() {
               CBD: {cbdRange[0]}%-{cbdRange[1]}%
               <button
                 type="button"
-                onClick={() => setCbdRange([0, 100])}
+                onClick={() => dispatch({ type: 'SET_CBD_RANGE', range: [0, 100] })}
                 className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Remove CBD range filter"
               >

@@ -12,7 +12,6 @@ interface LogEntry {
   timestamp: Date;
   type: 'log' | 'warn' | 'error' | 'info';
   message: string;
-  args: unknown[];
 }
 
 /* eslint-disable no-console */
@@ -45,7 +44,6 @@ export function ConsoleMonitor() {
         timestamp: new Date(),
         type,
         message,
-        args
       }, ...prev].slice(0, 1000));
     };
 

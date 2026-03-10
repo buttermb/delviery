@@ -17,21 +17,10 @@ import { logger } from '@/lib/logger';
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { initializeSecurityObfuscation } from "./utils/securityObfuscation";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import bugFinder from "./utils/bugFinder";
 import { setupGlobalErrorHandlers } from "./lib/globalErrorHandler";
+import { scheduleIdle } from "./lib/scheduleIdle";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
-
-const runDeferred = (task: () => void, timeout = 1500) => {
-  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    (window as Window & {
-      requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number;
-    }).requestIdleCallback(task, { timeout });
-    return;
-  }
-  (window ?? globalThis).setTimeout(task, 0);
-};
 
 // Setup global error handlers
 setupGlobalErrorHandlers();
@@ -145,13 +134,16 @@ logger.debug('[APP] Theme state:', {
   prefersDark: window.matchMedia('(prefers-color-scheme: dark)').matches
 });
 
-// Initialize security obfuscation in production
+// Initialize security obfuscation in production (deferred dynamic import)
 if (import.meta.env.PROD) {
-  try {
-    initializeSecurityObfuscation();
-  } catch (error) {
-    logger.error('[APP] Security obfuscation failed:', error);
-  }
+  scheduleIdle(async () => {
+    try {
+      const { initializeSecurityObfuscation } = await import('./utils/securityObfuscation');
+      initializeSecurityObfuscation();
+    } catch (error) {
+      logger.error('[APP] Security obfuscation failed:', error);
+    }
+  }, 2000);
 }
 
 // Register custom service worker (production only)
@@ -193,22 +185,20 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   });
 }
 
-// Initialize bug finder (runs in all environments)
-try {
-  // BugFinder automatically starts monitoring on instantiation
-  logger.debug('[APP] Bug Finder initialized');
-
-  // Defer dev-only bug scanning until idle to keep initial render responsive
-  if (import.meta.env.DEV) {
-    runDeferred(() => {
+// Initialize bug finder in DEV only (deferred dynamic import)
+if (import.meta.env.DEV) {
+  scheduleIdle(async () => {
+    try {
+      const { default: bugFinder } = await import('./utils/bugFinder');
+      logger.debug('[APP] Bug Finder initialized');
       const scan = bugFinder.scanBugs();
       if (scan.totalBugs > 0) {
         logger.warn('[APP] Existing bugs detected:', scan);
       }
-    });
-  }
-} catch (error) {
-  logger.error('[APP] Bug Finder initialization failed:', error);
+    } catch (error) {
+      logger.error('[APP] Bug Finder initialization failed:', error);
+    }
+  });
 }
 
 // Render application with error handling

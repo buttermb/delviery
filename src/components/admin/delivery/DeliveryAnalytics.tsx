@@ -26,7 +26,7 @@ import {
   Tooltip,
   CartesianGrid,
   Legend,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import {
   Truck,
   Clock,

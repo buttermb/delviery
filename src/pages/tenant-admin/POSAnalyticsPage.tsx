@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { queryKeys } from '@/lib/queryKeys';
 import { CHART_COLORS } from '@/lib/chartColors';
 import {

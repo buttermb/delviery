@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from '@/components/ui/lazy-recharts';
 
 interface ViewTrackingChartProps {
   data: Array<{

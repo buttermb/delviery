@@ -5,8 +5,8 @@
 import { lazy } from "react";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 
-// Eager-loaded critical pages
-export { default as NotFoundPage } from "@/pages/NotFoundPage";
+// NotFoundPage: lazy-loaded since it's rarely needed
+export const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 // Admin shell
 export const AdminNotFoundPage = lazy(() => import("@/pages/admin/AdminNotFoundPage"));

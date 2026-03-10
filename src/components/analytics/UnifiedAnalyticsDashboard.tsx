@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 import { Loader2, TrendingUp, ShoppingCart, DollarSign, CreditCard } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from '@/components/ui/lazy-recharts';
 import { format } from 'date-fns';
 import { queryKeys } from '@/lib/queryKeys';
 import { CHART_COLORS } from '@/lib/chartColors';

@@ -6,7 +6,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from '@/components/ui/lazy-recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/formatters';
 import { queryKeys } from '@/lib/queryKeys';

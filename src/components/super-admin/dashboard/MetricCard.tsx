@@ -11,7 +11,7 @@ import {
   Area,
   ResponsiveContainer,
   Tooltip,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 
 interface MetricCardProps {
   title: string;

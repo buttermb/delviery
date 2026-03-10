@@ -8,6 +8,11 @@ import { logger } from '@/lib/logger';
 import { buttonMonitor } from './buttonMonitor';
 
 let isInitialized = false;
+let healthCheckIntervalId: ReturnType<typeof setInterval> | null = null;
+let mutationObserverRef: MutationObserver | null = null;
+let unhandledRejectionHandler: ((event: PromiseRejectionEvent) => void) | null = null;
+let clickHandler: ((event: MouseEvent) => void) | null = null;
+let submitHandler: ((event: SubmitEvent) => void) | null = null;
 
 /**
  * Initialize global button monitoring
@@ -15,8 +20,8 @@ let isInitialized = false;
  */
 export function initializeGlobalButtonMonitoring() {
   if (isInitialized) {
-    logger.warn('Global button monitoring already initialized', { component: 'globalButtonInterceptor' });
-    return;
+    logger.info('Reinitializing global button monitoring (HMR support)', { component: 'globalButtonInterceptor' });
+    cleanupGlobalButtonMonitoring();
   }
 
   if (typeof window === 'undefined') {
@@ -31,7 +36,7 @@ export function initializeGlobalButtonMonitoring() {
   }>();
 
   // Monitor unhandled promise rejections (common in async button handlers)
-  window.addEventListener('unhandledrejection', (event) => {
+  unhandledRejectionHandler = (event: PromiseRejectionEvent) => {
     // Try to match to active button click
     const now = Date.now();
     for (const [key, click] of activeClicks.entries()) {
@@ -48,10 +53,11 @@ export function initializeGlobalButtonMonitoring() {
         break;
       }
     }
-  });
+  };
+  window.addEventListener('unhandledrejection', unhandledRejectionHandler);
 
   // Monitor all button clicks
-  document.addEventListener('click', (event) => {
+  clickHandler = ((event: MouseEvent) => {
     const target = event.target as HTMLElement;
     
     // Check if clicked element is a button or inside a button
@@ -134,10 +140,11 @@ export function initializeGlobalButtonMonitoring() {
         activeClicks.delete(key);
       }
     }
-  }, true); // Use capture phase to catch all clicks
+  }) as EventListener;
+  document.addEventListener('click', clickHandler, true); // Use capture phase to catch all clicks
 
   // Monitor form submissions (buttons in forms)
-  document.addEventListener('submit', (event) => {
+  submitHandler = ((event: SubmitEvent) => {
     const form = event.target as HTMLFormElement;
     const submitButton = form.querySelector('button[type="submit"], input[type="submit"]') as HTMLElement;
     
@@ -164,30 +171,13 @@ export function initializeGlobalButtonMonitoring() {
         }
       }, { once: true });
     }
-  }, true);
+  }) as EventListener;
+  document.addEventListener('submit', submitHandler, true);
 
-  // Monitor React Button component clicks via MutationObserver
-  // This catches dynamically added buttons
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          const element = node as HTMLElement;
-          const buttons = element.querySelectorAll?.('button, [role="button"]');
-          buttons?.forEach((button) => {
-            if (!button.hasAttribute('data-monitored')) {
-              // Button will be monitored on first click
-            }
-          });
-        }
-      });
-    });
-  });
-
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-  });
+  // MutationObserver removed — the callback body was empty (buttons are
+  // monitored on first click via the document-level click handler above),
+  // and observing every DOM mutation across document.body with subtree:true
+  // caused severe GC pressure on a large SPA.
 
   isInitialized = true;
   logger.info('Global button monitoring initialized', { component: 'globalButtonInterceptor' });
@@ -203,7 +193,7 @@ export function initializeGlobalButtonMonitoring() {
 
   // Log health report periodically in development
   if (import.meta.env.DEV) {
-    setInterval(() => {
+    healthCheckIntervalId = setInterval(() => {
       const report = buttonMonitor.getHealthReport();
       if (report.errorRate > 0.1 || report.brokenButtons > 0) {
         logger.warn('Button health check', { ...report, component: 'globalButtonInterceptor' });
@@ -215,6 +205,41 @@ export function initializeGlobalButtonMonitoring() {
       }
     }, 5 * 60 * 1000); // Every 5 minutes
   }
+}
+
+/**
+ * Cleanup global button monitoring
+ * Removes all event listeners, disconnects observers, and clears intervals.
+ * Call this before reinitializing or when tearing down the app.
+ */
+export function cleanupGlobalButtonMonitoring() {
+  if (healthCheckIntervalId !== null) {
+    clearInterval(healthCheckIntervalId);
+    healthCheckIntervalId = null;
+  }
+
+  if (mutationObserverRef !== null) {
+    mutationObserverRef.disconnect();
+    mutationObserverRef = null;
+  }
+
+  if (unhandledRejectionHandler !== null) {
+    window.removeEventListener('unhandledrejection', unhandledRejectionHandler);
+    unhandledRejectionHandler = null;
+  }
+
+  if (clickHandler !== null) {
+    document.removeEventListener('click', clickHandler, true);
+    clickHandler = null;
+  }
+
+  if (submitHandler !== null) {
+    document.removeEventListener('submit', submitHandler, true);
+    submitHandler = null;
+  }
+
+  isInitialized = false;
+  logger.info('Global button monitoring cleaned up', { component: 'globalButtonInterceptor' });
 }
 
 /**

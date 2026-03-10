@@ -21,7 +21,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from '@/components/ui/lazy-recharts';
 import { queryKeys } from '@/lib/queryKeys';
 
 interface RecentSale {

@@ -343,8 +343,8 @@ export function useAdminBadgeCounts() {
       });
     channelsRef.current.push(productsChannel);
 
-    // Fallback polling every 60 seconds (increased from 30s since we have realtime)
-    const interval = setInterval(fetchCounts, 60000);
+    // Fallback polling every 5 minutes (realtime handles live updates)
+    const interval = setInterval(fetchCounts, 300_000);
 
     return () => {
       // Clear debounce timeout

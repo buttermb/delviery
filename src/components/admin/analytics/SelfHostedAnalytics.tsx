@@ -48,7 +48,7 @@ import {
   PieChart,
   Pie,
   Cell,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { useAnalyticsData, type UnifiedAnalyticsData } from '@/hooks/useAnalyticsData';
 import { format } from 'date-fns';
 import { formatCurrency, formatCompactCurrency } from '@/lib/formatters';

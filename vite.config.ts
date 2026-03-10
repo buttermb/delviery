@@ -31,6 +31,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { buildTimestampPlugin } from './vite-plugins/build-timestamp';
 import { realtimeValidationPlugin } from './vite-plugins/realtime-validation';
 import { versionGeneratorPlugin } from './vite-plugins/version-generator';
+import { lucideDirectImportsPlugin } from './vite-plugins/lucide-direct-imports';
 
 // Backend env fallbacks for preview/dev environments.
 // These are *public* values (URL + anon/publishable key) and prevent the app from hard-crashing
@@ -89,6 +90,7 @@ export default defineConfig(({ mode }) => ({
   envPrefix: 'VITE_', // Only expose env vars prefixed with VITE_ to client
   plugins: [
     react(),
+    lucideDirectImportsPlugin(),
     mode === "development" && componentTagger(),
     versionGeneratorPlugin(),
     buildTimestampPlugin(),
@@ -215,6 +217,7 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('@capacitor')) return 'vendor-capacitor';
             if (id.includes('crypto-js') || id.includes('bcryptjs') || id.includes('@aikidosec')) return 'vendor-crypto';
             if (id.includes('@tanstack')) return 'vendor-query';
+            if (id.includes('framer-motion')) return 'vendor-motion';
             if (id.includes('recharts') || id.includes('@tremor') || id.includes('d3-') || id.includes('victory-vendor')) return 'vendor-charts';
           }
         },

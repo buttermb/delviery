@@ -22,7 +22,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import {
   Coins,
   TrendingUp,

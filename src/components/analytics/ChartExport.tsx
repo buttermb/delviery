@@ -50,6 +50,7 @@ export function ChartExport({ data, filename, title }: ChartExportProps) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 
     toast.success(`Exported to CSV — ${filename}.csv downloaded successfully`);
   };
@@ -71,6 +72,7 @@ export function ChartExport({ data, filename, title }: ChartExportProps) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 
     toast.success(`Exported to JSON — ${filename}.json downloaded successfully`);
   };

@@ -757,6 +757,7 @@ export default function WholesaleClients() {
                     a.href = url;
                     a.download = 'client-import-template.csv';
                     a.click();
+                    window.URL.revokeObjectURL(url);
                   }}
                   className="flex-1 min-h-[44px]"
                 >

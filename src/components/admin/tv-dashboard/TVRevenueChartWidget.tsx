@@ -8,7 +8,7 @@
  */
 
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from '@/components/ui/lazy-recharts';
 import { chartSemanticColors } from '@/lib/chartColors';
 
 export interface HourlyRevenue {

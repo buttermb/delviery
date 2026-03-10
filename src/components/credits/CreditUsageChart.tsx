@@ -14,7 +14,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';

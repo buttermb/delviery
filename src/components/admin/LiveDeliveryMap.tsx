@@ -213,6 +213,7 @@ export function LiveDeliveryMap({ deliveryId, showAll = false }: LiveDeliveryMap
           markerPair.runner.remove();
           markerPair.destination.remove();
           markers.current.delete(id);
+          etasRef.current.delete(id);
 
           // Remove route layer
           if (map.current!.getLayer('route-' + id)) {

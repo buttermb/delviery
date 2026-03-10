@@ -6,7 +6,7 @@ import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useBreadcrumbLabel } from '@/contexts/BreadcrumbContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from '@/components/ui/lazy-recharts';
 import { User, DollarSign, ShoppingCart, TrendingUp } from 'lucide-react';
 import { isPostgrestError } from "@/utils/errorHandling/typeGuards";
 import { queryKeys } from '@/lib/queryKeys';

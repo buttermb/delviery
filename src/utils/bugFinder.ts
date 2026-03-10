@@ -44,7 +44,7 @@ class BugFinder {
   private originalFetch?: typeof fetch;
   private apiErrors: Map<string, number> = new Map();
   private edgeFunctionErrors: Map<string, number> = new Map();
-  private maxBugs = 1000;
+  private maxBugs = 100;
   private listeners: Set<(bug: BugReport) => void> = new Set();
 
   constructor() {
@@ -109,17 +109,10 @@ class BugFinder {
         const response = await originalFetch!.apply(window, args);
         const duration = Date.now() - startTime;
 
-        // Check for errors
+        // Check for errors — log status only, don't clone/read bodies
+        // (cloning responses leaks ReadableStream references and stores
+        // potentially large payloads in memory)
         if (!response.ok) {
-          let errorBody: unknown = null;
-          try {
-            const clone = response.clone();
-            errorBody = await clone.text();
-            try {
-              errorBody = JSON.parse(errorBody as string);
-            } catch (e) { logger.warn('[BugFinder] Failed to parse error response body as JSON', { error: e }); }
-          } catch (e) { logger.warn('[BugFinder] Failed to read error response body', { error: e }); }
-
           const severity = response.status >= 500
             ? 'critical'
             : response.status >= 400
@@ -135,8 +128,6 @@ class BugFinder {
             context: {
               method,
               duration,
-              body: errorBody,
-              headers: Object.fromEntries(response.headers.entries()),
             },
           });
         }
@@ -169,6 +160,11 @@ class BugFinder {
   reportEdgeFunctionError(functionName: string, error: Error | string, context?: Record<string, unknown>) {
     const count = this.edgeFunctionErrors.get(functionName) ?? 0;
     this.edgeFunctionErrors.set(functionName, count + 1);
+    // Cap map size to prevent unbounded growth
+    if (this.edgeFunctionErrors.size > 200) {
+      const firstKey = this.edgeFunctionErrors.keys().next().value;
+      if (firstKey !== undefined) this.edgeFunctionErrors.delete(firstKey);
+    }
 
     this.reportBug({
       type: 'edge',

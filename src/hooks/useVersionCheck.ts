@@ -100,16 +100,18 @@ export function useVersionCheck() {
   const hasShownUpdateToast = useRef(false);
 
   useEffect(() => {
-    // Initial check on mount
+    // Skip version checking entirely in development to avoid reload loops
+    if (import.meta.env.DEV) return;
+
     const performCheck = async () => {
       const needsUpdate = await checkVersion();
-      
+
       if (needsUpdate && !hasShownUpdateToast.current) {
         hasShownUpdateToast.current = true;
-        
+
         toast.info('New version available', {
-          description: 'A new version is available. The page will reload to apply updates.',
-          duration: 5000,
+          description: 'A new version is available. Click to reload and apply updates.',
+          duration: Infinity,
           action: {
             label: 'Reload Now',
             onClick: async () => {
@@ -118,19 +120,11 @@ export function useVersionCheck() {
             }
           }
         });
-        
-        // Auto-reload after 10 seconds if user doesn't click
-        setTimeout(async () => {
-          await clearAllCaches();
-          window.location.reload();
-        }, 10000);
       }
     };
 
-    // Check immediately
     performCheck();
 
-    // Set up periodic checks
     checkIntervalRef.current = setInterval(performCheck, CHECK_INTERVAL);
 
     return () => {

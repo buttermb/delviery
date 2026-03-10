@@ -23,7 +23,7 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 
 import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
 import TrendingDown from 'lucide-react/dist/esm/icons/trending-down';

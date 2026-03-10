@@ -18,7 +18,7 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import {
   Users,
   FileText,

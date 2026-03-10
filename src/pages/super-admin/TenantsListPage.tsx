@@ -252,6 +252,7 @@ export default function TenantsListPage() {
               a.href = url;
               a.download = `tenants-${new Date().toISOString().split('T')[0]}.csv`;
               a.click();
+              window.URL.revokeObjectURL(url);
               showInfoToast("Export Complete", "Tenant list downloaded");
             }}
           >
@@ -616,6 +617,7 @@ export default function TenantsListPage() {
                 a.href = url;
                 a.download = `selected-tenants-${new Date().toISOString().split('T')[0]}.csv`;
                 a.click();
+                window.URL.revokeObjectURL(url);
                 showInfoToast("Export Complete", `${selectedTenants.length} tenants exported`);
               }}>
                 <Download className="h-4 w-4" />

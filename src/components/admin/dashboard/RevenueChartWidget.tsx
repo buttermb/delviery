@@ -22,7 +22,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 
 type ChartPeriod = '7d' | '30d' | 'mtd';
 

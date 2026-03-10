@@ -136,8 +136,8 @@ export function useNotifications(): UseNotificationsResult {
       }
     },
     enabled: !!tenantId,
-    refetchInterval: 15000, // 15 second refetch interval as per requirements
-    staleTime: 10000, // Consider data stale after 10 seconds
+    refetchInterval: 120_000, // 2 minutes (realtime handles live updates)
+    staleTime: 30_000, // 30 seconds
   });
 
   // Memoize unread count to avoid recomputing on every render

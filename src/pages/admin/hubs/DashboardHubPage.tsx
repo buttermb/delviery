@@ -54,7 +54,7 @@ import {
   BarChart,
   Bar,
   Legend,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useRevenueChart, useOrdersByStatus, useTopProducts } from '@/hooks/useDashboardCharts';
 import { useDashboardActivity, getRelativeTime, type ActivityType } from '@/hooks/useDashboardActivity';

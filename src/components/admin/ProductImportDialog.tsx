@@ -273,6 +273,7 @@ export function ProductImportDialog({ open, onOpenChange, onSuccess }: ProductIm
                             document.body.appendChild(a);
                             a.click();
                             document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
                         }
                     }
                 });

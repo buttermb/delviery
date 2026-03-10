@@ -132,9 +132,11 @@ export default function CommissionTracking() {
       const csvContent = csvRows.join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
+      link.href = url;
       link.download = `commissions-${new Date().toISOString().split('T')[0]}.csv`;
       link.click();
+      URL.revokeObjectURL(url);
 
       showSuccessToast('Export Complete', 'CSV file downloaded');
     } catch (error) {

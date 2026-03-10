@@ -404,6 +404,7 @@ export function CustomerManagement() {
     a.href = url;
     a.download = `customers-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+    window.URL.revokeObjectURL(url);
     toast.success("Customer data exported");
   };
 

@@ -3,6 +3,7 @@
  *
  * Wraps Supabase realtime subscriptions with:
  * - Tenant isolation (filters by tenant_id)
+ * - Channel deduplication (shared channels for same table+tenant+event)
  * - Automatic cleanup on unmount
  * - EventBus integration for cross-module communication
  * - Exponential backoff reconnection
@@ -42,6 +43,12 @@ export interface RealtimePayload<T = Record<string, unknown>> {
  * Callback function type for realtime changes
  */
 export type RealtimeCallback<T = Record<string, unknown>> = (payload: RealtimePayload<T>) => void;
+
+/**
+ * Internal handler type for the channel registry.
+ * Each subscriber registers a handler that receives the raw Supabase payload.
+ */
+type RegistryHandler = (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void;
 
 /**
  * Options for the realtime subscription hook
@@ -87,6 +94,48 @@ const BACKOFF_CONFIG = {
   maxRetries: 10,
 };
 
+// ---------------------------------------------------------------------------
+// Channel Deduplication Registry
+// ---------------------------------------------------------------------------
+
+/**
+ * Registry entry for a shared Supabase channel.
+ * Multiple hook instances subscribing to the same table+tenant+event
+ * share a single channel and fan out events via the handlers Set.
+ */
+interface ChannelEntry {
+  channel: RealtimeChannel;
+  refCount: number;
+  handlers: Set<RegistryHandler>;
+  status: ConnectionStatus;
+  /** Per-subscriber status callbacks so each hook can track status independently */
+  statusCallbacks: Set<(status: ConnectionStatus) => void>;
+}
+
+/**
+ * Module-level singleton registry.
+ * Key: dedup key from getChannelKey()
+ * Value: shared channel entry
+ */
+const channelRegistry = new Map<string, ChannelEntry>();
+
+/**
+ * Generate a deterministic dedup key from subscription parameters
+ */
+function getChannelKey(
+  schema: string,
+  table: string,
+  tenantId: string,
+  event: RealtimeEventType,
+  filterColumn: string
+): string {
+  return `${schema}:${table}:${tenantId}:${event}:${filterColumn}`;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
 /**
  * Calculate backoff delay with jitter
  */
@@ -95,7 +144,7 @@ function calculateBackoffDelay(attempt: number): number {
     BACKOFF_CONFIG.initialDelay * Math.pow(BACKOFF_CONFIG.multiplier, attempt),
     BACKOFF_CONFIG.maxDelay
   );
-  // Add jitter (±20%)
+  // Add jitter (+/-20%)
   const jitter = delay * 0.2 * (Math.random() - 0.5);
   return Math.floor(delay + jitter);
 }
@@ -176,7 +225,30 @@ function buildEventPayload(
 }
 
 /**
- * Hook for subscribing to Supabase realtime changes with tenant isolation
+ * Notify all status callbacks in a registry entry
+ */
+function notifyStatusCallbacks(entry: ChannelEntry, newStatus: ConnectionStatus): void {
+  const updatedEntry: ChannelEntry = { ...entry, status: newStatus };
+  // Update the entry in-place (registry is mutable at module level)
+  entry.status = newStatus;
+  for (const cb of updatedEntry.statusCallbacks) {
+    try {
+      cb(newStatus);
+    } catch (error) {
+      logger.error('[useRealTimeSubscription] Error in status callback', error);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
+/**
+ * Hook for subscribing to Supabase realtime changes with tenant isolation.
+ *
+ * Multiple components subscribing to the same table+tenant+event combination
+ * share a single Supabase channel via the deduplication registry.
  *
  * @example
  * ```tsx
@@ -208,8 +280,10 @@ export function useRealTimeSubscription<T = Record<string, unknown>>(
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
 
   // Refs for stable values and cleanup
-  const channelRef = useRef<RealtimeChannel | null>(null);
+  const channelKeyRef = useRef<string | null>(null);
   const callbackRef = useRef(callback);
+  const handlerRef = useRef<RegistryHandler | null>(null);
+  const statusCallbackRef = useRef<((s: ConnectionStatus) => void) | null>(null);
   const retryCountRef = useRef(0);
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
@@ -228,30 +302,12 @@ export function useRealTimeSubscription<T = Record<string, unknown>>(
   }, []);
 
   /**
-   * Clean up subscription and retry timeout
+   * Create the handler function for this hook instance.
+   * This wraps the user callback + eventBus publishing so the shared channel
+   * can fan out to each subscriber independently.
    */
-  const cleanup = useCallback(() => {
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-      retryTimeoutRef.current = null;
-    }
-
-    if (channelRef.current) {
-      logger.debug(`[useRealTimeSubscription] Cleaning up subscription for table: ${table}`);
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
-
-    if (mountedRef.current) {
-      setStatus('disconnected');
-    }
-  }, [table]);
-
-  /**
-   * Handle incoming realtime changes
-   */
-  const handleChange = useCallback(
-    (payload: RealtimePostgresChangesPayload<T & { tenant_id?: string }>) => {
+  const createHandler = useCallback((): RegistryHandler => {
+    return (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
       const realtimePayload: RealtimePayload<T> = {
         eventType: payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
         new: (payload.new as T) || null,
@@ -286,12 +342,59 @@ export function useRealTimeSubscription<T = Record<string, unknown>>(
           logger.error(`[useRealTimeSubscription] Error publishing to eventBus`, error);
         }
       }
-    },
-    [table, tenantId, publishToEvent]
-  );
+    };
+  }, [table, tenantId, publishToEvent]);
 
   /**
-   * Handle reconnection with exponential backoff
+   * Clean up this subscriber from the shared channel.
+   * Only removes the Supabase channel when refCount reaches 0.
+   */
+  const cleanup = useCallback(() => {
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+
+    const key = channelKeyRef.current;
+    if (key) {
+      const entry = channelRegistry.get(key);
+      if (entry) {
+        // Remove this subscriber's handler and status callback
+        if (handlerRef.current) {
+          entry.handlers.delete(handlerRef.current);
+        }
+        if (statusCallbackRef.current) {
+          entry.statusCallbacks.delete(statusCallbackRef.current);
+        }
+        entry.refCount -= 1;
+
+        logger.debug(`[useRealTimeSubscription] Unregistered subscriber for ${table}`, {
+          key,
+          remainingRefs: entry.refCount,
+        });
+
+        if (entry.refCount <= 0) {
+          // Last subscriber -- tear down the channel
+          logger.debug(`[useRealTimeSubscription] Removing shared channel for ${table}`, { key });
+          supabase.removeChannel(entry.channel);
+          channelRegistry.delete(key);
+        }
+      }
+      channelKeyRef.current = null;
+    }
+
+    handlerRef.current = null;
+    statusCallbackRef.current = null;
+
+    if (mountedRef.current) {
+      setStatus('disconnected');
+    }
+  }, [table]);
+
+  /**
+   * Handle reconnection with exponential backoff.
+   * Only the first subscriber that detects an error will trigger reconnect
+   * for the shared channel.
    */
   const handleReconnect = useCallback(() => {
     if (!mountedRef.current) return;
@@ -322,7 +425,8 @@ export function useRealTimeSubscription<T = Record<string, unknown>>(
   }, [table]);
 
   /**
-   * Internal setup function (no dependencies on itself)
+   * Internal setup function.
+   * Checks the dedup registry before creating a new channel.
    */
   const setupSubscriptionInternal = useCallback(() => {
     if (!tenantId || !enabled || !mountedRef.current) {
@@ -334,27 +438,95 @@ export function useRealTimeSubscription<T = Record<string, unknown>>(
       return;
     }
 
-    // Clean up existing subscription
+    // Clear any pending retry timeout
     if (retryTimeoutRef.current) {
       clearTimeout(retryTimeoutRef.current);
       retryTimeoutRef.current = null;
     }
 
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
+    // If this hook already registered on a channel, clean up first
+    if (channelKeyRef.current) {
+      const prevEntry = channelRegistry.get(channelKeyRef.current);
+      if (prevEntry) {
+        if (handlerRef.current) {
+          prevEntry.handlers.delete(handlerRef.current);
+        }
+        if (statusCallbackRef.current) {
+          prevEntry.statusCallbacks.delete(statusCallbackRef.current);
+        }
+        prevEntry.refCount -= 1;
+        if (prevEntry.refCount <= 0) {
+          supabase.removeChannel(prevEntry.channel);
+          channelRegistry.delete(channelKeyRef.current);
+        }
+      }
+      channelKeyRef.current = null;
+      handlerRef.current = null;
+      statusCallbackRef.current = null;
     }
 
+    const key = getChannelKey(schema, table, tenantId, event, filterColumn);
+    const handler = createHandler();
+    handlerRef.current = handler;
+
+    // Create a stable status callback for this hook instance
+    const onStatusChange = (newStatus: ConnectionStatus): void => {
+      if (mountedRef.current) {
+        setStatus(newStatus);
+        if (newStatus === 'connected') {
+          retryCountRef.current = 0;
+        }
+      }
+    };
+    statusCallbackRef.current = onStatusChange;
+
+    const existingEntry = channelRegistry.get(key);
+
+    if (existingEntry) {
+      // Shared channel already exists -- attach to it
+      existingEntry.refCount += 1;
+      existingEntry.handlers.add(handler);
+      existingEntry.statusCallbacks.add(onStatusChange);
+      channelKeyRef.current = key;
+
+      logger.debug(`[useRealTimeSubscription] Reusing shared channel for ${table}`, {
+        key,
+        refCount: existingEntry.refCount,
+      });
+
+      // Sync local status with the shared channel's current status
+      if (mountedRef.current) {
+        setStatus(existingEntry.status);
+      }
+
+      return;
+    }
+
+    // No existing channel -- create a new one
     setStatus('connecting');
 
-    logger.debug(`[useRealTimeSubscription] Setting up subscription`, {
+    logger.debug(`[useRealTimeSubscription] Creating shared channel`, {
       table,
       tenantId,
       event,
       schema,
+      key,
     });
 
-    const channelName = `realtime:${schema}:${table}:${tenantId}`;
+    const channelName = `realtime:${schema}:${table}:${tenantId}:${event}:${filterColumn}`;
+
+    // Build the new registry entry before subscribing so the handler
+    // closure can reference it for fan-out.
+    const newEntry: ChannelEntry = {
+      channel: null as unknown as RealtimeChannel, // assigned below
+      refCount: 1,
+      handlers: new Set([handler]),
+      status: 'connecting' as ConnectionStatus,
+      statusCallbacks: new Set([onStatusChange]),
+    };
+
+    channelRegistry.set(key, newEntry);
+    channelKeyRef.current = key;
 
     const channel = supabase
       .channel(channelName)
@@ -367,39 +539,56 @@ export function useRealTimeSubscription<T = Record<string, unknown>>(
           table,
           filter: `${filterColumn}=eq.${tenantId}`,
         },
-        handleChange
+        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+          // Fan out to all registered handlers
+          const entry = channelRegistry.get(key);
+          if (!entry) return;
+
+          for (const registeredHandler of entry.handlers) {
+            try {
+              registeredHandler(payload);
+            } catch (error) {
+              logger.error(`[useRealTimeSubscription] Error in registered handler for ${table}`, error);
+            }
+          }
+        }
       )
       .subscribe((subscriptionStatus) => {
-        if (!mountedRef.current) return;
+        const entry = channelRegistry.get(key);
+        if (!entry) return;
 
         logger.debug(`[useRealTimeSubscription] Channel status: ${subscriptionStatus}`, { table, channelName });
 
         if (subscriptionStatus === 'SUBSCRIBED') {
-          setStatus('connected');
-          retryCountRef.current = 0; // Reset retry count on successful connection
+          notifyStatusCallbacks(entry, 'connected');
           logger.info(`[useRealTimeSubscription] Successfully subscribed to ${table}`);
         } else if (subscriptionStatus === 'CHANNEL_ERROR' || subscriptionStatus === 'TIMED_OUT') {
-          setStatus('error');
+          notifyStatusCallbacks(entry, 'error');
           handleReconnect();
         } else if (subscriptionStatus === 'CLOSED') {
-          setStatus('disconnected');
+          notifyStatusCallbacks(entry, 'disconnected');
         }
       });
 
-    channelRef.current = channel;
-  }, [tenantId, enabled, table, event, schema, filterColumn, handleChange, handleReconnect]);
+    newEntry.channel = channel;
+  }, [tenantId, enabled, table, event, schema, filterColumn, createHandler, handleReconnect]);
 
   /**
-   * Manual reconnect function
+   * Manual reconnect function (per-component)
    */
   const reconnect = useCallback(() => {
     logger.debug(`[useRealTimeSubscription] Manual reconnect requested for ${table}`);
     retryCountRef.current = 0;
+
+    // Clean up this subscriber's registration and re-setup.
+    // If other subscribers exist on the shared channel, this will
+    // detach and reattach (or create a fresh channel if it was the last one).
+    cleanup();
     setupSubscriptionInternal();
-  }, [table, setupSubscriptionInternal]);
+  }, [table, cleanup, setupSubscriptionInternal]);
 
   /**
-   * Manual disconnect function
+   * Manual disconnect function (per-component)
    */
   const disconnect = useCallback(() => {
     logger.debug(`[useRealTimeSubscription] Manual disconnect requested for ${table}`);

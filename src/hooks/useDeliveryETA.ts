@@ -93,9 +93,9 @@ export function useDeliveryETA(orderIds: string[]) {
       return (data ?? []) as unknown as DeliveryRow[];
     },
     enabled: !!tenant?.id && hasOrderIds,
-    staleTime: 10_000,
+    staleTime: 30_000,
     gcTime: 60_000,
-    refetchInterval: 30_000, // Refresh every 30 seconds
+    refetchInterval: 120_000, // 2 minutes (realtime handles live updates)
   });
 
   // Fetch historical average delivery time for this tenant

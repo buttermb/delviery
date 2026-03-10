@@ -267,6 +267,7 @@ export default function FrontedInventoryAnalytics() {
     a.href = url;
     a.download = `fronted-inventory-analytics-${format(new Date(), "yyyy-MM-dd")}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
     toast.success("Report exported");
   };
 

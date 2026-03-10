@@ -12,7 +12,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import {
   Package,
   DollarSign,

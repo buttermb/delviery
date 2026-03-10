@@ -15,7 +15,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { format, subDays, parseISO } from 'date-fns';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';

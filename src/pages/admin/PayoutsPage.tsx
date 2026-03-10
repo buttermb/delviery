@@ -219,9 +219,11 @@ export default function PayoutsPage() {
       const csvContent = csvRows.join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
+      link.href = url;
       link.download = `payouts-${format(new Date(), 'yyyy-MM-dd')}.csv`;
       link.click();
+      URL.revokeObjectURL(url);
 
       showSuccessToast('Export Complete', 'CSV file downloaded');
     } catch (error) {

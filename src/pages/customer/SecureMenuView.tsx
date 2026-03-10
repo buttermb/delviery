@@ -105,18 +105,21 @@ const getEffectIcon = (effect: string) => {
 
 // Expiration Countdown Component
 function TimeRemaining({ expiresAt }: { expiresAt: Date }) {
-  const [remaining, setRemaining] = useState('');
-  const [isUrgent, setIsUrgent] = useState(false);
-  const [isExpired, setIsExpired] = useState(false);
+  const [state, setState] = useState(() => {
+    const diff = expiresAt.getTime() - Date.now();
+    return {
+      remaining: '',
+      isUrgent: false,
+      isExpired: diff <= 0,
+    };
+  });
 
   useEffect(() => {
     const update = () => {
       const diff = expiresAt.getTime() - Date.now();
       if (diff <= 0) {
-        setRemaining('Expired');
-        setIsExpired(true);
-        setIsUrgent(true);
-        return;
+        setState({ remaining: 'Expired', isExpired: true, isUrgent: true });
+        return true; // signal expired
       }
 
       const days = Math.floor(diff / 86400000);
@@ -125,23 +128,32 @@ function TimeRemaining({ expiresAt }: { expiresAt: Date }) {
       const secs = Math.floor((diff % 60000) / 1000);
 
       if (days > 0) {
-        setRemaining(`${days}d ${hours}h remaining`);
-        setIsUrgent(false);
+        setState({ remaining: `${days}d ${hours}h remaining`, isUrgent: false, isExpired: false });
       } else if (hours > 0) {
-        setRemaining(`${hours}h ${mins}m remaining`);
-        setIsUrgent(hours < 2);
+        setState({ remaining: `${hours}h ${mins}m remaining`, isUrgent: hours < 2, isExpired: false });
       } else {
-        setRemaining(`${mins}m ${secs}s remaining`);
-        setIsUrgent(true);
+        setState({ remaining: `${mins}m ${secs}s remaining`, isUrgent: true, isExpired: false });
       }
+      return false;
     };
 
-    update();
-    const interval = setInterval(update, 1000);
+    const expired = update();
+    if (expired) return; // don't start interval if already expired
+
+    // Use longer interval when >1hr remaining
+    const diff = expiresAt.getTime() - Date.now();
+    const intervalMs = diff > 3600000 ? 60000 : 1000;
+    const interval = setInterval(() => {
+      const isExpired = update();
+      if (isExpired) {
+        clearInterval(interval);
+      }
+    }, intervalMs);
+
     return () => clearInterval(interval);
   }, [expiresAt]);
 
-  if (isExpired) {
+  if (state.isExpired) {
     return (
       <Badge variant="destructive" className="gap-1.5 animate-pulse">
         <AlertTriangle className="h-3 w-3" />
@@ -155,13 +167,13 @@ function TimeRemaining({ expiresAt }: { expiresAt: Date }) {
       variant="outline"
       className={cn(
         "gap-1.5 transition-colors",
-        isUrgent
+        state.isUrgent
           ? "border-red-500/50 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30"
           : "border-amber-500/50 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30"
       )}
     >
-      <Timer className={cn("h-3 w-3", isUrgent && "animate-pulse")} />
-      {remaining}
+      <Timer className={cn("h-3 w-3", state.isUrgent && "animate-pulse")} />
+      {state.remaining}
     </Badge>
   );
 }

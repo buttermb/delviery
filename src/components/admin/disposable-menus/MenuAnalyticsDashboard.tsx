@@ -12,7 +12,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer,
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { useMenuDashboardAnalytics } from '@/hooks/useMenuDashboardAnalytics';
 import { AnalyticsExportButton } from './AnalyticsExportButton';

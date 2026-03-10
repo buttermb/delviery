@@ -146,6 +146,7 @@ export default function CreditAuditLogPage() {
     a.href = url;
     a.download = `credit-audit-log-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (

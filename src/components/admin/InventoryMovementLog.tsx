@@ -134,6 +134,7 @@ export function InventoryMovementLog() {
     a.href = url;
     a.download = `inventory-movements-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (

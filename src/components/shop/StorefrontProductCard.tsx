@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +36,12 @@ export interface MarketplaceProduct {
     unit_type?: string;
 }
 
+const cardMotionProps = {
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-50px" },
+} as const;
+
 interface StorefrontProductCardProps {
     product: MarketplaceProduct;
     storeSlug?: string;
@@ -53,7 +59,7 @@ interface StorefrontProductCardProps {
     showStockWarning?: boolean;
 }
 
-export function StorefrontProductCard({
+export const StorefrontProductCard = memo(function StorefrontProductCard({
     product,
     storeSlug,
     isPreviewMode,
@@ -70,16 +76,23 @@ export function StorefrontProductCard({
     showStockWarning = true,
 }: StorefrontProductCardProps) {
     const [isHovered, setIsHovered] = useState(false);
-    const cleanedName = cleanProductName(product.product_name);
-    const isOutStock = product.stock_quantity !== undefined && product.stock_quantity <= 0;
-    const isLowStock = product.stock_quantity !== undefined && product.stock_quantity > 0 && product.stock_quantity <= 5;
-    const hasSalePrice = product.sale_price != null && product.sale_price < product.price;
-    const displayPrice = hasSalePrice ? product.sale_price : product.price;
-    const isNew = product.display_order !== undefined && product.display_order <= 7;
-    const displayImage = isHovered && product.images && product.images.length > 1
-        ? product.images[1]
-        : product.image_url;
-    const displayEffects = product.effects?.slice(0, 2) ?? [];
+
+    const { cleanedName, isOutStock, isLowStock, hasSalePrice, displayPrice, isNew, displayEffects } = useMemo(() => ({
+        cleanedName: cleanProductName(product.product_name),
+        isOutStock: product.stock_quantity !== undefined && product.stock_quantity <= 0,
+        isLowStock: product.stock_quantity !== undefined && product.stock_quantity > 0 && product.stock_quantity <= 5,
+        hasSalePrice: product.sale_price != null && product.sale_price < product.price,
+        displayPrice: (product.sale_price != null && product.sale_price < product.price) ? product.sale_price : product.price,
+        isNew: product.display_order !== undefined && product.display_order <= 7,
+        displayEffects: product.effects?.slice(0, 2) ?? [],
+    }), [product.product_name, product.stock_quantity, product.sale_price, product.price, product.display_order, product.effects]);
+
+    const displayImage = useMemo(() =>
+        isHovered && product.images && product.images.length > 1
+            ? product.images[1]
+            : product.image_url,
+        [isHovered, product.images, product.image_url]
+    );
 
     const { store } = useShop();
     const { prefetchQuery } = usePrefetch();
@@ -104,9 +117,7 @@ export function StorefrontProductCard({
     return (
         <motion.div
             layout
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
+            {...cardMotionProps}
             transition={{ duration: 0.4, delay: index * 0.05 }}
             className="group h-full"
             onMouseEnter={handlePrefetch}
@@ -289,4 +300,4 @@ export function StorefrontProductCard({
             </div>
         </motion.div>
     );
-}
+});

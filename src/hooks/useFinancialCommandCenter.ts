@@ -202,8 +202,8 @@ export const useQuickStats = () => {
       };
     },
     enabled: !!tenant?.id,
-    staleTime: 30 * 1000,
-    refetchInterval: 60 * 1000
+    staleTime: 60_000,
+    refetchInterval: 300_000 // 5 minutes (realtime handles live updates)
   });
 };
 

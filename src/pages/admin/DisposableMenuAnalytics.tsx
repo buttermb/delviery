@@ -176,6 +176,7 @@ const DisposableMenuAnalytics = () => {
     a.href = url;
     a.download = `menu-analytics-${menuId}-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   if (menusLoading || logsLoading) {

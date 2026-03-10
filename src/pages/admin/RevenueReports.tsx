@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import {
   Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, ComposedChart, Area
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import { DollarSign, TrendingUp, ShoppingBag } from 'lucide-react';
 import { subDays, startOfYear, format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';

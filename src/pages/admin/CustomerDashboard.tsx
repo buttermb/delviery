@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
-} from 'recharts';
+} from '@/components/ui/lazy-recharts';
 import {
   Users, UserPlus, Activity, TrendingUp, TrendingDown,
   Crown, UserX, Download, Upload, Plus, ArrowRight, AlertCircle
