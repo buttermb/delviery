@@ -187,7 +187,7 @@ async function handleRevokeSession(
 }
 
 async function handleRevokeAllOthers(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   currentToken: string,
   ipAddress: string,
