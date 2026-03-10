@@ -82,7 +82,7 @@ serve(async (req) => {
   }
 });
 
-async function checkVelocity(userId: string, supabase: ReturnType<typeof createClient>) {
+async function checkVelocity(userId: string, supabase: any) {
   const hourAgo = new Date(Date.now() - 3600000).toISOString();
   
   const { data: recentOrders, error } = await supabase
