@@ -56,7 +56,7 @@ const tabs = [
     { id: 'stock', label: 'Stock', icon: BarChart3, group: 'Levels' },
     { id: 'monitoring', label: 'Alerts', icon: AlertTriangle, group: 'Levels' },
     // Movement
-    { id: 'adjustments', label: 'Transfers', icon: ArrowLeftRight, group: 'Movement' },
+    { id: 'transfers', label: 'Transfers', icon: ArrowLeftRight, group: 'Movement' },
     { id: 'dispatch', label: 'Dispatch', icon: Truck, group: 'Movement' },
     // Tracking & Tools
     { id: 'fronted', label: 'Fronted', icon: CreditCard, group: 'Tools' },
@@ -150,8 +150,8 @@ export default function InventoryHubPage() {
                     </ModuleErrorBoundary>
                 </TabsContent>
 
-                {/* Adjustments Tab */}
-                <TabsContent value="adjustments" className="m-0">
+                {/* Transfers Tab */}
+                <TabsContent value="transfers" className="m-0">
                     <ModuleErrorBoundary moduleName="Inventory Transfers">
                         <Suspense fallback={<TabSkeleton />}>
                             <InventoryManagement />

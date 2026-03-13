@@ -106,7 +106,7 @@ export const STARTER_SIDEBAR: SidebarSection[] = [
     defaultExpanded: true,
     items: [
       createItem('basic-orders', 'Orders', '/admin/orders', ShoppingCart),
-      createItem('disposable-menus', 'Menus', '/admin/disposable-menus', Menu),
+      createItem('disposable-menus', 'Menus', '/admin/inventory-hub?tab=menus', Menu),
     ],
   },
   {
@@ -164,12 +164,8 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     defaultExpanded: true,
     items: [
       createItem('basic-orders', 'Orders', '/admin/orders', ShoppingCart),
-      createItem('disposable-menus', 'Menus', '/admin/disposable-menus', Menu),
+      createItem('disposable-menus', 'Menus', '/admin/inventory-hub?tab=menus', Menu),
       createItem('storefront', 'Storefront', '/admin/storefront-hub', Store),
-      createItem('storefront', 'Builder', '/admin/storefront-hub?tab=builder', Layers),
-      createItem('storefront', 'Store Settings', '/admin/storefront-hub?tab=settings', Settings),
-      createItem('storefront', 'Live Orders', '/admin/storefront-hub?tab=live', Activity),
-      createItem('storefront', 'Store Analytics', '/admin/storefront-hub?tab=analytics', BarChart3),
       createItem('marketplace', 'Marketplace', '/admin/marketplace/dashboard', Globe),
     ],
   },
@@ -177,7 +173,6 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     section: 'Inventory',
     items: [
       createItem('products', 'Inventory', '/admin/inventory-hub', Package),
-      createItem('fronted-inventory', 'Who Owes Me', '/admin/fronted-inventory', CreditCard),
     ],
   },
   {
@@ -185,7 +180,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('customers', 'All Customers', '/admin/customer-hub', Users),
       createItem('marketing-automation', 'Marketing', '/admin/marketing-hub', Mail, { featureFlag: 'marketing_hub' }),
-      createItem('storefront', 'Reviews', '/admin/storefront-hub?tab=reviews', MessageSquare),
+      createItem('storefront-reviews', 'Reviews', '/admin/storefront-hub?tab=reviews', MessageSquare),
     ],
   },
   {
@@ -200,6 +195,7 @@ export const PROFESSIONAL_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('analytics', 'Analytics', '/admin/analytics-hub', BarChart3, { featureFlag: 'analytics_advanced' }),
       createItem('financial-center', 'Finance', '/admin/finance-hub', Briefcase),
+      createItem('fronted-inventory', 'Who Owes Me', '/admin/fronted-inventory', CreditCard),
     ],
   },
   {
@@ -236,7 +232,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
       createItem('dashboard', 'Dashboard', '/admin/dashboard', LayoutDashboard, { shortcut: '⌘1' }),
       createItem('hotbox', 'Hotbox', '/admin/hotbox', Flame, { hot: true }),
       createItem('live-orders', 'Live Orders', '/admin/orders?tab=live', Activity),
-      createItem('pos-system', 'POS', '/admin/pos-system', CreditCard, { featureFlag: 'pos' }),
+      createItem('pos-system', 'Cash Register', '/admin/pos-system', CreditCard, { featureFlag: 'pos' }),
       createItem('live-map', 'Live Map', '/admin/live-map', MapPinned, { featureFlag: 'live_map' }),
     ],
   },
@@ -249,7 +245,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     items: [
       createItem('basic-orders', 'All Orders', '/admin/orders', ShoppingCart),
       createItem('wholesale-orders', 'B2B Orders', '/admin/orders?tab=wholesale', Building),
-      createItem('storefront', 'Store Orders', '/admin/orders?tab=storefront', Store),
+      createItem('storefront-live-orders', 'Store Orders', '/admin/orders?tab=storefront', Store),
     ],
   },
   // ==========================================================================
@@ -262,7 +258,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
       createItem('disposable-menus', 'Menus', '/admin/inventory-hub?tab=menus', Menu),
       createItem('inventory-dashboard', 'Stock Levels', '/admin/inventory-hub?tab=stock', Warehouse),
       createItem('stock-alerts', 'Alerts', '/admin/inventory-hub?tab=monitoring', AlertCircle),
-      createItem('inventory-transfers', 'Transfers', '/admin/inventory-hub?tab=adjustments', ArrowRightLeft),
+      createItem('inventory-transfers', 'Transfers', '/admin/inventory-hub?tab=transfers', ArrowRightLeft),
       createItem('generate-barcodes', 'Barcodes', '/admin/inventory-hub?tab=barcodes', Barcode),
     ],
   },
@@ -286,7 +282,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
   {
     section: 'Finance',
     items: [
-      createItem('financial-center', 'Dashboard', '/admin/finance-hub', DollarSign),
+      createItem('financial-center', 'Finance', '/admin/finance-hub', DollarSign),
       createItem('revenue-reports', 'Revenue', '/admin/finance-hub?tab=revenue', TrendingUp),
       createItem('expense-tracking', 'Expenses', '/admin/finance-hub?tab=expenses', Wallet),
       createItem('invoice-management', 'Invoices', '/admin/finance-hub?tab=invoices', FileSpreadsheet),
@@ -299,7 +295,7 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
   {
     section: 'Fulfillment',
     items: [
-      createItem('delivery-management', 'Overview', '/admin/fulfillment-hub', Truck, { featureFlag: 'delivery_tracking' }),
+      createItem('delivery-management', 'Deliveries', '/admin/fulfillment-hub', Truck, { featureFlag: 'delivery_tracking' }),
       createItem('fleet-management', 'Fleet', '/admin/fulfillment-hub?tab=fleet', Truck, { featureFlag: 'fleet_management' }),
       createItem('couriers', 'Couriers', '/admin/fulfillment-hub?tab=couriers', Users, { featureFlag: 'courier_portal' }),
       createItem('delivery-tracking', 'Tracking', '/admin/fulfillment-hub?tab=map', MapPinned, { featureFlag: 'delivery_tracking' }),
@@ -312,11 +308,11 @@ export const ENTERPRISE_SIDEBAR: SidebarSection[] = [
     section: 'Marketing',
     items: [
       createItem('storefront', 'Storefront', '/admin/storefront-hub', Store),
-      createItem('storefront', 'Builder', '/admin/storefront-hub?tab=builder', Layers),
-      createItem('storefront', 'Store Settings', '/admin/storefront-hub?tab=settings', Settings),
-      createItem('storefront', 'Live Orders', '/admin/storefront-hub?tab=live', Activity),
-      createItem('storefront', 'Store Analytics', '/admin/storefront-hub?tab=analytics', BarChart3),
-      createItem('storefront', 'Reviews', '/admin/storefront-hub?tab=reviews', Star),
+      createItem('storefront-builder', 'Builder', '/admin/storefront-hub?tab=builder', Layers),
+      createItem('storefront-settings', 'Store Settings', '/admin/storefront-hub?tab=settings', Settings),
+      createItem('storefront-live-orders', 'Live Orders', '/admin/storefront-hub?tab=live', Activity),
+      createItem('storefront-analytics', 'Store Analytics', '/admin/storefront-hub?tab=analytics', BarChart3),
+      createItem('storefront-reviews', 'Reviews', '/admin/storefront-hub?tab=reviews', Star),
       createItem('coupons', 'Coupons', '/admin/storefront-hub?tab=coupons', Tag, { featureFlag: 'marketing_hub' }),
       createItem('marketing-automation', 'Campaigns', '/admin/marketing-hub?tab=campaigns', Mail, { featureFlag: 'marketing_hub' }),
       createItem('live-chat', 'Live Chat', '/admin/marketing-hub?tab=live-chat', MessageSquare, { featureFlag: 'live_chat' }),
@@ -394,6 +390,11 @@ export const SIDEBAR_FEATURE_MAP: Record<string, FeatureId> = {
   'basic-orders': 'basic-orders',
   'wholesale-orders': 'wholesale-orders',
   'storefront': 'storefront',
+  'storefront-builder': 'storefront-builder',
+  'storefront-settings': 'storefront-settings',
+  'storefront-analytics': 'storefront-analytics',
+  'storefront-live-orders': 'storefront-live-orders',
+  'storefront-reviews': 'storefront-reviews',
   'loyalty-program': 'loyalty-program',
   'coupons': 'coupons',
   'live-orders': 'live-orders',

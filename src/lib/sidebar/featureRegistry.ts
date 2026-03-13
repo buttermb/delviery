@@ -257,7 +257,7 @@ export const FEATURE_REGISTRY: Record<string, FeatureDef> = {
     id: 'advanced-inventory',
     name: 'Advanced Inventory',
     icon: Box,
-    path: '/admin/inventory-hub?tab=adjustments',
+    path: '/admin/inventory-hub?tab=transfers',
     category: 'Inventory',
     minTier: 'professional',
   },

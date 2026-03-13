@@ -45,10 +45,10 @@ const TabSkeleton = () => (
 
 const tabs = [
     // Overview
-    { id: 'contacts', label: 'All', icon: Users, group: 'Contacts' },
+    { id: 'contacts', label: 'Contacts', icon: Users, group: 'Contacts' },
     // Relationships
     { id: 'crm', label: 'CRM', tooltip: 'Customer Relationship Management', icon: Heart, group: 'Relationships' },
-    { id: 'wholesale', label: 'B2B', tooltip: 'Business-to-Business Clients', icon: Briefcase, group: 'Relationships' },
+    { id: 'wholesale', label: 'Wholesale', tooltip: 'Business-to-Business Clients', icon: Briefcase, group: 'Relationships' },
     // Transactions
     { id: 'invoices', label: 'Invoices', icon: FileText, group: 'Transactions' },
     // Engagement

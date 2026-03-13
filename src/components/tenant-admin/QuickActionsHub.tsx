@@ -101,7 +101,7 @@ export function QuickActionsHub() {
             id: 'add-inventory',
             label: 'Add Inventory',
             icon: Package,
-            action: () => navigate(`/${tenantSlug}/admin/inventory-hub?tab=adjustments`),
+            action: () => navigate(`/${tenantSlug}/admin/inventory-hub?tab=transfers`),
             shortcut: 'Alt+I',
             description: 'Update stock levels'
         },

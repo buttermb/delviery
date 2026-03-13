@@ -54,7 +54,7 @@ const tabs = [
     { id: 'collections', label: 'Payment Collection', icon: Wallet, group: 'Transactions' },
     { id: 'payouts', label: 'Payouts', icon: Banknote, group: 'Transactions' },
     // Utilities
-    { id: 'builder', label: 'Builder', icon: FileEdit, group: 'Tools' },
+    { id: 'builder', label: 'Invoice Builder', icon: FileEdit, group: 'Tools' },
 ] as const;
 
 type TabId = typeof tabs[number]['id'];

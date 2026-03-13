@@ -321,6 +321,46 @@ export const FEATURES = {
     category: 'Sales & Orders',
     route: '/admin/storefront-hub',
   },
+  'storefront-builder': {
+    id: 'storefront-builder',
+    name: 'Storefront Builder',
+    description: 'Build and customize your online store layout',
+    tier: 'professional',
+    category: 'Sales & Orders',
+    route: '/admin/storefront-hub?tab=builder',
+  },
+  'storefront-settings': {
+    id: 'storefront-settings',
+    name: 'Store Settings',
+    description: 'Configure store appearance, payments, and policies',
+    tier: 'professional',
+    category: 'Sales & Orders',
+    route: '/admin/storefront-hub?tab=settings',
+  },
+  'storefront-analytics': {
+    id: 'storefront-analytics',
+    name: 'Store Analytics',
+    description: 'Track store performance, traffic, and conversion',
+    tier: 'professional',
+    category: 'Sales & Orders',
+    route: '/admin/storefront-hub?tab=analytics',
+  },
+  'storefront-live-orders': {
+    id: 'storefront-live-orders',
+    name: 'Store Live Orders',
+    description: 'Real-time storefront order monitoring',
+    tier: 'professional',
+    category: 'Sales & Orders',
+    route: '/admin/storefront-hub?tab=live',
+  },
+  'storefront-reviews': {
+    id: 'storefront-reviews',
+    name: 'Reviews',
+    description: 'Manage customer reviews and ratings',
+    tier: 'professional',
+    category: 'Sales & Orders',
+    route: '/admin/storefront-hub?tab=reviews',
+  },
 
   // --- Inventory (Professional) ---
   'advanced-inventory': {
@@ -329,7 +369,7 @@ export const FEATURES = {
     description: 'Full inventory management with tracking and history',
     tier: 'professional',
     category: 'Inventory',
-    route: '/admin/inventory-hub?tab=adjustments',
+    route: '/admin/inventory-hub?tab=transfers',
   },
   'inventory-transfers': {
     id: 'inventory-transfers',
@@ -344,7 +384,7 @@ export const FEATURES = {
     name: 'Who Owes Me',
     description: 'Track fronted products and outstanding debts',
     tier: 'professional',
-    category: 'Inventory',
+    category: 'Analytics & Finance',
     route: '/admin/fronted-inventory',
   },
   'operations': {
