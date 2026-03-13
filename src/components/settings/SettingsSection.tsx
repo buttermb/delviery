@@ -100,7 +100,7 @@ export function SettingsRow({
           fullWidthOnMobile && '[&>*]:flex-1 sm:[&>*]:flex-none'
         )}
       >
-        {children}
+        {children || action}
       </div>
     </div>
   );
