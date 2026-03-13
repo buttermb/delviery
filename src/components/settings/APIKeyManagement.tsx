@@ -70,7 +70,7 @@ export function APIKeyManagement() {
       // Generate a random API key
       const key = `sk_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
 
-      const { data, error } = await (supabase as unknown as Record<string, {from: (table: string) => { insert: (data: unknown) => { select: () => { single: () => Promise<{data: APIKey | null; error: unknown}> } } } }>).from('api_keys').insert({
+      const { data, error } = await (supabase as any).from('api_keys').insert({
         tenant_id: tenant.id,
         name: newKeyName,
         key,
