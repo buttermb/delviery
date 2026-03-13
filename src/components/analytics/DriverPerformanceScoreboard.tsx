@@ -17,7 +17,7 @@ export function DriverPerformanceScoreboard() {
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">
-          Analytics component for tenant: {tenant?.name || 'Unknown'}
+          Analytics component for tenant: {tenant?.business_name || 'Unknown'}
         </p>
         <p className="text-xs text-muted-foreground mt-2">
           Implementation stub - full functionality pending
