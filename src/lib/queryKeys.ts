@@ -3211,15 +3211,7 @@ export const queryKeys = {
       ['external-apis', 'supported-currencies'] as const,
   },
 
-  // Notifications
-  notifications: {
-    all: () => ['notifications'] as const,
-    lists: () => [...queryKeys.notifications.all(), 'list'] as const,
-    list: (tenantId: string, filters?: Record<string, unknown>) =>
-      [...queryKeys.notifications.lists(), tenantId, filters] as const,
-    badgeCounts: (tenantId: string) =>
-      [...queryKeys.notifications.all(), 'badges', tenantId] as const,
-  },
+  // (notifications key merged into main block above)
 
   // Onboarding
   onboarding: {
