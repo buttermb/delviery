@@ -72,7 +72,7 @@ export function useInvoices() {
                 : 'created_at';
             const { data, error } = await supabase
                 .from('crm_invoices')
-                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
+                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, currency, exchange_rate, original_currency_total, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('account_id', accountId)
                 .order(sortCol, { ascending: sort?.ascending ?? false })
                 .limit(500);
@@ -90,7 +90,7 @@ export function useInvoices() {
             if (!accountId) return null;
             const { data, error } = await supabase
                 .from('crm_invoices')
-                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
+                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, currency, exchange_rate, original_currency_total, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                 .eq('id', id)
                 .eq('account_id', accountId)
                 .maybeSingle();
@@ -107,7 +107,7 @@ export function useInvoices() {
         return useMutation({
             mutationFn: async (invoiceId: string) => {
                 if (!accountId) throw new Error('Account ID required');
-                const { data, error } = await supabase.from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).eq('account_id', accountId).select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)').maybeSingle();
+                const { data, error } = await supabase.from('crm_invoices').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', invoiceId).eq('account_id', accountId).select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, currency, exchange_rate, original_currency_total, created_at, updated_at, client:crm_clients(id, name, email, phone)').maybeSingle();
                 if (error) throw error;
                 return normalizeInvoice(data);
             },
@@ -134,7 +134,14 @@ export function useInvoices() {
                 const { error } = await supabase.from('crm_invoices').delete().eq('id', invoiceId).eq('account_id', accountId);
                 if (error) throw error;
             },
-            onSuccess: () => { queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() }); toast.success('Invoice deleted'); },
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
+                toast.success('Invoice deleted');
+                // Cross-panel invalidation — finance, dashboard, collections
+                if (accountId) {
+                    invalidateOnEvent(queryClient, 'INVOICE_CREATED', accountId);
+                }
+            },
             onError: (error: Error) => { logger.error('Failed to delete invoice', { error }); toast.error('Failed to delete invoice', { description: humanizeError(error) }); },
         });
     };
@@ -149,13 +156,21 @@ export function useInvoices() {
                     .update({ status: 'sent' })
                     .eq('id', invoiceId)
                     .eq('account_id', accountId)
-                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
+                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, currency, exchange_rate, original_currency_total, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                     .maybeSingle();
                 if (error) throw error;
                 return normalizeInvoice(data);
             },
-            onSuccess: () => {
+            onSuccess: (data) => {
                 queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
+                toast.success('Invoice marked as sent');
+                // Cross-panel invalidation — invoice status change affects finance, collections
+                if (accountId) {
+                    invalidateOnEvent(queryClient, 'INVOICE_CREATED', accountId, {
+                        invoiceId: data?.id,
+                        customerId: data?.client_id,
+                    });
+                }
             },
         });
     };
@@ -170,13 +185,21 @@ export function useInvoices() {
                     .update({ status: 'cancelled' })
                     .eq('id', invoiceId)
                     .eq('account_id', accountId)
-                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
+                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, currency, exchange_rate, original_currency_total, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                     .maybeSingle();
                 if (error) throw error;
                 return normalizeInvoice(data);
             },
-            onSuccess: () => {
+            onSuccess: (data) => {
                 queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
+                toast.success('Invoice voided');
+                // Cross-panel invalidation — voided invoice affects finance, collections, dashboard
+                if (accountId) {
+                    invalidateOnEvent(queryClient, 'INVOICE_CREATED', accountId, {
+                        invoiceId: data?.id,
+                        customerId: data?.client_id,
+                    });
+                }
             },
         });
     };
@@ -189,7 +212,7 @@ export function useInvoices() {
                 // First fetch the original invoice
                 const { data: original, error: fetchError } = await supabase
                     .from('crm_invoices')
-                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at')
+                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, currency, exchange_rate, original_currency_total, created_at, updated_at')
                     .eq('id', invoiceId)
                     .eq('account_id', accountId)
                     .maybeSingle();
@@ -216,14 +239,22 @@ export function useInvoices() {
                         total: original.total,
                         status: 'draft',
                     })
-                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)')
+                    .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, currency, exchange_rate, original_currency_total, created_at, updated_at, client:crm_clients(id, name, email, phone)')
                     .maybeSingle();
 
                 if (error) throw error;
                 return normalizeInvoice(data);
             },
-            onSuccess: () => {
+            onSuccess: (data) => {
                 queryClient.invalidateQueries({ queryKey: queryKeys.crm.invoices.all() });
+                toast.success('Invoice duplicated');
+                // Cross-panel invalidation — new invoice affects finance, collections, dashboard
+                if (accountId) {
+                    invalidateOnEvent(queryClient, 'INVOICE_CREATED', accountId, {
+                        invoiceId: data?.id,
+                        customerId: data?.client_id,
+                    });
+                }
             },
         });
     };
@@ -247,7 +278,7 @@ export function useClientInvoices(clientId: string | undefined) {
             if (!clientId || !accountId) return [];
             const { data, error } = await crmClient
                 .from('crm_invoices')
-                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at')
+                .select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, currency, exchange_rate, original_currency_total, created_at, updated_at')
                 .eq('client_id', clientId)
                 .eq('account_id', accountId)
                 .order('created_at', { ascending: false });
@@ -267,7 +298,7 @@ export function useCreateInvoice() {
         mutationFn: async (values: InvoiceFormValues & { account_id?: string }) => {
             const finalAccountId = values.account_id || accountId;
             if (!finalAccountId) throw new Error('Account ID required');
-            const { data, error } = await crmClient.from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items as unknown as Json[] }).select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, created_at, updated_at, client:crm_clients(id, name, email, phone)').maybeSingle();
+            const { data, error } = await crmClient.from('crm_invoices').insert({ ...values, account_id: finalAccountId, line_items: values.line_items as unknown as Json[] }).select('id, account_id, client_id, invoice_number, invoice_date, due_date, status, subtotal, tax_rate, tax_amount, total, amount_paid, payment_history, line_items, paid_at, currency, exchange_rate, original_currency_total, created_at, updated_at, client:crm_clients(id, name, email, phone)').maybeSingle();
             if (error) throw error;
             return normalizeInvoice(data as unknown as Record<string, unknown>);
         },

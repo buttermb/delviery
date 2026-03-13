@@ -48,6 +48,7 @@ import { handleError } from '@/utils/errorHandling/handlers';
 import { ForceLightMode } from '@/components/marketing/ForceLightMode';
 import FloraIQLogo from '@/components/FloraIQLogo';
 import { useCsrfToken } from '@/hooks/useCsrfToken';
+import { useEmailValidation } from '@/hooks/useEmailValidation';
 import { STORAGE_KEYS } from '@/constants/storageKeys';
 
 
@@ -141,6 +142,9 @@ export default function SignUpPage() {
     mode: 'onChange',
   });
 
+  const emailValue = form.watch('email');
+  const emailCheck = useEmailValidation(emailValue);
+
   // Handle Clerk auth check callback
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -190,6 +194,11 @@ export default function SignUpPage() {
   const onSubmit = async (data: SignupFormData) => {
     if (!validateToken()) {
       toast.error('Invalid security token. Please refresh the page and try again.');
+      return;
+    }
+
+    if (emailCheck.isDisposable) {
+      toast.error('Disposable email addresses are not allowed. Please use a permanent email.');
       return;
     }
 
@@ -737,6 +746,9 @@ export default function SignUpPage() {
                               </div>
                             </FormControl>
                             <FormMessage />
+                            {emailCheck.isChecked && emailCheck.isDisposable && (
+                              <p className="text-sm font-medium text-destructive mt-1">Disposable email addresses are not allowed</p>
+                            )}
                           </FormItem>
                         )}
                       />

@@ -41,6 +41,10 @@ interface WholesaleInvoiceData {
   outstandingBalance?: number;
   // Notes
   notes?: string;
+  // Currency
+  currency?: string;
+  exchangeRate?: number;
+  originalCurrencyTotal?: number;
 }
 
 const styles = StyleSheet.create({
@@ -250,10 +254,10 @@ const styles = StyleSheet.create({
   },
 });
 
-function formatCurrency(amount: number): string {
+function formatCurrency(amount: number, currency = 'USD'): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency,
   }).format(amount);
 }
 
@@ -344,9 +348,9 @@ export function WholesaleInvoicePDF({ invoice }: { invoice: WholesaleInvoiceData
             <View key={item.id} style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
               <Text style={styles.colProductValue}>{item.product_name}</Text>
               <Text style={styles.colQty}>{item.quantity_lbs}</Text>
-              <Text style={styles.colPrice}>{formatCurrency(item.unit_price)}</Text>
+              <Text style={styles.colPrice}>{formatCurrency(item.unit_price, invoice.currency)}</Text>
               <Text style={styles.colTotal}>
-                {formatCurrency(item.quantity_lbs * item.unit_price)}
+                {formatCurrency(item.quantity_lbs * item.unit_price, invoice.currency)}
               </Text>
             </View>
           ))}
@@ -360,18 +364,28 @@ export function WholesaleInvoicePDF({ invoice }: { invoice: WholesaleInvoiceData
           </View>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Subtotal:</Text>
-            <Text style={styles.totalValue}>{formatCurrency(invoice.subtotal)}</Text>
+            <Text style={styles.totalValue}>{formatCurrency(invoice.subtotal, invoice.currency)}</Text>
           </View>
           {invoice.tax != null && invoice.tax > 0 && (
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Tax:</Text>
-              <Text style={styles.totalValue}>{formatCurrency(invoice.tax)}</Text>
+              <Text style={styles.totalValue}>{formatCurrency(invoice.tax, invoice.currency)}</Text>
             </View>
           )}
           <View style={styles.grandTotalRow}>
             <Text style={styles.grandTotalLabel}>Total Due:</Text>
-            <Text style={styles.grandTotalValue}>{formatCurrency(invoice.total)}</Text>
+            <Text style={styles.grandTotalValue}>{formatCurrency(invoice.total, invoice.currency)}</Text>
           </View>
+          {invoice.currency && invoice.currency !== 'USD' && invoice.exchangeRate && (
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>USD Equivalent:</Text>
+              <Text style={styles.totalValue}>
+                {formatCurrency(invoice.originalCurrencyTotal != null
+                  ? invoice.originalCurrencyTotal * invoice.exchangeRate
+                  : invoice.total * invoice.exchangeRate)}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Payment Info */}
@@ -388,7 +402,7 @@ export function WholesaleInvoicePDF({ invoice }: { invoice: WholesaleInvoiceData
           <View style={styles.warningBox}>
             <Text style={styles.warningTitle}>Outstanding Balance</Text>
             <Text style={styles.warningText}>
-              This client has an outstanding balance of {formatCurrency(invoice.outstandingBalance)}.
+              This client has an outstanding balance of {formatCurrency(invoice.outstandingBalance, invoice.currency)}.
               Please collect this amount along with the current invoice.
             </Text>
           </View>

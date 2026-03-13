@@ -123,6 +123,11 @@ export interface CRMInvoice {
     // Additional fields
     notes?: string | null;
 
+    // Currency
+    currency?: string;
+    exchange_rate?: number | null;
+    original_currency_total?: number | null;
+
     created_at: string;
     updated_at: string;
 
@@ -330,6 +335,9 @@ export interface InvoiceFormValues {
     total?: number;
     status?: 'draft' | 'sent' | 'paid' | 'overdue';
     notes?: string;
+    currency?: string;
+    exchange_rate?: number;
+    original_currency_total?: number;
 }
 
 /**

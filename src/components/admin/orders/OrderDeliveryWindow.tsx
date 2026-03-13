@@ -12,6 +12,7 @@ import Clock from "lucide-react/dist/esm/icons/clock";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
 import CheckCircle2 from "lucide-react/dist/esm/icons/check-circle-2";
 import Truck from "lucide-react/dist/esm/icons/truck";
+import { usePublicHolidays } from '@/hooks/usePublicHolidays';
 import { cn } from '@/lib/utils';
 
 interface TimeSlot {
@@ -31,6 +32,8 @@ interface OrderDeliveryWindowProps {
   deliveryStatus?: 'pending' | 'in_transit' | 'delivered' | 'cancelled';
   /** Whether to show compact version */
   compact?: boolean;
+  /** Country code for public holiday detection (ISO 3166-1 alpha-2) */
+  countryCode?: string;
   /** Additional CSS classes */
   className?: string;
 }
@@ -86,6 +89,7 @@ export function OrderDeliveryWindow({
   timeSlot,
   deliveryStatus,
   compact = false,
+  countryCode,
   className,
 }: OrderDeliveryWindowProps) {
   // No scheduled delivery
@@ -116,6 +120,9 @@ export function OrderDeliveryWindow({
     );
   }
 
+  const { isHoliday, getHolidayName } = usePublicHolidays(countryCode || 'US', scheduledDate.getFullYear());
+  const holidayName = getHolidayName(scheduledDate);
+
   const smartDate = getSmartDateDisplay(scheduledDate);
   const timeDisplay = timeSlot
     ? formatTimeSlotDisplay(timeSlot)
@@ -143,6 +150,9 @@ export function OrderDeliveryWindow({
               <p className="font-medium">Scheduled Delivery</p>
               <p>{format(scheduledDate, 'EEEE, MMMM d, yyyy')}</p>
               <p>{timeSlotLabel || timeDisplay}</p>
+              {holidayName && (
+                <p className="text-amber-600 mt-1">{holidayName}</p>
+              )}
               {isOverdue && (
                 <p className="text-destructive mt-1">Delivery window has passed</p>
               )}
@@ -210,6 +220,12 @@ export function OrderDeliveryWindow({
             <p className="text-xs text-muted-foreground mt-2">
               {format(scheduledDate, 'EEEE, MMMM d, yyyy')}
             </p>
+
+            {holidayName && (
+              <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
+                {holidayName}
+              </Badge>
+            )}
           </div>
         </div>
       </CardContent>

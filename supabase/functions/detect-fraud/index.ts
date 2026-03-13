@@ -38,6 +38,9 @@ serve(async (req) => {
     const behaviorCheck = await checkBehavior(userId, supabaseClient);
     if (behaviorCheck.flagged) flags.push(behaviorCheck);
 
+    const binCheck = await checkBinRisk(orderId, userId, supabaseClient);
+    if (binCheck.flagged) flags.push(binCheck);
+
     // Calculate risk level
     const riskLevel = calculateRiskLevel(flags);
 
@@ -48,6 +51,7 @@ serve(async (req) => {
         flag_type: flag.type,
         severity: flag.severity,
         description: flag.message,
+        metadata: flag.metadata ?? null,
       });
     }
 
@@ -178,7 +182,57 @@ async function checkDeviceFingerprint(userId: string, supabase: any) {
   return { flagged: false };
 }
 
-async function checkBehavior(userId: string, supabase: any) {
+async function checkBinRisk(
+  orderId: string | undefined,
+  userId: string,
+  supabase: ReturnType<typeof createClient>
+): Promise<Record<string, unknown>> {
+  if (!orderId) return { flagged: false };
+
+  // Get order payment details
+  const { data: order } = await supabase
+    .from('orders')
+    .select('payment_method_last4, delivery_address')
+    .eq('id', orderId)
+    .maybeSingle();
+
+  if (!order?.payment_method_last4) return { flagged: false };
+
+  // BIN data would be passed from the frontend during checkout as bin_prefix
+  // For now, check if BIN data was cached during checkout
+  const { data: cachedBin } = await supabase
+    .from('api_cache')
+    .select('response')
+    .like('cache_key', 'binlist:%')
+    .gt('expires_at', new Date().toISOString())
+    .limit(1);
+
+  if (!cachedBin || cachedBin.length === 0) return { flagged: false };
+
+  const binData = cachedBin[0].response as Record<string, unknown>;
+  if (!binData?.found) return { flagged: false };
+
+  const card = binData.card as Record<string, unknown> | undefined;
+  if (!card) return { flagged: false };
+
+  const flags: Record<string, unknown>[] = [];
+
+  // Flag prepaid cards
+  if (card.type === 'prepaid' || card.prepaid === true) {
+    flags.push({
+      flagged: true,
+      type: 'prepaid_card',
+      severity: 'medium',
+      message: 'Payment made with a prepaid card',
+      metadata: { card_type: card.type, scheme: card.scheme },
+    });
+  }
+
+  if (flags.length > 0) return flags[0];
+  return { flagged: false };
+}
+
+async function checkBehavior(userId: string, supabase: ReturnType<typeof createClient>) {
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")

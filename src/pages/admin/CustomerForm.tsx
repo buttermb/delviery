@@ -33,6 +33,7 @@ import { useTenantNavigation } from '@/lib/navigation/tenantNavigation';
 import { logger } from '@/lib/logger';
 import { ShortcutHint, useModifierKey } from '@/components/ui/shortcut-hint';
 import { useFormKeyboardShortcuts } from '@/hooks/useFormKeyboardShortcuts';
+import { useEmailValidation } from '@/hooks/useEmailValidation';
 
 const customerFormSchema = z.object({
   first_name: z.string().min(1, 'First name is required').max(100, 'First name must be 100 characters or less'),
@@ -80,6 +81,9 @@ export default function CustomerForm() {
     },
     mode: 'onBlur',
   });
+
+  const emailValue = form.watch('email');
+  const emailCheck = useEmailValidation(emailValue);
 
   const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
     isDirty: form.formState.isDirty,
@@ -320,6 +324,9 @@ export default function CustomerForm() {
                             <Input type="email" placeholder="john@example.com" {...field} />
                           </FormControl>
                           <FormMessage />
+                          {emailCheck.isChecked && emailCheck.isDisposable && (
+                            <p className="text-sm font-medium text-destructive mt-1">Disposable email addresses are not allowed</p>
+                          )}
                         </FormItem>
                       )}
                     />

@@ -36,6 +36,7 @@ import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useCreateInvoice } from "@/hooks/crm/useInvoices";
 import { useLogActivity } from "@/hooks/crm/useActivityLog";
+import { useCurrencyConvert, useSupportedCurrencies } from "@/hooks/useCurrencyConvert";
 import { useAccount } from "@/contexts/AccountContext";
 import { useCreditGatedAction } from "@/hooks/useCredits";
 import { logger } from '@/lib/logger';
@@ -55,6 +56,7 @@ const formSchema = z.object({
     status: z.enum(["draft", "sent", "paid"]),
     tax_rate: z.coerce.number().min(0, "Sales tax cannot be negative").max(100, "Sales tax cannot exceed 100%"),
     notes: z.string().max(1000, "Notes must be 1000 characters or less").optional(),
+    currency: z.string().default("USD"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -80,8 +82,13 @@ export default function CreateInvoicePage() {
             status: "draft",
             tax_rate: 0,
             notes: "",
+            currency: "USD",
         },
     });
+
+    const selectedCurrency = form.watch("currency");
+    const { data: currenciesMap } = useSupportedCurrencies();
+    const currencyConversion = useCurrencyConvert(selectedCurrency, 'USD', total);
 
     const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({
         isDirty: form.formState.isDirty || lineItems.length > 0,
@@ -108,7 +115,7 @@ export default function CreateInvoicePage() {
 
         await executeCreditAction('invoice_create', async () => {
             try {
-                const invoice = await createInvoice.mutateAsync({
+                const invoicePayload: Parameters<typeof createInvoice.mutateAsync>[0] = {
                     account_id: accountId,
                     client_id: values.client_id,
                     invoice_date: values.issue_date.toISOString().split('T')[0],
@@ -120,7 +127,13 @@ export default function CreateInvoicePage() {
                     tax_amount: taxAmount,
                     total,
                     notes: values.notes,
-                });
+                    currency: values.currency || 'USD',
+                };
+                if (values.currency && values.currency !== 'USD' && currencyConversion.rate) {
+                    invoicePayload.exchange_rate = currencyConversion.rate;
+                    invoicePayload.original_currency_total = total;
+                }
+                const invoice = await createInvoice.mutateAsync(invoicePayload);
 
                 // Log activity
                 logActivity.mutate({
@@ -304,6 +317,37 @@ export default function CreateInvoicePage() {
                                         </FormItem>
                                     )}
                                 />
+
+                                <FormField
+                                    control={form.control}
+                                    name="currency"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Currency</FormLabel>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select currency" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="USD">USD - US Dollar</SelectItem>
+                                                    {currenciesMap && Object.entries(currenciesMap)
+                                                        .filter(([code]) => code !== 'USD')
+                                                        .map(([code, name]) => (
+                                                            <SelectItem key={code} value={code}>
+                                                                {code} - {name}
+                                                            </SelectItem>
+                                                        ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </CardContent>
                         </Card>
 
@@ -368,8 +412,14 @@ export default function CreateInvoicePage() {
                                 </div>
                                 <div className="flex justify-between w-48 pt-2 border-t font-bold text-lg">
                                     <span>Total:</span>
-                                    <span>{formatCurrency(total)}</span>
+                                    <span>{formatCurrency(total, selectedCurrency)}</span>
                                 </div>
+                                {selectedCurrency !== 'USD' && currencyConversion.convertedAmount !== null && (
+                                    <div className="flex justify-between w-48 text-muted-foreground">
+                                        <span>USD Equivalent:</span>
+                                        <span>{formatCurrency(currencyConversion.convertedAmount, 'USD')}</span>
+                                    </div>
+                                )}
                             </div>
                         </CardContent>
                     </Card>

@@ -1,8 +1,12 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AutocompleteInput } from "@/components/ui/autocomplete-input";
+import { Button } from "@/components/ui/button";
+import { useBarcodeLookup } from "@/hooks/useBarcodeLookup";
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import Search from "lucide-react/dist/esm/icons/search";
 
 interface ProductFormData {
   name?: string;
@@ -38,10 +42,23 @@ function getFieldError(
 
 export function BasicInfoStep({ formData, updateFormData, showErrors = false }: BasicInfoStepProps) {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [barcodeInput, setBarcodeInput] = useState('');
+  const [lookupTriggered, setLookupTriggered] = useState(false);
+  const { found, product, isLoading: barcodeLoading } = useBarcodeLookup(lookupTriggered ? barcodeInput : '');
 
   const markTouched = useCallback((field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   }, []);
+
+  useEffect(() => {
+    if (found && product && lookupTriggered) {
+      const updates: Partial<ProductFormData> = {};
+      if (product.name && !formData.name) updates.name = product.name;
+      if (product.description) updates.description = product.description;
+      updateFormData(updates);
+      setLookupTriggered(false);
+    }
+  }, [found, product, lookupTriggered]);
 
   const nameError = getFieldError("name", formData.name, !!touched.name, showErrors);
   const categoryError = getFieldError("category", formData.category, !!touched.category, showErrors);
@@ -56,6 +73,40 @@ export function BasicInfoStep({ formData, updateFormData, showErrors = false }: 
       </div>
 
       <div className="space-y-4">
+        <div>
+          <Label htmlFor="barcode">Barcode Lookup (Optional)</Label>
+          <div className="flex gap-2 mt-1.5">
+            <Input
+              id="barcode"
+              value={barcodeInput}
+              onChange={(e) => { setBarcodeInput(e.target.value); setLookupTriggered(false); }}
+              placeholder="Enter UPC/EAN barcode"
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={barcodeInput.length < 8 || barcodeLoading}
+              onClick={() => setLookupTriggered(true)}
+            >
+              {barcodeLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              Lookup
+            </Button>
+          </div>
+          {found && product && (
+            <p className="text-sm text-emerald-600 mt-1">
+              Found: {product.name}{product.brand ? ` by ${product.brand}` : ''}
+            </p>
+          )}
+          {lookupTriggered && !barcodeLoading && !found && barcodeInput.length >= 8 && (
+            <p className="text-sm text-muted-foreground mt-1">No product found for this barcode</p>
+          )}
+          <p className="text-xs text-muted-foreground mt-1">
+            Search Open Food Facts database by barcode (useful for edibles and accessories)
+          </p>
+        </div>
+
         <div>
           <Label htmlFor="name" required>Product Name</Label>
           <Input

@@ -3169,4 +3169,21 @@ export const queryKeys = {
     byTenant: (tenantId?: string) =>
       ['vendors', tenantId] as const,
   },
+
+  // External API integrations
+  externalApis: {
+    all: ['external-apis'] as const,
+    currencyRate: (from: string, to: string) =>
+      ['external-apis', 'currency-rate', from, to] as const,
+    publicHolidays: (countryCode: string, year: number) =>
+      ['external-apis', 'public-holidays', countryCode, year] as const,
+    barcodeLookup: (barcode: string) =>
+      ['external-apis', 'barcode-lookup', barcode] as const,
+    binLookup: (bin: string) =>
+      ['external-apis', 'bin-lookup', bin] as const,
+    emailValidation: (email: string) =>
+      ['external-apis', 'email-validation', email] as const,
+    supportedCurrencies: () =>
+      ['external-apis', 'supported-currencies'] as const,
+  },
 } as const;
