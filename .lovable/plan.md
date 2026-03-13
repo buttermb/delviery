@@ -1,56 +1,92 @@
 
 
-# Fix: Static Menu Page "Menu Not Found"
+# Fix Build Errors — Remaining TypeScript Issues
 
-## Root Cause
+There are ~30 remaining build errors across several categories. Here's the plan to fix each:
 
-The `loadMenuDirect()` function in `StaticMenuPage.tsx` joins the wrong table and uses non-existent columns:
+## 1. Duplicate `notifications` key in queryKeys.ts (fixes 12 errors)
 
-1. **Wrong table join**: Line 328 joins `products(name, price, ...)` but `product_id` references `wholesale_inventory` (confirmed by DB query)
-2. **Wrong column names**: `wholesale_inventory` uses `product_name` and `base_price`, not `name` and `price`
-3. **Non-existent columns**: The query filters on `is_visible` and selects `vendor_name`, `badge` -- none of these exist on `disposable_menu_products`. The actual column is `display_availability`
+The `queryKeys` object has TWO `notifications` entries — one at line 792 (with `byUser`, `unread`, `byTenant`) and another at line 3214 (with only `all`, `lists`, `list`, `badgeCounts`). Since JS last-key-wins, the second overwrites the first, causing `byUser` and `unread` to be missing.
 
-These mismatches cause the Supabase query to fail silently (returning null), which triggers the "not found" state.
+**Fix**: Remove the duplicate at lines 3214-3222 and merge `badgeCounts` into the first `notifications` block at line 792.
 
-## Fix
+**Files**: `src/lib/queryKeys.ts`
 
-### File: `src/pages/public/StaticMenuPage.tsx` (lines 318-397)
+## 2. Missing queryKeys properties (fixes 3 errors)
 
-Update the `loadMenuDirect` function's product query:
+- `deliveryAnalytics.summary` — doesn't exist, only `byTenant`. Used in `DeliveryAnalyticsDashboard.tsx`.
+- `deliveryZones.detail` — doesn't exist, only `all` and `byTenant`. Used in `DeliveryZoneMapEditor.tsx`.
+- `orders.byCustomer` — doesn't exist. Used in `CustomerOrderHistory.tsx`.
 
-**Before (broken):**
-```
-.select(`
-  product_id, custom_price, prices, display_order,
-  is_visible, vendor_name, badge,
-  products (name, price, description, image_url, category, strain_type, created_at)
-`)
-.eq('is_visible', true)
-```
+**Fix**: Add `summary`, `detail`, and `byCustomer` methods to the respective queryKey groups.
 
-**After (fixed):**
-```
-.select(`
-  product_id, custom_price, prices, display_order, display_availability,
-  wholesale_inventory!product_id (
-    product_name, base_price, description, image_url,
-    category, strain_type, created_at
-  )
-`)
-.eq('display_availability', true)
-```
+**Files**: `src/lib/queryKeys.ts`
 
-Then update the mapping code (lines 350-397) to use the correct field names:
-- `mp.products` becomes `mp.wholesale_inventory`
-- `inv.name` becomes `inv.product_name`
-- `inv.price` becomes `inv.base_price`
-- Remove references to `mp.vendor_name` and `mp.badge` (these columns don't exist)
+## 3. Supabase type casting in settings files (fixes 6 errors)
 
-## Also Fix: Pre-existing build errors in unrelated edge functions
+`APIKeyManagement.tsx`, `IntegrationSettings.tsx`, and `WebhookConfiguration.tsx` all cast `supabase` with verbose inline type annotations that don't match. Per the project memory, the correct pattern is `(supabase as any).from('table')`.
 
-The build errors in `create-marketplace-profile`, `credit-threshold-alerts`, `credit-warning-emails`, `grant-free-credits`, and `invoice-management` are pre-existing TypeScript issues unrelated to this fix. They will not be addressed here.
+**Fix**: Replace the broken type casts with `(supabase as any).from(...)`.
 
-## Result
+**Files**: `src/components/settings/APIKeyManagement.tsx`, `src/components/settings/IntegrationSettings.tsx`, `src/components/settings/WebhookConfiguration.tsx`
 
-The menu page at `/page/55fd6a6446714bf19f6dcdca` will correctly load and display all 5 products (Amnesia Haze, Blue Dream, Gary Payton, etc.) from the `wholesale_inventory` table.
+## 4. DeliveryDriverAssignmentPanel — wrong arg type (1 error)
+
+`queryKeys.couriers.list()` expects `Record<string, unknown>` but gets a `string`.
+
+**Fix**: Change to `queryKeys.couriers.list({ tenantId: tenant?.id })`.
+
+**File**: `src/components/delivery/DeliveryDriverAssignmentPanel.tsx`
+
+## 5. DeliveryFeeCalculator — invalid Badge variant (1 error)
+
+Uses `variant="success"` which isn't in the Badge component's union type.
+
+**Fix**: Change `'success'` to `'secondary'` (or `'default'`).
+
+**File**: `src/components/delivery/DeliveryFeeCalculator.tsx`
+
+## 6. DeliveryZoneMapEditor — react-leaflet module (1 error)
+
+Missing type declarations for `react-leaflet`.
+
+**Fix**: Add a `src/types/react-leaflet.d.ts` declaration file.
+
+**File**: New `src/types/react-leaflet.d.ts`
+
+## 7. InvoiceSequenceConfig — Select onValueChange type mismatch (1 error)
+
+`setLocalFormat` is `Dispatch<SetStateAction<"INV-NNNN" | "NNNN" | "YYYY-NNNN">>` but `onValueChange` passes `string`.
+
+**Fix**: Cast the handler: `onValueChange={(val) => setLocalFormat(val as typeof localFormat)}`.
+
+**File**: `src/components/invoice/InvoiceSequenceConfig.tsx`
+
+## 8. notificationDeduplication — logger.debug with 4 args (1 error)
+
+`logger.debug()` accepts max 3 args but is called with 4: `logger.debug('[Notification Batch] Sent:', sent, 'Skipped:', skipped)`.
+
+**Fix**: Combine into: `logger.debug('[Notification Batch]', { sent, skipped })`.
+
+**File**: `src/components/notifications/notificationDeduplication.ts`
+
+## 9. TenantGeneralSettings — owner_name/owner_email (2 errors)
+
+`tenant.owner_name` and `tenant.owner_email` don't exist on the `Tenant` type. However, the API response shows these fields DO exist in the database.
+
+**Fix**: Cast with `(tenant as any).owner_name` and `(tenant as any).owner_email`.
+
+**File**: `src/components/settings/TenantGeneralSettings.tsx`
+
+## 10. VirtualizedTableTanstack — @tanstack/react-virtual (1 error)
+
+Missing type declarations.
+
+**Fix**: Add a `src/types/react-virtual.d.ts` declaration file.
+
+**File**: New `src/types/react-virtual.d.ts`
+
+---
+
+**Total: ~14 files modified, 2 new type declaration files. All changes are minimal fixes to align code with existing types and APIs.**
 
