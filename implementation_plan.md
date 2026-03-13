@@ -127,19 +127,18 @@
 - [x] Task 111: Add optimistic update to product mutations -- Wired useOptimisticList's updateOptimistic into handleInlineUpdate and deleteOptimistic into confirmDelete for instant UI feedback with automatic rollback on failure.
 - [x] Task 112: Add optimistic update to order status mutations -- Converted updateStatusMutation to use onMutate for immediate UI update before server confirms, with snapshot rollback in onError and onSettled invalidation for server consistency.
 - [x] Task 113: Add optimistic update to customer mutations -- Added optimistic updates to useDeleteTag, useAssignTag, and useRemoveTag in useCustomerTags.ts with rollback on error. 
-- [ ] Task 114: Add retry logic to product queries -- In useProduct.ts add retry: 2 and retryDelay: 1000 to useQuery options.
-- [ ] Task 115: Add retry logic to order queries -- In order list query hook add retry: 2 and retryDelay: 1000 to
-      useQuery options.
-- [ ] Task 116: Add staleTime to DashboardPage queries -- Add staleTime: 30_000 (30 seconds) to all dashboard stat queries.
-- [ ] Task 117: Add staleTime to ProductManagement queries -- Add staleTime: 60_000 (1 minute) to product list queries.
-- [ ] Task 118: Add staleTime to CustomerManagement queries -- Add staleTime: 60_000 to customer list queries.
-- [ ] Task 119: Add staleTime to InvoicesPage queries -- Add staleTime: 60_000 to invoice list queries.
-- [ ] Task 120: Add staleTime to WholesaleOrdersPage queries -- Add staleTime: 60_000 to wholesale order queries.
-- [ ] Task 121: Ensure queryKeys factory in DashboardPage.tsx -- 
-- [ ] Task 122: Ensure queryKeys factory in ProductManagement.tsx -- 
-- [ ] Task 123: Ensure queryKeys factory in CustomerManagement.tsx -- 
-- [ ] Task 124: Ensure queryKeys factory in InvoicesPage.tsx -- 
-- [ ] Task 125: Ensure queryKeys factory in VendorManagement.tsx -- 
+- [x] Task 114: Add retry logic to product queries -- Added retry: 2 to ProductManagement.tsx useQuery.
+- [x] Task 115: Add retry logic to order queries -- Added retry: 2 to WholesaleOrdersPage.tsx useQuery.
+- [x] Task 116: Add staleTime to DashboardPage queries -- Already had staleTime: 30_000 in useDashboardStats hook.
+- [x] Task 117: Add staleTime to ProductManagement queries -- Added staleTime: 60_000 to product list query.
+- [x] Task 118: Add staleTime to CustomerManagement queries -- Added staleTime: 60_000 to customer list query.
+- [x] Task 119: Add staleTime to InvoicesPage queries -- Already had staleTime: 30_000 in useInvoices hook.
+- [x] Task 120: Add staleTime to WholesaleOrdersPage queries -- Added staleTime: 60_000 to wholesale order query.
+- [x] Task 121: Ensure queryKeys factory in DashboardPage.tsx -- Already using queryKeys.dashboard.stats().
+- [x] Task 122: Ensure queryKeys factory in ProductManagement.tsx -- Already using queryKeys.products.list().
+- [x] Task 123: Ensure queryKeys factory in CustomerManagement.tsx -- Already using queryKeys.customers.list().
+- [x] Task 124: Ensure queryKeys factory in InvoicesPage.tsx -- Already using queryKeys.crm.invoices.lists().
+- [x] Task 125: Ensure queryKeys factory in VendorManagement.tsx -- Converted from useState/useEffect to useQuery/useMutation with queryKeys.vendors.byTenant().
 - [ ] Task 126: Add background refetch indicator to Orders.tsx -- 
 - [ ] Task 127: Add background refetch indicator to ProductManagement.tsx -- 
 - [ ] Task 128: Add background refetch indicator to ClientsPage.tsx -- 
@@ -156,7 +155,7 @@
 - [ ] Task 139: Add prefetch on hover for product rows -- 
 - [ ] Task 140: Add prefetch on hover for order rows -- 
 - [ ] Task 141: Add prefetch on hover for customer rows -- 
-- [ ] Task 142: Add realtime subscription for order status -- 
+- [x] Task 142: Add realtime subscription for order status -- Already implemented via useAdminOrdersRealtime hook in Orders.tsx. 
 - [ ] Task 143: Add realtime subscription for inventory changes -- 
 - [ ] Task 144: Add audit logging to product mutations -- 
 - [ ] Task 145: Add audit logging to order mutations -- 

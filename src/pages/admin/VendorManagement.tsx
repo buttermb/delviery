@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTenantAdminAuth } from '@/contexts/TenantAdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { queryKeys } from '@/lib/queryKeys';
+import { logger } from '@/lib/logger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +23,6 @@ import { SEOHead } from '@/components/SEOHead';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { EnhancedEmptyState } from '@/components/shared/EnhancedEmptyState';
 import { PageErrorState } from '@/components/admin/shared/PageErrorState';
-import { handleError } from "@/utils/errorHandling/handlers";
 
 interface VendorFormData {
   name: string;
@@ -62,103 +64,100 @@ const initialFormData: VendorFormData = {
 
 export function VendorManagement() {
   const { tenant, loading: accountLoading } = useTenantAdminAuth();
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
+  const queryClient = useQueryClient();
+  const tenantId = tenant?.id;
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [vendorToDelete, setVendorToDelete] = useState<{ id: string; name: string } | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<VendorFormData>(initialFormData);
 
-  const loadVendors = useCallback(async () => {
-    if (!tenant) return;
-
-    setLoadError(false);
-    try {
+  const { data: vendors = [], isLoading: loading, isError: loadError, refetch: loadVendors } = useQuery({
+    queryKey: queryKeys.vendors.byTenant(tenantId ?? ''),
+    queryFn: async () => {
+      if (!tenantId) return [];
       const { data, error } = await supabase
         .from('vendors')
         .select('id, name, contact_name, contact_email, contact_phone, address, website, license_number, notes, status, account_id, created_at, updated_at')
-        .eq('account_id', tenant.id)
+        .eq('account_id', tenantId)
         .order('name');
+      if (error) {
+        logger.error('Failed to load vendors', { error });
+        throw error;
+      }
+      return (data ?? []) as unknown as Vendor[];
+    },
+    enabled: !!tenantId,
+    staleTime: 60_000,
+    retry: 2,
+  });
 
-      if (error) throw error;
-      setVendors((data ?? []) as unknown as Vendor[]);
-    } catch (error) {
-      setLoadError(true);
-      handleError(error, {
-        component: 'VendorManagement.loadVendors',
-        toastTitle: 'Error',
-        showToast: true
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [tenant]);
-
-  useEffect(() => {
-    if (tenant) {
-      loadVendors();
-    }
-  }, [tenant, loadVendors]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tenant) return;
-
-    setIsSaving(true);
-    try {
+  const saveMutation = useMutation({
+    mutationFn: async ({ vendor, isEdit }: { vendor: VendorFormData; isEdit: boolean }) => {
+      if (!tenantId) throw new Error('Tenant context required');
       const vendorData = {
-        name: formData.name,
-        contact_name: formData.contact_name || null,
-        contact_email: formData.email || null,
-        contact_phone: formData.phone || null,
-        address: formData.address || null,
-        website: formData.website || null,
-        license_number: formData.license_number || null,
-        notes: formData.notes || null,
+        name: vendor.name,
+        contact_name: vendor.contact_name || null,
+        contact_email: vendor.email || null,
+        contact_phone: vendor.phone || null,
+        address: vendor.address || null,
+        website: vendor.website || null,
+        license_number: vendor.license_number || null,
+        notes: vendor.notes || null,
       };
-
-      if (editingVendor) {
-        if (!tenant?.id) throw new Error('Tenant context required');
-
+      if (isEdit && editingVendor) {
         const { error } = await supabase
           .from('vendors')
           .update(vendorData)
           .eq('id', editingVendor.id)
-          .eq('account_id', tenant.id);
-
+          .eq('account_id', tenantId);
         if (error) throw error;
-
-        toast.success('Vendor updated successfully');
       } else {
         const { error } = await supabase
           .from('vendors')
-          .insert({
-            ...vendorData,
-            account_id: tenant.id
-          });
-
+          .insert({ ...vendorData, account_id: tenantId });
         if (error) throw error;
-
-        toast.success('Vendor added successfully');
       }
-
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.byTenant(tenantId ?? '') });
+      toast.success(variables.isEdit ? 'Vendor updated successfully' : 'Vendor added successfully');
       setIsDialogOpen(false);
       setEditingVendor(null);
       setFormData(initialFormData);
-      loadVendors();
-    } catch (error) {
-      handleError(error, {
-        component: 'VendorManagement.handleSubmit',
-        toastTitle: 'Error',
-        showToast: true
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to save vendor', { error });
+      toast.error('Failed to save vendor');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (vendorId: string) => {
+      if (!tenantId) throw new Error('Tenant context required');
+      const { error } = await supabase
+        .from('vendors')
+        .delete()
+        .eq('id', vendorId)
+        .eq('account_id', tenantId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.byTenant(tenantId ?? '') });
+      toast.success('Vendor deleted successfully');
+      setDeleteDialogOpen(false);
+      setVendorToDelete(null);
+    },
+    onError: (error: Error) => {
+      logger.error('Failed to delete vendor', { error });
+      toast.error('Failed to delete vendor');
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveMutation.mutate({ vendor: formData, isEdit: !!editingVendor });
   };
 
   const handleEdit = (vendor: Vendor) => {
@@ -181,33 +180,9 @@ export function VendorManagement() {
     setDeleteDialogOpen(true);
   };
 
-  const handleDelete = async () => {
-    if (!vendorToDelete || !tenant) return;
-
-    try {
-      setIsDeleting(true);
-      const { error } = await supabase
-        .from('vendors')
-        .delete()
-        .eq('id', vendorToDelete.id)
-        .eq('account_id', tenant.id);
-
-      if (error) throw error;
-
-      toast.success('Vendor deleted successfully');
-
-      loadVendors();
-      setDeleteDialogOpen(false);
-      setVendorToDelete(null);
-    } catch (error) {
-      handleError(error, {
-        component: 'VendorManagement.handleDelete',
-        toastTitle: 'Error',
-        showToast: true
-      });
-    } finally {
-      setIsDeleting(false);
-    }
+  const handleDelete = () => {
+    if (!vendorToDelete) return;
+    deleteMutation.mutate(vendorToDelete.id);
   };
 
   if (accountLoading || loading) {
@@ -361,12 +336,12 @@ export function VendorManagement() {
                   type="button"
                   variant="outline"
                   onClick={() => setIsDialogOpen(false)}
-                  disabled={isSaving}
+                  disabled={saveMutation.isPending}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSaving}>
-                  {isSaving ? (
+                <Button type="submit" disabled={saveMutation.isPending}>
+                  {saveMutation.isPending ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Saving...
@@ -464,7 +439,7 @@ export function VendorManagement() {
         onConfirm={handleDelete}
         itemName={vendorToDelete?.name}
         itemType="vendor"
-        isLoading={isDeleting}
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );
