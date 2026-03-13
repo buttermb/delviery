@@ -97,7 +97,7 @@ export function WebhookConfiguration() {
     try {
       const secret = `whsec_${Math.random().toString(36).substring(2, 15)}`;
 
-      const { error } = await (supabase as unknown as Record<string, {from: (table: string) => { insert: (data: unknown) => Promise<{error: unknown}> } }>).from('webhooks').insert({
+      const { error } = await (supabase as any).from('webhooks').insert({
         tenant_id: tenant.id,
         name: data.name,
         url: data.url,
