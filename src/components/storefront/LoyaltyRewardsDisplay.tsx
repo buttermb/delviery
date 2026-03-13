@@ -65,27 +65,21 @@ export default function LoyaltyRewardsDisplay({
 
       if (!tenant) return null;
 
-      const db = supabase as unknown as Record<string, unknown>;
+      const db = supabase as any;
 
       const [balanceResult, historyResult, rewardsResult] = await Promise.all([
-        (db.from('loyalty_points') as unknown as {
-          select: (s: string) => { eq: (k: string, v: string) => { eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: LoyaltyPoints | null; error: { message: string } | null }> } } };
-        })
+        db.from('loyalty_points')
           .select('balance, lifetime_points')
           .eq('customer_id', customerId)
           .eq('tenant_id', tenant.id)
           .maybeSingle() as Promise<{ data: LoyaltyPoints | null; error: { message: string } | null }>,
-        (db.from('loyalty_points_history') as unknown as {
-          select: (s: string) => { eq: (k: string, v: string) => { eq: (k: string, v: string) => { order: (k: string, o: { ascending: boolean }) => { limit: (n: number) => Promise<{ data: PointsHistoryEntry[] | null; error: { message: string } | null }> } } } };
-        })
+        db.from('loyalty_points_history')
           .select('id, points, type, description, created_at')
           .eq('customer_id', customerId)
           .eq('tenant_id', tenant.id)
           .order('created_at', { ascending: false })
           .limit(20) as Promise<{ data: PointsHistoryEntry[] | null; error: { message: string } | null }>,
-        (db.from('loyalty_rewards') as unknown as {
-          select: (s: string) => { eq: (k: string, v: string) => { eq: (k: string, v: boolean) => { order: (k: string, o: { ascending: boolean }) => Promise<{ data: LoyaltyReward[] | null; error: { message: string } | null }> } } };
-        })
+        db.from('loyalty_rewards')
           .select('id, name, description, points_required, active')
           .eq('tenant_id', tenant.id)
           .eq('active', true)

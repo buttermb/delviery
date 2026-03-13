@@ -90,6 +90,10 @@ export default function CreateInvoicePage() {
 
     const selectedCurrency = form.watch("currency");
     const { data: currenciesMap } = useSupportedCurrencies();
+    const subtotal = lineItems.reduce((sum, item) => sum + item.line_total, 0);
+    const taxRate = form.watch("tax_rate");
+    const taxAmount = subtotal * (taxRate / 100);
+    const total = subtotal + taxAmount;
     const currencyConversion = useCurrencyConvert(selectedCurrency, 'USD', total);
 
     const { showBlockerDialog, confirmLeave, cancelLeave } = useUnsavedChanges({

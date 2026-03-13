@@ -55,7 +55,7 @@ export function ComplianceReports() {
 
   // Fetch recent IP access logs
   const { data: ipLogs, isLoading: logsLoading } = useQuery({
-    queryKey: [...queryKeys.auditLog.all, 'ip-logs', tenantId],
+    queryKey: ['compliance', 'audit-log', 'ip-logs', tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
 

@@ -89,7 +89,7 @@ export function WholesaleClientDiscountRules({
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
             <Label className="text-xs">Type</Label>
-            <Select value={newRule.type} onValueChange={(v) => setNewRule({ ...newRule, type: v as 'percentage' | 'fixed' })}>
+            <Select value={newRule.type} onValueChange={(v) => setNewRule({ ...newRule, type: v as 'percentage' })}>
               <SelectTrigger className="h-9">
                 <SelectValue />
               </SelectTrigger>

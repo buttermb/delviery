@@ -51,7 +51,7 @@ async function flushEvents(): Promise<void> {
   eventQueue = [];
 
   try {
-    const { error } = await (supabase as unknown as Record<string, unknown>)
+    const { error } = await (supabase as any)
       .from('storefront_analytics')
       .insert(batch) as { error: { message: string } | null };
 

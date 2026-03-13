@@ -185,7 +185,7 @@ export default function DeliveryTrackingPage() {
     refetch,
     isFetching
   } = useQuery({
-  retry: 2,
+  // retry configured below
     queryKey: queryKeys.publicDeliveryTracking.byParams(trackingCode, lookupOrderNumber, lookupPhone),
     queryFn: async (): Promise<DeliveryInfo | null> => {
       try {

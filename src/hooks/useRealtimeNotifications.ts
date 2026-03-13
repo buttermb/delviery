@@ -52,7 +52,7 @@ export function useRealtimeNotifications(options: UseRealtimeNotificationsOption
       logger.info('[RealtimeNotifications] Notification updated', { notification });
 
       // Invalidate notification queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
 
       // Show toast for failed notifications
       if (showToast && notification.status === 'failed' && payload.old.status !== 'failed') {
