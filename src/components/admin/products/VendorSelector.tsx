@@ -254,9 +254,6 @@ export function VendorSelector({
                         {vendor.payment_terms && (
                           <span>Terms: {vendor.payment_terms}</span>
                         )}
-                        {vendor.lead_time_days !== null && (
-                          <span>Lead time: {vendor.lead_time_days}d</span>
-                        )}
                       </div>
                     </CommandItem>
                   ))}

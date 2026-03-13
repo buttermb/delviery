@@ -191,7 +191,6 @@ export function ProductForm({
             { label: "Cost per Unit", value: formData.cost_per_unit },
             { label: "Wholesale Price", value: formData.wholesale_price },
             { label: "Retail Price", value: formData.retail_price },
-            { label: "Minimum Price", value: formData.minimum_price },
         ];
 
         for (const field of priceFields) {
@@ -311,9 +310,6 @@ export function ProductForm({
                                         <Info className="h-3 w-3" />
                                         {selectedVendor.payment_terms && (
                                             <span>Terms: {selectedVendor.payment_terms}</span>
-                                        )}
-                                        {selectedVendor.lead_time_days !== null && (
-                                            <span className="ml-2">Lead: {selectedVendor.lead_time_days}d</span>
                                         )}
                                     </div>
                                 )}

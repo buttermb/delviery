@@ -1,37 +1,56 @@
 
 
-# Fix Dropdowns & Product Save
+# Fix: Static Menu Page "Menu Not Found"
 
 ## Root Cause
 
-**Two separate issues:**
+The `loadMenuDirect()` function in `StaticMenuPage.tsx` joins the wrong table and uses non-existent columns:
 
-1. **Dropdowns broken / vendor data fails to load**: The `useVendorsWithStats` hook queries `lead_time_days` from the `vendors` table, but that column doesn't exist. This causes an HTTP 400 error, which breaks the vendor selector dropdown. The vendor selector likely blocks or interferes with form interactivity when it's in an error state.
+1. **Wrong table join**: Line 328 joins `products(name, price, ...)` but `product_id` references `wholesale_inventory` (confirmed by DB query)
+2. **Wrong column names**: `wholesale_inventory` uses `product_name` and `base_price`, not `name` and `price`
+3. **Non-existent columns**: The query filters on `is_visible` and selects `vendor_name`, `badge` -- none of these exist on `disposable_menu_products`. The actual column is `display_availability`
 
-2. **Product Name won't save**: The `handleProductSubmit` function (ProductManagement.tsx line 633-634) sends `exclude_from_discounts`, `minimum_price`, and `tags` to the database, but none of these columns exist on the `products` table. The INSERT/UPDATE fails with a 400 error.
+These mismatches cause the Supabase query to fail silently (returning null), which triggers the "not found" state.
 
-## Fix Plan
+## Fix
 
-### 1. Remove `lead_time_days` from vendor queries
-**File**: `src/hooks/useVendorsWithStats.ts`
-- Remove `lead_time_days` from both `.select()` strings (lines 58 and 182)
-- Remove from the `VendorWithStats` interface
-- Remove from both return mappings (lines 147 and 232)
+### File: `src/pages/public/StaticMenuPage.tsx` (lines 318-397)
 
-**Files**: `src/components/admin/products/ProductForm.tsx`, `src/components/admin/products/VendorSelector.tsx`, `src/pages/admin/VendorDetailPage.tsx`
-- Remove UI references to `lead_time_days`
+Update the `loadMenuDirect` function's product query:
 
-### 2. Remove non-existent columns from product save
-**File**: `src/pages/admin/ProductManagement.tsx` (lines 633-635)
-- Remove `exclude_from_discounts`, `minimum_price`, and `tags` from the `productData` object sent to the database
+**Before (broken):**
+```
+.select(`
+  product_id, custom_price, prices, display_order,
+  is_visible, vendor_name, badge,
+  products (name, price, description, image_url, category, strain_type, created_at)
+`)
+.eq('is_visible', true)
+```
 
-**File**: `src/components/admin/products/ProductForm.tsx`
-- Keep `exclude_from_discounts`, `minimum_price`, `tags` in the form interface (UI-only for now) but they won't be persisted
-- Remove `minimum_price` from price validation array (line 194)
+**After (fixed):**
+```
+.select(`
+  product_id, custom_price, prices, display_order, display_availability,
+  wholesale_inventory!product_id (
+    product_name, base_price, description, image_url,
+    category, strain_type, created_at
+  )
+`)
+.eq('display_availability', true)
+```
 
-### 3. Remove `minimum_price` validation reference
-**File**: `src/components/admin/products/ProductForm.tsx` (line 194)
-- Remove the `minimum_price` entry from the `priceFields` validation array since it's not a real DB column
+Then update the mapping code (lines 350-397) to use the correct field names:
+- `mp.products` becomes `mp.wholesale_inventory`
+- `inv.name` becomes `inv.product_name`
+- `inv.price` becomes `inv.base_price`
+- Remove references to `mp.vendor_name` and `mp.badge` (these columns don't exist)
 
-**Summary**: 6 files modified. No database migrations needed — all fixes are removing references to non-existent columns.
+## Also Fix: Pre-existing build errors in unrelated edge functions
+
+The build errors in `create-marketplace-profile`, `credit-threshold-alerts`, `credit-warning-emails`, `grant-free-credits`, and `invoice-management` are pre-existing TypeScript issues unrelated to this fix. They will not be addressed here.
+
+## Result
+
+The menu page at `/page/55fd6a6446714bf19f6dcdca` will correctly load and display all 5 products (Amnesia Haze, Blue Dream, Gary Payton, etc.) from the `wholesale_inventory` table.
 

@@ -28,7 +28,6 @@ export interface VendorWithStats {
   zip_code: string | null;
   license_number: string | null;
   payment_terms: string | null;
-  lead_time_days: number | null;
   status: string | null;
   notes: string | null;
   // Computed stats
@@ -55,7 +54,7 @@ export function useVendorsWithStats() {
       // Fetch vendors
       const { data: vendors, error: vendorsError } = await supabase
         .from('vendors')
-        .select('id, name, contact_name, contact_email, contact_phone, address, city, state, zip_code, license_number, payment_terms, lead_time_days, status, notes')
+        .select('id, name, contact_name, contact_email, contact_phone, address, city, state, zip_code, license_number, payment_terms, status, notes')
         .eq('account_id', tenantId)
         .order('name');
 
@@ -144,7 +143,6 @@ export function useVendorsWithStats() {
           zip_code: vendor.zip_code,
           license_number: vendor.license_number,
           payment_terms: vendor.payment_terms,
-          lead_time_days: (vendor as unknown as Record<string, unknown>).lead_time_days as number | null || null,
           status: vendor.status,
           notes: vendor.notes,
           product_count: productCountMap.get(vendor.name) ?? 0,
@@ -179,7 +177,7 @@ export function useVendorDetails(vendorName: string | null | undefined) {
 
       const { data: vendor, error } = await supabase
         .from('vendors')
-        .select('id, name, contact_name, contact_email, contact_phone, address, city, state, zip_code, license_number, payment_terms, lead_time_days, status, notes')
+        .select('id, name, contact_name, contact_email, contact_phone, address, city, state, zip_code, license_number, payment_terms, status, notes')
         .eq('account_id', tenantId)
         .eq('name', vendorName)
         .maybeSingle();
@@ -229,7 +227,6 @@ export function useVendorDetails(vendorName: string | null | undefined) {
         zip_code: vendor.zip_code,
         license_number: vendor.license_number,
         payment_terms: vendor.payment_terms,
-        lead_time_days: (vendor as unknown as Record<string, unknown>).lead_time_days as number | null || null,
         status: vendor.status,
         notes: vendor.notes,
         product_count: productCount ?? 0,
