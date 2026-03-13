@@ -54,7 +54,7 @@ export function useVendorsWithStats() {
       // Fetch vendors
       const { data: vendors, error: vendorsError } = await supabase
         .from('vendors')
-        .select('id, name, contact_name, contact_email, contact_phone, address, city, state, zip_code, license_number, payment_terms, lead_time_days, status, notes')
+        .select('id, name, contact_name, contact_email, contact_phone, address, city, state, zip_code, license_number, payment_terms, status, notes')
         .eq('account_id', tenantId)
         .order('name');
 
