@@ -259,6 +259,11 @@ export function StorefrontBuilder({
     const [selectedThemeId, setSelectedThemeId] = useState<string | undefined>(undefined);
     const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
 
+    // Debounce layout and theme configs for preview rendering (150ms)
+    // Editors use the raw state for instant feedback; the preview uses debounced values
+    const debouncedLayoutConfig = useDebounce(layoutConfig, 150);
+    const debouncedThemeConfig = useDebounce(themeConfig, 150);
+
     // Handle theme selection (for advanced mode)
     const handleThemeSelect = useCallback((theme: ThemePreset) => {
         logger.debug('Applying theme preset', { themeId: theme.id });
@@ -1259,9 +1264,9 @@ export function StorefrontBuilder({
                             </div>
                         </div>
 
-                        {/* Sections Render */}
-                        <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: themeConfig.colors?.background }}>
-                            {layoutConfig.filter(s => s.visible !== false).map((section) => {
+                        {/* Sections Render — uses debounced config for performance */}
+                        <div className="min-h-[calc(100%-4rem)] bg-background" style={{ backgroundColor: debouncedThemeConfig.colors?.background }}>
+                            {debouncedLayoutConfig.filter(s => s.visible !== false).map((section) => {
                                 const Component = SECTION_TYPES[section.type as keyof typeof SECTION_TYPES]?.component as React.ComponentType<{ content: Record<string, unknown>; styles: Record<string, unknown>; storeId?: string; storeSlug?: string }>;
                                 if (!Component) return <div key={section.id} className="p-4 text-destructive">Unknown: {section.type}</div>;
 
@@ -1280,7 +1285,7 @@ export function StorefrontBuilder({
                                     </div>
                                 );
                             })}
-                            {layoutConfig.length === 0 && (
+                            {debouncedLayoutConfig.length === 0 && (
                                 <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
                                     <Layout className="w-16 h-16 mb-4 opacity-50" />
                                     <p className="text-lg font-medium mb-2">Your store canvas is empty</p>

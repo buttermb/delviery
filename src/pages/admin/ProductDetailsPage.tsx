@@ -40,7 +40,7 @@ import Package from "lucide-react/dist/esm/icons/package";
 import DollarSign from "lucide-react/dist/esm/icons/dollar-sign";
 import Boxes from "lucide-react/dist/esm/icons/boxes";
 import Edit from "lucide-react/dist/esm/icons/edit";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2";
+import { Skeleton } from '@/components/ui/skeleton';
 import Beaker from "lucide-react/dist/esm/icons/beaker";
 import Tag from "lucide-react/dist/esm/icons/tag";
 import AlertTriangle from "lucide-react/dist/esm/icons/alert-triangle";
@@ -750,8 +750,19 @@ export default function ProductDetailsPage() {
                                 </CardHeader>
                                 <CardContent>
                                     {frontedLoading ? (
-                                        <div className="flex justify-center py-8">
-                                            <Loader2 className="h-6 w-6 animate-spin" />
+                                        <div className="space-y-3 py-4">
+                                            {[1, 2, 3].map((i) => (
+                                                <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                                                    <div className="space-y-2">
+                                                        <Skeleton className="h-4 w-32" />
+                                                        <Skeleton className="h-3 w-24" />
+                                                    </div>
+                                                    <div className="text-right space-y-2">
+                                                        <Skeleton className="h-4 w-20 ml-auto" />
+                                                        <Skeleton className="h-3 w-16 ml-auto" />
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     ) : frontedInventory.length === 0 ? (
                                         <p className="text-muted-foreground text-center py-8">
@@ -797,8 +808,22 @@ export default function ProductDetailsPage() {
                                 </CardHeader>
                                 <CardContent>
                                     {historyLoading ? (
-                                        <div className="flex justify-center py-8">
-                                            <Loader2 className="h-6 w-6 animate-spin" />
+                                        <div className="space-y-3 py-4">
+                                            {[1, 2, 3, 4].map((i) => (
+                                                <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                                                    <div className="flex items-center gap-3">
+                                                        <Skeleton className="h-4 w-4 rounded" />
+                                                        <div className="space-y-2">
+                                                            <Skeleton className="h-4 w-28" />
+                                                            <Skeleton className="h-3 w-36" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right space-y-2">
+                                                        <Skeleton className="h-4 w-12 ml-auto" />
+                                                        <Skeleton className="h-3 w-24 ml-auto" />
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     ) : inventoryHistory.length === 0 ? (
                                         <p className="text-muted-foreground text-center py-8">
