@@ -366,7 +366,7 @@ export function ProductCategories() {
         confirmText="Delete Category"
         variant="destructive"
         onConfirm={handleDelete}
-        loading={deleteMutation.isPending}
+        
       />
     </div>
   );
