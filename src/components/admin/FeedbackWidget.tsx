@@ -35,7 +35,7 @@ export function FeedbackWidget({ className }: FeedbackWidgetProps) {
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { tenant, user } = useTenantAdminAuth();
+  const { tenant, admin } = useTenantAdminAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -76,3 +76,22 @@ export const YAxis = createLazy('YAxis');
 export const CartesianGrid = createLazy('CartesianGrid');
 export const Tooltip = createLazy('Tooltip');
 export const Legend = createLazy('Legend');
+
+// Funnel charts
+export const FunnelChart = createLazy('FunnelChart');
+export const Funnel = createLazy('Funnel');
+
+// Labels
+export const LabelList = createLazy('LabelList');
+
+// Radar / Radial
+export const RadarChart = createLazy('RadarChart');
+export const Radar = createLazy('Radar');
+export const PolarGrid = createLazy('PolarGrid');
+export const PolarAngleAxis = createLazy('PolarAngleAxis');
+export const PolarRadiusAxis = createLazy('PolarRadiusAxis');
+export const RadialBarChart = createLazy('RadialBarChart');
+export const RadialBar = createLazy('RadialBar');
+
+// Reference lines
+export const ReferenceLine = createLazy('ReferenceLine');

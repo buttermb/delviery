@@ -147,7 +147,7 @@ export function BulkEmailDialog({
           );
 
         const personalizedBody = body
-          .replace("{business_name}", tenant.name)
+          .replace("{business_name}", tenant.name || tenant.business_name)
           .replace(
             "{customer_name}",
             `${customer.first_name} ${customer.last_name}`
