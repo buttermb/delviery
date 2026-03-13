@@ -47,7 +47,7 @@ export function APIKeyManagement() {
 
     setLoading(true);
     try {
-      const { data, error } = await (supabase as unknown as Record<string, {from: (table: string) => { select: (cols: string) => { eq: (col: string, val: string) => { order: (col: string, opts: {ascending: boolean}) => Promise<{data: APIKey[] | null; error: unknown}> } } } }>).from('api_keys').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
+      const { data, error } = await (supabase as any).from('api_keys').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false });
 
       if (error) throw error;
       setApiKeys(data || []);
