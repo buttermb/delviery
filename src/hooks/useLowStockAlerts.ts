@@ -77,9 +77,9 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
       // First try to fetch from stock_alerts table
       const { data: alerts, error: alertError } = await (supabase as any)
         .from('inventory_alerts')
-        .select('id, product_id, product_name, current_quantity, threshold, severity')
+        .select('id, product_id, product_name, current_quantity, reorder_point, severity')
         .eq('tenant_id', tenant.id)
-        .eq('status', 'active')
+        .eq('is_resolved', false)
         .order('current_quantity', { ascending: true });
 
       if (alertError) {
