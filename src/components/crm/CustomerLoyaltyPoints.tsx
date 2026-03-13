@@ -133,7 +133,7 @@ export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoya
   // Adjust points mutation
   const adjustPointsMutation = useMutation({
     mutationFn: async ({ points, reason }: { points: number; reason: string }) => {
-      if (!tenant?.id || !userId) throw new Error('Not authenticated');
+      if (!tenant?.id || !admin?.id) throw new Error('Not authenticated');
 
       const isPositive = points > 0;
       const transactionType = isPositive ? 'earn' : 'redeem';
