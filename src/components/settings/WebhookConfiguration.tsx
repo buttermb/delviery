@@ -123,7 +123,7 @@ export function WebhookConfiguration() {
     if (!tenant?.id) return;
 
     try {
-      const { error } = await (supabase as unknown as Record<string, {from: (table: string) => { delete: () => { eq: (col: string, val: string) => Promise<{error: unknown}> } } }>).from('webhooks').delete().eq('id', webhookId);
+      const { error } = await (supabase as any).from('webhooks').delete().eq('id', webhookId);
 
       if (error) throw error;
 

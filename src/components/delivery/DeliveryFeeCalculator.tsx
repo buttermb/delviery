@@ -170,7 +170,7 @@ export function DeliveryFeeCalculator({
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">{calculatedFee.zoneName}</span>
               </div>
-              <Badge variant={calculatedFee.isFreeDelivery ? 'success' : 'secondary'}>
+              <Badge variant={calculatedFee.isFreeDelivery ? 'default' : 'secondary'}>
                 {calculatedFee.isFreeDelivery ? 'Free Delivery' : formatCurrency(calculatedFee.totalFee)}
               </Badge>
             </div>

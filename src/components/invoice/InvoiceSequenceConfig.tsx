@@ -78,7 +78,7 @@ export function InvoiceSequenceConfig({
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="format">Number Format</Label>
-          <Select value={localFormat} onValueChange={setLocalFormat}>
+          <Select value={localFormat} onValueChange={(val) => setLocalFormat(val as typeof localFormat)}>
             <SelectTrigger id="format">
               <SelectValue />
             </SelectTrigger>

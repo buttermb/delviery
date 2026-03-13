@@ -81,7 +81,7 @@ export function IntegrationSettings() {
       const integration = AVAILABLE_INTEGRATIONS.find((i) => i.id === integrationId);
       if (!integration) return;
 
-      const { error } = await (supabase as unknown as Record<string, {from: (table: string) => { upsert: (data: unknown) => Promise<{error: unknown}> } }>).from('custom_integrations').upsert({
+      const { error } = await (supabase as any).from('custom_integrations').upsert({
         tenant_id: tenant.id,
         name: integration.name,
         type: integration.type,

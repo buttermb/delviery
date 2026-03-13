@@ -97,7 +97,7 @@ export function APIKeyManagement() {
     if (!tenant?.id) return;
 
     try {
-      const { error } = await (supabase as unknown as Record<string, {from: (table: string) => { delete: () => { eq: (col: string, val: string) => Promise<{error: unknown}> } } }>).from('api_keys').delete().eq('id', keyId);
+      const { error } = await (supabase as any).from('api_keys').delete().eq('id', keyId);
 
       if (error) throw error;
 

@@ -178,7 +178,7 @@ export async function batchSendNotifications(
     }
   }
 
-  logger.debug('[Notification Batch] Sent:', sent, 'Skipped:', skipped);
+  logger.debug('[Notification Batch]', { sent, skipped });
 
   return { sent, skipped };
 }
