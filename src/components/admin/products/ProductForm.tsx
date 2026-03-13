@@ -46,6 +46,9 @@ export interface ProductFormData {
     exclude_from_discounts: boolean;
     minimum_price: string;
     tags: string[];
+    wholesale_tier1_price?: string;
+    wholesale_tier2_price?: string;
+    wholesale_tier3_price?: string;
 }
 
 interface ProductFormProps {
@@ -78,6 +81,9 @@ const DEFAULT_FORM_DATA: ProductFormData = {
     exclude_from_discounts: false,
     minimum_price: "",
     tags: [],
+    wholesale_tier1_price: "",
+    wholesale_tier2_price: "",
+    wholesale_tier3_price: "",
 };
 
 export function ProductForm({
@@ -391,6 +397,37 @@ export function ProductForm({
                                     onChange={(e) => setFormData({ ...formData, retail_price: e.target.value })}
                                     placeholder="0.00"
                                 />
+                            </div>
+                        </div>
+
+                        <div className="space-y-3 pt-4 border-t">
+                            <h4 className="text-sm font-semibold">Wholesale Pricing Tiers (Optional)</h4>
+                            <p className="text-xs text-muted-foreground">Set tiered pricing for bulk orders</p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Tier 1 (1-10 units)</Label>
+                                    <CurrencyInput
+                                        value={formData.wholesale_tier1_price || ""}
+                                        onChange={(e) => setFormData({ ...formData, wholesale_tier1_price: e.target.value })}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Tier 2 (11-50 units)</Label>
+                                    <CurrencyInput
+                                        value={formData.wholesale_tier2_price || ""}
+                                        onChange={(e) => setFormData({ ...formData, wholesale_tier2_price: e.target.value })}
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Tier 3 (50+ units)</Label>
+                                    <CurrencyInput
+                                        value={formData.wholesale_tier3_price || ""}
+                                        onChange={(e) => setFormData({ ...formData, wholesale_tier3_price: e.target.value })}
+                                        placeholder="0.00"
+                                    />
+                                </div>
                             </div>
                         </div>
 

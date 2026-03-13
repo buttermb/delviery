@@ -137,6 +137,8 @@ export const queryKeys = {
       [...queryKeys.inventory.all, 'low-stock-products', tenantId] as const,
     locations: (tenantId?: string) =>
       [...queryKeys.inventory.all, 'locations', tenantId] as const,
+    valuation: (tenantId?: string) =>
+      [...queryKeys.inventory.all, 'valuation', tenantId] as const,
   },
 
   // Locations
@@ -201,6 +203,19 @@ export const queryKeys = {
     active: (tenantId?: string) => [...queryKeys.deliveries.all, 'active', tenantId] as const,
     byDriver: (tenantId: string, driverId: string) => [...queryKeys.deliveries.byTenant(tenantId), 'driver', driverId] as const,
     byOrder: (tenantId: string, orderId: string) => [...queryKeys.deliveries.byTenant(tenantId), 'order', orderId] as const,
+  },
+
+  // Delivery Settings & Zones
+  delivery: {
+    all: ['delivery'] as const,
+    zones: (tenantId?: string) => [...queryKeys.delivery.all, 'zones', tenantId] as const,
+    settings: (tenantId?: string) => [...queryKeys.delivery.all, 'settings', tenantId] as const,
+    drivers: (tenantId?: string) => [...queryKeys.delivery.all, 'drivers', tenantId] as const,
+    vehicles: (tenantId?: string) => [...queryKeys.delivery.all, 'vehicles', tenantId] as const,
+    analytics: (tenantId?: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.delivery.all, 'analytics', { tenantId, ...filters }] as const,
+    dailySummary: (tenantId?: string, date?: string) =>
+      [...queryKeys.delivery.all, 'daily-summary', tenantId, date] as const,
   },
 
   // Customers
@@ -1680,10 +1695,19 @@ export const queryKeys = {
   // Webhooks (admin integrations)
   webhooks: {
     all: ['webhooks'] as const,
+    list: (tenantId?: string) =>
+      [...queryKeys.webhooks.all, 'list', tenantId] as const,
     byTenant: (tenantId?: string) =>
       [...queryKeys.webhooks.all, tenantId] as const,
     logs: (tenantId?: string, webhookId?: string, limit?: number) =>
       ['webhook-logs', tenantId, webhookId, limit] as const,
+  },
+
+  // Tenant Settings (various setting pages)
+  tenantSettings: {
+    all: ['tenant-settings'] as const,
+    byTenant: (tenantId?: string, settingsKey?: string) =>
+      [...queryKeys.tenantSettings.all, tenantId, settingsKey] as const,
   },
 
   // Integration Webhooks
@@ -3185,5 +3209,31 @@ export const queryKeys = {
       ['external-apis', 'email-validation', email] as const,
     supportedCurrencies: () =>
       ['external-apis', 'supported-currencies'] as const,
+  },
+
+  // Notifications
+  notifications: {
+    all: () => ['notifications'] as const,
+    lists: () => [...queryKeys.notifications.all(), 'list'] as const,
+    list: (tenantId: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.notifications.lists(), tenantId, filters] as const,
+    badgeCounts: (tenantId: string) =>
+      [...queryKeys.notifications.all(), 'badges', tenantId] as const,
+  },
+
+  // Onboarding
+  onboarding: {
+    all: () => ['onboarding'] as const,
+    checklist: (tenantId: string) =>
+      [...queryKeys.onboarding.all(), 'checklist', tenantId] as const,
+  },
+
+  // Admin
+  admin: {
+    all: () => ['admin'] as const,
+    activityFeed: (tenantId: string) =>
+      [...queryKeys.admin.all(), 'activity-feed', tenantId] as const,
+    tasks: (tenantId: string) =>
+      [...queryKeys.admin.all(), 'tasks', tenantId] as const,
   },
 } as const;

@@ -26,7 +26,8 @@ const defaultFormData = {
     phone: '',
     license_number: '',
     payment_terms: 'net_30',
-    address: ''
+    address: '',
+    credit_limit: '5000'
 };
 
 export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props) {
@@ -42,7 +43,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
     }, [open]);
 
     // Dirty state: any field differs from empty defaults
-    const isDirty = formData.business_name !== '' || formData.contact_name !== '' || formData.email !== '' || formData.phone !== '' || formData.license_number !== '' || formData.address !== '' || formData.payment_terms !== 'net_30';
+    const isDirty = formData.business_name !== '' || formData.contact_name !== '' || formData.email !== '' || formData.phone !== '' || formData.license_number !== '' || formData.address !== '' || formData.payment_terms !== 'net_30' || formData.credit_limit !== '5000';
 
     const handleClose = useCallback(() => {
         onClose();
@@ -105,7 +106,7 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                     payment_terms: parseInt(formData.payment_terms === 'cod' ? '0' : formData.payment_terms === 'net_7' ? '7' : formData.payment_terms === 'net_15' ? '15' : '30'),
                     address: formData.address,
                     client_type: 'retail',
-                    credit_limit: 0,
+                    credit_limit: parseFloat(formData.credit_limit) || 0,
                     outstanding_balance: 0,
                     reliability_score: 100,
                     monthly_volume: 0,
@@ -127,7 +128,8 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                 phone: '',
                 license_number: '',
                 payment_terms: 'net_30',
-                address: ''
+                address: '',
+                credit_limit: '5000'
             });
             onClose();
         } catch (error: unknown) {
@@ -214,23 +216,37 @@ export function CreateWholesaleClientDialog({ open, onClose, onSuccess }: Props)
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="payment_terms">Payment Terms</Label>
-                        <Select
-                            value={formData.payment_terms}
-                            onValueChange={(value) => setFormData({ ...formData, payment_terms: value })}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select terms" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="cod">Cash on Delivery (COD)</SelectItem>
-                                <SelectItem value="net_7">Net 7</SelectItem>
-                                <SelectItem value="net_15">Net 15</SelectItem>
-                                <SelectItem value="net_30">Net 30</SelectItem>
-                                <SelectItem value="due_on_receipt">Due on Receipt</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="payment_terms">Payment Terms</Label>
+                            <Select
+                                value={formData.payment_terms}
+                                onValueChange={(value) => setFormData({ ...formData, payment_terms: value })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select terms" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="cod">Cash on Delivery (COD)</SelectItem>
+                                    <SelectItem value="net_7">Net 7</SelectItem>
+                                    <SelectItem value="net_15">Net 15</SelectItem>
+                                    <SelectItem value="net_30">Net 30</SelectItem>
+                                    <SelectItem value="due_on_receipt">Due on Receipt</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="credit_limit">Credit Limit</Label>
+                            <Input
+                                id="credit_limit"
+                                type="number"
+                                min="0"
+                                step="100"
+                                value={formData.credit_limit}
+                                onChange={(e) => setFormData({ ...formData, credit_limit: e.target.value })}
+                                placeholder="5000"
+                            />
+                        </div>
                     </div>
 
                     <DialogFooter className="pt-4">

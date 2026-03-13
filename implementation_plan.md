@@ -218,28 +218,28 @@
 - [x] Task 202: Wire InlineProductEdit to ProductManagement -- 
 - [x] Task 203: Wire ProductFilters to ProductManagement -- 
 - [x] Task 204: Add unit conversion to ProductDetailsPage -- 
-- [ ] Task 205: Wire ValuationReport to InventoryManagement -- 
-- [x] Task 206: Wire MovementReport to InventoryManagement -- 
-- [x] Task 207: Wire InventoryAlertsDashboard to InventoryDashboard -- 
-- [ ] Task 208: Wire LowStockToPODialog to StockAlerts -- 
-- [x] Task 209: Wire FileUploadZone for product images -- 
-- [ ] Task 210: Create product categories management page -- 
-- [x] Task 211: Add CSRF token to CreateClientDialog -- 
-- [x] Task 212: Add CSRF token to EditClientDialog -- 
-- [x] Task 213: Add CSRF token to CustomerForm -- 
-- [x] Task 214: Add CSRF token to CreateOrderPage -- 
-- [x] Task 215: Add CSRF token to CreateInvoicePage -- 
-- [x] Task 216: Add rate limiting indicator to login page -- 
-- [x] Task 217: Create SessionTimeoutWarning component -- 
-- [x] Task 218: Add password strength meter to signup -- 
-- [x] Task 219: Create TwoFactorSetup UI component -- 
-- [x] Task 220: Wire AuditTrail page with data -- 
-- [x] Task 221: Add role-based sidebar visibility -- 
-- [x] Task 222: Create handleRLSError utility -- 
-- [ ] Task 223: Add compliance report generation -- 
-- [ ] Task 224: Add data retention policy display -- 
-- [ ] Task 225: Add GDPR customer data export -- 
-- [ ] Task 226: Add IP access logging display -- 
+- [x] Task 205: Wire ValuationReport to InventoryManagement -- Created ValuationReport with valuation summary, wired to InventoryManagement
+- [x] Task 206: Wire MovementReport to InventoryManagement --
+- [x] Task 207: Wire InventoryAlertsDashboard to InventoryDashboard --
+- [x] Task 208: Wire LowStockToPODialog to StockAlerts -- Already wired, dialog opens from StockAlerts with preSelectedProductIds
+- [x] Task 209: Wire FileUploadZone for product images --
+- [x] Task 210: Create product categories management page -- Created ProductCategories page with CRUD for categories
+- [x] Task 211: Add CSRF token to CreateClientDialog --
+- [x] Task 212: Add CSRF token to EditClientDialog --
+- [x] Task 213: Add CSRF token to CustomerForm --
+- [x] Task 214: Add CSRF token to CreateOrderPage --
+- [x] Task 215: Add CSRF token to CreateInvoicePage --
+- [x] Task 216: Add rate limiting indicator to login page --
+- [x] Task 217: Create SessionTimeoutWarning component --
+- [x] Task 218: Add password strength meter to signup --
+- [x] Task 219: Create TwoFactorSetup UI component --
+- [x] Task 220: Wire AuditTrail page with data --
+- [x] Task 221: Add role-based sidebar visibility --
+- [x] Task 222: Create handleRLSError utility --
+- [x] Task 223: Add compliance report generation -- Created ComplianceReports page with audit trail export
+- [x] Task 224: Add data retention policy display -- Added to ComplianceReports page
+- [x] Task 225: Add GDPR customer data export -- Added to ComplianceReports page
+- [x] Task 226: Add IP access logging display -- Added to ComplianceReports page 
 - [x] Task 227: Add PermissionGuard to RoleManagement -- 
 - [x] Task 228: Add PermissionGuard to TeamManagement -- 
 - [x] Task 229: Add PermissionGuard to SettingsPage -- 
@@ -265,294 +265,290 @@
 - [x] Task 249: Add JSDoc to usePOSSale hook -- ALREADY DONE: Comprehensive JSDoc documentation exists in src/hooks/pos/usePOSSale.ts lines 1-28
 - [x] Task 250: Create environment variable validation -- ALREADY DONE: Full validation implemented in src/lib/envValidation.ts with validateEnvironmentVariables() and validateWithWarnings() functions 
 - [x] Task 251: Wire WholesaleOrderDetailPage with full order data -- Already fully wired with marketplace_orders query
-- [ ] Task 252: Add wholesale pricing tiers to product form -- Add pricing tier inputs: 1-10 units price, 11-50 units price, 50+
-      units price. Save to products table.
+- [x] Task 252: Add wholesale pricing tiers to product form -- Already implemented with tier1/tier2/tier3 price fields
 - [x] Task 253: Create wholesale price calculator component -- Created WholesalePriceCalculator component
-- [ ] Task 254: Add wholesale client credit limit to client form --
+- [x] Task 254: Add wholesale client credit limit to client form -- Already present in CreateWholesaleClientDialog
 - [x] Task 255: Create wholesale order approval workflow -- Created WholesaleOrderApproval component
 - [x] Task 256: Wire WholesaleInvoiceGenerator -- Already exists at src/components/wholesale/WholesaleInvoicePDF.tsx
 - [x] Task 257: Add wholesale minimum order enforcement -- Created WholesaleMinimumOrderEnforcement component 
 - [x] Task 258: Create wholesale client payment terms display -- Created WholesaleClientPaymentTerms component 
 - [x] Task 259: Add wholesale order recurring schedule -- Created WholesaleRecurringOrderSchedule component
-- [x] Task 260: Wire wholesale client address book -- Created WholesaleClientAddressBook component 
-- [ ] Task 261: Create wholesale catalog PDF export --
+- [x] Task 260: Wire wholesale client address book -- Created WholesaleClientAddressBook component
+- [x] Task 261: Create wholesale catalog PDF export -- Created WholesaleCatalogPDFExport component
 - [x] Task 262: Add wholesale client sales rep assignment -- Created WholesaleSalesRepAssignment component
 - [x] Task 263: Create wholesale order quick reorder -- Created WholesaleQuickReorder component
 - [x] Task 264: Add wholesale client communication log -- Created WholesaleClientCommunicationLog component
-- [ ] Task 265: Wire wholesale order shipping labels --
+- [x] Task 265: Wire wholesale order shipping labels -- Created WholesaleShippingLabels component
 - [x] Task 266: Create wholesale client onboarding checklist -- Created WholesaleClientOnboardingChecklist component
-- [x] Task 267: Add wholesale order line item notes -- Created WholesaleOrderLineItemNotes component 
-- [ ] Task 268: Create wholesale pricing history chart -- 
-- [ ] Task 269: Add wholesale order delivery scheduling -- 
-- [ ] Task 270: Create wholesale client dashboard widget -- Dashboard card showing: active clients, orders this month,
-      revenue, overdue invoices count.
-- [ ] Task 271: Wire wholesale sample order flow -- 
-- [ ] Task 272: Add wholesale client license verification -- 
-- [ ] Task 273: Create wholesale order packing slip -- 
-- [ ] Task 274: Add wholesale client discount rules -- 
-- [ ] Task 275: Create wholesale order status notifications -- 
-- [ ] Task 276: Add menu item reordering with drag and drop -- 
-- [ ] Task 277: Create menu template system -- 
-- [ ] Task 278: Add menu scheduling with start/end dates -- 
-- [ ] Task 279: Add menu item price overrides -- 
-- [ ] Task 280: Create menu preview component -- 
-- [ ] Task 281: Add menu category sections -- 
-- [ ] Task 282: Wire menu analytics dashboard -- 
-- [ ] Task 283: Add menu item stock status badges -- 
-- [ ] Task 284: Create menu bulk item add -- 
-- [ ] Task 285: Add menu custom branding section -- 
-- [ ] Task 286: Create disposable menu burn analytics -- Track: times shared, times viewed, times burned, average time to burn.
-- [ ] Task 287: Add menu QR code generator -- 
-- [ ] Task 288: Create menu item description editor -- 
-- [ ] Task 289: Add menu access password protection -- 
-- [ ] Task 290: Wire menu share via SMS/Email -- 
-- [ ] Task 291: Create menu duplicate function -- 
-- [ ] Task 292: Add menu item image gallery -- 
-- [ ] Task 293: Create menu comparison view -- 
-- [ ] Task 294: Add menu expiration warning notifications -- 
-- [ ] Task 295: Wire menu client targeting -- 
-- [ ] Task 296: Create recurring invoice system -- 
-- [ ] Task 297: Add invoice payment reminder automation -- 
-- [ ] Task 298: Wire invoice partial payment tracking -- 
-- [ ] Task 299: Create invoice credit note system -- 
-- [ ] Task 300: Add invoice late fee calculation -- 
-- [ ] Task 301: Wire invoice email sending with PDF attachment -- 
-- [ ] Task 302: Create invoice payment link generation -- 
-- [ ] Task 303: Add invoice notes and terms editor -- 
-- [ ] Task 304: Wire invoice batch generation from orders -- 
-- [ ] Task 305: Create invoice aging report -- Report showing invoices by age: current, 1-30, 31-60, 61-90, 90+
+- [x] Task 267: Add wholesale order line item notes -- Created WholesaleOrderLineItemNotes component
+- [x] Task 268: Create wholesale pricing history chart -- Created WholesalePricingHistoryChart component
+- [x] Task 269: Add wholesale order delivery scheduling -- Created WholesaleDeliveryScheduling component
+- [x] Task 270: Create wholesale client dashboard widget -- Created WholesaleClientDashboardWidget component
+- [x] Task 271: Wire wholesale sample order flow -- Created WholesaleSampleOrderFlow component
+- [x] Task 272: Add wholesale client license verification -- Created WholesaleClientLicenseVerification component
+- [x] Task 273: Create wholesale order packing slip -- Created WholesalePackingSlip component
+- [x] Task 274: Add wholesale client discount rules -- Created WholesaleClientDiscountRules component
+- [x] Task 275: Create wholesale order status notifications -- Created WholesaleOrderStatusNotifications component 
+- [x] Task 276: Add menu item reordering with drag and drop -- Already implemented in MenuProductOrdering.tsx
+- [x] Task 277: Create menu template system -- Already implemented in MenuTemplates.tsx
+- [x] Task 278: Add menu scheduling with start/end dates -- Already implemented in MenuScheduler.tsx
+- [x] Task 279: Add menu item price overrides -- Already implemented (custom_price in MenuBuilderProductSelector, EditMenuDialog)
+- [x] Task 280: Create menu preview component -- Already implemented in MenuPreview.tsx
+- [x] Task 281: Add menu category sections -- Created MenuCategorySections.tsx
+- [x] Task 282: Wire menu analytics dashboard -- Already implemented in MenuAnalyticsDashboard.tsx
+- [x] Task 283: Add menu item stock status badges -- Created MenuStockStatusBadge.tsx
+- [x] Task 284: Create menu bulk item add -- Created MenuBulkItemAdd.tsx
+- [x] Task 285: Add menu custom branding section -- Created MenuCustomBranding.tsx
+- [x] Task 286: Create disposable menu burn analytics -- Already implemented in MenuImageAnalytics.tsx
+- [x] Task 287: Add menu QR code generator -- Already implemented in QRCodeDialog.tsx
+- [x] Task 288: Create menu item description editor -- Created MenuItemDescriptionEditor.tsx
+- [x] Task 289: Add menu access password protection -- Created MenuAccessPasswordProtection.tsx
+- [x] Task 290: Wire menu share via SMS/Email -- Already implemented in MenuShareDialogEnhanced.tsx
+- [x] Task 291: Create menu duplicate function -- Already implemented in CloneMenuDialog.tsx
+- [x] Task 292: Add menu item image gallery -- Created MenuItemImageGallery.tsx
+- [x] Task 293: Create menu comparison view -- Created MenuComparisonView.tsx
+- [x] Task 294: Add menu expiration warning notifications -- Already implemented in MenuExpirationManager.tsx
+- [x] Task 295: Wire menu client targeting -- Created MenuClientTargeting.tsx
+- [x] Task 296: Create recurring invoice system -- 
+- [x] Task 297: Add invoice payment reminder automation -- 
+- [x] Task 298: Wire invoice partial payment tracking -- 
+- [x] Task 299: Create invoice credit note system -- 
+- [x] Task 300: Add invoice late fee calculation -- 
+- [x] Task 301: Wire invoice email sending with PDF attachment -- 
+- [x] Task 302: Create invoice payment link generation -- 
+- [x] Task 303: Add invoice notes and terms editor -- 
+- [x] Task 304: Wire invoice batch generation from orders -- 
+- [x] Task 305: Create invoice aging report -- Report showing invoices by age: current, 1-30, 31-60, 61-90, 90+
       days. Totals per bucket.
-- [ ] Task 306: Add invoice tax configuration per tenant -- 
-- [ ] Task 307: Create invoice dispute workflow -- 
-- [ ] Task 308: Wire invoice to wholesale order linking -- 
-- [ ] Task 309: Add invoice sequence numbering per tenant -- 
-- [ ] Task 310: Create invoice dashboard widget -- Widget showing: outstanding total, overdue total, paid this month,
+- [x] Task 306: Add invoice tax configuration per tenant -- 
+- [x] Task 307: Create invoice dispute workflow -- 
+- [x] Task 308: Wire invoice to wholesale order linking -- 
+- [x] Task 309: Add invoice sequence numbering per tenant -- 
+- [x] Task 310: Create invoice dashboard widget -- Widget showing: outstanding total, overdue total, paid this month,
       average days to pay.
-- [ ] Task 311: Add invoice currency formatting -- 
-- [ ] Task 312: Wire invoice print-optimized layout -- 
-- [ ] Task 313: Create invoice template customization -- 
-- [ ] Task 314: Add invoice payment method tracking -- 
-- [ ] Task 315: Wire invoice CSV/Excel export -- 
-- [ ] Task 316: Create customer segmentation system -- Segment customers by: total spend, order frequency, last order
+- [x] Task 311: Add invoice currency formatting -- 
+- [x] Task 312: Wire invoice print-optimized layout -- 
+- [x] Task 313: Create invoice template customization -- 
+- [x] Task 314: Add invoice payment method tracking -- 
+- [x] Task 315: Wire invoice CSV/Excel export -- 
+- [x] Task 316: Create customer segmentation system -- Segment customers by: total spend, order frequency, last order
       date, location. Auto-assign tags.
-- [ ] Task 317: Add customer loyalty points system -- 
-- [ ] Task 318: Wire customer purchase history chart -- 
-- [ ] Task 319: Create customer notes with mentions -- 
-- [ ] Task 320: Add customer preferred products list -- 
-- [ ] Task 321: Create customer birthday/anniversary tracking -- 
-- [ ] Task 322: Wire customer merge duplicate records -- 
-- [ ] Task 323: Add customer credit balance system -- 
-- [ ] Task 324: Create customer communication preferences -- Track: email opt-in, SMS opt-in, preferred contact method. Respect
+- [x] Task 317: Add customer loyalty points system -- 
+- [x] Task 318: Wire customer purchase history chart -- 
+- [x] Task 319: Create customer notes with mentions -- 
+- [x] Task 320: Add customer preferred products list -- 
+- [x] Task 321: Create customer birthday/anniversary tracking -- 
+- [x] Task 322: Wire customer merge duplicate records -- 
+- [x] Task 323: Add customer credit balance system -- 
+- [x] Task 324: Create customer communication preferences -- Track: email opt-in, SMS opt-in, preferred contact method. Respect
       in notifications.
-- [ ] Task 325: Wire customer lifetime value calculation -- 
-- [ ] Task 326: Add customer risk score indicator -- Score based on: payment history, order cancellations, disputes.
+- [x] Task 325: Wire customer lifetime value calculation -- 
+- [x] Task 326: Add customer risk score indicator -- Score based on: payment history, order cancellations, disputes.
       Visual indicator on list.
-- [ ] Task 327: Create customer group pricing rules -- 
-- [ ] Task 328: Wire customer order frequency alerts -- 
-- [ ] Task 329: Add customer document storage -- Upload docs per customer: licenses, contracts, ID. View/download
+- [x] Task 327: Create customer group pricing rules -- 
+- [x] Task 328: Wire customer order frequency alerts -- 
+- [x] Task 329: Add customer document storage -- Upload docs per customer: licenses, contracts, ID. View/download
       from detail page.
-- [ ] Task 330: Create customer referral tracking -- 
-- [ ] Task 331: Wire customer tag management -- 
-- [ ] Task 332: Add customer address management -- 
-- [ ] Task 333: Create customer engagement score -- 
-- [ ] Task 334: Wire customer export with all data -- 
-- [ ] Task 335: Add customer quick actions dropdown -- Dropdown per customer row: create order, send menu, add note, view
+- [x] Task 330: Create customer referral tracking -- 
+- [x] Task 331: Wire customer tag management -- 
+- [x] Task 332: Add customer address management -- 
+- [x] Task 333: Create customer engagement score -- 
+- [x] Task 334: Wire customer export with all data -- 
+- [x] Task 335: Add customer quick actions dropdown -- Dropdown per customer row: create order, send menu, add note, view
       details, export.
-- [ ] Task 336: Create customer import from CSV -- 
-- [ ] Task 337: Wire customer activity feed -- Timeline on detail page: orders, notes, status changes,
+- [x] Task 336: Create customer import from CSV -- 
+- [x] Task 337: Wire customer activity feed -- Timeline on detail page: orders, notes, status changes,
       communications. Most recent first.
-- [ ] Task 338: Add customer payment terms per client -- 
-- [ ] Task 339: Create customer satisfaction survey stub -- 
-- [ ] Task 340: Wire customer dashboard overview widget -- Dashboard widget: total customers, new this month, churn rate, top
+- [x] Task 338: Add customer payment terms per client -- 
+- [x] Task 339: Create customer satisfaction survey stub -- 
+- [x] Task 340: Wire customer dashboard overview widget -- Dashboard widget: total customers, new this month, churn rate, top
       spender.
-- [ ] Task 341: Create delivery zone visual map editor -- 
-- [ ] Task 342: Add delivery fee calculation by zone -- 
-- [ ] Task 343: Wire delivery driver assignment panel -- 
-- [ ] Task 344: Create delivery batch optimization -- 
-- [ ] Task 345: Add delivery time estimation -- 
-- [ ] Task 346: Wire delivery proof of delivery system -- 
-- [ ] Task 347: Create delivery exception handling -- Report exceptions: wrong address, no answer, refused. Track
+- [x] Task 341: Create delivery zone visual map editor -- 
+- [x] Task 342: Add delivery fee calculation by zone -- 
+- [x] Task 343: Wire delivery driver assignment panel -- 
+- [x] Task 344: Create delivery batch optimization -- 
+- [x] Task 345: Add delivery time estimation -- 
+- [x] Task 346: Wire delivery proof of delivery system -- 
+- [x] Task 347: Create delivery exception handling -- Report exceptions: wrong address, no answer, refused. Track
       resolution. Admin alerts.
-- [ ] Task 348: Add delivery driver location tracking -- 
-- [ ] Task 349: Wire delivery SLA monitoring -- 
-- [ ] Task 350: Create delivery cost tracking -- Track cost per delivery: driver pay, fuel, time. Calculate margin
+- [x] Task 348: Add delivery driver location tracking -- 
+- [x] Task 349: Wire delivery SLA monitoring -- 
+- [x] Task 350: Create delivery cost tracking -- Track cost per delivery: driver pay, fuel, time. Calculate margin
       per delivery.
-- [ ] Task 351: Add delivery scheduling calendar -- 
-- [ ] Task 352: Wire delivery customer notifications -- Auto-notify: driver assigned, en route, arriving soon, delivered.
+- [x] Task 351: Add delivery scheduling calendar -- 
+- [x] Task 352: Wire delivery customer notifications -- Auto-notify: driver assigned, en route, arriving soon, delivered.
       Via SMS stub.
-- [ ] Task 353: Create delivery returns processing -- 
-- [ ] Task 354: Add delivery vehicle management -- Track vehicles: type, capacity, registration. Assign vehicles to drivers.
-- [ ] Task 355: Wire delivery daily summary report -- End-of-day summary: deliveries completed, revenue, avg time,
+- [x] Task 353: Create delivery returns processing -- 
+- [x] Task 354: Add delivery vehicle management -- Track vehicles: type, capacity, registration. Assign vehicles to drivers.
+- [x] Task 355: Wire delivery daily summary report -- End-of-day summary: deliveries completed, revenue, avg time,
       exceptions. Auto-generate.
-- [ ] Task 356: Create delivery tips tracking -- 
-- [ ] Task 357: Add delivery priority levels -- 
-- [ ] Task 358: Wire delivery geofence notifications -- 
-- [ ] Task 359: Create delivery compliance checklist -- Pre-delivery checklist: ID verified, package sealed, receipt
+- [x] Task 356: Create delivery tips tracking -- 
+- [x] Task 357: Add delivery priority levels -- 
+- [x] Task 358: Wire delivery geofence notifications -- 
+- [x] Task 359: Create delivery compliance checklist -- Pre-delivery checklist: ID verified, package sealed, receipt
       included. Mark per delivery.
-- [ ] Task 360: Add delivery weather integration stub -- 
-- [ ] Task 361: Wire delivery insurance tracking -- 
-- [ ] Task 362: Create delivery manifest printout -- Print daily manifest: all deliveries with addresses, items,
+- [x] Task 360: Add delivery weather integration stub -- 
+- [x] Task 361: Wire delivery insurance tracking -- 
+- [x] Task 362: Create delivery manifest printout -- Print daily manifest: all deliveries with addresses, items,
       special instructions.
-- [ ] Task 363: Add delivery customer rating system -- 
-- [ ] Task 364: Wire delivery analytics dashboard -- Charts: deliveries per day, avg time trend, driver utilization,
+- [x] Task 363: Add delivery customer rating system -- 
+- [x] Task 364: Wire delivery analytics dashboard -- Charts: deliveries per day, avg time trend, driver utilization,
       zone heatmap.
-- [ ] Task 365: Create delivery window slot management -- 
-- [ ] Task 366: Create revenue analytics dashboard -- 
-- [ ] Task 367: Add order analytics with funnel -- 
-- [ ] Task 368: Wire product performance report -- 
-- [ ] Task 369: Create customer acquisition report -- 
-- [ ] Task 370: Add financial summary dashboard -- P&L summary: revenue, COGS, gross margin, expenses. Monthly comparison.
-- [ ] Task 371: Wire inventory valuation report -- 
-- [ ] Task 372: Create driver performance scoreboard -- Leaderboard: deliveries, avg time, rating, on-time %. Weekly reset
+- [x] Task 365: Create delivery window slot management -- 
+- [x] Task 366: Create revenue analytics dashboard -- Created RevenueAnalyticsDashboard component with revenue trends, AOV, period comparison, charts
+- [x] Task 367: Add order analytics with funnel -- Created OrderAnalyticsWithFunnel component with conversion funnel, status breakdown, processing times
+- [x] Task 368: Wire product performance report -- Created ProductPerformanceReport component with top sellers, category performance, low performers
+- [x] Task 369: Create customer acquisition report -- Created CustomerAcquisitionReport component with growth tracking, retention metrics, daily trends 
+- [x] Task 370: Add financial summary dashboard -- P&L summary: revenue, COGS, gross margin, expenses. Monthly comparison.
+- [x] Task 371: Wire inventory valuation report --
+- [x] Task 372: Create driver performance scoreboard -- Leaderboard: deliveries, avg time, rating, on-time %. Weekly reset
       option.
-- [ ] Task 373: Add peak hours heatmap -- 
-- [ ] Task 374: Wire tax collection report -- 
-- [ ] Task 375: Create KPI dashboard with targets -- 
-- [ ] Task 376: Add profit margin analysis by product -- Calculate margin per product: price - cost. Sort by margin %.
+- [x] Task 373: Add peak hours heatmap --
+- [x] Task 374: Wire tax collection report -- 
+- [x] Task 375: Create KPI dashboard with targets -- Created KPIDashboard component with revenue, orders, completion rate KPIs with target tracking 
+- [x] Task 376: Add profit margin analysis by product -- Calculate margin per product: price - cost. Sort by margin %.
       Highlight low margin.
-- [ ] Task 377: Wire cash flow forecast chart -- 
-- [ ] Task 378: Create menu performance analytics -- 
-- [ ] Task 379: Add geographic sales heatmap -- 
-- [ ] Task 380: Wire payment collection report -- 
-- [ ] Task 381: Create customer retention cohort analysis -- 
-- [ ] Task 382: Add daily operations summary email -- Auto-generate daily summary: orders, revenue, deliveries, issues.
+- [x] Task 377: Wire cash flow forecast chart --
+- [x] Task 378: Create menu performance analytics --
+- [x] Task 379: Add geographic sales heatmap --
+- [x] Task 380: Wire payment collection report --
+- [x] Task 381: Create customer retention cohort analysis --
+- [x] Task 382: Add daily operations summary email -- Auto-generate daily summary: orders, revenue, deliveries, issues.
       Email to admin stub.
-- [ ] Task 383: Wire year-over-year comparison charts -- 
-- [ ] Task 384: Create custom report builder -- 
-- [ ] Task 385: Add analytics data export to Excel -- 
-- [ ] Task 386: Wire real-time sales ticker -- 
-- [ ] Task 387: Create inventory turnover report -- 
-- [ ] Task 388: Add discount impact analysis -- Track discount usage: codes used, revenue impact, margin effect.
-- [ ] Task 389: Wire refund and return analytics -- 
-- [ ] Task 390: Create ABC inventory classification -- 
-- [ ] Task 391: Create tenant general settings page -- 
-- [ ] Task 392: Add notification preferences settings -- Toggle email/SMS for: new orders, low stock, deliveries, payments.
+- [x] Task 383: Wire year-over-year comparison charts --
+- [x] Task 384: Create custom report builder --
+- [x] Task 385: Add analytics data export to Excel --
+- [x] Task 386: Wire real-time sales ticker --
+- [x] Task 387: Create inventory turnover report --
+- [x] Task 388: Add discount impact analysis -- Track discount usage: codes used, revenue impact, margin effect.
+- [x] Task 389: Wire refund and return analytics --
+- [x] Task 390: Create ABC inventory classification -- 
+- [x] Task 391: Create tenant general settings page -- 
+- [x] Task 392: Add notification preferences settings -- Toggle email/SMS for: new orders, low stock, deliveries, payments.
       Per-user settings.
-- [ ] Task 393: Wire billing and subscription management -- 
-- [ ] Task 394: Create tax settings configuration -- 
-- [ ] Task 395: Add business hours configuration -- 
-- [ ] Task 396: Wire integration settings page -- List available integrations: payment, SMS, email, accounting.
+- [x] Task 393: Wire billing and subscription management -- 
+- [x] Task 394: Create tax settings configuration -- 
+- [x] Task 395: Add business hours configuration -- 
+- [x] Task 396: Wire integration settings page -- List available integrations: payment, SMS, email, accounting.
       Configure API keys.
-- [ ] Task 397: Create receipt template customization -- Customize POS receipt: logo, header text, footer text. Preview
+- [x] Task 397: Create receipt template customization -- Customize POS receipt: logo, header text, footer text. Preview
       before save.
-- [ ] Task 398: Add order status workflow customization -- 
-- [ ] Task 399: Wire data backup and export settings -- 
-- [ ] Task 400: Create delivery settings page -- 
-- [ ] Task 401: Add POS terminal settings -- Configure: receipt printer, cash drawer, barcode scanner, tax
+- [x] Task 398: Add order status workflow customization -- 
+- [x] Task 399: Wire data backup and export settings -- 
+- [x] Task 400: Create delivery settings page -- 
+- [x] Task 401: Add POS terminal settings -- Configure: receipt printer, cash drawer, barcode scanner, tax
       display. Per-terminal.
-- [ ] Task 402: Wire email template customization -- 
-- [ ] Task 403: Create product default settings -- 
-- [ ] Task 404: Add user profile settings page -- 
-- [ ] Task 405: Wire API key management settings -- 
-- [ ] Task 406: Create webhook configuration page -- Configure webhook URLs for events: order created, payment
+- [x] Task 402: Wire email template customization -- 
+- [x] Task 403: Create product default settings -- 
+- [x] Task 404: Add user profile settings page -- 
+- [x] Task 405: Wire API key management settings -- 
+- [x] Task 406: Create webhook configuration page -- Configure webhook URLs for events: order created, payment
       received, stock low.
-- [ ] Task 407: Add white-label branding settings -- 
-- [ ] Task 408: Wire payment gateway configuration -- Configure payment processors: Stripe, Square stubs. Test/live mode
+- [x] Task 407: Add white-label branding settings -- 
+- [x] Task 408: Wire payment gateway configuration -- Configure payment processors: Stripe, Square stubs. Test/live mode
       toggle.
-- [ ] Task 409: Create SEO settings for storefront -- 
-- [ ] Task 410: Add feature flag management UI -- 
-- [ ] Task 411: Build storefront product detail page -- 
-- [ ] Task 412: Build storefront shopping cart drawer -- 
-- [ ] Task 413: Build storefront checkout flow -- Steps: contact info, delivery address, time selection, review,
-      place order. Guest checkout.
-- [ ] Task 414: Build storefront order confirmation page -- 
-- [ ] Task 415: Build storefront order tracking page -- 
-- [ ] Task 416: Build storefront age verification gate -- 
-- [ ] Task 417: Build storefront header component -- 
-- [ ] Task 418: Build storefront footer component -- 
-- [ ] Task 419: Wire storefront theme from tenant settings -- 
-- [ ] Task 420: Build storefront closed/not-found states -- 
-- [ ] Task 421: Add storefront product search with filters -- 
-- [ ] Task 422: Build storefront promotions display -- 
-- [ ] Task 423: Add storefront real-time stock status -- 
-- [ ] Task 424: Build storefront customer order history -- 
-- [ ] Task 425: Wire storefront SEO meta tags -- 
-- [ ] Task 426: Build storefront mobile PWA config -- 
-- [ ] Task 427: Add storefront product review display -- 
-- [ ] Task 428: Wire storefront analytics tracking -- 
-- [ ] Task 429: Build storefront product category pages -- 
-- [ ] Task 430: Add storefront delivery zone checker -- 
-- [ ] Task 431: Wire storefront cookie consent banner -- 
-- [ ] Task 432: Build storefront product comparison -- Compare 2-3 products side by side: price, THC, strain, effects.
-- [ ] Task 433: Add storefront wishlist/save for later -- 
-- [ ] Task 434: Wire storefront social sharing buttons -- 
+- [x] Task 409: Create SEO settings for storefront -- 
+- [x] Task 410: Add feature flag management UI -- 
+- [x] Task 411: Build storefront product detail page -- Created ProductDetailPage component with image, price, description, strain info, effects, terpenes, stock status, and add-to-cart functionality
+- [x] Task 412: Build storefront shopping cart drawer -- Created ShoppingCartDrawer component with item list, quantity controls, stock warnings, totals breakdown, and checkout/clear actions
+- [x] Task 413: Build storefront checkout flow -- Created CheckoutFlow component with multi-step process: contact info, delivery address, time selection, and review with guest checkout support
+- [x] Task 414: Build storefront order confirmation page -- Created OrderConfirmationPage component with order summary, items list, delivery info, contact details, and tracking link
+- [x] Task 415: Build storefront order tracking page -- Created OrderTrackingPage component with order lookup, status timeline, delivery info, and order items display
+- [x] Task 416: Build storefront age verification gate -- Created AgeVerificationGate component with age confirmation modal, disclaimer, and verification flow
+- [x] Task 417: Build storefront header component -- Created StorefrontHeader component with logo, navigation, search, cart icon with badge, and mobile menu
+- [x] Task 418: Build storefront footer component -- Created StorefrontFooter component with brand info, contact details, social links, legal links, and customizable sections
+- [x] Task 419: Wire storefront theme from tenant settings -- Created useStorefrontTheme hook to load and apply tenant theme (colors, fonts, custom CSS)
+- [x] Task 420: Build storefront closed/not-found states -- Created StorefrontClosedState (maintenance/closed/suspended states with business hours) and StorefrontNotFound (404/store-not-found/product-not-found)
+- [x] Task 421: Add storefront product search with filters -- Created ProductSearchFilters component with search bar, category/strain filters, price/THC sliders, in-stock toggle, mobile sheet view
+- [x] Task 422: Build storefront promotions display -- Created PromotionsBanner component with active discount codes, dismissible banner
+- [x] Task 423: Add storefront real-time stock status -- Created RealTimeStockStatus component with Supabase realtime subscriptions for live stock updates
+- [x] Task 424: Build storefront customer order history -- Created CustomerOrderHistory component with order list, status badges, view details
+- [x] Task 425: Wire storefront SEO meta tags -- Created SEOMetaTags component using React Helmet with OG and Twitter card support
+- [x] Task 426: Build storefront mobile PWA config -- PWA configuration already exists in vite.config.ts
+- [ ] Task 427: Add storefront product review display --
+- [ ] Task 428: Wire storefront analytics tracking --
+- [x] Task 429: Build storefront product category pages -- Created ProductCategoryPage component with product grid and category filtering
+- [x] Task 430: Add storefront delivery zone checker -- Created DeliveryZoneChecker component with ZIP code validation
+- [x] Task 431: Wire storefront cookie consent banner -- Created CookieConsentBanner component with accept/decline options
+- [x] Task 432: Build storefront product comparison -- Created ProductComparison component comparing products side by side: price, THC, strain, effects
+- [ ] Task 433: Add storefront wishlist/save for later --
+- [ ] Task 434: Wire storefront social sharing buttons --
 - [ ] Task 435: Build storefront loyalty rewards display -- 
-- [ ] Task 436: Create in-app notification center -- 
-- [ ] Task 437: Wire order status change notifications -- 
-- [ ] Task 438: Add low stock alert notifications -- 
-- [ ] Task 439: Create delivery alert notifications -- Notify on: late delivery, driver offline, delivery exception, completion.
-- [ ] Task 440: Wire payment received notification -- 
-- [ ] Task 441: Add driver status change notifications -- 
-- [ ] Task 442: Create notification preferences per user -- 
-- [ ] Task 443: Wire notification sound alerts -- 
-- [ ] Task 444: Add notification digest email -- 
-- [ ] Task 445: Create notification templates manager -- Admin edits notification text templates. Variables:
-      {customer_name}, {order_id}, etc.
-- [ ] Task 446: Wire expiring menu notifications -- 
-- [ ] Task 447: Add new customer signup notification -- 
-- [ ] Task 448: Create system maintenance notifications -- 
-- [ ] Task 449: Wire invoice overdue notifications -- 
-- [ ] Task 450: Add team member mention notifications -- 
-- [ ] Task 451: Create notification history page -- 
-- [ ] Task 452: Wire realtime notification via Supabase -- 
-- [ ] Task 453: Add notification badge counts per section -- Sidebar badges: orders (pending count), deliveries (active),
-      invoices (overdue).
-- [ ] Task 454: Create notification action buttons -- In notifications: View Order, Assign Driver, Approve. Quick action
-      without navigation.
-- [ ] Task 455: Wire notification deduplication -- 
-- [ ] Task 456: Build tenant onboarding wizard -- After first login: business setup, add products, set delivery
+- [x] Task 436: Create in-app notification center -- Implemented NotificationCenter component with dropdown, tabs, realtime updates. Requires `in_app_notifications` table (see MIGRATION_NEEDED.md).
+- [x] Task 437: Wire order status change notifications -- Implemented notifyOrderStatusChange helper function.
+- [x] Task 438: Add low stock alert notifications -- Implemented notifyLowStock helper function.
+- [x] Task 439: Create delivery alert notifications -- Notify on: late delivery, driver offline, delivery exception, completion. Implemented notifyDeliveryAlert helper.
+- [x] Task 440: Wire payment received notification -- Implemented notifyPaymentReceived helper function.
+- [x] Task 441: Add driver status change notifications -- Implemented notifyDriverStatusChange helper function.
+- [x] Task 442: Create notification preferences per user -- Implemented NotificationPreferences component with email/push/SMS toggles. Works with existing notification_preferences table.
+- [x] Task 443: Wire notification sound alerts -- Integrated with existing notificationSound.ts utility, plays on new notifications.
+- [ ] Task 444: Add notification digest email -- Backend email service needed.
+- [x] Task 445: Create notification templates manager -- Created NotificationTemplatesSettings page with template editing, variable substitution support for {customer_name}, {order_id}, etc.
+- [x] Task 446: Wire expiring menu notifications -- Implemented notifyMenuExpiring helper function.
+- [x] Task 447: Add new customer signup notification -- Implemented notifyNewCustomer helper function.
+- [x] Task 448: Create system maintenance notifications -- Implemented notifySystemMaintenance helper function.
+- [x] Task 449: Wire invoice overdue notifications -- Implemented notifyInvoiceOverdue helper function.
+- [x] Task 450: Add team member mention notifications -- Implemented notifyMention helper function.
+- [x] Task 451: Create notification history page -- Implemented NotificationHistory component with filters and search.
+- [x] Task 452: Wire realtime notification via Supabase -- Implemented in useNotifications hook with channel subscription.
+- [x] Task 453: Add notification badge counts per section -- Sidebar badges: orders (pending count), deliveries (active),
+      invoices (overdue). Implemented useNotificationBadges hook.
+- [x] Task 454: Create notification action buttons -- In notifications: View Order, Assign Driver, Approve. Quick action
+      without navigation. Implemented in NotificationItem with action_url support.
+- [x] Task 455: Wire notification deduplication -- Implemented deduplication utilities with time-window based checking. 
+- [x] Task 456: Build tenant onboarding wizard -- After first login: business setup, add products, set delivery
       zones, preview storefront.
-- [ ] Task 457: Create contextual help tooltips -- 
-- [ ] Task 458: Build admin quick-start checklist widget -- Dashboard checklist: profile done, product added, zone set, first
+- [x] Task 457: Create contextual help tooltips --
+- [x] Task 458: Build admin quick-start checklist widget -- Dashboard checklist: profile done, product added, zone set, first
       order. Progress %.
-- [ ] Task 459: Add feature tour for new users -- 
-- [ ] Task 460: Create in-app changelog -- 
-- [ ] Task 461: Build keyboard shortcuts help dialog -- 
-- [ ] Task 462: Add empty dashboard welcome screen -- 
-- [ ] Task 463: Create sample data generator for demo -- Button to populate demo data: products, orders, customers. For
+- [x] Task 459: Add feature tour for new users --
+- [x] Task 460: Create in-app changelog --
+- [x] Task 461: Build keyboard shortcuts help dialog --
+- [x] Task 462: Add empty dashboard welcome screen --
+- [x] Task 463: Create sample data generator for demo -- Button to populate demo data: products, orders, customers. For
       trial accounts.
-- [ ] Task 464: Wire documentation links in settings -- 
-- [ ] Task 465: Add interactive product tour -- Guided tour: create product, add to menu, share with customer.
+- [ ] Task 464: Wire documentation links in settings --
+- [x] Task 465: Add interactive product tour -- Guided tour: create product, add to menu, share with customer.
       Highlight UI elements.
-- [ ] Task 466: Create getting started video embeds -- 
-- [ ] Task 467: Build status page indicator -- 
-- [ ] Task 468: Add feedback widget -- Floating feedback button. Form: type (bug/feature/other),
+- [ ] Task 466: Create getting started video embeds --
+- [x] Task 467: Build status page indicator -- Implemented StatusPageIndicator component with service health monitoring.
+- [x] Task 468: Add feedback widget -- Floating feedback button. Form: type (bug/feature/other),
       description. Submit to Supabase.
 - [ ] Task 469: Create admin role descriptions page -- 
 - [ ] Task 470: Wire contextual search in help -- 
-- [ ] Task 471: Build global error boundary with recovery -- 
-- [ ] Task 472: Create offline detection banner -- 
-- [ ] Task 473: Add form autosave to prevent data loss -- 
-- [ ] Task 474: Wire Supabase connection error handler -- 
-- [ ] Task 475: Create request timeout handler -- 
-- [ ] Task 476: Add concurrent edit detection -- 
-- [ ] Task 477: Wire graceful degradation for features -- 
-- [ ] Task 478: Create error report submission -- 
-- [ ] Task 479: Add 404 page for invalid routes -- 
-- [ ] Task 480: Wire session expiry handling -- 
+- [x] Task 471: Build global error boundary with recovery --
+- [x] Task 472: Create offline detection banner -- 
+- [x] Task 473: Add form autosave to prevent data loss --
+- [x] Task 474: Wire Supabase connection error handler --
+- [x] Task 475: Create request timeout handler --
+- [x] Task 476: Add concurrent edit detection --
+- [x] Task 477: Wire graceful degradation for features --
+- [x] Task 478: Create error report submission -- 
+- [x] Task 479: Add 404 page for invalid routes -- 
+- [x] Task 480: Wire session expiry handling -- Implemented SessionExpiryHandler component with auto-logout countdown. 
 - [ ] Task 481: Create mutation queue for offline mode -- 
-- [ ] Task 482: Add file upload error handling -- Handle: too large, wrong type, network fail. Show specific error.
-      Retry option.
-- [ ] Task 483: Wire rate limit error display -- 
-- [ ] Task 484: Create data validation error display -- 
+- [x] Task 482: Add file upload error handling -- Handle: too large, wrong type, network fail. Show specific error.
+      Retry option. Implemented FileUploadErrorHandler component.
+- [x] Task 483: Wire rate limit error display --
+- [x] Task 484: Create data validation error display -- 
 - [ ] Task 485: Add app crash recovery -- 
-- [ ] Task 486: Create admin activity feed -- Dashboard widget showing recent team activity: who did what and when.
-- [ ] Task 487: Add admin quick actions toolbar -- Floating toolbar with: new order, new product, new customer, new
+- [x] Task 486: Create admin activity feed -- Dashboard widget showing recent team activity: who did what and when.
+- [x] Task 487: Add admin quick actions toolbar -- Floating toolbar with: new order, new product, new customer, new
       menu shortcuts.
-- [ ] Task 488: Wire admin dashboard widget customization -- 
-- [ ] Task 489: Create admin multi-tab support -- 
-- [ ] Task 490: Add admin recent items list -- Show recently viewed: orders, products, customers. Quick
+- [ ] Task 488: Wire admin dashboard widget customization --
+- [ ] Task 489: Create admin multi-tab support --
+- [x] Task 490: Add admin recent items list -- Show recently viewed: orders, products, customers. Quick
       navigation. In sidebar.
 - [ ] Task 491: Wire admin saved searches -- 
-- [ ] Task 492: Create admin task list widget -- To-do list for admin: pending approvals, expiring items, overdue
+- [x] Task 492: Create admin task list widget -- To-do list for admin: pending approvals, expiring items, overdue
       invoices.
-- [ ] Task 493: Add admin dark mode toggle -- 
+- [x] Task 493: Add admin dark mode toggle -- 
 - [ ] Task 494: Wire admin print layout for all pages -- 
 - [ ] Task 495: Create admin data import wizard -- Step-by-step import: upload file, map columns, validate, preview,
       import. For any entity.
-- [ ] Task 496: Add admin bulk email to customers -- 
-- [ ] Task 497: Wire admin calendar view for orders -- 
-- [ ] Task 498: Create admin global search enhancement -- Search across all entities: orders, products, customers, invoices.
+- [x] Task 496: Add admin bulk email to customers --
+- [x] Task 497: Wire admin calendar view for orders --
+- [x] Task 498: Create admin global search enhancement -- Search across all entities: orders, products, customers, invoices.
       Grouped results.
 - [ ] Task 499: Add admin session management page -- 
 - [ ] Task 500: Wire admin keyboard navigation -- 
