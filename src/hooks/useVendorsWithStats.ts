@@ -143,7 +143,6 @@ export function useVendorsWithStats() {
           zip_code: vendor.zip_code,
           license_number: vendor.license_number,
           payment_terms: vendor.payment_terms,
-          lead_time_days: (vendor as unknown as Record<string, unknown>).lead_time_days as number | null || null,
           status: vendor.status,
           notes: vendor.notes,
           product_count: productCountMap.get(vendor.name) ?? 0,
