@@ -50,7 +50,7 @@ export function FeedbackWidget({ className }: FeedbackWidgetProps) {
     try {
       const { error } = await supabase.from("feedback").insert({
         tenant_id: tenant?.id ?? null,
-        user_id: user?.id ?? null,
+        user_id: admin?.id ?? null,
         type,
         description: description.trim(),
         metadata: {
