@@ -13,9 +13,9 @@ interface StockAlertRow {
   id: string;
   product_name: string;
   current_quantity: number;
-  threshold: number;
+  reorder_point: number;
   severity: 'critical' | 'warning' | 'info';
-  status: string;
+  is_resolved: boolean;
   created_at: string;
 }
 
