@@ -53,7 +53,7 @@ interface StockAlertRow {
   product_id: string;
   product_name: string;
   current_quantity: number;
-  threshold: number;
+  reorder_point: number;
   severity: string;
 }
 
