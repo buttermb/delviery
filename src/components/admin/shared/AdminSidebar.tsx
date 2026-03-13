@@ -281,26 +281,6 @@ export function AdminSidebar({ badgeCounts = {}, className }: AdminSidebarProps)
     });
   }, []);
 
-  // Auto-expand section when it contains active item
-  useEffect(() => {
-    visibleSections.forEach(section => {
-      const hasActiveItem = section.items.some(item => isActive(item.href));
-      if (hasActiveItem && !sectionStates[section.id]) {
-        setSectionStates(prev => {
-          const newStates = { ...prev, [section.id]: true };
-          persistSectionStates(newStates);
-          return newStates;
-        });
-      }
-    });
-  }, [location.pathname, isActive, sectionStates, visibleSections]);
-
-  // Guard against missing tenant slug
-  if (!tenantSlug) {
-    logger.error('AdminSidebar rendered without tenantSlug', new Error('Missing tenantSlug'), { component: 'AdminSidebar' });
-    return null;
-  }
-
   // Check if user has permission to view an item
   const hasPermission = useCallback((item: NavItem): boolean => {
     if (!item.permission) return true; // No permission required
@@ -319,6 +299,20 @@ export function AdminSidebar({ badgeCounts = {}, className }: AdminSidebarProps)
       items: section.items.filter(hasPermission)
     })).filter(section => section.items.length > 0);
   }, [hasPermission]);
+
+  // Auto-expand section when it contains active item
+  useEffect(() => {
+    visibleSections.forEach(section => {
+      const hasActiveItem = section.items.some(item => isActive(item.href));
+      if (hasActiveItem && !sectionStates[section.id]) {
+        setSectionStates(prev => {
+          const newStates = { ...prev, [section.id]: true };
+          persistSectionStates(newStates);
+          return newStates;
+        });
+      }
+    });
+  }, [location.pathname, isActive, sectionStates, visibleSections]);
 
   // Get badge value for an item
   const getBadgeValue = (badgeKey?: NavItem['badgeKey']): number | undefined => {

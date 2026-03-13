@@ -49,7 +49,7 @@ export function RevenueAnalyticsDashboard({ tenantId }: RevenueAnalyticsDashboar
   const [dateRange, setDateRange] = useState<DateRange>('30d');
 
   const { data: revenueStats, isLoading } = useQuery({
-    queryKey: queryKeys.analytics.revenue(tenantId, dateRange),
+    queryKey: queryKeys.analytics.revenue(tenantId, { range: dateRange }),
     queryFn: async (): Promise<RevenueStats> => {
       const days = parseInt(dateRange);
       const endDate = endOfDay(new Date());

@@ -97,14 +97,15 @@ export function ProductPerformanceReport({ tenantId }: ProductPerformanceReportP
           existing.revenue += revenue;
           existing.averagePrice = existing.revenue / existing.unitsSold;
         } else {
+          const prod = product as Record<string, unknown>;
           productPerformance.set(item.product_id, {
             productId: item.product_id,
-            productName: product.name,
-            sku: product.sku,
+            productName: (prod.name as string) || 'Unknown',
+            sku: (prod.sku as string) || '',
             unitsSold: quantity,
             revenue,
             averagePrice: Number(item.price) || 0,
-            category: product.category
+            category: (prod.category as string) || ''
           });
         }
       });
