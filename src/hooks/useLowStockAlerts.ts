@@ -101,7 +101,7 @@ export function useLowStockAlerts(): LowStockAlertsSummary {
             name: alert.product_name,
             stockQuantity: alert.current_quantity,
             availableQuantity: alert.current_quantity,
-            lowStockThreshold: alert.threshold,
+            lowStockThreshold: alert.reorder_point,
             category: '', // Category not stored in alerts
             alertLevel,
           };
