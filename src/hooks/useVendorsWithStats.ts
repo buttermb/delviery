@@ -177,7 +177,7 @@ export function useVendorDetails(vendorName: string | null | undefined) {
 
       const { data: vendor, error } = await supabase
         .from('vendors')
-        .select('id, name, contact_name, contact_email, contact_phone, address, city, state, zip_code, license_number, payment_terms, lead_time_days, status, notes')
+        .select('id, name, contact_name, contact_email, contact_phone, address, city, state, zip_code, license_number, payment_terms, status, notes')
         .eq('account_id', tenantId)
         .eq('name', vendorName)
         .maybeSingle();
