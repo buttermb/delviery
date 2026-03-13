@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, Zap, MapPin, User } from 'lucide-react';
 import { toast } from 'sonner';
 

@@ -147,7 +147,7 @@ export function CustomerLoyaltyPoints({ customerId, customerName }: CustomerLoya
           points_change: points,
           transaction_type: 'adjust',
           description: reason,
-          created_by: userId,
+          created_by: admin?.id,
         });
 
       if (txError) throw txError;

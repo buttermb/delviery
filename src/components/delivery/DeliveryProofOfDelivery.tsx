@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Camera, FileSignature, Check, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 

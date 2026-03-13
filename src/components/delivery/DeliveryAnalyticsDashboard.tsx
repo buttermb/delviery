@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { useQuery } from '@tanstack/query';
+import { useQuery } from '@tanstack/react-query';
 import { TrendingUp, Package, Clock, Users } from 'lucide-react';
 import { Line, Bar, Pie } from 'recharts';
 

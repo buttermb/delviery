@@ -386,7 +386,7 @@ export function CustomerNotesWithMentions({
                       </p>
                     )}
                   </div>
-                  {note.created_by === userId && editingNoteId !== note.id && (
+                  {note.created_by === admin?.id && editingNoteId !== note.id && (
                     <div className="flex gap-1">
                       <Button
                         variant="ghost"
