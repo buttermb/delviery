@@ -141,7 +141,7 @@ export function CustomerNotesWithMentions({
           tenant_id: tenant.id,
           customer_id: customerId,
           content,
-          created_by: userId,
+          created_by: admin?.id,
           mentions: mentions.length > 0 ? mentions : null,
         });
 
