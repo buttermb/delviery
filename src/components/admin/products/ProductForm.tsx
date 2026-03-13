@@ -334,7 +334,7 @@ export function ProductForm({
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select type (optional)" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="z-[220]">
                                         <SelectItem value="indica">Indica</SelectItem>
                                         <SelectItem value="sativa">Sativa</SelectItem>
                                         <SelectItem value="hybrid">Hybrid</SelectItem>
